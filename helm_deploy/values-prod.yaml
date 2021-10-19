@@ -1,0 +1,18 @@
+---
+# Per environment values which override defaults in hmpps-manage-adjudications-api/values.yaml
+
+generic-service:
+  replicaCount: 4
+
+  ingress:
+    host: manage-adjudications-api.hmpps.service.justice.gov.uk
+
+  env:
+    APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
+    OAUTH_ENDPOINT_URL: https://sign-in.hmpps.service.justice.gov.uk/auth
+    SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: https://sign-in.hmpps.service.justice.gov.uk/auth/.well-known/jwks.json
+
+# CloudPlatform AlertManager receiver to route promethues alerts to slack
+# See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
+generic-prometheus-alerts:
+  alertSeverity: digital-prison-service
