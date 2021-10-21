@@ -1,0 +1,17 @@
+version: '3.1'
+services:
+  hmpps-manage-adjudications-api-db:
+    image: postgres
+    networks:
+      - hmpps
+    container_name: hmpps-manage-adjudications-api-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_USER=test
+      - POSTGRES_DB=hmpps-manage-adjudications-api-db
+
+networks:
+  hmpps:

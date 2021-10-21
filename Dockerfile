@@ -22,7 +22,12 @@ ENV TZ=Europe/London
 RUN ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
 
 RUN addgroup --gid 2000 --system appgroup && \
-    adduser --uid 2000 --system appuser --gid 2000
+    adduser --uid 2000 --system appuser --gid 2000 \
+
+# Install AWS RDS Root cert into Java truststore
+RUN mkdir /home/appuser/.postgresql \
+  && curl https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem \
+    > /home/appuser/.postgresql/root.crt
 
 WORKDIR /app
 COPY --from=builder --chown=appuser:appgroup /app/build/libs/hmpps-manage-adjudications-api*.jar /app/app.jar
