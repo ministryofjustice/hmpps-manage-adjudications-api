@@ -64,4 +64,14 @@ class HealthCheckTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("status").isEqualTo("UP")
   }
+
+  @Test
+  fun `Health reports db info`() {
+    webTestClient.get().uri("/health")
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("components.db.details.database").isEqualTo("PostgreSQL")
+      .jsonPath("components.db.details.validationQuery").isEqualTo("isValid()")
+  }
 }

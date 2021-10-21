@@ -4,3 +4,11 @@ server:
 management.endpoint:
   health.cache.time-to-live: 0
   info.cache.time-to-live: 0
+
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hmpps-manage-adjudications-api-db
+    username: test
+    password: test
+    continueOnError: true
