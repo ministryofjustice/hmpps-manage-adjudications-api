@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.health
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.function.Consumer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestBase
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.function.Consumer
 
 class HealthCheckTest : IntegrationTestBase() {
 
