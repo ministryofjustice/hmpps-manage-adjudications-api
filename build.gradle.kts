@@ -15,12 +15,22 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
   runtimeOnly("com.h2database:h2")
+  runtimeOnly("org.flywaydb:flyway-core")
   runtimeOnly("org.postgresql:postgresql")
 
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
+  testImplementation("org.flywaydb:flyway-core:7.14.1")
+}
+
+allOpen {
+  annotations(
+    "javax.persistence.Entity",
+    "javax.persistence.MappedSuperclass",
+    "javax.persistence.Embeddable"
+  )
 }
 
 java {

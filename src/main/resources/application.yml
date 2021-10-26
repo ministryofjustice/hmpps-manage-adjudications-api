@@ -13,10 +13,25 @@ spring:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
 
+
+
   profiles:
     group:
       test:
         - "stdout"
+  jpa:
+    open-in-view: false
+    show-sql: false
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+
+  flyway:
+    enabled: true
+
+  datasource:
+    url: 'jdbc:h2:mem:restricted-patients-api-db;MODE=PostgreSQL'
+    continue-on-error: true
 
 server:
   port: 8080
