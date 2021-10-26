@@ -1,0 +1,34 @@
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
+
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import java.time.LocalDateTime
+import javax.persistence.CascadeType
+import javax.persistence.Entity
+import javax.persistence.EntityListeners
+import javax.persistence.JoinColumn
+import javax.persistence.OneToOne
+import javax.persistence.Table
+
+@Entity
+@Table(name = "draft_adjudications")
+@EntityListeners(AuditingEntityListener::class)
+data class DraftAdjudication(
+  override val id: Long? = null,
+  val prisonerNumber: String,
+  val adjudicationSent: Boolean? = false,
+  val adjudicationSentDateTime: LocalDateTime? = null,
+  @OneToOne(optional = true, cascade = [CascadeType.ALL])
+  @JoinColumn(name = "incident_details_id")
+  private var incidentDetails: IncidentDetails? = null,
+  @OneToOne(optional = true, cascade = [CascadeType.ALL])
+  @JoinColumn(name = "incident_statement_id")
+  var incidentStatement: IncidentStatement? = null,
+) : BaseEntity() {
+
+  fun addIncidentDetails(incidentDetails: IncidentDetails) {
+    if (this.incidentDetails != null) throw IllegalStateException("DraftAdjudication already contains the incident details")
+    this.incidentDetails = incidentDetails
+  }
+
+  fun getIncidentDetails(): IncidentDetails? = incidentDetails
+}
