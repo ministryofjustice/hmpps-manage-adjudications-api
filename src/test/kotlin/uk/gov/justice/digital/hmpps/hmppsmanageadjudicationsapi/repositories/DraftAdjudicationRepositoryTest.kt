@@ -27,37 +27,20 @@ class DraftAdjudicationRepositoryTest {
 
   @Test
   fun `save a new draft adjudication`() {
-    val savedEntity = entityManager.persistAndFlush(
-      DraftAdjudication(
-        prisonerNumber = "A12345"
-      )
-    )
-
-    assertThat(draftAdjudicationRepository.findById(savedEntity.id).orElseThrow())
-      .extracting("id", "prisonerNumber")
-      .contains(savedEntity.id, "A12345")
-  }
-
-  @Test
-  fun `add the incident details to an already existing draft adjudication`() {
-    val savedEntity = entityManager.persistAndFlush(
-      DraftAdjudication(
-        prisonerNumber = "A12345"
-      )
-    )
-
-    val draftAdjudication = draftAdjudicationRepository.findById(savedEntity.id).orElseThrow()
     val dateTimeOfIncident = LocalDateTime.now()
 
-    draftAdjudication.addIncidentDetails(IncidentDetails(2, dateTimeOfIncident))
+    val savedEntity = entityManager.persistAndFlush(
+      DraftAdjudication(
+        prisonerNumber = "A12345",
+        incidentDetails = IncidentDetails(2, dateTimeOfIncident)
+      )
+    )
 
-    val draftAdjudicationWithIncidentDetails = draftAdjudicationRepository.findById(savedEntity.id).orElseThrow()
-
-    assertThat(draftAdjudicationWithIncidentDetails)
+    assertThat(savedEntity)
       .extracting("id", "prisonerNumber")
       .contains(savedEntity.id, "A12345")
 
-    assertThat(draftAdjudicationWithIncidentDetails.getIncidentDetails())
+    assertThat(savedEntity.incidentDetails)
       .extracting("locationId", "dateTimeOfIncident")
       .contains(2L, dateTimeOfIncident)
   }

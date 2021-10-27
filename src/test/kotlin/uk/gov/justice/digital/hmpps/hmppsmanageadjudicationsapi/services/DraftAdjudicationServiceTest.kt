@@ -30,43 +30,23 @@ class DraftAdjudicationServiceTest {
   inner class StartDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(DraftAdjudication(id = 1, prisonerNumber = "A12345"))
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(
+        DraftAdjudication(
+          id = 1,
+          prisonerNumber = "A12345",
+          incidentDetails = IncidentDetails(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+        )
+      )
     }
 
     @Test
     fun `makes a call to the repository to save the draft adjudication`() {
+      val draftAdjudication =
+        draftAdjudicationService.startNewAdjudication("A12345", 2L, DATE_TIME_OF_INCIDENT)
+
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
 
-      draftAdjudicationService.startNewAdjudication("A12345")
-
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.prisonerNumber).isEqualTo("A12345")
-      assertThat(argumentCaptor.value.adjudicationSent).isFalse
-      assertThat(argumentCaptor.value.incidentStatement).isNull()
-      assertThat(argumentCaptor.value.getIncidentDetails()).isNull()
-    }
-  }
-
-  @Nested
-  inner class AddIncidentDetails {
-    @Test
-    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
-
-      assertThatThrownBy {
-        draftAdjudicationService.addIncidentDetails(1, 1, LocalDateTime.now())
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("DraftAdjudication not found for 1")
-    }
-
-    @Test
-    fun `returns the draft adjudication along with the incident details`() {
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-        Optional.of(DraftAdjudication(id = 1, prisonerNumber = "A12345"))
-      )
-      val now = LocalDateTime.now()
-      val draftAdjudication = draftAdjudicationService.addIncidentDetails(1, 2, now)
 
       assertThat(draftAdjudication)
         .extracting("id", "prisonerNumber")
@@ -74,7 +54,7 @@ class DraftAdjudicationServiceTest {
 
       assertThat(draftAdjudication.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident")
-        .contains(2L, now)
+        .contains(2L, DATE_TIME_OF_INCIDENT)
     }
   }
 
@@ -93,8 +73,8 @@ class DraftAdjudicationServiceTest {
     @Test
     fun `returns the draft adjudication`() {
       val now = LocalDateTime.now()
-      val draftAdjudication = DraftAdjudication(id = 1, prisonerNumber = "A12345")
-      draftAdjudication.addIncidentDetails(IncidentDetails(2, now))
+      val draftAdjudication =
+        DraftAdjudication(id = 1, prisonerNumber = "A12345", incidentDetails = IncidentDetails(2, now))
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(
         Optional.of(draftAdjudication)
@@ -110,5 +90,36 @@ class DraftAdjudicationServiceTest {
         .extracting("locationId", "dateTimeOfIncident")
         .contains(2L, now)
     }
+  }
+
+  @Nested
+  inner class AddIncidentStatement() {
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        draftAdjudicationService.addIncidentStatement(1, "test")
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+
+    @Test
+    fun `returns the draft adjudication along with the incident statement`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(DraftAdjudication(id = 1, prisonerNumber = "A12345"))
+      )
+      val draftAdjudication = draftAdjudicationService.addIncidentStatement(1, "test")
+
+      assertThat(draftAdjudication)
+        .extracting("id", "prisonerNumber")
+        .contains(1L, "A12345")
+
+      assertThat(draftAdjudication.incidentStatement?.statement).isEqualTo("test")
+    }
+  }
+
+  companion object {
+    private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
   }
 }

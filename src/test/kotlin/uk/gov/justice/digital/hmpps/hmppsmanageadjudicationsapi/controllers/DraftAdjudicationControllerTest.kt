@@ -13,11 +13,11 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -32,8 +32,12 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class StartDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.startNewAdjudication(any())).thenReturn(
-        DraftAdjudicationDto(id = 1, prisonerNumber = "A123456")
+      whenever(draftAdjudicationService.startNewAdjudication(any(), any(), any())).thenReturn(
+        DraftAdjudicationDto(
+          id = 1,
+          prisonerNumber = "A12345",
+          incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+        )
       )
     }
 
@@ -45,28 +49,48 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser("ITAG_USER")
     fun `calls the service to start a new adjudication for a prisoner`() {
-      startANewAdjudication().andExpect(status().isCreated)
+      startANewAdjudication("A12345", 1, DATE_TIME_OF_INCIDENT)
+        .andExpect(status().isCreated)
 
-      verify(draftAdjudicationService).startNewAdjudication("A123456")
+      verify(draftAdjudicationService).startNewAdjudication("A12345", 1, DATE_TIME_OF_INCIDENT)
     }
 
     @Test
     @WithMockUser("ITAG_USER")
     fun `returns the newly created draft adjudication`() {
-      startANewAdjudication()
+      startANewAdjudication("A12345", 1, DATE_TIME_OF_INCIDENT)
         .andExpect(status().isCreated)
         .andExpect(jsonPath("draftAdjudication.id").isNumber)
-        .andExpect(jsonPath("draftAdjudication.prisonerNumber").value("A123456"))
+        .andExpect(jsonPath("draftAdjudication.prisonerNumber").value("A12345"))
+        .andExpect(jsonPath("draftAdjudication.incidentDetails.locationId").value(2))
+        .andExpect(jsonPath("draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
     }
 
     @Test
     @WithMockUser("ITAG_USER")
     fun `returns a bad request when sent an empty body`() {
-      startANewAdjudication(emptyBody = true).andExpect(status().isBadRequest)
+      startANewAdjudication().andExpect(status().isBadRequest)
     }
 
-    private fun startANewAdjudication(emptyBody: Boolean = false): ResultActions {
-      val jsonBody = if (emptyBody) "" else objectMapper.writeValueAsString(mapOf("prisonerNumber" to "A123456"))
+    @Test
+    @WithMockUser(username = "ITAG_USER")
+    fun `returns a bad request when required fields are missing`() {
+      startANewAdjudication(prisonerNumber = "A12345").andExpect(status().isBadRequest)
+    }
+
+    private fun startANewAdjudication(
+      prisonerNumber: String? = null,
+      locationId: Long? = null,
+      dateTimeOfIncident: LocalDateTime? = null
+    ): ResultActions {
+      val jsonBody =
+        if (locationId == null && dateTimeOfIncident == null && prisonerNumber == null) "" else objectMapper.writeValueAsString(
+          mapOf(
+            "prisonerNumber" to prisonerNumber,
+            "locationId" to locationId,
+            "dateTimeOfIncident" to dateTimeOfIncident
+          )
+        )
 
       return mockMvc
         .perform(
@@ -75,80 +99,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             .content(jsonBody)
         )
     }
-  }
-
-  @Nested
-  inner class AddIncidentDetails {
-    @BeforeEach
-    fun beforeEach() {
-      whenever(draftAdjudicationService.addIncidentDetails(anyLong(), anyLong(), any())).thenReturn(
-        DraftAdjudicationDto(
-          id = 1,
-          prisonerNumber = "A123456",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 1,
-            dateTimeOfIncident = DATE_TIME_OF_INCIDENT
-          )
-        )
-      )
-    }
-
-    @Test
-    fun `responds with a unauthorised status code`() {
-      makeAddIncidentDetailsRequest(makeIncidentDetailsBody(1, DATE_TIME_OF_INCIDENT))
-        .andExpect(status().isUnauthorized)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER")
-    fun `makes a call to add the incident details to the draft adjudication`() {
-      makeAddIncidentDetailsRequest(makeIncidentDetailsBody(1, DATE_TIME_OF_INCIDENT))
-        .andExpect(status().isOk)
-
-      verify(draftAdjudicationService).addIncidentDetails(1, 1, DATE_TIME_OF_INCIDENT)
-    }
-
-    @Test
-    @WithMockUser(username = "TIAG_USER")
-    fun `returns a bad request when sent an empty body`() {
-      makeAddIncidentDetailsRequest(null).andExpect(status().isBadRequest)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER")
-    fun `returns a bad request when required fields are missing`() {
-      makeAddIncidentDetailsRequest(makeIncidentDetailsBody(1))
-        .andExpect(status().isBadRequest)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER")
-    fun `responds with an not found status code`() {
-      whenever(draftAdjudicationService.addIncidentDetails(anyLong(), anyLong(), any())).thenThrow(
-        EntityNotFoundException::class.java
-      )
-
-      makeAddIncidentDetailsRequest(makeIncidentDetailsBody(1, DATE_TIME_OF_INCIDENT)).andExpect(status().isNotFound)
-    }
-
-    private fun makeAddIncidentDetailsRequest(jsonBody: Any?): ResultActions {
-      val body = if (jsonBody == null) "" else objectMapper.writeValueAsString(jsonBody)
-
-      return mockMvc
-        .perform(
-          put("/draft-adjudications/1")
-            .header("Content-Type", "application/json")
-            .content(body)
-        )
-    }
-
-    private fun makeIncidentDetailsBody(
-      locationId: Int? = null,
-      dateTimeOfIncident: LocalDateTime? = null
-    ): Map<String, Any?> = mapOf(
-      "locationId" to locationId,
-      "dateTimeOfIncident" to dateTimeOfIncident
-    )
   }
 
   @Nested
@@ -190,6 +140,56 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .perform(
           get("/draft-adjudications/$id")
             .header("Content-Type", "application/json")
+        )
+    }
+  }
+
+  @Nested
+  inner class AddIncidentStatement {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(draftAdjudicationService.addIncidentStatement(1, "test")).thenReturn(
+        DraftAdjudicationDto(
+          id = 1L,
+          prisonerNumber = "A12345",
+          incidentStatement = IncidentStatementDto(statement = "test")
+        )
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      makeAddIncidentStatementRequest(1, "test")
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER")
+    fun `makes a call to add the incident statement to the draft adjudication`() {
+      makeAddIncidentStatementRequest(1, "test")
+        .andExpect(status().isCreated)
+
+      verify(draftAdjudicationService).addIncidentStatement(1, "test")
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER")
+    fun `returns the draft adjudication including the new statement`() {
+      makeAddIncidentStatementRequest(1, "test")
+        .andExpect(status().isCreated)
+        .andExpect(jsonPath("$.draftAdjudication.id").isNumber)
+        .andExpect(jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
+        .andExpect(jsonPath("$.draftAdjudication.incidentStatement.statement").value("test"))
+    }
+
+    private fun makeAddIncidentStatementRequest(id: Long, statement: String? = null): ResultActions {
+      val body = if (statement == null) "" else objectMapper.writeValueAsString(mapOf("statement" to statement))
+
+      return mockMvc
+        .perform(
+          post("/draft-adjudications/$id/incident-statement")
+            .header("Content-Type", "application/json")
+            .content(body)
         )
     }
   }
