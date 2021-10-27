@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAd
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Optional
 import javax.persistence.EntityNotFoundException
 
 class DraftAdjudicationServiceTest {
