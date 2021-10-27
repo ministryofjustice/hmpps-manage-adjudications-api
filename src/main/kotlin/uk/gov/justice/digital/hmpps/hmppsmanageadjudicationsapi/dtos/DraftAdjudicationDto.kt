@@ -11,7 +11,6 @@ data class DraftAdjudicationDto(
 )
 
 data class IncidentDetailsDto(
-  val id: Long? = null,
   val locationId: Long,
   val dateTimeOfIncident: LocalDateTime,
 )

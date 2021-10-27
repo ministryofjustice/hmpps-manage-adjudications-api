@@ -16,37 +16,44 @@ import javax.transaction.Transactional
 class DraftAdjudicationService(val draftAdjudicationRepository: DraftAdjudicationRepository) {
 
   @Transactional
-  fun startNewAdjudication(prisonerNumber: String): DraftAdjudicationDto {
+  fun startNewAdjudication(prisonerNumber: String, locationId: Long, dateTimeOfIncident: LocalDateTime): DraftAdjudicationDto {
+    val draftAdjudication = DraftAdjudication(
+      prisonerNumber = prisonerNumber,
+      incidentDetails = IncidentDetails(locationId, dateTimeOfIncident)
+    )
     return draftAdjudicationRepository
-      .save(DraftAdjudication(prisonerNumber = prisonerNumber))
+      .save(draftAdjudication)
       .toDto()
-  }
-
-  @Transactional
-  fun addIncidentDetails(id: Long, locationId: Long, dateTimeOfIncident: LocalDateTime): DraftAdjudicationDto {
-    val draftAdjudication =
-      draftAdjudicationRepository.findById(id)
-        .orElseThrow { throw EntityNotFoundException("DraftAdjudication not found for $id") }
-
-    draftAdjudication.addIncidentDetails(IncidentDetails(locationId, dateTimeOfIncident))
-
-    return draftAdjudication.toDto()
   }
 
   fun getDraftAdjudicationDetails(id: Long): DraftAdjudicationDto {
     val draftAdjudication =
       draftAdjudicationRepository.findById(id)
-        .orElseThrow { throw EntityNotFoundException("DraftAdjudication not found for $id") }
+        .orElseThrow { throwEntityNotFoundException(id) }
 
     return draftAdjudication.toDto()
   }
+
+  @Transactional
+  fun addIncidentStatement(id: Long, statement: String): DraftAdjudicationDto {
+    val draftAdjudication =
+      draftAdjudicationRepository.findById(id)
+        .orElseThrow { throwEntityNotFoundException(id) }
+
+    draftAdjudication.addIncidentStatement(statement)
+
+    return draftAdjudication.toDto()
+  }
+
+  fun throwEntityNotFoundException(id: Long): Nothing =
+    throw EntityNotFoundException("DraftAdjudication not found for $id")
 }
 
 fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(
   id = this.id!!,
   prisonerNumber = this.prisonerNumber,
-  incidentDetails = this.getIncidentDetails()?.toDto(),
-  incidentStatement = this.incidentStatement?.toDo(),
+  incidentDetails = this.incidentDetails?.toDto(),
+  incidentStatement = this.getIncidentStatement()?.toDo(),
   adjudicationSent = this.adjudicationSent,
 )
 

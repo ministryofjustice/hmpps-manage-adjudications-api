@@ -19,16 +19,15 @@ data class DraftAdjudication(
   val adjudicationSentDateTime: LocalDateTime? = null,
   @OneToOne(optional = true, cascade = [CascadeType.ALL])
   @JoinColumn(name = "incident_details_id")
-  private var incidentDetails: IncidentDetails? = null,
+  val incidentDetails: IncidentDetails? = null,
   @OneToOne(optional = true, cascade = [CascadeType.ALL])
   @JoinColumn(name = "incident_statement_id")
-  var incidentStatement: IncidentStatement? = null,
+  private var incidentStatement: IncidentStatement? = null,
 ) : BaseEntity() {
 
-  fun addIncidentDetails(incidentDetails: IncidentDetails) {
-    if (this.incidentDetails != null) throw IllegalStateException("DraftAdjudication already contains the incident details")
-    this.incidentDetails = incidentDetails
+  fun addIncidentStatement(statement: String) {
+    this.incidentStatement = IncidentStatement(statement)
   }
 
-  fun getIncidentDetails(): IncidentDetails? = incidentDetails
+  fun getIncidentStatement(): IncidentStatement? = incidentStatement
 }
