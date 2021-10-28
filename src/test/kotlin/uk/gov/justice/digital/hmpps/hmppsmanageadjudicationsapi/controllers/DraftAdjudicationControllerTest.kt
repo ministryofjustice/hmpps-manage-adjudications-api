@@ -148,7 +148,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class AddIncidentStatement {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.addIncidentStatement(1, "test")).thenReturn(
+      whenever(draftAdjudicationService.addIncidentStatement(anyLong(), any())).thenReturn(
         DraftAdjudicationDto(
           id = 1L,
           prisonerNumber = "A12345",
@@ -180,6 +180,16 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudication.id").isNumber)
         .andExpect(jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
         .andExpect(jsonPath("$.draftAdjudication.incidentStatement.statement").value("test"))
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER")
+    fun `returns a bad request when the maximum statement length has been exceeded`() {
+      val largeStatement = IntRange(0, 40000).joinToString("") { "A" }
+
+      makeAddIncidentStatementRequest(1, largeStatement)
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.userMessage").value("The incident statement exceeds the maximum character limit of 4000"))
     }
 
     private fun makeAddIncidentStatementRequest(id: Long, statement: String? = null): ResultActions {

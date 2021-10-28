@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 
-import com.sun.istack.NotNull
+import io.swagger.annotations.ApiModel
+import io.swagger.annotations.ApiModelProperty
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
@@ -15,16 +16,30 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
+import javax.validation.Valid
+import javax.validation.constraints.Size
 
+@ApiModel("Request to create a new draft adjudication")
 data class NewAdjudicationRequest(
-  @NotNull val prisonerNumber: String,
+  @ApiModelProperty(value = "Prison number assigned to a prisoner", example = "G2996UX")
+  val prisonerNumber: String,
+  @ApiModelProperty(value = "The id of the location the incident took place")
   val locationId: Long,
+  @ApiModelProperty(value = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime
 )
+@ApiModel("Request to add the incident statement to a draft adjudication")
+data class AddIncidentStatementRequest(
+  @ApiModelProperty(value = "The statement regarding the incident")
+  @get:Size(max = 4000, message = "The incident statement exceeds the maximum character limit of {max}") val statement: String
+)
 
-data class DraftAdjudicationResponse(val draftAdjudication: DraftAdjudicationDto)
-data class AddIncidentStatementRequest(val statement: String)
+@ApiModel("Draft adjudication response")
+data class DraftAdjudicationResponse(
+  @ApiModelProperty(value = "The draft adjudication")
+  val draftAdjudication: DraftAdjudicationDto
+)
 
 @RestController
 @RequestMapping("/draft-adjudications")
@@ -62,7 +77,7 @@ class DraftAdjudicationController {
   @ResponseStatus(HttpStatus.CREATED)
   fun addIncidentStatement(
     @PathVariable(name = "id") id: Long,
-    @RequestBody addIncidentStatementRequest: AddIncidentStatementRequest
+    @RequestBody @Valid addIncidentStatementRequest: AddIncidentStatementRequest
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.addIncidentStatement(
       id,

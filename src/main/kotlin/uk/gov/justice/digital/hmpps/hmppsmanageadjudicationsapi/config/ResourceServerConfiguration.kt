@@ -1,11 +1,17 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config
 
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
+import springfox.documentation.builders.PathSelectors
+import springfox.documentation.builders.RequestHandlerSelectors
+import springfox.documentation.spi.DocumentationType
+import springfox.documentation.spring.web.plugins.Docket
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DraftAdjudicationController
 
 @Configuration
 @EnableWebSecurity
@@ -28,5 +34,15 @@ class ResourceServerConfiguration : WebSecurityConfigurerAdapter() {
           .anyRequest()
           .authenticated()
       }.oauth2ResourceServer().jwt().jwtAuthenticationConverter(AuthAwareTokenConverter())
+  }
+
+  @Bean
+  fun api(): Docket? {
+    return Docket(DocumentationType.OAS_30)
+      .useDefaultResponseMessages(false)
+      .select()
+      .apis(RequestHandlerSelectors.basePackage(DraftAdjudicationController::class.java.getPackage().name))
+      .paths(PathSelectors.any())
+      .build()
   }
 }
