@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.3.10"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "3.3.12"
   kotlin("plugin.spring") version "1.5.31"
   kotlin("plugin.jpa") version "1.5.31"
 }
@@ -14,6 +14,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("io.springfox:springfox-boot-starter:3.0.0")
+  implementation("org.apache.commons:commons-text:1.9")
 
   runtimeOnly("com.h2database:h2")
   runtimeOnly("org.flywaydb:flyway-core")
@@ -23,7 +24,7 @@ dependencies {
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
-  testImplementation("org.flywaydb:flyway-core:7.14.1")
+  testImplementation("org.flywaydb:flyway-core:8.0.2")
 }
 
 allOpen {
