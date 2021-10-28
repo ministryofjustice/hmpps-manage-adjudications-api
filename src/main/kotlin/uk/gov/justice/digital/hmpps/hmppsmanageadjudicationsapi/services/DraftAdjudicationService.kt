@@ -53,8 +53,7 @@ fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(
   id = this.id!!,
   prisonerNumber = this.prisonerNumber,
   incidentDetails = this.incidentDetails?.toDto(),
-  incidentStatement = this.getIncidentStatement()?.toDo(),
-  adjudicationSent = this.adjudicationSent,
+  incidentStatement = this.getIncidentStatement()?.toDo()
 )
 
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
