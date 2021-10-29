@@ -119,6 +119,60 @@ class DraftAdjudicationServiceTest {
     }
   }
 
+  @Nested
+  inner class EditIncidentDetails() {
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        draftAdjudicationService.editIncidentDetails(1, 2, DATE_TIME_OF_INCIDENT)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+
+    @Test
+    fun `throws an entity not found if the incident details does not exist`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(
+          DraftAdjudication(
+            id = 1,
+            prisonerNumber = "A12345"
+          )
+        )
+      )
+
+      assertThatThrownBy {
+        draftAdjudicationService.editIncidentDetails(1, 2, DATE_TIME_OF_INCIDENT)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication does not have any incident details to update")
+    }
+
+    @Test
+    fun `return the edited incident details`() {
+      val dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1)
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(
+          DraftAdjudication(
+            id = 1,
+            prisonerNumber = "A12345",
+            incidentDetails = IncidentDetails(1, DATE_TIME_OF_INCIDENT)
+          )
+        )
+      )
+
+      val draftAdjudication = draftAdjudicationService.editIncidentDetails(1, 3, dateTimeOfIncident)
+
+      assertThat(draftAdjudication)
+        .extracting("id", "prisonerNumber")
+        .contains(1L, "A12345")
+
+      assertThat(draftAdjudication.incidentDetails)
+        .extracting("locationId", "dateTimeOfIncident")
+        .contains(3L, dateTimeOfIncident)
+    }
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
   }

@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -30,10 +31,23 @@ data class NewAdjudicationRequest(
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime
 )
+
 @ApiModel("Request to add the incident statement to a draft adjudication")
 data class AddIncidentStatementRequest(
   @ApiModelProperty(value = "The statement regarding the incident")
-  @get:Size(max = 4000, message = "The incident statement exceeds the maximum character limit of {max}") val statement: String
+  @get:Size(
+    max = 4000,
+    message = "The incident statement exceeds the maximum character limit of {max}"
+  ) val statement: String
+)
+
+@ApiModel("Request to edit the incident details")
+data class EditIncidentDetailsRequest(
+  @ApiModelProperty(value = "The id of the location the incident took place")
+  val locationId: Long? = null,
+  @ApiModelProperty(value = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+  val dateTimeOfIncident: LocalDateTime? = null
 )
 
 @ApiModel("Draft adjudication response")
@@ -85,6 +99,23 @@ class DraftAdjudicationController {
     val draftAdjudication = draftAdjudicationService.addIncidentStatement(
       id,
       addIncidentStatementRequest.statement
+    )
+
+    return DraftAdjudicationResponse(
+      draftAdjudication
+    )
+  }
+
+  @PutMapping(value = ["/{id}/incident-details"])
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  fun addIncidentStatement(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid editIncidentDetailsRequest: EditIncidentDetailsRequest
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.editIncidentDetails(
+      id,
+      editIncidentDetailsRequest.locationId,
+      editIncidentDetailsRequest.dateTimeOfIncident
     )
 
     return DraftAdjudicationResponse(
