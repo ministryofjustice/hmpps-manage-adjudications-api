@@ -47,7 +47,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser("ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `calls the service to start a new adjudication for a prisoner`() {
       startANewAdjudication("A12345", 1, DATE_TIME_OF_INCIDENT)
         .andExpect(status().isCreated)
@@ -56,7 +56,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser("ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `returns the newly created draft adjudication`() {
       startANewAdjudication("A12345", 1, DATE_TIME_OF_INCIDENT)
         .andExpect(status().isCreated)
@@ -67,7 +67,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser("ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `returns a bad request when sent an empty body`() {
       startANewAdjudication().andExpect(status().isBadRequest)
     }
@@ -164,7 +164,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `makes a call to add the incident statement to the draft adjudication`() {
       makeAddIncidentStatementRequest(1, "test")
         .andExpect(status().isCreated)
@@ -173,7 +173,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `returns the draft adjudication including the new statement`() {
       makeAddIncidentStatementRequest(1, "test")
         .andExpect(status().isCreated)
@@ -183,7 +183,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `returns a bad request when the maximum statement length has been exceeded`() {
       val largeStatement = IntRange(0, 40000).joinToString("") { "A" }
 

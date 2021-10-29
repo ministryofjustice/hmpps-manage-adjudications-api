@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
-import java.time.LocalDateTime
 import javax.persistence.CascadeType
 import javax.persistence.Entity
 import javax.persistence.EntityListeners
@@ -15,8 +14,6 @@ import javax.persistence.Table
 data class DraftAdjudication(
   override val id: Long? = null,
   val prisonerNumber: String,
-  val adjudicationSent: Boolean? = false,
-  val adjudicationSentDateTime: LocalDateTime? = null,
   @OneToOne(optional = true, cascade = [CascadeType.ALL])
   @JoinColumn(name = "incident_details_id")
   val incidentDetails: IncidentDetails? = null,

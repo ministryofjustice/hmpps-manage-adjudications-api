@@ -30,8 +30,6 @@ create table draft_adjudications
 (
     id                          serial primary key,
     prisoner_number             varchar(7)  not null,
-    adjudication_sent           boolean     null,
-    adjudication_sent_date_time timestamp   null,
     incident_details_id         integer     null,
     incident_statement_id       integer     null,
     create_user_id              varchar(32) not null,

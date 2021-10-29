@@ -32,7 +32,7 @@ abstract class IntegrationTestBase {
   }
 
   fun setHeaders(contentType: MediaType = MediaType.APPLICATION_JSON, username: String? = "ITAG_USER"): (HttpHeaders) -> Unit = {
-    it.setBearerAuth(jwtAuthHelper.createJwt(subject = username))
+    it.setBearerAuth(jwtAuthHelper.createJwt(subject = username, scope = listOf("write")))
     it.contentType = contentType
   }
 }
