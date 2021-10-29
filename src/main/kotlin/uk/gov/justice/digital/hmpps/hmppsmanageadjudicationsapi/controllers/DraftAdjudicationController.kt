@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -50,6 +51,7 @@ class DraftAdjudicationController {
   lateinit var draftAdjudicationService: DraftAdjudicationService
 
   @PostMapping
+  @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun startNewAdjudication(@RequestBody newAdjudicationRequest: NewAdjudicationRequest): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService
@@ -74,6 +76,7 @@ class DraftAdjudicationController {
   }
 
   @PostMapping(value = ["/{id}/incident-statement"])
+  @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun addIncidentStatement(
     @PathVariable(name = "id") id: Long,
