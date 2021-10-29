@@ -16,7 +16,11 @@ import javax.transaction.Transactional
 class DraftAdjudicationService(val draftAdjudicationRepository: DraftAdjudicationRepository) {
 
   @Transactional
-  fun startNewAdjudication(prisonerNumber: String, locationId: Long, dateTimeOfIncident: LocalDateTime): DraftAdjudicationDto {
+  fun startNewAdjudication(
+    prisonerNumber: String,
+    locationId: Long,
+    dateTimeOfIncident: LocalDateTime
+  ): DraftAdjudicationDto {
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
       incidentDetails = IncidentDetails(locationId, dateTimeOfIncident)
@@ -47,6 +51,19 @@ class DraftAdjudicationService(val draftAdjudicationRepository: DraftAdjudicatio
 
   fun throwEntityNotFoundException(id: Long): Nothing =
     throw EntityNotFoundException("DraftAdjudication not found for $id")
+
+  @Transactional
+  fun editIncidentDetails(id: Long, locationId: Long?, dateTimeOfIncident: LocalDateTime?): DraftAdjudicationDto {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+
+    if (draftAdjudication.incidentDetails == null)
+      throw EntityNotFoundException("DraftAdjudication does not have any incident details to update")
+
+    locationId?.let { draftAdjudication.incidentDetails?.locationId = it }
+    dateTimeOfIncident?.let { draftAdjudication.incidentDetails?.dateTimeOfIncident = it }
+
+    return draftAdjudication.toDto()
+  }
 }
 
 fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(

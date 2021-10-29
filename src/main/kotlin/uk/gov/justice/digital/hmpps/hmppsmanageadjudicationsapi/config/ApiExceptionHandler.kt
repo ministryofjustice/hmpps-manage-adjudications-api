@@ -84,6 +84,20 @@ class ApiExceptionHandler {
       )
   }
 
+  @ExceptionHandler(IllegalStateException::class)
+  fun handleIllegalStateException(e: IllegalStateException): ResponseEntity<ErrorResponse?>? {
+    log.info("Validation exception: {}", e.message)
+
+    return ResponseEntity
+      .status(BAD_REQUEST)
+      .body(
+        ErrorResponse(
+          status = BAD_REQUEST,
+          userMessage = e.message,
+        )
+      )
+  }
+
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
   }

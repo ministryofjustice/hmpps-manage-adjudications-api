@@ -64,6 +64,28 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("test")
   }
 
+  @Test
+  fun `edit the incident details`() {
+    val draftAdjudicationResponse = startNewAdjudication()
+
+    webTestClient.put()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-details")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "locationId" to 3,
+          "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT.plusMonths(1)
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-11-12T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(3)
+  }
+
   private fun startNewAdjudication(): DraftAdjudicationResponse {
     return webTestClient.post()
       .uri("/draft-adjudications")

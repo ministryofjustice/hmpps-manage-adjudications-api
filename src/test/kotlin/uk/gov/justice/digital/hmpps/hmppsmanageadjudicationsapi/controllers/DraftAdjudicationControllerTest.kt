@@ -13,6 +13,7 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
@@ -198,6 +199,71 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           post("/draft-adjudications/$id/incident-statement")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
+  @Nested
+  inner class EditIncidentDetails {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(draftAdjudicationService.editIncidentDetails(anyLong(), anyLong(), any())).thenReturn(
+        DraftAdjudicationDto(
+          id = 1L,
+          prisonerNumber = "A12345",
+          incidentDetails = IncidentDetailsDto(locationId = 3, DATE_TIME_OF_INCIDENT)
+        )
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      editIncidentDetailsRequest(1, 1, DATE_TIME_OF_INCIDENT)
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to edit the incident details`() {
+      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT)
+        .andExpect(status().isOk)
+
+      verify(draftAdjudicationService).editIncidentDetails(1, 2, DATE_TIME_OF_INCIDENT)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `returns the incident details`() {
+      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT)
+        .andExpect(status().isOk)
+        .andExpect(jsonPath("$.draftAdjudication.id").isNumber)
+        .andExpect(jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
+        .andExpect(jsonPath("$.draftAdjudication.incidentDetails.locationId").value(3))
+        .andExpect(jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `handles a bad request when an IllegalSateException is thrown`() {
+      whenever(draftAdjudicationService.editIncidentDetails(anyLong(), anyLong(), any())).thenThrow(
+        IllegalStateException::class.java
+      )
+      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT)
+        .andExpect(status().isBadRequest)
+    }
+
+    private fun editIncidentDetailsRequest(
+      id: Long,
+      locationId: Long,
+      dateTimeOfIncident: LocalDateTime?
+    ): ResultActions {
+      val body =
+        objectMapper.writeValueAsString(mapOf("locationId" to locationId, "dateTimeOfIncident" to dateTimeOfIncident))
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/incident-details")
             .header("Content-Type", "application/json")
             .content(body)
         )
