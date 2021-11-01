@@ -1,10 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
+import org.hibernate.validator.constraints.Length
 import javax.persistence.Entity
 import javax.persistence.Table
 
 @Entity
 @Table(name = "incident_statement")
 class IncidentStatement(
-  val statement: String,
+  override val id: Long? = null,
+  @Length(max = 4000)
+  var statement: String
 ) : BaseEntity()
