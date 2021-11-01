@@ -91,7 +91,7 @@ class DraftAdjudicationController {
   @PostMapping(value = ["/{id}/incident-statement"])
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
-  fun editIncidentDetails(
+  fun addIncidentStatement(
     @PathVariable(name = "id") id: Long,
     @RequestBody @Valid incidentStatementRequest: IncidentStatementRequest
   ): DraftAdjudicationResponse {
