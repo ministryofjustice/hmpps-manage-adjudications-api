@@ -22,6 +22,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.draftAdjudication.createdByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.createdDateTime").exists()
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(1)
   }
@@ -38,6 +40,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.draftAdjudication.createdByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.createdDateTime").exists()
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(2)
   }
@@ -62,6 +66,10 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(2)
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("test")
+      .jsonPath("$.draftAdjudication.incidentStatement.createdByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.incidentStatement.createdDateTime").exists()
+      .jsonPath("$.draftAdjudication.incidentStatement.modifiedByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.incidentStatement.modifiedByDateTime").exists()
   }
 
   @Test
@@ -84,6 +92,35 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-11-12T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(3)
+      .jsonPath("$.draftAdjudication.incidentDetails.modifiedByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.incidentDetails.modifiedByDateTime").exists()
+      .jsonPath("$.draftAdjudication.incidentDetails.createdByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.incidentDetails.createdDateTime").exists()
+  }
+
+  @Test
+  fun `edit the incident statement`() {
+    val draftAdjudicationResponse = startNewAdjudication()
+    addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
+
+    webTestClient.put()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-statement")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "statement" to "new statement"
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("new statement")
+      .jsonPath("$.draftAdjudication.incidentStatement.createdByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.incidentStatement.createdDateTime").exists()
+      .jsonPath("$.draftAdjudication.incidentStatement.modifiedByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.incidentStatement.modifiedByDateTime").exists()
   }
 
   private fun startNewAdjudication(): DraftAdjudicationResponse {
@@ -95,6 +132,22 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
           "prisonerNumber" to "A12345",
           "locationId" to 2,
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT
+        )
+      )
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
+  private fun addIncidentStatement(id: Long, statement: String): DraftAdjudicationResponse {
+    return webTestClient.post()
+      .uri("/draft-adjudications/$id/incident-statement")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "statement" to statement
         )
       )
       .exchange()
