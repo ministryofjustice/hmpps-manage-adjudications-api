@@ -19,7 +19,7 @@ abstract class HealthCheck(private val webClient: WebClient, private val timeout
     log.info(e.message)
     Health.down(e).withDetail("body", e.responseBodyAsString).build()
   } catch (e: Exception) {
-    log.error(e.message)
+    log.info(e.message)
     Health.down(e).build()
   }
   companion object {
