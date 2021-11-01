@@ -67,7 +67,7 @@ class DraftAdjudicationService(
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     if (draftAdjudication.incidentDetails == null)
-      throw EntityNotFoundException("DraftAdjudication does not have any incident details to update")
+      throw EntityNotFoundException("DraftAdjudication does not include an incident statement")
 
     locationId?.let { draftAdjudication.incidentDetails?.locationId = it }
     dateTimeOfIncident?.let { draftAdjudication.incidentDetails?.dateTimeOfIncident = it }

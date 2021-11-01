@@ -186,7 +186,7 @@ class DraftAdjudicationServiceTest {
       assertThatThrownBy {
         draftAdjudicationService.editIncidentDetails(1, 2, DATE_TIME_OF_INCIDENT)
       }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("DraftAdjudication does not have any incident details to update")
+        .hasMessageContaining("DraftAdjudication does not include an incident statement")
     }
 
     @Test
