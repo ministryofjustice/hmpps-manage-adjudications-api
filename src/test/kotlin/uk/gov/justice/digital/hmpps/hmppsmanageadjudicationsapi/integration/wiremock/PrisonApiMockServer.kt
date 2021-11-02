@@ -8,7 +8,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 class PrisonApiMockServer : WireMockServer(8979) {
   fun stubHealth() {
     stubFor(
-      get(urlEqualTo("/health/ping"))
+      get(urlEqualTo("/api/health/ping"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
