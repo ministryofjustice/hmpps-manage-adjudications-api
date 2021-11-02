@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudi
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.UnAuthorisedToEditIncidentStatementException
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
@@ -153,7 +154,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         DraftAdjudicationDto(
           id = 1L,
           prisonerNumber = "A12345",
-          incidentStatement = IncidentStatementDto(statement = "test")
+          incidentStatement = IncidentStatementDto(id = 1, statement = "test")
         )
       )
     }
@@ -264,6 +265,67 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           put("/draft-adjudications/$id/incident-details")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
+  @Nested
+  inner class EditIncidentStatement {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(draftAdjudicationService.editIncidentStatement(anyLong(), any())).thenReturn(
+        DraftAdjudicationDto(
+          id = 1L,
+          prisonerNumber = "A12345",
+          incidentStatement = IncidentStatementDto(id = 1, statement = "new statement")
+        )
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      editIncidentStatement(1, "test")
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to update the incident statement`() {
+      editIncidentStatement(1, "test")
+        .andExpect(status().isOk)
+
+      verify(draftAdjudicationService).editIncidentStatement(1, "test")
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `returns the incident statement`() {
+      editIncidentStatement(1, "new statement")
+        .andExpect(status().isOk)
+        .andExpect(jsonPath("$.draftAdjudication.id").isNumber)
+        .andExpect(jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
+        .andExpect(jsonPath("$.draftAdjudication.incidentStatement.statement").value("new statement"))
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `returns a not authorised status code when an UnAuthorisedToEditIncidentStatementException is thrown`() {
+      whenever(draftAdjudicationService.editIncidentStatement(anyLong(), any())).thenThrow(
+        UnAuthorisedToEditIncidentStatementException::class.java
+      )
+
+      editIncidentStatement(1, "new statement")
+        .andExpect(status().isUnauthorized)
+    }
+
+    private fun editIncidentStatement(id: Long, statement: String): ResultActions {
+      val body = objectMapper.writeValueAsString(mapOf("statement" to statement))
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/incident-statement")
             .header("Content-Type", "application/json")
             .content(body)
         )

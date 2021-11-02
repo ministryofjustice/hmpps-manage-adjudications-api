@@ -32,8 +32,8 @@ data class NewAdjudicationRequest(
   val dateTimeOfIncident: LocalDateTime
 )
 
-@ApiModel("Request to add the incident statement to a draft adjudication")
-data class AddIncidentStatementRequest(
+@ApiModel("Request to add or edit the incident statement for a draft adjudication")
+data class IncidentStatementRequest(
   @ApiModelProperty(value = "The statement regarding the incident")
   @get:Size(
     max = 4000,
@@ -60,7 +60,6 @@ data class DraftAdjudicationResponse(
 @RequestMapping("/draft-adjudications")
 @Validated
 class DraftAdjudicationController {
-
   @Autowired
   lateinit var draftAdjudicationService: DraftAdjudicationService
 
@@ -94,11 +93,11 @@ class DraftAdjudicationController {
   @ResponseStatus(HttpStatus.CREATED)
   fun addIncidentStatement(
     @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid addIncidentStatementRequest: AddIncidentStatementRequest
+    @RequestBody @Valid incidentStatementRequest: IncidentStatementRequest
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.addIncidentStatement(
       id,
-      addIncidentStatementRequest.statement
+      incidentStatementRequest.statement
     )
 
     return DraftAdjudicationResponse(
@@ -108,7 +107,7 @@ class DraftAdjudicationController {
 
   @PutMapping(value = ["/{id}/incident-details"])
   @PreAuthorize("hasAuthority('SCOPE_write')")
-  fun addIncidentStatement(
+  fun editIncidentDetails(
     @PathVariable(name = "id") id: Long,
     @RequestBody @Valid editIncidentDetailsRequest: EditIncidentDetailsRequest
   ): DraftAdjudicationResponse {
@@ -118,6 +117,21 @@ class DraftAdjudicationController {
       editIncidentDetailsRequest.dateTimeOfIncident
     )
 
+    return DraftAdjudicationResponse(
+      draftAdjudication
+    )
+  }
+
+  @PutMapping(value = ["/{id}/incident-statement"])
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  fun editIncidentStatement(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid editIncidentStatementRequest: IncidentStatementRequest
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.editIncidentStatement(
+      id,
+      statement = editIncidentStatementRequest.statement
+    )
     return DraftAdjudicationResponse(
       draftAdjudication
     )

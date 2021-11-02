@@ -5,11 +5,13 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
+import org.springframework.http.HttpStatus.UNAUTHORIZED
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.UnAuthorisedToEditIncidentStatementException
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 
@@ -93,6 +95,20 @@ class ApiExceptionHandler {
       .body(
         ErrorResponse(
           status = BAD_REQUEST,
+          userMessage = e.message,
+        )
+      )
+  }
+
+  @ExceptionHandler(UnAuthorisedToEditIncidentStatementException::class)
+  fun handleUnAuthorisedToEditIncidentStatementException(e: UnAuthorisedToEditIncidentStatementException): ResponseEntity<ErrorResponse?>? {
+    log.info("Unauthorised: {}", e.message)
+
+    return ResponseEntity
+      .status(UNAUTHORIZED)
+      .body(
+        ErrorResponse(
+          status = UNAUTHORIZED,
           userMessage = e.message,
         )
       )

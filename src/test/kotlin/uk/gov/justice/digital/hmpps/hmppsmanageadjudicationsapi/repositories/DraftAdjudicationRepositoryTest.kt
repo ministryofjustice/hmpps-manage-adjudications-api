@@ -22,9 +22,6 @@ class DraftAdjudicationRepositoryTest {
   @Autowired
   lateinit var entityManager: TestEntityManager
 
-  @Autowired
-  lateinit var draftAdjudicationRepository: DraftAdjudicationRepository
-
   @Test
   fun `save a new draft adjudication`() {
     val dateTimeOfIncident = LocalDateTime.now()
@@ -32,10 +29,9 @@ class DraftAdjudicationRepositoryTest {
     val savedEntity = entityManager.persistAndFlush(
       DraftAdjudication(
         prisonerNumber = "A12345",
-        incidentDetails = IncidentDetails(2, dateTimeOfIncident)
+        incidentDetails = IncidentDetails(locationId = 2, dateTimeOfIncident = dateTimeOfIncident)
       )
     )
-
     assertThat(savedEntity)
       .extracting("id", "prisonerNumber")
       .contains(savedEntity.id, "A12345")
