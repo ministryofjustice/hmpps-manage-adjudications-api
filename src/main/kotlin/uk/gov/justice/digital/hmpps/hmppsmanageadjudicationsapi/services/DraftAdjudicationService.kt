@@ -8,12 +8,19 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAd
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 
+class UnAuthorisedToEditIncidentStatementException() :
+  RuntimeException("Only the original author can make changes to this incident statement")
+
 @Service
-class DraftAdjudicationService(val draftAdjudicationRepository: DraftAdjudicationRepository) {
+class DraftAdjudicationService(
+  val draftAdjudicationRepository: DraftAdjudicationRepository,
+  val authenticationFacade: AuthenticationFacade
+) {
 
   @Transactional
   fun startNewAdjudication(
@@ -23,7 +30,7 @@ class DraftAdjudicationService(val draftAdjudicationRepository: DraftAdjudicatio
   ): DraftAdjudicationDto {
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
-      incidentDetails = IncidentDetails(locationId, dateTimeOfIncident)
+      incidentDetails = IncidentDetails(locationId = locationId, dateTimeOfIncident = dateTimeOfIncident)
     )
     return draftAdjudicationRepository
       .save(draftAdjudication)
@@ -44,9 +51,12 @@ class DraftAdjudicationService(val draftAdjudicationRepository: DraftAdjudicatio
       draftAdjudicationRepository.findById(id)
         .orElseThrow { throwEntityNotFoundException(id) }
 
-    draftAdjudication.addIncidentStatement(statement)
+    if (draftAdjudication.incidentStatement != null)
+      throw IllegalStateException("DraftAdjudication already includes the incident statement")
 
-    return draftAdjudication.toDto()
+    draftAdjudication.incidentStatement = IncidentStatement(statement = statement)
+
+    return draftAdjudicationRepository.save(draftAdjudication).toDto()
   }
 
   fun throwEntityNotFoundException(id: Long): Nothing =
@@ -57,27 +67,55 @@ class DraftAdjudicationService(val draftAdjudicationRepository: DraftAdjudicatio
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     if (draftAdjudication.incidentDetails == null)
-      throw EntityNotFoundException("DraftAdjudication does not have any incident details to update")
+      throw EntityNotFoundException("DraftAdjudication does not include an incident statement")
 
     locationId?.let { draftAdjudication.incidentDetails?.locationId = it }
     dateTimeOfIncident?.let { draftAdjudication.incidentDetails?.dateTimeOfIncident = it }
 
-    return draftAdjudication.toDto()
+    return draftAdjudicationRepository
+      .save(draftAdjudication)
+      .toDto()
+  }
+
+  @Transactional
+  fun editIncidentStatement(id: Long, statement: String): DraftAdjudicationDto {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+
+    if (draftAdjudication.incidentStatement == null)
+      throw EntityNotFoundException("DraftAdjudication does not have any incident statement to update")
+
+    if (authenticationFacade.currentUsername != draftAdjudication.incidentStatement?.createdByUserId)
+      throw UnAuthorisedToEditIncidentStatementException()
+
+    draftAdjudication.incidentStatement?.statement = statement
+
+    return draftAdjudicationRepository.save(draftAdjudication).toDto()
   }
 }
 
 fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(
   id = this.id!!,
   prisonerNumber = this.prisonerNumber,
+  createdByUserId = this.createdByUserId,
+  createdDateTime = this.createDateTime,
+  incidentStatement = this.incidentStatement?.toDo(),
   incidentDetails = this.incidentDetails?.toDto(),
-  incidentStatement = this.getIncidentStatement()?.toDo()
 )
 
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
   locationId = this.locationId,
-  dateTimeOfIncident = this.dateTimeOfIncident
+  dateTimeOfIncident = this.dateTimeOfIncident,
+  createdByUserId = this.createdByUserId,
+  createdDateTime = this.createDateTime,
+  modifiedByUserId = this.modifiedByUserId,
+  modifiedByDateTime = this.modifiedDateTime
 )
 
 fun IncidentStatement.toDo(): IncidentStatementDto = IncidentStatementDto(
-  statement = this.statement
+  id = this.id!!,
+  statement = this.statement,
+  createdByUserId = this.createdByUserId,
+  createdDateTime = this.createDateTime,
+  modifiedByUserId = this.modifiedByUserId,
+  modifiedByDateTime = this.modifiedDateTime
 )

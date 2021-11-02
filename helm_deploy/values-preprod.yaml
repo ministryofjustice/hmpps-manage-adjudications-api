@@ -11,6 +11,7 @@ generic-service:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
     OAUTH_ENDPOINT_URL: https://sign-in-preprod.hmpps.service.justice.gov.uk/auth
     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: https://sign-in-preprod.hmpps.service.justice.gov.uk/auth/.well-known/jwks.json
+    PRISON_API_ENDPOINT_URL: https://api-preprod.prison.service.justice.gov.uk
 
 # CloudPlatform AlertManager receiver to route promethues alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
