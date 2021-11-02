@@ -14,5 +14,3 @@ spring:
     username: test
     password: test
     continueOnError: true
-
-prison.api.endpoint.url: http://localhost:8999

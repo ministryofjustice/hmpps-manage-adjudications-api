@@ -1,11 +1,30 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock
 
 import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 
 class PrisonApiMockServer : WireMockServer(8979) {
+  fun stubHealth() {
+    stubFor(
+      get(urlEqualTo("/health/ping"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+            .withBody(
+              """
+               {
+                 "status": "UP"
+               }
+              """.trimIndent()
+            )
+        )
+    )
+  }
+
   fun stubGetAdjudication() {
     stubFor(
       get(urlEqualTo("/api/adjudications/adjudication/1524242"))
