@@ -22,6 +22,7 @@ data class ReportedAdjudication(
         dateTimeOfIncident = incidentTime
       ),
       incidentStatement = IncidentStatementDto(
+        id = 1,
         statement = statement
       )
     )
