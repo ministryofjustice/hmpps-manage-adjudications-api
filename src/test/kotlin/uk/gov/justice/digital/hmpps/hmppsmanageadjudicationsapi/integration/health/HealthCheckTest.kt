@@ -14,6 +14,8 @@ class HealthCheckTest : IntegrationTestBase() {
   fun beforeEach() {
     prisonApiMockServer.resetMappings()
     prisonApiMockServer.stubHealth()
+
+    oAuthMockServer.stubGrantToken()
   }
 
   @Test

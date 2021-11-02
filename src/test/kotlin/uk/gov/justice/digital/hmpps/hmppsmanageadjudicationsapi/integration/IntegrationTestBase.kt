@@ -11,7 +11,8 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.health.wiremock.PrisonApiMockServer
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.OAuthMockServer
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -32,16 +33,21 @@ abstract class IntegrationTestBase {
     @JvmField
     internal val prisonApiMockServer = PrisonApiMockServer()
 
+    @JvmField
+    internal val oAuthMockServer = OAuthMockServer()
+
     @BeforeAll
     @JvmStatic
     fun startMocks() {
       prisonApiMockServer.start()
+      oAuthMockServer.start()
     }
 
     @AfterAll
     @JvmStatic
     fun stopMocks() {
       prisonApiMockServer.stop()
+      oAuthMockServer.stop()
     }
   }
 

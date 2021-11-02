@@ -1,0 +1,8 @@
+prison.api.endpoint.url: https://api-dev.prison.service.justice.gov.uk
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: classpath:local-public-key.pub
