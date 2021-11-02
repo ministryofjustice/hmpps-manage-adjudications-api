@@ -39,18 +39,4 @@ class SpringOauthIntegrationTest : IntegrationTestBase() {
         .withRequestBody(WireMock.equalTo("grant_type=client_credentials&scope=write&username=USER2"))
     )
   }
-
-  fun getFormValues(offenderNo: String): Map<String, Any> = mapOf(
-    "offenderNo" to offenderNo,
-    "commentText" to "hello",
-    "dischargeTime" to "2010-10-10T21:00",
-    "fromLocationId" to "MDI",
-    "hospitalLocationCode" to "HAZLWD",
-    "supportingPrisonId" to "MDI"
-  )
-
-  companion object {
-    const val OFFENDER_ONE = "A12345"
-    const val OFFENDER_TWO = "A12346"
-  }
 }
