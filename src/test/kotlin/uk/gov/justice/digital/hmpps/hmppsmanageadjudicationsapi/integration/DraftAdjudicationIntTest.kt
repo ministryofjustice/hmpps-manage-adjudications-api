@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.Test
+import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DraftAdjudicationResponse
 import java.time.LocalDateTime
 
@@ -144,6 +145,24 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     )
 
     prisonApiMockServer.verifyPostAdjudication(objectMapper.writeValueAsString(expectedBody))
+
+    getDraftAdjudicationDetails(draftAdjudicationResponse.draftAdjudication.id).expectStatus().isNotFound
+  }
+
+  @Test
+  fun `should not delete the draft adjudication when the adjudication report submission fails`() {
+    prisonApiMockServer.stubPostAdjudicationFailure()
+
+    val draftAdjudicationResponse = startNewAdjudication()
+    addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
+
+    webTestClient.post()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/complete-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is5xxServerError
+
+    getDraftAdjudicationDetails(draftAdjudicationResponse.draftAdjudication.id).expectStatus().isOk
   }
 
   private fun startNewAdjudication(): DraftAdjudicationResponse {
@@ -178,6 +197,13 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .returnResult(DraftAdjudicationResponse::class.java)
       .responseBody
       .blockFirst()!!
+  }
+
+  private fun getDraftAdjudicationDetails(id: Long): WebTestClient.ResponseSpec {
+    return webTestClient.get()
+      .uri("/draft-adjudications/$id")
+      .headers(setHeaders())
+      .exchange()
   }
 
   companion object {

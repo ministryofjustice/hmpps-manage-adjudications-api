@@ -96,6 +96,18 @@ class PrisonApiMockServer : WireMockServer(8979) {
         )
     )
   }
+
+  fun stubPostAdjudicationFailure() {
+    stubFor(
+      post(urlEqualTo("/api/adjudications/adjudication"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(500)
+        )
+    )
+  }
+
   fun verifyPostAdjudication(bodyAsJson: String) {
     verify(
       postRequestedFor(urlEqualTo("/api/adjudications/adjudication"))
