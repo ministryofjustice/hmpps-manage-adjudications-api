@@ -30,6 +30,8 @@ generic-service:
   namespace_secrets:
     hmpps-manage-adjudications-api:
       APPINSIGHTS_INSTRUMENTATIONKEY: "APPINSIGHTS_INSTRUMENTATIONKEY"
+      MANAGE_ADJUDICATIONS_API_CLIENT_ID: "MANAGE_ADJUDICATIONS_API_CLIENT_ID"
+      MANAGE_ADJUDICATIONS_API_CLIENT_SECRET: "MANAGE_ADJUDICATIONS_API_CLIENT_SECRET"
     ma-rds-instance-output:
       DATABASE_ENDPOINT: "rds_instance_endpoint"
       DATABASE_NAME: "database_name"
