@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudi
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.UnAuthorisedToEditIncidentStatementException
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
@@ -310,17 +309,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudication.incidentStatement.statement").value("new statement"))
     }
 
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `returns a not authorised status code when an UnAuthorisedToEditIncidentStatementException is thrown`() {
-      whenever(draftAdjudicationService.editIncidentStatement(anyLong(), any())).thenThrow(
-        UnAuthorisedToEditIncidentStatementException::class.java
-      )
-
-      editIncidentStatement(1, "new statement")
-        .andExpect(status().isUnauthorized)
-    }
-
     private fun editIncidentStatement(id: Long, statement: String): ResultActions {
       val body = objectMapper.writeValueAsString(mapOf("statement" to statement))
       return mockMvc
@@ -328,6 +316,32 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           put("/draft-adjudications/$id/incident-statement")
             .header("Content-Type", "application/json")
             .content(body)
+        )
+    }
+  }
+
+  @Nested
+  inner class CompleteDraftAdjudication {
+    @Test
+    fun `responds with a unauthorised status code`() {
+      completeDraftAdjudication(1)
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `make a call to complete a draft adjudication`() {
+      completeDraftAdjudication(1)
+        .andExpect(status().isCreated)
+
+      verify(draftAdjudicationService).completeDraftAdjudication(1)
+    }
+
+    fun completeDraftAdjudication(id: Long): ResultActions {
+      return mockMvc
+        .perform(
+          post("/draft-adjudications/$id/complete-draft-adjudication")
+            .header("Content-Type", "application/json")
         )
     }
   }

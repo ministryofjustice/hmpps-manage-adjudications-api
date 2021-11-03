@@ -7,19 +7,22 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentSta
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationRepository
+import java.time.Clock
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 
-class UnAuthorisedToEditIncidentStatementException() :
-  RuntimeException("Only the original author can make changes to this incident statement")
-
 @Service
 class DraftAdjudicationService(
   val draftAdjudicationRepository: DraftAdjudicationRepository,
-  val authenticationFacade: AuthenticationFacade
+  val submittedDraftAdjudicationRepository: SubmittedAdjudicationRepository,
+  val prisonApiGateway: PrisonApiGateway,
+  val clock: Clock,
 ) {
 
   @Transactional
@@ -38,9 +41,7 @@ class DraftAdjudicationService(
   }
 
   fun getDraftAdjudicationDetails(id: Long): DraftAdjudicationDto {
-    val draftAdjudication =
-      draftAdjudicationRepository.findById(id)
-        .orElseThrow { throwEntityNotFoundException(id) }
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     return draftAdjudication.toDto()
   }
@@ -84,12 +85,33 @@ class DraftAdjudicationService(
     if (draftAdjudication.incidentStatement == null)
       throw EntityNotFoundException("DraftAdjudication does not have any incident statement to update")
 
-    if (authenticationFacade.currentUsername != draftAdjudication.incidentStatement?.createdByUserId)
-      throw UnAuthorisedToEditIncidentStatementException()
-
     draftAdjudication.incidentStatement?.statement = statement
 
     return draftAdjudicationRepository.save(draftAdjudication).toDto()
+  }
+
+  @Transactional
+  fun completeDraftAdjudication(id: Long) {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+
+    if (draftAdjudication.incidentStatement == null)
+      throw IllegalStateException("Please include an incident statement before completing this draft adjudication")
+
+    val reportedAdjudication = prisonApiGateway.publishAdjudication(
+      AdjudicationDetailsToPublish(
+        prisonerNumber = draftAdjudication.prisonerNumber,
+        incidentTime = draftAdjudication.incidentDetails!!.dateTimeOfIncident,
+        incidentLocationId = draftAdjudication.incidentDetails!!.locationId,
+        statement = draftAdjudication.incidentStatement!!.statement
+      )
+    )
+    submittedDraftAdjudicationRepository.save(
+      SubmittedAdjudication(
+        adjudicationNumber = reportedAdjudication.adjudicationNumber,
+        LocalDateTime.now(clock)
+      )
+    )
+    draftAdjudicationRepository.delete(draftAdjudication)
   }
 }
 

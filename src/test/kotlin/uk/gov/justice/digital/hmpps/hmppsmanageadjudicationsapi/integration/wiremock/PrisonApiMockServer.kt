@@ -2,8 +2,13 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wir
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.client.WireMock.verify
 
 class PrisonApiMockServer : WireMockServer(8979) {
   fun stubHealth() {
@@ -65,6 +70,36 @@ class PrisonApiMockServer : WireMockServer(8979) {
               """.trimIndent()
             )
         )
+    )
+  }
+
+  fun stubPostAdjudication() {
+    stubFor(
+      post(urlEqualTo("/api/adjudications/adjudication"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+            .withBody(
+              """
+               {
+                  "adjudicationNumber": 1524242,
+                  "reporterStaffId": 486080,
+                  "bookingId": 1,
+                  "prisonerNumber": "A12345",
+                  "incidentTime": "2021-10-25T09:03:11",
+                  "incidentLocationId": 721850,
+                  "statement": "It keeps happening..."
+                }
+              """.trimIndent()
+            )
+        )
+    )
+  }
+  fun verifyPostAdjudication(bodyAsJson: String) {
+    verify(
+      postRequestedFor(urlEqualTo("/api/adjudications/adjudication"))
+        .withRequestBody(equalTo(bodyAsJson))
     )
   }
 }

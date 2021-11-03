@@ -123,6 +123,29 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentStatement.modifiedByDateTime").exists()
   }
 
+  @Test
+  fun `complete draft adjudication`() {
+    prisonApiMockServer.stubPostAdjudication()
+
+    val draftAdjudicationResponse = startNewAdjudication()
+    addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
+
+    webTestClient.post()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/complete-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isCreated
+
+    val expectedBody = mapOf(
+      "prisonerNumber" to "A12345",
+      "incidentLocationId" to 2L,
+      "incidentTime" to "2010-10-12T10:00:00",
+      "statement" to "test statement"
+    )
+
+    prisonApiMockServer.verifyPostAdjudication(objectMapper.writeValueAsString(expectedBody))
+  }
+
   private fun startNewAdjudication(): DraftAdjudicationResponse {
     return webTestClient.post()
       .uri("/draft-adjudications")
