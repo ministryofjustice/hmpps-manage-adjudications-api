@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.flywaydb.core.Flyway
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -29,6 +30,9 @@ abstract class IntegrationTestBase {
   @Autowired
   lateinit var jwtAuthHelper: JwtAuthHelper
 
+  @Autowired
+  lateinit var objectMapper: ObjectMapper
+
   companion object {
     @JvmField
     internal val prisonApiMockServer = PrisonApiMockServer()
@@ -41,6 +45,7 @@ abstract class IntegrationTestBase {
     fun startMocks() {
       prisonApiMockServer.start()
       oAuthMockServer.start()
+      oAuthMockServer.stubGrantToken()
     }
 
     @AfterAll

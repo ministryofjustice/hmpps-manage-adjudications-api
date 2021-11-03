@@ -1,9 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.MediaType
 import org.springframework.http.codec.ClientCodecConfigurer
+import org.springframework.http.codec.json.Jackson2JsonDecoder
+import org.springframework.http.codec.json.Jackson2JsonEncoder
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
@@ -20,7 +24,8 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
 class WebClientConfig(
-  @Value("\${prison.api.endpoint.url}") private val prisonApiUrl: String
+  @Value("\${prison.api.endpoint.url}") private val prisonApiUrl: String,
+  val objectMapper: ObjectMapper
 ) {
 
   @Bean
@@ -41,7 +46,13 @@ class WebClientConfig(
     oauth2Client.setDefaultClientRegistrationId("manage-adjudications-api")
 
     val exchangeStrategies = ExchangeStrategies.builder()
-      .codecs { configurer: ClientCodecConfigurer -> configurer.defaultCodecs().maxInMemorySize(-1) }
+      .codecs { configurer: ClientCodecConfigurer ->
+        configurer.defaultCodecs().maxInMemorySize(-1)
+        configurer.defaultCodecs()
+          .jackson2JsonEncoder(Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON))
+        configurer.defaultCodecs()
+          .jackson2JsonDecoder(Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON))
+      }
       .build()
 
     return WebClient.builder()

@@ -136,4 +136,11 @@ class DraftAdjudicationController {
       draftAdjudication
     )
   }
+
+  @PostMapping(value = ["/{id}/complete-draft-adjudication"])
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @ResponseStatus(HttpStatus.CREATED)
+  fun completeDraftAdjudication(@PathVariable(name = "id") id: Long) {
+    draftAdjudicationService.completeDraftAdjudication(id)
+  }
 }

@@ -10,26 +10,34 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.BaseEntity
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationRepository
+import java.time.Clock
+import java.time.Instant.ofEpochMilli
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Optional
 import javax.persistence.EntityNotFoundException
 
 class DraftAdjudicationServiceTest {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
-  private val authenticationFacade: AuthenticationFacade = mock()
+  private val submittedAdjudicationRepository: SubmittedAdjudicationRepository = mock()
+  private val prisonApiGateway: PrisonApiGateway = mock()
+  private val clock: Clock = Clock.fixed(ofEpochMilli(0), ZoneId.systemDefault())
+
   private lateinit var draftAdjudicationService: DraftAdjudicationService
 
   @BeforeEach
   fun beforeEach() {
-    whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
     draftAdjudicationService =
-      DraftAdjudicationService(draftAdjudicationRepository, authenticationFacade)
+      DraftAdjudicationService(draftAdjudicationRepository, submittedAdjudicationRepository, prisonApiGateway, clock)
   }
 
   @Nested
@@ -285,24 +293,100 @@ class DraftAdjudicationServiceTest {
 
       assertThat(argumentCaptor.value.incidentStatement?.statement).isEqualTo(statementChanges)
     }
+  }
+
+  @Nested
+  inner class CompleteDraftAdjudication {
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        draftAdjudicationService.completeDraftAdjudication(1)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
+    }
 
     @Test
-    fun `throws an NotAuthorisedToUpdateStatementException`() {
-      val incidentStatement = IncidentStatement(statement = "old statement") as BaseEntity
-      incidentStatement.createdByUserId = "ANOTHER_USER"
-
+    fun `throws an IllegalStateException when the draft adjudication is missing the incident statement`() {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(
         Optional.of(
           DraftAdjudication(
-            id = 1, prisonerNumber = "A12345", incidentStatement = incidentStatement as IncidentStatement
+            prisonerNumber = "A12345",
+            incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now())
           )
         )
       )
 
       assertThatThrownBy {
-        draftAdjudicationService.editIncidentStatement(1, "new statement")
-      }.isInstanceOf(UnAuthorisedToEditIncidentStatementException::class.java)
-        .hasMessageContaining("Only the original author can make changes to this incident statement")
+        draftAdjudicationService.completeDraftAdjudication(1)
+      }.isInstanceOf(IllegalStateException::class.java)
+        .hasMessageContaining("Please include an incident statement before completing this draft adjudication")
+    }
+
+    @Nested
+    inner class WithAValidDraftAdjudication {
+      @BeforeEach
+      fun beforeEach() {
+        whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+          Optional.of(
+            DraftAdjudication(
+              id = 1,
+              prisonerNumber = "A12345",
+              incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
+              incidentStatement = IncidentStatement(statement = "test")
+            )
+          )
+        )
+        whenever(prisonApiGateway.publishAdjudication(any())).thenReturn(
+          ReportedAdjudication(
+            bookingId = 1L,
+            adjudicationNumber = 123456L,
+            statement = "test",
+            incidentLocationId = 2L,
+            incidentTime = LocalDateTime.now(clock),
+            reporterStaffId = 2
+          )
+        )
+      }
+
+      @Test
+      fun `store a new completed adjudication record`() {
+        draftAdjudicationService.completeDraftAdjudication(1)
+
+        val argumentCaptor = ArgumentCaptor.forClass(SubmittedAdjudication::class.java)
+        verify(submittedAdjudicationRepository).save(argumentCaptor.capture())
+
+        assertThat(argumentCaptor.value)
+          .extracting("adjudicationNumber", "dateTimeSent")
+          .contains(123456L, LocalDateTime.now(clock))
+      }
+
+      @Test
+      fun `makes a call to prison api to publish the draft adjudication`() {
+        draftAdjudicationService.completeDraftAdjudication(1)
+
+        val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
+          prisonerNumber = "A12345",
+          incidentLocationId = 1L,
+          incidentTime = LocalDateTime.now(clock),
+          statement = "test"
+        )
+
+        verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
+      }
+
+      @Test
+      fun `delete the draft adjudication once complete`() {
+        draftAdjudicationService.completeDraftAdjudication(1)
+
+        val argumentCaptor: ArgumentCaptor<DraftAdjudication> = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+        verify(draftAdjudicationRepository).delete(argumentCaptor.capture())
+
+        assertThat(argumentCaptor.value)
+          .extracting("id", "prisonerNumber")
+          .contains(1L, "A12345")
+      }
     }
   }
 
