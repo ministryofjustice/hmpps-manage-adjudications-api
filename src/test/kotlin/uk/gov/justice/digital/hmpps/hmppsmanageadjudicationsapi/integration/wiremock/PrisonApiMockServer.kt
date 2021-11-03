@@ -46,4 +46,25 @@ class PrisonApiMockServer : WireMockServer(8979) {
         )
     )
   }
+
+  fun stubGetAdjudicationWithInvalidNumber() {
+    stubFor(
+      get(urlEqualTo("/api/adjudications/adjudication/1524242"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(404)
+            .withBody(
+              """
+                {
+                  "timestamp": "2021-11-03T11:28:44.225+00:00",
+                  "status": 404,
+                  "error": "Not Found",
+                  "path": "/reported-adjudications/1524242"
+                }
+              """.trimIndent()
+            )
+        )
+    )
+  }
 }
