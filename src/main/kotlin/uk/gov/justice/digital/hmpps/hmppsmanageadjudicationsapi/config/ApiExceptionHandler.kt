@@ -11,12 +11,26 @@ import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.UnAuthorisedToEditIncidentStatementException
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 
 @RestControllerAdvice
 class ApiExceptionHandler {
+  @ExceptionHandler(WebClientResponseException::class)
+  fun handleException(e: WebClientResponseException): ResponseEntity<ErrorResponse> {
+    log.error("Forwarded HTTP call response exception", e)
+    return ResponseEntity
+      .status(e.rawStatusCode)
+      .body(
+        ErrorResponse(
+          status = e.rawStatusCode,
+          userMessage = "Forwarded HTTP call response error: ${e.message}",
+        )
+      )
+  }
+
   @ExceptionHandler(ValidationException::class)
   fun handleValidationException(e: Exception): ResponseEntity<ErrorResponse> {
     log.info("Validation exception: {}", e.message)

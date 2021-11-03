@@ -10,7 +10,7 @@ The frontend can be found here: <https://github.com/ministryofjustice/hmpps-mana
 
 # Instructions
 ###Tests
-Before running the tests `docker-compose -f docker-compose-postgres.yml up` needs to be running and to have finished loading
+Before running the tests `docker-compose -f docker-compose-postgres.yaml up` needs to be running and to have finished loading
 before you start running the tests. Once done you can run the tests by running `./gradlew build`
 
 ###Running locally
