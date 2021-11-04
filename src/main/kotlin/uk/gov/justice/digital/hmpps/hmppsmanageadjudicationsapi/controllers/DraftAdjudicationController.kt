@@ -59,7 +59,7 @@ data class DraftAdjudicationResponse(
 
 @ApiModel("In progress draft adjudication response")
 data class InProgressAdjudicationResponse(
-  @ApiModelProperty(value = "All in progress adjudications created by current user")
+  @ApiModelProperty(value = "All in progress adjudications")
   val draftAdjudications: Set<DraftAdjudicationDto>
 )
 
@@ -71,7 +71,7 @@ class DraftAdjudicationController {
   lateinit var draftAdjudicationService: DraftAdjudicationService
 
   @GetMapping
-  @ApiOperation(value = "Returns all in progress draft adjudications created by the current user. Default sort by earliest incident date and time.")
+  @ApiOperation(value = "Returns all the in progress draft adjudications created by the current user. Default sort is by earliest incident date and time.")
   fun getCurrentUsersInProgressDraftAdjudications(): InProgressAdjudicationResponse = InProgressAdjudicationResponse(
     draftAdjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications()
   )
@@ -104,7 +104,7 @@ class DraftAdjudicationController {
   }
 
   @PostMapping(value = ["/{id}/incident-statement"])
-  @ApiOperation(value = "Adds the incident statement to the draft adjudication.")
+  @ApiOperation(value = "Add the incident statement to the draft adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun addIncidentStatement(
