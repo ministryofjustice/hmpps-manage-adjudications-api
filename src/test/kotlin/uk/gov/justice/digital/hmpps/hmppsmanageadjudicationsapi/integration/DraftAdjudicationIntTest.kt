@@ -165,6 +165,26 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     getDraftAdjudicationDetails(draftAdjudicationResponse.draftAdjudication.id).expectStatus().isOk
   }
 
+  @Test
+  fun `returns all in progress draft adjudications created by the current user`() {
+    val draftAdjudicationResponse = startNewAdjudication()
+
+    webTestClient.get()
+      .uri("/draft-adjudications")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudications[0].id").isEqualTo(draftAdjudicationResponse.draftAdjudication.id)
+      .jsonPath("$.draftAdjudications[0].prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.draftAdjudications[0].incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
+      .jsonPath("$.draftAdjudications[0].incidentDetails.locationId").isEqualTo(2)
+      .jsonPath("$.draftAdjudications[0].incidentDetails.modifiedByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudications[0].incidentDetails.modifiedByDateTime").exists()
+      .jsonPath("$.draftAdjudications[0].incidentDetails.createdByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudications[0].incidentDetails.createdDateTime").exists()
+  }
+
   private fun startNewAdjudication(): DraftAdjudicationResponse {
     return webTestClient.post()
       .uri("/draft-adjudications")

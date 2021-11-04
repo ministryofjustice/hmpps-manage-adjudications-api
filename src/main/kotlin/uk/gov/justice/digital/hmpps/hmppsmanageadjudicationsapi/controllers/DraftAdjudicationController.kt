@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
+import io.swagger.annotations.ApiOperation
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
@@ -56,6 +57,12 @@ data class DraftAdjudicationResponse(
   val draftAdjudication: DraftAdjudicationDto
 )
 
+@ApiModel("In progress draft adjudication response")
+data class InProgressAdjudicationResponse(
+  @ApiModelProperty(value = "All in progress adjudications created by current user")
+  val draftAdjudications: Set<DraftAdjudicationDto>
+)
+
 @RestController
 @RequestMapping("/draft-adjudications")
 @Validated
@@ -63,8 +70,15 @@ class DraftAdjudicationController {
   @Autowired
   lateinit var draftAdjudicationService: DraftAdjudicationService
 
+  @GetMapping
+  @ApiOperation(value = "Returns all in progress draft adjudications created by the current user. Default sort by earliest incident date and time.")
+  fun getCurrentUsersInProgressDraftAdjudications(): InProgressAdjudicationResponse = InProgressAdjudicationResponse(
+    draftAdjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications()
+  )
+
   @PostMapping
   @PreAuthorize("hasAuthority('SCOPE_write')")
+  @ApiOperation(value = "Starts a new draft adjudication.")
   @ResponseStatus(HttpStatus.CREATED)
   fun startNewAdjudication(@RequestBody newAdjudicationRequest: NewAdjudicationRequest): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService
@@ -80,6 +94,7 @@ class DraftAdjudicationController {
   }
 
   @GetMapping(value = ["/{id}"])
+  @ApiOperation(value = "Returns the draft adjudication details.")
   fun getDraftAdjudicationDetails(@PathVariable(name = "id") id: Long): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.getDraftAdjudicationDetails(id)
 
@@ -89,6 +104,7 @@ class DraftAdjudicationController {
   }
 
   @PostMapping(value = ["/{id}/incident-statement"])
+  @ApiOperation(value = "Adds the incident statement to the draft adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun addIncidentStatement(
@@ -106,6 +122,7 @@ class DraftAdjudicationController {
   }
 
   @PutMapping(value = ["/{id}/incident-details"])
+  @ApiOperation(value = "Edit the incident details for a draft adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   fun editIncidentDetails(
     @PathVariable(name = "id") id: Long,
@@ -123,6 +140,7 @@ class DraftAdjudicationController {
   }
 
   @PutMapping(value = ["/{id}/incident-statement"])
+  @ApiOperation(value = "Edit the incident statement for a draft adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   fun editIncidentStatement(
     @PathVariable(name = "id") id: Long,
@@ -138,6 +156,7 @@ class DraftAdjudicationController {
   }
 
   @PostMapping(value = ["/{id}/complete-draft-adjudication"])
+  @ApiOperation(value = "Submits the draft adjudication to Prison-API, creates a submitted adjudication record and removes the draft adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun completeDraftAdjudication(@PathVariable(name = "id") id: Long) {
