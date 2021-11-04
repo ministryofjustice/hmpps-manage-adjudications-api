@@ -153,6 +153,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         DraftAdjudicationDto(
           id = 1L,
           prisonerNumber = "A12345",
+          incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT),
           incidentStatement = IncidentStatementDto(id = 1, statement = "test")
         )
       )
@@ -279,6 +280,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         DraftAdjudicationDto(
           id = 1L,
           prisonerNumber = "A12345",
+          incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT),
           incidentStatement = IncidentStatementDto(id = 1, statement = "new statement")
         )
       )
@@ -337,13 +339,68 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       verify(draftAdjudicationService).completeDraftAdjudication(1)
     }
 
-    fun completeDraftAdjudication(id: Long): ResultActions {
-      return mockMvc
-        .perform(
-          post("/draft-adjudications/$id/complete-draft-adjudication")
-            .header("Content-Type", "application/json")
+    fun completeDraftAdjudication(id: Long): ResultActions = mockMvc
+      .perform(
+        post("/draft-adjudications/$id/complete-draft-adjudication")
+          .header("Content-Type", "application/json")
+      )
+  }
+
+  @Nested
+  inner class InProgressDraftAdjudications {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications()).thenReturn(
+        setOf(
+          DraftAdjudicationDto(
+            id = 1,
+            prisonerNumber = "A12345",
+            incidentDetails = IncidentDetailsDto(locationId = 1, dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+          ),
+          DraftAdjudicationDto(
+            id = 2,
+            prisonerNumber = "A12346",
+            incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1))
+          )
         )
+      )
     }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      getInProgressDraftAdjudications()
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER")
+    fun `makes a call to return all mny in progress draft adjudications`() {
+      getInProgressDraftAdjudications()
+        .andExpect(status().isOk)
+
+      verify(draftAdjudicationService).getCurrentUsersInProgressDraftAdjudications()
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER")
+    fun `returns all in progress draft adjudications`() {
+      getInProgressDraftAdjudications()
+        .andExpect(status().isOk)
+        .andExpect(jsonPath("$.draftAdjudications[0].id").value(1))
+        .andExpect(jsonPath("$.draftAdjudications[0].prisonerNumber").value("A12345"))
+        .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.locationId").value(1))
+        .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
+        .andExpect(jsonPath("$.draftAdjudications[1].id").value(2))
+        .andExpect(jsonPath("$.draftAdjudications[1].prisonerNumber").value("A12346"))
+        .andExpect(jsonPath("$.draftAdjudications[1].incidentDetails.locationId").value(2))
+        .andExpect(jsonPath("$.draftAdjudications[1].incidentDetails.dateTimeOfIncident").value("2010-11-12T10:00:00"))
+    }
+
+    fun getInProgressDraftAdjudications(): ResultActions = mockMvc
+      .perform(
+        get("/draft-adjudications")
+          .header("Content-Type", "application/json")
+      )
   }
 
   companion object {

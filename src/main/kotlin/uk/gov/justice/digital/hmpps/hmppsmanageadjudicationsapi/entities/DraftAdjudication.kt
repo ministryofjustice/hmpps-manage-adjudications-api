@@ -14,7 +14,7 @@ data class DraftAdjudication(
   val prisonerNumber: String,
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "incident_details_id")
-  val incidentDetails: IncidentDetails? = null,
+  val incidentDetails: IncidentDetails,
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "incident_statement_id")
   var incidentStatement: IncidentStatement? = null,

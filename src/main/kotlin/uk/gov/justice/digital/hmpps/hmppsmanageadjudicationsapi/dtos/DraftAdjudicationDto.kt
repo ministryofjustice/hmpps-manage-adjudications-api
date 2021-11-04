@@ -11,7 +11,7 @@ data class DraftAdjudicationDto(
   @ApiModelProperty(value = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
   @ApiModelProperty(value = "Incident details")
-  val incidentDetails: IncidentDetailsDto? = null,
+  val incidentDetails: IncidentDetailsDto,
   @ApiModelProperty(value = "Incident statement")
   val incidentStatement: IncidentStatementDto? = null,
   @ApiModelProperty("Created by user id")
