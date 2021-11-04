@@ -6,10 +6,12 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
@@ -19,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonA
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.time.Clock
 import java.time.Instant.ofEpochMilli
 import java.time.LocalDateTime
@@ -30,6 +33,7 @@ class DraftAdjudicationServiceTest {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val submittedAdjudicationRepository: SubmittedAdjudicationRepository = mock()
   private val prisonApiGateway: PrisonApiGateway = mock()
+  private val authenticationFacade: AuthenticationFacade = mock()
   private val clock: Clock = Clock.fixed(ofEpochMilli(0), ZoneId.systemDefault())
 
   private lateinit var draftAdjudicationService: DraftAdjudicationService
@@ -37,7 +41,13 @@ class DraftAdjudicationServiceTest {
   @BeforeEach
   fun beforeEach() {
     draftAdjudicationService =
-      DraftAdjudicationService(draftAdjudicationRepository, submittedAdjudicationRepository, prisonApiGateway, clock)
+      DraftAdjudicationService(
+        draftAdjudicationRepository,
+        submittedAdjudicationRepository,
+        prisonApiGateway,
+        authenticationFacade,
+        clock
+      )
   }
 
   @Nested
@@ -124,7 +134,11 @@ class DraftAdjudicationServiceTest {
 
     @Test
     fun `adds an incident statement to a draft adjudication`() {
-      val draftAdjudicationEntity = DraftAdjudication(id = 1, prisonerNumber = "A12345")
+      val draftAdjudicationEntity = DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
+      )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
 
@@ -156,6 +170,7 @@ class DraftAdjudicationServiceTest {
             DraftAdjudication(
               id = 1,
               prisonerNumber = "A12345",
+              incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
               incidentStatement = IncidentStatement(id = 1, statement = "test")
             )
           )
@@ -178,23 +193,6 @@ class DraftAdjudicationServiceTest {
         draftAdjudicationService.editIncidentDetails(1, 2, DATE_TIME_OF_INCIDENT)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
-    }
-
-    @Test
-    fun `throws an entity not found if the incident details does not exist`() {
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-        Optional.of(
-          DraftAdjudication(
-            id = 1,
-            prisonerNumber = "A12345"
-          )
-        )
-      )
-
-      assertThatThrownBy {
-        draftAdjudicationService.editIncidentDetails(1, 2, DATE_TIME_OF_INCIDENT)
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("DraftAdjudication does not include an incident statement")
     }
 
     @Test
@@ -254,7 +252,8 @@ class DraftAdjudicationServiceTest {
         Optional.of(
           DraftAdjudication(
             id = 1,
-            prisonerNumber = "A12345"
+            prisonerNumber = "A12345",
+            incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
           )
         )
       )
@@ -271,6 +270,7 @@ class DraftAdjudicationServiceTest {
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
         incidentStatement = IncidentStatement(statement = "old statement")
       )
       draftAdjudicationEntity.incidentStatement?.createdByUserId = "ITAG_USER"
@@ -387,6 +387,62 @@ class DraftAdjudicationServiceTest {
           .extracting("id", "prisonerNumber")
           .contains(1L, "A12345")
       }
+    }
+  }
+
+  @Nested
+  inner class InProgressDraftAdjudications {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(draftAdjudicationRepository.findByCreatedByUserId(any())).thenReturn(
+        setOf(
+          DraftAdjudication(
+            id = 1,
+            prisonerNumber = "A12345",
+            incidentDetails = IncidentDetails(
+              id = 2,
+              locationId = 2,
+              dateTimeOfIncident = LocalDateTime.now(clock).plusMonths(2)
+            )
+          ),
+          DraftAdjudication(
+            id = 2,
+            prisonerNumber = "A12346",
+            incidentDetails = IncidentDetails(id = 3, locationId = 3, dateTimeOfIncident = LocalDateTime.now(clock))
+          )
+        )
+      )
+    }
+
+    @Test
+    fun `calls the repository method for all draft adjudications created by ITAG_USER`() {
+      whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
+
+      draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications()
+
+      verify(draftAdjudicationRepository).findByCreatedByUserId("ITAG_USER")
+    }
+
+    @Test
+    fun `given no user return an empty set`() {
+      whenever(authenticationFacade.currentUsername).thenReturn(null)
+      val draftAdjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications()
+
+      assertThat(draftAdjudications).isEmpty()
+    }
+
+    @Test
+    fun `sorts draft adjudications by incident date time`() {
+      whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
+
+      val adjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications()
+
+      assertThat(adjudications)
+        .extracting("id", "prisonerNumber", "incidentDetails")
+        .contains(
+          Tuple(2L, "A12346", IncidentDetailsDto(3, LocalDateTime.now(clock))),
+          Tuple(1L, "A12345", IncidentDetailsDto(2, LocalDateTime.now(clock).plusMonths(2)))
+        )
     }
   }
 

@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Adjudic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.time.Clock
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -22,6 +23,7 @@ class DraftAdjudicationService(
   val draftAdjudicationRepository: DraftAdjudicationRepository,
   val submittedDraftAdjudicationRepository: SubmittedAdjudicationRepository,
   val prisonApiGateway: PrisonApiGateway,
+  val authenticationFacade: AuthenticationFacade,
   val clock: Clock,
 ) {
 
@@ -67,9 +69,6 @@ class DraftAdjudicationService(
   fun editIncidentDetails(id: Long, locationId: Long?, dateTimeOfIncident: LocalDateTime?): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
-    if (draftAdjudication.incidentDetails == null)
-      throw EntityNotFoundException("DraftAdjudication does not include an incident statement")
-
     locationId?.let { draftAdjudication.incidentDetails?.locationId = it }
     dateTimeOfIncident?.let { draftAdjudication.incidentDetails?.dateTimeOfIncident = it }
 
@@ -113,6 +112,15 @@ class DraftAdjudicationService(
     )
     draftAdjudicationRepository.delete(draftAdjudication)
   }
+
+  fun getCurrentUsersInProgressDraftAdjudications(): Set<DraftAdjudicationDto> {
+    val username = authenticationFacade.currentUsername ?: return emptySet()
+
+    return draftAdjudicationRepository.findByCreatedByUserId(username)
+      .sortedBy { it.incidentDetails.dateTimeOfIncident }
+      .map { it.toDto() }
+      .toSet()
+  }
 }
 
 fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(
@@ -121,7 +129,7 @@ fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(
   createdByUserId = this.createdByUserId,
   createdDateTime = this.createDateTime,
   incidentStatement = this.incidentStatement?.toDo(),
-  incidentDetails = this.incidentDetails?.toDto(),
+  incidentDetails = this.incidentDetails.toDto(),
 )
 
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
