@@ -49,28 +49,25 @@ class DraftAdjudicationService(
   }
 
   @Transactional
-  fun addIncidentStatement(id: Long, statement: String): DraftAdjudicationDto {
-    val draftAdjudication =
-      draftAdjudicationRepository.findById(id)
-        .orElseThrow { throwEntityNotFoundException(id) }
+  fun addIncidentStatement(id: Long, statement: String?, completed: Boolean?): DraftAdjudicationDto {
+    throwIfStatementAndCompletedIsNull(statement, completed)
+
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     if (draftAdjudication.incidentStatement != null)
       throw IllegalStateException("DraftAdjudication already includes the incident statement")
 
-    draftAdjudication.incidentStatement = IncidentStatement(statement = statement)
+    draftAdjudication.incidentStatement = IncidentStatement(statement = statement, completed = completed)
 
     return draftAdjudicationRepository.save(draftAdjudication).toDto()
   }
-
-  fun throwEntityNotFoundException(id: Long): Nothing =
-    throw EntityNotFoundException("DraftAdjudication not found for $id")
 
   @Transactional
   fun editIncidentDetails(id: Long, locationId: Long?, dateTimeOfIncident: LocalDateTime?): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
-    locationId?.let { draftAdjudication.incidentDetails?.locationId = it }
-    dateTimeOfIncident?.let { draftAdjudication.incidentDetails?.dateTimeOfIncident = it }
+    locationId?.let { draftAdjudication.incidentDetails.locationId = it }
+    dateTimeOfIncident?.let { draftAdjudication.incidentDetails.dateTimeOfIncident = it }
 
     return draftAdjudicationRepository
       .save(draftAdjudication)
@@ -78,13 +75,16 @@ class DraftAdjudicationService(
   }
 
   @Transactional
-  fun editIncidentStatement(id: Long, statement: String): DraftAdjudicationDto {
+  fun editIncidentStatement(id: Long, statement: String?, completed: Boolean?): DraftAdjudicationDto {
+    throwIfStatementAndCompletedIsNull(statement, completed)
+
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     if (draftAdjudication.incidentStatement == null)
       throw EntityNotFoundException("DraftAdjudication does not have any incident statement to update")
 
-    draftAdjudication.incidentStatement?.statement = statement
+    statement?.let { draftAdjudication.incidentStatement?.statement = statement }
+    completed?.let { draftAdjudication.incidentStatement?.completed = completed }
 
     return draftAdjudicationRepository.save(draftAdjudication).toDto()
   }
@@ -99,9 +99,9 @@ class DraftAdjudicationService(
     val reportedAdjudication = prisonApiGateway.publishAdjudication(
       AdjudicationDetailsToPublish(
         prisonerNumber = draftAdjudication.prisonerNumber,
-        incidentTime = draftAdjudication.incidentDetails!!.dateTimeOfIncident,
-        incidentLocationId = draftAdjudication.incidentDetails!!.locationId,
-        statement = draftAdjudication.incidentStatement!!.statement
+        incidentTime = draftAdjudication.incidentDetails.dateTimeOfIncident,
+        incidentLocationId = draftAdjudication.incidentDetails.locationId,
+        statement = draftAdjudication.incidentStatement?.statement!!
       )
     )
     submittedDraftAdjudicationRepository.save(
@@ -113,14 +113,21 @@ class DraftAdjudicationService(
     draftAdjudicationRepository.delete(draftAdjudication)
   }
 
-  fun getCurrentUsersInProgressDraftAdjudications(): Set<DraftAdjudicationDto> {
-    val username = authenticationFacade.currentUsername ?: return emptySet()
+  fun getCurrentUsersInProgressDraftAdjudications(): List<DraftAdjudicationDto> {
+    val username = authenticationFacade.currentUsername ?: return emptyList()
 
     return draftAdjudicationRepository.findByCreatedByUserId(username)
       .sortedBy { it.incidentDetails.dateTimeOfIncident }
       .map { it.toDto() }
-      .toSet()
   }
+
+  private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {
+    if (statement == null && completed == null)
+      throw IllegalArgumentException("Please supply either a statement or the completed value")
+  }
+
+  fun throwEntityNotFoundException(id: Long): Nothing =
+    throw EntityNotFoundException("DraftAdjudication not found for $id")
 }
 
 fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(
@@ -143,7 +150,8 @@ fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
 
 fun IncidentStatement.toDo(): IncidentStatementDto = IncidentStatementDto(
   id = this.id!!,
-  statement = this.statement,
+  statement = this.statement!!,
+  completed = this.completed,
   createdByUserId = this.createdByUserId,
   createdDateTime = this.createDateTime,
   modifiedByUserId = this.modifiedByUserId,
