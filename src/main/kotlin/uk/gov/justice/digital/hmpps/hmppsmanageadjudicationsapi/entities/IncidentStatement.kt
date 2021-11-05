@@ -9,5 +9,6 @@ import javax.persistence.Table
 class IncidentStatement(
   override val id: Long? = null,
   @Length(max = 4000)
-  var statement: String
+  var statement: String? = null,
+  var completed: Boolean? = false
 ) : BaseEntity()

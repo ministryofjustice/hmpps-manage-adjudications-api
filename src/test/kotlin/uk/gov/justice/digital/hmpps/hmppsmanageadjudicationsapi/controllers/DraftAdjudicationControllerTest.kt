@@ -149,7 +149,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class AddIncidentStatement {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.addIncidentStatement(anyLong(), any())).thenReturn(
+      whenever(draftAdjudicationService.addIncidentStatement(anyLong(), any(), any())).thenReturn(
         DraftAdjudicationDto(
           id = 1L,
           prisonerNumber = "A12345",
@@ -171,7 +171,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       makeAddIncidentStatementRequest(1, "test")
         .andExpect(status().isCreated)
 
-      verify(draftAdjudicationService).addIncidentStatement(1, "test")
+      verify(draftAdjudicationService).addIncidentStatement(1, "test", false)
     }
 
     @Test
@@ -276,7 +276,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.editIncidentStatement(anyLong(), any())).thenReturn(
+      whenever(draftAdjudicationService.editIncidentStatement(anyLong(), any(), any())).thenReturn(
         DraftAdjudicationDto(
           id = 1L,
           prisonerNumber = "A12345",
@@ -298,7 +298,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       editIncidentStatement(1, "test")
         .andExpect(status().isOk)
 
-      verify(draftAdjudicationService).editIncidentStatement(1, "test")
+      verify(draftAdjudicationService).editIncidentStatement(1, "test", false)
     }
 
     @Test
@@ -351,7 +351,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications()).thenReturn(
-        setOf(
+        listOf(
           DraftAdjudicationDto(
             id = 1,
             prisonerNumber = "A12345",

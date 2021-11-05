@@ -39,7 +39,9 @@ data class IncidentStatementRequest(
   @get:Size(
     max = 4000,
     message = "The incident statement exceeds the maximum character limit of {max}"
-  ) val statement: String
+  )
+  val statement: String? = null,
+  val completed: Boolean? = false
 )
 
 @ApiModel("Request to edit the incident details")
@@ -60,7 +62,7 @@ data class DraftAdjudicationResponse(
 @ApiModel("In progress draft adjudication response")
 data class InProgressAdjudicationResponse(
   @ApiModelProperty(value = "All in progress adjudications")
-  val draftAdjudications: Set<DraftAdjudicationDto>
+  val draftAdjudications: List<DraftAdjudicationDto>
 )
 
 @RestController
@@ -113,7 +115,8 @@ class DraftAdjudicationController {
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.addIncidentStatement(
       id,
-      incidentStatementRequest.statement
+      incidentStatementRequest.statement,
+      incidentStatementRequest.completed
     )
 
     return DraftAdjudicationResponse(
@@ -148,7 +151,8 @@ class DraftAdjudicationController {
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.editIncidentStatement(
       id,
-      statement = editIncidentStatementRequest.statement
+      statement = editIncidentStatementRequest.statement,
+      completed = editIncidentStatementRequest.completed
     )
     return DraftAdjudicationResponse(
       draftAdjudication
