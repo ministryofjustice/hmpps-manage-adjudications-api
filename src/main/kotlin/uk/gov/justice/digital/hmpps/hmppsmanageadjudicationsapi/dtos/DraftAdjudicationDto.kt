@@ -42,6 +42,8 @@ data class IncidentStatementDto(
   val id: Long,
   @ApiModelProperty(value = "The statement regarding the incident")
   val statement: String,
+  @ApiModelProperty(value = "Indicates when the statement is complete")
+  val completed: Boolean? = false,
   @ApiModelProperty("Created by user id")
   val createdByUserId: String? = null,
   @ApiModelProperty("Created on date time")

@@ -185,6 +185,32 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudications[0].incidentDetails.createdDateTime").exists()
   }
 
+  @Test
+  fun `make the incident statement has being complete`() {
+    val draftAdjudicationResponse = startNewAdjudication()
+    addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
+
+    webTestClient.put()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-statement")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "completed" to true
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("test statement")
+      .jsonPath("$.draftAdjudication.incidentStatement.completed").isEqualTo(true)
+      .jsonPath("$.draftAdjudication.incidentStatement.createdByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.incidentStatement.createdDateTime").exists()
+      .jsonPath("$.draftAdjudication.incidentStatement.modifiedByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.incidentStatement.modifiedByDateTime").exists()
+  }
+
   private fun startNewAdjudication(): DraftAdjudicationResponse {
     return webTestClient.post()
       .uri("/draft-adjudications")

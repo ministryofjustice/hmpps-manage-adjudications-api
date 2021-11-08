@@ -127,7 +127,7 @@ class DraftAdjudicationServiceTest {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
 
       assertThatThrownBy {
-        draftAdjudicationService.addIncidentStatement(1, "test")
+        draftAdjudicationService.addIncidentStatement(1, "test", false)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
@@ -148,7 +148,7 @@ class DraftAdjudicationServiceTest {
         )
       )
 
-      val draftAdjudication = draftAdjudicationService.addIncidentStatement(1, "test")
+      val draftAdjudication = draftAdjudicationService.addIncidentStatement(1, "test", false)
 
       assertThat(draftAdjudication)
         .extracting("id", "prisonerNumber")
@@ -177,9 +177,17 @@ class DraftAdjudicationServiceTest {
         )
 
       assertThatThrownBy {
-        draftAdjudicationService.addIncidentStatement(1, "test")
+        draftAdjudicationService.addIncidentStatement(1, "test", false)
       }.isInstanceOf(IllegalStateException::class.java)
         .hasMessageContaining("DraftAdjudication already includes the incident statement")
+    }
+
+    @Test
+    fun `throws an IllegalArgumentException when statement and complete is null when adding an incident statement`() {
+      assertThatThrownBy {
+        draftAdjudicationService.addIncidentStatement(1, null, null)
+      }.isInstanceOf(IllegalArgumentException::class.java)
+        .hasMessageContaining("Please supply either a statement or the completed value")
     }
   }
 
@@ -232,6 +240,14 @@ class DraftAdjudicationServiceTest {
         .extracting("locationId", "dateTimeOfIncident")
         .contains(3L, dateTimeOfIncident)
     }
+
+    @Test
+    fun `throws an IllegalArgumentException when statement and complete is null when editing an incident statement`() {
+      assertThatThrownBy {
+        draftAdjudicationService.editIncidentStatement(1, null, null)
+      }.isInstanceOf(IllegalArgumentException::class.java)
+        .hasMessageContaining("Please supply either a statement or the completed value")
+    }
   }
 
   @Nested
@@ -241,7 +257,7 @@ class DraftAdjudicationServiceTest {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
 
       assertThatThrownBy {
-        draftAdjudicationService.editIncidentStatement(1, "new statement")
+        draftAdjudicationService.editIncidentStatement(1, "new statement", false)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
@@ -259,39 +275,44 @@ class DraftAdjudicationServiceTest {
       )
 
       assertThatThrownBy {
-        draftAdjudicationService.editIncidentStatement(1, "new statement")
+        draftAdjudicationService.editIncidentStatement(1, "new statement", false)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication does not have any incident statement to update")
     }
 
-    @Test
-    fun `makes changes to the statement`() {
-      val statementChanges = "new statement"
-      val draftAdjudicationEntity = DraftAdjudication(
-        id = 1,
-        prisonerNumber = "A12345",
-        incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
-        incidentStatement = IncidentStatement(statement = "old statement")
-      )
-      draftAdjudicationEntity.incidentStatement?.createdByUserId = "ITAG_USER"
+    @Nested
+    inner class WithValidExistingIncidentStatement {
+      @BeforeEach
+      fun beforeEach() {
+        val draftAdjudicationEntity = DraftAdjudication(
+          id = 1,
+          prisonerNumber = "A12345",
+          incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
+          incidentStatement = IncidentStatement(statement = "old statement")
+        )
 
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(
-        draftAdjudicationEntity.copy(incidentStatement = IncidentStatement(id = 1, statement = statementChanges))
-      )
+        whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
+        whenever(draftAdjudicationRepository.save(any())).thenReturn(
+          draftAdjudicationEntity.copy(incidentStatement = IncidentStatement(id = 1, statement = "new statement"))
+        )
+      }
 
-      val draftAdjudication = draftAdjudicationService.editIncidentStatement(1, statementChanges)
+      @Test
+      fun `makes changes to the statement`() {
+        val statementChanges = "new statement"
+        val draftAdjudication = draftAdjudicationService.editIncidentStatement(1, statementChanges, false)
 
-      assertThat(draftAdjudication)
-        .extracting("id", "prisonerNumber")
-        .contains(1L, "A12345")
+        assertThat(draftAdjudication)
+          .extracting("id", "prisonerNumber")
+          .contains(1L, "A12345")
 
-      assertThat(draftAdjudication.incidentStatement?.statement).isEqualTo(statementChanges)
+        assertThat(draftAdjudication.incidentStatement?.statement).isEqualTo(statementChanges)
 
-      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
-      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+        val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+        verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.incidentStatement?.statement).isEqualTo(statementChanges)
+        assertThat(argumentCaptor.value.incidentStatement?.statement).isEqualTo(statementChanges)
+      }
     }
   }
 
@@ -395,7 +416,7 @@ class DraftAdjudicationServiceTest {
     @BeforeEach
     fun beforeEach() {
       whenever(draftAdjudicationRepository.findByCreatedByUserId(any())).thenReturn(
-        setOf(
+        listOf(
           DraftAdjudication(
             id = 1,
             prisonerNumber = "A12345",
