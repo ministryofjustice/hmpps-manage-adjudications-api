@@ -20,8 +20,7 @@ class ApiExceptionHandler {
   fun handleException(e: WebClientResponseException): ResponseEntity<ErrorResponse> {
     val errorMessage = "Forwarded HTTP call response exception"
 
-    if (e.rawStatusCode >= 500) log.error(errorMessage, e.responseBodyAsString)
-    else log.info(errorMessage, e.responseBodyAsString)
+    log.error(errorMessage, e.responseBodyAsString)
 
     return ResponseEntity
       .status(e.rawStatusCode)
