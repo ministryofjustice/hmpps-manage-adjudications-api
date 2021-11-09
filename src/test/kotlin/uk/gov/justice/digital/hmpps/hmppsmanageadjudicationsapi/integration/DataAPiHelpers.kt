@@ -1,0 +1,63 @@
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
+
+import org.springframework.http.HttpHeaders
+import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DraftAdjudicationResponse
+import java.time.LocalDateTime
+import java.util.function.Consumer
+
+class DataAPiHelpers(private val webTestClient: WebTestClient, private val defaultHeaders: Consumer<HttpHeaders>) {
+
+  fun startNewAdjudication(
+    dateTimeOfIncident: LocalDateTime,
+    headers: Consumer<HttpHeaders>? = defaultHeaders
+  ): DraftAdjudicationResponse = webTestClient.post()
+    .uri("/draft-adjudications")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "prisonerNumber" to "A12345",
+        "locationId" to 2,
+        "dateTimeOfIncident" to dateTimeOfIncident
+      )
+    )
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
+
+  fun addIncidentStatement(
+    id: Long,
+    statement: String,
+    headers: Consumer<HttpHeaders>? = defaultHeaders
+  ): DraftAdjudicationResponse = webTestClient.post()
+    .uri("/draft-adjudications/$id/incident-statement")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "statement" to statement
+      )
+    )
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
+
+  fun getDraftAdjudicationDetails(
+    id: Long,
+    headers: Consumer<HttpHeaders>? = defaultHeaders
+  ): WebTestClient.ResponseSpec = webTestClient.get()
+    .uri("/draft-adjudications/$id")
+    .headers(headers)
+    .exchange()
+
+  fun completeDraftAdjudication(
+    id: Long,
+    headers: Consumer<HttpHeaders>? = defaultHeaders
+  ): WebTestClient.ResponseSpec = webTestClient.post()
+    .uri("/draft-adjudications/$id/complete-draft-adjudication")
+    .headers(headers)
+    .exchange()
+}

@@ -5,8 +5,8 @@ import javax.persistence.Entity
 import javax.persistence.Table
 
 @Entity
-@Table(name = "submitted_draft_adjudications")
-data class SubmittedAdjudication(
+@Table(name = "submitted_adjudication_history")
+data class SubmittedAdjudicationHistory(
   val adjudicationNumber: Long,
   val dateTimeSent: LocalDateTime
 ) : BaseEntity()

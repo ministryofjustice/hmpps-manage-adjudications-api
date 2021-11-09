@@ -18,7 +18,10 @@ import javax.validation.ValidationException
 class ApiExceptionHandler {
   @ExceptionHandler(WebClientResponseException::class)
   fun handleException(e: WebClientResponseException): ResponseEntity<ErrorResponse> {
-    log.error("Forwarded HTTP call response exception", e)
+    val errorMessage = "Forwarded HTTP call response exception"
+
+    log.error(errorMessage, e.responseBodyAsString)
+
     return ResponseEntity
       .status(e.rawStatusCode)
       .body(

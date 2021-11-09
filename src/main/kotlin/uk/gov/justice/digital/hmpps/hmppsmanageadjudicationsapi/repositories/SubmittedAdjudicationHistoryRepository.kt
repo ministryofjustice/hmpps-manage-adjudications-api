@@ -1,0 +1,6 @@
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories
+
+import org.springframework.data.repository.CrudRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
+
+interface SubmittedAdjudicationHistoryRepository : CrudRepository<SubmittedAdjudicationHistory, Long>
