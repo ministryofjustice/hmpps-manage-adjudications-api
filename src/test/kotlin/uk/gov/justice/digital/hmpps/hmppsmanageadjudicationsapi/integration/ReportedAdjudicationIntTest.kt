@@ -14,8 +14,9 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
-      .jsonPath("$.reportedAdjudication.adjudicationNumber").isNumber
-      .jsonPath("$.reportedAdjudication.prisonerNumber").isEqualTo("1524242")
+      .jsonPath("$.reportedAdjudication.adjudicationNumber").isEqualTo("1524242")
+      .jsonPath("$.reportedAdjudication.prisonerNumber").isEqualTo("AA1234A")
+      .jsonPath("$.reportedAdjudication.bookingId").isEqualTo("123")
       .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2021-10-25T09:03:11")
       .jsonPath("$.reportedAdjudication.incidentDetails.locationId").isEqualTo(721850)
   }

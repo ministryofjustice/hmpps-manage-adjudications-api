@@ -137,6 +137,12 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders())
       .exchange()
       .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.adjudicationNumber").isEqualTo(1524242)
+      .jsonPath("$.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.incidentStatement.statement").isEqualTo("new statement")
+      .jsonPath("$.incidentDetails.dateTimeOfIncident").isEqualTo("2010-11-12T10:00:00")
+      .jsonPath("$.incidentDetails.locationId").isEqualTo(721850)
 
     val expectedBody = mapOf(
       "offenderNo" to "A12345",

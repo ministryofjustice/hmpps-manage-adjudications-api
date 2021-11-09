@@ -38,8 +38,6 @@ data class IncidentDetailsDto(
 
 @ApiModel(value = "Incident statement")
 data class IncidentStatementDto(
-  @ApiModelProperty("Incident statement id")
-  val id: Long,
   @ApiModelProperty(value = "The statement regarding the incident")
   val statement: String,
   @ApiModelProperty(value = "Indicates when the statement is complete")

@@ -361,12 +361,13 @@ class DraftAdjudicationServiceTest {
         )
         whenever(prisonApiGateway.publishAdjudication(any())).thenReturn(
           ReportedAdjudication(
-            bookingId = 1L,
             adjudicationNumber = 123456L,
+            offenderNo = "A12345",
+            bookingId = 1L,
             statement = "test",
             incidentLocationId = 2L,
             incidentTime = LocalDateTime.now(clock),
-            reporterStaffId = 2
+            reporterStaffId = 2,
           )
         )
       }

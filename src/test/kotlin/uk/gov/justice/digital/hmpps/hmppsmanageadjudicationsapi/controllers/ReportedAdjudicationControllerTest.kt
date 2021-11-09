@@ -39,14 +39,16 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         ReportedAdjudicationDto(
           adjudicationNumber = 1,
           prisonerNumber = "A12345",
+          bookingId = 123,
           incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT),
-          incidentStatement = IncidentStatementDto(id = 1, statement = INCIDENT_STATEMENT)
+          incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
         )
       )
       makeGetAdjudicationRequest(1)
         .andExpect(status().isOk)
         .andExpect(jsonPath("$.reportedAdjudication.adjudicationNumber").isNumber)
         .andExpect(jsonPath("$.reportedAdjudication.prisonerNumber").value("A12345"))
+        .andExpect(jsonPath("$.reportedAdjudication.bookingId").value("123"))
         .andExpect(jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("$.reportedAdjudication.incidentDetails.locationId").value(2))
         .andExpect(jsonPath("$.reportedAdjudication.incidentStatement.statement").value(INCIDENT_STATEMENT))

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
@@ -90,7 +91,7 @@ class DraftAdjudicationService(
   }
 
   @Transactional
-  fun completeDraftAdjudication(id: Long) {
+  fun completeDraftAdjudication(id: Long): ReportedAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     if (draftAdjudication.incidentStatement == null)
@@ -111,6 +112,9 @@ class DraftAdjudicationService(
       )
     )
     draftAdjudicationRepository.delete(draftAdjudication)
+
+    return reportedAdjudication
+      .toDto()
   }
 
   fun getCurrentUsersInProgressDraftAdjudications(): List<DraftAdjudicationDto> {
@@ -149,7 +153,6 @@ fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
 )
 
 fun IncidentStatement.toDo(): IncidentStatementDto = IncidentStatementDto(
-  id = this.id!!,
   statement = this.statement!!,
   completed = this.completed,
   createdByUserId = this.createdByUserId,

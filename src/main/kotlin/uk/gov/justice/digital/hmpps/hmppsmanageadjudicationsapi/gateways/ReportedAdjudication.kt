@@ -8,6 +8,7 @@ import java.time.LocalDateTime
 data class ReportedAdjudication(
   val adjudicationNumber: Long,
   val reporterStaffId: Long,
+  val offenderNo: String,
   val bookingId: Long,
   val incidentTime: LocalDateTime,
   val incidentLocationId: Long,
@@ -16,13 +17,13 @@ data class ReportedAdjudication(
   fun toDto(): ReportedAdjudicationDto =
     ReportedAdjudicationDto(
       adjudicationNumber = adjudicationNumber,
-      prisonerNumber = "" + bookingId,
+      prisonerNumber = offenderNo,
+      bookingId = bookingId,
       incidentDetails = IncidentDetailsDto(
         locationId = incidentLocationId,
         dateTimeOfIncident = incidentTime
       ),
       incidentStatement = IncidentStatementDto(
-        id = 1,
         statement = statement
       )
     )

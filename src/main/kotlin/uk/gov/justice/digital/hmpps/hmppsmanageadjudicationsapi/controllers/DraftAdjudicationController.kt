@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
 import javax.validation.Valid
@@ -163,7 +164,6 @@ class DraftAdjudicationController {
   @ApiOperation(value = "Submits the draft adjudication to Prison-API, creates a submitted adjudication record and removes the draft adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
-  fun completeDraftAdjudication(@PathVariable(name = "id") id: Long) {
+  fun completeDraftAdjudication(@PathVariable(name = "id") id: Long): ReportedAdjudicationDto =
     draftAdjudicationService.completeDraftAdjudication(id)
-  }
 }
