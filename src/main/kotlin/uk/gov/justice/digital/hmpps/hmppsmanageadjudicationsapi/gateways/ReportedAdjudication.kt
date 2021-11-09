@@ -10,7 +10,6 @@ data class ReportedAdjudication(
   val reporterStaffId: Long,
   val offenderNo: String,
   val bookingId: Long,
-  val offenderNo: String,
   val incidentTime: LocalDateTime,
   val incidentLocationId: Long,
   val statement: String
