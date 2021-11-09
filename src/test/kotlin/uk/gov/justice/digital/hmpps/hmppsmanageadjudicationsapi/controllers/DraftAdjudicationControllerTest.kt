@@ -154,7 +154,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           id = 1L,
           prisonerNumber = "A12345",
           incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT),
-          incidentStatement = IncidentStatementDto(id = 1, statement = "test")
+          incidentStatement = IncidentStatementDto(statement = "test")
         )
       )
     }
@@ -281,7 +281,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           id = 1L,
           prisonerNumber = "A12345",
           incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT),
-          incidentStatement = IncidentStatementDto(id = 1, statement = "new statement")
+          incidentStatement = IncidentStatementDto(statement = "new statement")
         )
       )
     }

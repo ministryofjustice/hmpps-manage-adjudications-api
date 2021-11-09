@@ -9,6 +9,7 @@ data class ReportedAdjudication(
   val adjudicationNumber: Long,
   val reporterStaffId: Long,
   val bookingId: Long,
+  val offenderNo: String,
   val incidentTime: LocalDateTime,
   val incidentLocationId: Long,
   val statement: String
@@ -16,13 +17,12 @@ data class ReportedAdjudication(
   fun toDto(): ReportedAdjudicationDto =
     ReportedAdjudicationDto(
       adjudicationNumber = adjudicationNumber,
-      prisonerNumber = "" + bookingId,
+      prisonerNumber = offenderNo,
       incidentDetails = IncidentDetailsDto(
         locationId = incidentLocationId,
         dateTimeOfIncident = incidentTime
       ),
       incidentStatement = IncidentStatementDto(
-        id = 1,
         statement = statement
       )
     )
