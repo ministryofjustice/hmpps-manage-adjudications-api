@@ -8,8 +8,8 @@ import java.time.LocalDateTime
 data class ReportedAdjudication(
   val adjudicationNumber: Long,
   val reporterStaffId: Long,
-  val bookingId: Long,
   val offenderNo: String,
+  val bookingId: Long,
   val incidentTime: LocalDateTime,
   val incidentLocationId: Long,
   val statement: String
@@ -18,6 +18,7 @@ data class ReportedAdjudication(
     ReportedAdjudicationDto(
       adjudicationNumber = adjudicationNumber,
       prisonerNumber = offenderNo,
+      bookingId = bookingId,
       incidentDetails = IncidentDetailsDto(
         locationId = incidentLocationId,
         dateTimeOfIncident = incidentTime
