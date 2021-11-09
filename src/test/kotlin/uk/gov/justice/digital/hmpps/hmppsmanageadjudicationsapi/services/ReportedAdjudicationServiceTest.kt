@@ -51,7 +51,7 @@ class ReportedAdjudicationServiceTest {
 
       assertThat(reportedAdjudicationDto)
         .extracting("adjudicationNumber", "prisonerNumber")
-        .contains(1L, "123")
+        .contains(1L, "A12345")
 
       assertThat(reportedAdjudicationDto.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident")
