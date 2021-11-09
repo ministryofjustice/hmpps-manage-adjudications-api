@@ -41,7 +41,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           prisonerNumber = "A12345",
           bookingId = 123,
           incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT),
-          incidentStatement = IncidentStatementDto(id = 1, statement = INCIDENT_STATEMENT)
+          incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
         )
       )
       makeGetAdjudicationRequest(1)

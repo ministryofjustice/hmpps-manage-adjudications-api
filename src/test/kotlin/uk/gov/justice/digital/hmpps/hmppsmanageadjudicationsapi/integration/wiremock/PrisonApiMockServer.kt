@@ -88,9 +88,9 @@ class PrisonApiMockServer : WireMockServer(8979) {
                   "reporterStaffId": 486080,
                   "offenderNo": "A12345",
                   "bookingId": 1,
-                  "incidentTime": "2021-10-25T09:03:11",
+                  "incidentTime": "2010-11-12T10:00:00",
                   "incidentLocationId": 721850,
-                  "statement": "It keeps happening..."
+                  "statement": "new statement"
                 }
               """.trimIndent()
             )
