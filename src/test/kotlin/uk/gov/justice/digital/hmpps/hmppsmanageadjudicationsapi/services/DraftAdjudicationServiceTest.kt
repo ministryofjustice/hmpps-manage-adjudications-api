@@ -368,7 +368,6 @@ class DraftAdjudicationServiceTest {
             incidentLocationId = 2L,
             incidentTime = LocalDateTime.now(clock),
             reporterStaffId = 2,
-            offenderNo = "A12345"
           )
         )
       }
