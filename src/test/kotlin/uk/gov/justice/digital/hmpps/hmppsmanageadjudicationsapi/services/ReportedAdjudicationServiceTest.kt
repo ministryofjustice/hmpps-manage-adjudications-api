@@ -39,7 +39,8 @@ class ReportedAdjudicationServiceTest {
       val reportedAdjudication =
         ReportedAdjudication(
           adjudicationNumber = 1, bookingId = 123, reporterStaffId = 234,
-          incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+          incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
+          offenderNo = "A12345"
         )
 
       whenever(prisonApiGateway.getReportedAdjudication(any())).thenReturn(
@@ -50,7 +51,7 @@ class ReportedAdjudicationServiceTest {
 
       assertThat(reportedAdjudicationDto)
         .extracting("adjudicationNumber", "prisonerNumber")
-        .contains(1L, "123")
+        .contains(1L, "A12345")
 
       assertThat(reportedAdjudicationDto.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident")

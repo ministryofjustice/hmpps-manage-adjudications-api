@@ -42,6 +42,7 @@ class PrisonApiMockServer : WireMockServer(8979) {
                   "adjudicationNumber": 1524242,
                   "reporterStaffId": 486080,
                   "bookingId": 1524242,
+                  "offenderNo": "A12345",
                   "incidentTime": "2021-10-25T09:03:11",
                   "incidentLocationId": 721850,
                   "statement": "It keeps happening..."
@@ -86,10 +87,10 @@ class PrisonApiMockServer : WireMockServer(8979) {
                   "adjudicationNumber": 1524242,
                   "reporterStaffId": 486080,
                   "bookingId": 1,
-                  "prisonerNumber": "A12345",
-                  "incidentTime": "2021-10-25T09:03:11",
+                  "offenderNo": "A12345",
+                  "incidentTime": "2010-11-12T10:00:00",
                   "incidentLocationId": 721850,
-                  "statement": "It keeps happening..."
+                  "statement": "new statement"
                 }
               """.trimIndent()
             )
