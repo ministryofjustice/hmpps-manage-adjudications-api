@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.Test
-import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DraftAdjudicationResponse
 import java.time.LocalDateTime
 
 class DraftAdjudicationIntTest : IntegrationTestBase() {
+  fun dataAPiHelpers(): DataAPiHelpers = DataAPiHelpers(webTestClient, setHeaders())
+
   @Test
   fun `makes a request to start a new draft adjudication`() {
     webTestClient.post()
@@ -31,7 +31,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `get draft adjudication details`() {
-    val draftAdjudicationResponse = startNewAdjudication()
+    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
 
     webTestClient.get()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}")
@@ -49,7 +49,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `add the incident statement to the draft adjudication`() {
-    val draftAdjudicationResponse = startNewAdjudication()
+    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
 
     webTestClient.post()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-statement")
@@ -75,7 +75,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `edit the incident details`() {
-    val draftAdjudicationResponse = startNewAdjudication()
+    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
 
     webTestClient.put()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-details")
@@ -101,8 +101,9 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `edit the incident statement`() {
-    val draftAdjudicationResponse = startNewAdjudication()
-    addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
+    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+
+    dataAPiHelpers().addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
 
     webTestClient.put()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-statement")
@@ -128,8 +129,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `complete draft adjudication`() {
     prisonApiMockServer.stubPostAdjudication()
 
-    val draftAdjudicationResponse = startNewAdjudication()
-    addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
+    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+    dataAPiHelpers().addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
 
     webTestClient.post()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/complete-draft-adjudication")
@@ -138,7 +139,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isCreated
 
     val expectedBody = mapOf(
-      "prisonerNumber" to "A12345",
+      "offenderNo" to "A12345",
       "incidentLocationId" to 2L,
       "incidentTime" to "2010-10-12T10:00:00",
       "statement" to "test statement"
@@ -146,15 +147,16 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     prisonApiMockServer.verifyPostAdjudication(objectMapper.writeValueAsString(expectedBody))
 
-    getDraftAdjudicationDetails(draftAdjudicationResponse.draftAdjudication.id).expectStatus().isNotFound
+    dataAPiHelpers().getDraftAdjudicationDetails(draftAdjudicationResponse.draftAdjudication.id).expectStatus().isNotFound
   }
 
   @Test
   fun `should not delete the draft adjudication when the adjudication report submission fails`() {
     prisonApiMockServer.stubPostAdjudicationFailure()
 
-    val draftAdjudicationResponse = startNewAdjudication()
-    addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
+    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+
+    dataAPiHelpers().addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
 
     webTestClient.post()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/complete-draft-adjudication")
@@ -162,12 +164,12 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().is5xxServerError
 
-    getDraftAdjudicationDetails(draftAdjudicationResponse.draftAdjudication.id).expectStatus().isOk
+    dataAPiHelpers().getDraftAdjudicationDetails(draftAdjudicationResponse.draftAdjudication.id).expectStatus().isOk
   }
 
   @Test
   fun `returns all in progress draft adjudications created by the current user`() {
-    val draftAdjudicationResponse = startNewAdjudication()
+    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
 
     webTestClient.get()
       .uri("/draft-adjudications")
@@ -187,8 +189,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `make the incident statement has being complete`() {
-    val draftAdjudicationResponse = startNewAdjudication()
-    addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
+    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+    dataAPiHelpers().addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
 
     webTestClient.put()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-statement")
@@ -209,47 +211,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentStatement.createdDateTime").exists()
       .jsonPath("$.draftAdjudication.incidentStatement.modifiedByUserId").isEqualTo("ITAG_USER")
       .jsonPath("$.draftAdjudication.incidentStatement.modifiedByDateTime").exists()
-  }
-
-  private fun startNewAdjudication(): DraftAdjudicationResponse {
-    return webTestClient.post()
-      .uri("/draft-adjudications")
-      .headers(setHeaders())
-      .bodyValue(
-        mapOf(
-          "prisonerNumber" to "A12345",
-          "locationId" to 2,
-          "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT
-        )
-      )
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(DraftAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
-
-  private fun addIncidentStatement(id: Long, statement: String): DraftAdjudicationResponse {
-    return webTestClient.post()
-      .uri("/draft-adjudications/$id/incident-statement")
-      .headers(setHeaders())
-      .bodyValue(
-        mapOf(
-          "statement" to statement
-        )
-      )
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(DraftAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
-
-  private fun getDraftAdjudicationDetails(id: Long): WebTestClient.ResponseSpec {
-    return webTestClient.get()
-      .uri("/draft-adjudications/$id")
-      .headers(setHeaders())
-      .exchange()
   }
 
   companion object {

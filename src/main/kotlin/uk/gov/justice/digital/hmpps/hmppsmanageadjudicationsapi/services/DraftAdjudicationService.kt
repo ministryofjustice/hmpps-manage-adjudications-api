@@ -7,11 +7,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentSta
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.time.Clock
 import java.time.LocalDateTime
@@ -21,7 +21,7 @@ import javax.transaction.Transactional
 @Service
 class DraftAdjudicationService(
   val draftAdjudicationRepository: DraftAdjudicationRepository,
-  val submittedDraftAdjudicationRepository: SubmittedAdjudicationRepository,
+  val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository,
   val prisonApiGateway: PrisonApiGateway,
   val authenticationFacade: AuthenticationFacade,
   val clock: Clock,
@@ -98,14 +98,14 @@ class DraftAdjudicationService(
 
     val reportedAdjudication = prisonApiGateway.publishAdjudication(
       AdjudicationDetailsToPublish(
-        prisonerNumber = draftAdjudication.prisonerNumber,
+        offenderNo = draftAdjudication.prisonerNumber,
         incidentTime = draftAdjudication.incidentDetails.dateTimeOfIncident,
         incidentLocationId = draftAdjudication.incidentDetails.locationId,
         statement = draftAdjudication.incidentStatement?.statement!!
       )
     )
-    submittedDraftAdjudicationRepository.save(
-      SubmittedAdjudication(
+    submittedAdjudicationHistoryRepository.save(
+      SubmittedAdjudicationHistory(
         adjudicationNumber = reportedAdjudication.adjudicationNumber,
         LocalDateTime.now(clock)
       )
