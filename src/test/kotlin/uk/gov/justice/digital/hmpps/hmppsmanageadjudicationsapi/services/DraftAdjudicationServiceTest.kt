@@ -15,12 +15,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDet
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.time.Clock
 import java.time.Instant.ofEpochMilli
@@ -31,7 +31,7 @@ import javax.persistence.EntityNotFoundException
 
 class DraftAdjudicationServiceTest {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
-  private val submittedAdjudicationRepository: SubmittedAdjudicationRepository = mock()
+  private val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository = mock()
   private val prisonApiGateway: PrisonApiGateway = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
   private val clock: Clock = Clock.fixed(ofEpochMilli(0), ZoneId.systemDefault())
@@ -43,7 +43,7 @@ class DraftAdjudicationServiceTest {
     draftAdjudicationService =
       DraftAdjudicationService(
         draftAdjudicationRepository,
-        submittedAdjudicationRepository,
+        submittedAdjudicationHistoryRepository,
         prisonApiGateway,
         authenticationFacade,
         clock
@@ -375,8 +375,8 @@ class DraftAdjudicationServiceTest {
       fun `store a new completed adjudication record`() {
         draftAdjudicationService.completeDraftAdjudication(1)
 
-        val argumentCaptor = ArgumentCaptor.forClass(SubmittedAdjudication::class.java)
-        verify(submittedAdjudicationRepository).save(argumentCaptor.capture())
+        val argumentCaptor = ArgumentCaptor.forClass(SubmittedAdjudicationHistory::class.java)
+        verify(submittedAdjudicationHistoryRepository).save(argumentCaptor.capture())
 
         assertThat(argumentCaptor.value)
           .extracting("adjudicationNumber", "dateTimeSent")
@@ -388,7 +388,7 @@ class DraftAdjudicationServiceTest {
         draftAdjudicationService.completeDraftAdjudication(1)
 
         val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
-          prisonerNumber = "A12345",
+          offenderNo = "A12345",
           incidentLocationId = 1L,
           incidentTime = LocalDateTime.now(clock),
           statement = "test"

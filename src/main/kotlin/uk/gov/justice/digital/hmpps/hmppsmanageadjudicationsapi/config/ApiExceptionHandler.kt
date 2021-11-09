@@ -24,7 +24,7 @@ class ApiExceptionHandler {
       .body(
         ErrorResponse(
           status = e.rawStatusCode,
-          userMessage = "Forwarded HTTP call response error: ${e.message}",
+          userMessage = "Forwarded HTTP call response error: ${e.responseBodyAsString}",
         )
       )
   }

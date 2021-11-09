@@ -86,8 +86,4 @@ class WebClientConfig(
     authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider)
     return authorizedClientManager
   }
-
-  fun prisonApiWebClient(builder: WebClient.Builder): WebClient = builder
-    .baseUrl(prisonApiUrl)
-    .build()
 }
