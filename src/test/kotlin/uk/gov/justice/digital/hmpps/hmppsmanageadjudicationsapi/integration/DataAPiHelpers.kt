@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DraftAdjudicationResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import java.time.LocalDateTime
 import java.util.function.Consumer
 
@@ -60,4 +61,15 @@ class DataAPiHelpers(private val webTestClient: WebTestClient, private val defau
     .uri("/draft-adjudications/$id/complete-draft-adjudication")
     .headers(headers)
     .exchange()
+
+  fun createAndCompleteADraftAdjudication(dateTimeOfIncident: LocalDateTime): ReportedAdjudicationDto {
+    val draftAdjudication = startNewAdjudication(dateTimeOfIncident)
+    addIncidentStatement(draftAdjudication.draftAdjudication.id, statement = "hello")
+
+    return completeDraftAdjudication(draftAdjudication.draftAdjudication.id)
+      .expectStatus().isCreated
+      .returnResult(ReportedAdjudicationDto::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
 }
