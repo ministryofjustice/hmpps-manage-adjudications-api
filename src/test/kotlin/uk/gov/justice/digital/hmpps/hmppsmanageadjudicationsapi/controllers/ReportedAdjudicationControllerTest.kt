@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyLong
@@ -68,6 +70,65 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           get("/reported-adjudications/$adjudicationNumber")
+            .header("Content-Type", "application/json")
+        )
+    }
+  }
+
+  @Nested
+  inner class MyReportedAdjudications {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(reportedAdjudicationService.getMyReportedAdjudications()).thenReturn(
+        listOf(
+          ReportedAdjudicationDto(
+            adjudicationNumber = 1,
+            prisonerNumber = "A12345",
+            bookingId = 123,
+            incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT),
+            incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
+          )
+        )
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      getMyAdjudications().andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER")
+    fun `makes a call to return all my reported adjudications`() {
+      getMyAdjudications().andExpect(status().isOk)
+      verify(reportedAdjudicationService).getMyReportedAdjudications()
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER")
+    fun `returns all my reported adjudications`() {
+      getMyAdjudications()
+        .andExpect(status().isOk)
+        .andExpect(jsonPath("$.reportedAdjudications[0].adjudicationNumber").isNumber)
+        .andExpect(jsonPath("$.reportedAdjudications[0].prisonerNumber").value("A12345"))
+        .andExpect(jsonPath("$.reportedAdjudications[0].bookingId").value("123"))
+        .andExpect(
+          jsonPath("$.reportedAdjudications[0].incidentDetails.dateTimeOfIncident").value(
+            "2010-10-12T10:00:00"
+          )
+        )
+        .andExpect(jsonPath("$.reportedAdjudications[0].incidentDetails.locationId").value(2))
+        .andExpect(
+          jsonPath("$.reportedAdjudications[0].incidentStatement.statement").value(
+            INCIDENT_STATEMENT
+          )
+        )
+    }
+
+    private fun getMyAdjudications(): ResultActions {
+      return mockMvc
+        .perform(
+          get("/reported-adjudications/my")
             .header("Content-Type", "application/json")
         )
     }

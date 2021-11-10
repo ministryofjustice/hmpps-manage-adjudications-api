@@ -16,6 +16,12 @@ data class ReportedAdjudicationResponse(
   val reportedAdjudication: ReportedAdjudicationDto
 )
 
+@ApiModel("My reported adjudication response")
+data class MyReportedAdjudicationsResponse(
+  @ApiModelProperty("My reported adjudications")
+  val reportedAdjudications: List<ReportedAdjudicationDto>
+)
+
 @RestController
 @RequestMapping("/reported-adjudications")
 class ReportedAdjudicationController {
@@ -29,6 +35,15 @@ class ReportedAdjudicationController {
 
     return ReportedAdjudicationResponse(
       reportedAdjudication
+    )
+  }
+
+  @GetMapping("/my")
+  fun getMyReportedAdjudications(): MyReportedAdjudicationsResponse {
+    val myReportedAdjudications = reportedAdjudicationService.getMyReportedAdjudications()
+
+    return MyReportedAdjudicationsResponse(
+      reportedAdjudications = myReportedAdjudications
     )
   }
 }

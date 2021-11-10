@@ -53,6 +53,41 @@ class PrisonApiMockServer : WireMockServer(8979) {
     )
   }
 
+  fun stubGetAdjudications() {
+    stubFor(
+      post(urlEqualTo("/api/adjudications"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+            .withBody(
+              """
+              [
+               {
+                  "adjudicationNumber": 1,
+                  "reporterStaffId": 486080,
+                  "offenderNo": "AA1234A",
+                  "bookingId": 123,
+                  "incidentTime": "2021-10-25T09:03:11",
+                  "incidentLocationId": 721850,
+                  "statement": "It keeps happening..."
+                },
+                 {
+                  "adjudicationNumber": 2,
+                  "reporterStaffId": 486080,
+                  "offenderNo": "AA1234B",
+                  "bookingId": 456,
+                  "incidentTime": "2021-10-25T09:03:11",
+                  "incidentLocationId": 721850,
+                  "statement": "It keeps happening..."
+                }
+              ]
+              """.trimIndent()
+            )
+        )
+    )
+  }
+
   fun stubGetAdjudicationWithInvalidNumber() {
     stubFor(
       get(urlEqualTo("/api/adjudications/adjudication/1524242"))
