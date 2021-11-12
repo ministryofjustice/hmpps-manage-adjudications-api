@@ -8,10 +8,10 @@ data class PageResponse<T>(
   val firstPage: Long = 1
 ) {
 
-  fun <R> map(transform: (T) -> R ): PageResponse<R> = PageResponse<R>(this.pageNumber, this.pageSize, this.totalResults, this.results.map(transform), this.firstPage)
+  fun <R> map(transform: (T) -> R ): PageResponse<R> = PageResponse(this.pageNumber, this.pageSize, this.totalResults, this.results.map(transform), this.firstPage)
 
   companion object {
-    fun <T> emptyPageRequest(pageRequest: PageRequest): PageResponse<T> = PageResponse(pageRequest.pageNumber, pageRequest.pageSize, 0, emptyList<T>(), pageRequest.firstPage)
+    fun <T> emptyPageRequest(pageRequest: PageRequest): PageResponse<T> = PageResponse(pageRequest.pageNumber, pageRequest.pageSize, 0, emptyList(), pageRequest.firstPage)
   }
 }
 

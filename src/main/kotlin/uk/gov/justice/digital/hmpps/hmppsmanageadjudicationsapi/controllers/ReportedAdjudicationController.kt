@@ -48,7 +48,7 @@ class ReportedAdjudicationController {
     )
   }
 
-  @GetMapping("/my/{locationId}")
+  @GetMapping("/my/location/{locationId}")
   fun getMyReportedAdjudications2(@PathVariable(name = "locationId") locationId: Long,
                                   pageRequest: PageRequest
                                   ): MyPagedReportedAdjudicationsResponse {

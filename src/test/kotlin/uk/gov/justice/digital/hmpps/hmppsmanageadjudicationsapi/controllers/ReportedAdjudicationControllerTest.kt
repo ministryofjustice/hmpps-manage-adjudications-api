@@ -16,9 +16,12 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
+import com.nhaarman.mockitokotlin2.any
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageResponse
 
 @WebMvcTest(value = [ReportedAdjudicationController::class])
 class ReportedAdjudicationControllerTest : TestControllerBase() {
@@ -90,6 +93,18 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           )
         )
       )
+      whenever(reportedAdjudicationService.getMyReportedAdjudications(anyLong(), any())).thenReturn(
+        PageResponse(1, 20, 1,
+          listOf(
+            ReportedAdjudicationDto(
+              adjudicationNumber = 1,
+              prisonerNumber = "A12345",
+              bookingId = 123,
+              incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT),
+              incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
+            )
+          )
+        ))
     }
 
     @Test
@@ -125,10 +140,48 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         )
     }
 
+
+    @Test
+    @WithMockUser(username = "ITAG_USER")
+    fun `returns paged my reported adjudications`() {
+      getPagedMyAdjudications()
+        .andExpect(status().isOk)
+        .andExpect(jsonPath("$.pagedReportedAdjudications.pageNumber").value(1))
+        .andExpect(jsonPath("$.pagedReportedAdjudications.pageSize").value(20))
+        .andExpect(jsonPath("$.pagedReportedAdjudications.totalResults").value(1))
+        .andExpect(jsonPath("$.pagedReportedAdjudications.results[0].adjudicationNumber").isNumber)
+        .andExpect(jsonPath("$.pagedReportedAdjudications.results[0].prisonerNumber").value("A12345"))
+        .andExpect(jsonPath("$.pagedReportedAdjudications.results[0].bookingId").value("123"))
+        .andExpect(
+          jsonPath("$.pagedReportedAdjudications.results[0].incidentDetails.dateTimeOfIncident").value(
+            "2010-10-12T10:00:00"
+          )
+        )
+        .andExpect(jsonPath("$.pagedReportedAdjudications.results[0].incidentDetails.locationId").value(2))
+        .andExpect(
+          jsonPath("$.pagedReportedAdjudications.results[0].incidentStatement.statement").value(
+            INCIDENT_STATEMENT
+          )
+        )
+    }
+
+    @Test
+    fun `paged responds with a unauthorised status code`() {
+      getPagedMyAdjudications().andExpect(status().isUnauthorized)
+    }
+
     private fun getMyAdjudications(): ResultActions {
       return mockMvc
         .perform(
           get("/reported-adjudications/my")
+            .header("Content-Type", "application/json")
+        )
+    }
+
+    private fun getPagedMyAdjudications(): ResultActions {
+      return mockMvc
+        .perform(
+          get("/reported-adjudications/my/location/1?pageNumber=1&pageSize=20")
             .header("Content-Type", "application/json")
         )
     }
