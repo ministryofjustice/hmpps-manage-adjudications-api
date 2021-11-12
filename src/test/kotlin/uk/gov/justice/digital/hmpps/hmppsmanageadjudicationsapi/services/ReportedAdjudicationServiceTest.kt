@@ -94,7 +94,8 @@ class ReportedAdjudicationServiceTest {
         )
       )
       whenever(prisonApiGateway.getReportedAdjudications(any<ReportedAdjudicationRequest>())).thenReturn(
-        PageResponse(1, 20, 2,
+        PageResponse(
+          1, 20, 2,
           listOf(
             ReportedAdjudication(
               adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234,
