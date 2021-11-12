@@ -78,8 +78,7 @@ class ReportedAdjudicationServiceTest {
           SubmittedAdjudicationHistory(adjudicationNumber = 2, dateTimeSent = DATE_TIME_OF_INCIDENT),
         )
       )
-
-      whenever(prisonApiGateway.getReportedAdjudications(any())).thenReturn(
+      whenever(prisonApiGateway.getReportedAdjudications(any<Set<Long>>())).thenReturn(
         listOf(
           ReportedAdjudication(
             adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234,
