@@ -53,7 +53,7 @@ class PrisonApiMockServer : WireMockServer(8979) {
     )
   }
 
-  fun stubGetAdjudications() {
+  fun stubGetAllAdjudications() {
     stubFor(
       post(urlEqualTo("/api/adjudications"))
         .willReturn(
@@ -82,6 +82,46 @@ class PrisonApiMockServer : WireMockServer(8979) {
                   "statement": "It keeps happening..."
                 }
               ]
+              """.trimIndent()
+            )
+        )
+    )
+  }
+
+  fun stubGetPagedAdjudications() {
+    stubFor(
+      post(urlEqualTo("/api/adjudications"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+            .withBody(
+              """
+              {
+                 "pageNumber":1,
+                 "pageSize":20,
+                 "totalResults":2,
+                 "results":[
+                    {
+                       "adjudicationNumber":1,
+                       "reporterStaffId":486080,
+                       "offenderNo":"AA1234A",
+                       "bookingId":123,
+                       "incidentTime":"2021-10-25T09:03:11",
+                       "incidentLocationId":721850,
+                       "statement":"It keeps happening..."
+                    },
+                    {
+                       "adjudicationNumber":2,
+                       "reporterStaffId":486080,
+                       "offenderNo":"AA1234B",
+                       "bookingId":456,
+                       "incidentTime":"2021-10-25T09:03:11",
+                       "incidentLocationId":721850,
+                       "statement":"It keeps happening..."
+                    }
+                 ]
+              }
               """.trimIndent()
             )
         )
