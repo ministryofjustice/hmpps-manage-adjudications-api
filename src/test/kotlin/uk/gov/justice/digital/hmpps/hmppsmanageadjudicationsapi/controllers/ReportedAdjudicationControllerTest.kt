@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.BeforeEach
@@ -16,12 +17,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
-import com.nhaarman.mockitokotlin2.any
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageResponse
 
 @WebMvcTest(value = [ReportedAdjudicationController::class])
 class ReportedAdjudicationControllerTest : TestControllerBase() {
@@ -94,7 +93,8 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         )
       )
       whenever(reportedAdjudicationService.getMyReportedAdjudications(anyLong(), any())).thenReturn(
-        PageResponse(1, 20, 1,
+        PageResponse(
+          1, 20, 1,
           listOf(
             ReportedAdjudicationDto(
               adjudicationNumber = 1,
@@ -104,7 +104,8 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
               incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
             )
           )
-        ))
+        )
+      )
     }
 
     @Test
@@ -139,7 +140,6 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           )
         )
     }
-
 
     @Test
     @WithMockUser(username = "ITAG_USER")
