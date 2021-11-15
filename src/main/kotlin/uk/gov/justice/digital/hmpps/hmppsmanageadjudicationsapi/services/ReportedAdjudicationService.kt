@@ -11,9 +11,8 @@ class ReportedAdjudicationService(
   val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository,
   val authenticationFacade: AuthenticationFacade,
   val prisonApi: PrisonApiGateway,
-  val dateCalculationService: DateCalculationService,
-
-  ) {
+  val dateCalculationService: DateCalculationService
+) {
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
     val reportedAdjudication =
       prisonApi.getReportedAdjudication(adjudicationNumber)
