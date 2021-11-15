@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 
 @ApiModel("Reported adjudication response")
@@ -20,6 +22,12 @@ data class ReportedAdjudicationResponse(
 data class MyReportedAdjudicationsResponse(
   @ApiModelProperty("My reported adjudications")
   val reportedAdjudications: List<ReportedAdjudicationDto>
+)
+
+@ApiModel("My paged reported adjudication response")
+data class MyPagedReportedAdjudicationsResponse(
+  @ApiModelProperty("My paged reported adjudications")
+  val pagedReportedAdjudications: PageResponse<ReportedAdjudicationDto>
 )
 
 @RestController
@@ -35,6 +43,18 @@ class ReportedAdjudicationController {
 
     return ReportedAdjudicationResponse(
       reportedAdjudication
+    )
+  }
+
+  @GetMapping("/my/location/{locationId}")
+  fun getMyReportedAdjudications2(
+    @PathVariable(name = "locationId") locationId: Long,
+    pageRequest: PageRequest
+  ): MyPagedReportedAdjudicationsResponse {
+    val myReportedAdjudications = reportedAdjudicationService.getMyReportedAdjudications(locationId, pageRequest)
+
+    return MyPagedReportedAdjudicationsResponse(
+      pagedReportedAdjudications = myReportedAdjudications
     )
   }
 

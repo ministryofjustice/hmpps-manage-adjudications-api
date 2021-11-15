@@ -13,6 +13,9 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudicationRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.time.LocalDateTime
@@ -80,8 +83,7 @@ class ReportedAdjudicationServiceTest {
           SubmittedAdjudicationHistory(adjudicationNumber = 2, dateTimeSent = DATE_TIME_OF_INCIDENT),
         )
       )
-
-      whenever(prisonApiGateway.getReportedAdjudications(any())).thenReturn(
+      whenever(prisonApiGateway.getReportedAdjudications(any<Set<Long>>())).thenReturn(
         listOf(
           ReportedAdjudication(
             adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234,
@@ -90,6 +92,21 @@ class ReportedAdjudicationServiceTest {
           ReportedAdjudication(
             adjudicationNumber = 2, offenderNo = "AA1234B", bookingId = 456, reporterStaffId = 234,
             incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+          )
+        )
+      )
+      whenever(prisonApiGateway.getReportedAdjudications(any<ReportedAdjudicationRequest>())).thenReturn(
+        PageResponse(
+          1, 20, 2,
+          listOf(
+            ReportedAdjudication(
+              adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234,
+              incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+            ),
+            ReportedAdjudication(
+              adjudicationNumber = 2, offenderNo = "AA1234B", bookingId = 456, reporterStaffId = 234,
+              incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+            )
           )
         )
       )
@@ -120,6 +137,19 @@ class ReportedAdjudicationServiceTest {
           Tuple.tuple(1L, "AA1234A", 123L, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES),
           Tuple.tuple(2L, "AA1234B", 456L, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
         )
+    }
+
+    @Test
+    fun `returns paged my reported adjudications`() {
+      val myReportedAdjudications = reportedAdjudicationService.getMyReportedAdjudications(1, PageRequest(1, 20))
+
+      assertThat(myReportedAdjudications.results)
+        .extracting("adjudicationNumber", "prisonerNumber", "bookingId")
+        .contains(
+          Tuple.tuple(1L, "AA1234A", 123L),
+          Tuple.tuple(2L, "AA1234B", 456L)
+        )
+      assertThat(myReportedAdjudications.pageNumber)
     }
   }
 
