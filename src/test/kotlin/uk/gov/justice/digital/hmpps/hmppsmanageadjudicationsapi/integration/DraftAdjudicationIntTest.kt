@@ -128,6 +128,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   @Test
   fun `complete draft adjudication`() {
     prisonApiMockServer.stubPostAdjudication()
+    bankHolidayApiMockServer.stubGetBankHolidays()
 
     val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
     dataAPiHelpers().addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
@@ -140,6 +141,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.adjudicationNumber").isEqualTo(1524242)
       .jsonPath("$.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.bookingId").isEqualTo("1")
+      .jsonPath("$.dateTimeReportExpires").isEqualTo("2010-11-15T10:00:00")
       .jsonPath("$.incidentStatement.statement").isEqualTo("new statement")
       .jsonPath("$.incidentDetails.dateTimeOfIncident").isEqualTo("2010-11-12T10:00:00")
       .jsonPath("$.incidentDetails.locationId").isEqualTo(721850)
