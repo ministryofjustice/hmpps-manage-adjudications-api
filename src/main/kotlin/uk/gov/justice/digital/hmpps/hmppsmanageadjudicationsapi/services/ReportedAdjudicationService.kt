@@ -35,7 +35,7 @@ class ReportedAdjudicationService(
   fun getMyReportedAdjudications(locationId: Long, pageRequest: PageRequest): PageResponse<ReportedAdjudicationDto> {
     val adjudicationNumbers = myAdjudications()
     if (adjudicationNumbers.isEmpty()) return PageResponse.emptyPageRequest(pageRequest)
-    return prisonApi.getReportedAdjudications(ReportedAdjudicationRequest(locationId, pageRequest, adjudicationNumbers)).map { it.toDto() }
+    return prisonApi.getReportedAdjudications(ReportedAdjudicationRequest(locationId, pageRequest, adjudicationNumbers)).map { it.toDto(dateCalculationService.calculate48WorkingHoursFrom(it.incidentTime)) }
   }
 
   private fun myAdjudications(): Set<Long> {
