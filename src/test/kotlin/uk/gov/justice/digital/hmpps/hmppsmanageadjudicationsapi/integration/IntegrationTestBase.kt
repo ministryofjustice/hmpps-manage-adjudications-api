@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.BankHolidayApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.OAuthMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
@@ -38,12 +39,16 @@ abstract class IntegrationTestBase {
     internal val prisonApiMockServer = PrisonApiMockServer()
 
     @JvmField
+    internal val bankHolidayApiMockServer = BankHolidayApiMockServer()
+
+    @JvmField
     internal val oAuthMockServer = OAuthMockServer()
 
     @BeforeAll
     @JvmStatic
     fun startMocks() {
       prisonApiMockServer.start()
+      bankHolidayApiMockServer.start()
       oAuthMockServer.start()
       oAuthMockServer.stubGrantToken()
     }
@@ -52,6 +57,7 @@ abstract class IntegrationTestBase {
     @JvmStatic
     fun stopMocks() {
       prisonApiMockServer.stop()
+      bankHolidayApiMockServer.stop()
       oAuthMockServer.stop()
     }
   }

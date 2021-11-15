@@ -14,11 +14,12 @@ data class ReportedAdjudication(
   val incidentLocationId: Long,
   val statement: String
 ) {
-  fun toDto(): ReportedAdjudicationDto =
+  fun toDto(dateTimeReportExpires: LocalDateTime): ReportedAdjudicationDto =
     ReportedAdjudicationDto(
       adjudicationNumber = adjudicationNumber,
       prisonerNumber = offenderNo,
       bookingId = bookingId,
+      dateTimeReportExpires = dateTimeReportExpires,
       incidentDetails = IncidentDetailsDto(
         locationId = incidentLocationId,
         dateTimeOfIncident = incidentTime

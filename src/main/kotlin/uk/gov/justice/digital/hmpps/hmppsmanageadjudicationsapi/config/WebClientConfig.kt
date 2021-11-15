@@ -25,6 +25,7 @@ import org.springframework.web.reactive.function.client.WebClient
 @Configuration
 class WebClientConfig(
   @Value("\${prison.api.endpoint.url}") private val prisonApiUrl: String,
+  @Value("\${bank-holiday.api.url:https://www.gov.uk}") private val bankHolidayApiUrl: String,
   val objectMapper: ObjectMapper
 ) {
 
@@ -37,6 +38,11 @@ class WebClientConfig(
     "$prisonApiUrl/api",
     authorizedClientManagerRequestScope(clientRegistrationRepository, authorizedClientRepository)
   )
+
+  @Bean
+  fun bankHolidayApiWebClient(): WebClient {
+    return WebClient.builder().baseUrl(bankHolidayApiUrl).build()
+  }
 
   private fun getClientCredsWebClient(
     url: String,
