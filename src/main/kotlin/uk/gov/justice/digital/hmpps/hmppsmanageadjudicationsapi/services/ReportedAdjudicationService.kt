@@ -10,13 +10,17 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Authent
 class ReportedAdjudicationService(
   val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository,
   val authenticationFacade: AuthenticationFacade,
-  val prisonApi: PrisonApiGateway
-) {
+  val prisonApi: PrisonApiGateway,
+  val dateCalculationService: DateCalculationService,
+
+  ) {
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
     val reportedAdjudication =
       prisonApi.getReportedAdjudication(adjudicationNumber)
 
-    return reportedAdjudication.toDto()
+    val expirationDateTime = dateCalculationService.calculate48WorkingHoursFrom(reportedAdjudication.incidentTime)
+
+    return reportedAdjudication.toDto(expirationDateTime)
   }
 
   fun getMyReportedAdjudications(): List<ReportedAdjudicationDto> {
@@ -27,6 +31,6 @@ class ReportedAdjudicationService(
     if (adjudicationNumbers.isEmpty()) return emptyList()
 
     return prisonApi.getReportedAdjudications(adjudicationNumbers)
-      .map { it.toDto() }
+      .map { it.toDto(dateCalculationService.calculate48WorkingHoursFrom(it.incidentTime)) }
   }
 }

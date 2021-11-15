@@ -42,6 +42,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           adjudicationNumber = 1,
           prisonerNumber = "A12345",
           bookingId = 123,
+          dateTimeReportExpires = DATE_TIME_OF_INCIDENT.plusDays(2),
           incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT),
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
         )
@@ -51,6 +52,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.reportedAdjudication.adjudicationNumber").isNumber)
         .andExpect(jsonPath("$.reportedAdjudication.prisonerNumber").value("A12345"))
         .andExpect(jsonPath("$.reportedAdjudication.bookingId").value("123"))
+        .andExpect(jsonPath("$.reportedAdjudication.dateTimeReportExpires").value("2010-10-14T10:00:00"))
         .andExpect(jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("$.reportedAdjudication.incidentDetails.locationId").value(2))
         .andExpect(jsonPath("$.reportedAdjudication.incidentStatement.statement").value(INCIDENT_STATEMENT))
@@ -85,6 +87,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
             adjudicationNumber = 1,
             prisonerNumber = "A12345",
             bookingId = 123,
+            dateTimeReportExpires = DATE_TIME_OF_INCIDENT.plusDays(2),
             incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT),
             incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
           )
@@ -112,6 +115,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.reportedAdjudications[0].adjudicationNumber").isNumber)
         .andExpect(jsonPath("$.reportedAdjudications[0].prisonerNumber").value("A12345"))
         .andExpect(jsonPath("$.reportedAdjudications[0].bookingId").value("123"))
+        .andExpect(jsonPath("$.reportedAdjudications[0].dateTimeReportExpires").value("2010-10-14T10:00:00"))
         .andExpect(
           jsonPath("$.reportedAdjudications[0].incidentDetails.dateTimeOfIncident").value(
             "2010-10-12T10:00:00"
