@@ -40,7 +40,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `return all reported adjudications completed by the current user`() {
-    prisonApiMockServer.stubGetAdjudications()
+    prisonApiMockServer.stubGetAllAdjudications()
     prisonApiMockServer.stubPostAdjudication()
 
     val dataAPiHelpers = DataAPiHelpers(webTestClient, setHeaders(username = "NEW_USER"))
@@ -64,5 +64,33 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudications[1].incidentDetails.dateTimeOfIncident")
       .isEqualTo("2021-10-25T09:03:11")
       .jsonPath("$.reportedAdjudications[1].incidentDetails.locationId").isEqualTo(721850)
+  }
+
+  @Test
+  fun `return a page of reported adjudications completed by the current user`() {
+    prisonApiMockServer.stubGetPagedAdjudications()
+    prisonApiMockServer.stubPostAdjudication()
+
+    val dataAPiHelpers = DataAPiHelpers(webTestClient, setHeaders(username = "NEW_USER"))
+    dataAPiHelpers.createAndCompleteADraftAdjudication(LocalDateTime.parse("2021-10-25T09:03:11"))
+
+    webTestClient.get()
+      .uri("/reported-adjudications/my/location/1?pageNumber=1&pageSize=20")
+      .headers(setHeaders(username = "NEW_USER"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.pagedReportedAdjudications.results[0].adjudicationNumber").isEqualTo("1")
+      .jsonPath("$.pagedReportedAdjudications.results[0].prisonerNumber").isEqualTo("AA1234A")
+      .jsonPath("$.pagedReportedAdjudications.results[0].bookingId").isEqualTo("123")
+      .jsonPath("$.pagedReportedAdjudications.results[0].incidentDetails.dateTimeOfIncident")
+      .isEqualTo("2021-10-25T09:03:11")
+      .jsonPath("$.pagedReportedAdjudications.results[0].incidentDetails.locationId").isEqualTo(721850)
+      .jsonPath("$.pagedReportedAdjudications.results[1].adjudicationNumber").isEqualTo("2")
+      .jsonPath("$.pagedReportedAdjudications.results[1].prisonerNumber").isEqualTo("AA1234B")
+      .jsonPath("$.pagedReportedAdjudications.results[1].bookingId").isEqualTo("456")
+      .jsonPath("$.pagedReportedAdjudications.results[1].incidentDetails.dateTimeOfIncident")
+      .isEqualTo("2021-10-25T09:03:11")
+      .jsonPath("$.pagedReportedAdjudications.results[1].incidentDetails.locationId").isEqualTo(721850)
   }
 }
