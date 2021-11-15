@@ -4,11 +4,11 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
-import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
-import com.github.tomakehurst.wiremock.client.WireMock.verify
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
 
 class PrisonApiMockServer : WireMockServer(8979) {
   fun stubHealth() {
@@ -109,17 +109,21 @@ class PrisonApiMockServer : WireMockServer(8979) {
     )
   }
 
-  fun stubPostAdjudication() {
+  fun stubPostAdjudication(offenderNo: String, adjudicationNumber: Long) {
     stubFor(
       post(urlEqualTo("/api/adjudications/adjudication"))
+        .withRequestBody(matchingJsonPath(
+          "$.offenderNo",
+          equalTo(offenderNo)
+        ))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withStatus(200)
-            .withBody(
+            .withBody(String.format(
               """
                {
-                  "adjudicationNumber": 1524242,
+                  "adjudicationNumber": %d,
                   "reporterStaffId": 486080,
                   "offenderNo": "A12345",
                   "bookingId": 1,
@@ -128,6 +132,7 @@ class PrisonApiMockServer : WireMockServer(8979) {
                   "statement": "new statement"
                 }
               """.trimIndent()
+              , adjudicationNumber)
             )
         )
     )

@@ -1,0 +1,1 @@
+alter table submitted_adjudication_history add column date_time_report_expires timestamp not null;

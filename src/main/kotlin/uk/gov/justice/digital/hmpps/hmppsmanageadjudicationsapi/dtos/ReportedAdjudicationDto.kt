@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos
 
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
+import java.time.LocalDateTime
 
 @ApiModel(value = "Reported adjudication details")
 data class ReportedAdjudicationDto(
@@ -11,6 +12,8 @@ data class ReportedAdjudicationDto(
   val prisonerNumber: String,
   @ApiModelProperty(value = "The current booking id for a prisoner", example = "1234")
   val bookingId: Long,
+  @ApiModelProperty(value = "When this report will expire", example = "2010-10-12T10:00:00")
+  val dateTimeReportExpires: LocalDateTime,
   @ApiModelProperty(value = "Incident details")
   val incidentDetails: IncidentDetailsDto,
   @ApiModelProperty(value = "Incident statement")

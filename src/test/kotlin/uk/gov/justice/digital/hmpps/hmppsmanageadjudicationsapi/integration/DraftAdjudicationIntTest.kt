@@ -1,10 +1,17 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import java.time.LocalDateTime
 
 class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun dataAPiHelpers(): DataAPiHelpers = DataAPiHelpers(webTestClient, setHeaders())
+
+  @Autowired
+  lateinit var submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository
 
   @Test
   fun `makes a request to start a new draft adjudication`() {
@@ -127,7 +134,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `complete draft adjudication`() {
-    prisonApiMockServer.stubPostAdjudication()
+    prisonApiMockServer.stubPostAdjudication("A12345", 1524242)
+    bankHolidayApiMockServer.stubGetBankHolidays()
 
     val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
     dataAPiHelpers().addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
@@ -140,6 +148,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.adjudicationNumber").isEqualTo(1524242)
       .jsonPath("$.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.dateTimeReportExpires").isEqualTo("2010-10-14T10:00:00")
       .jsonPath("$.incidentStatement.statement").isEqualTo("new statement")
       .jsonPath("$.incidentDetails.dateTimeOfIncident").isEqualTo("2010-11-12T10:00:00")
       .jsonPath("$.incidentDetails.locationId").isEqualTo(721850)
@@ -152,8 +161,12 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     )
 
     prisonApiMockServer.verifyPostAdjudication(objectMapper.writeValueAsString(expectedBody))
+    bankHolidayApiMockServer.verifyGetBankHolidays()
 
     dataAPiHelpers().getDraftAdjudicationDetails(draftAdjudicationResponse.draftAdjudication.id).expectStatus().isNotFound
+
+    val completedAdjudicationData = submittedAdjudicationHistoryRepository.findByAdjudicationNumber(1524242)
+    assertThat(completedAdjudicationData!!.dateTimeReportExpires).isEqualTo("2010-10-14T10:00:00")
   }
 
   @Test

@@ -15,6 +15,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Dra
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.time.Clock
+import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
@@ -24,6 +26,7 @@ class DraftAdjudicationService(
   val draftAdjudicationRepository: DraftAdjudicationRepository,
   val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository,
   val prisonApiGateway: PrisonApiGateway,
+  val dateCalculationService: DateCalculationService,
   val authenticationFacade: AuthenticationFacade,
   val clock: Clock,
 ) {
@@ -97,6 +100,8 @@ class DraftAdjudicationService(
     if (draftAdjudication.incidentStatement == null)
       throw IllegalStateException("Please include an incident statement before completing this draft adjudication")
 
+    val expirationDateTime = dateCalculationService.calculate48WorkingHoursFrom(draftAdjudication.incidentDetails.dateTimeOfIncident)
+
     val reportedAdjudication = prisonApiGateway.publishAdjudication(
       AdjudicationDetailsToPublish(
         offenderNo = draftAdjudication.prisonerNumber,
@@ -105,16 +110,18 @@ class DraftAdjudicationService(
         statement = draftAdjudication.incidentStatement?.statement!!
       )
     )
-    submittedAdjudicationHistoryRepository.save(
-      SubmittedAdjudicationHistory(
-        adjudicationNumber = reportedAdjudication.adjudicationNumber,
-        LocalDateTime.now(clock)
-      )
+
+    val submittedAdjudicationHistory = SubmittedAdjudicationHistory(
+      adjudicationNumber = reportedAdjudication.adjudicationNumber,
+      dateTimeReportExpires = expirationDateTime,
+      LocalDateTime.now(clock)
     )
+    submittedAdjudicationHistoryRepository.save(submittedAdjudicationHistory)
+
     draftAdjudicationRepository.delete(draftAdjudication)
 
     return reportedAdjudication
-      .toDto()
+      .toDto(submittedAdjudicationHistory)
   }
 
   fun getCurrentUsersInProgressDraftAdjudications(): List<DraftAdjudicationDto> {

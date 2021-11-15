@@ -33,6 +33,7 @@ class DraftAdjudicationServiceTest {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository = mock()
   private val prisonApiGateway: PrisonApiGateway = mock()
+  private val dateCalculationService: DateCalculationService = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
   private val clock: Clock = Clock.fixed(ofEpochMilli(0), ZoneId.systemDefault())
 
@@ -45,6 +46,7 @@ class DraftAdjudicationServiceTest {
         draftAdjudicationRepository,
         submittedAdjudicationHistoryRepository,
         prisonApiGateway,
+        dateCalculationService,
         authenticationFacade,
         clock
       )

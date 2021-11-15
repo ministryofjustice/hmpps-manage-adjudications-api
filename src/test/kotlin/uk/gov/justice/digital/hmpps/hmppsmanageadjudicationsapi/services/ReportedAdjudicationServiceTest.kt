@@ -74,8 +74,8 @@ class ReportedAdjudicationServiceTest {
     fun beforeEach() {
       whenever(submittedAdjudicationHistoryRepository.findByCreatedByUserId(any())).thenReturn(
         listOf(
-          SubmittedAdjudicationHistory(adjudicationNumber = 1, dateTimeSent = DATE_TIME_OF_INCIDENT),
-          SubmittedAdjudicationHistory(adjudicationNumber = 2, dateTimeSent = DATE_TIME_OF_INCIDENT),
+          SubmittedAdjudicationHistory(adjudicationNumber = 1, dateTimeReportExpires = DATE_TIME_OF_INCIDENT.plusDays(2), dateTimeSent = DATE_TIME_OF_INCIDENT),
+          SubmittedAdjudicationHistory(adjudicationNumber = 2, dateTimeReportExpires = DATE_TIME_OF_INCIDENT.plusDays(2), dateTimeSent = DATE_TIME_OF_INCIDENT),
         )
       )
 

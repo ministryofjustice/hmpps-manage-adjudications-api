@@ -8,5 +8,6 @@ import javax.persistence.Table
 @Table(name = "submitted_adjudication_history")
 data class SubmittedAdjudicationHistory(
   val adjudicationNumber: Long,
+  val dateTimeReportExpires: LocalDateTime,
   val dateTimeSent: LocalDateTime
 ) : BaseEntity()

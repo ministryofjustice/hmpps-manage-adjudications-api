@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import javax.persistence.EntityNotFoundException
 
 @Service
 class ReportedAdjudicationService(
@@ -15,18 +16,20 @@ class ReportedAdjudicationService(
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
     val reportedAdjudication =
       prisonApi.getReportedAdjudication(adjudicationNumber)
+    val submittedAdjudicationHistory = submittedAdjudicationHistoryRepository.findByAdjudicationNumber(adjudicationNumber)
 
-    return reportedAdjudication.toDto()
+    return reportedAdjudication.toDto(submittedAdjudicationHistory ?:
+      throw EntityNotFoundException(String.format("Adjudication not found: Number: %d", adjudicationNumber)))
   }
 
   fun getMyReportedAdjudications(): List<ReportedAdjudicationDto> {
     val username = authenticationFacade.currentUsername
-    val submittedAdjudicationHistory = submittedAdjudicationHistoryRepository.findByCreatedByUserId(username!!)
-    val adjudicationNumbers = submittedAdjudicationHistory.map { it.adjudicationNumber }.toSet()
+    val submittedAdjudicationHistories = submittedAdjudicationHistoryRepository.findByCreatedByUserId(username!!)
+    val submittedAdjudicationHistoriesByAdjudicationNumber = submittedAdjudicationHistories.associateBy {it.adjudicationNumber}
 
-    if (adjudicationNumbers.isEmpty()) return emptyList()
+    if (submittedAdjudicationHistoriesByAdjudicationNumber.isEmpty()) return emptyList()
 
-    return prisonApi.getReportedAdjudications(adjudicationNumbers)
-      .map { it.toDto() }
+    return prisonApi.getReportedAdjudications(submittedAdjudicationHistoriesByAdjudicationNumber.keys)
+      .map { it.toDto(submittedAdjudicationHistoriesByAdjudicationNumber[it.adjudicationNumber]!!) }
   }
 }
