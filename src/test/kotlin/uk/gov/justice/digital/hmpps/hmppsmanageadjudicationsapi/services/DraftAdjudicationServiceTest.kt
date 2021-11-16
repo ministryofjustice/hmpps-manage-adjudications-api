@@ -33,6 +33,7 @@ class DraftAdjudicationServiceTest {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository = mock()
   private val prisonApiGateway: PrisonApiGateway = mock()
+  private val dateCalculationService: DateCalculationService = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
   private val clock: Clock = Clock.fixed(ofEpochMilli(0), ZoneId.systemDefault())
 
@@ -45,6 +46,7 @@ class DraftAdjudicationServiceTest {
         draftAdjudicationRepository,
         submittedAdjudicationHistoryRepository,
         prisonApiGateway,
+        dateCalculationService,
         authenticationFacade,
         clock
       )
@@ -370,6 +372,7 @@ class DraftAdjudicationServiceTest {
             reporterStaffId = 2,
           )
         )
+        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
       }
 
       @Test
@@ -470,5 +473,6 @@ class DraftAdjudicationServiceTest {
 
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
+    private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
   }
 }

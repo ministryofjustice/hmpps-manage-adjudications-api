@@ -23,6 +23,7 @@ import javax.persistence.EntityNotFoundException
 
 class ReportedAdjudicationServiceTest {
   private val prisonApiGateway: PrisonApiGateway = mock()
+  private val dateCalculationService: DateCalculationService = mock()
   private val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
   private lateinit var reportedAdjudicationService: ReportedAdjudicationService
@@ -32,7 +33,7 @@ class ReportedAdjudicationServiceTest {
     whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
 
     reportedAdjudicationService =
-      ReportedAdjudicationService(submittedAdjudicationHistoryRepository, authenticationFacade, prisonApiGateway)
+      ReportedAdjudicationService(submittedAdjudicationHistoryRepository, authenticationFacade, prisonApiGateway, dateCalculationService)
   }
 
   @Nested
@@ -58,12 +59,13 @@ class ReportedAdjudicationServiceTest {
       whenever(prisonApiGateway.getReportedAdjudication(any())).thenReturn(
         reportedAdjudication
       )
+      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
 
       val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails(1)
 
       assertThat(reportedAdjudicationDto)
-        .extracting("adjudicationNumber", "prisonerNumber", "bookingId")
-        .contains(1L, "AA1234A", 123L)
+        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "dateTimeReportExpires")
+        .contains(1L, "AA1234A", 123L, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
 
       assertThat(reportedAdjudicationDto.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident")
@@ -108,6 +110,7 @@ class ReportedAdjudicationServiceTest {
           )
         )
       )
+      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
     }
 
     @Test
@@ -129,10 +132,10 @@ class ReportedAdjudicationServiceTest {
       val myReportedAdjudications = reportedAdjudicationService.getMyReportedAdjudications()
 
       assertThat(myReportedAdjudications)
-        .extracting("adjudicationNumber", "prisonerNumber", "bookingId")
+        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "dateTimeReportExpires")
         .contains(
-          Tuple.tuple(1L, "AA1234A", 123L),
-          Tuple.tuple(2L, "AA1234B", 456L)
+          Tuple.tuple(1L, "AA1234A", 123L, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES),
+          Tuple.tuple(2L, "AA1234B", 456L, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
         )
     }
 
@@ -152,6 +155,7 @@ class ReportedAdjudicationServiceTest {
 
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
+    private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private const val INCIDENT_STATEMENT = "A statement"
   }
 }

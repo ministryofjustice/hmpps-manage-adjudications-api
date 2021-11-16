@@ -24,6 +24,7 @@ class DraftAdjudicationService(
   val draftAdjudicationRepository: DraftAdjudicationRepository,
   val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository,
   val prisonApiGateway: PrisonApiGateway,
+  val dateCalculationService: DateCalculationService,
   val authenticationFacade: AuthenticationFacade,
   val clock: Clock,
 ) {
@@ -114,7 +115,7 @@ class DraftAdjudicationService(
     draftAdjudicationRepository.delete(draftAdjudication)
 
     return reportedAdjudication
-      .toDto()
+      .toDto(dateCalculationService.calculate48WorkingHoursFrom(reportedAdjudication.incidentTime))
   }
 
   fun getCurrentUsersInProgressDraftAdjudications(): List<DraftAdjudicationDto> {
