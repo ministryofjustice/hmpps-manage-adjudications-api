@@ -41,8 +41,4 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
     .retrieve()
     .bodyToMono(object : ParameterizedTypeReference<RestResponsePage<ReportedAdjudication>>() {})
     .block()!!
-
-
-
-
 }
