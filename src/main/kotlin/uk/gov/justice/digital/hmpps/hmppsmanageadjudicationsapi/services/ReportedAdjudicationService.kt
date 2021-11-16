@@ -26,7 +26,7 @@ class ReportedAdjudicationService(
   }
 
   fun getMyReportedAdjudications(agencyId: String, pageable: Pageable): Page<ReportedAdjudicationDto> {
-    val adjudicationNumbers = myAdjudications() // listOf(1524279L, 1524280L).toSet()
+    val adjudicationNumbers = myAdjudications()
     if (adjudicationNumbers.isEmpty()) return Page.empty(pageable)
     return prisonApi.search(
       ReportedAdjudicationRequest(agencyId, adjudicationNumbers),
