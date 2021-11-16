@@ -10,7 +10,9 @@ import org.mockito.ArgumentMatchers.anyLong
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -106,7 +108,10 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER")
     fun `makes a call to return my reported adjudications`() {
       getMyAdjudications().andExpect(status().isOk)
-      verify(reportedAdjudicationService).getMyReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
+      verify(reportedAdjudicationService).getMyReportedAdjudications(
+        "MDI",
+        PageRequest.ofSize(20).withPage(0).withSort(Sort.by(Sort.Direction.DESC,"incidentDate"))
+      )
     }
 
     @Test
@@ -114,20 +119,18 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     fun `returns my reported adjudications`() {
       getMyAdjudications()
         .andExpect(status().isOk)
-        .andExpect(jsonPath("$.pagedReportedAdjudications.pageNumber").value(1))
-        .andExpect(jsonPath("$.pagedReportedAdjudications.pageSize").value(20))
-        .andExpect(jsonPath("$.pagedReportedAdjudications.totalResults").value(1))
-        .andExpect(jsonPath("$.pagedReportedAdjudications.results[0].adjudicationNumber").isNumber)
-        .andExpect(jsonPath("$.pagedReportedAdjudications.results[0].prisonerNumber").value("A12345"))
-        .andExpect(jsonPath("$.pagedReportedAdjudications.results[0].bookingId").value("123"))
+        .andExpect(jsonPath("$.totalPages").value(1))
+        .andExpect(jsonPath("$.size").value(20))
+        .andExpect(jsonPath("$.number").value(0))
+        .andExpect(jsonPath("$.content[0].adjudicationNumber").isNumber)
+        .andExpect(jsonPath("$.content[0].prisonerNumber").value("A12345"))
+        .andExpect(jsonPath("$.content[0].bookingId").value("123"))
         .andExpect(
-          jsonPath("$.pagedReportedAdjudications.results[0].incidentDetails.dateTimeOfIncident").value(
-            "2010-10-12T10:00:00"
-          )
+          jsonPath("$.content[0].incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00")
         )
-        .andExpect(jsonPath("$.pagedReportedAdjudications.results[0].incidentDetails.locationId").value(2))
+        .andExpect(jsonPath("$.content[0].incidentDetails.locationId").value(2))
         .andExpect(
-          jsonPath("$.pagedReportedAdjudications.results[0].incidentStatement.statement").value(
+          jsonPath("$.content[0].incidentStatement.statement").value(
             INCIDENT_STATEMENT
           )
         )
@@ -141,7 +144,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     private fun getMyAdjudications(): ResultActions {
       return mockMvc
         .perform(
-          get("/reported-adjudications/my/agencyId/MDI?page=1&size=20")
+          get("/reported-adjudications/my/agency/MDI?page=0&size=20&sort=incidentDate,DESC")
             .header("Content-Type", "application/json")
         )
     }
