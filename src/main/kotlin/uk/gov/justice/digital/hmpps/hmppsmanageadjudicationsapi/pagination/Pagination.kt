@@ -7,7 +7,8 @@ fun getPageableUrlParameters(pageable: Pageable): String = getPageUrlParameters(
 fun getPageUrlParameters(pageable: Pageable): List<String> {
   val params = mapOf(
     "size" to pageable.pageSize,
-    "page" to pageable.pageNumber)
+    "page" to pageable.pageNumber
+  )
   return params.map { it.key + "=" + it.value }
 }
 
