@@ -106,12 +106,14 @@ class ReportedAdjudicationServiceTest {
               adjudicationNumber = 2, offenderNo = "AA1234B", bookingId = 456, reporterStaffId = 234,
               incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
             )
-        ), Pageable.ofSize(20).withPage(0), 2)
+          ),
+          Pageable.ofSize(20).withPage(0),
+          2
+        )
       )
-
       whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
     }
-    
+
     @Test
     fun `makes a call to prison api to retrieve reported adjudications created my the current user`() {
       reportedAdjudicationService.getMyReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
