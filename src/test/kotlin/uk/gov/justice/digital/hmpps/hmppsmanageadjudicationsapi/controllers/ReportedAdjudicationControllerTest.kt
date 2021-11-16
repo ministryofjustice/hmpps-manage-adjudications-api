@@ -87,16 +87,21 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(reportedAdjudicationService.getMyReportedAdjudications(any(), any())).thenReturn(
-        PageImpl(listOf(
-          ReportedAdjudicationDto(
-            adjudicationNumber = 1,
-            prisonerNumber = "A12345",
-            bookingId = 123,
-            dateTimeReportExpires = DATE_TIME_OF_INCIDENT.plusDays(2),
-            incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT),
-            incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
-          )), Pageable.ofSize(20).withPage(0), 1),
-        )
+        PageImpl(
+          listOf(
+            ReportedAdjudicationDto(
+              adjudicationNumber = 1,
+              prisonerNumber = "A12345",
+              bookingId = 123,
+              dateTimeReportExpires = DATE_TIME_OF_INCIDENT.plusDays(2),
+              incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT),
+              incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
+            )
+          ),
+          Pageable.ofSize(20).withPage(0),
+          1
+        ),
+      )
     }
 
     @Test
@@ -110,7 +115,12 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       getMyAdjudications().andExpect(status().isOk)
       verify(reportedAdjudicationService).getMyReportedAdjudications(
         "MDI",
-        PageRequest.ofSize(20).withPage(0).withSort(Sort.by(Sort.Direction.DESC,"incidentDate"))
+        PageRequest.ofSize(20).withPage(0).withSort(
+          Sort.by(
+            Sort.Direction.DESC,
+            "incidentDate"
+          )
+        )
       )
     }
 
