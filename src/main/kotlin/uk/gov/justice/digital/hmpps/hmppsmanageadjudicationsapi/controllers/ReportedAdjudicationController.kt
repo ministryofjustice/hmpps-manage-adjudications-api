@@ -8,26 +8,16 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageResponse
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 
 @ApiModel("Reported adjudication response")
 data class ReportedAdjudicationResponse(
   @ApiModelProperty(value = "The reported adjudication")
   val reportedAdjudication: ReportedAdjudicationDto
-)
-
-@ApiModel("My reported adjudication response")
-data class MyReportedAdjudicationsResponse(
-  @ApiModelProperty("My reported adjudications")
-  val reportedAdjudications: List<ReportedAdjudicationDto>
-)
-
-@ApiModel("My paged reported adjudication response")
-data class MyPagedReportedAdjudicationsResponse(
-  @ApiModelProperty("My paged reported adjudications")
-  val pagedReportedAdjudications: PageResponse<ReportedAdjudicationDto>
 )
 
 @RestController
@@ -46,24 +36,11 @@ class ReportedAdjudicationController {
     )
   }
 
-  @GetMapping("/my/location/{locationId}")
-  fun getMyReportedAdjudications2(
-    @PathVariable(name = "locationId") locationId: Long,
-    pageRequest: PageRequest
-  ): MyPagedReportedAdjudicationsResponse {
-    val myReportedAdjudications = reportedAdjudicationService.getMyReportedAdjudications(locationId, pageRequest)
-
-    return MyPagedReportedAdjudicationsResponse(
-      pagedReportedAdjudications = myReportedAdjudications
-    )
-  }
-
-  @GetMapping("/my")
-  fun getMyReportedAdjudications(): MyReportedAdjudicationsResponse {
-    val myReportedAdjudications = reportedAdjudicationService.getMyReportedAdjudications()
-
-    return MyReportedAdjudicationsResponse(
-      reportedAdjudications = myReportedAdjudications
-    )
+  @GetMapping("/my/agency/{agencyId}")
+  fun getMyReportedAdjudications(
+    @PathVariable(name = "agencyId") agencyId: String,
+    @PageableDefault(sort = ["incidentDate", "incidentTime"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
+  ): Page<ReportedAdjudicationDto> {
+    return reportedAdjudicationService.getMyReportedAdjudications(agencyId, pageable)
   }
 }

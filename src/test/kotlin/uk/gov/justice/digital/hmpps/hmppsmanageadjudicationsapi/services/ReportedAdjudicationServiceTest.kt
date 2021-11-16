@@ -10,12 +10,12 @@ import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudicationRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.time.LocalDateTime
@@ -83,7 +83,7 @@ class ReportedAdjudicationServiceTest {
           SubmittedAdjudicationHistory(adjudicationNumber = 2, dateTimeSent = DATE_TIME_OF_INCIDENT),
         )
       )
-      whenever(prisonApiGateway.getReportedAdjudications(any<Set<Long>>())).thenReturn(
+      whenever(prisonApiGateway.getReportedAdjudications(any())).thenReturn(
         listOf(
           ReportedAdjudication(
             adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234,
@@ -95,9 +95,8 @@ class ReportedAdjudicationServiceTest {
           )
         )
       )
-      whenever(prisonApiGateway.getReportedAdjudications(any<ReportedAdjudicationRequest>())).thenReturn(
-        PageResponse(
-          1, 20, 2,
+      whenever(prisonApiGateway.search(any(), any())).thenReturn(
+        PageImpl(
           listOf(
             ReportedAdjudication(
               adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234,
@@ -107,49 +106,29 @@ class ReportedAdjudicationServiceTest {
               adjudicationNumber = 2, offenderNo = "AA1234B", bookingId = 456, reporterStaffId = 234,
               incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
             )
-          )
-        )
+        ), Pageable.ofSize(20).withPage(0), 2)
       )
+
       whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
     }
-
+    
     @Test
-    fun `makes a call to retrieve all my reported adjudication submissions history`() {
-      reportedAdjudicationService.getMyReportedAdjudications()
+    fun `makes a call to prison api to retrieve reported adjudications created my the current user`() {
+      reportedAdjudicationService.getMyReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
 
-      verify(submittedAdjudicationHistoryRepository).findByCreatedByUserId("ITAG_USER")
-    }
-
-    @Test
-    fun `makes a call to prison api to retrieve all reported adjudications created my the current user`() {
-      reportedAdjudicationService.getMyReportedAdjudications()
-
-      verify(prisonApiGateway).getReportedAdjudications(setOf(1, 2))
+      verify(prisonApiGateway).search(ReportedAdjudicationRequest("MDI", setOf(1, 2)), Pageable.ofSize(20).withPage(0))
     }
 
     @Test
     fun `returns my reported adjudications`() {
-      val myReportedAdjudications = reportedAdjudicationService.getMyReportedAdjudications()
+      val myReportedAdjudications = reportedAdjudicationService.getMyReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
 
-      assertThat(myReportedAdjudications)
-        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "dateTimeReportExpires")
-        .contains(
-          Tuple.tuple(1L, "AA1234A", 123L, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES),
-          Tuple.tuple(2L, "AA1234B", 456L, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
-        )
-    }
-
-    @Test
-    fun `returns paged my reported adjudications`() {
-      val myReportedAdjudications = reportedAdjudicationService.getMyReportedAdjudications(1, PageRequest(1, 20))
-
-      assertThat(myReportedAdjudications.results)
+      assertThat(myReportedAdjudications.content)
         .extracting("adjudicationNumber", "prisonerNumber", "bookingId")
         .contains(
           Tuple.tuple(1L, "AA1234A", 123L),
           Tuple.tuple(2L, "AA1234B", 456L)
         )
-      assertThat(myReportedAdjudications.pageNumber)
     }
   }
 

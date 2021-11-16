@@ -1,22 +1,16 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination
 
-data class PageResponse<T>(
-  val pageNumber: Long,
-  val pageSize: Long,
-  val totalResults: Long,
-  val results: List<T>,
-  val firstPage: Long = 1
-) {
+import org.springframework.data.domain.Pageable
 
-  fun <R> map(transform: (T) -> R): PageResponse<R> = PageResponse(this.pageNumber, this.pageSize, this.totalResults, this.results.map(transform), this.firstPage)
+fun getPageableUrlParameters(pageable: Pageable): String = getPageUrlParameters(pageable).plus(getSortUrlParameters(pageable)).joinToString("&")
 
-  companion object {
-    fun <T> emptyPageRequest(pageRequest: PageRequest): PageResponse<T> = PageResponse(pageRequest.pageNumber, pageRequest.pageSize, 0, emptyList(), pageRequest.firstPage)
-  }
+fun getPageUrlParameters(pageable: Pageable): List<String> {
+  val params = mapOf(
+    "size" to pageable.pageSize,
+    "page" to pageable.pageNumber)
+  return params.map { it.key + "=" + it.value }
 }
 
-data class PageRequest(
-  val pageNumber: Long,
-  val pageSize: Long,
-  val firstPage: Long = 1
-)
+fun getSortUrlParameters(pageable: Pageable): List<String> {
+  return pageable.sort.map { "sort=" + it.property + "," + it.direction }.toList()
+}

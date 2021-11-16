@@ -1,9 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways
 
 import org.springframework.core.ParameterizedTypeReference
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.RestResponsePage
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.getPageableUrlParameters
 
 @Service
 class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
@@ -31,11 +34,15 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
     .bodyToMono(object : ParameterizedTypeReference<List<ReportedAdjudication>>() {})
     .block()!!
 
-  fun getReportedAdjudications(request: ReportedAdjudicationRequest): PageResponse<ReportedAdjudication> = prisonApiClientCreds
+  fun search(request: ReportedAdjudicationRequest, pageable: Pageable): Page<ReportedAdjudication> = prisonApiClientCreds
     .post()
-    .uri("/adjudications")
+    .uri("/adjudications/search?" + getPageableUrlParameters(pageable))
     .bodyValue(request)
     .retrieve()
-    .bodyToMono(object : ParameterizedTypeReference<PageResponse<ReportedAdjudication>>() {})
+    .bodyToMono(object : ParameterizedTypeReference<RestResponsePage<ReportedAdjudication>>() {})
     .block()!!
+
+
+
+
 }
