@@ -12,6 +12,7 @@ import javax.persistence.Table
 data class DraftAdjudication(
   override val id: Long? = null,
   val prisonerNumber: String,
+  val agencyId: String,
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "incident_details_id")
   val incidentDetails: IncidentDetails,

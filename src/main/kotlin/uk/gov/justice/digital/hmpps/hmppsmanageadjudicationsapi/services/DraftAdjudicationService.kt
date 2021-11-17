@@ -32,11 +32,13 @@ class DraftAdjudicationService(
   @Transactional
   fun startNewAdjudication(
     prisonerNumber: String,
+    agencyId: String,
     locationId: Long,
     dateTimeOfIncident: LocalDateTime
   ): DraftAdjudicationDto {
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
+      agencyId = agencyId,
       incidentDetails = IncidentDetails(locationId = locationId, dateTimeOfIncident = dateTimeOfIncident)
     )
     return draftAdjudicationRepository
@@ -118,10 +120,10 @@ class DraftAdjudicationService(
       .toDto(dateCalculationService.calculate48WorkingHoursFrom(reportedAdjudication.incidentTime))
   }
 
-  fun getCurrentUsersInProgressDraftAdjudications(): List<DraftAdjudicationDto> {
+  fun getCurrentUsersInProgressDraftAdjudications(agencyId: String): List<DraftAdjudicationDto> {
     val username = authenticationFacade.currentUsername ?: return emptyList()
 
-    return draftAdjudicationRepository.findByCreatedByUserId(username)
+    return draftAdjudicationRepository.findByAgencyIdAndCreatedByUserId(agencyId, username)
       .sortedBy { it.incidentDetails.dateTimeOfIncident }
       .map { it.toDto() }
   }

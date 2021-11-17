@@ -27,6 +27,8 @@ import javax.validation.constraints.Size
 data class NewAdjudicationRequest(
   @ApiModelProperty(value = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
+  @ApiModelProperty(value = "The agency id (or caseload) associated with this adjudication", example = "MDI")
+  val agencyId: String,
   @ApiModelProperty(value = "The id of the location the incident took place")
   val locationId: Long,
   @ApiModelProperty(value = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
@@ -73,10 +75,12 @@ class DraftAdjudicationController {
   @Autowired
   lateinit var draftAdjudicationService: DraftAdjudicationService
 
-  @GetMapping
+  @GetMapping("/my/agency/{agencyId}")
   @ApiOperation(value = "Returns all the in progress draft adjudications created by the current user. Default sort is by earliest incident date and time.")
-  fun getCurrentUsersInProgressDraftAdjudications(): InProgressAdjudicationResponse = InProgressAdjudicationResponse(
-    draftAdjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications()
+  fun getCurrentUsersInProgressDraftAdjudications(
+    @PathVariable(name = "agencyId") agencyId: String,
+  ): InProgressAdjudicationResponse = InProgressAdjudicationResponse(
+    draftAdjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(agencyId)
   )
 
   @PostMapping
@@ -87,6 +91,7 @@ class DraftAdjudicationController {
     val draftAdjudication = draftAdjudicationService
       .startNewAdjudication(
         newAdjudicationRequest.prisonerNumber,
+        newAdjudicationRequest.agencyId,
         newAdjudicationRequest.locationId,
         newAdjudicationRequest.dateTimeOfIncident
       )

@@ -18,6 +18,7 @@ class DataAPiHelpers(private val webTestClient: WebTestClient, private val defau
     .bodyValue(
       mapOf(
         "prisonerNumber" to "A12345",
+        "agencyId" to "MDI",
         "locationId" to 2,
         "dateTimeOfIncident" to dateTimeOfIncident
       )

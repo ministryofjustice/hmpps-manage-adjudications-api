@@ -14,6 +14,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "prisonerNumber" to "A12345",
+          "agencyId" to "MDI",
           "locationId" to 1,
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT
         )
@@ -177,11 +178,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `returns all in progress draft adjudications created by the current user`() {
+  fun `returns all in progress draft adjudications created by the current user in the given caseload`() {
     val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
 
     webTestClient.get()
-      .uri("/draft-adjudications")
+      .uri("/draft-adjudications/my/agency/MDI")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk
