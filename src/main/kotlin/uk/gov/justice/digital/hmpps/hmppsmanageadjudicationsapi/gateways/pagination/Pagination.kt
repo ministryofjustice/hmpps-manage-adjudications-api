@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.pagination
 
 import org.springframework.data.domain.Pageable
 
