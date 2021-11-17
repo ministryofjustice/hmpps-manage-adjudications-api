@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudicationRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination.PageResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 
@@ -25,17 +25,13 @@ class ReportedAdjudicationService(
     return reportedAdjudication.toDto(expirationDateTime)
   }
 
-  fun getMyReportedAdjudications(): List<ReportedAdjudicationDto> {
+  fun getMyReportedAdjudications(agencyId: String, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val adjudicationNumbers = myAdjudications()
-    if (adjudicationNumbers.isEmpty()) return emptyList()
-    return prisonApi.getReportedAdjudications(adjudicationNumbers)
-      .map { it.toDto(dateCalculationService.calculate48WorkingHoursFrom(it.incidentTime)) }
-  }
-
-  fun getMyReportedAdjudications(locationId: Long, pageRequest: PageRequest): PageResponse<ReportedAdjudicationDto> {
-    val adjudicationNumbers = myAdjudications()
-    if (adjudicationNumbers.isEmpty()) return PageResponse.emptyPageRequest(pageRequest)
-    return prisonApi.getReportedAdjudications(ReportedAdjudicationRequest(locationId, pageRequest, adjudicationNumbers)).map { it.toDto(dateCalculationService.calculate48WorkingHoursFrom(it.incidentTime)) }
+    if (adjudicationNumbers.isEmpty()) return Page.empty(pageable)
+    return prisonApi.search(
+      ReportedAdjudicationRequest(agencyId, adjudicationNumbers),
+      pageable
+    ).map { it.toDto(dateCalculationService.calculate48WorkingHoursFrom(it.incidentTime)) }
   }
 
   private fun myAdjudications(): Set<Long> {

@@ -71,61 +71,31 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `return all reported adjudications completed by the current user`() {
-    prisonApiMockServer.stubGetAllAdjudications()
-    bankHolidayApiMockServer.stubGetBankHolidays()
-    prisonApiMockServer.stubPostAdjudication()
-
-    val dataAPiHelpers = DataAPiHelpers(webTestClient, setHeaders(username = "NEW_USER"))
-    dataAPiHelpers.createAndCompleteADraftAdjudication(LocalDateTime.parse("2021-10-25T09:03:11"))
-
-    webTestClient.get()
-      .uri("/reported-adjudications/my")
-      .headers(setHeaders(username = "NEW_USER"))
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.reportedAdjudications[0].adjudicationNumber").isEqualTo("1")
-      .jsonPath("$.reportedAdjudications[0].prisonerNumber").isEqualTo("AA1234A")
-      .jsonPath("$.reportedAdjudications[0].bookingId").isEqualTo("123")
-      .jsonPath("$.reportedAdjudications[0].dateTimeReportExpires").isEqualTo("2021-10-27T09:03:11")
-      .jsonPath("$.reportedAdjudications[0].incidentDetails.dateTimeOfIncident")
-      .isEqualTo("2021-10-25T09:03:11")
-      .jsonPath("$.reportedAdjudications[0].incidentDetails.locationId").isEqualTo(721850)
-      .jsonPath("$.reportedAdjudications[1].adjudicationNumber").isEqualTo("2")
-      .jsonPath("$.reportedAdjudications[1].prisonerNumber").isEqualTo("AA1234B")
-      .jsonPath("$.reportedAdjudications[1].bookingId").isEqualTo("456")
-      .jsonPath("$.reportedAdjudications[1].dateTimeReportExpires").isEqualTo("2021-10-27T09:03:11")
-      .jsonPath("$.reportedAdjudications[1].incidentDetails.dateTimeOfIncident")
-      .isEqualTo("2021-10-25T09:03:11")
-      .jsonPath("$.reportedAdjudications[1].incidentDetails.locationId").isEqualTo(721850)
-  }
-
-  @Test
   fun `return a page of reported adjudications completed by the current user`() {
-    prisonApiMockServer.stubGetPagedAdjudications()
+    prisonApiMockServer.stubGetAdjudications()
     prisonApiMockServer.stubPostAdjudication()
+    bankHolidayApiMockServer.stubGetBankHolidays()
 
     val dataAPiHelpers = DataAPiHelpers(webTestClient, setHeaders(username = "NEW_USER"))
     dataAPiHelpers.createAndCompleteADraftAdjudication(LocalDateTime.parse("2021-10-25T09:03:11"))
 
     webTestClient.get()
-      .uri("/reported-adjudications/my/location/1?pageNumber=1&pageSize=20")
+      .uri("/reported-adjudications/my/agency/MDI?page=0&size=20")
       .headers(setHeaders(username = "NEW_USER"))
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.pagedReportedAdjudications.results[0].adjudicationNumber").isEqualTo("1")
-      .jsonPath("$.pagedReportedAdjudications.results[0].prisonerNumber").isEqualTo("AA1234A")
-      .jsonPath("$.pagedReportedAdjudications.results[0].bookingId").isEqualTo("123")
-      .jsonPath("$.pagedReportedAdjudications.results[0].incidentDetails.dateTimeOfIncident")
+      .jsonPath("$.content[0].adjudicationNumber").isEqualTo("1")
+      .jsonPath("$.content[0].prisonerNumber").isEqualTo("AA1234A")
+      .jsonPath("$.content[0].bookingId").isEqualTo("123")
+      .jsonPath("$.content[0].incidentDetails.dateTimeOfIncident")
       .isEqualTo("2021-10-25T09:03:11")
-      .jsonPath("$.pagedReportedAdjudications.results[0].incidentDetails.locationId").isEqualTo(721850)
-      .jsonPath("$.pagedReportedAdjudications.results[1].adjudicationNumber").isEqualTo("2")
-      .jsonPath("$.pagedReportedAdjudications.results[1].prisonerNumber").isEqualTo("AA1234B")
-      .jsonPath("$.pagedReportedAdjudications.results[1].bookingId").isEqualTo("456")
-      .jsonPath("$.pagedReportedAdjudications.results[1].incidentDetails.dateTimeOfIncident")
+      .jsonPath("$.content[0].incidentDetails.locationId").isEqualTo(721850)
+      .jsonPath("$.content[1].adjudicationNumber").isEqualTo("2")
+      .jsonPath("$.content[1].prisonerNumber").isEqualTo("AA1234B")
+      .jsonPath("$.content[1].bookingId").isEqualTo("456")
+      .jsonPath("$.content[1].incidentDetails.dateTimeOfIncident")
       .isEqualTo("2021-10-25T09:03:11")
-      .jsonPath("$.pagedReportedAdjudications.results[1].incidentDetails.locationId").isEqualTo(721850)
+      .jsonPath("$.content[1].incidentDetails.locationId").isEqualTo(721850)
   }
 }
