@@ -39,7 +39,7 @@ class ReportedAdjudicationController {
       reportedAdjudication
     )
   }
-  
+
   @ApiOperation(value = "Get my reported adjudications for caseload")
   @ApiImplicitParams(ApiImplicitParam(name = "page", dataType = "java.lang.Integer", paramType = "query", value = "Results page you want to retrieve (0..N). Default 0, e.g. the first page", example = "0"), ApiImplicitParam(name = "size", dataType = "java.lang.Integer", paramType = "query", value = "Number of records per page. Default 20"), ApiImplicitParam(name = "sort", dataType = "java.lang.String", paramType = "query", value = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to incidentDate,incidentTime ASC"))
   @GetMapping("/my/agency/{agencyId}")
