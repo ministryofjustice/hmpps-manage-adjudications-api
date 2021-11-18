@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.pagination
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty

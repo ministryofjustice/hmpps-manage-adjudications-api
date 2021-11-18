@@ -1,10 +1,10 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.pagination
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.pagination
 
 import org.springframework.data.domain.Pageable
 
 fun getPageableUrlParameters(pageable: Pageable): String = getPageUrlParameters(pageable).plus(getSortUrlParameters(pageable)).joinToString("&")
 
-fun getPageUrlParameters(pageable: Pageable): List<String> {
+private fun getPageUrlParameters(pageable: Pageable): List<String> {
   val params = mapOf(
     "size" to pageable.pageSize,
     "page" to pageable.pageNumber
@@ -12,6 +12,6 @@ fun getPageUrlParameters(pageable: Pageable): List<String> {
   return params.map { it.key + "=" + it.value }
 }
 
-fun getSortUrlParameters(pageable: Pageable): List<String> {
+private fun getSortUrlParameters(pageable: Pageable): List<String> {
   return pageable.sort.map { "sort=" + it.property + "," + it.direction }.toList()
 }
