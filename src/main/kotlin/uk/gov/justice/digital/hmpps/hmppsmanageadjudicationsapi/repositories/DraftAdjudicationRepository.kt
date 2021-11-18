@@ -5,5 +5,5 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAd
 
 interface DraftAdjudicationRepository : CrudRepository<DraftAdjudication, Long> {
   fun save(draftAdjudication: DraftAdjudication?): DraftAdjudication
-  fun findByCreatedByUserId(createdUserId: String): List<DraftAdjudication>
+  fun findByAgencyIdAndCreatedByUserId(agencyId: String, username: String): List<DraftAdjudication>
 }

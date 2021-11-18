@@ -60,6 +60,7 @@ class DraftAdjudicationServiceTest {
         DraftAdjudication(
           id = 1,
           prisonerNumber = "A12345",
+          agencyId = "MDI",
           incidentDetails = IncidentDetails(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
         )
       )
@@ -68,7 +69,7 @@ class DraftAdjudicationServiceTest {
     @Test
     fun `makes a call to the repository to save the draft adjudication`() {
       val draftAdjudication =
-        draftAdjudicationService.startNewAdjudication("A12345", 2L, DATE_TIME_OF_INCIDENT)
+        draftAdjudicationService.startNewAdjudication("A12345", "MDI", 2L, DATE_TIME_OF_INCIDENT)
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
 
@@ -103,6 +104,7 @@ class DraftAdjudicationServiceTest {
         DraftAdjudication(
           id = 1,
           prisonerNumber = "A12345",
+          agencyId = "MDI",
           incidentDetails = IncidentDetails(locationId = 2, dateTimeOfIncident = now)
         )
 
@@ -139,6 +141,7 @@ class DraftAdjudicationServiceTest {
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        agencyId = "MDI",
         incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
       )
 
@@ -172,6 +175,7 @@ class DraftAdjudicationServiceTest {
             DraftAdjudication(
               id = 1,
               prisonerNumber = "A12345",
+              agencyId = "MDI",
               incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
               incidentStatement = IncidentStatement(id = 1, statement = "test")
             )
@@ -211,6 +215,7 @@ class DraftAdjudicationServiceTest {
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        agencyId = "MDI",
         incidentDetails = IncidentDetails(id = 1, locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
       )
 
@@ -271,6 +276,7 @@ class DraftAdjudicationServiceTest {
           DraftAdjudication(
             id = 1,
             prisonerNumber = "A12345",
+            agencyId = "MDI",
             incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
           )
         )
@@ -289,6 +295,7 @@ class DraftAdjudicationServiceTest {
         val draftAdjudicationEntity = DraftAdjudication(
           id = 1,
           prisonerNumber = "A12345",
+          agencyId = "MDI",
           incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
           incidentStatement = IncidentStatement(statement = "old statement")
         )
@@ -336,6 +343,7 @@ class DraftAdjudicationServiceTest {
         Optional.of(
           DraftAdjudication(
             prisonerNumber = "A12345",
+            agencyId = "MDI",
             incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now())
           )
         )
@@ -356,6 +364,7 @@ class DraftAdjudicationServiceTest {
             DraftAdjudication(
               id = 1,
               prisonerNumber = "A12345",
+              agencyId = "MDI",
               incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
               incidentStatement = IncidentStatement(statement = "test")
             )
@@ -419,11 +428,12 @@ class DraftAdjudicationServiceTest {
   inner class InProgressDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationRepository.findByCreatedByUserId(any())).thenReturn(
+      whenever(draftAdjudicationRepository.findByAgencyIdAndCreatedByUserId(any(), any())).thenReturn(
         listOf(
           DraftAdjudication(
             id = 1,
             prisonerNumber = "A12345",
+            agencyId = "MDI",
             incidentDetails = IncidentDetails(
               id = 2,
               locationId = 2,
@@ -433,6 +443,7 @@ class DraftAdjudicationServiceTest {
           DraftAdjudication(
             id = 2,
             prisonerNumber = "A12346",
+            agencyId = "MDI",
             incidentDetails = IncidentDetails(id = 3, locationId = 3, dateTimeOfIncident = LocalDateTime.now(clock))
           )
         )
@@ -443,15 +454,15 @@ class DraftAdjudicationServiceTest {
     fun `calls the repository method for all draft adjudications created by ITAG_USER`() {
       whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
 
-      draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications()
+      draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications("MDI")
 
-      verify(draftAdjudicationRepository).findByCreatedByUserId("ITAG_USER")
+      verify(draftAdjudicationRepository).findByAgencyIdAndCreatedByUserId("MDI", "ITAG_USER")
     }
 
     @Test
     fun `given no user return an empty set`() {
       whenever(authenticationFacade.currentUsername).thenReturn(null)
-      val draftAdjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications()
+      val draftAdjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications("MDI")
 
       assertThat(draftAdjudications).isEmpty()
     }
@@ -460,7 +471,7 @@ class DraftAdjudicationServiceTest {
     fun `sorts draft adjudications by incident date time`() {
       whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
 
-      val adjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications()
+      val adjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications("MDI")
 
       assertThat(adjudications)
         .extracting("id", "prisonerNumber", "incidentDetails")

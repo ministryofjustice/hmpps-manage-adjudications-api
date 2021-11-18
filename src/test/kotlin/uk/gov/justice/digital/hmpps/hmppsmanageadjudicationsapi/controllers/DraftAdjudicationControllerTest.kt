@@ -33,7 +33,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class StartDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.startNewAdjudication(any(), any(), any())).thenReturn(
+      whenever(draftAdjudicationService.startNewAdjudication(any(), any(), any(), any())).thenReturn(
         DraftAdjudicationDto(
           id = 1,
           prisonerNumber = "A12345",
@@ -50,16 +50,16 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `calls the service to start a new adjudication for a prisoner`() {
-      startANewAdjudication("A12345", 1, DATE_TIME_OF_INCIDENT)
+      startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT)
         .andExpect(status().isCreated)
 
-      verify(draftAdjudicationService).startNewAdjudication("A12345", 1, DATE_TIME_OF_INCIDENT)
+      verify(draftAdjudicationService).startNewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `returns the newly created draft adjudication`() {
-      startANewAdjudication("A12345", 1, DATE_TIME_OF_INCIDENT)
+      startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT)
         .andExpect(status().isCreated)
         .andExpect(jsonPath("draftAdjudication.id").isNumber)
         .andExpect(jsonPath("draftAdjudication.prisonerNumber").value("A12345"))
@@ -81,6 +81,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     private fun startANewAdjudication(
       prisonerNumber: String? = null,
+      agencyId: String = "MDI",
       locationId: Long? = null,
       dateTimeOfIncident: LocalDateTime? = null
     ): ResultActions {
@@ -88,6 +89,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         if (locationId == null && dateTimeOfIncident == null && prisonerNumber == null) "" else objectMapper.writeValueAsString(
           mapOf(
             "prisonerNumber" to prisonerNumber,
+            "agencyId" to agencyId,
             "locationId" to locationId,
             "dateTimeOfIncident" to dateTimeOfIncident
           )
@@ -350,7 +352,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class InProgressDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications()).thenReturn(
+      whenever(draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(any())).thenReturn(
         listOf(
           DraftAdjudicationDto(
             id = 1,
@@ -378,7 +380,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       getInProgressDraftAdjudications()
         .andExpect(status().isOk)
 
-      verify(draftAdjudicationService).getCurrentUsersInProgressDraftAdjudications()
+      verify(draftAdjudicationService).getCurrentUsersInProgressDraftAdjudications("MDI")
     }
 
     @Test
@@ -398,7 +400,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     fun getInProgressDraftAdjudications(): ResultActions = mockMvc
       .perform(
-        get("/draft-adjudications")
+        get("/draft-adjudications/my/agency/MDI")
           .header("Content-Type", "application/json")
       )
   }
