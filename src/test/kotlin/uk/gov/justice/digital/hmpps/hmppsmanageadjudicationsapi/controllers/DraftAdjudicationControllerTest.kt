@@ -37,7 +37,11 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         DraftAdjudicationDto(
           id = 1,
           prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+          incidentDetails = IncidentDetailsDto(
+            locationId = 2,
+            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          )
         )
       )
     }
@@ -65,6 +69,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("draftAdjudication.prisonerNumber").value("A12345"))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.locationId").value(2))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
+        .andExpect(jsonPath("draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
     }
 
     @Test
@@ -119,7 +124,11 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         DraftAdjudicationDto(
           id = 1,
           prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(locationId = 1L, dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+          incidentDetails = IncidentDetailsDto(
+            locationId = 1L,
+            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          )
         )
       )
       makeGetDraftAdjudicationRequest(1)
@@ -127,6 +136,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudication.id").isNumber)
         .andExpect(jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
+        .andExpect(jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.locationId").value(1))
     }
 
@@ -155,7 +165,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         DraftAdjudicationDto(
           id = 1L,
           prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT),
+          incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
           incidentStatement = IncidentStatementDto(statement = "test")
         )
       )
@@ -216,7 +226,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         DraftAdjudicationDto(
           id = 1L,
           prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(locationId = 3, DATE_TIME_OF_INCIDENT)
+          incidentDetails = IncidentDetailsDto(locationId = 3, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
         )
       )
     }
@@ -245,6 +255,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.locationId").value(3))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
+        .andExpect(jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
     }
 
     @Test
@@ -282,7 +293,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         DraftAdjudicationDto(
           id = 1L,
           prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT),
+          incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
           incidentStatement = IncidentStatementDto(statement = "new statement")
         )
       )
@@ -357,12 +368,20 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           DraftAdjudicationDto(
             id = 1,
             prisonerNumber = "A12345",
-            incidentDetails = IncidentDetailsDto(locationId = 1, dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+            incidentDetails = IncidentDetailsDto(
+              locationId = 1,
+              dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+            )
           ),
           DraftAdjudicationDto(
             id = 2,
             prisonerNumber = "A12346",
-            incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1))
+            incidentDetails = IncidentDetailsDto(
+              locationId = 2,
+              dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1),
+              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE.plusMonths(1)
+            )
           )
         )
       )
@@ -392,10 +411,12 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudications[0].prisonerNumber").value("A12345"))
         .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.locationId").value(1))
         .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
+        .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudications[1].id").value(2))
         .andExpect(jsonPath("$.draftAdjudications[1].prisonerNumber").value("A12346"))
         .andExpect(jsonPath("$.draftAdjudications[1].incidentDetails.locationId").value(2))
         .andExpect(jsonPath("$.draftAdjudications[1].incidentDetails.dateTimeOfIncident").value("2010-11-12T10:00:00"))
+        .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
     }
 
     fun getInProgressDraftAdjudications(): ResultActions = mockMvc
@@ -407,5 +428,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
+    private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
   }
 }

@@ -27,11 +27,14 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.createdByUserId").isEqualTo("ITAG_USER")
       .jsonPath("$.draftAdjudication.createdDateTime").exists()
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(1)
   }
 
   @Test
   fun `get draft adjudication details`() {
+    bankHolidayApiMockServer.stubGetBankHolidays()
+
     val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
 
     webTestClient.get()
@@ -45,11 +48,14 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.createdByUserId").isEqualTo("ITAG_USER")
       .jsonPath("$.draftAdjudication.createdDateTime").exists()
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(2)
   }
 
   @Test
   fun `add the incident statement to the draft adjudication`() {
+    bankHolidayApiMockServer.stubGetBankHolidays()
+
     val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
 
     webTestClient.post()
@@ -65,6 +71,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(2)
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("test")
@@ -76,6 +83,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `edit the incident details`() {
+    bankHolidayApiMockServer.stubGetBankHolidays()
+
     val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
 
     webTestClient.put()
@@ -93,6 +102,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-11-12T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-11-15T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(3)
       .jsonPath("$.draftAdjudication.incidentDetails.modifiedByUserId").isEqualTo("ITAG_USER")
       .jsonPath("$.draftAdjudication.incidentDetails.modifiedByDateTime").exists()
@@ -102,6 +112,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `edit the incident statement`() {
+    bankHolidayApiMockServer.stubGetBankHolidays()
+
     val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
 
     dataAPiHelpers().addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
@@ -146,6 +158,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.dateTimeReportExpires").isEqualTo("2010-11-15T10:00:00")
       .jsonPath("$.incidentStatement.statement").isEqualTo("new statement")
       .jsonPath("$.incidentDetails.dateTimeOfIncident").isEqualTo("2010-11-12T10:00:00")
+      .jsonPath("$.incidentDetails.handoverDeadline").isEqualTo("2010-11-15T10:00:00")
       .jsonPath("$.incidentDetails.locationId").isEqualTo(721850)
 
     val expectedBody = mapOf(
@@ -190,6 +203,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudications[0].id").isEqualTo(draftAdjudicationResponse.draftAdjudication.id)
       .jsonPath("$.draftAdjudications[0].prisonerNumber").isEqualTo("A12345")
       .jsonPath("$.draftAdjudications[0].incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
+      .jsonPath("$.draftAdjudications[0].incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
       .jsonPath("$.draftAdjudications[0].incidentDetails.locationId").isEqualTo(2)
       .jsonPath("$.draftAdjudications[0].incidentDetails.modifiedByUserId").isEqualTo("ITAG_USER")
       .jsonPath("$.draftAdjudications[0].incidentDetails.modifiedByDateTime").exists()

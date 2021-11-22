@@ -33,7 +33,11 @@ class DraftAdjudicationRepositoryTest {
       DraftAdjudication(
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(locationId = 2, dateTimeOfIncident = dateTimeOfIncident)
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = dateTimeOfIncident,
+          handoverDeadline = dateTimeOfIncident.plusDays(2)
+        )
       )
     )
     assertThat(savedEntity)
@@ -41,8 +45,8 @@ class DraftAdjudicationRepositoryTest {
       .contains(savedEntity.id, "A12345", "MDI", "ITAG_USER")
 
     assertThat(savedEntity.incidentDetails)
-      .extracting("locationId", "dateTimeOfIncident")
-      .contains(2L, dateTimeOfIncident)
+      .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
+      .contains(2L, dateTimeOfIncident, dateTimeOfIncident.plusDays(2))
   }
 
   @Test
@@ -53,14 +57,22 @@ class DraftAdjudicationRepositoryTest {
       DraftAdjudication(
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(locationId = 2, dateTimeOfIncident = dateTimeOfIncident)
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = dateTimeOfIncident,
+          handoverDeadline = dateTimeOfIncident.plusDays(2)
+        )
       )
     )
     entityManager.persistAndFlush(
       DraftAdjudication(
         prisonerNumber = "A12346",
         agencyId = "LEI",
-        incidentDetails = IncidentDetails(locationId = 2, dateTimeOfIncident = dateTimeOfIncident)
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = dateTimeOfIncident,
+          handoverDeadline = dateTimeOfIncident.plusDays(2)
+        )
       )
     )
     val foundAdjudications = draftAdjudicationRepository.findByAgencyIdAndCreatedByUserId("MDI", "ITAG_USER")

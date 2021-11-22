@@ -48,7 +48,11 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           prisonerNumber = "A12345",
           bookingId = 123,
           dateTimeReportExpires = DATE_TIME_OF_INCIDENT.plusDays(2),
-          incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT),
+          incidentDetails = IncidentDetailsDto(
+            locationId = 2,
+            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          ),
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
         )
       )
@@ -59,6 +63,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.reportedAdjudication.bookingId").value("123"))
         .andExpect(jsonPath("$.reportedAdjudication.dateTimeReportExpires").value("2010-10-14T10:00:00"))
         .andExpect(jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
+        .andExpect(jsonPath("$.reportedAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
         .andExpect(jsonPath("$.reportedAdjudication.incidentDetails.locationId").value(2))
         .andExpect(jsonPath("$.reportedAdjudication.incidentStatement.statement").value(INCIDENT_STATEMENT))
     }
@@ -94,7 +99,11 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
               prisonerNumber = "A12345",
               bookingId = 123,
               dateTimeReportExpires = DATE_TIME_OF_INCIDENT.plusDays(2),
-              incidentDetails = IncidentDetailsDto(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT),
+              incidentDetails = IncidentDetailsDto(
+                locationId = 2,
+                dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+              ),
               incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
             )
           ),
@@ -138,6 +147,9 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         .andExpect(
           jsonPath("$.content[0].incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00")
         )
+        .andExpect(
+          jsonPath("$.content[0].incidentDetails.handoverDeadline").value("2010-10-14T10:00:00")
+        )
         .andExpect(jsonPath("$.content[0].incidentDetails.locationId").value(2))
         .andExpect(
           jsonPath("$.content[0].incidentStatement.statement").value(
@@ -162,6 +174,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
 
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
+    private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
     private const val INCIDENT_STATEMENT = "A statement"
   }
 }

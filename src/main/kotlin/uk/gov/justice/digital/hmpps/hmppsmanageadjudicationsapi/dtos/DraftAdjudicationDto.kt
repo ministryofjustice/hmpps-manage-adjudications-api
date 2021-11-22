@@ -26,6 +26,8 @@ data class IncidentDetailsDto(
   val locationId: Long,
   @ApiModelProperty(value = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   val dateTimeOfIncident: LocalDateTime,
+  @ApiModelProperty(value = "When this report must be handed to the prisoner", example = "2010-10-14T10:00:00")
+  val handoverDeadline: LocalDateTime,
   @ApiModelProperty("Created by user id")
   val createdByUserId: String? = null,
   @ApiModelProperty("Created on date time")
