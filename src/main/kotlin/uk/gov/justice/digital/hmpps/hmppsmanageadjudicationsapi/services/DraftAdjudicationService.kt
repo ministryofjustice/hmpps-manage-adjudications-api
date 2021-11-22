@@ -39,7 +39,11 @@ class DraftAdjudicationService(
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
       agencyId = agencyId,
-      incidentDetails = IncidentDetails(locationId = locationId, dateTimeOfIncident = dateTimeOfIncident)
+      incidentDetails = IncidentDetails(
+        locationId = locationId,
+        dateTimeOfIncident = dateTimeOfIncident,
+        handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(dateTimeOfIncident)
+      )
     )
     return draftAdjudicationRepository
       .save(draftAdjudication)
@@ -71,7 +75,10 @@ class DraftAdjudicationService(
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     locationId?.let { draftAdjudication.incidentDetails.locationId = it }
-    dateTimeOfIncident?.let { draftAdjudication.incidentDetails.dateTimeOfIncident = it }
+    dateTimeOfIncident?.let {
+      draftAdjudication.incidentDetails.dateTimeOfIncident = it
+      draftAdjudication.incidentDetails.handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(it)
+    }
 
     return draftAdjudicationRepository
       .save(draftAdjudication)
@@ -128,6 +135,10 @@ class DraftAdjudicationService(
       .map { it.toDto() }
   }
 
+  private fun getExpiryDateTime(draftAdjudication: DraftAdjudication): LocalDateTime {
+    return dateCalculationService.calculate48WorkingHoursFrom(draftAdjudication.incidentDetails.dateTimeOfIncident)
+  }
+
   private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {
     if (statement == null && completed == null)
       throw IllegalArgumentException("Please supply either a statement or the completed value")
@@ -149,6 +160,7 @@ fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
   locationId = this.locationId,
   dateTimeOfIncident = this.dateTimeOfIncident,
+  handoverDeadline = this.handoverDeadline,
   createdByUserId = this.createdByUserId,
   createdDateTime = this.createDateTime,
   modifiedByUserId = this.modifiedByUserId,

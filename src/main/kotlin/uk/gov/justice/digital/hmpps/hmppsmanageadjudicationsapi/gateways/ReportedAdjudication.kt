@@ -22,7 +22,8 @@ data class ReportedAdjudication(
       dateTimeReportExpires = dateTimeReportExpires,
       incidentDetails = IncidentDetailsDto(
         locationId = incidentLocationId,
-        dateTimeOfIncident = incidentTime
+        dateTimeOfIncident = incidentTime,
+        handoverDeadline = dateTimeReportExpires
       ),
       incidentStatement = IncidentStatementDto(
         statement = statement

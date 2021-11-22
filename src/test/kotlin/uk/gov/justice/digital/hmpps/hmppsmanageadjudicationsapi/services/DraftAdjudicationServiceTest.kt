@@ -61,9 +61,14 @@ class DraftAdjudicationServiceTest {
           id = 1,
           prisonerNumber = "A12345",
           agencyId = "MDI",
-          incidentDetails = IncidentDetails(locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+          incidentDetails = IncidentDetails(
+            locationId = 2,
+            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          )
         )
       )
+      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
     }
 
     @Test
@@ -80,8 +85,8 @@ class DraftAdjudicationServiceTest {
         .contains(1L, "A12345")
 
       assertThat(draftAdjudication.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident")
-        .contains(2L, DATE_TIME_OF_INCIDENT)
+        .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
+        .contains(2L, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
     }
   }
 
@@ -105,7 +110,11 @@ class DraftAdjudicationServiceTest {
           id = 1,
           prisonerNumber = "A12345",
           agencyId = "MDI",
-          incidentDetails = IncidentDetails(locationId = 2, dateTimeOfIncident = now)
+          incidentDetails = IncidentDetails(
+            locationId = 2,
+            dateTimeOfIncident = now,
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          )
         )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(
@@ -142,7 +151,11 @@ class DraftAdjudicationServiceTest {
         id = 1,
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
+        incidentDetails = IncidentDetails(
+          locationId = 1,
+          dateTimeOfIncident = LocalDateTime.now(clock),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
@@ -176,7 +189,11 @@ class DraftAdjudicationServiceTest {
               id = 1,
               prisonerNumber = "A12345",
               agencyId = "MDI",
-              incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
+              incidentDetails = IncidentDetails(
+                locationId = 1,
+                dateTimeOfIncident = LocalDateTime.now(clock),
+                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+              ),
               incidentStatement = IncidentStatement(id = 1, statement = "test")
             )
           )
@@ -211,12 +228,19 @@ class DraftAdjudicationServiceTest {
 
     @Test
     fun `makes changes to the incident details`() {
+      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+
       val dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1)
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(id = 1, locationId = 2, dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+        incidentDetails = IncidentDetails(
+          id = 1,
+          locationId = 2,
+          dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        )
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
@@ -225,7 +249,8 @@ class DraftAdjudicationServiceTest {
           incidentDetails = IncidentDetails(
             id = 1,
             locationId = 3L,
-            dateTimeOfIncident = dateTimeOfIncident
+            dateTimeOfIncident = dateTimeOfIncident,
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           )
         )
       )
@@ -237,8 +262,8 @@ class DraftAdjudicationServiceTest {
         .contains(1L, "A12345")
 
       assertThat(draftAdjudication.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident")
-        .contains(3L, dateTimeOfIncident)
+        .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
+        .contains(3L, dateTimeOfIncident, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
@@ -277,7 +302,11 @@ class DraftAdjudicationServiceTest {
             id = 1,
             prisonerNumber = "A12345",
             agencyId = "MDI",
-            incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
+            incidentDetails = IncidentDetails(
+              locationId = 1,
+              dateTimeOfIncident = LocalDateTime.now(clock),
+              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+            ),
           )
         )
       )
@@ -296,7 +325,11 @@ class DraftAdjudicationServiceTest {
           id = 1,
           prisonerNumber = "A12345",
           agencyId = "MDI",
-          incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
+          incidentDetails = IncidentDetails(
+            locationId = 1,
+            dateTimeOfIncident = LocalDateTime.now(clock),
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          ),
           incidentStatement = IncidentStatement(statement = "old statement")
         )
 
@@ -344,7 +377,11 @@ class DraftAdjudicationServiceTest {
           DraftAdjudication(
             prisonerNumber = "A12345",
             agencyId = "MDI",
-            incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now())
+            incidentDetails = IncidentDetails(
+              locationId = 1,
+              dateTimeOfIncident = LocalDateTime.now(),
+              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+            )
           )
         )
       )
@@ -365,7 +402,11 @@ class DraftAdjudicationServiceTest {
               id = 1,
               prisonerNumber = "A12345",
               agencyId = "MDI",
-              incidentDetails = IncidentDetails(locationId = 1, dateTimeOfIncident = LocalDateTime.now(clock)),
+              incidentDetails = IncidentDetails(
+                locationId = 1,
+                dateTimeOfIncident = LocalDateTime.now(clock),
+                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+              ),
               incidentStatement = IncidentStatement(statement = "test")
             )
           )
@@ -437,14 +478,20 @@ class DraftAdjudicationServiceTest {
             incidentDetails = IncidentDetails(
               id = 2,
               locationId = 2,
-              dateTimeOfIncident = LocalDateTime.now(clock).plusMonths(2)
+              dateTimeOfIncident = LocalDateTime.now(clock).plusMonths(2),
+              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             )
           ),
           DraftAdjudication(
             id = 2,
             prisonerNumber = "A12346",
             agencyId = "MDI",
-            incidentDetails = IncidentDetails(id = 3, locationId = 3, dateTimeOfIncident = LocalDateTime.now(clock))
+            incidentDetails = IncidentDetails(
+              id = 3,
+              locationId = 3,
+              dateTimeOfIncident = LocalDateTime.now(clock),
+              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+            )
           )
         )
       )
@@ -476,14 +523,15 @@ class DraftAdjudicationServiceTest {
       assertThat(adjudications)
         .extracting("id", "prisonerNumber", "incidentDetails")
         .contains(
-          Tuple(2L, "A12346", IncidentDetailsDto(3, LocalDateTime.now(clock))),
-          Tuple(1L, "A12345", IncidentDetailsDto(2, LocalDateTime.now(clock).plusMonths(2)))
+          Tuple(2L, "A12346", IncidentDetailsDto(3, LocalDateTime.now(clock), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)),
+          Tuple(1L, "A12345", IncidentDetailsDto(2, LocalDateTime.now(clock).plusMonths(2), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE))
         )
     }
   }
 
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
+    private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
   }
 }
