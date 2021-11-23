@@ -163,6 +163,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val expectedBody = mapOf(
       "offenderNo" to "A12345",
+      "agencyId" to "MDI",
       "incidentLocationId" to 2L,
       "incidentTime" to "2010-10-12T10:00:00",
       "statement" to "test statement"

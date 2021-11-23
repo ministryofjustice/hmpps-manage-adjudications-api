@@ -111,6 +111,7 @@ class DraftAdjudicationService(
     val reportedAdjudication = prisonApiGateway.publishAdjudication(
       AdjudicationDetailsToPublish(
         offenderNo = draftAdjudication.prisonerNumber,
+        agencyId = draftAdjudication.agencyId,
         incidentTime = draftAdjudication.incidentDetails.dateTimeOfIncident,
         incidentLocationId = draftAdjudication.incidentDetails.locationId,
         statement = draftAdjudication.incidentStatement?.statement!!
