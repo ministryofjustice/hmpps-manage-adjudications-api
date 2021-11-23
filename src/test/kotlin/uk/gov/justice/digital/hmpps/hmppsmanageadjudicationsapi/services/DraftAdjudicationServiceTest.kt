@@ -60,6 +60,7 @@ class DraftAdjudicationServiceTest {
         DraftAdjudication(
           id = 1,
           prisonerNumber = "A12345",
+          reportNumber = null,
           agencyId = "MDI",
           incidentDetails = IncidentDetails(
             locationId = 2,
@@ -109,6 +110,7 @@ class DraftAdjudicationServiceTest {
         DraftAdjudication(
           id = 1,
           prisonerNumber = "A12345",
+          reportNumber = null,
           agencyId = "MDI",
           incidentDetails = IncidentDetails(
             locationId = 2,
@@ -150,6 +152,7 @@ class DraftAdjudicationServiceTest {
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        reportNumber = null,
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           locationId = 1,
@@ -188,6 +191,7 @@ class DraftAdjudicationServiceTest {
             DraftAdjudication(
               id = 1,
               prisonerNumber = "A12345",
+              reportNumber = null,
               agencyId = "MDI",
               incidentDetails = IncidentDetails(
                 locationId = 1,
@@ -234,6 +238,7 @@ class DraftAdjudicationServiceTest {
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        reportNumber = null,
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           id = 1,
@@ -301,6 +306,7 @@ class DraftAdjudicationServiceTest {
           DraftAdjudication(
             id = 1,
             prisonerNumber = "A12345",
+            reportNumber = null,
             agencyId = "MDI",
             incidentDetails = IncidentDetails(
               locationId = 1,
@@ -324,6 +330,7 @@ class DraftAdjudicationServiceTest {
         val draftAdjudicationEntity = DraftAdjudication(
           id = 1,
           prisonerNumber = "A12345",
+          reportNumber = null,
           agencyId = "MDI",
           incidentDetails = IncidentDetails(
             locationId = 1,
@@ -376,6 +383,7 @@ class DraftAdjudicationServiceTest {
         Optional.of(
           DraftAdjudication(
             prisonerNumber = "A12345",
+            reportNumber = null,
             agencyId = "MDI",
             incidentDetails = IncidentDetails(
               locationId = 1,
@@ -401,6 +409,7 @@ class DraftAdjudicationServiceTest {
             DraftAdjudication(
               id = 1,
               prisonerNumber = "A12345",
+              reportNumber = null,
               agencyId = "MDI",
               incidentDetails = IncidentDetails(
                 locationId = 1,
@@ -416,6 +425,7 @@ class DraftAdjudicationServiceTest {
             adjudicationNumber = 123456L,
             offenderNo = "A12345",
             bookingId = 1L,
+            agencyId = "MDI",
             statement = "test",
             incidentLocationId = 2L,
             incidentTime = LocalDateTime.now(clock),
@@ -469,11 +479,12 @@ class DraftAdjudicationServiceTest {
   inner class InProgressDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationRepository.findByAgencyIdAndCreatedByUserId(any(), any())).thenReturn(
+      whenever(draftAdjudicationRepository.findUnsubmittedByAgencyIdAndCreatedByUserId(any(), any())).thenReturn(
         listOf(
           DraftAdjudication(
             id = 1,
             prisonerNumber = "A12345",
+            reportNumber = null,
             agencyId = "MDI",
             incidentDetails = IncidentDetails(
               id = 2,
@@ -485,6 +496,7 @@ class DraftAdjudicationServiceTest {
           DraftAdjudication(
             id = 2,
             prisonerNumber = "A12346",
+            reportNumber = null,
             agencyId = "MDI",
             incidentDetails = IncidentDetails(
               id = 3,
@@ -503,7 +515,7 @@ class DraftAdjudicationServiceTest {
 
       draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications("MDI")
 
-      verify(draftAdjudicationRepository).findByAgencyIdAndCreatedByUserId("MDI", "ITAG_USER")
+      verify(draftAdjudicationRepository).findUnsubmittedByAgencyIdAndCreatedByUserId("MDI", "ITAG_USER")
     }
 
     @Test

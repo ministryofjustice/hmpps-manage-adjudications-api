@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -167,6 +168,40 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           get("/reported-adjudications/my/agency/MDI?page=0&size=20&sort=incidentDate,DESC")
+            .header("Content-Type", "application/json")
+        )
+    }
+  }
+
+  @Nested
+  inner class CreateDraftFromReportedAdjudication {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(reportedAdjudicationService.createDraftFromReportedAdjudication(any())).thenReturn(
+        DraftAdjudicationDto(
+          id = 1,
+          prisonerNumber = "A12345",
+          incidentDetails = IncidentDetailsDto(
+            locationId = 2,
+            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          ),
+          incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
+        )
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      makeCreateDraftFromReportedAdjudicationRequest(123).andExpect(status().isUnauthorized)
+    }
+
+    private fun makeCreateDraftFromReportedAdjudicationRequest(
+      adjudicationNumber: Long
+    ): ResultActions {
+      return mockMvc
+        .perform(
+          get("/reported-adjudications/$adjudicationNumber/create-draft-adjudication")
             .header("Content-Type", "application/json")
         )
     }

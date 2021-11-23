@@ -10,9 +10,13 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
+import org.springframework.http.HttpStatus
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.annotations.ApiIgnore
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -49,5 +53,16 @@ class ReportedAdjudicationController {
     @PageableDefault(sort = ["incidentDate", "incidentTime"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
   ): Page<ReportedAdjudicationDto> {
     return reportedAdjudicationService.getMyReportedAdjudications(agencyId, pageable)
+  }
+
+  @PostMapping(value = ["/{adjudicationNumber}/create-draft-adjudication"])
+  @ApiOperation(value = "Creates a draft adjudication from the reported adjudication with the given number.")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @ResponseStatus(HttpStatus.CREATED)
+  fun createDraftAdjudication(@PathVariable(name = "adjudicationNumber") adjudicationNumber: Long): DraftAdjudicationResponse {
+    val draftAdjudication = reportedAdjudicationService.createDraftFromReportedAdjudication(adjudicationNumber)
+    return DraftAdjudicationResponse(
+      draftAdjudication
+    )
   }
 }

@@ -43,6 +43,7 @@ class PrisonApiMockServer : WireMockServer(8979) {
                   "reporterStaffId": 486080,
                   "offenderNo": "AA1234A",
                   "bookingId": 123,
+                  "agencyId": "MDI",
                   "incidentTime": "2021-10-25T09:03:11",
                   "incidentLocationId": 721850,
                   "statement": "It keeps happening..."
@@ -69,6 +70,7 @@ class PrisonApiMockServer : WireMockServer(8979) {
                        "reporterStaffId":486080,
                        "offenderNo":"AA1234A",
                        "bookingId":123,
+                       "agencyId": "MDI",
                        "incidentTime":"2021-10-25T09:03:11",
                        "incidentLocationId":721850,
                        "statement":"It keeps happening..."
@@ -78,6 +80,7 @@ class PrisonApiMockServer : WireMockServer(8979) {
                        "reporterStaffId":486080,
                        "offenderNo":"AA1234B",
                        "bookingId":456,
+                       "agencyId": "MDI",
                        "incidentTime":"2021-10-25T09:03:11",
                        "incidentLocationId":721850,
                        "statement":"It keeps happening..."
@@ -150,6 +153,7 @@ class PrisonApiMockServer : WireMockServer(8979) {
                   "reporterStaffId": 486080,
                   "offenderNo": "A12345",
                   "bookingId": 1,
+                  "agencyId": "MDI",
                   "incidentTime": "2010-11-12T10:00:00",
                   "incidentLocationId": 721850,
                   "statement": "new statement"

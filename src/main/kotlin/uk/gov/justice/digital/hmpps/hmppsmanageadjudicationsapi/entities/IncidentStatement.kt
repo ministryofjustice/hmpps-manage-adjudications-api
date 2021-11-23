@@ -6,7 +6,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "incident_statement")
-class IncidentStatement(
+data class IncidentStatement(
   override val id: Long? = null,
   @Length(max = 4000)
   var statement: String? = null,
