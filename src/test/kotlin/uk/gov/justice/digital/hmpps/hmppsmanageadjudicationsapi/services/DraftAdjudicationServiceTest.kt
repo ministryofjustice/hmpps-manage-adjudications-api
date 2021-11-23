@@ -453,6 +453,7 @@ class DraftAdjudicationServiceTest {
 
         val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
           offenderNo = "A12345",
+          agencyId = "MDI",
           incidentLocationId = 1L,
           incidentTime = LocalDateTime.now(clock),
           statement = "test"
