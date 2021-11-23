@@ -32,6 +32,7 @@ class DraftAdjudicationRepositoryTest {
     val savedEntity = entityManager.persistAndFlush(
       DraftAdjudication(
         prisonerNumber = "A12345",
+        reportNumber = null,
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           locationId = 2,
@@ -56,6 +57,7 @@ class DraftAdjudicationRepositoryTest {
     entityManager.persistAndFlush(
       DraftAdjudication(
         prisonerNumber = "A12345",
+        reportNumber = null,
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           locationId = 2,
@@ -67,6 +69,7 @@ class DraftAdjudicationRepositoryTest {
     entityManager.persistAndFlush(
       DraftAdjudication(
         prisonerNumber = "A12346",
+        reportNumber = null,
         agencyId = "LEI",
         incidentDetails = IncidentDetails(
           locationId = 2,
@@ -75,7 +78,19 @@ class DraftAdjudicationRepositoryTest {
         )
       )
     )
-    val foundAdjudications = draftAdjudicationRepository.findByAgencyIdAndCreatedByUserId("MDI", "ITAG_USER")
+    entityManager.persistAndFlush(
+      DraftAdjudication(
+        prisonerNumber = "A12347",
+        reportNumber = 123,
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 3,
+          dateTimeOfIncident = dateTimeOfIncident,
+          handoverDeadline = dateTimeOfIncident.plusDays(3)
+        )
+      )
+    )
+    val foundAdjudications = draftAdjudicationRepository.findUnsubmittedByAgencyIdAndCreatedByUserId("MDI", "ITAG_USER")
 
     assertThat(foundAdjudications).hasSize(1)
       .extracting("prisonerNumber")

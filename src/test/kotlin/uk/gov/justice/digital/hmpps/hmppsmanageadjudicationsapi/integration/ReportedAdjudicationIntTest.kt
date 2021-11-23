@@ -10,6 +10,8 @@ import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 
 class ReportedAdjudicationIntTest : IntegrationTestBase() {
+  fun dataAPiHelpers(): DataAPiHelpers = DataAPiHelpers(webTestClient, setHeaders())
+
   @Autowired
   lateinit var cacheManager: CacheManager
 
@@ -97,5 +99,53 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.content[1].incidentDetails.dateTimeOfIncident")
       .isEqualTo("2021-10-25T09:03:11")
       .jsonPath("$.content[1].incidentDetails.locationId").isEqualTo(721850)
+  }
+
+  @Test
+  fun `create draft from reported adjudication returns expected result`() {
+    prisonApiMockServer.stubGetAdjudication()
+    bankHolidayApiMockServer.stubGetBankHolidays()
+    oAuthMockServer.stubGrantToken()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/1524242/create-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .expectBody()
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("AA1234A")
+      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2021-10-25T09:03:11")
+      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(721850)
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2021-10-27T09:03:11")
+      .jsonPath("$.draftAdjudication.incidentStatement.completed").isEqualTo(true)
+      .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("It keeps happening...")
+      .jsonPath("$.draftAdjudication.createdByUserId").isEqualTo("ITAG_USER")
+  }
+
+  @Test
+  fun `create draft from reported adjudication adds draft`() {
+    prisonApiMockServer.stubGetAdjudication()
+    bankHolidayApiMockServer.stubGetBankHolidays()
+    oAuthMockServer.stubGrantToken()
+
+    val createdDraft = dataAPiHelpers().createADraftFromAReportedAdjudication(1524242)
+
+    dataAPiHelpers().getDraftAdjudicationDetails(createdDraft.draftAdjudication.id).expectStatus().isOk
+  }
+
+  @Test
+  fun `create draft from reported adjudication with invalid adjudication number`() {
+    prisonApiMockServer.stubGetAdjudicationWithInvalidNumber()
+    oAuthMockServer.stubGrantToken()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/1524242/create-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isNotFound
+      .expectBody()
+      .jsonPath("$.status").isEqualTo(404)
+      .jsonPath("$.userMessage")
+      .isEqualTo("Forwarded HTTP call response error: 404 Not Found from GET http://localhost:8979/api/adjudications/adjudication/1524242")
   }
 }

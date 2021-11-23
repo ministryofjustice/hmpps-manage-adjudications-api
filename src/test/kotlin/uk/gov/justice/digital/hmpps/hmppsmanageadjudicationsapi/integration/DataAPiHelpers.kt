@@ -73,4 +73,16 @@ class DataAPiHelpers(private val webTestClient: WebTestClient, private val defau
       .responseBody
       .blockFirst()!!
   }
+
+  fun createADraftFromAReportedAdjudication(
+    adjudicationNumber: Long,
+    headers: Consumer<HttpHeaders>? = defaultHeaders
+  ): DraftAdjudicationResponse = webTestClient.post()
+    .uri("/reported-adjudications/$adjudicationNumber/create-draft-adjudication")
+    .headers(headers)
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 }

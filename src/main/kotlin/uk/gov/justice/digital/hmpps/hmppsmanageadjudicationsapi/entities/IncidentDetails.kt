@@ -6,7 +6,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "incident_details")
-class IncidentDetails(
+data class IncidentDetails(
   override val id: Long? = null,
   var locationId: Long,
   var dateTimeOfIncident: LocalDateTime,
