@@ -36,7 +36,7 @@ class DataAPiHelpers(private val webTestClient: WebTestClient, private val defau
     headers: Consumer<HttpHeaders>? = defaultHeaders
   ): DraftAdjudicationResponse =
     webTestClient.put()
-      .uri("/draft-adjudications/${id}/incident-details")
+      .uri("/draft-adjudications/$id/incident-details")
       .headers(headers)
       .bodyValue(
         mapOf(

@@ -143,9 +143,9 @@ class DraftAdjudicationService(
           statement = draftAdjudication.incidentStatement?.statement!!
         )
       )
-    }
-    else {
-      return prisonApiGateway.updateAdjudication(draftAdjudication.reportNumber!!,
+    } else {
+      return prisonApiGateway.updateAdjudication(
+        draftAdjudication.reportNumber!!,
         AdjudicationDetailsToUpdate(
           incidentTime = draftAdjudication.incidentDetails.dateTimeOfIncident,
           incidentLocationId = draftAdjudication.incidentDetails.locationId,
