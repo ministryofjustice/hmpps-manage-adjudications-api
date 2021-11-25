@@ -29,11 +29,50 @@ class DataAPiHelpers(private val webTestClient: WebTestClient, private val defau
     .responseBody
     .blockFirst()!!
 
+  fun editIncidentDetails(
+    id: Long,
+    dateTimeOfIncident: LocalDateTime,
+    locationId: Long,
+    headers: Consumer<HttpHeaders>? = defaultHeaders
+  ): DraftAdjudicationResponse =
+    webTestClient.put()
+      .uri("/draft-adjudications/$id/incident-details")
+      .headers(headers)
+      .bodyValue(
+        mapOf(
+          "locationId" to locationId,
+          "dateTimeOfIncident" to dateTimeOfIncident
+        )
+      )
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+
   fun addIncidentStatement(
     id: Long,
     statement: String,
     headers: Consumer<HttpHeaders>? = defaultHeaders
   ): DraftAdjudicationResponse = webTestClient.post()
+    .uri("/draft-adjudications/$id/incident-statement")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "statement" to statement
+      )
+    )
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
+
+  fun editIncidentStatement(
+    id: Long,
+    statement: String,
+    headers: Consumer<HttpHeaders>? = defaultHeaders
+  ): DraftAdjudicationResponse = webTestClient.put()
     .uri("/draft-adjudications/$id/incident-statement")
     .headers(headers)
     .bodyValue(

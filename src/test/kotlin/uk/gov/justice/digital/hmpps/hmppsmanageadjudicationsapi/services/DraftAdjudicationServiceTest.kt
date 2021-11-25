@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
@@ -436,7 +437,7 @@ class DraftAdjudicationServiceTest {
       }
 
       @Test
-      fun `store a new completed adjudication record`() {
+      fun `stores a new completed adjudication record`() {
         draftAdjudicationService.completeDraftAdjudication(1)
 
         val argumentCaptor = ArgumentCaptor.forClass(SubmittedAdjudicationHistory::class.java)
@@ -463,7 +464,80 @@ class DraftAdjudicationServiceTest {
       }
 
       @Test
-      fun `delete the draft adjudication once complete`() {
+      fun `deletes the draft adjudication once complete`() {
+        draftAdjudicationService.completeDraftAdjudication(1)
+
+        val argumentCaptor: ArgumentCaptor<DraftAdjudication> = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+        verify(draftAdjudicationRepository).delete(argumentCaptor.capture())
+
+        assertThat(argumentCaptor.value)
+          .extracting("id", "prisonerNumber")
+          .contains(1L, "A12345")
+      }
+    }
+
+    @Nested
+    inner class CompleteAPreviouslyCompletedAdjudication {
+      @BeforeEach
+      fun beforeEach() {
+        whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+          Optional.of(
+            DraftAdjudication(
+              id = 1,
+              prisonerNumber = "A12345",
+              reportNumber = 123L,
+              agencyId = "MDI",
+              incidentDetails = IncidentDetails(
+                locationId = 1,
+                dateTimeOfIncident = LocalDateTime.now(clock),
+                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+              ),
+              incidentStatement = IncidentStatement(statement = "test")
+            )
+          )
+        )
+        whenever(prisonApiGateway.updateAdjudication(any(), any())).thenReturn(
+          ReportedAdjudication(
+            adjudicationNumber = 123L,
+            offenderNo = "A12345",
+            bookingId = 1L,
+            agencyId = "MDI",
+            statement = "test",
+            incidentLocationId = 2L,
+            incidentTime = LocalDateTime.now(clock),
+            reporterStaffId = 2,
+          )
+        )
+        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
+      }
+
+      @Test
+      fun `updates the completed adjudication record`() {
+        draftAdjudicationService.completeDraftAdjudication(1)
+
+        val argumentCaptor = ArgumentCaptor.forClass(SubmittedAdjudicationHistory::class.java)
+        verify(submittedAdjudicationHistoryRepository).save(argumentCaptor.capture())
+
+        assertThat(argumentCaptor.value)
+          .extracting("adjudicationNumber", "dateTimeSent")
+          .contains(123L, LocalDateTime.now(clock))
+      }
+
+      @Test
+      fun `makes a call to prison api to update the draft adjudication`() {
+        draftAdjudicationService.completeDraftAdjudication(1)
+
+        val expectedAdjudicationToUpdate = AdjudicationDetailsToUpdate(
+          incidentLocationId = 1L,
+          incidentTime = LocalDateTime.now(clock),
+          statement = "test"
+        )
+
+        verify(prisonApiGateway).updateAdjudication(123L, expectedAdjudicationToUpdate)
+      }
+
+      @Test
+      fun `deletes the draft adjudication once complete`() {
         draftAdjudicationService.completeDraftAdjudication(1)
 
         val argumentCaptor: ArgumentCaptor<DraftAdjudication> = ArgumentCaptor.forClass(DraftAdjudication::class.java)
