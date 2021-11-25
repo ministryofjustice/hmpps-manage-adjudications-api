@@ -10,7 +10,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -108,15 +110,8 @@ class DraftAdjudicationService(
     if (draftAdjudication.incidentStatement == null)
       throw IllegalStateException("Please include an incident statement before completing this draft adjudication")
 
-    val reportedAdjudication = prisonApiGateway.publishAdjudication(
-      AdjudicationDetailsToPublish(
-        offenderNo = draftAdjudication.prisonerNumber,
-        agencyId = draftAdjudication.agencyId,
-        incidentTime = draftAdjudication.incidentDetails.dateTimeOfIncident,
-        incidentLocationId = draftAdjudication.incidentDetails.locationId,
-        statement = draftAdjudication.incidentStatement?.statement!!
-      )
-    )
+    val reportedAdjudication = saveToPrisonApi(draftAdjudication)
+
     submittedAdjudicationHistoryRepository.save(
       SubmittedAdjudicationHistory(
         adjudicationNumber = reportedAdjudication.adjudicationNumber,
@@ -135,6 +130,29 @@ class DraftAdjudicationService(
     return draftAdjudicationRepository.findUnsubmittedByAgencyIdAndCreatedByUserId(agencyId, username)
       .sortedBy { it.incidentDetails.dateTimeOfIncident }
       .map { it.toDto() }
+  }
+
+  private fun saveToPrisonApi(draftAdjudication: DraftAdjudication): ReportedAdjudication {
+    if (draftAdjudication.reportNumber == null) {
+      return prisonApiGateway.publishAdjudication(
+        AdjudicationDetailsToPublish(
+          offenderNo = draftAdjudication.prisonerNumber,
+          agencyId = draftAdjudication.agencyId,
+          incidentTime = draftAdjudication.incidentDetails.dateTimeOfIncident,
+          incidentLocationId = draftAdjudication.incidentDetails.locationId,
+          statement = draftAdjudication.incidentStatement?.statement!!
+        )
+      )
+    }
+    else {
+      return prisonApiGateway.updateAdjudication(draftAdjudication.reportNumber!!,
+        AdjudicationDetailsToUpdate(
+          incidentTime = draftAdjudication.incidentDetails.dateTimeOfIncident,
+          incidentLocationId = draftAdjudication.incidentDetails.locationId,
+          statement = draftAdjudication.incidentStatement?.statement!!
+        )
+      )
+    }
   }
 
   private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {

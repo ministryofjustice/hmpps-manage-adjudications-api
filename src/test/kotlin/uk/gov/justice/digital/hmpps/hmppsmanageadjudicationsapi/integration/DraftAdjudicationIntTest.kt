@@ -1,6 +1,14 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_ADJUDICATION_NUMBER
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_PRISONER_BOOKING_ID
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_PRISONER_NUMBER
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_DATE_TIME_OF_INCIDENT
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_DATE_TIME_OF_INCIDENT_TEXT
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_HANDOVER_DEADLINE_TEXT
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_LOCATION_ID
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_STATEMENT
 import java.time.LocalDateTime
 
 class DraftAdjudicationIntTest : IntegrationTestBase() {
@@ -175,6 +183,42 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `complete draft update of existing adjudication`() {
+    prisonApiMockServer.stubGetAdjudication()
+    prisonApiMockServer.stubPutAdjudication()
+    bankHolidayApiMockServer.stubGetBankHolidays()
+
+    val draftAdjudicationResponse = dataAPiHelpers().createADraftFromAReportedAdjudication(DEFAULT_ADJUDICATION_NUMBER)
+    dataAPiHelpers().editIncidentDetails(draftAdjudicationResponse.draftAdjudication.id, UPDATED_DATE_TIME_OF_INCIDENT, UPDATED_LOCATION_ID)
+    dataAPiHelpers().editIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, UPDATED_STATEMENT)
+
+    webTestClient.post()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/complete-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.adjudicationNumber").isEqualTo(DEFAULT_ADJUDICATION_NUMBER)
+      .jsonPath("$.prisonerNumber").isEqualTo(DEFAULT_PRISONER_NUMBER)
+      .jsonPath("$.bookingId").isEqualTo(DEFAULT_PRISONER_BOOKING_ID)
+      .jsonPath("$.dateTimeReportExpires").isEqualTo(UPDATED_HANDOVER_DEADLINE_TEXT)
+      .jsonPath("$.incidentStatement.statement").isEqualTo(UPDATED_STATEMENT)
+      .jsonPath("$.incidentDetails.dateTimeOfIncident").isEqualTo(UPDATED_DATE_TIME_OF_INCIDENT_TEXT)
+      .jsonPath("$.incidentDetails.handoverDeadline").isEqualTo(UPDATED_HANDOVER_DEADLINE_TEXT)
+      .jsonPath("$.incidentDetails.locationId").isEqualTo(UPDATED_LOCATION_ID)
+
+    val expectedBody = mapOf(
+      "incidentLocationId" to UPDATED_LOCATION_ID,
+      "incidentTime" to UPDATED_DATE_TIME_OF_INCIDENT_TEXT,
+      "statement" to UPDATED_STATEMENT
+    )
+
+    prisonApiMockServer.verifyPutAdjudication(objectMapper.writeValueAsString(expectedBody))
+
+    dataAPiHelpers().getDraftAdjudicationDetails(draftAdjudicationResponse.draftAdjudication.id).expectStatus().isNotFound
+  }
+
+  @Test
   fun `should not delete the draft adjudication when the adjudication report submission fails`() {
     prisonApiMockServer.stubPostAdjudicationFailure()
 
@@ -213,7 +257,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `make the incident statement has being complete`() {
+  fun `mark the incident statement as being complete`() {
     val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
     dataAPiHelpers().addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
 

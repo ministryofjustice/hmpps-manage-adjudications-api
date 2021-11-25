@@ -26,6 +26,15 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
       .bodyToMono(object : ParameterizedTypeReference<ReportedAdjudication>() {})
       .block()!!
 
+  fun updateAdjudication(adjudicationNumber: Long, adjudicationDetailsToUpdate: AdjudicationDetailsToUpdate): ReportedAdjudication =
+    prisonApiClientCreds
+      .put()
+      .uri("/adjudications/adjudication/$adjudicationNumber")
+      .bodyValue(adjudicationDetailsToUpdate)
+      .retrieve()
+      .bodyToMono(object : ParameterizedTypeReference<ReportedAdjudication>() {})
+      .block()!!
+
   fun getReportedAdjudications(adjudicationNumbers: Set<Long>): List<ReportedAdjudication> = prisonApiClientCreds
     .post()
     .uri("/adjudications")
