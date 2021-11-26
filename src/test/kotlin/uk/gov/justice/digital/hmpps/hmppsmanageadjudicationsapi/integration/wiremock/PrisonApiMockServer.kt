@@ -4,11 +4,15 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.http.Request
+import com.github.tomakehurst.wiremock.http.Response
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.AdjudicationIntTestDataSet
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_ADJUDICATION_NUMBER
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_AGENCY_ID
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_PRISONER_BOOKING_ID
@@ -17,7 +21,17 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntT
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_LOCATION_ID
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_STATEMENT
 
-class PrisonApiMockServer : WireMockServer(8979) {
+class PrisonApiMockServer : WireMockServer {
+  constructor():super(8979) {
+    /* Add logging of request and any matched response. */
+    addMockServiceRequestListener(::requestReceived)
+  }
+
+  private fun requestReceived(inRequest: Request,
+                              inResponse: Response) {
+    System.out.println("BODY: ${inResponse.bodyAsString}")
+  }
+
   fun stubHealth() {
     stubFor(
       get(urlEqualTo("/api/health/ping"))
@@ -125,6 +139,43 @@ class PrisonApiMockServer : WireMockServer(8979) {
     )
   }
 
+  fun stubGetValidAdjudicationsById(testDataSet1: AdjudicationIntTestDataSet, testDataSet2: AdjudicationIntTestDataSet) {
+    stubFor(
+      post(urlEqualTo("/api/adjudications"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+            .withBody(
+              """
+                [
+                  {
+                     "adjudicationNumber": ${testDataSet1.adjudicationNumber},
+                     "reporterStaffId":486080,
+                     "offenderNo": "${testDataSet1.prisonerNumber}",
+                     "bookingId":123,
+                     "agencyId": "${testDataSet1.agencyId}",
+                     "incidentTime": "${testDataSet1.dateTimeOfIncidentISOString}",
+                     "incidentLocationId": ${testDataSet1.locationId},
+                     "statement": "${testDataSet1.statement}"
+                  },
+                  {
+                     "adjudicationNumber":${testDataSet2.adjudicationNumber},
+                     "reporterStaffId":486080,
+                     "offenderNo": "${testDataSet2.prisonerNumber}",
+                     "bookingId":456,
+                     "agencyId": "${testDataSet2.agencyId}",
+                     "incidentTime": "${testDataSet2.dateTimeOfIncidentISOString}",
+                     "incidentLocationId": ${testDataSet2.locationId},
+                     "statement": "${testDataSet2.statement}"
+                  }
+                ]
+              """.trimIndent()
+            )
+        )
+    )
+  }
+
   fun stubGetAdjudicationWithInvalidNumber() {
     stubFor(
       get(urlEqualTo("/api/adjudications/adjudication/1524242"))
@@ -218,6 +269,33 @@ class PrisonApiMockServer : WireMockServer(8979) {
     verify(
       putRequestedFor(urlEqualTo("/api/adjudications/adjudication/$DEFAULT_ADJUDICATION_NUMBER"))
         .withRequestBody(equalTo(bodyAsJson))
+    )
+  }
+
+  fun stubPostAdjudication(testDataSet: AdjudicationIntTestDataSet) {
+    stubFor(
+      post(urlEqualTo("/api/adjudications/adjudication"))
+        .withRequestBody(matchingJsonPath("$.[?(@.offenderNo == '${testDataSet.prisonerNumber}')]"))
+//        .withRequestBody(matchingJsonPath("$.offenderNo = '${testDataSet.prisonerNumber}'"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+            .withBody(
+              """
+               {
+                  "adjudicationNumber": ${testDataSet.adjudicationNumber},
+                  "reporterStaffId": 486080,
+                  "offenderNo": "${testDataSet.prisonerNumber}",
+                  "bookingId": 1,
+                  "agencyId": "${testDataSet.agencyId}",
+                  "incidentTime": "${testDataSet.dateTimeOfIncidentISOString}",
+                  "incidentLocationId": ${testDataSet.locationId},
+                  "statement": "${testDataSet.statement}"
+                }
+              """.trimIndent()
+            )
+        )
     )
   }
 }

@@ -79,13 +79,60 @@ class ReportedAdjudicationServiceTest {
   }
 
   @Nested
+  inner class AllReportedAdjudications {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(submittedAdjudicationHistoryRepository.findByAgencyId(any(), any())).thenReturn(
+        PageImpl(
+          listOf(
+            SubmittedAdjudicationHistory(adjudicationNumber = 1, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
+            SubmittedAdjudicationHistory(adjudicationNumber = 2, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
+          )
+        )
+      )
+      whenever(prisonApiGateway.getReportedAdjudications(any())).thenReturn(
+        listOf(
+          ReportedAdjudication(
+            adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
+            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+          ),
+          ReportedAdjudication(
+            adjudicationNumber = 2, offenderNo = "AA1234B", bookingId = 456, reporterStaffId = 234, agencyId = "MDI",
+            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+          )
+        )
+      )
+      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
+    }
+
+    @Test
+    fun `makes a call to prison api to retrieve reported adjudications created my the current user`() {
+      reportedAdjudicationService.getAllReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
+
+      verify(prisonApiGateway).getReportedAdjudications(listOf(1, 2))
+    }
+
+    @Test
+    fun `returns my reported adjudications`() {
+      val myReportedAdjudications = reportedAdjudicationService.getAllReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
+
+      assertThat(myReportedAdjudications.content)
+        .extracting("adjudicationNumber", "prisonerNumber", "bookingId")
+        .contains(
+          Tuple.tuple(1L, "AA1234A", 123L),
+          Tuple.tuple(2L, "AA1234B", 456L)
+        )
+    }
+  }
+
+  @Nested
   inner class MyReportedAdjudications {
     @BeforeEach
     fun beforeEach() {
       whenever(submittedAdjudicationHistoryRepository.findByCreatedByUserId(any())).thenReturn(
         listOf(
-          SubmittedAdjudicationHistory(adjudicationNumber = 1, dateTimeSent = DATE_TIME_OF_INCIDENT),
-          SubmittedAdjudicationHistory(adjudicationNumber = 2, dateTimeSent = DATE_TIME_OF_INCIDENT),
+          SubmittedAdjudicationHistory(adjudicationNumber = 1, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
+          SubmittedAdjudicationHistory(adjudicationNumber = 2, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
         )
       )
       whenever(prisonApiGateway.getReportedAdjudications(any())).thenReturn(

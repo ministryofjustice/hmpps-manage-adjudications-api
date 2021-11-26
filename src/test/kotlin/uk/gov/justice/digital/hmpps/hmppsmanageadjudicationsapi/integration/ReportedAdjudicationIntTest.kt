@@ -102,6 +102,46 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `return a page of reported adjudications completed in the current agency`() {
+    val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
+
+    val firstDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_1)
+    intTestData.addIncidentStatement(firstDraftCreationResponse, IntTestData.ADJUDICATION_1)
+    intTestData.completeDraftAdjudication(firstDraftCreationResponse, IntTestData.ADJUDICATION_1)
+
+    val secondDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_2)
+    intTestData.addIncidentStatement(secondDraftCreationResponse, IntTestData.ADJUDICATION_2)
+    intTestData.completeDraftAdjudication(secondDraftCreationResponse, IntTestData.ADJUDICATION_2)
+
+    prisonApiMockServer.stubGetValidAdjudicationsById(IntTestData.ADJUDICATION_1, IntTestData.ADJUDICATION_2)
+    bankHolidayApiMockServer.stubGetBankHolidays()
+
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/MDI?page=0&size=20")
+      .headers(setHeaders(username = "NEW_USER", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content[0].adjudicationNumber").isEqualTo(IntTestData.ADJUDICATION_2.adjudicationNumber)
+      .jsonPath("$.content[0].prisonerNumber").isEqualTo(IntTestData.ADJUDICATION_2.prisonerNumber)
+      .jsonPath("$.content[0].bookingId").isEqualTo("456")
+      .jsonPath("$.content[0].incidentDetails.dateTimeOfIncident")
+        .isEqualTo(IntTestData.ADJUDICATION_2.dateTimeOfIncidentISOString)
+      .jsonPath("$.content[0].incidentDetails.locationId").isEqualTo(IntTestData.ADJUDICATION_2.locationId)
+  }
+
+  @Test
+  fun `get 403 without the relevant role when attempting to return reported adjudications for a caseload`() {
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/MDI?page=0&size=20")
+      .headers(setHeaders(username = "NEW_USER"))
+      .exchange()
+      .expectStatus().is5xxServerError
+      .expectBody()
+      .jsonPath("$.userMessage").isEqualTo("Unexpected error: Access is denied")
+  }
+
+  @Test
   fun `create draft from reported adjudication returns expected result`() {
     prisonApiMockServer.stubGetAdjudication()
     bankHolidayApiMockServer.stubGetBankHolidays()
