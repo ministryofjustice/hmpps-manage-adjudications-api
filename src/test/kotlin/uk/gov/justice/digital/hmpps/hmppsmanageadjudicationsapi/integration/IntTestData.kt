@@ -112,4 +112,3 @@ class IntTestData(
     it.contentType = contentType
   }
 }
-

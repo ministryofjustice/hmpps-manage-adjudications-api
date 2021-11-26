@@ -126,7 +126,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.content[0].prisonerNumber").isEqualTo(IntTestData.ADJUDICATION_2.prisonerNumber)
       .jsonPath("$.content[0].bookingId").isEqualTo("456")
       .jsonPath("$.content[0].incidentDetails.dateTimeOfIncident")
-        .isEqualTo(IntTestData.ADJUDICATION_2.dateTimeOfIncidentISOString)
+      .isEqualTo(IntTestData.ADJUDICATION_2.dateTimeOfIncidentISOString)
       .jsonPath("$.content[0].incidentDetails.locationId").isEqualTo(IntTestData.ADJUDICATION_2.locationId)
   }
 
