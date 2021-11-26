@@ -22,13 +22,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntT
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_STATEMENT
 
 class PrisonApiMockServer : WireMockServer {
-  constructor():super(8979) {
+  constructor() : super(8979) {
     /* Add logging of request and any matched response. */
     addMockServiceRequestListener(::requestReceived)
   }
 
-  private fun requestReceived(inRequest: Request,
-                              inResponse: Response) {
+  private fun requestReceived(
+    inRequest: Request,
+    inResponse: Response
+  ) {
     System.out.println("BODY: ${inResponse.bodyAsString}")
   }
 
