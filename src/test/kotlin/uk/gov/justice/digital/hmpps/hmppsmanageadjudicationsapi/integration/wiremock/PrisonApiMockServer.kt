@@ -278,7 +278,6 @@ class PrisonApiMockServer : WireMockServer {
     stubFor(
       post(urlEqualTo("/api/adjudications/adjudication"))
         .withRequestBody(matchingJsonPath("$.[?(@.offenderNo == '${testDataSet.prisonerNumber}')]"))
-//        .withRequestBody(matchingJsonPath("$.offenderNo = '${testDataSet.prisonerNumber}'"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
