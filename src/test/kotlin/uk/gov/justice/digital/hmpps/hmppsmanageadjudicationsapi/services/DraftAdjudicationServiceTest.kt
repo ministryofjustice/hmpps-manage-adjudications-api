@@ -403,6 +403,8 @@ class DraftAdjudicationServiceTest {
 
     @Nested
     inner class WithAValidDraftAdjudication {
+      private val INCIDENT_TIME = LocalDateTime.now(clock)
+
       @BeforeEach
       fun beforeEach() {
         whenever(draftAdjudicationRepository.findById(any())).thenReturn(
@@ -414,7 +416,7 @@ class DraftAdjudicationServiceTest {
               agencyId = "MDI",
               incidentDetails = IncidentDetails(
                 locationId = 1,
-                dateTimeOfIncident = LocalDateTime.now(clock),
+                dateTimeOfIncident = INCIDENT_TIME,
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
               incidentStatement = IncidentStatement(statement = "test")
@@ -444,8 +446,8 @@ class DraftAdjudicationServiceTest {
         verify(submittedAdjudicationHistoryRepository).save(argumentCaptor.capture())
 
         assertThat(argumentCaptor.value)
-          .extracting("adjudicationNumber", "dateTimeSent")
-          .contains(123456L, LocalDateTime.now(clock))
+          .extracting("adjudicationNumber", "agencyId", "dateTimeOfIncident", "dateTimeSent")
+          .contains(123456L, "MDI", INCIDENT_TIME, LocalDateTime.now(clock))
       }
 
       @Test
@@ -519,8 +521,8 @@ class DraftAdjudicationServiceTest {
         verify(submittedAdjudicationHistoryRepository).save(argumentCaptor.capture())
 
         assertThat(argumentCaptor.value)
-          .extracting("adjudicationNumber", "dateTimeSent")
-          .contains(123L, LocalDateTime.now(clock))
+          .extracting("adjudicationNumber", "agencyId", "dateTimeSent")
+          .contains(123L, "MDI", LocalDateTime.now(clock))
       }
 
       @Test

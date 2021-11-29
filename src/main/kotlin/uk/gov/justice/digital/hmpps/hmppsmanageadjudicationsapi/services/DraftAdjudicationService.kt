@@ -115,6 +115,8 @@ class DraftAdjudicationService(
     submittedAdjudicationHistoryRepository.save(
       SubmittedAdjudicationHistory(
         adjudicationNumber = reportedAdjudication.adjudicationNumber,
+        agencyId = reportedAdjudication.agencyId,
+        dateTimeOfIncident = reportedAdjudication.incidentTime,
         LocalDateTime.now(clock)
       )
     )
