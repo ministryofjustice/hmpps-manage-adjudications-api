@@ -58,7 +58,8 @@ class ReportedAdjudicationServiceTest {
       val reportedAdjudication =
         ReportedAdjudication(
           adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
-          incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+          incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
+          createdByUserId = "A_SMITH",
         )
 
       whenever(prisonApiGateway.getReportedAdjudication(any())).thenReturn(
@@ -69,8 +70,8 @@ class ReportedAdjudicationServiceTest {
       val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails(1)
 
       assertThat(reportedAdjudicationDto)
-        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "dateTimeReportExpires")
-        .contains(1L, "AA1234A", 123L, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
+        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "dateTimeReportExpires", "createdByUserId")
+        .contains(1L, "AA1234A", 123L, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, "A_SMITH")
 
       assertThat(reportedAdjudicationDto.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident")
@@ -94,11 +95,13 @@ class ReportedAdjudicationServiceTest {
         listOf(
           ReportedAdjudication(
             adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
-            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
+            createdByUserId = "A_SMITH",
           ),
           ReportedAdjudication(
             adjudicationNumber = 2, offenderNo = "AA1234B", bookingId = 456, reporterStaffId = 234, agencyId = "MDI",
-            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
+            createdByUserId = "A_SMITH",
           )
         )
       )
@@ -106,14 +109,21 @@ class ReportedAdjudicationServiceTest {
     }
 
     @Test
-    fun `makes a call to prison api to retrieve reported adjudications created my the current user`() {
+    fun `makes a call to the submitted adjudication repository to get the page of adjudications`() {
+      reportedAdjudicationService.getAllReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
+
+      verify(submittedAdjudicationHistoryRepository).findByAgencyId("MDI", Pageable.ofSize(20).withPage(0))
+    }
+
+    @Test
+    fun `makes a call to prison api to retrieve the found adjudication details`() {
       reportedAdjudicationService.getAllReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
 
       verify(prisonApiGateway).getReportedAdjudications(listOf(1, 2))
     }
 
     @Test
-    fun `returns my reported adjudications`() {
+    fun `returns all reported adjudications`() {
       val myReportedAdjudications = reportedAdjudicationService.getAllReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
 
       assertThat(myReportedAdjudications.content)
@@ -139,11 +149,13 @@ class ReportedAdjudicationServiceTest {
         listOf(
           ReportedAdjudication(
             adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
-            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
+            createdByUserId = "A_SMITH",
           ),
           ReportedAdjudication(
             adjudicationNumber = 2, offenderNo = "AA1234B", bookingId = 456, reporterStaffId = 234, agencyId = "MDI",
-            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
+            createdByUserId = "A_SMITH",
           )
         )
       )
@@ -152,11 +164,13 @@ class ReportedAdjudicationServiceTest {
           listOf(
             ReportedAdjudication(
               adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
-              incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+              incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
+              createdByUserId = "A_SMITH",
             ),
             ReportedAdjudication(
               adjudicationNumber = 2, offenderNo = "AA1234B", bookingId = 456, reporterStaffId = 234, agencyId = "MDI",
-              incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+              incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
+              createdByUserId = "A_SMITH",
             )
           ),
           Pageable.ofSize(20).withPage(0),
@@ -190,7 +204,8 @@ class ReportedAdjudicationServiceTest {
   inner class CreateDraftFromReported {
     val reportedAdjudication = ReportedAdjudication(
       adjudicationNumber = 123, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
-      incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT
+      incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
+      createdByUserId = "A_SMITH",
     )
 
     val expectedSavedDraftAdjudication = DraftAdjudication(

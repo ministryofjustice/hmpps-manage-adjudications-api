@@ -21,6 +21,7 @@ class IntTestData(
     const val DEFAULT_PRISONER_NUMBER = "AA1234A"
     const val DEFAULT_PRISONER_BOOKING_ID = 123L
     const val DEFAULT_AGENCY_ID = "MDI"
+    const val DEFAULT_CREATED_USER_ID = "B_MILLS"
     val DEFAULT_DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 11, 12, 10, 0)
 
     const val UPDATED_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-13T10:00:00"
@@ -36,7 +37,8 @@ class IntTestData(
       locationId = 11L,
       dateTimeOfIncidentISOString = "2020-12-13T08:00:00",
       dateTimeOfIncident = LocalDateTime.parse("2020-12-13T08:00:00"),
-      statement = "Test statement"
+      statement = "Test statement",
+      createdByUserId = "A_NESS"
     )
 
     val ADJUDICATION_2 = AdjudicationIntTestDataSet(
@@ -46,7 +48,19 @@ class IntTestData(
       locationId = 12L,
       dateTimeOfIncidentISOString = "2020-12-14T09:00:00",
       dateTimeOfIncident = LocalDateTime.parse("2020-12-14T09:00:00"),
-      statement = "Different test statement"
+      statement = "Different test statement",
+      createdByUserId = "P_NESS"
+    )
+
+    val ADJUDICATION_3 = AdjudicationIntTestDataSet(
+      adjudicationNumber = 789L,
+      prisonerNumber = "DD3456D",
+      agencyId = "MDI",
+      locationId = 13L,
+      dateTimeOfIncidentISOString = "2020-12-15T10:00:00",
+      dateTimeOfIncident = LocalDateTime.parse("2020-12-15T10:00:00"),
+      statement = "Another test statement",
+      createdByUserId = "L_NESS"
     )
   }
 

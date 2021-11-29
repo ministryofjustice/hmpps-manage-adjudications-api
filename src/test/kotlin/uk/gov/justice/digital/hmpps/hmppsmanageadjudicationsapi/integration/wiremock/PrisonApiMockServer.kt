@@ -10,11 +10,13 @@ import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.http.Request
 import com.github.tomakehurst.wiremock.http.Response
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.AdjudicationIntTestDataSet
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_ADJUDICATION_NUMBER
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_AGENCY_ID
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_CREATED_USER_ID
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_PRISONER_BOOKING_ID
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_PRISONER_NUMBER
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_DATE_TIME_OF_INCIDENT_TEXT
@@ -52,6 +54,16 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
+  fun stubHealthFailure() {
+    stubFor(
+      get(urlEqualTo("/api/health/ping"))
+        .willReturn(
+          aResponse()
+            .withFault(Fault.CONNECTION_RESET_BY_PEER)
+        )
+    )
+  }
+
   fun stubGetAdjudication() {
     stubFor(
       get(urlEqualTo("/api/adjudications/adjudication/1524242"))
@@ -69,7 +81,8 @@ class PrisonApiMockServer : WireMockServer {
                   "agencyId": "MDI",
                   "incidentTime": "2021-10-25T09:03:11",
                   "incidentLocationId": 721850,
-                  "statement": "It keeps happening..."
+                  "statement": "It keeps happening...",
+                  "createdByUserId": "A_SMITH"
                 }
               """.trimIndent()
             )
@@ -96,7 +109,8 @@ class PrisonApiMockServer : WireMockServer {
                        "agencyId": "MDI",
                        "incidentTime":"2021-10-25T09:03:11",
                        "incidentLocationId":721850,
-                       "statement":"It keeps happening..."
+                       "statement":"It keeps happening...",
+                       "createdByUserId": "A_SMITH"
                     },
                     {
                        "adjudicationNumber":2,
@@ -106,7 +120,8 @@ class PrisonApiMockServer : WireMockServer {
                        "agencyId": "MDI",
                        "incidentTime":"2021-10-25T09:03:11",
                        "incidentLocationId":721850,
-                       "statement":"It keeps happening..."
+                       "statement":"It keeps happening...",
+                       "createdByUserId": "A_SMITH"
                     }
                  ],
                  "pageable":{
@@ -159,7 +174,8 @@ class PrisonApiMockServer : WireMockServer {
                      "agencyId": "${testDataSet1.agencyId}",
                      "incidentTime": "${testDataSet1.dateTimeOfIncidentISOString}",
                      "incidentLocationId": ${testDataSet1.locationId},
-                     "statement": "${testDataSet1.statement}"
+                     "statement": "${testDataSet1.statement}",
+                     "createdByUserId": "${testDataSet1.createdByUserId}"
                   },
                   {
                      "adjudicationNumber":${testDataSet2.adjudicationNumber},
@@ -169,7 +185,8 @@ class PrisonApiMockServer : WireMockServer {
                      "agencyId": "${testDataSet2.agencyId}",
                      "incidentTime": "${testDataSet2.dateTimeOfIncidentISOString}",
                      "incidentLocationId": ${testDataSet2.locationId},
-                     "statement": "${testDataSet2.statement}"
+                     "statement": "${testDataSet2.statement}",
+                     "createdByUserId": "${testDataSet2.createdByUserId}"
                   }
                 ]
               """.trimIndent()
@@ -216,7 +233,8 @@ class PrisonApiMockServer : WireMockServer {
                   "agencyId": "MDI",
                   "incidentTime": "2010-11-12T10:00:00",
                   "incidentLocationId": 721850,
-                  "statement": "new statement"
+                  "statement": "new statement",
+                  "createdByUserId": "A_SMITH"
                 }
               """.trimIndent()
             )
@@ -259,7 +277,8 @@ class PrisonApiMockServer : WireMockServer {
                   "agencyId": "$DEFAULT_AGENCY_ID",
                   "incidentTime": "$UPDATED_DATE_TIME_OF_INCIDENT_TEXT",
                   "incidentLocationId": $UPDATED_LOCATION_ID,
-                  "statement": "$UPDATED_STATEMENT"
+                  "statement": "$UPDATED_STATEMENT",
+                  "createdByUserId": "$DEFAULT_CREATED_USER_ID"
                 }
               """.trimIndent()
             )
@@ -292,7 +311,8 @@ class PrisonApiMockServer : WireMockServer {
                   "agencyId": "${testDataSet.agencyId}",
                   "incidentTime": "${testDataSet.dateTimeOfIncidentISOString}",
                   "incidentLocationId": ${testDataSet.locationId},
-                  "statement": "${testDataSet.statement}"
+                  "statement": "${testDataSet.statement}",
+                  "createdByUserId": "${testDataSet.createdByUserId}"
                 }
               """.trimIndent()
             )

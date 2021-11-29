@@ -13,7 +13,8 @@ data class ReportedAdjudication(
   val agencyId: String,
   val incidentTime: LocalDateTime,
   val incidentLocationId: Long,
-  val statement: String
+  val statement: String,
+  val createdByUserId: String
 ) {
   fun toDto(dateTimeReportExpires: LocalDateTime): ReportedAdjudicationDto =
     ReportedAdjudicationDto(
@@ -28,6 +29,7 @@ data class ReportedAdjudication(
       ),
       incidentStatement = IncidentStatementDto(
         statement = statement
-      )
+      ),
+      createdByUserId = createdByUserId
     )
 }
