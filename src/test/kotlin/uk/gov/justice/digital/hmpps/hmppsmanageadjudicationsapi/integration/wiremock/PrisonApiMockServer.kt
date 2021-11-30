@@ -38,7 +38,7 @@ class PrisonApiMockServer : WireMockServer {
 
   fun stubHealth() {
     stubFor(
-      get(urlEqualTo("/api/health/ping"))
+      get(urlEqualTo("/health/ping"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -56,7 +56,7 @@ class PrisonApiMockServer : WireMockServer {
 
   fun stubHealthFailure() {
     stubFor(
-      get(urlEqualTo("/api/health/ping"))
+      get(urlEqualTo("/health/ping"))
         .willReturn(
           aResponse()
             .withFault(Fault.CONNECTION_RESET_BY_PEER)

@@ -3,17 +3,27 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.hea
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.CacheManager
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.CacheConfiguration
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestBase
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 
 class HealthCheckTest : IntegrationTestBase() {
+
+  @Autowired
+  lateinit var cacheManager: CacheManager
 
   @BeforeEach
   fun beforeEach() {
     prisonApiMockServer.resetMappings()
     prisonApiMockServer.stubHealth()
+
+    bankHolidayApiMockServer.resetMappings()
+    bankHolidayApiMockServer.stubGetBankHolidays()
 
     oAuthMockServer.stubGrantToken()
   }
@@ -85,7 +95,7 @@ class HealthCheckTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Prison API health reports UP and OK`() {
+  fun `Prison API and Bank Holiday API health reports UP and OK`() {
     webTestClient.get().uri("/health")
       .exchange()
       .expectStatus().isOk
@@ -100,6 +110,11 @@ class HealthCheckTest : IntegrationTestBase() {
           assertThat(it).isEqualTo("OK")
         }
       )
+      .jsonPath("components.bankHolidayApiHealthCheck.status").value(
+        Consumer<String> {
+          assertThat(it).isEqualTo("UP")
+        }
+      )
   }
 
   @Test
@@ -111,6 +126,22 @@ class HealthCheckTest : IntegrationTestBase() {
       .isEqualTo(503)
       .expectBody()
       .jsonPath("components.prisonApiHealthCheck.status").value(
+        Consumer<String> {
+          assertThat(it).isEqualTo("DOWN")
+        }
+      )
+  }
+
+  @Test
+  fun `Bank Holiday API reports DOWN and not OK if fails`() {
+    cacheManager.getCache(CacheConfiguration.BANK_HOLIDAYS_CACHE_NAME)!!.invalidate()
+    bankHolidayApiMockServer.stubGetBankHolidaysFailure()
+    webTestClient.get().uri("/health")
+      .exchange()
+      .expectStatus()
+      .isEqualTo(503)
+      .expectBody()
+      .jsonPath("components.bankHolidayApiHealthCheck.status").value(
         Consumer<String> {
           assertThat(it).isEqualTo("DOWN")
         }
