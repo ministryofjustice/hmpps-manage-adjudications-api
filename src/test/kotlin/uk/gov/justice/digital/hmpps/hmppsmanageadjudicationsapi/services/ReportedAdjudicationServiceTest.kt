@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudicationRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -139,10 +138,12 @@ class ReportedAdjudicationServiceTest {
   inner class MyReportedAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(submittedAdjudicationHistoryRepository.findByCreatedByUserId(any())).thenReturn(
-        listOf(
-          SubmittedAdjudicationHistory(adjudicationNumber = 1, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
-          SubmittedAdjudicationHistory(adjudicationNumber = 2, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
+      whenever(submittedAdjudicationHistoryRepository.findByCreatedByUserIdAndAgencyId(any(), any(), any())).thenReturn(
+        PageImpl(
+          listOf(
+            SubmittedAdjudicationHistory(adjudicationNumber = 1, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
+            SubmittedAdjudicationHistory(adjudicationNumber = 2, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
+          )
         )
       )
       whenever(prisonApiGateway.getReportedAdjudications(any())).thenReturn(
@@ -159,32 +160,14 @@ class ReportedAdjudicationServiceTest {
           )
         )
       )
-      whenever(prisonApiGateway.search(any(), any())).thenReturn(
-        PageImpl(
-          listOf(
-            ReportedAdjudication(
-              adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
-              incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
-              createdByUserId = "A_SMITH",
-            ),
-            ReportedAdjudication(
-              adjudicationNumber = 2, offenderNo = "AA1234B", bookingId = 456, reporterStaffId = 234, agencyId = "MDI",
-              incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
-              createdByUserId = "A_SMITH",
-            )
-          ),
-          Pageable.ofSize(20).withPage(0),
-          2
-        )
-      )
       whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
     }
 
     @Test
-    fun `makes a call to prison api to retrieve reported adjudications created my the current user`() {
+    fun `makes a call to prison api to retrieve reported adjudications`() {
       reportedAdjudicationService.getMyReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
 
-      verify(prisonApiGateway).search(ReportedAdjudicationRequest("MDI", setOf(1, 2)), Pageable.ofSize(20).withPage(0))
+      verify(prisonApiGateway).getReportedAdjudications(listOf(1, 2))
     }
 
     @Test

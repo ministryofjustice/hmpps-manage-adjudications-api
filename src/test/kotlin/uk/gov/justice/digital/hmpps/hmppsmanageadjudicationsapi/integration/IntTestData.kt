@@ -62,6 +62,28 @@ class IntTestData(
       statement = "Another test statement",
       createdByUserId = "L_NESS"
     )
+
+    val ADJUDICATION_4 = AdjudicationIntTestDataSet(
+      adjudicationNumber = 1234L,
+      prisonerNumber = "EE4567E",
+      agencyId = "MDI",
+      locationId = 14L,
+      dateTimeOfIncidentISOString = "2020-12-16T10:00:00",
+      dateTimeOfIncident = LocalDateTime.parse("2020-12-16T10:00:00"),
+      statement = "Yet another test statement",
+      createdByUserId = "P_NESS"
+    )
+
+    val ADJUDICATION_5 = AdjudicationIntTestDataSet(
+      adjudicationNumber = 2345L,
+      prisonerNumber = "FF4567F",
+      agencyId = "LEI",
+      locationId = 15L,
+      dateTimeOfIncidentISOString = "2020-12-17T10:00:00",
+      dateTimeOfIncident = LocalDateTime.parse("2020-12-17T10:00:00"),
+      statement = "Keep on with the test statements",
+      createdByUserId = "P_NESS"
+    )
   }
 
   fun startNewAdjudication(

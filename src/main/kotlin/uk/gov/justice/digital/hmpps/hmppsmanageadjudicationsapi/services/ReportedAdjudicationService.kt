@@ -8,9 +8,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudicationRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -34,23 +34,13 @@ class ReportedAdjudicationService(
 
   fun getAllReportedAdjudications(agencyId: String, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val submittedAdjudicationsPage = submittedAdjudicationHistoryRepository.findByAgencyId(agencyId, pageable)
-    val adjudicationNumbers = submittedAdjudicationsPage.map { it.adjudicationNumber }.toList()
-    if (adjudicationNumbers.isEmpty()) return Page.empty(pageable)
-
-    val adjudicationDetailsByNumber = prisonApi.getReportedAdjudications(adjudicationNumbers).groupBy { it.adjudicationNumber }
-    return submittedAdjudicationsPage.map { toDto(adjudicationDetailsByNumber[it.adjudicationNumber]!![0]) }
+    return getAdjudicationDetailsPage(submittedAdjudicationsPage, pageable)
   }
 
-  private fun toDto(adjudication: ReportedAdjudication): ReportedAdjudicationDto =
-    adjudication.toDto(dateCalculationService.calculate48WorkingHoursFrom(adjudication.incidentTime))
-
   fun getMyReportedAdjudications(agencyId: String, pageable: Pageable): Page<ReportedAdjudicationDto> {
-    val adjudicationNumbers = myAdjudications()
-    if (adjudicationNumbers.isEmpty()) return Page.empty(pageable)
-    return prisonApi.search(
-      ReportedAdjudicationRequest(agencyId, adjudicationNumbers),
-      pageable
-    ).map { it.toDto(dateCalculationService.calculate48WorkingHoursFrom(it.incidentTime)) }
+    val username = authenticationFacade.currentUsername
+    val submittedAdjudicationsPage = submittedAdjudicationHistoryRepository.findByCreatedByUserIdAndAgencyId(username!!, agencyId, pageable)
+    return getAdjudicationDetailsPage(submittedAdjudicationsPage, pageable)
   }
 
   fun createDraftFromReportedAdjudication(adjudicationNumber: Long): DraftAdjudicationDto {
@@ -77,9 +67,14 @@ class ReportedAdjudicationService(
       .toDto()
   }
 
-  private fun myAdjudications(): Set<Long> {
-    val username = authenticationFacade.currentUsername
-    val submittedAdjudicationHistory = submittedAdjudicationHistoryRepository.findByCreatedByUserId(username!!)
-    return submittedAdjudicationHistory.map { it.adjudicationNumber }.toSet()
+  private fun getAdjudicationDetailsPage(submittedAdjudicationsPage: Page<SubmittedAdjudicationHistory>, defaultPageable: Pageable): Page<ReportedAdjudicationDto> {
+    val adjudicationNumbers = submittedAdjudicationsPage.map { it.adjudicationNumber }.toList()
+    if (adjudicationNumbers.isEmpty()) return Page.empty(defaultPageable)
+
+    val adjudicationDetailsByNumber = prisonApi.getReportedAdjudications(adjudicationNumbers).groupBy { it.adjudicationNumber }
+    return submittedAdjudicationsPage.map { toDto(adjudicationDetailsByNumber[it.adjudicationNumber]!![0]) }
   }
+
+  private fun toDto(adjudication: ReportedAdjudication): ReportedAdjudicationDto =
+    adjudication.toDto(dateCalculationService.calculate48WorkingHoursFrom(adjudication.incidentTime))
 }

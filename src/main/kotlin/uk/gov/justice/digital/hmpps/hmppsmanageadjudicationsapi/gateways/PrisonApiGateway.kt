@@ -42,12 +42,4 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
     .retrieve()
     .bodyToMono(object : ParameterizedTypeReference<List<ReportedAdjudication>>() {})
     .block()!!
-
-  fun search(request: ReportedAdjudicationRequest, pageable: Pageable): Page<ReportedAdjudication> = prisonApiClientCreds
-    .post()
-    .uri("/adjudications/search?" + getPageableUrlParameters(pageable))
-    .bodyValue(request)
-    .retrieve()
-    .bodyToMono(object : ParameterizedTypeReference<RestResponsePage<ReportedAdjudication>>() {})
-    .block()!!
 }

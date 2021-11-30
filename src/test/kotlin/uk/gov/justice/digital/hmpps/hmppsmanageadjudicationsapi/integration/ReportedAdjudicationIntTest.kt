@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.CacheManager
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.CacheConfiguration
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.BankHolidays
-import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 
 class ReportedAdjudicationIntTest : IntegrationTestBase() {
@@ -75,31 +74,51 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `return a page of reported adjudications completed by the current user`() {
-    prisonApiMockServer.stubGetAdjudications()
-    prisonApiMockServer.stubPostAdjudication()
-    bankHolidayApiMockServer.stubGetBankHolidays()
+    val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
 
-    val dataAPiHelpers = DataAPiHelpers(webTestClient, setHeaders(username = "NEW_USER"))
-    dataAPiHelpers.createAndCompleteADraftAdjudication(LocalDateTime.parse("2021-10-25T09:03:11"))
+    val firstDraftUserHeaders = setHeaders(username = IntTestData.ADJUDICATION_2.createdByUserId)
+    val firstDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_2, firstDraftUserHeaders)
+    intTestData.addIncidentStatement(firstDraftCreationResponse, IntTestData.ADJUDICATION_2, firstDraftUserHeaders)
+    intTestData.completeDraftAdjudication(firstDraftCreationResponse, IntTestData.ADJUDICATION_2, firstDraftUserHeaders)
+
+    val secondDraftUserHeaders = setHeaders(username = IntTestData.ADJUDICATION_3.createdByUserId)
+    val secondDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_3, secondDraftUserHeaders)
+    intTestData.addIncidentStatement(secondDraftCreationResponse, IntTestData.ADJUDICATION_3, secondDraftUserHeaders)
+    intTestData.completeDraftAdjudication(secondDraftCreationResponse, IntTestData.ADJUDICATION_3, secondDraftUserHeaders)
+
+    val thirdDraftUserHeaders = setHeaders(username = IntTestData.ADJUDICATION_4.createdByUserId)
+    val thirdDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_4, thirdDraftUserHeaders)
+    intTestData.addIncidentStatement(thirdDraftCreationResponse, IntTestData.ADJUDICATION_4, thirdDraftUserHeaders)
+    intTestData.completeDraftAdjudication(thirdDraftCreationResponse, IntTestData.ADJUDICATION_4, thirdDraftUserHeaders)
+
+    val fourthDraftUserHeaders = setHeaders(username = IntTestData.ADJUDICATION_5.createdByUserId)
+    val fourthDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_5, fourthDraftUserHeaders)
+    intTestData.addIncidentStatement(fourthDraftCreationResponse, IntTestData.ADJUDICATION_5, fourthDraftUserHeaders)
+    intTestData.completeDraftAdjudication(fourthDraftCreationResponse, IntTestData.ADJUDICATION_5, fourthDraftUserHeaders)
+
+    prisonApiMockServer.stubGetValidAdjudicationsById(IntTestData.ADJUDICATION_2, IntTestData.ADJUDICATION_4)
+    bankHolidayApiMockServer.stubGetBankHolidays()
 
     webTestClient.get()
       .uri("/reported-adjudications/my/agency/MDI?page=0&size=20")
-      .headers(setHeaders(username = "NEW_USER"))
+      .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.content[0].adjudicationNumber").isEqualTo("1")
-      .jsonPath("$.content[0].prisonerNumber").isEqualTo("AA1234A")
-      .jsonPath("$.content[0].bookingId").isEqualTo("123")
+      .jsonPath("$.content[0].adjudicationNumber").isEqualTo(IntTestData.ADJUDICATION_4.adjudicationNumber)
+      .jsonPath("$.content[0].prisonerNumber").isEqualTo(IntTestData.ADJUDICATION_4.prisonerNumber)
+      .jsonPath("$.content[0].bookingId").isEqualTo("456")
       .jsonPath("$.content[0].incidentDetails.dateTimeOfIncident")
-      .isEqualTo("2021-10-25T09:03:11")
-      .jsonPath("$.content[0].incidentDetails.locationId").isEqualTo(721850)
-      .jsonPath("$.content[1].adjudicationNumber").isEqualTo("2")
-      .jsonPath("$.content[1].prisonerNumber").isEqualTo("AA1234B")
-      .jsonPath("$.content[1].bookingId").isEqualTo("456")
+      .isEqualTo(IntTestData.ADJUDICATION_4.dateTimeOfIncidentISOString)
+      .jsonPath("$.content[0].incidentDetails.locationId").isEqualTo(IntTestData.ADJUDICATION_4.locationId)
+      .jsonPath("$.content[0].createdByUserId").isEqualTo(IntTestData.ADJUDICATION_4.createdByUserId)
+      .jsonPath("$.content[1].adjudicationNumber").isEqualTo(IntTestData.ADJUDICATION_2.adjudicationNumber)
+      .jsonPath("$.content[1].prisonerNumber").isEqualTo(IntTestData.ADJUDICATION_2.prisonerNumber)
+      .jsonPath("$.content[1].bookingId").isEqualTo("123")
       .jsonPath("$.content[1].incidentDetails.dateTimeOfIncident")
-      .isEqualTo("2021-10-25T09:03:11")
-      .jsonPath("$.content[1].incidentDetails.locationId").isEqualTo(721850)
+      .isEqualTo(IntTestData.ADJUDICATION_2.dateTimeOfIncidentISOString)
+      .jsonPath("$.content[1].incidentDetails.locationId").isEqualTo(IntTestData.ADJUDICATION_2.locationId)
+      .jsonPath("$.content[1].createdByUserId").isEqualTo(IntTestData.ADJUDICATION_2.createdByUserId)
   }
 
   @Test
