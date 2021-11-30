@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.CacheConf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestBase
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 
 class HealthCheckTest : IntegrationTestBase() {
