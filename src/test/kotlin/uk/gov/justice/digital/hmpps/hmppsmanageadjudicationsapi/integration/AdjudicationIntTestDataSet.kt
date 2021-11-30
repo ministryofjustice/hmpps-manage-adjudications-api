@@ -9,5 +9,6 @@ data class AdjudicationIntTestDataSet(
   val locationId: Long,
   val dateTimeOfIncident: LocalDateTime,
   val dateTimeOfIncidentISOString: String,
-  val statement: String
+  val statement: String,
+  val createdByUserId: String
 )

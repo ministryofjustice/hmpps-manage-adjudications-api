@@ -33,6 +33,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.dateTimeReportExpires").isEqualTo("2021-10-27T09:03:11")
       .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2021-10-25T09:03:11")
       .jsonPath("$.reportedAdjudication.incidentDetails.locationId").isEqualTo(721850)
+      .jsonPath("$.reportedAdjudication.createdByUserId").isEqualTo("A_SMITH")
   }
 
   @Test
@@ -113,7 +114,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     intTestData.addIncidentStatement(secondDraftCreationResponse, IntTestData.ADJUDICATION_2)
     intTestData.completeDraftAdjudication(secondDraftCreationResponse, IntTestData.ADJUDICATION_2)
 
-    prisonApiMockServer.stubGetValidAdjudicationsById(IntTestData.ADJUDICATION_1, IntTestData.ADJUDICATION_2)
+    val thirdDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_3)
+    intTestData.addIncidentStatement(thirdDraftCreationResponse, IntTestData.ADJUDICATION_3)
+    intTestData.completeDraftAdjudication(thirdDraftCreationResponse, IntTestData.ADJUDICATION_3)
+
+    prisonApiMockServer.stubGetValidAdjudicationsById(IntTestData.ADJUDICATION_2, IntTestData.ADJUDICATION_3)
     bankHolidayApiMockServer.stubGetBankHolidays()
 
     webTestClient.get()
@@ -122,12 +127,20 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.content[0].adjudicationNumber").isEqualTo(IntTestData.ADJUDICATION_2.adjudicationNumber)
-      .jsonPath("$.content[0].prisonerNumber").isEqualTo(IntTestData.ADJUDICATION_2.prisonerNumber)
+      .jsonPath("$.content[0].adjudicationNumber").isEqualTo(IntTestData.ADJUDICATION_3.adjudicationNumber)
+      .jsonPath("$.content[0].prisonerNumber").isEqualTo(IntTestData.ADJUDICATION_3.prisonerNumber)
       .jsonPath("$.content[0].bookingId").isEqualTo("456")
       .jsonPath("$.content[0].incidentDetails.dateTimeOfIncident")
+      .isEqualTo(IntTestData.ADJUDICATION_3.dateTimeOfIncidentISOString)
+      .jsonPath("$.content[0].incidentDetails.locationId").isEqualTo(IntTestData.ADJUDICATION_3.locationId)
+      .jsonPath("$.content[0].createdByUserId").isEqualTo(IntTestData.ADJUDICATION_3.createdByUserId)
+      .jsonPath("$.content[1].adjudicationNumber").isEqualTo(IntTestData.ADJUDICATION_2.adjudicationNumber)
+      .jsonPath("$.content[1].prisonerNumber").isEqualTo(IntTestData.ADJUDICATION_2.prisonerNumber)
+      .jsonPath("$.content[1].bookingId").isEqualTo("123")
+      .jsonPath("$.content[1].incidentDetails.dateTimeOfIncident")
       .isEqualTo(IntTestData.ADJUDICATION_2.dateTimeOfIncidentISOString)
-      .jsonPath("$.content[0].incidentDetails.locationId").isEqualTo(IntTestData.ADJUDICATION_2.locationId)
+      .jsonPath("$.content[1].incidentDetails.locationId").isEqualTo(IntTestData.ADJUDICATION_2.locationId)
+      .jsonPath("$.content[1].createdByUserId").isEqualTo(IntTestData.ADJUDICATION_2.createdByUserId)
   }
 
   @Test

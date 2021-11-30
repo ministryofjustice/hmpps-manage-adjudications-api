@@ -101,4 +101,19 @@ class HealthCheckTest : IntegrationTestBase() {
         }
       )
   }
+
+  @Test
+  fun `Prison API health reports DOWN and not OK if fails`() {
+    prisonApiMockServer.stubHealthFailure()
+    webTestClient.get().uri("/health")
+      .exchange()
+      .expectStatus()
+      .isEqualTo(503)
+      .expectBody()
+      .jsonPath("components.prisonApiHealthCheck.status").value(
+        Consumer<String> {
+          assertThat(it).isEqualTo("DOWN")
+        }
+      )
+  }
 }

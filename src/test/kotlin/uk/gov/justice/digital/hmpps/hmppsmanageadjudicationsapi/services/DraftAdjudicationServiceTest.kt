@@ -433,6 +433,7 @@ class DraftAdjudicationServiceTest {
             incidentLocationId = 2L,
             incidentTime = LocalDateTime.now(clock),
             reporterStaffId = 2,
+            createdByUserId = "A_SMITH"
           )
         )
         whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
@@ -508,6 +509,7 @@ class DraftAdjudicationServiceTest {
             incidentLocationId = 2L,
             incidentTime = LocalDateTime.now(clock),
             reporterStaffId = 2,
+            createdByUserId = "A_SMITH",
           )
         )
         whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)

@@ -54,7 +54,8 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
-          incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
+          incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
+          createdByUserId = "A_SMITH"
         )
       )
       makeGetAdjudicationRequest(1)
@@ -67,6 +68,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.reportedAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
         .andExpect(jsonPath("$.reportedAdjudication.incidentDetails.locationId").value(2))
         .andExpect(jsonPath("$.reportedAdjudication.incidentStatement.statement").value(INCIDENT_STATEMENT))
+        .andExpect(jsonPath("$.reportedAdjudication.createdByUserId").value("A_SMITH"))
     }
 
     @Test
@@ -105,7 +107,8 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
                 dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
-              incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
+              incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
+              createdByUserId = "A_SMITH"
             )
           ),
           Pageable.ofSize(20).withPage(0),
@@ -157,6 +160,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
             INCIDENT_STATEMENT
           )
         )
+        .andExpect(jsonPath("$.content[0].createdByUserId").value("A_SMITH"))
     }
 
     @Test

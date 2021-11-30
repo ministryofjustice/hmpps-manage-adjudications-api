@@ -17,5 +17,7 @@ data class ReportedAdjudicationDto(
   @ApiModelProperty(value = "Incident details")
   val incidentDetails: IncidentDetailsDto,
   @ApiModelProperty(value = "Incident statement")
-  val incidentStatement: IncidentStatementDto
+  val incidentStatement: IncidentStatementDto,
+  @ApiModelProperty("Created by user id")
+  val createdByUserId: String
 )
