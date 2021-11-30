@@ -30,6 +30,11 @@ class WebClientConfig(
 ) {
 
   @Bean
+  fun prisonApiNoAuthWebClient(builder: WebClient.Builder): WebClient = builder
+    .baseUrl(prisonApiUrl)
+    .build()
+
+  @Bean
   @RequestScope
   fun prisonApiClientCreds(
     clientRegistrationRepository: ClientRegistrationRepository,
@@ -40,8 +45,8 @@ class WebClientConfig(
   )
 
   @Bean
-  fun bankHolidayApiWebClient(): WebClient {
-    return WebClient.builder().baseUrl(bankHolidayApiUrl).build()
+  fun bankHolidayApiWebClient(builder: WebClient.Builder): WebClient {
+    return builder.baseUrl(bankHolidayApiUrl).build()
   }
 
   private fun getClientCredsWebClient(

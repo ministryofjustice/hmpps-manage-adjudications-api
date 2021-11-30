@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import com.github.tomakehurst.wiremock.http.Fault
 
 class BankHolidayApiMockServer : WireMockServer(8978) {
   fun stubGetBankHolidays() {
@@ -69,9 +69,13 @@ class BankHolidayApiMockServer : WireMockServer(8978) {
     )
   }
 
-  fun verifyGetBankHolidays() {
-    verify(
-      WireMock.getRequestedFor(urlEqualTo("/bank-holidays.json"))
+  fun stubGetBankHolidaysFailure() {
+    stubFor(
+      get(urlEqualTo("/bank-holidays.json"))
+        .willReturn(
+          aResponse()
+            .withFault(Fault.MALFORMED_RESPONSE_CHUNK)
+        )
     )
   }
 }

@@ -23,7 +23,7 @@ class CacheConfiguration {
   }
 
   @CacheEvict(allEntries = true, cacheNames = [BANK_HOLIDAYS_CACHE_NAME])
-  @Scheduled(fixedDelay = TTL_HOURS, timeUnit = TimeUnit.HOURS)
+  @Scheduled(fixedDelay = TTL_DAYS, timeUnit = TimeUnit.DAYS)
   fun cacheEvict() {
     log.info("Evicting cache $BANK_HOLIDAYS_CACHE_NAME")
   }
@@ -31,6 +31,6 @@ class CacheConfiguration {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
     const val BANK_HOLIDAYS_CACHE_NAME: String = "bankHolidays"
-    const val TTL_HOURS: Long = 1
+    const val TTL_DAYS: Long = 7
   }
 }
