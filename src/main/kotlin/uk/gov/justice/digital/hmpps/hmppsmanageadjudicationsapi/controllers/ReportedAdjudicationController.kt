@@ -62,7 +62,7 @@ class ReportedAdjudicationController {
   fun getMyReportedAdjudications(
     @PathVariable(name = "agencyId") agencyId: String,
     @ApiIgnore
-    @PageableDefault(sort = ["incidentDate", "incidentTime"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
+    @PageableDefault(sort = ["dateTimeOfIncident"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
   ): Page<ReportedAdjudicationDto> {
     return reportedAdjudicationService.getMyReportedAdjudications(agencyId, pageable)
   }

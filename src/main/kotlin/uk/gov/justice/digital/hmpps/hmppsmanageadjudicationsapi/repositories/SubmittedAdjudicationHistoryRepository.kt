@@ -6,6 +6,6 @@ import org.springframework.data.repository.CrudRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
 
 interface SubmittedAdjudicationHistoryRepository : CrudRepository<SubmittedAdjudicationHistory, Long> {
-  fun findByCreatedByUserId(userId: String): List<SubmittedAdjudicationHistory>
+  fun findByCreatedByUserIdAndAgencyId(userId: String, agencyId: String, pageable: Pageable): Page<SubmittedAdjudicationHistory>
   fun findByAgencyId(agencyId: String, pageable: Pageable): Page<SubmittedAdjudicationHistory>
 }
