@@ -28,14 +28,6 @@ data class IncidentDetailsDto(
   val dateTimeOfIncident: LocalDateTime,
   @ApiModelProperty(value = "When this report must be handed to the prisoner", example = "2010-10-14T10:00:00")
   val handoverDeadline: LocalDateTime,
-  @ApiModelProperty("Created by user id")
-  val createdByUserId: String? = null,
-  @ApiModelProperty("Created on date time")
-  val createdDateTime: LocalDateTime? = null,
-  @ApiModelProperty("Modified by user id")
-  val modifiedByUserId: String? = null,
-  @ApiModelProperty("Modified on")
-  val modifiedByDateTime: LocalDateTime? = null
 )
 
 @ApiModel(value = "Incident statement")
@@ -44,12 +36,4 @@ data class IncidentStatementDto(
   val statement: String,
   @ApiModelProperty(value = "Indicates when the statement is complete")
   val completed: Boolean? = false,
-  @ApiModelProperty("Created by user id")
-  val createdByUserId: String? = null,
-  @ApiModelProperty("Created on date time")
-  val createdDateTime: LocalDateTime? = null,
-  @ApiModelProperty("Modified by user id")
-  val modifiedByUserId: String? = null,
-  @ApiModelProperty("Modified on")
-  val modifiedByDateTime: LocalDateTime? = null
 )

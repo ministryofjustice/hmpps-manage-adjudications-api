@@ -179,17 +179,9 @@ fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
   locationId = this.locationId,
   dateTimeOfIncident = this.dateTimeOfIncident,
   handoverDeadline = this.handoverDeadline,
-  createdByUserId = this.createdByUserId,
-  createdDateTime = this.createDateTime,
-  modifiedByUserId = this.modifiedByUserId,
-  modifiedByDateTime = this.modifiedDateTime
 )
 
 fun IncidentStatement.toDo(): IncidentStatementDto = IncidentStatementDto(
   statement = this.statement!!,
   completed = this.completed,
-  createdByUserId = this.createdByUserId,
-  createdDateTime = this.createDateTime,
-  modifiedByUserId = this.modifiedByUserId,
-  modifiedByDateTime = this.modifiedDateTime
 )

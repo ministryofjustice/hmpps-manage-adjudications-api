@@ -83,10 +83,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(2)
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("test")
-      .jsonPath("$.draftAdjudication.incidentStatement.createdByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.incidentStatement.createdDateTime").exists()
-      .jsonPath("$.draftAdjudication.incidentStatement.modifiedByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.incidentStatement.modifiedByDateTime").exists()
   }
 
   @Test
@@ -112,10 +108,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-11-12T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-11-15T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(3)
-      .jsonPath("$.draftAdjudication.incidentDetails.modifiedByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.incidentDetails.modifiedByDateTime").exists()
-      .jsonPath("$.draftAdjudication.incidentDetails.createdByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.incidentDetails.createdDateTime").exists()
   }
 
   @Test
@@ -140,10 +132,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("new statement")
-      .jsonPath("$.draftAdjudication.incidentStatement.createdByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.incidentStatement.createdDateTime").exists()
-      .jsonPath("$.draftAdjudication.incidentStatement.modifiedByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.incidentStatement.modifiedByDateTime").exists()
   }
 
   @Test
@@ -250,10 +238,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudications[0].incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
       .jsonPath("$.draftAdjudications[0].incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
       .jsonPath("$.draftAdjudications[0].incidentDetails.locationId").isEqualTo(2)
-      .jsonPath("$.draftAdjudications[0].incidentDetails.modifiedByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudications[0].incidentDetails.modifiedByDateTime").exists()
-      .jsonPath("$.draftAdjudications[0].incidentDetails.createdByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudications[0].incidentDetails.createdDateTime").exists()
   }
 
   @Test
@@ -276,10 +260,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("test statement")
       .jsonPath("$.draftAdjudication.incidentStatement.completed").isEqualTo(true)
-      .jsonPath("$.draftAdjudication.incidentStatement.createdByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.incidentStatement.createdDateTime").exists()
-      .jsonPath("$.draftAdjudication.incidentStatement.modifiedByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.incidentStatement.modifiedByDateTime").exists()
   }
 
   companion object {
