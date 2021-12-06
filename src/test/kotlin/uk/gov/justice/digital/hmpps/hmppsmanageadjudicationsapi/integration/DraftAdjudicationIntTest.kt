@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntT
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_LOCATION_ID
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_STATEMENT
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun dataAPiHelpers(): DataAPiHelpers = DataAPiHelpers(webTestClient, setHeaders())
@@ -58,6 +59,29 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(2)
+  }
+
+  @Test
+  fun `get previously submitted draft adjudication details`() {
+    val testAdjudication = IntTestData.ADJUDICATION_1
+    val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
+
+    val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(testAdjudication)
+
+    webTestClient.get()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.reportNumber").isEqualTo(testAdjudication.adjudicationNumber)
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
+      .jsonPath("$.draftAdjudication.createdByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.createdDateTime").exists()
+      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo(testAdjudication.dateTimeOfIncidentISOString)
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(testAdjudication.dateTimeOfIncident.plusDays(2).format(DateTimeFormatter.ISO_DATE_TIME))
+      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
   }
 
   @Test

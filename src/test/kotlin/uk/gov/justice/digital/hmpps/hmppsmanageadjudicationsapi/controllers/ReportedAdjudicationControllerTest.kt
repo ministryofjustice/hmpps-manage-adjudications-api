@@ -183,14 +183,15 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(reportedAdjudicationService.createDraftFromReportedAdjudication(any())).thenReturn(
         DraftAdjudicationDto(
-          id = 1,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 2,
-            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
+                id = 1,
+                reportNumber = 123L,
+                prisonerNumber = "A12345",
+                incidentDetails = IncidentDetailsDto(
+                  locationId = 2,
+                  dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+                  handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+                ),
+                incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
         )
       )
     }

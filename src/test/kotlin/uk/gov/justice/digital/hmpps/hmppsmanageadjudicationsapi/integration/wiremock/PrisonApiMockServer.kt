@@ -90,6 +90,32 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
+  fun stubGetAdjudication(testDataSet: AdjudicationIntTestDataSet) {
+    stubFor(
+      get(urlEqualTo("/api/adjudications/adjudication/${testDataSet.adjudicationNumber}"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+            .withBody(
+              """
+               {
+                 "adjudicationNumber": ${testDataSet.adjudicationNumber},
+                 "reporterStaffId":486080,
+                 "offenderNo": "${testDataSet.prisonerNumber}",
+                 "bookingId":123,
+                 "agencyId": "${testDataSet.agencyId}",
+                 "incidentTime": "${testDataSet.dateTimeOfIncidentISOString}",
+                 "incidentLocationId": ${testDataSet.locationId},
+                 "statement": "${testDataSet.statement}",
+                 "createdByUserId": "${testDataSet.createdByUserId}"
+               }
+              """.trimIndent()
+            )
+        )
+    )
+  }
+
   fun stubGetAdjudications() {
     stubFor(
       post(urlEqualTo("/api/adjudications/search?size=20&page=0&sort=incidentDate,DESC&sort=incidentTime,DESC"))

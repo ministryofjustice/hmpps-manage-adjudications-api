@@ -35,13 +35,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(draftAdjudicationService.startNewAdjudication(any(), any(), any(), any())).thenReturn(
         DraftAdjudicationDto(
-          id = 1,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 2,
-            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          )
+                id = 1,
+                reportNumber = null,
+                prisonerNumber = "A12345",
+                incidentDetails = IncidentDetailsDto(
+                  locationId = 2,
+                  dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+                  handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+                ),
         )
       )
     }
@@ -66,6 +67,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT)
         .andExpect(status().isCreated)
         .andExpect(jsonPath("draftAdjudication.id").isNumber)
+        .andExpect(jsonPath("draftAdjudication.reportNumber").doesNotExist())
         .andExpect(jsonPath("draftAdjudication.prisonerNumber").value("A12345"))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.locationId").value(2))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
@@ -122,13 +124,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     fun `returns the draft adjudication for a given id`() {
       whenever(draftAdjudicationService.getDraftAdjudicationDetails(any())).thenReturn(
         DraftAdjudicationDto(
-          id = 1,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 1L,
-            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          )
+                id = 1,
+                reportNumber = null,
+                prisonerNumber = "A12345",
+                incidentDetails = IncidentDetailsDto(
+                  locationId = 1L,
+                  dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+                  handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+                ),
         )
       )
       makeGetDraftAdjudicationRequest(1)
@@ -163,10 +166,11 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(draftAdjudicationService.addIncidentStatement(anyLong(), any(), any())).thenReturn(
         DraftAdjudicationDto(
-          id = 1L,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
-          incidentStatement = IncidentStatementDto(statement = "test")
+                id = 1L,
+                reportNumber = null,
+                prisonerNumber = "A12345",
+                incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
+                incidentStatement = IncidentStatementDto(statement = "test"),
         )
       )
     }
@@ -224,9 +228,10 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(draftAdjudicationService.editIncidentDetails(anyLong(), anyLong(), any())).thenReturn(
         DraftAdjudicationDto(
-          id = 1L,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(locationId = 3, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+                id = 1L,
+                reportNumber = null,
+                prisonerNumber = "A12345",
+                incidentDetails = IncidentDetailsDto(locationId = 3, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
         )
       )
     }
@@ -291,10 +296,11 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(draftAdjudicationService.editIncidentStatement(anyLong(), any(), any())).thenReturn(
         DraftAdjudicationDto(
-          id = 1L,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
-          incidentStatement = IncidentStatementDto(statement = "new statement")
+                id = 1L,
+                reportNumber = null,
+                prisonerNumber = "A12345",
+                incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
+                incidentStatement = IncidentStatementDto(statement = "new statement"),
         )
       )
     }
@@ -366,22 +372,24 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       whenever(draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(any())).thenReturn(
         listOf(
           DraftAdjudicationDto(
-            id = 1,
-            prisonerNumber = "A12345",
-            incidentDetails = IncidentDetailsDto(
-              locationId = 1,
-              dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-            )
+                  id = 1,
+                  reportNumber = null,
+                  prisonerNumber = "A12345",
+                  incidentDetails = IncidentDetailsDto(
+                    locationId = 1,
+                    dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+                    handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+                  ),
           ),
           DraftAdjudicationDto(
-            id = 2,
-            prisonerNumber = "A12346",
-            incidentDetails = IncidentDetailsDto(
-              locationId = 2,
-              dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1),
-              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE.plusMonths(1)
-            )
+                  id = 2,
+                  reportNumber = null,
+                  prisonerNumber = "A12346",
+                  incidentDetails = IncidentDetailsDto(
+                    locationId = 2,
+                    dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1),
+                    handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE.plusMonths(1)
+                  ),
           )
         )
       )

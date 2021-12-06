@@ -138,9 +138,26 @@ class IntTestData(
     prisonApiMockServer.stubPostAdjudication(testDataSet)
 
     return webTestClient.post()
-      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/complete-draft-adjudication")
+      .uri("/reported-adjudications/${draftCreationData.draftAdjudication.id}/complete-draft-adjudication")
       .headers(headers)
       .exchange()
+  }
+
+  fun recallCompletedDraftAdjudication(
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ): DraftAdjudicationResponse {
+    prisonApiMockServer.stubGetAdjudication(testDataSet)
+    bankHolidayApiMockServer.stubGetBankHolidays()
+
+    return webTestClient.post()
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/create-draft-adjudication")
+      .headers(headers)
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
   }
 
   fun setHeaders(contentType: MediaType = MediaType.APPLICATION_JSON, username: String? = "ITAG_USER", roles: List<String> = emptyList()): (HttpHeaders) -> Unit = {
