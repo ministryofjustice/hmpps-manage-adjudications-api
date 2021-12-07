@@ -75,7 +75,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.reportNumber").isEqualTo(testAdjudication.adjudicationNumber)
+      .jsonPath("$.draftAdjudication.adjudicationNumber").isEqualTo(testAdjudication.adjudicationNumber)
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
       .jsonPath("$.draftAdjudication.createdByUserId").isEqualTo("ITAG_USER")
       .jsonPath("$.draftAdjudication.createdDateTime").exists()

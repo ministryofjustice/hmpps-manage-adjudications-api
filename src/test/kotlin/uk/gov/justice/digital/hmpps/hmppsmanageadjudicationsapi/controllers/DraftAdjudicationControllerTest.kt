@@ -36,7 +36,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       whenever(draftAdjudicationService.startNewAdjudication(any(), any(), any(), any())).thenReturn(
         DraftAdjudicationDto(
           id = 1,
-          reportNumber = null,
+          adjudicationNumber = null,
           prisonerNumber = "A12345",
           incidentDetails = IncidentDetailsDto(
             locationId = 2,
@@ -67,7 +67,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT)
         .andExpect(status().isCreated)
         .andExpect(jsonPath("draftAdjudication.id").isNumber)
-        .andExpect(jsonPath("draftAdjudication.reportNumber").doesNotExist())
+        .andExpect(jsonPath("draftAdjudication.adjudicationNumber").doesNotExist())
         .andExpect(jsonPath("draftAdjudication.prisonerNumber").value("A12345"))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.locationId").value(2))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
@@ -125,7 +125,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       whenever(draftAdjudicationService.getDraftAdjudicationDetails(any())).thenReturn(
         DraftAdjudicationDto(
           id = 1,
-          reportNumber = null,
+          adjudicationNumber = null,
           prisonerNumber = "A12345",
           incidentDetails = IncidentDetailsDto(
             locationId = 1L,
@@ -167,7 +167,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       whenever(draftAdjudicationService.addIncidentStatement(anyLong(), any(), any())).thenReturn(
         DraftAdjudicationDto(
           id = 1L,
-          reportNumber = null,
+          adjudicationNumber = null,
           prisonerNumber = "A12345",
           incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
           incidentStatement = IncidentStatementDto(statement = "test"),
@@ -229,7 +229,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       whenever(draftAdjudicationService.editIncidentDetails(anyLong(), anyLong(), any())).thenReturn(
         DraftAdjudicationDto(
           id = 1L,
-          reportNumber = null,
+          adjudicationNumber = null,
           prisonerNumber = "A12345",
           incidentDetails = IncidentDetailsDto(locationId = 3, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
         )
@@ -297,7 +297,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       whenever(draftAdjudicationService.editIncidentStatement(anyLong(), any(), any())).thenReturn(
         DraftAdjudicationDto(
           id = 1L,
-          reportNumber = null,
+          adjudicationNumber = null,
           prisonerNumber = "A12345",
           incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
           incidentStatement = IncidentStatementDto(statement = "new statement"),
@@ -373,7 +373,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         listOf(
           DraftAdjudicationDto(
             id = 1,
-            reportNumber = null,
+            adjudicationNumber = null,
             prisonerNumber = "A12345",
             incidentDetails = IncidentDetailsDto(
               locationId = 1,
@@ -383,7 +383,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           ),
           DraftAdjudicationDto(
             id = 2,
-            reportNumber = null,
+            adjudicationNumber = null,
             prisonerNumber = "A12346",
             incidentDetails = IncidentDetailsDto(
               locationId = 2,
