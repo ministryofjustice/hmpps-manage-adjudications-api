@@ -110,16 +110,10 @@ class DraftAdjudicationService(
     if (draftAdjudication.incidentStatement == null)
       throw IllegalStateException("Please include an incident statement before completing this draft adjudication")
 
-    val reportedAdjudication = saveToPrisonApi(draftAdjudication)
+    val isNew = draftAdjudication.reportNumber == null
+    val reportedAdjudication = saveToPrisonApi(draftAdjudication, isNew)
+    saveToSubmittedReports(reportedAdjudication, isNew)
 
-    submittedAdjudicationHistoryRepository.save(
-      SubmittedAdjudicationHistory(
-        adjudicationNumber = reportedAdjudication.adjudicationNumber,
-        agencyId = reportedAdjudication.agencyId,
-        dateTimeOfIncident = reportedAdjudication.incidentTime,
-        LocalDateTime.now(clock)
-      )
-    )
     draftAdjudicationRepository.delete(draftAdjudication)
 
     return reportedAdjudication
@@ -134,8 +128,8 @@ class DraftAdjudicationService(
       .map { it.toDto() }
   }
 
-  private fun saveToPrisonApi(draftAdjudication: DraftAdjudication): ReportedAdjudication {
-    if (draftAdjudication.reportNumber == null) {
+  private fun saveToPrisonApi(draftAdjudication: DraftAdjudication, isNew: Boolean): ReportedAdjudication {
+    if (isNew) {
       return prisonApiGateway.publishAdjudication(
         AdjudicationDetailsToPublish(
           offenderNo = draftAdjudication.prisonerNumber,
@@ -154,6 +148,26 @@ class DraftAdjudicationService(
           statement = draftAdjudication.incidentStatement?.statement!!
         )
       )
+    }
+  }
+
+  private fun saveToSubmittedReports(reportedAdjudication: ReportedAdjudication, isNew: Boolean) {
+    if (isNew) {
+      submittedAdjudicationHistoryRepository.save(
+        SubmittedAdjudicationHistory(
+          adjudicationNumber = reportedAdjudication.adjudicationNumber,
+          agencyId = reportedAdjudication.agencyId,
+          dateTimeOfIncident = reportedAdjudication.incidentTime,
+          LocalDateTime.now(clock)
+        )
+      )
+    } else {
+      val previousSubmittedAdjudicationHistory = submittedAdjudicationHistoryRepository.findByAdjudicationNumber(reportedAdjudication.adjudicationNumber)
+      previousSubmittedAdjudicationHistory?.let {
+        it.dateTimeOfIncident = reportedAdjudication.incidentTime
+        it.dateTimeSent = LocalDateTime.now(clock)
+        submittedAdjudicationHistoryRepository.save(previousSubmittedAdjudicationHistory)
+      }
     }
   }
 

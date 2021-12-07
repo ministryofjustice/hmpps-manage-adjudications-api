@@ -8,4 +8,5 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Submitt
 interface SubmittedAdjudicationHistoryRepository : CrudRepository<SubmittedAdjudicationHistory, Long> {
   fun findByCreatedByUserIdAndAgencyId(userId: String, agencyId: String, pageable: Pageable): Page<SubmittedAdjudicationHistory>
   fun findByAgencyId(agencyId: String, pageable: Pageable): Page<SubmittedAdjudicationHistory>
+  fun findByAdjudicationNumber(adjudicationNumber: Long): SubmittedAdjudicationHistory?
 }

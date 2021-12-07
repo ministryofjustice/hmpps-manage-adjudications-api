@@ -1,7 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_ADJUDICATION_NUMBER
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_DATE_TIME_OF_INCIDENT
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_PRISONER_BOOKING_ID
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_PRISONER_NUMBER
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_DATE_TIME_OF_INCIDENT
@@ -9,11 +12,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntT
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_HANDOVER_DEADLINE_TEXT
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_LOCATION_ID
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_STATEMENT
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun dataAPiHelpers(): DataAPiHelpers = DataAPiHelpers(webTestClient, setHeaders())
+
+  @Autowired
+  lateinit var submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository
 
   @Test
   fun `makes a request to start a new draft adjudication`() {
@@ -196,9 +203,15 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `complete draft update of existing adjudication`() {
+    prisonApiMockServer.stubPostAdjudication()
     prisonApiMockServer.stubGetAdjudication()
     prisonApiMockServer.stubPutAdjudication()
     bankHolidayApiMockServer.stubGetBankHolidays()
+
+    assertThat(submittedAdjudicationHistoryRepository.findAll()).hasSize(0)
+
+    dataAPiHelpers().createAndCompleteADraftAdjudication(DEFAULT_DATE_TIME_OF_INCIDENT)
+    assertThat(submittedAdjudicationHistoryRepository.findAll()).hasSize(1)
 
     val draftAdjudicationResponse = dataAPiHelpers().createADraftFromAReportedAdjudication(DEFAULT_ADJUDICATION_NUMBER)
     dataAPiHelpers().editIncidentDetails(draftAdjudicationResponse.draftAdjudication.id, UPDATED_DATE_TIME_OF_INCIDENT, UPDATED_LOCATION_ID)
@@ -228,6 +241,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     prisonApiMockServer.verifyPutAdjudication(objectMapper.writeValueAsString(expectedBody))
 
     dataAPiHelpers().getDraftAdjudicationDetails(draftAdjudicationResponse.draftAdjudication.id).expectStatus().isNotFound
+
+    assertThat(submittedAdjudicationHistoryRepository.findAll()).hasSize(1)
   }
 
   @Test

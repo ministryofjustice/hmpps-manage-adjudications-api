@@ -9,6 +9,6 @@ import javax.persistence.Table
 data class SubmittedAdjudicationHistory(
   val adjudicationNumber: Long,
   val agencyId: String,
-  val dateTimeOfIncident: LocalDateTime,
-  val dateTimeSent: LocalDateTime,
+  var dateTimeOfIncident: LocalDateTime,
+  var dateTimeSent: LocalDateTime,
 ) : BaseEntity()
