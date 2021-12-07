@@ -143,6 +143,23 @@ class IntTestData(
       .exchange()
   }
 
+  fun recallCompletedDraftAdjudication(
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ): DraftAdjudicationResponse {
+    prisonApiMockServer.stubGetAdjudication(testDataSet)
+    bankHolidayApiMockServer.stubGetBankHolidays()
+
+    return webTestClient.post()
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/create-draft-adjudication")
+      .headers(headers)
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
   fun setHeaders(contentType: MediaType = MediaType.APPLICATION_JSON, username: String? = "ITAG_USER", roles: List<String> = emptyList()): (HttpHeaders) -> Unit = {
     it.setBearerAuth(jwtAuthHelper.createJwt(subject = username, roles = roles, scope = listOf("write")))
     it.contentType = contentType

@@ -8,6 +8,8 @@ import java.time.LocalDateTime
 data class DraftAdjudicationDto(
   @ApiModelProperty(value = "Draft adjudication id")
   val id: Long,
+  @ApiModelProperty(value = "The number for the reported adjudication", notes = "Will only be present if this adjudication has been submitted to Prison-API", example = "4567123")
+  val adjudicationNumber: Long?,
   @ApiModelProperty(value = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
   @ApiModelProperty(value = "Incident details")

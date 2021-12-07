@@ -184,13 +184,14 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       whenever(reportedAdjudicationService.createDraftFromReportedAdjudication(any())).thenReturn(
         DraftAdjudicationDto(
           id = 1,
+          adjudicationNumber = 123L,
           prisonerNumber = "A12345",
           incidentDetails = IncidentDetailsDto(
             locationId = 2,
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
-          incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT)
+          incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
         )
       )
     }

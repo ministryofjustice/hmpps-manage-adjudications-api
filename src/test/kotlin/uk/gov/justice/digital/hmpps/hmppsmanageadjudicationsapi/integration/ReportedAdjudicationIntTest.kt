@@ -185,6 +185,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
+      .jsonPath("$.draftAdjudication.adjudicationNumber").isEqualTo("1524242")
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("AA1234A")
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2021-10-25T09:03:11")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(721850)
