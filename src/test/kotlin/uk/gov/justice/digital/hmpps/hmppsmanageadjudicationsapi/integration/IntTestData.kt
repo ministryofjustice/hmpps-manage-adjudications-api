@@ -138,7 +138,7 @@ class IntTestData(
     prisonApiMockServer.stubPostAdjudication(testDataSet)
 
     return webTestClient.post()
-      .uri("/reported-adjudications/${draftCreationData.draftAdjudication.id}/complete-draft-adjudication")
+      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/complete-draft-adjudication")
       .headers(headers)
       .exchange()
   }
