@@ -236,7 +236,7 @@ class ReportedAdjudicationServiceTest {
       val createdDraft = reportedAdjudicationService.createDraftFromReportedAdjudication(123)
 
       assertThat(createdDraft)
-        .extracting("prisonerNumber", "id", "reportNumber")
+        .extracting("prisonerNumber", "id", "adjudicationNumber")
         .contains("AA1234A", 1L, 123L)
       assertThat(createdDraft.incidentDetails)
         .extracting("dateTimeOfIncident", "handoverDeadline", "locationId")
