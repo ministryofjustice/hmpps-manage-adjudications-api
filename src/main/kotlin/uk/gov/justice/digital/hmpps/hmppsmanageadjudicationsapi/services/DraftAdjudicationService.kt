@@ -112,14 +112,8 @@ class DraftAdjudicationService(
 
     val reportedAdjudication = saveToPrisonApi(draftAdjudication)
 
-    submittedAdjudicationHistoryRepository.save(
-      SubmittedAdjudicationHistory(
-        adjudicationNumber = reportedAdjudication.adjudicationNumber,
-        agencyId = reportedAdjudication.agencyId,
-        dateTimeOfIncident = reportedAdjudication.incidentTime,
-        LocalDateTime.now(clock)
-      )
-    )
+    saveToSubmittedReports(reportedAdjudication, draftAdjudication.reportNumber == null)
+
     draftAdjudicationRepository.delete(draftAdjudication)
 
     return reportedAdjudication
@@ -154,6 +148,26 @@ class DraftAdjudicationService(
           statement = draftAdjudication.incidentStatement?.statement!!
         )
       )
+    }
+  }
+
+  private fun saveToSubmittedReports(reportedAdjudication: ReportedAdjudication, isNew: Boolean) {
+    if (isNew) {
+      submittedAdjudicationHistoryRepository.save(
+        SubmittedAdjudicationHistory(
+          adjudicationNumber = reportedAdjudication.adjudicationNumber,
+          agencyId = reportedAdjudication.agencyId,
+          dateTimeOfIncident = reportedAdjudication.incidentTime,
+          LocalDateTime.now(clock)
+        )
+      )
+    } else {
+      val previousSubmittedAdjudicationHistory = submittedAdjudicationHistoryRepository.findByAdjudicationNumber(reportedAdjudication.adjudicationNumber)
+      previousSubmittedAdjudicationHistory?.let {
+        it.dateTimeOfIncident = reportedAdjudication.incidentTime
+        it.dateTimeSent = LocalDateTime.now(clock)
+        submittedAdjudicationHistoryRepository.save(previousSubmittedAdjudicationHistory)
+      }
     }
   }
 
