@@ -110,9 +110,9 @@ class DraftAdjudicationService(
     if (draftAdjudication.incidentStatement == null)
       throw IllegalStateException("Please include an incident statement before completing this draft adjudication")
 
-    val reportedAdjudication = saveToPrisonApi(draftAdjudication)
-
-    saveToSubmittedReports(reportedAdjudication, draftAdjudication.reportNumber == null)
+    val isNew = draftAdjudication.reportNumber == null
+    val reportedAdjudication = saveToPrisonApi(draftAdjudication, isNew)
+    saveToSubmittedReports(reportedAdjudication, isNew)
 
     draftAdjudicationRepository.delete(draftAdjudication)
 
@@ -128,8 +128,8 @@ class DraftAdjudicationService(
       .map { it.toDto() }
   }
 
-  private fun saveToPrisonApi(draftAdjudication: DraftAdjudication): ReportedAdjudication {
-    if (draftAdjudication.reportNumber == null) {
+  private fun saveToPrisonApi(draftAdjudication: DraftAdjudication, isNew: Boolean): ReportedAdjudication {
+    if (isNew) {
       return prisonApiGateway.publishAdjudication(
         AdjudicationDetailsToPublish(
           offenderNo = draftAdjudication.prisonerNumber,

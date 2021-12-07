@@ -499,6 +499,14 @@ class DraftAdjudicationServiceTest {
             )
           )
         )
+        whenever(submittedAdjudicationHistoryRepository.findByAdjudicationNumber(any())).thenReturn(
+          SubmittedAdjudicationHistory(
+            adjudicationNumber = 123L,
+            agencyId = "MDI",
+            dateTimeOfIncident = LocalDateTime.now(clock),
+            dateTimeSent = LocalDateTime.now(clock)
+          )
+        )
         whenever(prisonApiGateway.updateAdjudication(any(), any())).thenReturn(
           ReportedAdjudication(
             adjudicationNumber = 123L,
@@ -518,6 +526,8 @@ class DraftAdjudicationServiceTest {
       @Test
       fun `updates the completed adjudication record`() {
         draftAdjudicationService.completeDraftAdjudication(1)
+
+        verify(submittedAdjudicationHistoryRepository).findByAdjudicationNumber(123L)
 
         val argumentCaptor = ArgumentCaptor.forClass(SubmittedAdjudicationHistory::class.java)
         verify(submittedAdjudicationHistoryRepository).save(argumentCaptor.capture())
