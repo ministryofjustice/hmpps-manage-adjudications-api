@@ -194,6 +194,7 @@ class ReportedAdjudicationServiceTest {
     val expectedSavedDraftAdjudication = DraftAdjudication(
       prisonerNumber = "AA1234A",
       reportNumber = 123L,
+      reportByUserId = "A_SMITH",
       agencyId = "MDI",
       incidentDetails = IncidentDetails(
         locationId = 345L,
@@ -236,8 +237,8 @@ class ReportedAdjudicationServiceTest {
       val createdDraft = reportedAdjudicationService.createDraftFromReportedAdjudication(123)
 
       assertThat(createdDraft)
-        .extracting("prisonerNumber", "id", "adjudicationNumber")
-        .contains("AA1234A", 1L, 123L)
+        .extracting("prisonerNumber", "id", "adjudicationNumber", "startedByUserId")
+        .contains("AA1234A", 1L, 123L, "A_SMITH")
       assertThat(createdDraft.incidentDetails)
         .extracting("dateTimeOfIncident", "handoverDeadline", "locationId")
         .contains(DATE_TIME_OF_INCIDENT, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, 345L)
