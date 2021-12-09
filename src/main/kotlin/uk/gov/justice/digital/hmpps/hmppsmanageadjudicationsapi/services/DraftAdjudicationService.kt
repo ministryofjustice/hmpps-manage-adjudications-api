@@ -184,8 +184,6 @@ class DraftAdjudicationService(
 fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(
   id = this.id!!,
   prisonerNumber = this.prisonerNumber,
-  createdByUserId = this.createdByUserId,
-  createdDateTime = this.createDateTime,
   incidentStatement = this.incidentStatement?.toDo(),
   incidentDetails = this.incidentDetails.toDto(),
   adjudicationNumber = this.reportNumber,

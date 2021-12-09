@@ -16,10 +16,6 @@ data class DraftAdjudicationDto(
   val incidentDetails: IncidentDetailsDto,
   @ApiModelProperty(value = "Incident statement")
   val incidentStatement: IncidentStatementDto? = null,
-  @ApiModelProperty("Created by user id")
-  val createdByUserId: String? = null,
-  @ApiModelProperty("Created on date time")
-  val createdDateTime: LocalDateTime? = null,
   @ApiModelProperty("The id of the user who started the adjudication")
   val startedByUserId: String? = null,
 )
