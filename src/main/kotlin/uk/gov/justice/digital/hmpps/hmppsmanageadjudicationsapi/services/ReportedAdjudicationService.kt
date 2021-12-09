@@ -49,6 +49,7 @@ class ReportedAdjudicationService(
 
     val draftAdjudication = DraftAdjudication(
       reportNumber = reportedAdjudication.adjudicationNumber,
+      reportByUserId = reportedAdjudication.createdByUserId,
       prisonerNumber = reportedAdjudication.offenderNo,
       agencyId = reportedAdjudication.agencyId,
       incidentDetails = IncidentDetails(

@@ -32,7 +32,6 @@ class DraftAdjudicationRepositoryTest {
     val savedEntity = entityManager.persistAndFlush(
       DraftAdjudication(
         prisonerNumber = "A12345",
-        reportNumber = null,
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           locationId = 2,
@@ -57,7 +56,6 @@ class DraftAdjudicationRepositoryTest {
     entityManager.persistAndFlush(
       DraftAdjudication(
         prisonerNumber = "A12345",
-        reportNumber = null,
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           locationId = 2,
@@ -69,7 +67,6 @@ class DraftAdjudicationRepositoryTest {
     entityManager.persistAndFlush(
       DraftAdjudication(
         prisonerNumber = "A12346",
-        reportNumber = null,
         agencyId = "LEI",
         incidentDetails = IncidentDetails(
           locationId = 2,
@@ -82,6 +79,7 @@ class DraftAdjudicationRepositoryTest {
       DraftAdjudication(
         prisonerNumber = "A12347",
         reportNumber = 123,
+        reportByUserId = "A_SMITH",
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           locationId = 3,

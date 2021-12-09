@@ -41,12 +41,13 @@ class DraftAdjudicationService(
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
       agencyId = agencyId,
-      reportNumber = null,
       incidentDetails = IncidentDetails(
         locationId = locationId,
         dateTimeOfIncident = dateTimeOfIncident,
         handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(dateTimeOfIncident)
-      )
+      ),
+      reportNumber = null,
+      reportByUserId = null,
     )
     return draftAdjudicationRepository
       .save(draftAdjudication)
@@ -182,12 +183,13 @@ class DraftAdjudicationService(
 
 fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(
   id = this.id!!,
-  adjudicationNumber = this.reportNumber,
   prisonerNumber = this.prisonerNumber,
   createdByUserId = this.createdByUserId,
   createdDateTime = this.createDateTime,
   incidentStatement = this.incidentStatement?.toDo(),
   incidentDetails = this.incidentDetails.toDto(),
+  adjudicationNumber = this.reportNumber,
+  startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
 )
 
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(

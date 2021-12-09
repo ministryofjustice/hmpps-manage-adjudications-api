@@ -61,7 +61,6 @@ class DraftAdjudicationServiceTest {
         DraftAdjudication(
           id = 1,
           prisonerNumber = "A12345",
-          reportNumber = null,
           agencyId = "MDI",
           incidentDetails = IncidentDetails(
             locationId = 2,
@@ -111,7 +110,6 @@ class DraftAdjudicationServiceTest {
         DraftAdjudication(
           id = 1,
           prisonerNumber = "A12345",
-          reportNumber = null,
           agencyId = "MDI",
           incidentDetails = IncidentDetails(
             locationId = 2,
@@ -119,6 +117,7 @@ class DraftAdjudicationServiceTest {
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           )
         )
+      draftAdjudication.createdByUserId = "A_USER" // Add audit information
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(
         Optional.of(draftAdjudication)
@@ -127,8 +126,8 @@ class DraftAdjudicationServiceTest {
       val draftAdjudicationDto = draftAdjudicationService.getDraftAdjudicationDetails(1)
 
       assertThat(draftAdjudicationDto)
-        .extracting("id", "prisonerNumber")
-        .contains(1L, "A12345")
+        .extracting("id", "prisonerNumber", "startedByUserId")
+        .contains(1L, "A12345", "A_USER")
 
       assertThat(draftAdjudicationDto.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident")
@@ -153,7 +152,6 @@ class DraftAdjudicationServiceTest {
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
-        reportNumber = null,
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           locationId = 1,
@@ -192,7 +190,6 @@ class DraftAdjudicationServiceTest {
             DraftAdjudication(
               id = 1,
               prisonerNumber = "A12345",
-              reportNumber = null,
               agencyId = "MDI",
               incidentDetails = IncidentDetails(
                 locationId = 1,
@@ -239,7 +236,6 @@ class DraftAdjudicationServiceTest {
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
-        reportNumber = null,
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           id = 1,
@@ -307,7 +303,6 @@ class DraftAdjudicationServiceTest {
           DraftAdjudication(
             id = 1,
             prisonerNumber = "A12345",
-            reportNumber = null,
             agencyId = "MDI",
             incidentDetails = IncidentDetails(
               locationId = 1,
@@ -331,7 +326,6 @@ class DraftAdjudicationServiceTest {
         val draftAdjudicationEntity = DraftAdjudication(
           id = 1,
           prisonerNumber = "A12345",
-          reportNumber = null,
           agencyId = "MDI",
           incidentDetails = IncidentDetails(
             locationId = 1,
@@ -384,7 +378,6 @@ class DraftAdjudicationServiceTest {
         Optional.of(
           DraftAdjudication(
             prisonerNumber = "A12345",
-            reportNumber = null,
             agencyId = "MDI",
             incidentDetails = IncidentDetails(
               locationId = 1,
@@ -412,7 +405,6 @@ class DraftAdjudicationServiceTest {
             DraftAdjudication(
               id = 1,
               prisonerNumber = "A12345",
-              reportNumber = null,
               agencyId = "MDI",
               incidentDetails = IncidentDetails(
                 locationId = 1,
@@ -489,6 +481,7 @@ class DraftAdjudicationServiceTest {
               id = 1,
               prisonerNumber = "A12345",
               reportNumber = 123L,
+              reportByUserId = "A_SMITH",
               agencyId = "MDI",
               incidentDetails = IncidentDetails(
                 locationId = 1,
@@ -573,7 +566,6 @@ class DraftAdjudicationServiceTest {
           DraftAdjudication(
             id = 1,
             prisonerNumber = "A12345",
-            reportNumber = null,
             agencyId = "MDI",
             incidentDetails = IncidentDetails(
               id = 2,
@@ -585,7 +577,6 @@ class DraftAdjudicationServiceTest {
           DraftAdjudication(
             id = 2,
             prisonerNumber = "A12346",
-            reportNumber = null,
             agencyId = "MDI",
             incidentDetails = IncidentDetails(
               id = 3,

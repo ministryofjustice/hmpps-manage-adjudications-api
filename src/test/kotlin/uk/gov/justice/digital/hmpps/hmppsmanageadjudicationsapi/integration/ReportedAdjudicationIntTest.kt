@@ -193,6 +193,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentStatement.completed").isEqualTo(true)
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("It keeps happening...")
       .jsonPath("$.draftAdjudication.createdByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo("A_SMITH")
   }
 
   @Test

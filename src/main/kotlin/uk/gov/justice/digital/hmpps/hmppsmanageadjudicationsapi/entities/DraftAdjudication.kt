@@ -11,8 +11,9 @@ import javax.persistence.Table
 @Table(name = "draft_adjudications")
 data class DraftAdjudication(
   override val id: Long? = null,
-  val reportNumber: Long?,
   val prisonerNumber: String,
+  val reportNumber: Long? = null,
+  val reportByUserId: String? = null,
   val agencyId: String,
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "incident_details_id")
