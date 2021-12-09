@@ -192,7 +192,6 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2021-10-27T09:03:11")
       .jsonPath("$.draftAdjudication.incidentStatement.completed").isEqualTo(true)
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("It keeps happening...")
-      .jsonPath("$.draftAdjudication.createdByUserId").isEqualTo("ITAG_USER")
       .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo("A_SMITH")
   }
 

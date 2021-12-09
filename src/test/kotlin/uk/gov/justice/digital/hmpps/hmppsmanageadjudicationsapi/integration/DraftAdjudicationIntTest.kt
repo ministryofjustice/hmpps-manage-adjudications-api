@@ -40,8 +40,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
-      .jsonPath("$.draftAdjudication.createdByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.createdDateTime").exists()
       .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo("ITAG_USER")
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
@@ -62,8 +60,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
-      .jsonPath("$.draftAdjudication.createdByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.createdDateTime").exists()
       .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo("ITAG_USER")
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
@@ -86,8 +82,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.adjudicationNumber").isEqualTo(testAdjudication.adjudicationNumber)
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
-      .jsonPath("$.draftAdjudication.createdByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.createdDateTime").exists()
       .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo(testAdjudication.createdByUserId)
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo(testAdjudication.dateTimeOfIncidentISOString)
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(testAdjudication.dateTimeOfIncident.plusDays(2).format(DateTimeFormatter.ISO_DATE_TIME))
