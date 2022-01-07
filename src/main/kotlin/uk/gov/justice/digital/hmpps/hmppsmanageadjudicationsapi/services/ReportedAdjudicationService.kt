@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -24,12 +24,12 @@ class ReportedAdjudicationService(
   val dateCalculationService: DateCalculationService
 ) {
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
-    val reportedAdjudication =
+    val nomisAdjudication =
       prisonApi.getReportedAdjudication(adjudicationNumber)
 
-    val expirationDateTime = dateCalculationService.calculate48WorkingHoursFrom(reportedAdjudication.incidentTime)
+    val expirationDateTime = dateCalculationService.calculate48WorkingHoursFrom(nomisAdjudication.incidentTime)
 
-    return reportedAdjudication.toDto(expirationDateTime)
+    return nomisAdjudication.toDto(expirationDateTime)
   }
 
   fun getAllReportedAdjudications(agencyId: String, pageable: Pageable): Page<ReportedAdjudicationDto> {
@@ -44,21 +44,21 @@ class ReportedAdjudicationService(
   }
 
   fun createDraftFromReportedAdjudication(adjudicationNumber: Long): DraftAdjudicationDto {
-    val reportedAdjudication =
+    val nomisAdjudication =
       prisonApi.getReportedAdjudication(adjudicationNumber)
 
     val draftAdjudication = DraftAdjudication(
-      reportNumber = reportedAdjudication.adjudicationNumber,
-      reportByUserId = reportedAdjudication.createdByUserId,
-      prisonerNumber = reportedAdjudication.offenderNo,
-      agencyId = reportedAdjudication.agencyId,
+      reportNumber = nomisAdjudication.adjudicationNumber,
+      reportByUserId = nomisAdjudication.createdByUserId,
+      prisonerNumber = nomisAdjudication.offenderNo,
+      agencyId = nomisAdjudication.agencyId,
       incidentDetails = IncidentDetails(
-        locationId = reportedAdjudication.incidentLocationId,
-        dateTimeOfIncident = reportedAdjudication.incidentTime,
-        handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(reportedAdjudication.incidentTime)
+        locationId = nomisAdjudication.incidentLocationId,
+        dateTimeOfIncident = nomisAdjudication.incidentTime,
+        handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(nomisAdjudication.incidentTime)
       ),
       incidentStatement = IncidentStatement(
-        statement = reportedAdjudication.statement,
+        statement = nomisAdjudication.statement,
         completed = true
       )
     )
@@ -72,10 +72,10 @@ class ReportedAdjudicationService(
     val adjudicationNumbers = submittedAdjudicationsPage.map { it.adjudicationNumber }.toList()
     if (adjudicationNumbers.isEmpty()) return Page.empty(defaultPageable)
 
-    val adjudicationDetailsByNumber = prisonApi.getReportedAdjudications(adjudicationNumbers).groupBy { it.adjudicationNumber }
-    return submittedAdjudicationsPage.map { toDto(adjudicationDetailsByNumber[it.adjudicationNumber]!![0]) }
+    val nomisAdjudicationDetailsByNumber = prisonApi.getReportedAdjudications(adjudicationNumbers).groupBy { it.adjudicationNumber }
+    return submittedAdjudicationsPage.map { toDto(nomisAdjudicationDetailsByNumber[it.adjudicationNumber]!![0]) }
   }
 
-  private fun toDto(adjudication: ReportedAdjudication): ReportedAdjudicationDto =
+  private fun toDto(adjudication: NomisAdjudication): ReportedAdjudicationDto =
     adjudication.toDto(dateCalculationService.calculate48WorkingHoursFrom(adjudication.incidentTime))
 }

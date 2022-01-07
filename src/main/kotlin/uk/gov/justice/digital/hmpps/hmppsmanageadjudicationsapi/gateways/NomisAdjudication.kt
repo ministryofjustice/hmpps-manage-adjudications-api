@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentSta
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import java.time.LocalDateTime
 
-data class ReportedAdjudication(
+data class NomisAdjudication(
   val adjudicationNumber: Long,
   val reporterStaffId: Long,
   val offenderNo: String,
