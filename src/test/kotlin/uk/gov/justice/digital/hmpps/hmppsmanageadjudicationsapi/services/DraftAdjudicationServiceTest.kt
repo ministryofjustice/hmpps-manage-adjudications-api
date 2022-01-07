@@ -16,14 +16,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAd
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.time.Clock
 import java.time.Instant.ofEpochMilli
@@ -35,7 +33,6 @@ import javax.persistence.EntityNotFoundException
 class DraftAdjudicationServiceTest {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
-  private val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository = mock()
   private val prisonApiGateway: PrisonApiGateway = mock()
   private val dateCalculationService: DateCalculationService = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
@@ -49,11 +46,9 @@ class DraftAdjudicationServiceTest {
       DraftAdjudicationService(
         draftAdjudicationRepository,
         reportedAdjudicationRepository,
-        submittedAdjudicationHistoryRepository,
         prisonApiGateway,
         dateCalculationService,
-        authenticationFacade,
-        clock
+        authenticationFacade
       )
   }
 
@@ -439,13 +434,6 @@ class DraftAdjudicationServiceTest {
       fun `stores a new completed adjudication record`() {
         draftAdjudicationService.completeDraftAdjudication(1)
 
-        val argumentCaptor = ArgumentCaptor.forClass(SubmittedAdjudicationHistory::class.java)
-        verify(submittedAdjudicationHistoryRepository).save(argumentCaptor.capture())
-
-        assertThat(argumentCaptor.value)
-          .extracting("adjudicationNumber", "agencyId", "dateTimeOfIncident", "dateTimeSent")
-          .contains(123456L, "MDI", INCIDENT_TIME, LocalDateTime.now(clock))
-
         val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
         verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
@@ -503,14 +491,6 @@ class DraftAdjudicationServiceTest {
             )
           )
         )
-        whenever(submittedAdjudicationHistoryRepository.findByAdjudicationNumber(any())).thenReturn(
-          SubmittedAdjudicationHistory(
-            adjudicationNumber = 123L,
-            agencyId = "MDI",
-            dateTimeOfIncident = LocalDateTime.now(clock),
-            dateTimeSent = LocalDateTime.now(clock)
-          )
-        )
         whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
           ReportedAdjudication(
             id = 1,
@@ -544,16 +524,7 @@ class DraftAdjudicationServiceTest {
       fun `updates the completed adjudication record`() {
         draftAdjudicationService.completeDraftAdjudication(1)
 
-        verify(submittedAdjudicationHistoryRepository).findByAdjudicationNumber(123L)
-
         verify(reportedAdjudicationRepository).findByReportNumber(123L)
-
-        val argumentCaptor = ArgumentCaptor.forClass(SubmittedAdjudicationHistory::class.java)
-        verify(submittedAdjudicationHistoryRepository).save(argumentCaptor.capture())
-
-        assertThat(argumentCaptor.value)
-          .extracting("adjudicationNumber", "agencyId", "dateTimeSent")
-          .contains(123L, "MDI", LocalDateTime.now(clock))
 
         val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
         verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
