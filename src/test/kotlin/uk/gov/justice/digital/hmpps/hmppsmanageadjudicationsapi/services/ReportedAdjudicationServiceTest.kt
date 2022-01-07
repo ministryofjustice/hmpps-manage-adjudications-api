@@ -16,8 +16,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAd
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -41,7 +41,7 @@ class ReportedAdjudicationServiceTest {
   }
 
   @Nested
-  inner class ReportedAdjudicationDetails {
+  inner class NomisAdjudicationDetails {
     @Test
     fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
       whenever(prisonApiGateway.getReportedAdjudication(any())).thenThrow(EntityNotFoundException("ReportedAdjudication not found for 1"))
@@ -55,7 +55,7 @@ class ReportedAdjudicationServiceTest {
     @Test
     fun `returns the reported adjudication`() {
       val reportedAdjudication =
-        ReportedAdjudication(
+        NomisAdjudication(
           adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
           incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
           createdByUserId = "A_SMITH",
@@ -79,7 +79,7 @@ class ReportedAdjudicationServiceTest {
   }
 
   @Nested
-  inner class AllReportedAdjudications {
+  inner class AllNomisAdjudications {
     @BeforeEach
     fun beforeEach() {
       whenever(submittedAdjudicationHistoryRepository.findByAgencyId(any(), any())).thenReturn(
@@ -92,12 +92,12 @@ class ReportedAdjudicationServiceTest {
       )
       whenever(prisonApiGateway.getReportedAdjudications(any())).thenReturn(
         listOf(
-          ReportedAdjudication(
+          NomisAdjudication(
             adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
             incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
             createdByUserId = "A_SMITH",
           ),
-          ReportedAdjudication(
+          NomisAdjudication(
             adjudicationNumber = 2, offenderNo = "AA1234B", bookingId = 456, reporterStaffId = 234, agencyId = "MDI",
             incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
             createdByUserId = "A_SMITH",
@@ -135,7 +135,7 @@ class ReportedAdjudicationServiceTest {
   }
 
   @Nested
-  inner class MyReportedAdjudications {
+  inner class MyNomisAdjudications {
     @BeforeEach
     fun beforeEach() {
       whenever(submittedAdjudicationHistoryRepository.findByCreatedByUserIdAndAgencyId(any(), any(), any())).thenReturn(
@@ -148,12 +148,12 @@ class ReportedAdjudicationServiceTest {
       )
       whenever(prisonApiGateway.getReportedAdjudications(any())).thenReturn(
         listOf(
-          ReportedAdjudication(
+          NomisAdjudication(
             adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
             incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
             createdByUserId = "A_SMITH",
           ),
-          ReportedAdjudication(
+          NomisAdjudication(
             adjudicationNumber = 2, offenderNo = "AA1234B", bookingId = 456, reporterStaffId = 234, agencyId = "MDI",
             incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
             createdByUserId = "A_SMITH",
@@ -185,7 +185,7 @@ class ReportedAdjudicationServiceTest {
 
   @Nested
   inner class CreateDraftFromReported {
-    val reportedAdjudication = ReportedAdjudication(
+    val reportedAdjudication = NomisAdjudication(
       adjudicationNumber = 123, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
       incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
       createdByUserId = "A_SMITH",
