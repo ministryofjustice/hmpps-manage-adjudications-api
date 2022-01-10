@@ -428,6 +428,11 @@ class DraftAdjudicationServiceTest {
           )
         )
         whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
+        whenever(reportedAdjudicationRepository.save(any())).thenAnswer{
+          val passedInAdjudication = it.arguments[0] as ReportedAdjudication
+          passedInAdjudication.createdByUserId = "A_SMITH"
+          passedInAdjudication
+        }
       }
 
       @Test
@@ -518,6 +523,21 @@ class DraftAdjudicationServiceTest {
           )
         )
         whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
+        whenever(reportedAdjudicationRepository.save(any())).thenAnswer{
+          val passedInAdjudication = it.arguments[0] as ReportedAdjudication
+          passedInAdjudication.createdByUserId = "A_SMITH"
+          passedInAdjudication
+        }
+      }
+
+      @Test
+      fun `throws an entity not found exception and does not call prisonApi if the reported adjudication for the supplied id does not exists`() {
+        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
+
+        assertThatThrownBy {
+          draftAdjudicationService.completeDraftAdjudication(1)
+        }.isInstanceOf(EntityNotFoundException::class.java)
+          .hasMessageContaining("ReportedAdjudication not found for 1")
       }
 
       @Test
