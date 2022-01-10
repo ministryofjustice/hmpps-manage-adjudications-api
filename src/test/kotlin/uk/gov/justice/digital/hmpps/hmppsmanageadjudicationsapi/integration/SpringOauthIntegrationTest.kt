@@ -1,17 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.ActiveProfiles
 
 @ActiveProfiles("test")
 class SpringOauthIntegrationTest : IntegrationTestBase() {
-
-  @BeforeEach
-  fun beforeEach() {
-    prisonApiMockServer.stubGetAdjudication()
-  }
 
   @Test
   fun `should request a new token for each request`() {
