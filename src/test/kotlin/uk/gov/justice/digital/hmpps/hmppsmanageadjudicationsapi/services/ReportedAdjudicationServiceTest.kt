@@ -15,11 +15,11 @@ import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -28,7 +28,7 @@ class ReportedAdjudicationServiceTest {
   private val prisonApiGateway: PrisonApiGateway = mock()
   private val dateCalculationService: DateCalculationService = mock()
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
-  private val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository = mock()
+  private val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
   private lateinit var reportedAdjudicationService: ReportedAdjudicationService
 
@@ -37,7 +37,7 @@ class ReportedAdjudicationServiceTest {
     whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
 
     reportedAdjudicationService =
-      ReportedAdjudicationService(draftAdjudicationRepository, submittedAdjudicationHistoryRepository, authenticationFacade, prisonApiGateway, dateCalculationService)
+      ReportedAdjudicationService(draftAdjudicationRepository, reportedAdjudicationRepository, authenticationFacade, prisonApiGateway, dateCalculationService)
   }
 
   @Nested
@@ -79,14 +79,34 @@ class ReportedAdjudicationServiceTest {
   }
 
   @Nested
-  inner class AllNomisAdjudications {
+  inner class AllReportedAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(submittedAdjudicationHistoryRepository.findByAgencyId(any(), any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByAgencyId(any(), any())).thenReturn(
         PageImpl(
           listOf(
-            SubmittedAdjudicationHistory(adjudicationNumber = 1, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
-            SubmittedAdjudicationHistory(adjudicationNumber = 2, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
+            ReportedAdjudication(
+              id = 1,
+              prisonerNumber = "AA1234A",
+              bookingId = 123,
+              reportNumber = 1,
+              agencyId = "MDI",
+              locationId = 345,
+              dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+              handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+              statement = INCIDENT_STATEMENT,
+            ),
+            ReportedAdjudication(
+              id = 2,
+              prisonerNumber = "AA1234B",
+              bookingId = 456,
+              reportNumber = 2,
+              agencyId = "MDI",
+              locationId = 345,
+              dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+              handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+              statement = INCIDENT_STATEMENT,
+            )
           )
         )
       )
@@ -111,7 +131,7 @@ class ReportedAdjudicationServiceTest {
     fun `makes a call to the submitted adjudication repository to get the page of adjudications`() {
       reportedAdjudicationService.getAllReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
 
-      verify(submittedAdjudicationHistoryRepository).findByAgencyId("MDI", Pageable.ofSize(20).withPage(0))
+      verify(reportedAdjudicationRepository).findByAgencyId("MDI", Pageable.ofSize(20).withPage(0))
     }
 
     @Test
@@ -135,14 +155,34 @@ class ReportedAdjudicationServiceTest {
   }
 
   @Nested
-  inner class MyNomisAdjudications {
+  inner class MyReportedAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(submittedAdjudicationHistoryRepository.findByCreatedByUserIdAndAgencyId(any(), any(), any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyId(any(), any(), any())).thenReturn(
         PageImpl(
           listOf(
-            SubmittedAdjudicationHistory(adjudicationNumber = 1, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
-            SubmittedAdjudicationHistory(adjudicationNumber = 2, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
+            ReportedAdjudication(
+              id = 1,
+              prisonerNumber = "AA1234A",
+              bookingId = 123,
+              reportNumber = 1,
+              agencyId = "MDI",
+              locationId = 345,
+              dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+              handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+              statement = INCIDENT_STATEMENT,
+            ),
+            ReportedAdjudication(
+              id = 2,
+              prisonerNumber = "AA1234B",
+              bookingId = 456,
+              reportNumber = 2,
+              agencyId = "MDI",
+              locationId = 345,
+              dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+              handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+              statement = INCIDENT_STATEMENT,
+            )
           )
         )
       )

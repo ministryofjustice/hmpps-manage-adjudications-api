@@ -9,16 +9,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAd
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
-import java.time.Clock
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
@@ -27,11 +24,9 @@ import javax.transaction.Transactional
 class DraftAdjudicationService(
   val draftAdjudicationRepository: DraftAdjudicationRepository,
   val reportedAdjudicationRepository: ReportedAdjudicationRepository,
-  val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository,
   val prisonApiGateway: PrisonApiGateway,
   val dateCalculationService: DateCalculationService,
   val authenticationFacade: AuthenticationFacade,
-  val clock: Clock,
 ) {
 
   @Transactional
@@ -116,7 +111,6 @@ class DraftAdjudicationService(
 
     val isNew = draftAdjudication.reportNumber == null
     val nomisAdjudication = saveToPrisonApi(draftAdjudication, isNew)
-    saveToSubmittedReports(nomisAdjudication, isNew)
     saveToReportedAdjudications(draftAdjudication, nomisAdjudication, isNew)
 
     draftAdjudicationRepository.delete(draftAdjudication)
@@ -153,26 +147,6 @@ class DraftAdjudicationService(
           statement = draftAdjudication.incidentStatement?.statement!!
         )
       )
-    }
-  }
-
-  private fun saveToSubmittedReports(nomisAdjudication: NomisAdjudication, isNew: Boolean) {
-    if (isNew) {
-      submittedAdjudicationHistoryRepository.save(
-        SubmittedAdjudicationHistory(
-          adjudicationNumber = nomisAdjudication.adjudicationNumber,
-          agencyId = nomisAdjudication.agencyId,
-          dateTimeOfIncident = nomisAdjudication.incidentTime,
-          LocalDateTime.now(clock)
-        )
-      )
-    } else {
-      val previousSubmittedAdjudicationHistory = submittedAdjudicationHistoryRepository.findByAdjudicationNumber(nomisAdjudication.adjudicationNumber)
-      previousSubmittedAdjudicationHistory?.let {
-        it.dateTimeOfIncident = nomisAdjudication.incidentTime
-        it.dateTimeSent = LocalDateTime.now(clock)
-        submittedAdjudicationHistoryRepository.save(it)
-      }
     }
   }
 
