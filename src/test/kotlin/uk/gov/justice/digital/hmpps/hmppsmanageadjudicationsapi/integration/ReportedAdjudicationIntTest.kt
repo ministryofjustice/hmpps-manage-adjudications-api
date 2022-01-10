@@ -96,18 +96,27 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
     val firstDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_1)
     intTestData.addIncidentStatement(firstDraftCreationResponse, IntTestData.ADJUDICATION_1)
-    intTestData.completeDraftAdjudication(firstDraftCreationResponse, IntTestData.ADJUDICATION_1,
-      setHeaders(username = IntTestData.ADJUDICATION_1.createdByUserId))
+    intTestData.completeDraftAdjudication(
+      firstDraftCreationResponse,
+      IntTestData.ADJUDICATION_1,
+      setHeaders(username = IntTestData.ADJUDICATION_1.createdByUserId)
+    )
 
     val secondDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_2)
     intTestData.addIncidentStatement(secondDraftCreationResponse, IntTestData.ADJUDICATION_2)
-    intTestData.completeDraftAdjudication(secondDraftCreationResponse, IntTestData.ADJUDICATION_2,
-      setHeaders(username = IntTestData.ADJUDICATION_2.createdByUserId))
+    intTestData.completeDraftAdjudication(
+      secondDraftCreationResponse,
+      IntTestData.ADJUDICATION_2,
+      setHeaders(username = IntTestData.ADJUDICATION_2.createdByUserId)
+    )
 
     val thirdDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_3)
     intTestData.addIncidentStatement(thirdDraftCreationResponse, IntTestData.ADJUDICATION_3)
-    intTestData.completeDraftAdjudication(thirdDraftCreationResponse, IntTestData.ADJUDICATION_3,
-      setHeaders(username = IntTestData.ADJUDICATION_3.createdByUserId))
+    intTestData.completeDraftAdjudication(
+      thirdDraftCreationResponse,
+      IntTestData.ADJUDICATION_3,
+      setHeaders(username = IntTestData.ADJUDICATION_3.createdByUserId)
+    )
 
     webTestClient.get()
       .uri("/reported-adjudications/agency/MDI?page=0&size=20")

@@ -66,8 +66,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val draftCreationResponse = intTestData.startNewAdjudication(testAdjudication)
     intTestData.addIncidentStatement(draftCreationResponse, testAdjudication)
-    intTestData.completeDraftAdjudication(draftCreationResponse, testAdjudication,
-      setHeaders(username = testAdjudication.createdByUserId))
+    intTestData.completeDraftAdjudication(
+      draftCreationResponse,
+      testAdjudication,
+      setHeaders(username = testAdjudication.createdByUserId)
+    )
 
     val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(testAdjudication)
 

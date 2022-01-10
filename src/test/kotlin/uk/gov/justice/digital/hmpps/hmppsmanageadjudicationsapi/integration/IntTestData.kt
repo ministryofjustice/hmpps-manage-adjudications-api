@@ -155,9 +155,11 @@ class IntTestData(
       .blockFirst()!!
   }
 
-  fun editIncidentDetails(draftAdjudicationResponse: DraftAdjudicationResponse,
-                          testDataSet: AdjudicationIntTestDataSet,
-                          headers: (HttpHeaders) -> Unit = setHeaders()) {
+  fun editIncidentDetails(
+    draftAdjudicationResponse: DraftAdjudicationResponse,
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ) {
     webTestClient.put()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-details")
       .headers(headers)
