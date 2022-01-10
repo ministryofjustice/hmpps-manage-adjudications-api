@@ -428,7 +428,7 @@ class DraftAdjudicationServiceTest {
           )
         )
         whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
-        whenever(reportedAdjudicationRepository.save(any())).thenAnswer{
+        whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
           val passedInAdjudication = it.arguments[0] as ReportedAdjudication
           passedInAdjudication.createdByUserId = "A_SMITH"
           passedInAdjudication
@@ -523,7 +523,7 @@ class DraftAdjudicationServiceTest {
           )
         )
         whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
-        whenever(reportedAdjudicationRepository.save(any())).thenAnswer{
+        whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
           val passedInAdjudication = it.arguments[0] as ReportedAdjudication
           passedInAdjudication.createdByUserId = "A_SMITH"
           passedInAdjudication
