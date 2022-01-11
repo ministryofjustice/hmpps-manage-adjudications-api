@@ -111,12 +111,12 @@ class DraftAdjudicationService(
 
     val isNew = draftAdjudication.reportNumber == null
     val nomisAdjudication = saveToPrisonApi(draftAdjudication, isNew)
-    saveToReportedAdjudications(draftAdjudication, nomisAdjudication, isNew)
+    val generatedReportedAdjudication = saveToReportedAdjudications(draftAdjudication, nomisAdjudication, isNew)
 
     draftAdjudicationRepository.delete(draftAdjudication)
 
-    return nomisAdjudication
-      .toDto(dateCalculationService.calculate48WorkingHoursFrom(nomisAdjudication.incidentTime))
+    return generatedReportedAdjudication
+      .toDto()
   }
 
   fun getCurrentUsersInProgressDraftAdjudications(agencyId: String): List<DraftAdjudicationDto> {
@@ -154,9 +154,9 @@ class DraftAdjudicationService(
     draftAdjudication: DraftAdjudication,
     nomisAdjudication: NomisAdjudication,
     isNew: Boolean
-  ) {
+  ): ReportedAdjudication {
     if (isNew) {
-      reportedAdjudicationRepository.save(
+      return reportedAdjudicationRepository.save(
         ReportedAdjudication(
           bookingId = nomisAdjudication.bookingId,
           reportNumber = nomisAdjudication.adjudicationNumber,
@@ -168,20 +168,20 @@ class DraftAdjudicationService(
           statement = draftAdjudication.incidentStatement!!.statement!!
         )
       )
-    } else {
-      val previousReportedAdjudication = reportedAdjudicationRepository.findByReportNumber(nomisAdjudication.adjudicationNumber)
-      previousReportedAdjudication?.let {
-        it.bookingId = nomisAdjudication.bookingId
-        it.reportNumber = nomisAdjudication.adjudicationNumber
-        it.prisonerNumber = draftAdjudication.prisonerNumber
-        it.agencyId = draftAdjudication.agencyId
-        it.locationId = draftAdjudication.incidentDetails.locationId
-        it.dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident
-        it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline
-        it.statement = draftAdjudication.incidentStatement!!.statement!!
-        reportedAdjudicationRepository.save(it)
-      }
     }
+
+    val previousReportedAdjudication = reportedAdjudicationRepository.findByReportNumber(nomisAdjudication.adjudicationNumber)
+    previousReportedAdjudication?.let {
+      it.bookingId = nomisAdjudication.bookingId
+      it.reportNumber = nomisAdjudication.adjudicationNumber
+      it.prisonerNumber = draftAdjudication.prisonerNumber
+      it.agencyId = draftAdjudication.agencyId
+      it.locationId = draftAdjudication.incidentDetails.locationId
+      it.dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident
+      it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline
+      it.statement = draftAdjudication.incidentStatement!!.statement!!
+      return reportedAdjudicationRepository.save(it)
+    } ?: ReportedAdjudicationService.throwEntityNotFoundException(nomisAdjudication.adjudicationNumber)
   }
 
   private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {

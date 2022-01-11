@@ -23,12 +23,37 @@ class IntTestData(
     const val DEFAULT_AGENCY_ID = "MDI"
     const val DEFAULT_CREATED_USER_ID = "B_MILLS"
     val DEFAULT_DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 11, 12, 10, 0)
+    const val DEFAULT_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-12T10:00:00"
+    const val DEFAULT_HANDOVER_DEADLINE_ISO_STRING = "2010-11-15T10:00:00"
+    const val DEFAULT_STATEMENT = "A statement"
 
     const val UPDATED_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-13T10:00:00"
-    const val UPDATED_HANDOVER_DEADLINE_TEXT = "2010-11-16T10:00:00"
+    const val UPDATED_HANDOVER_DEADLINE_ISO_STRING = "2010-11-16T10:00:00"
     const val UPDATED_LOCATION_ID = 721899L
     const val UPDATED_STATEMENT = "updated test statement"
     val UPDATED_DATE_TIME_OF_INCIDENT = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
+
+    val DEFAULT_ADJUDICATION = AdjudicationIntTestDataSet(
+      adjudicationNumber = DEFAULT_ADJUDICATION_NUMBER,
+      prisonerNumber = DEFAULT_PRISONER_NUMBER,
+      agencyId = DEFAULT_AGENCY_ID,
+      locationId = UPDATED_LOCATION_ID,
+      dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
+      dateTimeOfIncident = DEFAULT_DATE_TIME_OF_INCIDENT,
+      statement = DEFAULT_STATEMENT,
+      createdByUserId = DEFAULT_CREATED_USER_ID
+    )
+
+    val UPDATED_ADJUDICATION = AdjudicationIntTestDataSet(
+      adjudicationNumber = DEFAULT_ADJUDICATION_NUMBER,
+      prisonerNumber = DEFAULT_PRISONER_NUMBER,
+      agencyId = DEFAULT_AGENCY_ID,
+      locationId = UPDATED_LOCATION_ID,
+      dateTimeOfIncidentISOString = UPDATED_DATE_TIME_OF_INCIDENT_TEXT,
+      dateTimeOfIncident = UPDATED_DATE_TIME_OF_INCIDENT,
+      statement = UPDATED_STATEMENT,
+      createdByUserId = DEFAULT_CREATED_USER_ID
+    )
 
     val ADJUDICATION_1 = AdjudicationIntTestDataSet(
       adjudicationNumber = 456L,
@@ -130,6 +155,47 @@ class IntTestData(
       .blockFirst()!!
   }
 
+  fun editIncidentDetails(
+    draftAdjudicationResponse: DraftAdjudicationResponse,
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ) {
+    webTestClient.put()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-details")
+      .headers(headers)
+      .bodyValue(
+        mapOf(
+          "locationId" to testDataSet.locationId,
+          "dateTimeOfIncident" to testDataSet.dateTimeOfIncidentISOString
+        )
+      )
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
+  fun editIncidentStatement(
+    draftCreationData: DraftAdjudicationResponse,
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ): DraftAdjudicationResponse {
+    return webTestClient.put()
+      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/incident-statement")
+      .headers(headers)
+      .bodyValue(
+        mapOf(
+          "statement" to testDataSet.statement
+        )
+      )
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
   fun completeDraftAdjudication(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
@@ -147,9 +213,6 @@ class IntTestData(
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders()
   ): DraftAdjudicationResponse {
-    prisonApiMockServer.stubGetAdjudication(testDataSet)
-    bankHolidayApiMockServer.stubGetBankHolidays()
-
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/create-draft-adjudication")
       .headers(headers)

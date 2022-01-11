@@ -6,13 +6,6 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @Service
 class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
-  fun getReportedAdjudication(adjudicationNumber: Long): NomisAdjudication = prisonApiClientCreds
-    .get()
-    .uri("/adjudications/adjudication/$adjudicationNumber")
-    .retrieve()
-    .bodyToMono(object : ParameterizedTypeReference<NomisAdjudication>() {})
-    .block()!!
-
   fun publishAdjudication(adjudicationDetailsToPublish: AdjudicationDetailsToPublish): NomisAdjudication =
     prisonApiClientCreds
       .post()
@@ -30,12 +23,4 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
       .retrieve()
       .bodyToMono(object : ParameterizedTypeReference<NomisAdjudication>() {})
       .block()!!
-
-  fun getReportedAdjudications(adjudicationNumbers: Collection<Long>): List<NomisAdjudication> = prisonApiClientCreds
-    .post()
-    .uri("/adjudications")
-    .bodyValue(adjudicationNumbers)
-    .retrieve()
-    .bodyToMono(object : ParameterizedTypeReference<List<NomisAdjudication>>() {})
-    .block()!!
 }
