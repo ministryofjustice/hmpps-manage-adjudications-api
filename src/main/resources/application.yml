@@ -13,6 +13,8 @@ spring:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
 
+
+
   profiles:
     group:
       test:
@@ -44,6 +46,10 @@ spring:
         provider:
           hmpps-auth:
             token-uri: ${oauth.endpoint.url}/oauth/token
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 
 server:
   port: 8080
