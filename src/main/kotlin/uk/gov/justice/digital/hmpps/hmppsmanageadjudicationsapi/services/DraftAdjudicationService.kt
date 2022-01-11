@@ -8,15 +8,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
-import java.time.Clock
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
@@ -24,11 +23,10 @@ import javax.transaction.Transactional
 @Service
 class DraftAdjudicationService(
   val draftAdjudicationRepository: DraftAdjudicationRepository,
-  val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository,
+  val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   val prisonApiGateway: PrisonApiGateway,
   val dateCalculationService: DateCalculationService,
   val authenticationFacade: AuthenticationFacade,
-  val clock: Clock,
 ) {
 
   @Transactional
@@ -108,17 +106,17 @@ class DraftAdjudicationService(
   fun completeDraftAdjudication(id: Long): ReportedAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
-    if (draftAdjudication.incidentStatement == null)
+    if (draftAdjudication.incidentStatement == null || draftAdjudication.incidentStatement!!.statement == null)
       throw IllegalStateException("Please include an incident statement before completing this draft adjudication")
 
     val isNew = draftAdjudication.reportNumber == null
-    val reportedAdjudication = saveToPrisonApi(draftAdjudication, isNew)
-    saveToSubmittedReports(reportedAdjudication, isNew)
+    val nomisAdjudication = saveToPrisonApi(draftAdjudication, isNew)
+    val generatedReportedAdjudication = saveToReportedAdjudications(draftAdjudication, nomisAdjudication, isNew)
 
     draftAdjudicationRepository.delete(draftAdjudication)
 
-    return reportedAdjudication
-      .toDto(dateCalculationService.calculate48WorkingHoursFrom(reportedAdjudication.incidentTime))
+    return generatedReportedAdjudication
+      .toDto()
   }
 
   fun getCurrentUsersInProgressDraftAdjudications(agencyId: String): List<DraftAdjudicationDto> {
@@ -129,7 +127,7 @@ class DraftAdjudicationService(
       .map { it.toDto() }
   }
 
-  private fun saveToPrisonApi(draftAdjudication: DraftAdjudication, isNew: Boolean): ReportedAdjudication {
+  private fun saveToPrisonApi(draftAdjudication: DraftAdjudication, isNew: Boolean): NomisAdjudication {
     if (isNew) {
       return prisonApiGateway.publishAdjudication(
         AdjudicationDetailsToPublish(
@@ -152,24 +150,38 @@ class DraftAdjudicationService(
     }
   }
 
-  private fun saveToSubmittedReports(reportedAdjudication: ReportedAdjudication, isNew: Boolean) {
+  private fun saveToReportedAdjudications(
+    draftAdjudication: DraftAdjudication,
+    nomisAdjudication: NomisAdjudication,
+    isNew: Boolean
+  ): ReportedAdjudication {
     if (isNew) {
-      submittedAdjudicationHistoryRepository.save(
-        SubmittedAdjudicationHistory(
-          adjudicationNumber = reportedAdjudication.adjudicationNumber,
-          agencyId = reportedAdjudication.agencyId,
-          dateTimeOfIncident = reportedAdjudication.incidentTime,
-          LocalDateTime.now(clock)
+      return reportedAdjudicationRepository.save(
+        ReportedAdjudication(
+          bookingId = nomisAdjudication.bookingId,
+          reportNumber = nomisAdjudication.adjudicationNumber,
+          prisonerNumber = draftAdjudication.prisonerNumber,
+          agencyId = draftAdjudication.agencyId,
+          locationId = draftAdjudication.incidentDetails.locationId,
+          dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
+          handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
+          statement = draftAdjudication.incidentStatement!!.statement!!
         )
       )
-    } else {
-      val previousSubmittedAdjudicationHistory = submittedAdjudicationHistoryRepository.findByAdjudicationNumber(reportedAdjudication.adjudicationNumber)
-      previousSubmittedAdjudicationHistory?.let {
-        it.dateTimeOfIncident = reportedAdjudication.incidentTime
-        it.dateTimeSent = LocalDateTime.now(clock)
-        submittedAdjudicationHistoryRepository.save(previousSubmittedAdjudicationHistory)
-      }
     }
+
+    val previousReportedAdjudication = reportedAdjudicationRepository.findByReportNumber(nomisAdjudication.adjudicationNumber)
+    previousReportedAdjudication?.let {
+      it.bookingId = nomisAdjudication.bookingId
+      it.reportNumber = nomisAdjudication.adjudicationNumber
+      it.prisonerNumber = draftAdjudication.prisonerNumber
+      it.agencyId = draftAdjudication.agencyId
+      it.locationId = draftAdjudication.incidentDetails.locationId
+      it.dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident
+      it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline
+      it.statement = draftAdjudication.incidentStatement!!.statement!!
+      return reportedAdjudicationRepository.save(it)
+    } ?: ReportedAdjudicationService.throwEntityNotFoundException(nomisAdjudication.adjudicationNumber)
   }
 
   private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {

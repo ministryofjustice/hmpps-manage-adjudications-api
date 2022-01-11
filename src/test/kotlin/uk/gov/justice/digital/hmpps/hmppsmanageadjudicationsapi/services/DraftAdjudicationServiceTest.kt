@@ -15,13 +15,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDet
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.time.Clock
 import java.time.Instant.ofEpochMilli
@@ -32,7 +32,7 @@ import javax.persistence.EntityNotFoundException
 
 class DraftAdjudicationServiceTest {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
-  private val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository = mock()
+  private val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
   private val prisonApiGateway: PrisonApiGateway = mock()
   private val dateCalculationService: DateCalculationService = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
@@ -45,11 +45,10 @@ class DraftAdjudicationServiceTest {
     draftAdjudicationService =
       DraftAdjudicationService(
         draftAdjudicationRepository,
-        submittedAdjudicationHistoryRepository,
+        reportedAdjudicationRepository,
         prisonApiGateway,
         dateCalculationService,
-        authenticationFacade,
-        clock
+        authenticationFacade
       )
   }
 
@@ -416,7 +415,7 @@ class DraftAdjudicationServiceTest {
           )
         )
         whenever(prisonApiGateway.publishAdjudication(any())).thenReturn(
-          ReportedAdjudication(
+          NomisAdjudication(
             adjudicationNumber = 123456L,
             offenderNo = "A12345",
             bookingId = 1L,
@@ -429,18 +428,23 @@ class DraftAdjudicationServiceTest {
           )
         )
         whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
+        whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
+          val passedInAdjudication = it.arguments[0] as ReportedAdjudication
+          passedInAdjudication.createdByUserId = "A_SMITH"
+          passedInAdjudication
+        }
       }
 
       @Test
       fun `stores a new completed adjudication record`() {
         draftAdjudicationService.completeDraftAdjudication(1)
 
-        val argumentCaptor = ArgumentCaptor.forClass(SubmittedAdjudicationHistory::class.java)
-        verify(submittedAdjudicationHistoryRepository).save(argumentCaptor.capture())
+        val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+        verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
-        assertThat(argumentCaptor.value)
-          .extracting("adjudicationNumber", "agencyId", "dateTimeOfIncident", "dateTimeSent")
-          .contains(123456L, "MDI", INCIDENT_TIME, LocalDateTime.now(clock))
+        assertThat(reportedAdjudicationArgumentCaptor.value)
+          .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId", "locationId", "dateTimeOfIncident", "handoverDeadline", "statement")
+          .contains("A12345", 123456L, 1L, "MDI", 1L, INCIDENT_TIME, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, "test")
       }
 
       @Test
@@ -492,42 +496,62 @@ class DraftAdjudicationServiceTest {
             )
           )
         )
-        whenever(submittedAdjudicationHistoryRepository.findByAdjudicationNumber(any())).thenReturn(
-          SubmittedAdjudicationHistory(
-            adjudicationNumber = 123L,
+        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+          ReportedAdjudication(
+            id = 1,
+            prisonerNumber = "A12345",
+            bookingId = 33L,
+            reportNumber = 123L,
             agencyId = "MDI",
-            dateTimeOfIncident = LocalDateTime.now(clock),
-            dateTimeSent = LocalDateTime.now(clock)
+            locationId = 2,
+            dateTimeOfIncident = LocalDateTime.now(clock).minusDays(2),
+            handoverDeadline = LocalDateTime.now(clock),
+            statement = "olddata",
           )
         )
         whenever(prisonApiGateway.updateAdjudication(any(), any())).thenReturn(
-          ReportedAdjudication(
+          NomisAdjudication(
             adjudicationNumber = 123L,
             offenderNo = "A12345",
-            bookingId = 1L,
+            bookingId = 33L,
             agencyId = "MDI",
-            statement = "test",
+            statement = "olddata",
             incidentLocationId = 2L,
-            incidentTime = LocalDateTime.now(clock),
+            incidentTime = LocalDateTime.now(clock).minusDays(2),
             reporterStaffId = 2,
             createdByUserId = "A_SMITH",
           )
         )
         whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
+        whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
+          val passedInAdjudication = it.arguments[0] as ReportedAdjudication
+          passedInAdjudication.createdByUserId = "A_SMITH"
+          passedInAdjudication
+        }
+      }
+
+      @Test
+      fun `throws an entity not found exception and does not call prisonApi if the reported adjudication for the supplied id does not exists`() {
+        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
+
+        assertThatThrownBy {
+          draftAdjudicationService.completeDraftAdjudication(1)
+        }.isInstanceOf(EntityNotFoundException::class.java)
+          .hasMessageContaining("ReportedAdjudication not found for 1")
       }
 
       @Test
       fun `updates the completed adjudication record`() {
         draftAdjudicationService.completeDraftAdjudication(1)
 
-        verify(submittedAdjudicationHistoryRepository).findByAdjudicationNumber(123L)
+        verify(reportedAdjudicationRepository).findByReportNumber(123L)
 
-        val argumentCaptor = ArgumentCaptor.forClass(SubmittedAdjudicationHistory::class.java)
-        verify(submittedAdjudicationHistoryRepository).save(argumentCaptor.capture())
+        val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+        verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
-        assertThat(argumentCaptor.value)
-          .extracting("adjudicationNumber", "agencyId", "dateTimeSent")
-          .contains(123L, "MDI", LocalDateTime.now(clock))
+        assertThat(reportedAdjudicationArgumentCaptor.value)
+          .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId", "locationId", "dateTimeOfIncident", "handoverDeadline", "statement")
+          .contains("A12345", 123L, 1L, "MDI", 1L, LocalDateTime.now(clock), DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, "test")
       }
 
       @Test

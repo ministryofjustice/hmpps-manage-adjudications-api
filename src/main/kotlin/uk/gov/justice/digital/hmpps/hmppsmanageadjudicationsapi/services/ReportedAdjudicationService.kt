@@ -4,58 +4,62 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import javax.persistence.EntityNotFoundException
 
 @Service
 class ReportedAdjudicationService(
   val draftAdjudicationRepository: DraftAdjudicationRepository,
-  val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository,
-  val authenticationFacade: AuthenticationFacade,
-  val prisonApi: PrisonApiGateway,
-  val dateCalculationService: DateCalculationService
+  val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  val authenticationFacade: AuthenticationFacade
 ) {
+  companion object {
+    fun throwEntityNotFoundException(id: Long): Nothing =
+      throw EntityNotFoundException("ReportedAdjudication not found for $id")
+  }
+
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
     val reportedAdjudication =
-      prisonApi.getReportedAdjudication(adjudicationNumber)
+      reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
 
-    val expirationDateTime = dateCalculationService.calculate48WorkingHoursFrom(reportedAdjudication.incidentTime)
-
-    return reportedAdjudication.toDto(expirationDateTime)
+    return reportedAdjudication?.toDto() ?: throwEntityNotFoundException(adjudicationNumber)
   }
 
   fun getAllReportedAdjudications(agencyId: String, pageable: Pageable): Page<ReportedAdjudicationDto> {
-    val submittedAdjudicationsPage = submittedAdjudicationHistoryRepository.findByAgencyId(agencyId, pageable)
-    return getAdjudicationDetailsPage(submittedAdjudicationsPage, pageable)
+    val reportedAdjudicationsPage = reportedAdjudicationRepository.findByAgencyId(agencyId, pageable)
+    return reportedAdjudicationsPage.map { it.toDto() }
   }
 
   fun getMyReportedAdjudications(agencyId: String, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val username = authenticationFacade.currentUsername
-    val submittedAdjudicationsPage = submittedAdjudicationHistoryRepository.findByCreatedByUserIdAndAgencyId(username!!, agencyId, pageable)
-    return getAdjudicationDetailsPage(submittedAdjudicationsPage, pageable)
+    val reportedAdjudicationsPage = reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyId(username!!, agencyId, pageable)
+    return reportedAdjudicationsPage.map { it.toDto() }
   }
 
   fun createDraftFromReportedAdjudication(adjudicationNumber: Long): DraftAdjudicationDto {
-    val reportedAdjudication =
-      prisonApi.getReportedAdjudication(adjudicationNumber)
+    val foundReportedAdjudication =
+      reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
+
+    val reportedAdjudication = foundReportedAdjudication ?: throwEntityNotFoundException(adjudicationNumber)
 
     val draftAdjudication = DraftAdjudication(
-      reportNumber = reportedAdjudication.adjudicationNumber,
+      reportNumber = reportedAdjudication.reportNumber,
       reportByUserId = reportedAdjudication.createdByUserId,
-      prisonerNumber = reportedAdjudication.offenderNo,
+      prisonerNumber = reportedAdjudication.prisonerNumber,
       agencyId = reportedAdjudication.agencyId,
       incidentDetails = IncidentDetails(
-        locationId = reportedAdjudication.incidentLocationId,
-        dateTimeOfIncident = reportedAdjudication.incidentTime,
-        handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(reportedAdjudication.incidentTime)
+        locationId = reportedAdjudication.locationId,
+        dateTimeOfIncident = reportedAdjudication.dateTimeOfIncident,
+        handoverDeadline = reportedAdjudication.handoverDeadline
       ),
       incidentStatement = IncidentStatement(
         statement = reportedAdjudication.statement,
@@ -67,15 +71,20 @@ class ReportedAdjudicationService(
       .save(draftAdjudication)
       .toDto()
   }
-
-  private fun getAdjudicationDetailsPage(submittedAdjudicationsPage: Page<SubmittedAdjudicationHistory>, defaultPageable: Pageable): Page<ReportedAdjudicationDto> {
-    val adjudicationNumbers = submittedAdjudicationsPage.map { it.adjudicationNumber }.toList()
-    if (adjudicationNumbers.isEmpty()) return Page.empty(defaultPageable)
-
-    val adjudicationDetailsByNumber = prisonApi.getReportedAdjudications(adjudicationNumbers).groupBy { it.adjudicationNumber }
-    return submittedAdjudicationsPage.map { toDto(adjudicationDetailsByNumber[it.adjudicationNumber]!![0]) }
-  }
-
-  private fun toDto(adjudication: ReportedAdjudication): ReportedAdjudicationDto =
-    adjudication.toDto(dateCalculationService.calculate48WorkingHoursFrom(adjudication.incidentTime))
 }
+
+fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudicationDto(
+  adjudicationNumber = reportNumber,
+  prisonerNumber = prisonerNumber,
+  bookingId = bookingId,
+  dateTimeReportExpires = handoverDeadline,
+  incidentDetails = IncidentDetailsDto(
+    locationId = locationId,
+    dateTimeOfIncident = dateTimeOfIncident,
+    handoverDeadline = handoverDeadline
+  ),
+  incidentStatement = IncidentStatementDto(
+    statement = statement
+  ),
+  createdByUserId = createdByUserId!!
+)

@@ -15,20 +15,16 @@ import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.SubmittedAdjudicationHistory
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.SubmittedAdjudicationHistoryRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
 class ReportedAdjudicationServiceTest {
-  private val prisonApiGateway: PrisonApiGateway = mock()
-  private val dateCalculationService: DateCalculationService = mock()
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
-  private val submittedAdjudicationHistoryRepository: SubmittedAdjudicationHistoryRepository = mock()
+  private val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
   private lateinit var reportedAdjudicationService: ReportedAdjudicationService
 
@@ -37,14 +33,14 @@ class ReportedAdjudicationServiceTest {
     whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
 
     reportedAdjudicationService =
-      ReportedAdjudicationService(draftAdjudicationRepository, submittedAdjudicationHistoryRepository, authenticationFacade, prisonApiGateway, dateCalculationService)
+      ReportedAdjudicationService(draftAdjudicationRepository, reportedAdjudicationRepository, authenticationFacade)
   }
 
   @Nested
   inner class ReportedAdjudicationDetails {
     @Test
     fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-      whenever(prisonApiGateway.getReportedAdjudication(any())).thenThrow(EntityNotFoundException("ReportedAdjudication not found for 1"))
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
 
       assertThatThrownBy {
         reportedAdjudicationService.getReportedAdjudicationDetails(1)
@@ -56,15 +52,15 @@ class ReportedAdjudicationServiceTest {
     fun `returns the reported adjudication`() {
       val reportedAdjudication =
         ReportedAdjudication(
-          adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
-          incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
-          createdByUserId = "A_SMITH",
+          reportNumber = 1, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
+          dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
+          handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
         )
+      reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
 
-      whenever(prisonApiGateway.getReportedAdjudication(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication
       )
-      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
 
       val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails(1)
 
@@ -82,43 +78,42 @@ class ReportedAdjudicationServiceTest {
   inner class AllReportedAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(submittedAdjudicationHistoryRepository.findByAgencyId(any(), any())).thenReturn(
+      val reportedAdjudication1 = ReportedAdjudication(
+        id = 1,
+        prisonerNumber = "AA1234A",
+        bookingId = 123,
+        reportNumber = 1,
+        agencyId = "MDI",
+        locationId = 345,
+        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+        handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+        statement = INCIDENT_STATEMENT,
+      )
+      reportedAdjudication1.createdByUserId = "A_SMITH"
+      val reportedAdjudication2 = ReportedAdjudication(
+        id = 2,
+        prisonerNumber = "AA1234B",
+        bookingId = 456,
+        reportNumber = 2,
+        agencyId = "MDI",
+        locationId = 345,
+        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+        handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+        statement = INCIDENT_STATEMENT,
+      )
+      reportedAdjudication2.createdByUserId = "P_SMITH"
+      whenever(reportedAdjudicationRepository.findByAgencyId(any(), any())).thenReturn(
         PageImpl(
-          listOf(
-            SubmittedAdjudicationHistory(adjudicationNumber = 1, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
-            SubmittedAdjudicationHistory(adjudicationNumber = 2, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
-          )
+          listOf(reportedAdjudication1, reportedAdjudication2)
         )
       )
-      whenever(prisonApiGateway.getReportedAdjudications(any())).thenReturn(
-        listOf(
-          ReportedAdjudication(
-            adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
-            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
-            createdByUserId = "A_SMITH",
-          ),
-          ReportedAdjudication(
-            adjudicationNumber = 2, offenderNo = "AA1234B", bookingId = 456, reporterStaffId = 234, agencyId = "MDI",
-            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
-            createdByUserId = "A_SMITH",
-          )
-        )
-      )
-      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
     }
 
     @Test
-    fun `makes a call to the submitted adjudication repository to get the page of adjudications`() {
+    fun `makes a call to the reported adjudication repository to get the page of adjudications`() {
       reportedAdjudicationService.getAllReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
 
-      verify(submittedAdjudicationHistoryRepository).findByAgencyId("MDI", Pageable.ofSize(20).withPage(0))
-    }
-
-    @Test
-    fun `makes a call to prison api to retrieve the found adjudication details`() {
-      reportedAdjudicationService.getAllReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
-
-      verify(prisonApiGateway).getReportedAdjudications(listOf(1, 2))
+      verify(reportedAdjudicationRepository).findByAgencyId("MDI", Pageable.ofSize(20).withPage(0))
     }
 
     @Test
@@ -126,10 +121,10 @@ class ReportedAdjudicationServiceTest {
       val myReportedAdjudications = reportedAdjudicationService.getAllReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
 
       assertThat(myReportedAdjudications.content)
-        .extracting("adjudicationNumber", "prisonerNumber", "bookingId")
+        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId")
         .contains(
-          Tuple.tuple(1L, "AA1234A", 123L),
-          Tuple.tuple(2L, "AA1234B", 456L)
+          Tuple.tuple(1L, "AA1234A", 123L, "A_SMITH"),
+          Tuple.tuple(2L, "AA1234B", 456L, "P_SMITH")
         )
     }
   }
@@ -138,36 +133,35 @@ class ReportedAdjudicationServiceTest {
   inner class MyReportedAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(submittedAdjudicationHistoryRepository.findByCreatedByUserIdAndAgencyId(any(), any(), any())).thenReturn(
+      val reportedAdjudication1 = ReportedAdjudication(
+        id = 1,
+        prisonerNumber = "AA1234A",
+        bookingId = 123,
+        reportNumber = 1,
+        agencyId = "MDI",
+        locationId = 345,
+        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+        handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+        statement = INCIDENT_STATEMENT,
+      )
+      reportedAdjudication1.createdByUserId = "A_SMITH"
+      val reportedAdjudication2 = ReportedAdjudication(
+        id = 2,
+        prisonerNumber = "AA1234B",
+        bookingId = 456,
+        reportNumber = 2,
+        agencyId = "MDI",
+        locationId = 345,
+        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+        handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+        statement = INCIDENT_STATEMENT,
+      )
+      reportedAdjudication2.createdByUserId = "A_SMITH"
+      whenever(reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyId(any(), any(), any())).thenReturn(
         PageImpl(
-          listOf(
-            SubmittedAdjudicationHistory(adjudicationNumber = 1, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
-            SubmittedAdjudicationHistory(adjudicationNumber = 2, agencyId = "MDI", dateTimeOfIncident = DATE_TIME_OF_INCIDENT, dateTimeSent = DATE_TIME_OF_INCIDENT),
-          )
+          listOf(reportedAdjudication1, reportedAdjudication2)
         )
       )
-      whenever(prisonApiGateway.getReportedAdjudications(any())).thenReturn(
-        listOf(
-          ReportedAdjudication(
-            adjudicationNumber = 1, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
-            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
-            createdByUserId = "A_SMITH",
-          ),
-          ReportedAdjudication(
-            adjudicationNumber = 2, offenderNo = "AA1234B", bookingId = 456, reporterStaffId = 234, agencyId = "MDI",
-            incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
-            createdByUserId = "A_SMITH",
-          )
-        )
-      )
-      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
-    }
-
-    @Test
-    fun `makes a call to prison api to retrieve reported adjudications`() {
-      reportedAdjudicationService.getMyReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
-
-      verify(prisonApiGateway).getReportedAdjudications(listOf(1, 2))
     }
 
     @Test
@@ -185,13 +179,13 @@ class ReportedAdjudicationServiceTest {
 
   @Nested
   inner class CreateDraftFromReported {
-    val reportedAdjudication = ReportedAdjudication(
-      adjudicationNumber = 123, offenderNo = "AA1234A", bookingId = 123, reporterStaffId = 234, agencyId = "MDI",
-      incidentTime = DATE_TIME_OF_INCIDENT, incidentLocationId = 345, statement = INCIDENT_STATEMENT,
-      createdByUserId = "A_SMITH",
+    private val reportedAdjudication = ReportedAdjudication(
+      reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
+      dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
+      handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
     )
 
-    val expectedSavedDraftAdjudication = DraftAdjudication(
+    private val expectedSavedDraftAdjudication = DraftAdjudication(
       prisonerNumber = "AA1234A",
       reportNumber = 123L,
       reportByUserId = "A_SMITH",
@@ -207,22 +201,25 @@ class ReportedAdjudicationServiceTest {
       )
     )
 
-    val savedDraftAdjudication = expectedSavedDraftAdjudication.copy(
+    private val savedDraftAdjudication = expectedSavedDraftAdjudication.copy(
       id = 1,
     )
 
     @BeforeEach
     fun beforeEach() {
-      whenever(prisonApiGateway.getReportedAdjudication(any())).thenReturn(reportedAdjudication)
+      reportedAdjudication.createdByUserId = "A_SMITH"
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
       whenever(draftAdjudicationRepository.save(any())).thenReturn(savedDraftAdjudication)
-      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
     }
 
     @Test
-    fun `makes a call to prison api to retrieve the reported adjudication`() {
-      reportedAdjudicationService.createDraftFromReportedAdjudication(123)
+    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
 
-      verify(prisonApiGateway).getReportedAdjudication(123)
+      assertThatThrownBy {
+        reportedAdjudicationService.createDraftFromReportedAdjudication(1)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("ReportedAdjudication not found for 1")
     }
 
     @Test
