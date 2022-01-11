@@ -156,8 +156,6 @@ class DraftAdjudicationService(
     isNew: Boolean
   ): ReportedAdjudication {
     if (isNew) {
-      System.out.println("Oh balls " + draftAdjudication.incidentStatement!!.statement!!)
-      val statement = draftAdjudication.incidentStatement!!.statement!!
       return reportedAdjudicationRepository.save(
         ReportedAdjudication(
           bookingId = nomisAdjudication.bookingId,
@@ -167,7 +165,7 @@ class DraftAdjudicationService(
           locationId = draftAdjudication.incidentDetails.locationId,
           dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
           handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
-          statement = statement
+          statement = draftAdjudication.incidentStatement!!.statement!!
         )
       )
     }
