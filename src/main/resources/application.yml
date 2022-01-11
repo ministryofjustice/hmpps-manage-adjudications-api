@@ -13,8 +13,6 @@ spring:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
 
-
-
   profiles:
     group:
       test:
@@ -78,5 +76,9 @@ management:
     info:
       cache:
         time-to-live: 2000ms
+  info:
+    env:
+      enabled: true
+
 api:
   health-timeout-ms: 1000

@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.0.1-beta"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.0.0"
   kotlin("plugin.spring") version "1.5.31"
   kotlin("plugin.jpa") version "1.5.31"
 }
@@ -14,7 +14,9 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+
   implementation("io.springfox:springfox-boot-starter:3.0.0")
+
   implementation("org.apache.commons:commons-text:1.9")
 
   runtimeOnly("com.h2database:h2")
@@ -26,6 +28,7 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
   testImplementation("org.flywaydb:flyway-core:8.0.2")
+  testImplementation("io.swagger.parser.v3:swagger-parser-v3:2.0.20")
 }
 
 allOpen {
