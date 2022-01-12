@@ -2,7 +2,7 @@
 # Hmpps manage adjudications API
 [![CircleCI](https://circleci.com/gh/ministryofjustice/hmpps-manage-adjudications-api/tree/main.svg?style=svg)](https://circleci.com/gh/ministryofjustice/hmpps-manage-adjudications-api)
 [![Docker](https://quay.io/repository/hmpps/hmpps-manage-adjudications-api/status)](https://quay.io/repository/hmpps/hmpps-manage-adjudications-api/status)
-[![API docs](https://img.shields.io/badge/API_docs_(needs_VPN)-view-85EA2D.svg?logo=swagger)](https://manage-adjudications-api-dev.hmpps.service.justice.gov.uk/swagger-ui/?configUrl=/v3/api-docs)
+[![API docs](https://img.shields.io/badge/API_docs_-view-85EA2D.svg?logo=swagger)](https://manage-adjudications-api-dev.hmpps.service.justice.gov.uk/swagger-ui/?configUrl=/v3/api-docs)
 # Features
 * Start a new draft adjudication
 
