@@ -34,13 +34,15 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class StartDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.startNewAdjudication(
+      whenever(
+        draftAdjudicationService.startNewAdjudication(
           any(),
           any(),
           any(),
           any(),
           any(),
-      )).thenReturn(
+        )
+      ).thenReturn(
         DraftAdjudicationDto(
           id = 1,
           adjudicationNumber = null,
@@ -67,11 +69,11 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(status().isCreated)
 
       verify(draftAdjudicationService).startNewAdjudication(
-          "A12345",
-          "MDI",
-          1,
-          DATE_TIME_OF_INCIDENT,
-          INCIDENT_ROLE_WITH_ALL_VALUES,
+        "A12345",
+        "MDI",
+        1,
+        DATE_TIME_OF_INCIDENT,
+        INCIDENT_ROLE_WITH_ALL_VALUES,
       )
     }
 
@@ -273,12 +275,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class EditIncidentDetails {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.editIncidentDetails(
-        anyLong(),
-        anyLong(),
-        any(),
-        any(),
-      )).thenReturn(
+      whenever(
+        draftAdjudicationService.editIncidentDetails(
+          anyLong(),
+          anyLong(),
+          any(),
+          any(),
+        )
+      ).thenReturn(
         DraftAdjudicationDto(
           id = 1L,
           adjudicationNumber = null,
@@ -326,12 +330,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `handles a bad request when an IllegalSateException is thrown`() {
-      whenever(draftAdjudicationService.editIncidentDetails(
-        anyLong(),
-        anyLong(),
-        any(),
-        any(),
-      )).thenThrow(
+      whenever(
+        draftAdjudicationService.editIncidentDetails(
+          anyLong(),
+          anyLong(),
+          any(),
+          any(),
+        )
+      ).thenThrow(
         IllegalStateException::class.java
       )
       editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES)
@@ -345,11 +351,13 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       incidentRole: IncidentRoleDto?
     ): ResultActions {
       val body =
-        objectMapper.writeValueAsString(mapOf(
-          "locationId" to locationId,
-          "dateTimeOfIncident" to dateTimeOfIncident,
-          "incidentRole" to incidentRole
-        ))
+        objectMapper.writeValueAsString(
+          mapOf(
+            "locationId" to locationId,
+            "dateTimeOfIncident" to dateTimeOfIncident,
+            "incidentRole" to incidentRole
+          )
+        )
       return mockMvc
         .perform(
           put("/draft-adjudications/$id/incident-details")
