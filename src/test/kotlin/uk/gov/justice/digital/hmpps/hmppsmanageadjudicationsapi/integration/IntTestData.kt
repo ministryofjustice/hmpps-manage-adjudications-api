@@ -4,6 +4,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DraftAdjudicationResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.BankHolidayApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
@@ -25,11 +26,15 @@ class IntTestData(
     val DEFAULT_DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 11, 12, 10, 0)
     const val DEFAULT_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-12T10:00:00"
     const val DEFAULT_HANDOVER_DEADLINE_ISO_STRING = "2010-11-15T10:00:00"
+    const val DEFAULT_INCIDENT_ROLE_CODE = "25a"
+    const val DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER = "B2345BB"
     const val DEFAULT_STATEMENT = "A statement"
 
     const val UPDATED_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-13T10:00:00"
     const val UPDATED_HANDOVER_DEADLINE_ISO_STRING = "2010-11-16T10:00:00"
     const val UPDATED_LOCATION_ID = 721899L
+    const val UPDATED_INCIDENT_ROLE_CODE = "25b"
+    const val UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER = "C3456CC"
     const val UPDATED_STATEMENT = "updated test statement"
     val UPDATED_DATE_TIME_OF_INCIDENT = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
 
@@ -40,6 +45,9 @@ class IntTestData(
       locationId = UPDATED_LOCATION_ID,
       dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
       dateTimeOfIncident = DEFAULT_DATE_TIME_OF_INCIDENT,
+      handoverDeadlineISOString = DEFAULT_HANDOVER_DEADLINE_ISO_STRING,
+      incidentRoleCode = DEFAULT_INCIDENT_ROLE_CODE,
+      incidentRoleAssociatedPrisonersNumber = DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER,
       statement = DEFAULT_STATEMENT,
       createdByUserId = DEFAULT_CREATED_USER_ID
     )
@@ -51,6 +59,9 @@ class IntTestData(
       locationId = UPDATED_LOCATION_ID,
       dateTimeOfIncidentISOString = UPDATED_DATE_TIME_OF_INCIDENT_TEXT,
       dateTimeOfIncident = UPDATED_DATE_TIME_OF_INCIDENT,
+      handoverDeadlineISOString = UPDATED_HANDOVER_DEADLINE_ISO_STRING,
+      incidentRoleCode = UPDATED_INCIDENT_ROLE_CODE,
+      incidentRoleAssociatedPrisonersNumber = UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER,
       statement = UPDATED_STATEMENT,
       createdByUserId = DEFAULT_CREATED_USER_ID
     )
@@ -62,6 +73,9 @@ class IntTestData(
       locationId = 11L,
       dateTimeOfIncidentISOString = "2020-12-13T08:00:00",
       dateTimeOfIncident = LocalDateTime.parse("2020-12-13T08:00:00"),
+      handoverDeadlineISOString = "2020-12-15T08:00:00",
+      incidentRoleCode = "25c",
+      incidentRoleAssociatedPrisonersNumber = "D4567DD",
       statement = "Test statement",
       createdByUserId = "A_NESS"
     )
@@ -73,6 +87,9 @@ class IntTestData(
       locationId = 12L,
       dateTimeOfIncidentISOString = "2020-12-14T09:00:00",
       dateTimeOfIncident = LocalDateTime.parse("2020-12-14T09:00:00"),
+      handoverDeadlineISOString = "2020-12-16T09:00:00",
+      incidentRoleCode = "25a",
+      incidentRoleAssociatedPrisonersNumber = "A5678AA",
       statement = "Different test statement",
       createdByUserId = "P_NESS"
     )
@@ -84,6 +101,9 @@ class IntTestData(
       locationId = 13L,
       dateTimeOfIncidentISOString = "2020-12-15T10:00:00",
       dateTimeOfIncident = LocalDateTime.parse("2020-12-15T10:00:00"),
+      handoverDeadlineISOString = "2020-12-17T10:00:00",
+      incidentRoleCode = "25c",
+      incidentRoleAssociatedPrisonersNumber = "D4567DD",
       statement = "Another test statement",
       createdByUserId = "L_NESS"
     )
@@ -95,6 +115,9 @@ class IntTestData(
       locationId = 14L,
       dateTimeOfIncidentISOString = "2020-12-16T10:00:00",
       dateTimeOfIncident = LocalDateTime.parse("2020-12-16T10:00:00"),
+      handoverDeadlineISOString = "2020-12-18T10:00:00",
+      incidentRoleCode = "25a",
+      incidentRoleAssociatedPrisonersNumber = "A5678AA",
       statement = "Yet another test statement",
       createdByUserId = "P_NESS"
     )
@@ -106,6 +129,9 @@ class IntTestData(
       locationId = 15L,
       dateTimeOfIncidentISOString = "2020-12-17T10:00:00",
       dateTimeOfIncident = LocalDateTime.parse("2020-12-17T10:00:00"),
+      handoverDeadlineISOString = "2020-12-19T10:00:00",
+      incidentRoleCode = "25a",
+      incidentRoleAssociatedPrisonersNumber = "A5678AA",
       statement = "Keep on with the test statements",
       createdByUserId = "P_NESS"
     )
@@ -125,7 +151,8 @@ class IntTestData(
           "prisonerNumber" to testDataSet.prisonerNumber,
           "agencyId" to testDataSet.agencyId,
           "locationId" to testDataSet.locationId,
-          "dateTimeOfIncident" to testDataSet.dateTimeOfIncident
+          "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,
+          "incidentRole" to IncidentRoleDto(testDataSet.incidentRoleCode, testDataSet.incidentRoleAssociatedPrisonersNumber),
         )
       )
       .exchange()
@@ -166,7 +193,8 @@ class IntTestData(
       .bodyValue(
         mapOf(
           "locationId" to testDataSet.locationId,
-          "dateTimeOfIncident" to testDataSet.dateTimeOfIncidentISOString
+          "dateTimeOfIncident" to testDataSet.dateTimeOfIncidentISOString,
+          "incidentRole" to IncidentRoleDto("25b", "C3456CC"),
         )
       )
       .exchange()

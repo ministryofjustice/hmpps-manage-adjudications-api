@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_PRISONER_BOOKING_ID
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_HANDOVER_DEADLINE_ISO_STRING
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -25,7 +26,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
           "prisonerNumber" to "A12345",
           "agencyId" to "MDI",
           "locationId" to 1,
-          "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT
+          "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT,
+          "incidentRole" to IncidentRoleDto("25a", "B2345BB"),
         )
       )
       .exchange()
@@ -37,13 +39,16 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(1)
+      .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo("25a")
+      .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo("B2345BB")
   }
 
   @Test
   fun `get draft adjudication details`() {
-    bankHolidayApiMockServer.stubGetBankHolidays()
+    val testAdjudication = IntTestData.ADJUDICATION_1
+    val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
 
-    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
 
     webTestClient.get()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}")
@@ -52,11 +57,13 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
       .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
-      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
-      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(2)
+      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo(testAdjudication.dateTimeOfIncidentISOString)
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(testAdjudication.handoverDeadlineISOString)
+      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
+      .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
+      .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
   }
 
   @Test
@@ -87,13 +94,17 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo(testAdjudication.dateTimeOfIncidentISOString)
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(testAdjudication.dateTimeOfIncident.plusDays(2).format(DateTimeFormatter.ISO_DATE_TIME))
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
+    // To be added when reported adjudications support it
+    // .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
+    // .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
   }
 
   @Test
   fun `add the incident statement to the draft adjudication`() {
-    bankHolidayApiMockServer.stubGetBankHolidays()
+    val testAdjudication = IntTestData.ADJUDICATION_1
+    val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
 
-    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
 
     webTestClient.post()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-statement")
@@ -107,18 +118,21 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
-      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
-      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(2)
-      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
+      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo(testAdjudication.dateTimeOfIncidentISOString)
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(testAdjudication.handoverDeadlineISOString)
+      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
+      .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
+      .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("test")
   }
 
   @Test
   fun `edit the incident details`() {
-    bankHolidayApiMockServer.stubGetBankHolidays()
+    val testAdjudication = IntTestData.ADJUDICATION_1
+    val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
 
-    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
 
     webTestClient.put()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-details")
@@ -126,17 +140,20 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "locationId" to 3,
-          "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT.plusMonths(1)
+          "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT.plusMonths(1),
+          "incidentRole" to IncidentRoleDto("25b", "C3456CC"),
         )
       )
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-11-12T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-11-15T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(3)
+      .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo("25b")
+      .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo("C3456CC")
   }
 
   @Test
@@ -186,6 +203,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.incidentDetails.dateTimeOfIncident").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString)
       .jsonPath("$.incidentDetails.handoverDeadline").isEqualTo(IntTestData.DEFAULT_HANDOVER_DEADLINE_ISO_STRING)
       .jsonPath("$.incidentDetails.locationId").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.locationId)
+      .jsonPath("$.incidentRole.roleCode").doesNotExist()
+      .jsonPath("$.incidentRole.associatedPrisonersNumber").doesNotExist()
 
     val expectedBody = mapOf(
       "offenderNo" to IntTestData.DEFAULT_ADJUDICATION.prisonerNumber,
@@ -232,11 +251,13 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.incidentDetails.dateTimeOfIncident").isEqualTo(IntTestData.UPDATED_ADJUDICATION.dateTimeOfIncidentISOString)
       .jsonPath("$.incidentDetails.handoverDeadline").isEqualTo(UPDATED_HANDOVER_DEADLINE_ISO_STRING)
       .jsonPath("$.incidentDetails.locationId").isEqualTo(IntTestData.UPDATED_ADJUDICATION.locationId)
+      .jsonPath("$.incidentRole.roleCode").doesNotExist()
+      .jsonPath("$.incidentRole.associatedPrisonersNumber").doesNotExist()
 
     val expectedBody = mapOf(
       "incidentLocationId" to IntTestData.UPDATED_ADJUDICATION.locationId,
       "incidentTime" to IntTestData.UPDATED_ADJUDICATION.dateTimeOfIncidentISOString,
-      "statement" to IntTestData.UPDATED_ADJUDICATION.statement
+      "statement" to IntTestData.UPDATED_ADJUDICATION.statement,
     )
 
     prisonApiMockServer.verifyPutAdjudication(objectMapper.writeValueAsString(expectedBody))
@@ -265,19 +286,24 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `returns all in progress draft adjudications created by the current user in the given caseload`() {
-    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+    val testAdjudication = IntTestData.ADJUDICATION_1
+    val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
+
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
 
     webTestClient.get()
-      .uri("/draft-adjudications/my/agency/MDI")
+      .uri("/draft-adjudications/my/agency/${IntTestData.ADJUDICATION_1.agencyId}")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.draftAdjudications[0].id").isEqualTo(draftAdjudicationResponse.draftAdjudication.id)
-      .jsonPath("$.draftAdjudications[0].prisonerNumber").isEqualTo("A12345")
-      .jsonPath("$.draftAdjudications[0].incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
-      .jsonPath("$.draftAdjudications[0].incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
-      .jsonPath("$.draftAdjudications[0].incidentDetails.locationId").isEqualTo(2)
+      .jsonPath("$.draftAdjudications[0].prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
+      .jsonPath("$.draftAdjudications[0].incidentDetails.dateTimeOfIncident").isEqualTo(testAdjudication.dateTimeOfIncidentISOString)
+      .jsonPath("$.draftAdjudications[0].incidentDetails.handoverDeadline").isEqualTo(testAdjudication.handoverDeadlineISOString)
+      .jsonPath("$.draftAdjudications[0].incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
+      .jsonPath("$.draftAdjudications[0].incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
+      .jsonPath("$.draftAdjudications[0].incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
   }
 
   @Test
