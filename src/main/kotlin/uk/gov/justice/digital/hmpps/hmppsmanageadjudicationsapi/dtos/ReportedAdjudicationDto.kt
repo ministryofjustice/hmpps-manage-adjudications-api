@@ -16,6 +16,8 @@ data class ReportedAdjudicationDto(
   val dateTimeReportExpires: LocalDateTime,
   @ApiModelProperty(value = "Incident details")
   val incidentDetails: IncidentDetailsDto,
+  // @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
+  // val incidentRole: IncidentRoleDto,
   @ApiModelProperty(value = "Incident statement")
   val incidentStatement: IncidentStatementDto,
   @ApiModelProperty("Created by user id")

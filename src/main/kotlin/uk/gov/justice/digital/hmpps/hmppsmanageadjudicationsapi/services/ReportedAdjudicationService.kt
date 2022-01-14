@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentSta
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
@@ -60,6 +61,10 @@ class ReportedAdjudicationService(
         locationId = reportedAdjudication.locationId,
         dateTimeOfIncident = reportedAdjudication.dateTimeOfIncident,
         handoverDeadline = reportedAdjudication.handoverDeadline
+      ),
+      incidentRole = IncidentRole(
+        roleCode = null,
+        associatedPrisonersNumber = null,
       ),
       incidentStatement = IncidentStatement(
         statement = reportedAdjudication.statement,

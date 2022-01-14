@@ -12,8 +12,10 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
@@ -65,7 +67,8 @@ class DraftAdjudicationServiceTest {
             locationId = 2,
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          )
+          ),
+          incidentRole = incidentRoleWithAllValuesSet()
         )
       )
       whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
@@ -74,7 +77,13 @@ class DraftAdjudicationServiceTest {
     @Test
     fun `makes a call to the repository to save the draft adjudication`() {
       val draftAdjudication =
-        draftAdjudicationService.startNewAdjudication("A12345", "MDI", 2L, DATE_TIME_OF_INCIDENT)
+        draftAdjudicationService.startNewAdjudication(
+          "A12345",
+          "MDI",
+          2L,
+          DATE_TIME_OF_INCIDENT,
+          incidentRoleDtoWithAllValuesSet()
+        )
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
 
@@ -87,6 +96,10 @@ class DraftAdjudicationServiceTest {
       assertThat(draftAdjudication.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
         .contains(2L, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+
+      assertThat(draftAdjudication.incidentRole)
+        .extracting("roleCode", "associatedPrisonersNumber")
+        .contains(incidentRoleDtoWithAllValuesSet().roleCode, incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber)
     }
   }
 
@@ -114,7 +127,8 @@ class DraftAdjudicationServiceTest {
             locationId = 2,
             dateTimeOfIncident = now,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          )
+          ),
+          incidentRole = incidentRoleWithAllValuesSet(),
         )
       draftAdjudication.createdByUserId = "A_USER" // Add audit information
 
@@ -131,6 +145,10 @@ class DraftAdjudicationServiceTest {
       assertThat(draftAdjudicationDto.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident")
         .contains(2L, now)
+
+      assertThat(draftAdjudication.incidentRole)
+        .extracting("roleCode", "associatedPrisonersNumber")
+        .contains(incidentRoleDtoWithAllValuesSet().roleCode, incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber)
     }
   }
 
@@ -157,6 +175,7 @@ class DraftAdjudicationServiceTest {
           dateTimeOfIncident = LocalDateTime.now(clock),
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
+        incidentRole = incidentRoleWithNoValuesSet(),
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
@@ -195,6 +214,7 @@ class DraftAdjudicationServiceTest {
                 dateTimeOfIncident = LocalDateTime.now(clock),
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
+              incidentRole = incidentRoleWithNoValuesSet(),
               incidentStatement = IncidentStatement(id = 1, statement = "test")
             )
           )
@@ -222,7 +242,12 @@ class DraftAdjudicationServiceTest {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
 
       assertThatThrownBy {
-        draftAdjudicationService.editIncidentDetails(1, 2, DATE_TIME_OF_INCIDENT)
+        draftAdjudicationService.editIncidentDetails(
+          1,
+          2,
+          DATE_TIME_OF_INCIDENT,
+          incidentRoleDtoWithNoValuesSet(),
+        )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
@@ -231,7 +256,9 @@ class DraftAdjudicationServiceTest {
     fun `makes changes to the incident details`() {
       whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
 
-      val dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1)
+      val editedDateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1)
+      val editedIncidentRole = incidentRoleWithNoValuesSet()
+      val editedIncidentRoleDtoRequest = incidentRoleDtoWithNoValuesSet()
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
@@ -241,7 +268,8 @@ class DraftAdjudicationServiceTest {
           locationId = 2,
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-        )
+        ),
+        incidentRole = incidentRoleWithAllValuesSet(),
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
@@ -250,13 +278,19 @@ class DraftAdjudicationServiceTest {
           incidentDetails = IncidentDetails(
             id = 1,
             locationId = 3L,
-            dateTimeOfIncident = dateTimeOfIncident,
+            dateTimeOfIncident = editedDateTimeOfIncident,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          )
+          ),
+          incidentRole = editedIncidentRole
         )
       )
 
-      val draftAdjudication = draftAdjudicationService.editIncidentDetails(1, 3, dateTimeOfIncident)
+      val draftAdjudication = draftAdjudicationService.editIncidentDetails(
+        1,
+        3,
+        editedDateTimeOfIncident,
+        editedIncidentRoleDtoRequest
+      )
 
       assertThat(draftAdjudication)
         .extracting("id", "prisonerNumber")
@@ -264,14 +298,18 @@ class DraftAdjudicationServiceTest {
 
       assertThat(draftAdjudication.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
-        .contains(3L, dateTimeOfIncident, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+        .contains(3L, editedDateTimeOfIncident, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident")
-        .contains(3L, dateTimeOfIncident)
+        .contains(3L, editedDateTimeOfIncident)
+
+      assertThat(argumentCaptor.value.incidentRole)
+        .extracting("roleCode", "associatedPrisonersNumber")
+        .contains(editedIncidentRole.roleCode, editedIncidentRole.associatedPrisonersNumber)
     }
 
     @Test
@@ -308,6 +346,7 @@ class DraftAdjudicationServiceTest {
               dateTimeOfIncident = LocalDateTime.now(clock),
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
+            incidentRole = incidentRoleWithNoValuesSet(),
           )
         )
       )
@@ -331,6 +370,7 @@ class DraftAdjudicationServiceTest {
             dateTimeOfIncident = LocalDateTime.now(clock),
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
+          incidentRole = incidentRoleWithNoValuesSet(),
           incidentStatement = IncidentStatement(statement = "old statement")
         )
 
@@ -382,7 +422,8 @@ class DraftAdjudicationServiceTest {
               locationId = 1,
               dateTimeOfIncident = LocalDateTime.now(),
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-            )
+            ),
+            incidentRole = incidentRoleWithAllValuesSet(),
           )
         )
       )
@@ -410,6 +451,7 @@ class DraftAdjudicationServiceTest {
                 dateTimeOfIncident = INCIDENT_TIME,
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
+              incidentRole = incidentRoleWithAllValuesSet(),
               incidentStatement = IncidentStatement(statement = "test")
             )
           )
@@ -492,6 +534,7 @@ class DraftAdjudicationServiceTest {
                 dateTimeOfIncident = LocalDateTime.now(clock),
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
+              incidentRole = incidentRoleWithAllValuesSet(),
               incidentStatement = IncidentStatement(statement = "test")
             )
           )
@@ -531,7 +574,7 @@ class DraftAdjudicationServiceTest {
       }
 
       @Test
-      fun `throws an entity not found exception and does not call prisonApi if the reported adjudication for the supplied id does not exists`() {
+      fun `throws an entity not found exception if the reported adjudication for the supplied id does not exists`() {
         whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
 
         assertThatThrownBy {
@@ -596,7 +639,8 @@ class DraftAdjudicationServiceTest {
               locationId = 2,
               dateTimeOfIncident = LocalDateTime.now(clock).plusMonths(2),
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-            )
+            ),
+            incidentRole = incidentRoleWithAllValuesSet(),
           ),
           DraftAdjudication(
             id = 2,
@@ -607,7 +651,8 @@ class DraftAdjudicationServiceTest {
               locationId = 3,
               dateTimeOfIncident = LocalDateTime.now(clock),
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-            )
+            ),
+            incidentRole = incidentRoleWithNoValuesSet(),
           )
         )
       )
@@ -637,10 +682,24 @@ class DraftAdjudicationServiceTest {
       val adjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications("MDI")
 
       assertThat(adjudications)
-        .extracting("id", "prisonerNumber", "incidentDetails")
+        .extracting("id", "prisonerNumber")
         .contains(
-          Tuple(2L, "A12346", IncidentDetailsDto(3, LocalDateTime.now(clock), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)),
-          Tuple(1L, "A12345", IncidentDetailsDto(2, LocalDateTime.now(clock).plusMonths(2), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE))
+          Tuple(2L, "A12346"),
+          Tuple(1L, "A12345")
+        )
+
+      assertThat(adjudications)
+        .extracting("incidentDetails")
+        .contains(
+          IncidentDetailsDto(3, LocalDateTime.now(clock), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
+          IncidentDetailsDto(2, LocalDateTime.now(clock).plusMonths(2), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+        )
+
+      assertThat(adjudications)
+        .extracting("incidentRole")
+        .contains(
+          incidentRoleDtoWithAllValuesSet(),
+          incidentRoleDtoWithNoValuesSet(),
         )
     }
   }
@@ -649,5 +708,19 @@ class DraftAdjudicationServiceTest {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
+    private val INCIDENT_ROLE_CODE = "25a"
+    private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
+
+    fun incidentRoleDtoWithAllValuesSet(): IncidentRoleDto =
+      IncidentRoleDto(INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)
+
+    fun incidentRoleDtoWithNoValuesSet(): IncidentRoleDto =
+      IncidentRoleDto(null, null)
+
+    fun incidentRoleWithAllValuesSet(): IncidentRole =
+      IncidentRole(null, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)
+
+    fun incidentRoleWithNoValuesSet(): IncidentRole =
+      IncidentRole(null, null, null)
   }
 }

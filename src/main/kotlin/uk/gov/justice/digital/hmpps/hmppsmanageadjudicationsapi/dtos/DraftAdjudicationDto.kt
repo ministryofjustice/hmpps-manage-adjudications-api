@@ -14,6 +14,8 @@ data class DraftAdjudicationDto(
   val prisonerNumber: String,
   @ApiModelProperty(value = "Incident details")
   val incidentDetails: IncidentDetailsDto,
+  @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
+  val incidentRole: IncidentRoleDto,
   @ApiModelProperty(value = "Incident statement")
   val incidentStatement: IncidentStatementDto? = null,
   @ApiModelProperty("The id of the user who started the adjudication")
@@ -30,6 +32,13 @@ data class IncidentDetailsDto(
   val handoverDeadline: LocalDateTime,
 )
 
+@ApiModel(value = "Incident Role")
+data class IncidentRoleDto(
+  @ApiModelProperty(value = "The incident role code", notes = "If not set then it is assumed they committed the offence on their own", example = "25a")
+  val roleCode: String?,
+  @ApiModelProperty(value = "The prison number of the other prisoner involved in the incident", notes = "This only applies to role codes 25b and 25c", example = "G2996UX")
+  val associatedPrisonersNumber: String?,
+)
 @ApiModel(value = "Incident statement")
 data class IncidentStatementDto(
   @ApiModelProperty(value = "The statement regarding the incident")

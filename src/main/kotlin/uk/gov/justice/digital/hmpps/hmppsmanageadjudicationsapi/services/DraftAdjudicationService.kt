@@ -3,10 +3,12 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
@@ -34,7 +36,8 @@ class DraftAdjudicationService(
     prisonerNumber: String,
     agencyId: String,
     locationId: Long,
-    dateTimeOfIncident: LocalDateTime
+    dateTimeOfIncident: LocalDateTime,
+    incidentRole: IncidentRoleDto?
   ): DraftAdjudicationDto {
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
@@ -44,6 +47,11 @@ class DraftAdjudicationService(
         dateTimeOfIncident = dateTimeOfIncident,
         handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(dateTimeOfIncident)
       ),
+      // Temporary code for backwards compatibility
+      incidentRole = incidentRole?.let { IncidentRole(
+        roleCode = incidentRole.roleCode,
+        associatedPrisonersNumber = incidentRole.associatedPrisonersNumber,
+      )} ?: IncidentRole(roleCode = null, associatedPrisonersNumber = null),
       reportNumber = null,
       reportByUserId = null,
     )
@@ -73,13 +81,22 @@ class DraftAdjudicationService(
   }
 
   @Transactional
-  fun editIncidentDetails(id: Long, locationId: Long?, dateTimeOfIncident: LocalDateTime?): DraftAdjudicationDto {
+  fun editIncidentDetails(
+    id: Long,
+    locationId: Long?,
+    dateTimeOfIncident: LocalDateTime?,
+    incidentRole: IncidentRoleDto?
+  ): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     locationId?.let { draftAdjudication.incidentDetails.locationId = it }
     dateTimeOfIncident?.let {
       draftAdjudication.incidentDetails.dateTimeOfIncident = it
       draftAdjudication.incidentDetails.handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(it)
+    }
+    incidentRole?.let {
+      draftAdjudication.incidentRole.roleCode = it.roleCode
+      draftAdjudication.incidentRole.associatedPrisonersNumber = it.associatedPrisonersNumber
     }
 
     return draftAdjudicationRepository
@@ -198,6 +215,7 @@ fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(
   prisonerNumber = this.prisonerNumber,
   incidentStatement = this.incidentStatement?.toDo(),
   incidentDetails = this.incidentDetails.toDto(),
+  incidentRole = this.incidentRole.toDto(),
   adjudicationNumber = this.reportNumber,
   startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
 )
@@ -206,6 +224,11 @@ fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
   locationId = this.locationId,
   dateTimeOfIncident = this.dateTimeOfIncident,
   handoverDeadline = this.handoverDeadline,
+)
+
+fun IncidentRole.toDto(): IncidentRoleDto = IncidentRoleDto(
+  roleCode = this.roleCode,
+  associatedPrisonersNumber = this.associatedPrisonersNumber,
 )
 
 fun IncidentStatement.toDo(): IncidentStatementDto = IncidentStatementDto(

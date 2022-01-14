@@ -15,5 +15,7 @@ data class ReportedAdjudication(
   var locationId: Long,
   var dateTimeOfIncident: LocalDateTime,
   var handoverDeadline: LocalDateTime,
+  // var incidentRoleCode: String?,
+  // var incidentRoleAssociatedPrisonersNumber: String?,
   var statement: String,
 ) : BaseEntity()
