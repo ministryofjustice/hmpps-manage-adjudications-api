@@ -48,10 +48,12 @@ class DraftAdjudicationService(
         handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(dateTimeOfIncident)
       ),
       // Temporary code for backwards compatibility
-      incidentRole = incidentRole?.let { IncidentRole(
-        roleCode = incidentRole.roleCode,
-        associatedPrisonersNumber = incidentRole.associatedPrisonersNumber,
-      )} ?: IncidentRole(roleCode = null, associatedPrisonersNumber = null),
+      incidentRole = incidentRole?.let {
+        IncidentRole(
+          roleCode = incidentRole.roleCode,
+          associatedPrisonersNumber = incidentRole.associatedPrisonersNumber,
+        )
+      } ?: IncidentRole(roleCode = null, associatedPrisonersNumber = null),
       reportNumber = null,
       reportByUserId = null,
     )
