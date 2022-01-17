@@ -26,6 +26,10 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.dateTimeReportExpires").isEqualTo(IntTestData.DEFAULT_HANDOVER_DEADLINE_ISO_STRING)
       .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString)
       .jsonPath("$.reportedAdjudication.incidentDetails.locationId").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.locationId)
+      .jsonPath("$.reportedAdjudication.incidentRole.roleCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.incidentRoleCode)
+      .jsonPath("$.reportedAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.incidentRoleAssociatedPrisonersNumber)
+      .jsonPath("$.reportedAdjudication.incidentStatement.statement").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.statement)
+      .jsonPath("$.reportedAdjudication.incidentStatement.completed").isEqualTo(true)
       .jsonPath("$.reportedAdjudication.createdByUserId").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.createdByUserId)
   }
 
@@ -80,14 +84,12 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.content[0].incidentDetails.dateTimeOfIncident")
       .isEqualTo(IntTestData.ADJUDICATION_4.dateTimeOfIncidentISOString)
       .jsonPath("$.content[0].incidentDetails.locationId").isEqualTo(IntTestData.ADJUDICATION_4.locationId)
+      .jsonPath("$.content[0].incidentRole.roleCode").isEqualTo(IntTestData.ADJUDICATION_4.incidentRoleCode)
+      .jsonPath("$.content[0].incidentRole.associatedPrisonersNumber").isEqualTo(IntTestData.ADJUDICATION_4.incidentRoleAssociatedPrisonersNumber)
+      .jsonPath("$.content[0].incidentStatement.statement").isEqualTo(IntTestData.ADJUDICATION_4.statement)
+      .jsonPath("$.content[0].incidentStatement.completed").isEqualTo(true)
       .jsonPath("$.content[0].createdByUserId").isEqualTo(IntTestData.ADJUDICATION_4.createdByUserId)
       .jsonPath("$.content[1].adjudicationNumber").isEqualTo(IntTestData.ADJUDICATION_2.adjudicationNumber)
-      .jsonPath("$.content[1].prisonerNumber").isEqualTo(IntTestData.ADJUDICATION_2.prisonerNumber)
-      .jsonPath("$.content[1].bookingId").isEqualTo(1) // From PrisonAPiMockServer.stubPostAdjudication
-      .jsonPath("$.content[1].incidentDetails.dateTimeOfIncident")
-      .isEqualTo(IntTestData.ADJUDICATION_2.dateTimeOfIncidentISOString)
-      .jsonPath("$.content[1].incidentDetails.locationId").isEqualTo(IntTestData.ADJUDICATION_2.locationId)
-      .jsonPath("$.content[1].createdByUserId").isEqualTo(IntTestData.ADJUDICATION_2.createdByUserId)
   }
 
   @Test
@@ -130,14 +132,12 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.content[0].incidentDetails.dateTimeOfIncident")
       .isEqualTo(IntTestData.ADJUDICATION_3.dateTimeOfIncidentISOString)
       .jsonPath("$.content[0].incidentDetails.locationId").isEqualTo(IntTestData.ADJUDICATION_3.locationId)
+      .jsonPath("$.content[0].incidentRole.roleCode").isEqualTo(IntTestData.ADJUDICATION_3.incidentRoleCode)
+      .jsonPath("$.content[0].incidentRole.associatedPrisonersNumber").isEqualTo(IntTestData.ADJUDICATION_3.incidentRoleAssociatedPrisonersNumber)
+      .jsonPath("$.content[0].incidentStatement.statement").isEqualTo(IntTestData.ADJUDICATION_3.statement)
+      .jsonPath("$.content[0].incidentStatement.completed").isEqualTo(true)
       .jsonPath("$.content[0].createdByUserId").isEqualTo(IntTestData.ADJUDICATION_3.createdByUserId)
       .jsonPath("$.content[1].adjudicationNumber").isEqualTo(IntTestData.ADJUDICATION_2.adjudicationNumber)
-      .jsonPath("$.content[1].prisonerNumber").isEqualTo(IntTestData.ADJUDICATION_2.prisonerNumber)
-      .jsonPath("$.content[1].bookingId").isEqualTo(1) // From PrisonAPiMockServer.stubPostAdjudication
-      .jsonPath("$.content[1].incidentDetails.dateTimeOfIncident")
-      .isEqualTo(IntTestData.ADJUDICATION_2.dateTimeOfIncidentISOString)
-      .jsonPath("$.content[1].incidentDetails.locationId").isEqualTo(IntTestData.ADJUDICATION_2.locationId)
-      .jsonPath("$.content[1].createdByUserId").isEqualTo(IntTestData.ADJUDICATION_2.createdByUserId)
   }
 
   @Test
@@ -172,9 +172,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString)
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.locationId)
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(IntTestData.DEFAULT_HANDOVER_DEADLINE_ISO_STRING)
-      // To be added
-      // .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.incidentRoleCode)
-      // .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.incidentRoleAssociatedPrisonersNumber)
+      .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.incidentRoleCode)
+      .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.incidentRoleAssociatedPrisonersNumber)
       .jsonPath("$.draftAdjudication.incidentStatement.completed").isEqualTo(true)
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.statement)
       .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.createdByUserId)

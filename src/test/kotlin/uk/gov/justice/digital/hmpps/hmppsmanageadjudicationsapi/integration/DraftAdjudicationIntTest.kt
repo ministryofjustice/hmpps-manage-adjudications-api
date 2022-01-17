@@ -4,8 +4,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_INCIDENT_ROLE_CODE
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_PRISONER_BOOKING_ID
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_HANDOVER_DEADLINE_ISO_STRING
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_INCIDENT_ROLE_CODE
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -94,9 +98,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo(testAdjudication.dateTimeOfIncidentISOString)
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(testAdjudication.dateTimeOfIncident.plusDays(2).format(DateTimeFormatter.ISO_DATE_TIME))
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
-    // To be added when reported adjudications support it
-    // .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
-    // .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
+      .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
+      .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
   }
 
   @Test
@@ -203,8 +206,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.incidentDetails.dateTimeOfIncident").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString)
       .jsonPath("$.incidentDetails.handoverDeadline").isEqualTo(IntTestData.DEFAULT_HANDOVER_DEADLINE_ISO_STRING)
       .jsonPath("$.incidentDetails.locationId").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.locationId)
-      .jsonPath("$.incidentRole.roleCode").doesNotExist()
-      .jsonPath("$.incidentRole.associatedPrisonersNumber").doesNotExist()
+      .jsonPath("$.incidentRole.roleCode").isEqualTo(DEFAULT_INCIDENT_ROLE_CODE)
+      .jsonPath("$.incidentRole.associatedPrisonersNumber").isEqualTo(DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER)
 
     val expectedBody = mapOf(
       "offenderNo" to IntTestData.DEFAULT_ADJUDICATION.prisonerNumber,
@@ -251,8 +254,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.incidentDetails.dateTimeOfIncident").isEqualTo(IntTestData.UPDATED_ADJUDICATION.dateTimeOfIncidentISOString)
       .jsonPath("$.incidentDetails.handoverDeadline").isEqualTo(UPDATED_HANDOVER_DEADLINE_ISO_STRING)
       .jsonPath("$.incidentDetails.locationId").isEqualTo(IntTestData.UPDATED_ADJUDICATION.locationId)
-      .jsonPath("$.incidentRole.roleCode").doesNotExist()
-      .jsonPath("$.incidentRole.associatedPrisonersNumber").doesNotExist()
+      .jsonPath("$.incidentRole.roleCode").isEqualTo(UPDATED_INCIDENT_ROLE_CODE)
+      .jsonPath("$.incidentRole.associatedPrisonersNumber").isEqualTo(UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER)
 
     val expectedBody = mapOf(
       "incidentLocationId" to IntTestData.UPDATED_ADJUDICATION.locationId,

@@ -485,8 +485,8 @@ class DraftAdjudicationServiceTest {
         verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
         assertThat(reportedAdjudicationArgumentCaptor.value)
-          .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId", "locationId", "dateTimeOfIncident", "handoverDeadline", "statement")
-          .contains("A12345", 123456L, 1L, "MDI", 1L, INCIDENT_TIME, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, "test")
+          .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId", "locationId", "dateTimeOfIncident", "handoverDeadline", "incidentRoleCode", "incidentRoleAssociatedPrisonersNumber", "statement")
+          .contains("A12345", 123456L, 1L, "MDI", 1L, INCIDENT_TIME, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
       }
 
       @Test
@@ -549,6 +549,8 @@ class DraftAdjudicationServiceTest {
             locationId = 2,
             dateTimeOfIncident = LocalDateTime.now(clock).minusDays(2),
             handoverDeadline = LocalDateTime.now(clock),
+            incidentRoleCode = null,
+            incidentRoleAssociatedPrisonersNumber = null,
             statement = "olddata",
           )
         )
@@ -593,8 +595,8 @@ class DraftAdjudicationServiceTest {
         verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
         assertThat(reportedAdjudicationArgumentCaptor.value)
-          .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId", "locationId", "dateTimeOfIncident", "handoverDeadline", "statement")
-          .contains("A12345", 123L, 1L, "MDI", 1L, LocalDateTime.now(clock), DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, "test")
+          .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId", "locationId", "dateTimeOfIncident", "handoverDeadline", "incidentRoleCode", "incidentRoleAssociatedPrisonersNumber", "statement")
+          .contains("A12345", 123L, 1L, "MDI", 1L, LocalDateTime.now(clock), DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
       }
 
       @Test
