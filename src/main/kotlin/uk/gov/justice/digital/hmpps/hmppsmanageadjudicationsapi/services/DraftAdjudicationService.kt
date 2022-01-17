@@ -37,7 +37,7 @@ class DraftAdjudicationService(
     agencyId: String,
     locationId: Long,
     dateTimeOfIncident: LocalDateTime,
-    incidentRole: IncidentRoleDto?
+    incidentRole: IncidentRoleDto
   ): DraftAdjudicationDto {
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
@@ -47,13 +47,10 @@ class DraftAdjudicationService(
         dateTimeOfIncident = dateTimeOfIncident,
         handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(dateTimeOfIncident)
       ),
-      // Temporary code for backwards compatibility
-      incidentRole = incidentRole?.let {
-        IncidentRole(
-          roleCode = incidentRole.roleCode,
-          associatedPrisonersNumber = incidentRole.associatedPrisonersNumber,
-        )
-      } ?: IncidentRole(roleCode = null, associatedPrisonersNumber = null),
+      incidentRole = IncidentRole(
+        roleCode = incidentRole.roleCode,
+        associatedPrisonersNumber = incidentRole.associatedPrisonersNumber,
+      ),
       reportNumber = null,
       reportByUserId = null,
     )
