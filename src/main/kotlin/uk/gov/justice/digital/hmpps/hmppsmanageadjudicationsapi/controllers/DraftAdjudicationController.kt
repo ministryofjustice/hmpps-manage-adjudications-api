@@ -36,7 +36,7 @@ data class NewAdjudicationRequest(
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime,
   @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
-  val incidentRole: IncidentRoleDto? = null,
+  val incidentRole: IncidentRoleDto,
 )
 
 @ApiModel("Request to add or edit the incident statement for a draft adjudication")
