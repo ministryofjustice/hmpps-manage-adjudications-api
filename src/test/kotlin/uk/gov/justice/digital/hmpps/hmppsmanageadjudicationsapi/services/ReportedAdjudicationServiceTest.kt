@@ -55,6 +55,7 @@ class ReportedAdjudicationServiceTest {
         ReportedAdjudication(
           reportNumber = 1, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
+          incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
           handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
         )
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
@@ -72,6 +73,14 @@ class ReportedAdjudicationServiceTest {
       assertThat(reportedAdjudicationDto.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident")
         .contains(345L, DATE_TIME_OF_INCIDENT)
+
+      assertThat(reportedAdjudicationDto.incidentRole)
+        .extracting("roleCode", "associatedPrisonersNumber")
+        .contains("25b", "BB2345B")
+
+      assertThat(reportedAdjudicationDto.incidentStatement)
+        .extracting("statement", "completed")
+        .contains(INCIDENT_STATEMENT, true)
     }
   }
 
@@ -88,6 +97,8 @@ class ReportedAdjudicationServiceTest {
         locationId = 345,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+        incidentRoleCode = "25b",
+        incidentRoleAssociatedPrisonersNumber = "BB2345B",
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
@@ -100,6 +111,8 @@ class ReportedAdjudicationServiceTest {
         locationId = 345,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+        incidentRoleCode = null,
+        incidentRoleAssociatedPrisonersNumber = null,
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
@@ -143,6 +156,8 @@ class ReportedAdjudicationServiceTest {
         locationId = 345,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+        incidentRoleCode = "25b",
+        incidentRoleAssociatedPrisonersNumber = "BB2345B",
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
@@ -155,6 +170,8 @@ class ReportedAdjudicationServiceTest {
         locationId = 345,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+        incidentRoleCode = null,
+        incidentRoleAssociatedPrisonersNumber = null,
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication2.createdByUserId = "A_SMITH"
@@ -183,6 +200,7 @@ class ReportedAdjudicationServiceTest {
     private val reportedAdjudication = ReportedAdjudication(
       reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
       dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
+      incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
       handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
     )
 
@@ -196,10 +214,9 @@ class ReportedAdjudicationServiceTest {
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
       ),
-      // Temporary code until we implement in reported adjudications
       incidentRole = IncidentRole(
-        roleCode = null,
-        associatedPrisonersNumber = null
+        roleCode = "25b",
+        associatedPrisonersNumber = "BB2345B",
       ),
       incidentStatement = IncidentStatement(
         completed = true,
@@ -245,6 +262,9 @@ class ReportedAdjudicationServiceTest {
       assertThat(createdDraft.incidentDetails)
         .extracting("dateTimeOfIncident", "handoverDeadline", "locationId")
         .contains(DATE_TIME_OF_INCIDENT, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, 345L)
+      assertThat(createdDraft.incidentRole)
+        .extracting("roleCode", "associatedPrisonersNumber")
+        .contains("25b", "BB2345B")
       assertThat(createdDraft.incidentStatement)
         .extracting("completed", "statement")
         .contains(true, INCIDENT_STATEMENT)

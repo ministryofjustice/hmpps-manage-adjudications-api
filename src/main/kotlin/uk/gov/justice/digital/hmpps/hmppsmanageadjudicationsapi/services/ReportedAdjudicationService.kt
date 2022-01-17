@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
@@ -63,8 +64,8 @@ class ReportedAdjudicationService(
         handoverDeadline = reportedAdjudication.handoverDeadline
       ),
       incidentRole = IncidentRole(
-        roleCode = null,
-        associatedPrisonersNumber = null,
+        roleCode = reportedAdjudication.incidentRoleCode,
+        associatedPrisonersNumber = reportedAdjudication.incidentRoleAssociatedPrisonersNumber,
       ),
       incidentStatement = IncidentStatement(
         statement = reportedAdjudication.statement,
@@ -88,8 +89,13 @@ fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudication
     dateTimeOfIncident = dateTimeOfIncident,
     handoverDeadline = handoverDeadline
   ),
+  incidentRole = IncidentRoleDto(
+    roleCode = incidentRoleCode,
+    associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
+  ),
   incidentStatement = IncidentStatementDto(
-    statement = statement
+    statement = statement,
+    completed = true,
   ),
   createdByUserId = createdByUserId!!
 )

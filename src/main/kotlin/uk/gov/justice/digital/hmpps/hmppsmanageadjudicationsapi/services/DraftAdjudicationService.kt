@@ -184,6 +184,8 @@ class DraftAdjudicationService(
           locationId = draftAdjudication.incidentDetails.locationId,
           dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
           handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
+          incidentRoleCode = draftAdjudication.incidentRole.roleCode,
+          incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber,
           statement = draftAdjudication.incidentStatement!!.statement!!
         )
       )
@@ -198,6 +200,8 @@ class DraftAdjudicationService(
       it.locationId = draftAdjudication.incidentDetails.locationId
       it.dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident
       it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline
+      it.incidentRoleCode = draftAdjudication.incidentRole.roleCode
+      it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber
       it.statement = draftAdjudication.incidentStatement!!.statement!!
       return reportedAdjudicationRepository.save(it)
     } ?: ReportedAdjudicationService.throwEntityNotFoundException(nomisAdjudication.adjudicationNumber)
