@@ -19,6 +19,9 @@ data class DraftAdjudication(
   @JoinColumn(name = "incident_details_id")
   val incidentDetails: IncidentDetails,
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+  @JoinColumn(name = "incident_role_id")
+  var incidentRole: IncidentRole,
+  @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "incident_statement_id")
   var incidentStatement: IncidentStatement? = null,
 ) : BaseEntity()

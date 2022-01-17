@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
@@ -33,7 +34,9 @@ data class NewAdjudicationRequest(
   val locationId: Long,
   @ApiModelProperty(value = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-  val dateTimeOfIncident: LocalDateTime
+  val dateTimeOfIncident: LocalDateTime,
+  @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
+  val incidentRole: IncidentRoleDto? = null,
 )
 
 @ApiModel("Request to add or edit the incident statement for a draft adjudication")
@@ -53,7 +56,9 @@ data class EditIncidentDetailsRequest(
   val locationId: Long? = null,
   @ApiModelProperty(value = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-  val dateTimeOfIncident: LocalDateTime? = null
+  val dateTimeOfIncident: LocalDateTime? = null,
+  @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
+  val incidentRole: IncidentRoleDto? = null,
 )
 
 @ApiModel("Draft adjudication response")
@@ -93,7 +98,8 @@ class DraftAdjudicationController {
         newAdjudicationRequest.prisonerNumber,
         newAdjudicationRequest.agencyId,
         newAdjudicationRequest.locationId,
-        newAdjudicationRequest.dateTimeOfIncident
+        newAdjudicationRequest.dateTimeOfIncident,
+        newAdjudicationRequest.incidentRole,
       )
 
     return DraftAdjudicationResponse(
@@ -140,7 +146,8 @@ class DraftAdjudicationController {
     val draftAdjudication = draftAdjudicationService.editIncidentDetails(
       id,
       editIncidentDetailsRequest.locationId,
-      editIncidentDetailsRequest.dateTimeOfIncident
+      editIncidentDetailsRequest.dateTimeOfIncident,
+      editIncidentDetailsRequest.incidentRole,
     )
 
     return DraftAdjudicationResponse(

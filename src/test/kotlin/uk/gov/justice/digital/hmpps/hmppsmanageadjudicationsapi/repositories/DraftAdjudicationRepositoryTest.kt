@@ -11,6 +11,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConfiguration
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
 import java.time.LocalDateTime
 
@@ -37,7 +38,11 @@ class DraftAdjudicationRepositoryTest {
           locationId = 2,
           dateTimeOfIncident = dateTimeOfIncident,
           handoverDeadline = dateTimeOfIncident.plusDays(2)
-        )
+        ),
+        incidentRole = IncidentRole(
+          roleCode = "25a",
+          associatedPrisonersNumber = "B23456"
+        ),
       )
     )
     assertThat(savedEntity)
@@ -47,6 +52,10 @@ class DraftAdjudicationRepositoryTest {
     assertThat(savedEntity.incidentDetails)
       .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
       .contains(2L, dateTimeOfIncident, dateTimeOfIncident.plusDays(2))
+
+    assertThat(savedEntity.incidentRole)
+      .extracting("roleCode", "associatedPrisonersNumber")
+      .contains("25a", "B23456")
   }
 
   @Test
@@ -61,7 +70,11 @@ class DraftAdjudicationRepositoryTest {
           locationId = 2,
           dateTimeOfIncident = dateTimeOfIncident,
           handoverDeadline = dateTimeOfIncident.plusDays(2)
-        )
+        ),
+        incidentRole = IncidentRole(
+          roleCode = "25a",
+          associatedPrisonersNumber = "B23456"
+        ),
       )
     )
     entityManager.persistAndFlush(
@@ -72,7 +85,11 @@ class DraftAdjudicationRepositoryTest {
           locationId = 2,
           dateTimeOfIncident = dateTimeOfIncident,
           handoverDeadline = dateTimeOfIncident.plusDays(2)
-        )
+        ),
+        incidentRole = IncidentRole(
+          roleCode = null,
+          associatedPrisonersNumber = null
+        ),
       )
     )
     entityManager.persistAndFlush(
@@ -85,7 +102,11 @@ class DraftAdjudicationRepositoryTest {
           locationId = 3,
           dateTimeOfIncident = dateTimeOfIncident,
           handoverDeadline = dateTimeOfIncident.plusDays(3)
-        )
+        ),
+        incidentRole = IncidentRole(
+          roleCode = null,
+          associatedPrisonersNumber = null
+        ),
       )
     )
     val foundAdjudications = draftAdjudicationRepository.findUnsubmittedByAgencyIdAndCreatedByUserId("MDI", "ITAG_USER")
