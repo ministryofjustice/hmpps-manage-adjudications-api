@@ -161,11 +161,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `edit the incident statement`() {
-    bankHolidayApiMockServer.stubGetBankHolidays()
+    val testAdjudication = IntTestData.ADJUDICATION_1
+    val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
 
-    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
-
-    dataAPiHelpers().addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
+    intTestData.addIncidentStatement(draftAdjudicationResponse, testAdjudication)
 
     webTestClient.put()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-statement")
@@ -179,7 +179,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("new statement")
   }
 
@@ -274,9 +274,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `should not delete the draft adjudication when the adjudication report submission fails`() {
     prisonApiMockServer.stubPostAdjudicationFailure()
 
-    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
+    val testAdjudication = IntTestData.ADJUDICATION_1
+    val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
 
-    dataAPiHelpers().addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
+    intTestData.addIncidentStatement(draftAdjudicationResponse, testAdjudication)
 
     webTestClient.post()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/complete-draft-adjudication")
@@ -311,8 +313,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `mark the incident statement as being complete`() {
-    val draftAdjudicationResponse = dataAPiHelpers().startNewAdjudication(dateTimeOfIncident = DATE_TIME_OF_INCIDENT)
-    dataAPiHelpers().addIncidentStatement(draftAdjudicationResponse.draftAdjudication.id, "test statement")
+    val testAdjudication = IntTestData.ADJUDICATION_1
+    val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
+
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
+    intTestData.addIncidentStatement(draftAdjudicationResponse, testAdjudication)
 
     webTestClient.put()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-statement")
@@ -326,8 +331,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
-      .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("test statement")
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
+      .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo(testAdjudication.statement)
       .jsonPath("$.draftAdjudication.incidentStatement.completed").isEqualTo(true)
   }
 
