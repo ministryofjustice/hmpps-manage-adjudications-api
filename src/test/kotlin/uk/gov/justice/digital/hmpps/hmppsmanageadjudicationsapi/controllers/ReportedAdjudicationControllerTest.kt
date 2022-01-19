@@ -58,6 +58,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
           createdByUserId = "A_SMITH",
+          createdDateTime = REPORTED_DATE_TIME,
         )
       )
       makeGetAdjudicationRequest(1)
@@ -104,7 +105,8 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
               ),
               incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
               incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
-              createdByUserId = "A_SMITH"
+              createdByUserId = "A_SMITH",
+              createdDateTime = REPORTED_DATE_TIME,
             )
           ),
           Pageable.ofSize(20).withPage(0),
@@ -200,6 +202,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
+    private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private val INCIDENT_ROLE_WITH_ALL_VALUES = IncidentRoleDto("25a", "B23456")
     private const val INCIDENT_STATEMENT = "A statement"
   }

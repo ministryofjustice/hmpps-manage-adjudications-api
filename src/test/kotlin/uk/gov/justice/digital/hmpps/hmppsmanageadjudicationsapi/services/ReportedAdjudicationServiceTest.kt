@@ -59,6 +59,7 @@ class ReportedAdjudicationServiceTest {
           handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
         )
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
+      reportedAdjudication.createDateTime = REPORTED_DATE_TIME
 
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication
@@ -67,8 +68,8 @@ class ReportedAdjudicationServiceTest {
       val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails(1)
 
       assertThat(reportedAdjudicationDto)
-        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "dateTimeReportExpires", "createdByUserId")
-        .contains(1L, "AA1234A", 123L, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, "A_SMITH")
+        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "dateTimeReportExpires", "createdByUserId", "createdDateTime")
+        .contains(1L, "AA1234A", 123L, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, "A_SMITH", REPORTED_DATE_TIME)
 
       assertThat(reportedAdjudicationDto.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident")
@@ -102,6 +103,7 @@ class ReportedAdjudicationServiceTest {
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
+      reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
       val reportedAdjudication2 = ReportedAdjudication(
         id = 2,
         prisonerNumber = "AA1234B",
@@ -116,6 +118,7 @@ class ReportedAdjudicationServiceTest {
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
+      reportedAdjudication1.createDateTime = REPORTED_DATE_TIME.plusDays(2)
       whenever(reportedAdjudicationRepository.findByAgencyId(any(), any())).thenReturn(
         PageImpl(
           listOf(reportedAdjudication1, reportedAdjudication2)
@@ -135,10 +138,10 @@ class ReportedAdjudicationServiceTest {
       val myReportedAdjudications = reportedAdjudicationService.getAllReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
 
       assertThat(myReportedAdjudications.content)
-        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId")
+        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
         .contains(
-          Tuple.tuple(1L, "AA1234A", 123L, "A_SMITH"),
-          Tuple.tuple(2L, "AA1234B", 456L, "P_SMITH")
+          Tuple.tuple(1L, "AA1234A", 123L, "A_SMITH", REPORTED_DATE_TIME),
+          Tuple.tuple(2L, "AA1234B", 456L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2))
         )
     }
   }
@@ -161,6 +164,7 @@ class ReportedAdjudicationServiceTest {
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
+      reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
       val reportedAdjudication2 = ReportedAdjudication(
         id = 2,
         prisonerNumber = "AA1234B",
@@ -174,7 +178,8 @@ class ReportedAdjudicationServiceTest {
         incidentRoleAssociatedPrisonersNumber = null,
         statement = INCIDENT_STATEMENT,
       )
-      reportedAdjudication2.createdByUserId = "A_SMITH"
+      reportedAdjudication2.createdByUserId = "P_SMITH"
+      reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
       whenever(reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyId(any(), any(), any())).thenReturn(
         PageImpl(
           listOf(reportedAdjudication1, reportedAdjudication2)
@@ -187,10 +192,10 @@ class ReportedAdjudicationServiceTest {
       val myReportedAdjudications = reportedAdjudicationService.getMyReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
 
       assertThat(myReportedAdjudications.content)
-        .extracting("adjudicationNumber", "prisonerNumber", "bookingId")
+        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
         .contains(
-          Tuple.tuple(1L, "AA1234A", 123L),
-          Tuple.tuple(2L, "AA1234B", 456L)
+          Tuple.tuple(1L, "AA1234A", 123L, "A_SMITH", REPORTED_DATE_TIME),
+          Tuple.tuple(2L, "AA1234B", 456L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2))
         )
     }
   }
@@ -231,6 +236,7 @@ class ReportedAdjudicationServiceTest {
     @BeforeEach
     fun beforeEach() {
       reportedAdjudication.createdByUserId = "A_SMITH"
+      reportedAdjudication.createDateTime = REPORTED_DATE_TIME
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
       whenever(draftAdjudicationRepository.save(any())).thenReturn(savedDraftAdjudication)
     }
@@ -274,6 +280,7 @@ class ReportedAdjudicationServiceTest {
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
+    private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private const val INCIDENT_STATEMENT = "A statement"
   }
 }
