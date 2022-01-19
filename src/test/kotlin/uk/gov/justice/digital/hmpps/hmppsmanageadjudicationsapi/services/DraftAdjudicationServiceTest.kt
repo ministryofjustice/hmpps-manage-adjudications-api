@@ -473,6 +473,7 @@ class DraftAdjudicationServiceTest {
         whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
           val passedInAdjudication = it.arguments[0] as ReportedAdjudication
           passedInAdjudication.createdByUserId = "A_SMITH"
+          passedInAdjudication.createDateTime = REPORTED_DATE_TIME
           passedInAdjudication
         }
       }
@@ -571,6 +572,7 @@ class DraftAdjudicationServiceTest {
         whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
           val passedInAdjudication = it.arguments[0] as ReportedAdjudication
           passedInAdjudication.createdByUserId = "A_SMITH"
+          passedInAdjudication.createDateTime = REPORTED_DATE_TIME
           passedInAdjudication
         }
       }
@@ -710,6 +712,7 @@ class DraftAdjudicationServiceTest {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
+    private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private val INCIDENT_ROLE_CODE = "25a"
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
 

@@ -1,12 +1,19 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
+  @BeforeEach
+  fun setUp() {
+    setAuditTime(IntTestData.DEFAULT_REPORTED_DATE_TIME)
+  }
+
   @Test
   fun `get reported adjudication details`() {
     oAuthMockServer.stubGrantToken()
+
     val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
 
     val firstDraftUserHeaders = setHeaders(username = IntTestData.DEFAULT_ADJUDICATION.createdByUserId)
@@ -31,6 +38,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.incidentStatement.statement").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.statement)
       .jsonPath("$.reportedAdjudication.incidentStatement.completed").isEqualTo(true)
       .jsonPath("$.reportedAdjudication.createdByUserId").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.createdByUserId)
+      .jsonPath("$.reportedAdjudication.createdDateTime").isEqualTo(IntTestData.DEFAULT_REPORTED_DATE_TIME_TEXT)
   }
 
   @Test
@@ -89,6 +97,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.content[0].incidentStatement.statement").isEqualTo(IntTestData.ADJUDICATION_4.statement)
       .jsonPath("$.content[0].incidentStatement.completed").isEqualTo(true)
       .jsonPath("$.content[0].createdByUserId").isEqualTo(IntTestData.ADJUDICATION_4.createdByUserId)
+      .jsonPath("$.content[0].createdDateTime").isEqualTo(IntTestData.DEFAULT_REPORTED_DATE_TIME_TEXT)
       .jsonPath("$.content[1].adjudicationNumber").isEqualTo(IntTestData.ADJUDICATION_2.adjudicationNumber)
   }
 
@@ -137,6 +146,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.content[0].incidentStatement.statement").isEqualTo(IntTestData.ADJUDICATION_3.statement)
       .jsonPath("$.content[0].incidentStatement.completed").isEqualTo(true)
       .jsonPath("$.content[0].createdByUserId").isEqualTo(IntTestData.ADJUDICATION_3.createdByUserId)
+      .jsonPath("$.content[0].createdDateTime").isEqualTo(IntTestData.DEFAULT_REPORTED_DATE_TIME_TEXT)
       .jsonPath("$.content[1].adjudicationNumber").isEqualTo(IntTestData.ADJUDICATION_2.adjudicationNumber)
   }
 

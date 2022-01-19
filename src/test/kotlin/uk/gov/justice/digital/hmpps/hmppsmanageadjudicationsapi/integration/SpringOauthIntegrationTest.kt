@@ -15,6 +15,8 @@ class SpringOauthIntegrationTest : IntegrationTestBase() {
 
   @BeforeEach
   fun beforeEach() {
+    setAuditTime(IntTestData.DEFAULT_REPORTED_DATE_TIME)
+
     intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
 
     draftCreationResponseForAdjudication1 = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_1)

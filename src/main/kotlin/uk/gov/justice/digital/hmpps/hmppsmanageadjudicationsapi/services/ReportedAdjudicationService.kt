@@ -97,5 +97,6 @@ fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudication
     statement = statement,
     completed = true,
   ),
-  createdByUserId = createdByUserId!!
+  createdByUserId = createdByUserId!!,
+  createdDateTime = createDateTime!!
 )
