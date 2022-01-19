@@ -17,15 +17,15 @@ dependencies {
   implementation("io.springfox:springfox-boot-starter:3.0.0")
   implementation("org.apache.commons:commons-text:1.9")
 
-  runtimeOnly("com.h2database:h2")
-  runtimeOnly("org.flywaydb:flyway-core")
+  runtimeOnly("com.h2database:h2:2.0.206")
+  runtimeOnly("org.flywaydb:flyway-core:8.4.1")
   runtimeOnly("org.postgresql:postgresql")
 
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
-  testImplementation("org.flywaydb:flyway-core:8.0.2")
+  testImplementation("org.flywaydb:flyway-core:8.4.1")
 }
 
 allOpen {
