@@ -118,7 +118,7 @@ class ReportedAdjudicationServiceTest {
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
-      reportedAdjudication1.createDateTime = REPORTED_DATE_TIME.plusDays(2)
+      reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
       whenever(reportedAdjudicationRepository.findByAgencyId(any(), any())).thenReturn(
         PageImpl(
           listOf(reportedAdjudication1, reportedAdjudication2)
