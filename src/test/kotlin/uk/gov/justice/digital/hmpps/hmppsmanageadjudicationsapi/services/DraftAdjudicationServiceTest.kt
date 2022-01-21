@@ -829,7 +829,6 @@ class DraftAdjudicationServiceTest {
           incidentRoleDtoWithNoValuesSet(),
         )
 
-      // val nullOffenceDetails: List<OffenceDetailsDto>? = null
       assertThat(adjudications)
         .extracting("offenceDetails")
         .contains(
