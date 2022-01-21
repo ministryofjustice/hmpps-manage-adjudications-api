@@ -225,14 +225,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @Test
     fun `responds with a unauthorised status code`() {
-      makeSetOffenceDetailsRequest(1, 2)
+      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_DETAILS)
         .andExpect(status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `makes a call to set the offence details to the draft adjudication`() {
-      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_DETAILS.offenceCode)
+      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_DETAILS)
         .andExpect(status().isCreated)
 
       verify(draftAdjudicationService).setOffenceDetails(
@@ -248,19 +248,19 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `returns the draft adjudication including the new offence details`() {
-      makeSetOffenceDetailsRequest(1, 2)
+      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_DETAILS)
         .andExpect(status().isCreated)
         .andExpect(jsonPath("$.draftAdjudication.id").isNumber)
         .andExpect(jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
         .andExpect(jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").value(BASIC_OFFENCE_DETAILS.offenceCode))
     }
 
-    private fun makeSetOffenceDetailsRequest(id: Long, offenceCode: Int): ResultActions {
-      val body = objectMapper.writeValueAsString(mapOf("offenceCode" to offenceCode))
+    private fun makeSetOffenceDetailsRequest(id: Long, offenceDetails: OffenceDetailsDto): ResultActions {
+      val body = objectMapper.writeValueAsString(mapOf("offenceDetails" to listOf(offenceDetails)))
 
       return mockMvc
         .perform(
-          post("/draft-adjudications/$id/offence-details")
+          put("/draft-adjudications/$id/offence-details")
             .header("Content-Type", "application/json")
             .content(body)
         )
