@@ -17,7 +17,7 @@ data class AdjudicationIntTestDataSet(
   val createdByUserId: String
 )
 
-data class OffenceTestDataSet (
+data class OffenceTestDataSet(
   val offenceCode: Int,
   val victimPrisonersNumber: String? = null
 )

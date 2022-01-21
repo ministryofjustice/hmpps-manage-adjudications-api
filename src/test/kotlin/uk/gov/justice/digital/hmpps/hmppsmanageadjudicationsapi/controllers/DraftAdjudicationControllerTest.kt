@@ -235,11 +235,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_DETAILS.offenceCode)
         .andExpect(status().isCreated)
 
-      verify(draftAdjudicationService).setOffenceDetails(1, listOf(
-        OffenceDetailsDto(
-          offenceCode = BASIC_OFFENCE_DETAILS.offenceCode
+      verify(draftAdjudicationService).setOffenceDetails(
+        1,
+        listOf(
+          OffenceDetailsDto(
+            offenceCode = BASIC_OFFENCE_DETAILS.offenceCode
+          )
         )
-      ))
+      )
     }
 
     @Test
