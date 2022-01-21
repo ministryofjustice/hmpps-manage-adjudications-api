@@ -12,6 +12,12 @@ data class AdjudicationIntTestDataSet(
   val handoverDeadlineISOString: String,
   val incidentRoleCode: String,
   val incidentRoleAssociatedPrisonersNumber: String,
+  val offences: List<OffenceTestDataSet>,
   val statement: String,
   val createdByUserId: String
+)
+
+data class OffenceTestDataSet (
+  val offenceCode: Int,
+  val victimPrisonersNumber: String? = null
 )

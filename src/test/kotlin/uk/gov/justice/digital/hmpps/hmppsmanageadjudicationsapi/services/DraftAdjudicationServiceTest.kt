@@ -13,10 +13,13 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
@@ -129,6 +132,11 @@ class DraftAdjudicationServiceTest {
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = incidentRoleWithAllValuesSet(),
+          offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS, FULL_OFFENCE_DETAILS),
+          incidentStatement = IncidentStatement(
+            statement = "Example statement",
+            completed = false
+          ),
         )
       draftAdjudication.createdByUserId = "A_USER" // Add audit information
 
@@ -146,9 +154,119 @@ class DraftAdjudicationServiceTest {
         .extracting("locationId", "dateTimeOfIncident")
         .contains(2L, now)
 
-      assertThat(draftAdjudication.incidentRole)
+      assertThat(draftAdjudicationDto.incidentRole)
         .extracting("roleCode", "associatedPrisonersNumber")
         .contains(incidentRoleDtoWithAllValuesSet().roleCode, incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber)
+
+      assertThat(draftAdjudicationDto.offenceDetails).hasSize(2)
+        .extracting("offenceCode", "victimPrisonersNumber")
+        .contains(
+          Tuple(BASIC_OFFENCE_DETAILS_DTO.offenceCode, BASIC_OFFENCE_DETAILS_DTO.victimPrisonersNumber),
+          Tuple(FULL_OFFENCE_DETAILS_DTO.offenceCode, FULL_OFFENCE_DETAILS_DTO.victimPrisonersNumber),
+        )
+
+      assertThat(draftAdjudicationDto.incidentStatement)
+        .extracting("statement", "completed")
+        .contains("Example statement", false)
+    }
+  }
+
+  @Nested
+  inner class SetOffenceDetails {
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        draftAdjudicationService.setOffenceDetails(1, listOf(BASIC_OFFENCE_DETAILS_DTO))
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+
+    @Test
+    fun `adds the offence details to a draft adjudication`() {
+      val offenceDetailsToAdd = listOf(BASIC_OFFENCE_DETAILS_DTO, FULL_OFFENCE_DETAILS_DTO)
+      val offenceDetailsToSave = mutableListOf(BASIC_OFFENCE_DETAILS, FULL_OFFENCE_DETAILS)
+      val draftAdjudicationEntity = DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 1,
+          dateTimeOfIncident = LocalDateTime.now(clock),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithNoValuesSet(),
+      )
+
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
+
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(
+        draftAdjudicationEntity.copy(
+          offenceDetails = offenceDetailsToSave
+        )
+      )
+
+      val draftAdjudication = draftAdjudicationService.setOffenceDetails(1, offenceDetailsToAdd)
+
+      assertThat(draftAdjudication)
+        .extracting("id", "prisonerNumber")
+        .contains(1L, "A12345")
+
+      assertThat(draftAdjudication.offenceDetails).isEqualTo(offenceDetailsToAdd)
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails).isEqualTo(offenceDetailsToSave)
+    }
+
+    @Test
+    fun `edits the offence details of an existing draft adjudication`() {
+      val existingOffenceDetails = mutableListOf(Offence(offenceCode = 1))
+      val offenceDetailsToUse = listOf(BASIC_OFFENCE_DETAILS_DTO, FULL_OFFENCE_DETAILS_DTO)
+      val offenceDetailsToSave = mutableListOf(BASIC_OFFENCE_DETAILS, FULL_OFFENCE_DETAILS)
+      val draftAdjudicationEntity = DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 1,
+          dateTimeOfIncident = LocalDateTime.now(clock),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithNoValuesSet(),
+        offenceDetails = existingOffenceDetails,
+      )
+
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
+
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(
+        draftAdjudicationEntity.copy(
+          offenceDetails = offenceDetailsToSave
+        )
+      )
+
+      val draftAdjudication = draftAdjudicationService.setOffenceDetails(1, offenceDetailsToUse)
+
+      assertThat(draftAdjudication)
+        .extracting("id", "prisonerNumber")
+        .contains(1L, "A12345")
+
+      assertThat(draftAdjudication.offenceDetails).isEqualTo(offenceDetailsToUse)
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails).isEqualTo(offenceDetailsToSave)
+    }
+
+    @Test
+    fun `throws an IllegalArgumentException when no offence details are provided`() {
+      assertThatThrownBy {
+        draftAdjudicationService.setOffenceDetails(1, listOf())
+      }.isInstanceOf(IllegalArgumentException::class.java)
+        .hasMessageContaining("Please supply at least one set of offence details")
     }
   }
 
@@ -645,6 +763,11 @@ class DraftAdjudicationServiceTest {
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
             incidentRole = incidentRoleWithAllValuesSet(),
+            offenceDetails = mutableListOf(FULL_OFFENCE_DETAILS),
+            incidentStatement = IncidentStatement(
+              statement = "Example statement",
+              completed = false
+            ),
           ),
           DraftAdjudication(
             id = 2,
@@ -705,6 +828,21 @@ class DraftAdjudicationServiceTest {
           incidentRoleDtoWithAllValuesSet(),
           incidentRoleDtoWithNoValuesSet(),
         )
+
+      // val nullOffenceDetails: List<OffenceDetailsDto>? = null
+      assertThat(adjudications)
+        .extracting("offenceDetails")
+        .contains(
+          listOf(FULL_OFFENCE_DETAILS_DTO),
+          null as List<OffenceDetailsDto>?
+        )
+
+      assertThat(adjudications)
+        .extracting("incidentStatement")
+        .contains(
+          IncidentStatementDto("Example statement", false),
+          null as IncidentStatementDto?
+        )
     }
   }
 
@@ -715,6 +853,13 @@ class DraftAdjudicationServiceTest {
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private val INCIDENT_ROLE_CODE = "25a"
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
+    private val BASIC_OFFENCE_DETAILS_DTO = OffenceDetailsDto(offenceCode = 2)
+    private val FULL_OFFENCE_DETAILS_DTO = OffenceDetailsDto(offenceCode = 3, victimPrisonersNumber = "A1234AA")
+    private val BASIC_OFFENCE_DETAILS = Offence(offenceCode = BASIC_OFFENCE_DETAILS_DTO.offenceCode)
+    private val FULL_OFFENCE_DETAILS = Offence(
+      offenceCode = FULL_OFFENCE_DETAILS_DTO.offenceCode,
+      victimPrisonersNumber = FULL_OFFENCE_DETAILS_DTO.victimPrisonersNumber
+    )
 
     fun incidentRoleDtoWithAllValuesSet(): IncidentRoleDto =
       IncidentRoleDto(INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)

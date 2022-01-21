@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
@@ -37,6 +38,12 @@ data class NewAdjudicationRequest(
   val dateTimeOfIncident: LocalDateTime,
   @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
   val incidentRole: IncidentRoleDto,
+)
+
+@ApiModel("Request to update the list of offence details for a draft adjudication")
+data class OffenceDetailsRequest(
+  @ApiModelProperty(value = "The details of all offences the prisoner is accused of")
+  val offenceDetails: List<OffenceDetailsDto>,
 )
 
 @ApiModel("Request to add or edit the incident statement for a draft adjudication")
@@ -111,6 +118,24 @@ class DraftAdjudicationController {
   @ApiOperation(value = "Returns the draft adjudication details.")
   fun getDraftAdjudicationDetails(@PathVariable(name = "id") id: Long): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.getDraftAdjudicationDetails(id)
+
+    return DraftAdjudicationResponse(
+      draftAdjudication
+    )
+  }
+
+  @PutMapping(value = ["/{id}/offence-details"])
+  @ApiOperation(value = "Set the offence details for the draft adjudication.", notes = "At least one set of offence details must be supplied")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @ResponseStatus(HttpStatus.CREATED)
+  fun setOffenceDetails(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid offenceDetailsRequest: OffenceDetailsRequest
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.setOffenceDetails(
+      id,
+      offenceDetailsRequest.offenceDetails
+    )
 
     return DraftAdjudicationResponse(
       draftAdjudication

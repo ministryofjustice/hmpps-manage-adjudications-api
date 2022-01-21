@@ -76,6 +76,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
 
     val draftCreationResponse = intTestData.startNewAdjudication(testAdjudication)
+    intTestData.setOffenceDetails(draftCreationResponse, testAdjudication)
     intTestData.addIncidentStatement(draftCreationResponse, testAdjudication)
     intTestData.completeDraftAdjudication(
       draftCreationResponse,
@@ -100,6 +101,41 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
       .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
+      // Not implemented yet
+      // .jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[0].offenceCode)
+      // .jsonPath("$.draftAdjudication.offenceDetails[0].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo(testAdjudication.statement)
+  }
+
+  @Test
+  fun `add offence details to the draft adjudication`() {
+    val testAdjudication = IntTestData.ADJUDICATION_1
+    val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
+
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
+
+    webTestClient.put()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/offence-details")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "offenceDetails" to testAdjudication.offences,
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
+      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo(testAdjudication.dateTimeOfIncidentISOString)
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(testAdjudication.handoverDeadlineISOString)
+      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
+      .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
+      .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
+      .jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").isEqualTo(testAdjudication.offences[0].offenceCode)
+      .jsonPath("$.draftAdjudication.offenceDetails[0].victimPrisonersNumber").isEqualTo(testAdjudication.offences[0].victimPrisonersNumber!!)
+      .jsonPath("$.draftAdjudication.offenceDetails[1].offenceCode").isEqualTo(testAdjudication.offences[1].offenceCode)
+      .jsonPath("$.draftAdjudication.offenceDetails[1].victimPrisonersNumber").doesNotExist()
   }
 
   @Test
@@ -160,6 +196,37 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `edit offence details for the draft adjudication`() {
+    val testAdjudication = IntTestData.ADJUDICATION_1
+    val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
+
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
+    intTestData.setOffenceDetails(draftAdjudicationResponse, testAdjudication)
+
+    webTestClient.put()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/offence-details")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "offenceDetails" to listOf(IntTestData.BASIC_OFFENCE),
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
+      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo(testAdjudication.dateTimeOfIncidentISOString)
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(testAdjudication.handoverDeadlineISOString)
+      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
+      .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
+      .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
+      .jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").isEqualTo(IntTestData.BASIC_OFFENCE.offenceCode)
+      .jsonPath("$.draftAdjudication.offenceDetails[0].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.draftAdjudication.offenceDetails[1]").doesNotExist()
+  }
+
+  @Test
   fun `edit the incident statement`() {
     val testAdjudication = IntTestData.ADJUDICATION_1
     val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
@@ -190,6 +257,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val firstDraftUserHeaders = setHeaders(username = IntTestData.DEFAULT_ADJUDICATION.createdByUserId)
     val draftAdjudicationResponse = intTestData.startNewAdjudication(IntTestData.DEFAULT_ADJUDICATION, firstDraftUserHeaders)
+    intTestData.setOffenceDetails(draftAdjudicationResponse, IntTestData.DEFAULT_ADJUDICATION, firstDraftUserHeaders)
     intTestData.addIncidentStatement(draftAdjudicationResponse, IntTestData.DEFAULT_ADJUDICATION, firstDraftUserHeaders)
 
     webTestClient.post()
@@ -202,12 +270,15 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.prisonerNumber").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.prisonerNumber)
       .jsonPath("$.bookingId").isEqualTo(1) // From PrisonAPIMockServer.stubPostAdjudication
       .jsonPath("$.dateTimeReportExpires").isEqualTo(IntTestData.DEFAULT_HANDOVER_DEADLINE_ISO_STRING)
-      .jsonPath("$.incidentStatement.statement").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.statement)
       .jsonPath("$.incidentDetails.dateTimeOfIncident").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString)
       .jsonPath("$.incidentDetails.handoverDeadline").isEqualTo(IntTestData.DEFAULT_HANDOVER_DEADLINE_ISO_STRING)
       .jsonPath("$.incidentDetails.locationId").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.locationId)
       .jsonPath("$.incidentRole.roleCode").isEqualTo(DEFAULT_INCIDENT_ROLE_CODE)
       .jsonPath("$.incidentRole.associatedPrisonersNumber").isEqualTo(DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER)
+      // Not implemented yet
+      // .jsonPath("$.offenceDetails[0].offenceCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[0].offenceCode)
+      // .jsonPath("$.offenceDetails[0].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.incidentStatement.statement").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.statement)
 
     val expectedBody = mapOf(
       "offenderNo" to IntTestData.DEFAULT_ADJUDICATION.prisonerNumber,
@@ -229,6 +300,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val firstDraftUserHeaders = setHeaders(username = IntTestData.DEFAULT_ADJUDICATION.createdByUserId)
     val firstDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.DEFAULT_ADJUDICATION, firstDraftUserHeaders)
+    intTestData.setOffenceDetails(firstDraftCreationResponse, IntTestData.DEFAULT_ADJUDICATION, firstDraftUserHeaders)
     intTestData.addIncidentStatement(firstDraftCreationResponse, IntTestData.DEFAULT_ADJUDICATION, firstDraftUserHeaders)
 
     assertThat(reportedAdjudicationRepository.findAll()).hasSize(0)
@@ -238,6 +310,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(IntTestData.DEFAULT_ADJUDICATION)
     intTestData.editIncidentDetails(draftAdjudicationResponse, IntTestData.UPDATED_ADJUDICATION)
+    intTestData.setOffenceDetails(draftAdjudicationResponse, IntTestData.UPDATED_ADJUDICATION)
     intTestData.editIncidentStatement(draftAdjudicationResponse, IntTestData.UPDATED_ADJUDICATION)
 
     webTestClient.post()
@@ -250,12 +323,15 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.prisonerNumber").isEqualTo(IntTestData.UPDATED_ADJUDICATION.prisonerNumber)
       .jsonPath("$.bookingId").isEqualTo(DEFAULT_PRISONER_BOOKING_ID) // From PrisonAPIMockServer.stubPutAdjudication()
       .jsonPath("$.dateTimeReportExpires").isEqualTo(UPDATED_HANDOVER_DEADLINE_ISO_STRING)
-      .jsonPath("$.incidentStatement.statement").isEqualTo(IntTestData.UPDATED_ADJUDICATION.statement)
       .jsonPath("$.incidentDetails.dateTimeOfIncident").isEqualTo(IntTestData.UPDATED_ADJUDICATION.dateTimeOfIncidentISOString)
       .jsonPath("$.incidentDetails.handoverDeadline").isEqualTo(UPDATED_HANDOVER_DEADLINE_ISO_STRING)
       .jsonPath("$.incidentDetails.locationId").isEqualTo(IntTestData.UPDATED_ADJUDICATION.locationId)
       .jsonPath("$.incidentRole.roleCode").isEqualTo(UPDATED_INCIDENT_ROLE_CODE)
       .jsonPath("$.incidentRole.associatedPrisonersNumber").isEqualTo(UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER)
+      // Not implemented yet
+      // .jsonPath("$.offenceDetails[0].offenceCode").isEqualTo(IntTestData.UPDATED_ADJUDICATION.offences[0].offenceCode)
+      // .jsonPath("$.offenceDetails[0].victimPrisonersNumber").isEqualTo(IntTestData.UPDATED_ADJUDICATION.offences[0].victimPrisonersNumber)
+      .jsonPath("$.incidentStatement.statement").isEqualTo(IntTestData.UPDATED_ADJUDICATION.statement)
 
     val expectedBody = mapOf(
       "incidentLocationId" to IntTestData.UPDATED_ADJUDICATION.locationId,
@@ -278,6 +354,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
 
     val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
+    intTestData.setOffenceDetails(draftAdjudicationResponse, testAdjudication)
     intTestData.addIncidentStatement(draftAdjudicationResponse, testAdjudication)
 
     webTestClient.post()
