@@ -51,7 +51,7 @@ class DraftAdjudicationRepositoryTest {
   @Test
   fun `save a new draft adjudication with all data`() {
     val draft = draftWithAllData()
-    val savedEntity = entityManager.persistAndFlush(draft)
+    val savedEntity = draftAdjudicationRepository.save(draft)
 
     assertThat(savedEntity)
       .extracting("id", "prisonerNumber", "agencyId", "createdByUserId")
@@ -79,13 +79,21 @@ class DraftAdjudicationRepositoryTest {
 
   @Test
   fun `update an existing draft adjudication with modified offences`() {
-    val draft = draftWithAllData_DifferentOffenceData()
-    val savedEntity = entityManager.persistAndFlush(draft)
+    val draftWithAllData = draftWithAllData()
+    val updatedDraft = draftWithAllData.copy(
+      offenceDetails = mutableListOf(
+        Offence(
+          offenceCode = 4,
+          victimPrisonersNumber = "B2345BB"
+        ),
+      ),
+    )
+    val savedEntity = draftAdjudicationRepository.save(updatedDraft)
 
     assertThat(savedEntity.offenceDetails).hasSize(1)
       .extracting("offenceCode", "victimPrisonersNumber")
       .contains(
-        Tuple(draft.offenceDetails!![0].offenceCode, draft.offenceDetails!![0].victimPrisonersNumber),
+        Tuple(updatedDraft.offenceDetails!![0].offenceCode, updatedDraft.offenceDetails!![0].victimPrisonersNumber),
       )
   }
 
@@ -190,17 +198,6 @@ class DraftAdjudicationRepositoryTest {
       incidentStatement = IncidentStatement(
         statement = "Example statement",
         completed = false,
-      ),
-    )
-  }
-
-  private fun draftWithAllData_DifferentOffenceData(): DraftAdjudication {
-    return draftWithAllData().copy(
-      offenceDetails = mutableListOf(
-        Offence(
-          offenceCode = 4,
-          victimPrisonersNumber = "B2345BB"
-        ),
       ),
     )
   }
