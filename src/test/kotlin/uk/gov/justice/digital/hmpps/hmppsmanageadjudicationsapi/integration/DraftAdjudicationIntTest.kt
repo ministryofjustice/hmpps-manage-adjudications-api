@@ -103,7 +103,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
       .jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").isEqualTo(testAdjudication.offences[0].offenceCode)
       .jsonPath("$.draftAdjudication.offenceDetails[0].victimPrisonersNumber").isEqualTo(testAdjudication.offences[0].victimPrisonersNumber)
-      .jsonPath("$.draftAdjudication.offenceDetails[1].offenceCode").isEqualTo(testAdjudication.offences[0].offenceCode)
+      .jsonPath("$.draftAdjudication.offenceDetails[1].offenceCode").isEqualTo(testAdjudication.offences[1].offenceCode)
       .jsonPath("$.draftAdjudication.offenceDetails[1].victimPrisonersNumber").doesNotExist()
       .jsonPath("$.draftAdjudication.offenceDetails[2]").doesNotExist()
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo(testAdjudication.statement)
