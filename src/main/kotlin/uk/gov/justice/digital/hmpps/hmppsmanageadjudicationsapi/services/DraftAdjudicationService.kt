@@ -81,7 +81,7 @@ class DraftAdjudicationService(
       )
     }.toMutableList()
     if (draftAdjudication.offenceDetails != null) {
-      draftAdjudication.offenceDetails!!.removeAll(draftAdjudication.offenceDetails!!)
+      draftAdjudication.offenceDetails!!.clear()
       draftAdjudication.offenceDetails!!.addAll(newValuesToStore)
     } else {
       draftAdjudication.offenceDetails = newValuesToStore
