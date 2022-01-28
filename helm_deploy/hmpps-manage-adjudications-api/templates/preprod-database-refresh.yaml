@@ -69,7 +69,7 @@ spec:
                   valueFrom:
                     secretKeyRef:
                       name: ma-rds-instance-output
-                      key: ma_instance_address
+                      key: rds_instance_address
                 - name: DB_NAME_PREPROD
                   valueFrom:
                     secretKeyRef:
