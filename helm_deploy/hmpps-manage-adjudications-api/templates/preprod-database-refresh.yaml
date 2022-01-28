@@ -1,4 +1,4 @@
-{{- if eq .Values.environment  "dev" -}}
+{{- if eq .Values.environment  "prod" -}}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -53,42 +53,42 @@ spec:
                 - name: DB_NAME
                   valueFrom:
                     secretKeyRef:
-                      name: dps-rds-instance-output
+                      name: ma-rds-instance-output
                       key: database_name
                 - name: DB_USER
                   valueFrom:
                     secretKeyRef:
-                      name: dps-rds-instance-output
+                      name: ma-rds-instance-output
                       key: database_username
                 - name: DB_PASS
                   valueFrom:
                     secretKeyRef:
-                      name: dps-rds-instance-output
+                      name: ma-rds-instance-output
                       key: database_password
                 - name: DB_HOST
                   valueFrom:
                     secretKeyRef:
-                      name: dps-rds-instance-output
+                      name: ma-rds-instance-output
                       key: rds_instance_address
                 - name: DB_NAME_PREPROD
                   valueFrom:
                     secretKeyRef:
-                      name: dps-rds-instance-output-preprod
+                      name: ma-rds-instance-output-preprod
                       key: database_name
                 - name: DB_USER_PREPROD
                   valueFrom:
                     secretKeyRef:
-                      name: dps-rds-instance-output-preprod
+                      name: ma-rds-instance-output-preprod
                       key: database_username
                 - name: DB_PASS_PREPROD
                   valueFrom:
                     secretKeyRef:
-                      name: dps-rds-instance-output-preprod
+                      name: ma-rds-instance-output-preprod
                       key: database_password
                 - name: DB_HOST_PREPROD
                   valueFrom:
                     secretKeyRef:
-                      name: dps-rds-instance-output-preprod
+                      name: ma-rds-instance-output-preprod
                       key: rds_instance_address
           restartPolicy: "Never"
           volumes:
@@ -101,9 +101,9 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   labels:
-    app: dps-db-refresh-job
+    app: ma-db-refresh-job
     prometheus: cloud-platform
-  name: dps-prometheus-rules-db-refresh
+  name: ma-prometheus-rules-db-refresh
 spec:
   groups:
   - name: kubernetes-apps
