@@ -7,12 +7,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudi
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -67,6 +70,7 @@ class ReportedAdjudicationService(
         roleCode = reportedAdjudication.incidentRoleCode,
         associatedPrisonersNumber = reportedAdjudication.incidentRoleAssociatedPrisonersNumber,
       ),
+      // TODO offenceDetails = doit(),
       incidentStatement = IncidentStatement(
         statement = reportedAdjudication.statement,
         completed = true
@@ -93,6 +97,7 @@ fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudication
     roleCode = incidentRoleCode,
     associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
   ),
+  offences = toReportedOffence(offences),
   incidentStatement = IncidentStatementDto(
     statement = statement,
     completed = true,
@@ -100,3 +105,12 @@ fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudication
   createdByUserId = createdByUserId!!,
   createdDateTime = createDateTime!!
 )
+
+private fun toReportedOffence(offences: MutableList<ReportedOffence>?): List<OffenceDto> {
+  return (offences ?: mutableListOf()).map { offence ->
+    OffenceDto(
+      offenceCode = offence.offenceCode,
+      victimPrisonersNumber = offence.victimPrisonersNumber
+    )
+  }.toList()
+}

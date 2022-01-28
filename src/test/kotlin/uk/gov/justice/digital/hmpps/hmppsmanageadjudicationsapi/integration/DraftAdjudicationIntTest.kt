@@ -275,9 +275,10 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.incidentDetails.locationId").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.locationId)
       .jsonPath("$.incidentRole.roleCode").isEqualTo(DEFAULT_INCIDENT_ROLE_CODE)
       .jsonPath("$.incidentRole.associatedPrisonersNumber").isEqualTo(DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER)
-      // Not implemented yet
-      // .jsonPath("$.offenceDetails[0].offenceCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[0].offenceCode)
-      // .jsonPath("$.offenceDetails[0].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.offences[0].offenceCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[0].offenceCode)
+      .jsonPath("$.offences[0].victimPrisonersNumber").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[0].victimPrisonersNumber)
+      .jsonPath("$.offences[1].offenceCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[1].offenceCode)
+      .jsonPath("$.offences[1].victimPrisonersNumber").doesNotExist()
       .jsonPath("$.incidentStatement.statement").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.statement)
 
     val expectedBody = mapOf(
@@ -328,9 +329,9 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.incidentDetails.locationId").isEqualTo(IntTestData.UPDATED_ADJUDICATION.locationId)
       .jsonPath("$.incidentRole.roleCode").isEqualTo(UPDATED_INCIDENT_ROLE_CODE)
       .jsonPath("$.incidentRole.associatedPrisonersNumber").isEqualTo(UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER)
-      // Not implemented yet
-      // .jsonPath("$.offenceDetails[0].offenceCode").isEqualTo(IntTestData.UPDATED_ADJUDICATION.offences[0].offenceCode)
-      // .jsonPath("$.offenceDetails[0].victimPrisonersNumber").isEqualTo(IntTestData.UPDATED_ADJUDICATION.offences[0].victimPrisonersNumber)
+      .jsonPath("$.offences[0].offenceCode").isEqualTo(IntTestData.UPDATED_ADJUDICATION.offences[0].offenceCode)
+      .jsonPath("$.offences[0].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.offences[1]").doesNotExist()
       .jsonPath("$.incidentStatement.statement").isEqualTo(IntTestData.UPDATED_ADJUDICATION.statement)
 
     val expectedBody = mapOf(

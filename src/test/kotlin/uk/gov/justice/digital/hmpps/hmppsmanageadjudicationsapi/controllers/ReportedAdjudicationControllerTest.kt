@@ -56,6 +56,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+          offences = listOf(), // TODO
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
           createdByUserId = "A_SMITH",
           createdDateTime = REPORTED_DATE_TIME,
@@ -104,6 +105,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
               incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+              offences = listOf(), // TODO
               incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
               createdByUserId = "A_SMITH",
               createdDateTime = REPORTED_DATE_TIME,
