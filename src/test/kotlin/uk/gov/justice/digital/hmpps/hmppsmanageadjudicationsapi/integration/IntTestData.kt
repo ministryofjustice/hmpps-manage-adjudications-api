@@ -18,6 +18,9 @@ class IntTestData(
 ) {
 
   companion object {
+    val BASIC_OFFENCE = OffenceTestDataSet(offenceCode = 2)
+    val FULL_OFFENCE = OffenceTestDataSet(offenceCode = 3, victimPrisonersNumber = "A1234AA")
+
     const val DEFAULT_ADJUDICATION_NUMBER = 1524242L
     const val DEFAULT_PRISONER_NUMBER = "AA1234A"
     const val DEFAULT_PRISONER_BOOKING_ID = 123L
@@ -28,6 +31,7 @@ class IntTestData(
     const val DEFAULT_HANDOVER_DEADLINE_ISO_STRING = "2010-11-15T10:00:00"
     const val DEFAULT_INCIDENT_ROLE_CODE = "25a"
     const val DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER = "B2345BB"
+    val DEFAULT_OFFENCES = listOf(FULL_OFFENCE, BASIC_OFFENCE)
     const val DEFAULT_STATEMENT = "A statement"
     val DEFAULT_REPORTED_DATE_TIME = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
     const val DEFAULT_REPORTED_DATE_TIME_TEXT = "2010-11-13T10:00:00"
@@ -37,6 +41,7 @@ class IntTestData(
     const val UPDATED_LOCATION_ID = 721899L
     const val UPDATED_INCIDENT_ROLE_CODE = "25b"
     const val UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER = "C3456CC"
+    val UPDATED_OFFENCES = listOf(BASIC_OFFENCE)
     const val UPDATED_STATEMENT = "updated test statement"
     val UPDATED_DATE_TIME_OF_INCIDENT = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
 
@@ -50,6 +55,7 @@ class IntTestData(
       handoverDeadlineISOString = DEFAULT_HANDOVER_DEADLINE_ISO_STRING,
       incidentRoleCode = DEFAULT_INCIDENT_ROLE_CODE,
       incidentRoleAssociatedPrisonersNumber = DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER,
+      offences = DEFAULT_OFFENCES,
       statement = DEFAULT_STATEMENT,
       createdByUserId = DEFAULT_CREATED_USER_ID
     )
@@ -64,6 +70,7 @@ class IntTestData(
       handoverDeadlineISOString = UPDATED_HANDOVER_DEADLINE_ISO_STRING,
       incidentRoleCode = UPDATED_INCIDENT_ROLE_CODE,
       incidentRoleAssociatedPrisonersNumber = UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER,
+      offences = UPDATED_OFFENCES,
       statement = UPDATED_STATEMENT,
       createdByUserId = DEFAULT_CREATED_USER_ID
     )
@@ -78,6 +85,7 @@ class IntTestData(
       handoverDeadlineISOString = "2020-12-15T08:00:00",
       incidentRoleCode = "25c",
       incidentRoleAssociatedPrisonersNumber = "D4567DD",
+      offences = DEFAULT_OFFENCES,
       statement = "Test statement",
       createdByUserId = "A_NESS"
     )
@@ -92,6 +100,7 @@ class IntTestData(
       handoverDeadlineISOString = "2020-12-16T09:00:00",
       incidentRoleCode = "25a",
       incidentRoleAssociatedPrisonersNumber = "A5678AA",
+      offences = DEFAULT_OFFENCES,
       statement = "Different test statement",
       createdByUserId = "P_NESS"
     )
@@ -106,6 +115,7 @@ class IntTestData(
       handoverDeadlineISOString = "2020-12-17T10:00:00",
       incidentRoleCode = "25c",
       incidentRoleAssociatedPrisonersNumber = "D4567DD",
+      offences = DEFAULT_OFFENCES,
       statement = "Another test statement",
       createdByUserId = "L_NESS"
     )
@@ -120,6 +130,7 @@ class IntTestData(
       handoverDeadlineISOString = "2020-12-18T10:00:00",
       incidentRoleCode = "25a",
       incidentRoleAssociatedPrisonersNumber = "A5678AA",
+      offences = DEFAULT_OFFENCES,
       statement = "Yet another test statement",
       createdByUserId = "P_NESS"
     )
@@ -134,6 +145,7 @@ class IntTestData(
       handoverDeadlineISOString = "2020-12-19T10:00:00",
       incidentRoleCode = "25a",
       incidentRoleAssociatedPrisonersNumber = "A5678AA",
+      offences = DEFAULT_OFFENCES,
       statement = "Keep on with the test statements",
       createdByUserId = "P_NESS"
     )
@@ -155,6 +167,26 @@ class IntTestData(
           "locationId" to testDataSet.locationId,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,
           "incidentRole" to IncidentRoleDto(testDataSet.incidentRoleCode, testDataSet.incidentRoleAssociatedPrisonersNumber),
+        )
+      )
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
+  fun setOffenceDetails(
+    draftCreationData: DraftAdjudicationResponse,
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ): DraftAdjudicationResponse {
+    return webTestClient.put()
+      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/offence-details")
+      .headers(headers)
+      .bodyValue(
+        mapOf(
+          "offenceDetails" to testDataSet.offences,
         )
       )
       .exchange()

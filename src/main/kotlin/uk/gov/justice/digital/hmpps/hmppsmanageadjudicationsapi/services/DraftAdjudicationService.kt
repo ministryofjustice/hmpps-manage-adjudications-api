@@ -5,11 +5,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudi
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
@@ -63,6 +65,28 @@ class DraftAdjudicationService(
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     return draftAdjudication.toDto()
+  }
+
+  @Transactional
+  fun setOffenceDetails(id: Long, offenceDetails: List<OffenceDetailsDto>): DraftAdjudicationDto {
+    throwIfNoOffenceDetails(offenceDetails)
+
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+
+    val newValuesToStore = offenceDetails.map {
+      Offence(
+        offenceCode = it.offenceCode,
+        victimPrisonersNumber = it.victimPrisonersNumber,
+      )
+    }.toMutableList()
+    if (draftAdjudication.offenceDetails != null) {
+      draftAdjudication.offenceDetails!!.removeAll(draftAdjudication.offenceDetails!!)
+      draftAdjudication.offenceDetails!!.addAll(newValuesToStore)
+    } else {
+      draftAdjudication.offenceDetails = newValuesToStore
+    }
+
+    return draftAdjudicationRepository.save(draftAdjudication).toDto()
   }
 
   @Transactional
@@ -209,6 +233,11 @@ class DraftAdjudicationService(
       throw IllegalArgumentException("Please supply either a statement or the completed value")
   }
 
+  private fun throwIfNoOffenceDetails(offenceDetails: List<OffenceDetailsDto>) {
+    if (offenceDetails.isEmpty())
+      throw IllegalArgumentException("Please supply at least one set of offence details")
+  }
+
   fun throwEntityNotFoundException(id: Long): Nothing =
     throw EntityNotFoundException("DraftAdjudication not found for $id")
 }
@@ -219,6 +248,7 @@ fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(
   incidentStatement = this.incidentStatement?.toDo(),
   incidentDetails = this.incidentDetails.toDto(),
   incidentRole = this.incidentRole.toDto(),
+  offenceDetails = this.offenceDetails?.map { it.toDto() },
   adjudicationNumber = this.reportNumber,
   startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
 )
@@ -232,6 +262,11 @@ fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
 fun IncidentRole.toDto(): IncidentRoleDto = IncidentRoleDto(
   roleCode = this.roleCode,
   associatedPrisonersNumber = this.associatedPrisonersNumber,
+)
+
+fun Offence.toDto(): OffenceDetailsDto = OffenceDetailsDto(
+  offenceCode = this.offenceCode,
+  victimPrisonersNumber = this.victimPrisonersNumber,
 )
 
 fun IncidentStatement.toDo(): IncidentStatementDto = IncidentStatementDto(

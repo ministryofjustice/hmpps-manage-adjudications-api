@@ -4,6 +4,7 @@ import javax.persistence.CascadeType
 import javax.persistence.Entity
 import javax.persistence.FetchType
 import javax.persistence.JoinColumn
+import javax.persistence.OneToMany
 import javax.persistence.OneToOne
 import javax.persistence.Table
 
@@ -21,6 +22,9 @@ data class DraftAdjudication(
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "incident_role_id")
   var incidentRole: IncidentRole,
+  @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
+  @JoinColumn(name = "draft_adjudication_fk_id")
+  var offenceDetails: MutableList<Offence>? = null,
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "incident_statement_id")
   var incidentStatement: IncidentStatement? = null,

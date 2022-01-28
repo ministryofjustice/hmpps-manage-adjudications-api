@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudi
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -162,8 +163,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.locationId").value(1))
-        .andExpect(jsonPath("$.draftAdjudication.incidentRole.roleCode").value("25a"))
-        .andExpect(jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").value("B23456"))
         .andExpect(jsonPath("$.draftAdjudication.incidentRole.roleCode").value(INCIDENT_ROLE_WITH_ALL_VALUES.roleCode))
         .andExpect(jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_ALL_VALUES.associatedPrisonersNumber))
     }
@@ -204,6 +203,66 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .perform(
           get("/draft-adjudications/$id")
             .header("Content-Type", "application/json")
+        )
+    }
+  }
+
+  @Nested
+  inner class SetOffenceDetails {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(draftAdjudicationService.setOffenceDetails(anyLong(), any())).thenReturn(
+        DraftAdjudicationDto(
+          id = 1L,
+          adjudicationNumber = null,
+          prisonerNumber = "A12345",
+          incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+          offenceDetails = listOf(BASIC_OFFENCE_DETAILS),
+        )
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_DETAILS)
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the offence details to the draft adjudication`() {
+      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_DETAILS)
+        .andExpect(status().isCreated)
+
+      verify(draftAdjudicationService).setOffenceDetails(
+        1,
+        listOf(
+          OffenceDetailsDto(
+            offenceCode = BASIC_OFFENCE_DETAILS.offenceCode
+          )
+        )
+      )
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `returns the draft adjudication including the new offence details`() {
+      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_DETAILS)
+        .andExpect(status().isCreated)
+        .andExpect(jsonPath("$.draftAdjudication.id").isNumber)
+        .andExpect(jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
+        .andExpect(jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").value(BASIC_OFFENCE_DETAILS.offenceCode))
+    }
+
+    private fun makeSetOffenceDetailsRequest(id: Long, offenceDetails: OffenceDetailsDto): ResultActions {
+      val body = objectMapper.writeValueAsString(mapOf("offenceDetails" to listOf(offenceDetails)))
+
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/offence-details")
+            .header("Content-Type", "application/json")
+            .content(body)
         )
     }
   }
@@ -505,11 +564,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudications[0].incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_ALL_VALUES.associatedPrisonersNumber))
         .andExpect(jsonPath("$.draftAdjudications[1].id").value(2))
         .andExpect(jsonPath("$.draftAdjudications[1].prisonerNumber").value("A12346"))
-        .andExpect(jsonPath("$.draftAdjudications[1].incidentDetails.locationId").value(2))
-        .andExpect(jsonPath("$.draftAdjudications[1].incidentDetails.dateTimeOfIncident").value("2010-11-12T10:00:00"))
-        .andExpect(jsonPath("$.draftAdjudications[1].incidentDetails.handoverDeadline").value("2010-11-14T10:00:00"))
-        .andExpect(jsonPath("$.draftAdjudications[1].incidentRole.roleCode").value(INCIDENT_ROLE_WITH_NO_VALUES.roleCode))
-        .andExpect(jsonPath("$.draftAdjudications[1].incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_NO_VALUES.associatedPrisonersNumber))
     }
 
     fun getInProgressDraftAdjudications(): ResultActions = mockMvc
@@ -524,5 +578,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val INCIDENT_ROLE_WITH_ALL_VALUES = IncidentRoleDto("25a", "B23456")
     private val INCIDENT_ROLE_WITH_NO_VALUES = IncidentRoleDto(null, null)
+    private val BASIC_OFFENCE_DETAILS = OffenceDetailsDto(offenceCode = 3)
   }
 }
