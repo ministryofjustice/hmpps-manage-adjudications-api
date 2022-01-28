@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAd
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
@@ -69,7 +70,7 @@ class ReportedAdjudicationService(
         roleCode = reportedAdjudication.incidentRoleCode,
         associatedPrisonersNumber = reportedAdjudication.incidentRoleAssociatedPrisonersNumber,
       ),
-      // TODO offenceDetails = doit(),
+      offenceDetails = toDraftOffence(reportedAdjudication.offences),
       incidentStatement = IncidentStatement(
         statement = reportedAdjudication.statement,
         completed = true
@@ -79,6 +80,15 @@ class ReportedAdjudicationService(
     return draftAdjudicationRepository
       .save(draftAdjudication)
       .toDto()
+  }
+
+  private fun toDraftOffence(offences: MutableList<ReportedOffence>?): MutableList<Offence> {
+    return (offences ?: mutableListOf()).map { offence ->
+      Offence(
+        offenceCode = offence.offenceCode,
+        victimPrisonersNumber = offence.victimPrisonersNumber
+      )
+    }.toMutableList()
   }
 }
 
