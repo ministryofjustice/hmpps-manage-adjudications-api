@@ -16,6 +16,8 @@ data class DraftAdjudicationDto(
   val incidentDetails: IncidentDetailsDto,
   @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
   val incidentRole: IncidentRoleDto,
+  @ApiModelProperty(value = "Details about all the offences the prisoner is accused of")
+  val offenceDetails: List<OffenceDetailsDto>? = null,
   @ApiModelProperty(value = "Incident statement")
   val incidentStatement: IncidentStatementDto? = null,
   @ApiModelProperty("The id of the user who started the adjudication")
@@ -39,6 +41,15 @@ data class IncidentRoleDto(
   @ApiModelProperty(value = "The prison number of the other prisoner involved in the incident", notes = "This only applies to role codes 25b and 25c", example = "G2996UX")
   val associatedPrisonersNumber: String?,
 )
+
+@ApiModel(value = "Details of an offence")
+data class OffenceDetailsDto(
+  @ApiModelProperty(value = "The offence code", notes = "This is the paragraph number relating to the offence", example = "3")
+  val offenceCode: Int,
+  @ApiModelProperty(value = "The prison number of the victim involved in the incident, if relevant", example = "G2996UX")
+  val victimPrisonersNumber: String? = null,
+)
+
 @ApiModel(value = "Incident statement")
 data class IncidentStatementDto(
   @ApiModelProperty(value = "The statement regarding the incident")
