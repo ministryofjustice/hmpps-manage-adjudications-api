@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudication
@@ -80,7 +81,7 @@ class DraftAdjudicationService(
       )
     }.toMutableList()
     if (draftAdjudication.offenceDetails != null) {
-      draftAdjudication.offenceDetails!!.removeAll(draftAdjudication.offenceDetails!!)
+      draftAdjudication.offenceDetails!!.clear()
       draftAdjudication.offenceDetails!!.addAll(newValuesToStore)
     } else {
       draftAdjudication.offenceDetails = newValuesToStore
@@ -207,6 +208,7 @@ class DraftAdjudicationService(
           handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
           incidentRoleCode = draftAdjudication.incidentRole.roleCode,
           incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber,
+          offences = toReportedOffence(draftAdjudication.offenceDetails),
           statement = draftAdjudication.incidentStatement!!.statement!!
         )
       )
@@ -223,9 +225,22 @@ class DraftAdjudicationService(
       it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline
       it.incidentRoleCode = draftAdjudication.incidentRole.roleCode
       it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber
+      it.offences?.let { offence ->
+        offence.clear()
+        offence.addAll(toReportedOffence(draftAdjudication.offenceDetails))
+      }
       it.statement = draftAdjudication.incidentStatement!!.statement!!
       return reportedAdjudicationRepository.save(it)
     } ?: ReportedAdjudicationService.throwEntityNotFoundException(nomisAdjudication.adjudicationNumber)
+  }
+
+  private fun toReportedOffence(draftOffences: MutableList<Offence>?): MutableList<ReportedOffence> {
+    return (draftOffences ?: listOf<Offence>()).map {
+      ReportedOffence(
+        offenceCode = it.offenceCode,
+        victimPrisonersNumber = it.victimPrisonersNumber
+      )
+    }.toMutableList()
   }
 
   private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {

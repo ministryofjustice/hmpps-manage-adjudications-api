@@ -16,7 +16,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAd
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -56,6 +58,14 @@ class ReportedAdjudicationServiceTest {
           reportNumber = 1, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
           incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
+          offences = mutableListOf(
+            ReportedOffence(
+              offenceCode = 2
+            ),
+            ReportedOffence(
+              offenceCode = 3, victimPrisonersNumber = "BB2345B"
+            ),
+          ),
           handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
         )
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
@@ -79,6 +89,13 @@ class ReportedAdjudicationServiceTest {
         .extracting("roleCode", "associatedPrisonersNumber")
         .contains("25b", "BB2345B")
 
+      assertThat(reportedAdjudicationDto.offences)
+        .extracting("offenceCode", "victimPrisonersNumber")
+        .contains(
+          Tuple(2, null),
+          Tuple(3, "BB2345B"),
+        )
+
       assertThat(reportedAdjudicationDto.incidentStatement)
         .extracting("statement", "completed")
         .contains(INCIDENT_STATEMENT, true)
@@ -100,6 +117,11 @@ class ReportedAdjudicationServiceTest {
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
         incidentRoleCode = "25b",
         incidentRoleAssociatedPrisonersNumber = "BB2345B",
+        offences = mutableListOf(
+          ReportedOffence(
+            offenceCode = 3, victimPrisonersNumber = "BB2345B"
+          )
+        ),
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
@@ -115,6 +137,7 @@ class ReportedAdjudicationServiceTest {
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
+        offences = null,
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
@@ -161,6 +184,11 @@ class ReportedAdjudicationServiceTest {
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
         incidentRoleCode = "25b",
         incidentRoleAssociatedPrisonersNumber = "BB2345B",
+        offences = mutableListOf(
+          ReportedOffence(
+            offenceCode = 3, victimPrisonersNumber = "BB2345B"
+          )
+        ),
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
@@ -176,6 +204,7 @@ class ReportedAdjudicationServiceTest {
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
+        offences = null,
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
@@ -206,6 +235,11 @@ class ReportedAdjudicationServiceTest {
       reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
       dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
       incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
+      offences = mutableListOf(
+        ReportedOffence(
+          offenceCode = 3, victimPrisonersNumber = "BB2345B"
+        )
+      ),
       handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
     )
 
@@ -222,6 +256,12 @@ class ReportedAdjudicationServiceTest {
       incidentRole = IncidentRole(
         roleCode = "25b",
         associatedPrisonersNumber = "BB2345B",
+      ),
+      offenceDetails = mutableListOf(
+        Offence(
+          offenceCode = 3,
+          victimPrisonersNumber = "BB2345B"
+        )
       ),
       incidentStatement = IncidentStatement(
         completed = true,
@@ -271,6 +311,11 @@ class ReportedAdjudicationServiceTest {
       assertThat(createdDraft.incidentRole)
         .extracting("roleCode", "associatedPrisonersNumber")
         .contains("25b", "BB2345B")
+      assertThat(createdDraft.offenceDetails)
+        .extracting("offenceCode", "victimPrisonersNumber")
+        .contains(
+          Tuple(3, "BB2345B")
+        )
       assertThat(createdDraft.incidentStatement)
         .extracting("completed", "statement")
         .contains(true, INCIDENT_STATEMENT)

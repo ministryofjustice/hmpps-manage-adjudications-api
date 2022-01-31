@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudication
@@ -570,6 +571,7 @@ class DraftAdjudicationServiceTest {
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
               incidentRole = incidentRoleWithAllValuesSet(),
+              offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS, FULL_OFFENCE_DETAILS),
               incidentStatement = IncidentStatement(statement = "test")
             )
           )
@@ -604,8 +606,19 @@ class DraftAdjudicationServiceTest {
         verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
         assertThat(reportedAdjudicationArgumentCaptor.value)
-          .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId", "locationId", "dateTimeOfIncident", "handoverDeadline", "incidentRoleCode", "incidentRoleAssociatedPrisonersNumber", "statement")
-          .contains("A12345", 123456L, 1L, "MDI", 1L, INCIDENT_TIME, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
+          .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId")
+          .contains("A12345", 123456L, 1L, "MDI")
+
+        assertThat(reportedAdjudicationArgumentCaptor.value)
+          .extracting("locationId", "dateTimeOfIncident", "handoverDeadline", "incidentRoleCode", "incidentRoleAssociatedPrisonersNumber", "statement")
+          .contains(1L, INCIDENT_TIME, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
+
+        assertThat(reportedAdjudicationArgumentCaptor.value.offences)
+          .extracting("offenceCode", "victimPrisonersNumber")
+          .contains(
+            Tuple(BASIC_OFFENCE_DETAILS.offenceCode, BASIC_OFFENCE_DETAILS.victimPrisonersNumber),
+            Tuple(FULL_OFFENCE_DETAILS.offenceCode, FULL_OFFENCE_DETAILS.victimPrisonersNumber)
+          )
       }
 
       @Test
@@ -654,6 +667,7 @@ class DraftAdjudicationServiceTest {
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
               incidentRole = incidentRoleWithAllValuesSet(),
+              offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS, FULL_OFFENCE_DETAILS),
               incidentStatement = IncidentStatement(statement = "test")
             )
           )
@@ -670,6 +684,7 @@ class DraftAdjudicationServiceTest {
             handoverDeadline = LocalDateTime.now(clock),
             incidentRoleCode = null,
             incidentRoleAssociatedPrisonersNumber = null,
+            offences = mutableListOf(ReportedOffence(offenceCode = 3)),
             statement = "olddata",
           )
         )
@@ -715,8 +730,19 @@ class DraftAdjudicationServiceTest {
         verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
         assertThat(reportedAdjudicationArgumentCaptor.value)
-          .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId", "locationId", "dateTimeOfIncident", "handoverDeadline", "incidentRoleCode", "incidentRoleAssociatedPrisonersNumber", "statement")
-          .contains("A12345", 123L, 1L, "MDI", 1L, LocalDateTime.now(clock), DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
+          .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId")
+          .contains("A12345", 123L, 33L, "MDI")
+
+        assertThat(reportedAdjudicationArgumentCaptor.value)
+          .extracting("locationId", "dateTimeOfIncident", "handoverDeadline", "incidentRoleCode", "incidentRoleAssociatedPrisonersNumber", "statement")
+          .contains(1L, LocalDateTime.now(clock), DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
+
+        assertThat(reportedAdjudicationArgumentCaptor.value.offences)
+          .extracting("offenceCode", "victimPrisonersNumber")
+          .contains(
+            Tuple(BASIC_OFFENCE_DETAILS.offenceCode, BASIC_OFFENCE_DETAILS.victimPrisonersNumber),
+            Tuple(FULL_OFFENCE_DETAILS.offenceCode, FULL_OFFENCE_DETAILS.victimPrisonersNumber)
+          )
       }
 
       @Test

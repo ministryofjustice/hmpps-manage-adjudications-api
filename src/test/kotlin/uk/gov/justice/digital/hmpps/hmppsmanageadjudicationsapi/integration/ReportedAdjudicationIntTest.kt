@@ -18,6 +18,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
     val firstDraftUserHeaders = setHeaders(username = IntTestData.DEFAULT_ADJUDICATION.createdByUserId)
     val firstDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.DEFAULT_ADJUDICATION, firstDraftUserHeaders)
+    intTestData.setOffenceDetails(firstDraftCreationResponse, IntTestData.DEFAULT_ADJUDICATION)
     intTestData.addIncidentStatement(firstDraftCreationResponse, IntTestData.DEFAULT_ADJUDICATION, firstDraftUserHeaders)
     intTestData.completeDraftAdjudication(firstDraftCreationResponse, IntTestData.DEFAULT_ADJUDICATION, firstDraftUserHeaders)
 
@@ -35,6 +36,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.incidentDetails.locationId").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.locationId)
       .jsonPath("$.reportedAdjudication.incidentRole.roleCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.incidentRoleCode)
       .jsonPath("$.reportedAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.incidentRoleAssociatedPrisonersNumber)
+      .jsonPath("$.reportedAdjudication.offences[0].offenceCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[0].offenceCode)
+      .jsonPath("$.reportedAdjudication.offences[0].victimPrisonersNumber").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[0].victimPrisonersNumber)
+      .jsonPath("$.reportedAdjudication.offences[1].offenceCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[1].offenceCode)
+      .jsonPath("$.reportedAdjudication.offences[1].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.reportedAdjudication.offences[2]").doesNotExist()
       .jsonPath("$.reportedAdjudication.incidentStatement.statement").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.statement)
       .jsonPath("$.reportedAdjudication.incidentStatement.completed").isEqualTo(true)
       .jsonPath("$.reportedAdjudication.createdByUserId").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.createdByUserId)
@@ -62,21 +68,25 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
     val firstDraftUserHeaders = setHeaders(username = IntTestData.ADJUDICATION_2.createdByUserId)
     val firstDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_2, firstDraftUserHeaders)
+    intTestData.setOffenceDetails(firstDraftCreationResponse, IntTestData.ADJUDICATION_2, firstDraftUserHeaders)
     intTestData.addIncidentStatement(firstDraftCreationResponse, IntTestData.ADJUDICATION_2, firstDraftUserHeaders)
     intTestData.completeDraftAdjudication(firstDraftCreationResponse, IntTestData.ADJUDICATION_2, firstDraftUserHeaders)
 
     val secondDraftUserHeaders = setHeaders(username = IntTestData.ADJUDICATION_3.createdByUserId)
     val secondDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_3, secondDraftUserHeaders)
+    intTestData.setOffenceDetails(secondDraftCreationResponse, IntTestData.ADJUDICATION_3, secondDraftUserHeaders)
     intTestData.addIncidentStatement(secondDraftCreationResponse, IntTestData.ADJUDICATION_3, secondDraftUserHeaders)
     intTestData.completeDraftAdjudication(secondDraftCreationResponse, IntTestData.ADJUDICATION_3, secondDraftUserHeaders)
 
     val thirdDraftUserHeaders = setHeaders(username = IntTestData.ADJUDICATION_4.createdByUserId)
     val thirdDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_4, thirdDraftUserHeaders)
+    intTestData.setOffenceDetails(thirdDraftCreationResponse, IntTestData.ADJUDICATION_4, thirdDraftUserHeaders)
     intTestData.addIncidentStatement(thirdDraftCreationResponse, IntTestData.ADJUDICATION_4, thirdDraftUserHeaders)
     intTestData.completeDraftAdjudication(thirdDraftCreationResponse, IntTestData.ADJUDICATION_4, thirdDraftUserHeaders)
 
     val fourthDraftUserHeaders = setHeaders(username = IntTestData.ADJUDICATION_5.createdByUserId)
     val fourthDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_5, fourthDraftUserHeaders)
+    intTestData.setOffenceDetails(fourthDraftCreationResponse, IntTestData.ADJUDICATION_5, fourthDraftUserHeaders)
     intTestData.addIncidentStatement(fourthDraftCreationResponse, IntTestData.ADJUDICATION_5, fourthDraftUserHeaders)
     intTestData.completeDraftAdjudication(fourthDraftCreationResponse, IntTestData.ADJUDICATION_5, fourthDraftUserHeaders)
 
@@ -94,6 +104,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.content[0].incidentDetails.locationId").isEqualTo(IntTestData.ADJUDICATION_4.locationId)
       .jsonPath("$.content[0].incidentRole.roleCode").isEqualTo(IntTestData.ADJUDICATION_4.incidentRoleCode)
       .jsonPath("$.content[0].incidentRole.associatedPrisonersNumber").isEqualTo(IntTestData.ADJUDICATION_4.incidentRoleAssociatedPrisonersNumber)
+      .jsonPath("$.content[0].offences[0].offenceCode").isEqualTo(IntTestData.ADJUDICATION_4.offences[0].offenceCode)
+      .jsonPath("$.content[0].offences[0].victimPrisonersNumber").isEqualTo(IntTestData.ADJUDICATION_4.offences[0].victimPrisonersNumber)
+      .jsonPath("$.content[0].offences[1].offenceCode").isEqualTo(IntTestData.ADJUDICATION_4.offences[1].offenceCode)
+      .jsonPath("$.content[0].offences[1].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.content[0].offences[2]").doesNotExist()
       .jsonPath("$.content[0].incidentStatement.statement").isEqualTo(IntTestData.ADJUDICATION_4.statement)
       .jsonPath("$.content[0].incidentStatement.completed").isEqualTo(true)
       .jsonPath("$.content[0].createdByUserId").isEqualTo(IntTestData.ADJUDICATION_4.createdByUserId)
@@ -106,6 +121,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
 
     val firstDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_1)
+    intTestData.setOffenceDetails(firstDraftCreationResponse, IntTestData.ADJUDICATION_1)
     intTestData.addIncidentStatement(firstDraftCreationResponse, IntTestData.ADJUDICATION_1)
     intTestData.completeDraftAdjudication(
       firstDraftCreationResponse,
@@ -114,6 +130,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     )
 
     val secondDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_2)
+    intTestData.setOffenceDetails(secondDraftCreationResponse, IntTestData.ADJUDICATION_2)
     intTestData.addIncidentStatement(secondDraftCreationResponse, IntTestData.ADJUDICATION_2)
     intTestData.completeDraftAdjudication(
       secondDraftCreationResponse,
@@ -122,6 +139,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     )
 
     val thirdDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_3)
+    intTestData.setOffenceDetails(thirdDraftCreationResponse, IntTestData.ADJUDICATION_3)
     intTestData.addIncidentStatement(thirdDraftCreationResponse, IntTestData.ADJUDICATION_3)
     intTestData.completeDraftAdjudication(
       thirdDraftCreationResponse,
@@ -143,6 +161,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.content[0].incidentDetails.locationId").isEqualTo(IntTestData.ADJUDICATION_3.locationId)
       .jsonPath("$.content[0].incidentRole.roleCode").isEqualTo(IntTestData.ADJUDICATION_3.incidentRoleCode)
       .jsonPath("$.content[0].incidentRole.associatedPrisonersNumber").isEqualTo(IntTestData.ADJUDICATION_3.incidentRoleAssociatedPrisonersNumber)
+      .jsonPath("$.content[0].offences[0].offenceCode").isEqualTo(IntTestData.ADJUDICATION_3.offences[0].offenceCode)
+      .jsonPath("$.content[0].offences[0].victimPrisonersNumber").isEqualTo(IntTestData.ADJUDICATION_3.offences[0].victimPrisonersNumber)
+      .jsonPath("$.content[0].offences[1].offenceCode").isEqualTo(IntTestData.ADJUDICATION_3.offences[1].offenceCode)
+      .jsonPath("$.content[0].offences[1].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.content[0].offences[2]").doesNotExist()
       .jsonPath("$.content[0].incidentStatement.statement").isEqualTo(IntTestData.ADJUDICATION_3.statement)
       .jsonPath("$.content[0].incidentStatement.completed").isEqualTo(true)
       .jsonPath("$.content[0].createdByUserId").isEqualTo(IntTestData.ADJUDICATION_3.createdByUserId)
@@ -168,6 +191,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
     val firstDraftUserHeaders = setHeaders(username = IntTestData.DEFAULT_ADJUDICATION.createdByUserId)
     val firstDraftCreationResponse = intTestData.startNewAdjudication(IntTestData.DEFAULT_ADJUDICATION, firstDraftUserHeaders)
+    intTestData.setOffenceDetails(firstDraftCreationResponse, IntTestData.DEFAULT_ADJUDICATION, firstDraftUserHeaders)
     intTestData.addIncidentStatement(firstDraftCreationResponse, IntTestData.DEFAULT_ADJUDICATION, firstDraftUserHeaders)
     intTestData.completeDraftAdjudication(firstDraftCreationResponse, IntTestData.DEFAULT_ADJUDICATION, firstDraftUserHeaders)
 
@@ -184,6 +208,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(IntTestData.DEFAULT_HANDOVER_DEADLINE_ISO_STRING)
       .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.incidentRoleCode)
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.incidentRoleAssociatedPrisonersNumber)
+      .jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[0].offenceCode)
+      .jsonPath("$.draftAdjudication.offenceDetails[0].victimPrisonersNumber").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[0].victimPrisonersNumber)
+      .jsonPath("$.draftAdjudication.offenceDetails[1].offenceCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[1].offenceCode)
+      .jsonPath("$.draftAdjudication.offenceDetails[1].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.draftAdjudication.offenceDetails[2]").doesNotExist()
       .jsonPath("$.draftAdjudication.incidentStatement.completed").isEqualTo(true)
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.statement)
       .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.createdByUserId)

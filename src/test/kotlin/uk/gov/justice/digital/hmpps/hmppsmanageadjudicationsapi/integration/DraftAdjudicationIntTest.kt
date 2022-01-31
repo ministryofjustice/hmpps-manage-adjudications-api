@@ -101,9 +101,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
       .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
-      // Not implemented yet
-      // .jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[0].offenceCode)
-      // .jsonPath("$.draftAdjudication.offenceDetails[0].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").isEqualTo(testAdjudication.offences[0].offenceCode)
+      .jsonPath("$.draftAdjudication.offenceDetails[0].victimPrisonersNumber").isEqualTo(testAdjudication.offences[0].victimPrisonersNumber)
+      .jsonPath("$.draftAdjudication.offenceDetails[1].offenceCode").isEqualTo(testAdjudication.offences[1].offenceCode)
+      .jsonPath("$.draftAdjudication.offenceDetails[1].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.draftAdjudication.offenceDetails[2]").doesNotExist()
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo(testAdjudication.statement)
   }
 
@@ -275,9 +277,10 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.incidentDetails.locationId").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.locationId)
       .jsonPath("$.incidentRole.roleCode").isEqualTo(DEFAULT_INCIDENT_ROLE_CODE)
       .jsonPath("$.incidentRole.associatedPrisonersNumber").isEqualTo(DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER)
-      // Not implemented yet
-      // .jsonPath("$.offenceDetails[0].offenceCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[0].offenceCode)
-      // .jsonPath("$.offenceDetails[0].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.offences[0].offenceCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[0].offenceCode)
+      .jsonPath("$.offences[0].victimPrisonersNumber").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[0].victimPrisonersNumber)
+      .jsonPath("$.offences[1].offenceCode").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.offences[1].offenceCode)
+      .jsonPath("$.offences[1].victimPrisonersNumber").doesNotExist()
       .jsonPath("$.incidentStatement.statement").isEqualTo(IntTestData.DEFAULT_ADJUDICATION.statement)
 
     val expectedBody = mapOf(
@@ -328,9 +331,9 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.incidentDetails.locationId").isEqualTo(IntTestData.UPDATED_ADJUDICATION.locationId)
       .jsonPath("$.incidentRole.roleCode").isEqualTo(UPDATED_INCIDENT_ROLE_CODE)
       .jsonPath("$.incidentRole.associatedPrisonersNumber").isEqualTo(UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER)
-      // Not implemented yet
-      // .jsonPath("$.offenceDetails[0].offenceCode").isEqualTo(IntTestData.UPDATED_ADJUDICATION.offences[0].offenceCode)
-      // .jsonPath("$.offenceDetails[0].victimPrisonersNumber").isEqualTo(IntTestData.UPDATED_ADJUDICATION.offences[0].victimPrisonersNumber)
+      .jsonPath("$.offences[0].offenceCode").isEqualTo(IntTestData.UPDATED_ADJUDICATION.offences[0].offenceCode)
+      .jsonPath("$.offences[0].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.offences[1]").doesNotExist()
       .jsonPath("$.incidentStatement.statement").isEqualTo(IntTestData.UPDATED_ADJUDICATION.statement)
 
     val expectedBody = mapOf(

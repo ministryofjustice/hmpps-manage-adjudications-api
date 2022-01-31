@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudi
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 import java.time.LocalDateTime
@@ -56,6 +57,11 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+          offences = listOf(
+            OffenceDto(
+              offenceCode = 2
+            )
+          ),
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
           createdByUserId = "A_SMITH",
           createdDateTime = REPORTED_DATE_TIME,
@@ -104,6 +110,11 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
               incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+              offences = listOf(
+                OffenceDto(
+                  offenceCode = 2
+                )
+              ),
               incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
               createdByUserId = "A_SMITH",
               createdDateTime = REPORTED_DATE_TIME,
