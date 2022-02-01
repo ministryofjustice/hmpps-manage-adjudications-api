@@ -17,7 +17,7 @@ dependencies {
   implementation("io.springfox:springfox-boot-starter:3.0.0")
   implementation("org.apache.commons:commons-text:1.9")
 
-  runtimeOnly("com.h2database:h2:2.0.206")
+  runtimeOnly("com.h2database:h2:2.1.210")
   runtimeOnly("org.flywaydb:flyway-core:8.4.1")
   runtimeOnly("org.postgresql:postgresql")
 
