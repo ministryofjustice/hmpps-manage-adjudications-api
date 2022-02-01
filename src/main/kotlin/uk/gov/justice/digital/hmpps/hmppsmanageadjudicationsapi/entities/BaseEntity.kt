@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 import org.hibernate.Hibernate
 import org.springframework.data.annotation.CreatedBy
 import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedBy
+import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 import javax.persistence.Column
@@ -28,11 +30,11 @@ class BaseEntity(
   @Column(name = "CREATE_USER_ID", nullable = false)
   var createdByUserId: String? = null
 
-  @CreatedDate
+  @LastModifiedDate
   @Column(name = "MODIFY_DATETIME", nullable = false)
   var modifiedDateTime: LocalDateTime? = null
 
-  @CreatedBy
+  @LastModifiedBy
   @Column(name = "MODIFY_USER_ID", nullable = false)
   var modifiedByUserId: String? = null
 
