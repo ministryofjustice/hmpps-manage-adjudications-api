@@ -14,14 +14,14 @@ import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.http.Request
 import com.github.tomakehurst.wiremock.http.Response
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.AdjudicationIntTestDataSet
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_ADJUDICATION_NUMBER
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_AGENCY_ID
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_CREATED_USER_ID
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_PRISONER_BOOKING_ID
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.DEFAULT_PRISONER_NUMBER
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_DATE_TIME_OF_INCIDENT_TEXT
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_LOCATION_ID
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntTestData.Companion.UPDATED_STATEMENT
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_ADJUDICATION_NUMBER
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_AGENCY_ID
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_CREATED_USER_ID
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_PRISONER_BOOKING_ID
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_PRISONER_NUMBER
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_DATE_TIME_OF_INCIDENT_TEXT
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_LOCATION_ID
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_STATEMENT
 
 class PrisonApiMockServer : WireMockServer {
   constructor() : super(8979) {
@@ -61,50 +61,6 @@ class PrisonApiMockServer : WireMockServer {
           aResponse()
             .withFault(Fault.CONNECTION_RESET_BY_PEER)
         )
-    )
-  }
-
-  fun stubPostAdjudication() {
-    stubFor(
-      post(urlEqualTo("/api/adjudications/adjudication"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(200)
-            .withBody(
-              """
-               {
-                  "adjudicationNumber": 1524242,
-                  "reporterStaffId": 486080,
-                  "offenderNo": "A12345",
-                  "bookingId": 1,
-                  "agencyId": "MDI",
-                  "incidentTime": "2010-11-12T10:00:00",
-                  "incidentLocationId": 721850,
-                  "statement": "new statement",
-                  "createdByUserId": "A_SMITH"
-                }
-              """.trimIndent()
-            )
-        )
-    )
-  }
-
-  fun stubPostAdjudicationFailure() {
-    stubFor(
-      post(urlEqualTo("/api/adjudications/adjudication"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(500)
-        )
-    )
-  }
-
-  fun verifyPostAdjudication(bodyAsJson: String) {
-    verify(
-      postRequestedFor(urlEqualTo("/api/adjudications/adjudication"))
-        .withRequestBody(equalTo(bodyAsJson))
     )
   }
 
@@ -155,7 +111,7 @@ class PrisonApiMockServer : WireMockServer {
                   "adjudicationNumber": ${testDataSet.adjudicationNumber},
                   "reporterStaffId": 486080,
                   "offenderNo": "${testDataSet.prisonerNumber}",
-                  "bookingId": 1,
+                  "bookingId": ${testDataSet.bookingId},
                   "agencyId": "${testDataSet.agencyId}",
                   "incidentTime": "${testDataSet.dateTimeOfIncidentISOString}",
                   "incidentLocationId": ${testDataSet.locationId},
@@ -165,6 +121,24 @@ class PrisonApiMockServer : WireMockServer {
               """.trimIndent()
             )
         )
+    )
+  }
+
+  fun stubPostAdjudicationFailure() {
+    stubFor(
+      post(urlEqualTo("/api/adjudications/adjudication"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(500)
+        )
+    )
+  }
+
+  fun verifyPostAdjudication(bodyAsJson: String) {
+    verify(
+      postRequestedFor(urlEqualTo("/api/adjudications/adjudication"))
+        .withRequestBody(equalTo(bodyAsJson))
     )
   }
 }

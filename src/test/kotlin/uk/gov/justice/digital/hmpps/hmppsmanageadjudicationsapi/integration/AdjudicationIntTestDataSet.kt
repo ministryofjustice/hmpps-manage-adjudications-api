@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 data class AdjudicationIntTestDataSet(
   val adjudicationNumber: Long,
   val prisonerNumber: String,
+  val bookingId: Long,
   val agencyId: String,
   val locationId: Long,
   val dateTimeOfIncident: LocalDateTime,

@@ -9,21 +9,21 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Draf
 @ActiveProfiles("test")
 class SpringOauthIntegrationTest : IntegrationTestBase() {
 
-  private lateinit var intTestData: IntTestData
+  private lateinit var intTestData: IntegrationTestData
   private lateinit var draftCreationResponseForAdjudication1: DraftAdjudicationResponse
   private lateinit var draftCreationResponseForAdjudication2: DraftAdjudicationResponse
 
   @BeforeEach
   fun beforeEach() {
-    setAuditTime(IntTestData.DEFAULT_REPORTED_DATE_TIME)
+    setAuditTime(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME)
 
-    intTestData = IntTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
+    intTestData = IntegrationTestData(webTestClient, jwtAuthHelper, bankHolidayApiMockServer, prisonApiMockServer)
 
-    draftCreationResponseForAdjudication1 = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_1)
-    intTestData.addIncidentStatement(draftCreationResponseForAdjudication1, IntTestData.ADJUDICATION_1)
+    draftCreationResponseForAdjudication1 = intTestData.startNewAdjudication(IntegrationTestData.ADJUDICATION_1)
+    intTestData.addIncidentStatement(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1)
 
-    draftCreationResponseForAdjudication2 = intTestData.startNewAdjudication(IntTestData.ADJUDICATION_2)
-    intTestData.addIncidentStatement(draftCreationResponseForAdjudication2, IntTestData.ADJUDICATION_2)
+    draftCreationResponseForAdjudication2 = intTestData.startNewAdjudication(IntegrationTestData.ADJUDICATION_2)
+    intTestData.addIncidentStatement(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2)
   }
 
   @Test
@@ -32,13 +32,13 @@ class SpringOauthIntegrationTest : IntegrationTestBase() {
 
     intTestData.completeDraftAdjudication(
       draftCreationResponseForAdjudication1,
-      IntTestData.ADJUDICATION_1,
+      IntegrationTestData.ADJUDICATION_1,
       setHeaders(username = "USER1")
     )
 
     intTestData.completeDraftAdjudication(
       draftCreationResponseForAdjudication2,
-      IntTestData.ADJUDICATION_2,
+      IntegrationTestData.ADJUDICATION_2,
       setHeaders(username = "USER2")
     )
 
