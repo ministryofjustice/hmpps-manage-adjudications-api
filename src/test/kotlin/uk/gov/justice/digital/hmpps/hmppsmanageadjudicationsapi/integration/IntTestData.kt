@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wire
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import java.time.LocalDateTime
+import java.util.function.Consumer
 
 class IntTestData(
   private val webTestClient: WebTestClient,
@@ -150,6 +151,14 @@ class IntTestData(
       createdByUserId = "P_NESS"
     )
   }
+
+  fun getDraftAdjudicationDetails(
+    draftCreationData: DraftAdjudicationResponse,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ): WebTestClient.ResponseSpec = webTestClient.get()
+    .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}")
+    .headers(headers)
+    .exchange()
 
   fun startNewAdjudication(
     testDataSet: AdjudicationIntTestDataSet,

@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class DraftAdjudicationIntTest : IntegrationTestBase() {
-  fun dataAPiHelpers(): DataAPiHelpers = DataAPiHelpers(webTestClient, setHeaders())
+  // TODO - fun dataAPiHelpers(): DataAPiHelpers = DataAPiHelpers(webTestClient, setHeaders())
 
   @Autowired
   lateinit var reportedAdjudicationRepository: ReportedAdjudicationRepository
@@ -293,7 +293,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     prisonApiMockServer.verifyPostAdjudication(objectMapper.writeValueAsString(expectedBody))
 
-    dataAPiHelpers().getDraftAdjudicationDetails(draftAdjudicationResponse.draftAdjudication.id).expectStatus().isNotFound
+    intTestData.getDraftAdjudicationDetails(draftAdjudicationResponse).expectStatus().isNotFound
   }
 
   @Test
@@ -344,7 +344,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     prisonApiMockServer.verifyPutAdjudication(objectMapper.writeValueAsString(expectedBody))
 
-    dataAPiHelpers().getDraftAdjudicationDetails(draftAdjudicationResponse.draftAdjudication.id).expectStatus().isNotFound
+    intTestData.getDraftAdjudicationDetails(draftAdjudicationResponse).expectStatus().isNotFound
 
     assertThat(reportedAdjudicationRepository.findAll()).hasSize(1)
   }
@@ -366,7 +366,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().is5xxServerError
 
-    dataAPiHelpers().getDraftAdjudicationDetails(draftAdjudicationResponse.draftAdjudication.id).expectStatus().isOk
+    intTestData.getDraftAdjudicationDetails(draftAdjudicationResponse).expectStatus().isOk
   }
 
   @Test
