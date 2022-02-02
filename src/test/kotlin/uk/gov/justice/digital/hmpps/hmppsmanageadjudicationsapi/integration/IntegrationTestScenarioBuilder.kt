@@ -11,13 +11,12 @@ class IntegrationTestScenarioBuilder(
 ) {
   fun start(testAdjudication: AdjudicationIntTestDataSet): IntegrationTestScenario {
     val draftCreationResponse = intTestData.startNewAdjudication(testAdjudication)
-    return IntegrationTestScenario(intTestData, intTestBase, headers, draftCreationResponse, testAdjudication)
+    return IntegrationTestScenario(intTestData, headers, draftCreationResponse, testAdjudication)
   }
 }
 
 class IntegrationTestScenario(
   private val intTestData: IntegrationTestData,
-  private val intTestBase: IntegrationTestBase,
   private val headers: ((HttpHeaders) -> Unit),
   private val draftCreationResponse: DraftAdjudicationResponse,
   private val testAdjudicationDataSet: AdjudicationIntTestDataSet
@@ -48,5 +47,4 @@ class IntegrationTestScenario(
   fun getDraftAdjudicationDetails(): WebTestClient.ResponseSpec {
     return intTestData.getDraftAdjudicationDetails(draftCreationResponse)
   }
-
 }

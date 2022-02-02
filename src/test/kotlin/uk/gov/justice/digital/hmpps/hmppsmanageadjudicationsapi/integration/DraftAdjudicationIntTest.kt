@@ -316,7 +316,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     intTestScenario.completeDraft()
     assertThat(reportedAdjudicationRepository.findAll()).hasSize(1)
 
-    // TODO - Fix
     val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
     intTestData.editIncidentDetails(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
     intTestData.setOffenceDetails(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
