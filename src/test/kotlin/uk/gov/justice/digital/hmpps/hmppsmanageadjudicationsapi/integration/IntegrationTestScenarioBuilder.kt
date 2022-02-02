@@ -9,7 +9,7 @@ class IntegrationTestScenarioBuilder(
   private val intTestBase: IntegrationTestBase,
   private val headers: ((HttpHeaders) -> Unit) = intTestBase.setHeaders()
 ) {
-  fun start(testAdjudication: AdjudicationIntTestDataSet): IntegrationTestScenario {
+  fun startDraft(testAdjudication: AdjudicationIntTestDataSet): IntegrationTestScenario {
     val draftCreationResponse = intTestData.startNewAdjudication(testAdjudication)
     return IntegrationTestScenario(intTestData, headers, draftCreationResponse, testAdjudication)
   }

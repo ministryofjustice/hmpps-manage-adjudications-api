@@ -73,10 +73,12 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `get previously submitted draft adjudication details`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+
+    val userHeaders = setHeaders(username = testAdjudication.createdByUserId)
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, userHeaders)
 
     intTestBuilder
-      .start(testAdjudication)
+      .startDraft(testAdjudication)
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -201,7 +203,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
 
     val intTestScenario = intTestBuilder
-      .start(testAdjudication)
+      .startDraft(testAdjudication)
       .setOffenceData()
 
     webTestClient.put()
@@ -234,7 +236,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
 
     val intTestScenario = intTestBuilder
-      .start(testAdjudication)
+      .startDraft(testAdjudication)
       .addIncidentStatement()
 
     webTestClient.put()
@@ -261,7 +263,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
 
     val intTestScenario = intTestBuilder
-      .start(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
       .setOffenceData()
       .addIncidentStatement()
 
@@ -307,7 +309,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
 
     val intTestScenario = intTestBuilder
-      .start(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
       .setOffenceData()
       .addIncidentStatement()
 
@@ -363,7 +365,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
 
     val intTestScenario = intTestBuilder
-      .start(testAdjudication)
+      .startDraft(testAdjudication)
       .setOffenceData()
       .addIncidentStatement()
 
@@ -405,7 +407,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
 
     val intTestScenario = intTestBuilder
-      .start(testAdjudication)
+      .startDraft(testAdjudication)
       .addIncidentStatement()
 
     webTestClient.put()
