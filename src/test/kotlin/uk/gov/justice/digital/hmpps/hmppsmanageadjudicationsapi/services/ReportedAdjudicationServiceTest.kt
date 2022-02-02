@@ -78,12 +78,12 @@ class ReportedAdjudicationServiceTest {
       val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails(1)
 
       assertThat(reportedAdjudicationDto)
-        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "dateTimeReportExpires", "createdByUserId", "createdDateTime")
-        .contains(1L, "AA1234A", 123L, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, "A_SMITH", REPORTED_DATE_TIME)
+        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
+        .contains(1L, "AA1234A", 123L, "A_SMITH", REPORTED_DATE_TIME)
 
       assertThat(reportedAdjudicationDto.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident")
-        .contains(345L, DATE_TIME_OF_INCIDENT)
+        .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
+        .contains(345L, DATE_TIME_OF_INCIDENT, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
 
       assertThat(reportedAdjudicationDto.incidentRole)
         .extracting("roleCode", "associatedPrisonersNumber")
