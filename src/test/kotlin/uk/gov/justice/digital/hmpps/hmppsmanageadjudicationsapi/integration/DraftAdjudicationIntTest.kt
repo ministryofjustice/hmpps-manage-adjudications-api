@@ -257,7 +257,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `complete draft adjudication`() {
-    prisonApiMockServer.stubPostAdjudication()
+    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+
     val intTestData = integrationTestData()
     val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
     val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
@@ -275,7 +276,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.adjudicationNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
       .jsonPath("$.prisonerNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber)
-      .jsonPath("$.bookingId").isEqualTo(1) // From PrisonAPIMockServer.stubPostAdjudication
+      .jsonPath("$.bookingId").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.bookingId)
       .jsonPath("$.dateTimeReportExpires").isEqualTo(IntegrationTestData.DEFAULT_HANDOVER_DEADLINE_ISO_STRING)
       .jsonPath("$.incidentDetails.dateTimeOfIncident").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString)
       .jsonPath("$.incidentDetails.handoverDeadline").isEqualTo(IntegrationTestData.DEFAULT_HANDOVER_DEADLINE_ISO_STRING)
@@ -331,7 +332,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.adjudicationNumber").isEqualTo(IntegrationTestData.UPDATED_ADJUDICATION.adjudicationNumber)
       .jsonPath("$.prisonerNumber").isEqualTo(IntegrationTestData.UPDATED_ADJUDICATION.prisonerNumber)
-      .jsonPath("$.bookingId").isEqualTo(DEFAULT_PRISONER_BOOKING_ID) // From PrisonAPIMockServer.stubPutAdjudication()
+      .jsonPath("$.bookingId").isEqualTo(IntegrationTestData.UPDATED_ADJUDICATION.bookingId)
       .jsonPath("$.dateTimeReportExpires").isEqualTo(UPDATED_HANDOVER_DEADLINE_ISO_STRING)
       .jsonPath("$.incidentDetails.dateTimeOfIncident").isEqualTo(IntegrationTestData.UPDATED_ADJUDICATION.dateTimeOfIncidentISOString)
       .jsonPath("$.incidentDetails.handoverDeadline").isEqualTo(UPDATED_HANDOVER_DEADLINE_ISO_STRING)

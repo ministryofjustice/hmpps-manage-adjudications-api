@@ -64,50 +64,6 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubPostAdjudication() {
-    stubFor(
-      post(urlEqualTo("/api/adjudications/adjudication"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(200)
-            .withBody(
-              """
-               {
-                  "adjudicationNumber": 1524242,
-                  "reporterStaffId": 486080,
-                  "offenderNo": "A12345",
-                  "bookingId": 1,
-                  "agencyId": "MDI",
-                  "incidentTime": "2010-11-12T10:00:00",
-                  "incidentLocationId": 721850,
-                  "statement": "new statement",
-                  "createdByUserId": "A_SMITH"
-                }
-              """.trimIndent()
-            )
-        )
-    )
-  }
-
-  fun stubPostAdjudicationFailure() {
-    stubFor(
-      post(urlEqualTo("/api/adjudications/adjudication"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(500)
-        )
-    )
-  }
-
-  fun verifyPostAdjudication(bodyAsJson: String) {
-    verify(
-      postRequestedFor(urlEqualTo("/api/adjudications/adjudication"))
-        .withRequestBody(equalTo(bodyAsJson))
-    )
-  }
-
   fun stubPutAdjudication() {
     stubFor(
       put(urlEqualTo("/api/adjudications/adjudication/$DEFAULT_ADJUDICATION_NUMBER"))
@@ -155,7 +111,7 @@ class PrisonApiMockServer : WireMockServer {
                   "adjudicationNumber": ${testDataSet.adjudicationNumber},
                   "reporterStaffId": 486080,
                   "offenderNo": "${testDataSet.prisonerNumber}",
-                  "bookingId": 1,
+                  "bookingId": ${testDataSet.bookingId},
                   "agencyId": "${testDataSet.agencyId}",
                   "incidentTime": "${testDataSet.dateTimeOfIncidentISOString}",
                   "incidentLocationId": ${testDataSet.locationId},
@@ -165,6 +121,24 @@ class PrisonApiMockServer : WireMockServer {
               """.trimIndent()
             )
         )
+    )
+  }
+
+  fun stubPostAdjudicationFailure() {
+    stubFor(
+      post(urlEqualTo("/api/adjudications/adjudication"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(500)
+        )
+    )
+  }
+
+  fun verifyPostAdjudication(bodyAsJson: String) {
+    verify(
+      postRequestedFor(urlEqualTo("/api/adjudications/adjudication"))
+        .withRequestBody(equalTo(bodyAsJson))
     )
   }
 }
