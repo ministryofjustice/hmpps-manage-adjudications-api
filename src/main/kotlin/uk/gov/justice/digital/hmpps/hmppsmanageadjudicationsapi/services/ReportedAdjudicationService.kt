@@ -96,7 +96,6 @@ fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudication
   adjudicationNumber = reportNumber,
   prisonerNumber = prisonerNumber,
   bookingId = bookingId,
-  dateTimeReportExpires = handoverDeadline,
   incidentDetails = IncidentDetailsDto(
     locationId = locationId,
     dateTimeOfIncident = dateTimeOfIncident,
