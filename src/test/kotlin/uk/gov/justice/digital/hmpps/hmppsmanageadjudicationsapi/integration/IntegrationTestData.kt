@@ -9,9 +9,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wire
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import java.time.LocalDateTime
-import java.util.function.Consumer
 
-class IntTestData(
+class IntegrationTestData(
   private val webTestClient: WebTestClient,
   private val jwtAuthHelper: JwtAuthHelper,
   private val bankHolidayApiMockServer: BankHolidayApiMockServer,
