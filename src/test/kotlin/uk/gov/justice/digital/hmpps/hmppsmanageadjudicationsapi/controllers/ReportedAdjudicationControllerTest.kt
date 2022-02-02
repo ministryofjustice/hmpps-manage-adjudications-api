@@ -50,7 +50,6 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           adjudicationNumber = 1,
           prisonerNumber = "A12345",
           bookingId = 123,
-          dateTimeReportExpires = DATE_TIME_OF_INCIDENT.plusDays(2),
           incidentDetails = IncidentDetailsDto(
             locationId = 2,
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
@@ -103,7 +102,6 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
               adjudicationNumber = 1,
               prisonerNumber = "A12345",
               bookingId = 123,
-              dateTimeReportExpires = DATE_TIME_OF_INCIDENT.plusDays(2),
               incidentDetails = IncidentDetailsDto(
                 locationId = 2,
                 dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
