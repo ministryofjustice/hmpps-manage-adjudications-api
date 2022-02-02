@@ -12,8 +12,6 @@ data class ReportedAdjudicationDto(
   val prisonerNumber: String,
   @ApiModelProperty(value = "The current booking id for a prisoner", example = "1234")
   val bookingId: Long,
-  @ApiModelProperty(value = "When this report will expire", example = "2010-10-12T10:00:00")
-  val dateTimeReportExpires: LocalDateTime,
   @ApiModelProperty(value = "Incident details")
   val incidentDetails: IncidentDetailsDto,
   @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
