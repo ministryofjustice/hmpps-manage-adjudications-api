@@ -28,6 +28,7 @@ import javax.persistence.EntityNotFoundException
 class ReportedAdjudicationServiceTest {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
+  private val offenceCodeLookupService: OffenceCodeLookupService = OffenceCodeLookupService()
   private val authenticationFacade: AuthenticationFacade = mock()
   private lateinit var reportedAdjudicationService: ReportedAdjudicationService
 
@@ -36,7 +37,7 @@ class ReportedAdjudicationServiceTest {
     whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
 
     reportedAdjudicationService =
-      ReportedAdjudicationService(draftAdjudicationRepository, reportedAdjudicationRepository, authenticationFacade)
+      ReportedAdjudicationService(draftAdjudicationRepository, reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
   }
 
   @Nested
@@ -260,6 +261,7 @@ class ReportedAdjudicationServiceTest {
       offenceDetails = mutableListOf(
         Offence(
           offenceCode = 3,
+          paragraphNumber = "NIY",
           victimPrisonersNumber = "BB2345B"
         )
       ),

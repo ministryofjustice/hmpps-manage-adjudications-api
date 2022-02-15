@@ -66,10 +66,12 @@ class DraftAdjudicationRepositoryTest {
       .contains(draft.incidentRole.roleCode, draft.incidentRole.associatedPrisonersNumber)
 
     assertThat(savedEntity.offenceDetails).hasSize(2)
-      .extracting("offenceCode", "victimPrisonersNumber")
+      .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
       .contains(
-        Tuple(draft.offenceDetails!![0].offenceCode, draft.offenceDetails!![0].victimPrisonersNumber),
-        Tuple(draft.offenceDetails!![1].offenceCode, draft.offenceDetails!![1].victimPrisonersNumber),
+        Tuple(draft.offenceDetails!![0].offenceCode, draft.offenceDetails!![0].paragraphNumber,
+          draft.offenceDetails!![0].victimPrisonersNumber, draft.offenceDetails!![0].victimStaffUsername, draft.offenceDetails!![0].victimOtherPersonsName),
+        Tuple(draft.offenceDetails!![1].offenceCode, draft.offenceDetails!![1].paragraphNumber,
+          draft.offenceDetails!![1].victimPrisonersNumber, draft.offenceDetails!![1].victimStaffUsername, draft.offenceDetails!![1].victimOtherPersonsName),
       )
 
     assertThat(savedEntity.incidentStatement)
@@ -84,16 +86,21 @@ class DraftAdjudicationRepositoryTest {
       offenceDetails = mutableListOf(
         Offence(
           offenceCode = 4,
-          victimPrisonersNumber = "B2345BB"
+          paragraphNumber = "2",
+          victimPrisonersNumber = "B2345BB",
+          victimStaffUsername = "ABC12D",
+          victimOtherPersonsName = "Someones Name Here"
         ),
       ),
     )
     val savedEntity = draftAdjudicationRepository.save(updatedDraft)
 
     assertThat(savedEntity.offenceDetails).hasSize(1)
-      .extracting("offenceCode", "victimPrisonersNumber")
+      .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
       .contains(
-        Tuple(updatedDraft.offenceDetails!![0].offenceCode, updatedDraft.offenceDetails!![0].victimPrisonersNumber),
+        Tuple(updatedDraft.offenceDetails!![0].offenceCode, updatedDraft.offenceDetails!![0].paragraphNumber,
+          updatedDraft.offenceDetails!![0].victimPrisonersNumber, updatedDraft.offenceDetails!![0].victimStaffUsername,
+          updatedDraft.offenceDetails!![0].victimOtherPersonsName),
       )
   }
 
@@ -188,11 +195,15 @@ class DraftAdjudicationRepositoryTest {
       ),
       offenceDetails = mutableListOf(
         Offence( // offence with minimal data set
-          offenceCode = 2
+          offenceCode = 2,
+          paragraphNumber = "1",
         ),
         Offence( // offence with all data set
           offenceCode = 3,
-          victimPrisonersNumber = "A1234AA"
+          paragraphNumber = "2",
+          victimPrisonersNumber = "A1234AA",
+          victimStaffUsername = "ABC12D",
+          victimOtherPersonsName = "Someones Name Here"
         ),
       ),
       incidentStatement = IncidentStatement(

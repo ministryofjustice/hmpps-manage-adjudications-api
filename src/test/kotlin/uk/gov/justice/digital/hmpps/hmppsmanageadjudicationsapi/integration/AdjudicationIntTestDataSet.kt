@@ -20,5 +20,9 @@ data class AdjudicationIntTestDataSet(
 
 data class OffenceTestDataSet(
   val offenceCode: Int,
-  val victimPrisonersNumber: String? = null
+  val paragraphNumber: String,
+  val paragraphDescription: String,
+  val victimPrisonersNumber: String? = null,
+  val victimStaffUsername: String? = null,
+  val victimOtherPersonsName: String? = null,
 )
