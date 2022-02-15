@@ -68,10 +68,14 @@ class DraftAdjudicationRepositoryTest {
     assertThat(savedEntity.offenceDetails).hasSize(2)
       .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
       .contains(
-        Tuple(draft.offenceDetails!![0].offenceCode, draft.offenceDetails!![0].paragraphNumber,
-          draft.offenceDetails!![0].victimPrisonersNumber, draft.offenceDetails!![0].victimStaffUsername, draft.offenceDetails!![0].victimOtherPersonsName),
-        Tuple(draft.offenceDetails!![1].offenceCode, draft.offenceDetails!![1].paragraphNumber,
-          draft.offenceDetails!![1].victimPrisonersNumber, draft.offenceDetails!![1].victimStaffUsername, draft.offenceDetails!![1].victimOtherPersonsName),
+        Tuple(
+          draft.offenceDetails!![0].offenceCode, draft.offenceDetails!![0].paragraphNumber,
+          draft.offenceDetails!![0].victimPrisonersNumber, draft.offenceDetails!![0].victimStaffUsername, draft.offenceDetails!![0].victimOtherPersonsName
+        ),
+        Tuple(
+          draft.offenceDetails!![1].offenceCode, draft.offenceDetails!![1].paragraphNumber,
+          draft.offenceDetails!![1].victimPrisonersNumber, draft.offenceDetails!![1].victimStaffUsername, draft.offenceDetails!![1].victimOtherPersonsName
+        ),
       )
 
     assertThat(savedEntity.incidentStatement)
@@ -98,9 +102,11 @@ class DraftAdjudicationRepositoryTest {
     assertThat(savedEntity.offenceDetails).hasSize(1)
       .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
       .contains(
-        Tuple(updatedDraft.offenceDetails!![0].offenceCode, updatedDraft.offenceDetails!![0].paragraphNumber,
+        Tuple(
+          updatedDraft.offenceDetails!![0].offenceCode, updatedDraft.offenceDetails!![0].paragraphNumber,
           updatedDraft.offenceDetails!![0].victimPrisonersNumber, updatedDraft.offenceDetails!![0].victimStaffUsername,
-          updatedDraft.offenceDetails!![0].victimOtherPersonsName),
+          updatedDraft.offenceDetails!![0].victimOtherPersonsName
+        ),
       )
   }
 
