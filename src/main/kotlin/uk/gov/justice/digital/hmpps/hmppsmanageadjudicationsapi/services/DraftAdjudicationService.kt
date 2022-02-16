@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.OffenceDetailsRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
@@ -43,7 +44,7 @@ class DraftAdjudicationService(
     agencyId: String,
     locationId: Long,
     dateTimeOfIncident: LocalDateTime,
-    incidentRole: IncidentRoleDto
+    incidentRole: IncidentRoleRequest
   ): DraftAdjudicationDto {
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
@@ -115,7 +116,7 @@ class DraftAdjudicationService(
     id: Long,
     locationId: Long?,
     dateTimeOfIncident: LocalDateTime?,
-    incidentRole: IncidentRoleDto?
+    incidentRole: IncidentRoleRequest?
   ): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
@@ -248,7 +249,7 @@ class DraftAdjudicationService(
   }
 
   private fun toReportedOffence(draftOffences: MutableList<Offence>?): MutableList<ReportedOffence> {
-    return (draftOffences ?: listOf<Offence>()).map {
+    return (draftOffences ?: listOf()).map {
       ReportedOffence(
         offenceCode = it.offenceCode,
         paragraphNumber = it.paragraphNumber,
@@ -292,6 +293,7 @@ fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
 
 fun IncidentRole.toDto(): IncidentRoleDto = IncidentRoleDto(
   roleCode = this.roleCode,
+  offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(this.roleCode),
   associatedPrisonersNumber = this.associatedPrisonersNumber,
 )
 

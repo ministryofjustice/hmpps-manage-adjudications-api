@@ -11,6 +11,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.OffenceDetailsRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
@@ -94,7 +95,7 @@ class DraftAdjudicationServiceTest {
           "MDI",
           2L,
           DATE_TIME_OF_INCIDENT,
-          incidentRoleDtoWithAllValuesSet()
+          incidentRoleRequestWithAllValuesSet()
         )
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
@@ -110,8 +111,12 @@ class DraftAdjudicationServiceTest {
         .contains(2L, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
 
       assertThat(draftAdjudication.incidentRole)
-        .extracting("roleCode", "associatedPrisonersNumber")
-        .contains(incidentRoleDtoWithAllValuesSet().roleCode, incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber)
+        .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
+        .contains(
+          incidentRoleDtoWithAllValuesSet().roleCode,
+          IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode),
+          incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
+        )
     }
   }
 
@@ -164,8 +169,12 @@ class DraftAdjudicationServiceTest {
         .contains(2L, now)
 
       assertThat(draftAdjudicationDto.incidentRole)
-        .extracting("roleCode", "associatedPrisonersNumber")
-        .contains(incidentRoleDtoWithAllValuesSet().roleCode, incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber)
+        .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
+        .contains(
+          incidentRoleDtoWithAllValuesSet().roleCode,
+          IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode),
+          incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
+        )
 
       assertThat(draftAdjudicationDto.offenceDetails).hasSize(2)
         .extracting("offenceCode", "offenceRule.paragraphNumber", "offenceRule.paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
@@ -383,7 +392,7 @@ class DraftAdjudicationServiceTest {
           1,
           2,
           DATE_TIME_OF_INCIDENT,
-          incidentRoleDtoWithNoValuesSet(),
+          incidentRoleRequestWithNoValuesSet(),
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
@@ -395,7 +404,7 @@ class DraftAdjudicationServiceTest {
 
       val editedDateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1)
       val editedIncidentRole = incidentRoleWithNoValuesSet()
-      val editedIncidentRoleDtoRequest = incidentRoleDtoWithNoValuesSet()
+      val editedIncidentRoleDtoRequest = incidentRoleRequestWithNoValuesSet()
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
@@ -910,7 +919,10 @@ class DraftAdjudicationServiceTest {
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
+
     private val INCIDENT_ROLE_CODE = "25a"
+    private val INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(a)"
+    private val INCIDENT_ROLE_PARAGRAPH_DESCRIPTION = "Attempts to commit any of the foregoing offences:"
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
 
     private val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5"
@@ -955,11 +967,27 @@ class DraftAdjudicationServiceTest {
       victimOtherPersonsName = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName,
     )
 
+    fun incidentRoleRequestWithAllValuesSet(): IncidentRoleRequest =
+      IncidentRoleRequest(
+        INCIDENT_ROLE_CODE,
+        INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER
+      )
+
     fun incidentRoleDtoWithAllValuesSet(): IncidentRoleDto =
-      IncidentRoleDto(INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)
+      IncidentRoleDto(
+        INCIDENT_ROLE_CODE,
+        OffenceRuleDetailsDto(
+          INCIDENT_ROLE_PARAGRAPH_NUMBER,
+          INCIDENT_ROLE_PARAGRAPH_DESCRIPTION,
+        ),
+        INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER
+      )
+
+    fun incidentRoleRequestWithNoValuesSet(): IncidentRoleRequest =
+      IncidentRoleRequest(null, null)
 
     fun incidentRoleDtoWithNoValuesSet(): IncidentRoleDto =
-      IncidentRoleDto(null, null)
+      IncidentRoleDto(null, null, null)
 
     fun incidentRoleWithAllValuesSet(): IncidentRole =
       IncidentRole(null, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)

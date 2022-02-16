@@ -97,8 +97,8 @@ class ReportedAdjudicationServiceTest {
         .contains(345L, DATE_TIME_OF_INCIDENT, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
 
       assertThat(reportedAdjudicationDto.incidentRole)
-        .extracting("roleCode", "associatedPrisonersNumber")
-        .contains("25b", "BB2345B")
+        .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
+        .contains("25b", IncidentRoleRuleLookup.getOffenceRuleDetails("25b"), "BB2345B")
 
       assertThat(reportedAdjudicationDto.offences)
         .extracting("offenceCode", "offenceRule.paragraphNumber", "offenceRule.paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
@@ -335,8 +335,8 @@ class ReportedAdjudicationServiceTest {
         .extracting("dateTimeOfIncident", "handoverDeadline", "locationId")
         .contains(DATE_TIME_OF_INCIDENT, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, 345L)
       assertThat(createdDraft.incidentRole)
-        .extracting("roleCode", "associatedPrisonersNumber")
-        .contains("25b", "BB2345B")
+        .extracting("roleCode", "offenceRule.paragraphNumber", "offenceRule.paragraphDescription", "associatedPrisonersNumber")
+        .contains("25b", "25(b)", "Incites another prisoner to commit any of the foregoing offences:", "BB2345B")
       assertThat(createdDraft.offenceDetails)
         .extracting("offenceCode", "offenceRule.paragraphNumber", "offenceRule.paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
         .contains(

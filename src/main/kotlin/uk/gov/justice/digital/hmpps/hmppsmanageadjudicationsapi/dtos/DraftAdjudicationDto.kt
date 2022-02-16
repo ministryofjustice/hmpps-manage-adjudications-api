@@ -38,6 +38,8 @@ data class IncidentDetailsDto(
 data class IncidentRoleDto(
   @ApiModelProperty(value = "The incident role code", notes = "If not set then it is assumed they committed the offence on their own", example = "25a")
   val roleCode: String?,
+  @ApiModelProperty(value = "The offence rules related to the given incident role", notes = "Will not be set of there is no role code")
+  val offenceRule: OffenceRuleDetailsDto?,
   @ApiModelProperty(value = "The prison number of the other prisoner involved in the incident", notes = "This only applies to role codes 25b and 25c", example = "G2996UX")
   val associatedPrisonersNumber: String?,
 )

@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDet
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
@@ -194,6 +195,10 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           ),
           incidentRole = IncidentRoleDto(
             roleCode = "25a",
+            offenceRule = OffenceRuleDetailsDto(
+              paragraphNumber = "25(a)",
+              paragraphDescription = "Commits an assault"
+            ),
             associatedPrisonersNumber = "B2345BB"
           ),
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
@@ -221,7 +226,13 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
-    private val INCIDENT_ROLE_WITH_ALL_VALUES = IncidentRoleDto("25a", "B23456")
     private const val INCIDENT_STATEMENT = "A statement"
+    private val INCIDENT_ROLE_WITH_ALL_VALUES = IncidentRoleDto(
+      "25a",
+      OffenceRuleDetailsDto(
+        "25(a)",
+        "Commits an assault"
+      ),
+      "B23456")
   }
 }

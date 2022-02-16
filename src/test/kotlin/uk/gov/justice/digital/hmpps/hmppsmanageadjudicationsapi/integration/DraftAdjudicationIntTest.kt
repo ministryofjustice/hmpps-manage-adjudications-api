@@ -3,12 +3,16 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_INCIDENT_ROLE_CODE
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_INCIDENT_ROLE_PARAGRAPH_NUMBER
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_HANDOVER_DEADLINE_ISO_STRING
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_INCIDENT_ROLE_CODE
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_INCIDENT_ROLE_PARAGRAPH_NUMBER
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -29,7 +33,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
           "agencyId" to "MDI",
           "locationId" to 1,
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT,
-          "incidentRole" to IncidentRoleDto("25a", "B2345BB"),
+          "incidentRole" to IncidentRoleRequest("25a", "B2345BB"),
         )
       )
       .exchange()
@@ -42,6 +46,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(1)
       .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo("25a")
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphNumber").isEqualTo("25(a)")
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphDescription").isEqualTo("Attempts to commit any of the foregoing offences:")
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo("B2345BB")
   }
 
@@ -65,6 +71,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(testAdjudication.handoverDeadlineISOString)
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
       .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphNumber").isEqualTo(testAdjudication.incidentRoleParagraphNumber)
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphDescription").isEqualTo(testAdjudication.incidentRoleParagraphDescription)
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
   }
 
@@ -98,6 +106,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(testAdjudication.dateTimeOfIncident.plusDays(2).format(DateTimeFormatter.ISO_DATE_TIME))
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
       .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphNumber").isEqualTo(testAdjudication.incidentRoleParagraphNumber)
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphDescription").isEqualTo(testAdjudication.incidentRoleParagraphDescription)
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
       .jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").isEqualTo(testAdjudication.offences[0].offenceCode)
       .jsonPath("$.draftAdjudication.offenceDetails[0].offenceRule.paragraphNumber").isEqualTo(testAdjudication.offences[0].paragraphNumber)
@@ -139,6 +149,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(testAdjudication.handoverDeadlineISOString)
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
       .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphNumber").isEqualTo(testAdjudication.incidentRoleParagraphNumber)
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphDescription").isEqualTo(testAdjudication.incidentRoleParagraphDescription)
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
       .jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").isEqualTo(testAdjudication.offences[0].offenceCode)
       .jsonPath("$.draftAdjudication.offenceDetails[0].offenceRule.paragraphNumber").isEqualTo(testAdjudication.offences[0].paragraphNumber)
@@ -178,6 +190,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(testAdjudication.handoverDeadlineISOString)
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
       .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphNumber").isEqualTo(testAdjudication.incidentRoleParagraphNumber)
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphDescription").isEqualTo(testAdjudication.incidentRoleParagraphDescription)
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("test")
   }
@@ -196,7 +210,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "locationId" to 3,
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT.plusMonths(1),
-          "incidentRole" to IncidentRoleDto("25b", "C3456CC"),
+          "incidentRole" to IncidentRoleRequest("25b", "C3456CC"),
         )
       )
       .exchange()
@@ -208,6 +222,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-11-15T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(3)
       .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo("25b")
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphNumber").isEqualTo("25(b)")
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphDescription").isEqualTo("Incites another prisoner to commit any of the foregoing offences:")
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo("C3456CC")
   }
 
@@ -238,6 +254,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo(testAdjudication.handoverDeadlineISOString)
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
       .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphNumber").isEqualTo(testAdjudication.incidentRoleParagraphNumber)
+      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphDescription").isEqualTo(testAdjudication.incidentRoleParagraphDescription)
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
       .jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").isEqualTo(IntegrationTestData.BASIC_OFFENCE.offenceCode)
       .jsonPath("$.draftAdjudication.offenceDetails[0].offenceRule.paragraphNumber").isEqualTo(IntegrationTestData.BASIC_OFFENCE.paragraphNumber)
@@ -300,6 +318,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.incidentDetails.handoverDeadline").isEqualTo(IntegrationTestData.DEFAULT_HANDOVER_DEADLINE_ISO_STRING)
       .jsonPath("$.incidentDetails.locationId").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.locationId)
       .jsonPath("$.incidentRole.roleCode").isEqualTo(DEFAULT_INCIDENT_ROLE_CODE)
+      .jsonPath("$.incidentRole.offenceRule.paragraphNumber").isEqualTo(DEFAULT_INCIDENT_ROLE_PARAGRAPH_NUMBER)
+      .jsonPath("$.incidentRole.offenceRule.paragraphDescription").isEqualTo(DEFAULT_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION)
       .jsonPath("$.incidentRole.associatedPrisonersNumber").isEqualTo(DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER)
       .jsonPath("$.offences[0].offenceCode").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.offences[0].offenceCode)
       .jsonPath("$.offences[0].offenceRule.paragraphNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.offences[0].paragraphNumber)
@@ -363,6 +383,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.incidentDetails.handoverDeadline").isEqualTo(UPDATED_HANDOVER_DEADLINE_ISO_STRING)
       .jsonPath("$.incidentDetails.locationId").isEqualTo(IntegrationTestData.UPDATED_ADJUDICATION.locationId)
       .jsonPath("$.incidentRole.roleCode").isEqualTo(UPDATED_INCIDENT_ROLE_CODE)
+      .jsonPath("$.incidentRole.offenceRule.paragraphNumber").isEqualTo(UPDATED_INCIDENT_ROLE_PARAGRAPH_NUMBER)
+      .jsonPath("$.incidentRole.offenceRule.paragraphDescription").isEqualTo(UPDATED_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION)
       .jsonPath("$.incidentRole.associatedPrisonersNumber").isEqualTo(UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER)
       .jsonPath("$.offences[0].offenceCode").isEqualTo(IntegrationTestData.UPDATED_ADJUDICATION.offences[0].offenceCode)
       .jsonPath("$.offences[0].offenceRule.paragraphNumber").isEqualTo(IntegrationTestData.UPDATED_ADJUDICATION.offences[0].paragraphNumber)
@@ -427,6 +449,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudications[0].incidentDetails.handoverDeadline").isEqualTo(testAdjudication.handoverDeadlineISOString)
       .jsonPath("$.draftAdjudications[0].incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
       .jsonPath("$.draftAdjudications[0].incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
+      .jsonPath("$.draftAdjudications[0].incidentRole.offenceRule.paragraphNumber").isEqualTo(testAdjudication.incidentRoleParagraphNumber)
+      .jsonPath("$.draftAdjudications[0].incidentRole.offenceRule.paragraphDescription").isEqualTo(testAdjudication.incidentRoleParagraphDescription)
       .jsonPath("$.draftAdjudications[0].incidentRole.associatedPrisonersNumber").isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
   }
 
