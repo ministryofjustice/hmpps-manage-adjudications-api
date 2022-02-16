@@ -25,6 +25,7 @@ import javax.persistence.EntityNotFoundException
 class ReportedAdjudicationService(
   val draftAdjudicationRepository: DraftAdjudicationRepository,
   val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  val offenceCodeLookupService: OffenceCodeLookupService,
   val authenticationFacade: AuthenticationFacade
 ) {
   companion object {
@@ -79,13 +80,14 @@ class ReportedAdjudicationService(
 
     return draftAdjudicationRepository
       .save(draftAdjudication)
-      .toDto()
+      .toDto(offenceCodeLookupService)
   }
 
   private fun toDraftOffence(offences: MutableList<ReportedOffence>?): MutableList<Offence> {
     return (offences ?: mutableListOf()).map { offence ->
       Offence(
         offenceCode = offence.offenceCode,
+        paragraphNumber = "NIY",
         victimPrisonersNumber = offence.victimPrisonersNumber
       )
     }.toMutableList()

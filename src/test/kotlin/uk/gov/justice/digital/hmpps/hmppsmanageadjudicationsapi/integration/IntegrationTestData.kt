@@ -18,8 +18,19 @@ class IntegrationTestData(
 ) {
 
   companion object {
-    val BASIC_OFFENCE = OffenceTestDataSet(offenceCode = 2)
-    val FULL_OFFENCE = OffenceTestDataSet(offenceCode = 3, victimPrisonersNumber = "A1234AA")
+    val BASIC_OFFENCE = OffenceTestDataSet(
+      offenceCode = 2,
+      paragraphNumber = "1",
+      paragraphDescription = "Commits any assault"
+    )
+    val FULL_OFFENCE = OffenceTestDataSet(
+      offenceCode = 8,
+      paragraphNumber = "4",
+      paragraphDescription = "Fights with any person",
+      victimPrisonersNumber = "A1234AA",
+      victimStaffUsername = "ABC12D",
+      victimOtherPersonsName = "A. User",
+    )
 
     const val DEFAULT_ADJUDICATION_NUMBER = 1524242L
     const val DEFAULT_PRISONER_NUMBER = "AA1234A"

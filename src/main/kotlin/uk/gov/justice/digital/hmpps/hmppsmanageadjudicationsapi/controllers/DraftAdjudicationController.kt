@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
@@ -43,7 +42,19 @@ data class NewAdjudicationRequest(
 @ApiModel("Request to update the list of offence details for a draft adjudication")
 data class OffenceDetailsRequest(
   @ApiModelProperty(value = "The details of all offences the prisoner is accused of")
-  val offenceDetails: List<OffenceDetailsDto>,
+  val offenceDetails: List<OffenceDetailsRequestItem>,
+)
+
+@ApiModel(value = "Details of an offence")
+data class OffenceDetailsRequestItem(
+  @ApiModelProperty(value = "The offence code", notes = "This is the unique number relating to the type of offence they have been alleged to have committed", example = "3")
+  val offenceCode: Int,
+  @ApiModelProperty(value = "The prison number of the victim involved in the incident, if relevant", example = "G2996UX")
+  val victimPrisonersNumber: String? = null,
+  @ApiModelProperty(value = "The username of the member of staff who is a victim of the incident, if relevant", example = "ABC12D")
+  val victimStaffUsername: String? = null,
+  @ApiModelProperty(value = "The name of the victim (who is not a member of staff or a prisoner) involved in the incident, if relevant", example = "Bob Hope")
+  val victimOtherPersonsName: String? = null,
 )
 
 @ApiModel("Request to add or edit the incident statement for a draft adjudication")

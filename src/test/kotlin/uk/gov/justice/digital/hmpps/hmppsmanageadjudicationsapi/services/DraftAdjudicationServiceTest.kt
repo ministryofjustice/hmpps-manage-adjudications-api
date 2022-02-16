@@ -11,6 +11,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.OffenceDetailsRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
@@ -40,6 +41,7 @@ class DraftAdjudicationServiceTest {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
   private val prisonApiGateway: PrisonApiGateway = mock()
+  private val offenceCodeLookupService: OffenceCodeLookupService = mock()
   private val dateCalculationService: DateCalculationService = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
   private val clock: Clock = Clock.fixed(ofEpochMilli(0), ZoneId.systemDefault())
@@ -53,9 +55,14 @@ class DraftAdjudicationServiceTest {
         draftAdjudicationRepository,
         reportedAdjudicationRepository,
         prisonApiGateway,
+        offenceCodeLookupService,
         dateCalculationService,
         authenticationFacade
       )
+    whenever(offenceCodeLookupService.getParagraphNumber(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
+    whenever(offenceCodeLookupService.getParagraphDescription(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
+    whenever(offenceCodeLookupService.getParagraphNumber(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
+    whenever(offenceCodeLookupService.getParagraphDescription(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
   }
 
   @Nested
@@ -133,7 +140,7 @@ class DraftAdjudicationServiceTest {
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = incidentRoleWithAllValuesSet(),
-          offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS, FULL_OFFENCE_DETAILS),
+          offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
           incidentStatement = IncidentStatement(
             statement = "Example statement",
             completed = false
@@ -160,10 +167,18 @@ class DraftAdjudicationServiceTest {
         .contains(incidentRoleDtoWithAllValuesSet().roleCode, incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber)
 
       assertThat(draftAdjudicationDto.offenceDetails).hasSize(2)
-        .extracting("offenceCode", "victimPrisonersNumber")
+        .extracting("offenceCode", "paragraphNumber", "paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
         .contains(
-          Tuple(BASIC_OFFENCE_DETAILS_DTO.offenceCode, BASIC_OFFENCE_DETAILS_DTO.victimPrisonersNumber),
-          Tuple(FULL_OFFENCE_DETAILS_DTO.offenceCode, FULL_OFFENCE_DETAILS_DTO.victimPrisonersNumber),
+          Tuple(
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode, BASIC_OFFENCE_DETAILS_RESPONSE_DTO.paragraphNumber,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.paragraphDescription, BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername, BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
+          ),
+          Tuple(
+            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode, FULL_OFFENCE_DETAILS_RESPONSE_DTO.paragraphNumber,
+            FULL_OFFENCE_DETAILS_RESPONSE_DTO.paragraphDescription, FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+            FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername, FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
+          ),
         )
 
       assertThat(draftAdjudicationDto.incidentStatement)
@@ -179,15 +194,16 @@ class DraftAdjudicationServiceTest {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
 
       assertThatThrownBy {
-        draftAdjudicationService.setOffenceDetails(1, listOf(BASIC_OFFENCE_DETAILS_DTO))
+        draftAdjudicationService.setOffenceDetails(1, listOf(BASIC_OFFENCE_DETAILS_REQUEST))
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
 
     @Test
     fun `adds the offence details to a draft adjudication`() {
-      val offenceDetailsToAdd = listOf(BASIC_OFFENCE_DETAILS_DTO, FULL_OFFENCE_DETAILS_DTO)
-      val offenceDetailsToSave = mutableListOf(BASIC_OFFENCE_DETAILS, FULL_OFFENCE_DETAILS)
+      val offenceDetailsToAdd = listOf(BASIC_OFFENCE_DETAILS_REQUEST, FULL_OFFENCE_DETAILS_REQUEST)
+      val offenceDetailsToSave = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
+      val expectedOffenceDetailsResponse = listOf(BASIC_OFFENCE_DETAILS_RESPONSE_DTO, FULL_OFFENCE_DETAILS_RESPONSE_DTO)
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
@@ -214,7 +230,7 @@ class DraftAdjudicationServiceTest {
         .extracting("id", "prisonerNumber")
         .contains(1L, "A12345")
 
-      assertThat(draftAdjudication.offenceDetails).isEqualTo(offenceDetailsToAdd)
+      assertThat(draftAdjudication.offenceDetails).isEqualTo(expectedOffenceDetailsResponse)
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
@@ -224,10 +240,11 @@ class DraftAdjudicationServiceTest {
 
     @Test
     fun `edits the offence details of an existing draft adjudication`() {
-      val existingOffenceDetails = mutableListOf(Offence(offenceCode = 1))
-      val offenceDetailsToUse = listOf(BASIC_OFFENCE_DETAILS_DTO, FULL_OFFENCE_DETAILS_DTO)
-      val offenceDetailsToSave = mutableListOf(BASIC_OFFENCE_DETAILS, FULL_OFFENCE_DETAILS)
-      val draftAdjudicationEntity = DraftAdjudication(
+      val existingOffenceDetails = mutableListOf(Offence(offenceCode = 1, paragraphNumber = "1"))
+      val offenceDetailsToUse = listOf(BASIC_OFFENCE_DETAILS_REQUEST, FULL_OFFENCE_DETAILS_REQUEST)
+      val offenceDetailsToSave = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
+      val expectedOffenceDetailsResponse = listOf(BASIC_OFFENCE_DETAILS_RESPONSE_DTO, FULL_OFFENCE_DETAILS_RESPONSE_DTO)
+      val existingDraftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
         agencyId = "MDI",
@@ -240,10 +257,10 @@ class DraftAdjudicationServiceTest {
         offenceDetails = existingOffenceDetails,
       )
 
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(existingDraftAdjudicationEntity))
 
       whenever(draftAdjudicationRepository.save(any())).thenReturn(
-        draftAdjudicationEntity.copy(
+        existingDraftAdjudicationEntity.copy(
           offenceDetails = offenceDetailsToSave
         )
       )
@@ -254,7 +271,7 @@ class DraftAdjudicationServiceTest {
         .extracting("id", "prisonerNumber")
         .contains(1L, "A12345")
 
-      assertThat(draftAdjudication.offenceDetails).isEqualTo(offenceDetailsToUse)
+      assertThat(draftAdjudication.offenceDetails).isEqualTo(expectedOffenceDetailsResponse)
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
@@ -571,7 +588,7 @@ class DraftAdjudicationServiceTest {
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
               incidentRole = incidentRoleWithAllValuesSet(),
-              offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS, FULL_OFFENCE_DETAILS),
+              offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
               incidentStatement = IncidentStatement(statement = "test")
             )
           )
@@ -614,11 +631,23 @@ class DraftAdjudicationServiceTest {
           .contains(1L, INCIDENT_TIME, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
 
         assertThat(reportedAdjudicationArgumentCaptor.value.offences)
+          // To fix as part of reported adjudication work
           .extracting("offenceCode", "victimPrisonersNumber")
           .contains(
-            Tuple(BASIC_OFFENCE_DETAILS.offenceCode, BASIC_OFFENCE_DETAILS.victimPrisonersNumber),
-            Tuple(FULL_OFFENCE_DETAILS.offenceCode, FULL_OFFENCE_DETAILS.victimPrisonersNumber)
+            Tuple(BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber),
+            Tuple(FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber),
           )
+          /*
+          .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+          .contains(
+            Tuple(BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName),
+            Tuple(FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+              FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
+              FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName),
+          )
+           */
       }
 
       @Test
@@ -667,7 +696,7 @@ class DraftAdjudicationServiceTest {
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
               incidentRole = incidentRoleWithAllValuesSet(),
-              offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS, FULL_OFFENCE_DETAILS),
+              offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
               incidentStatement = IncidentStatement(statement = "test")
             )
           )
@@ -738,11 +767,23 @@ class DraftAdjudicationServiceTest {
           .contains(1L, LocalDateTime.now(clock), DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
 
         assertThat(reportedAdjudicationArgumentCaptor.value.offences)
+          // To fix as part of reported adjudication work
           .extracting("offenceCode", "victimPrisonersNumber")
           .contains(
-            Tuple(BASIC_OFFENCE_DETAILS.offenceCode, BASIC_OFFENCE_DETAILS.victimPrisonersNumber),
-            Tuple(FULL_OFFENCE_DETAILS.offenceCode, FULL_OFFENCE_DETAILS.victimPrisonersNumber)
+            Tuple(BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber),
+            Tuple(FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber),
           )
+          /*
+          .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+          .contains(
+            Tuple(BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName),
+            Tuple(FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+              FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
+              FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName),
+          )
+           */
       }
 
       @Test
@@ -789,7 +830,7 @@ class DraftAdjudicationServiceTest {
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
             incidentRole = incidentRoleWithAllValuesSet(),
-            offenceDetails = mutableListOf(FULL_OFFENCE_DETAILS),
+            offenceDetails = mutableListOf(FULL_OFFENCE_DETAILS_DB_ENTITY),
             incidentStatement = IncidentStatement(
               statement = "Example statement",
               completed = false
@@ -858,7 +899,7 @@ class DraftAdjudicationServiceTest {
       assertThat(adjudications)
         .extracting("offenceDetails")
         .contains(
-          listOf(FULL_OFFENCE_DETAILS_DTO),
+          listOf(FULL_OFFENCE_DETAILS_RESPONSE_DTO),
           null as List<OffenceDetailsDto>?
         )
 
@@ -878,12 +919,43 @@ class DraftAdjudicationServiceTest {
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private val INCIDENT_ROLE_CODE = "25a"
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
-    private val BASIC_OFFENCE_DETAILS_DTO = OffenceDetailsDto(offenceCode = 2)
-    private val FULL_OFFENCE_DETAILS_DTO = OffenceDetailsDto(offenceCode = 3, victimPrisonersNumber = "A1234AA")
-    private val BASIC_OFFENCE_DETAILS = Offence(offenceCode = BASIC_OFFENCE_DETAILS_DTO.offenceCode)
-    private val FULL_OFFENCE_DETAILS = Offence(
-      offenceCode = FULL_OFFENCE_DETAILS_DTO.offenceCode,
-      victimPrisonersNumber = FULL_OFFENCE_DETAILS_DTO.victimPrisonersNumber
+
+    private val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5"
+    private val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
+    private val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6"
+    private val OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another paragraph description"
+
+    private val BASIC_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(offenceCode = 2)
+    private val BASIC_OFFENCE_DETAILS_RESPONSE_DTO = OffenceDetailsDto(
+      offenceCode = BASIC_OFFENCE_DETAILS_REQUEST.offenceCode,
+      paragraphNumber = OFFENCE_CODE_2_PARAGRAPH_NUMBER,
+      paragraphDescription = OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION
+    )
+    private val BASIC_OFFENCE_DETAILS_DB_ENTITY = Offence(
+      offenceCode = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+      paragraphNumber = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.paragraphNumber
+    )
+
+    private val FULL_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(
+      offenceCode = 3,
+      victimPrisonersNumber = "A1234AA",
+      victimStaffUsername = "ABC12D",
+      victimOtherPersonsName = "A name",
+    )
+    private val FULL_OFFENCE_DETAILS_RESPONSE_DTO = OffenceDetailsDto(
+      offenceCode = FULL_OFFENCE_DETAILS_REQUEST.offenceCode,
+      paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+      paragraphDescription = OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
+      victimPrisonersNumber = FULL_OFFENCE_DETAILS_REQUEST.victimPrisonersNumber,
+      victimStaffUsername = FULL_OFFENCE_DETAILS_REQUEST.victimStaffUsername,
+      victimOtherPersonsName = FULL_OFFENCE_DETAILS_REQUEST.victimOtherPersonsName,
+    )
+    private val FULL_OFFENCE_DETAILS_DB_ENTITY = Offence(
+      offenceCode = FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+      paragraphNumber = FULL_OFFENCE_DETAILS_RESPONSE_DTO.paragraphNumber,
+      victimPrisonersNumber = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+      victimStaffUsername = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
+      victimOtherPersonsName = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName,
     )
 
     fun incidentRoleDtoWithAllValuesSet(): IncidentRoleDto =

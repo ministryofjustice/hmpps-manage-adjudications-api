@@ -218,28 +218,28 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           prisonerNumber = "A12345",
           incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
-          offenceDetails = listOf(BASIC_OFFENCE_DETAILS),
+          offenceDetails = listOf(BASIC_OFFENCE_RESPONSE_DTO),
         )
       )
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
-      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_DETAILS)
+      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
         .andExpect(status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `makes a call to set the offence details to the draft adjudication`() {
-      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_DETAILS)
+      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
         .andExpect(status().isCreated)
 
       verify(draftAdjudicationService).setOffenceDetails(
         1,
         listOf(
-          OffenceDetailsDto(
-            offenceCode = BASIC_OFFENCE_DETAILS.offenceCode
+          OffenceDetailsRequestItem(
+            offenceCode = BASIC_OFFENCE_REQUEST.offenceCode,
           )
         )
       )
@@ -248,14 +248,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `returns the draft adjudication including the new offence details`() {
-      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_DETAILS)
+      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
         .andExpect(status().isCreated)
         .andExpect(jsonPath("$.draftAdjudication.id").isNumber)
         .andExpect(jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
-        .andExpect(jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").value(BASIC_OFFENCE_DETAILS.offenceCode))
+        .andExpect(jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").value(BASIC_OFFENCE_RESPONSE_DTO.offenceCode))
     }
 
-    private fun makeSetOffenceDetailsRequest(id: Long, offenceDetails: OffenceDetailsDto): ResultActions {
+    private fun makeSetOffenceDetailsRequest(id: Long, offenceDetails: OffenceDetailsRequestItem): ResultActions {
       val body = objectMapper.writeValueAsString(mapOf("offenceDetails" to listOf(offenceDetails)))
 
       return mockMvc
@@ -578,6 +578,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val INCIDENT_ROLE_WITH_ALL_VALUES = IncidentRoleDto("25a", "B23456")
     private val INCIDENT_ROLE_WITH_NO_VALUES = IncidentRoleDto(null, null)
-    private val BASIC_OFFENCE_DETAILS = OffenceDetailsDto(offenceCode = 3)
+    private val BASIC_OFFENCE_REQUEST = OffenceDetailsRequestItem(offenceCode = 3)
+    private val BASIC_OFFENCE_RESPONSE_DTO = OffenceDetailsDto(offenceCode = 3, paragraphNumber = "3", paragraphDescription = "A description")
   }
 }
