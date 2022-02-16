@@ -457,6 +457,30 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentStatement.completed").isEqualTo(true)
   }
 
+  @Test
+  fun `gets offence rule details for a valid offence code`() {
+    webTestClient.get()
+      .uri("/draft-adjudications/offence-rule/4")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.paragraphNumber").isEqualTo(1)
+      .jsonPath("$.paragraphDescription").isEqualTo("Commits any assault")
+  }
+
+  @Test
+  fun `gets default offence rule details for an invalid offence code`() {
+    webTestClient.get()
+      .uri("/draft-adjudications/offence-rule/999")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.paragraphNumber").isEqualTo("")
+      .jsonPath("$.paragraphDescription").isEqualTo("")
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
   }
