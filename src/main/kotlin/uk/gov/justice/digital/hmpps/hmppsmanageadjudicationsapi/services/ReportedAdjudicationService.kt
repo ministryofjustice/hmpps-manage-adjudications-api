@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDet
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
@@ -122,8 +123,10 @@ private fun toReportedOffence(offences: MutableList<ReportedOffence>?, offenceCo
   return (offences ?: mutableListOf()).map { offence ->
     OffenceDto(
       offenceCode = offence.offenceCode,
-      paragraphNumber = offence.paragraphNumber,
-      paragraphDescription = offenceCodeLookupService.getParagraphDescription(offence.offenceCode),
+      offenceRule = OffenceRuleDto(
+        paragraphNumber = offence.paragraphNumber,
+        paragraphDescription = offenceCodeLookupService.getParagraphDescription(offence.offenceCode),
+      ),
       victimPrisonersNumber = offence.victimPrisonersNumber,
       victimStaffUsername = offence.victimStaffUsername,
       victimOtherPersonsName = offence.victimOtherPersonsName,

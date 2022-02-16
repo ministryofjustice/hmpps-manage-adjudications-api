@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDet
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 import java.time.LocalDateTime
@@ -59,8 +60,10 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           offences = listOf(
             OffenceDto(
               offenceCode = 2,
-              paragraphNumber = "3",
-              paragraphDescription = "A paragraph description",
+              OffenceRuleDto(
+                paragraphNumber = "3",
+                paragraphDescription = "A paragraph description",
+              )
             )
           ),
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
@@ -113,8 +116,10 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
               offences = listOf(
                 OffenceDto(
                   offenceCode = 2,
-                  paragraphNumber = "3",
-                  paragraphDescription = "A paragraph description",
+                  OffenceRuleDto(
+                    paragraphNumber = "3",
+                    paragraphDescription = "A paragraph description",
+                  )
                 )
               ),
               incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),

@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDet
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
@@ -289,8 +290,10 @@ fun IncidentRole.toDto(): IncidentRoleDto = IncidentRoleDto(
 
 fun Offence.toDto(offenceCodeLookupService: OffenceCodeLookupService): OffenceDetailsDto = OffenceDetailsDto(
   offenceCode = this.offenceCode,
-  paragraphNumber = this.paragraphNumber,
-  paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode),
+  offenceRule = OffenceRuleDetailsDto(
+    paragraphNumber = this.paragraphNumber,
+    paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode),
+  ),
   victimPrisonersNumber = this.victimPrisonersNumber,
   victimStaffUsername = this.victimStaffUsername,
   victimOtherPersonsName = this.victimOtherPersonsName,
