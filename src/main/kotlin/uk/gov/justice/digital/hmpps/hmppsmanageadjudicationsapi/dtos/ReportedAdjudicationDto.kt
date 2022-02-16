@@ -30,6 +30,14 @@ data class ReportedAdjudicationDto(
 data class OffenceDto(
   @ApiModelProperty(value = "The offence code", notes = "This is the paragraph number relating to the offence", example = "3")
   val offenceCode: Int,
+  @ApiModelProperty(value = "The paragraph number relating to the offence they have been alleged to have committed", example = "22")
+  val paragraphNumber: String,
+  @ApiModelProperty(value = "The description relating to the paragraph number", example = "Committed an assault")
+  val paragraphDescription: String,
   @ApiModelProperty(value = "The prison number of the victim involved in the incident, if relevant", example = "G2996UX")
   val victimPrisonersNumber: String? = null,
+  @ApiModelProperty(value = "The username of the member of staff who is a victim of the incident, if relevant", example = "ABC12D")
+  val victimStaffUsername: String? = null,
+  @ApiModelProperty(value = "The name of the victim (who is not a member of staff or a prisoner) involved in the incident, if relevant", example = "Bob Hope")
+  val victimOtherPersonsName: String? = null,
 )

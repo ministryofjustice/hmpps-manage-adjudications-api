@@ -75,10 +75,14 @@ class ReportedAdjudicationRepositoryTest {
         offences = mutableListOf(
           ReportedOffence(
             offenceCode = 2,
+            paragraphNumber = "3",
           ),
           ReportedOffence(
             offenceCode = 3,
+            paragraphNumber = "4",
             victimPrisonersNumber = "B1234BB",
+            victimStaffUsername = "ABC12D",
+            victimOtherPersonsName = "Another Person",
           )
         )
       )
@@ -103,10 +107,13 @@ class ReportedAdjudicationRepositoryTest {
       .contains(adjudication.incidentRoleCode, adjudication.incidentRoleAssociatedPrisonersNumber)
 
     assertThat(savedEntity.offences).hasSize(2)
-      .extracting("offenceCode", "victimPrisonersNumber")
+      .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
       .contains(
-        Tuple(adjudication.offences!![0].offenceCode, adjudication.offences!![0].victimPrisonersNumber),
-        Tuple(adjudication.offences!![1].offenceCode, adjudication.offences!![1].victimPrisonersNumber),
+        Tuple(
+          adjudication.offences!![0].offenceCode, adjudication.offences!![0].paragraphNumber,
+          adjudication.offences!![0].victimPrisonersNumber, adjudication.offences!![0].victimStaffUsername,
+          adjudication.offences!![0].victimOtherPersonsName
+        ),
       )
   }
 
@@ -118,7 +125,10 @@ class ReportedAdjudicationRepositoryTest {
       mutableListOf(
         ReportedOffence(
           offenceCode = 5,
-          victimPrisonersNumber = "C2345CC"
+          paragraphNumber = "6",
+          victimPrisonersNumber = "C2345CC",
+          victimStaffUsername = "DEF34G",
+          victimOtherPersonsName = "Yet Another Person",
         ),
       )
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
@@ -128,9 +138,13 @@ class ReportedAdjudicationRepositoryTest {
       .contains(adjudication.id, adjudication.prisonerNumber, adjudication.reportNumber, adjudication.bookingId, adjudication.createdByUserId)
 
     assertThat(savedEntity.offences).hasSize(1)
-      .extracting("offenceCode", "victimPrisonersNumber")
+      .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
       .contains(
-        Tuple(adjudication.offences!![0].offenceCode, adjudication.offences!![0].victimPrisonersNumber),
+        Tuple(
+          adjudication.offences!![0].offenceCode, adjudication.offences!![0].paragraphNumber,
+          adjudication.offences!![0].victimPrisonersNumber, adjudication.offences!![0].victimStaffUsername,
+          adjudication.offences!![0].victimOtherPersonsName
+        ),
       )
   }
 
@@ -180,11 +194,15 @@ class ReportedAdjudicationRepositoryTest {
       incidentRoleAssociatedPrisonersNumber = "B23456",
       offences = mutableListOf(
         ReportedOffence( // offence with minimal data set
-          offenceCode = 2
+          offenceCode = 2,
+          paragraphNumber = "3"
         ),
         ReportedOffence( // offence with all data set
           offenceCode = 3,
-          victimPrisonersNumber = "A1234AA"
+          paragraphNumber = "4",
+          victimPrisonersNumber = "A1234AA",
+          victimStaffUsername = "ABC12D",
+          victimOtherPersonsName = "A Person",
         ),
       ),
       statement = "Example statement",

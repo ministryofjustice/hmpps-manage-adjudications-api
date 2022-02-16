@@ -162,7 +162,7 @@ class DraftAdjudicationService(
     draftAdjudicationRepository.delete(draftAdjudication)
 
     return generatedReportedAdjudication
-      .toDto()
+      .toDto(offenceCodeLookupService)
   }
 
   fun getCurrentUsersInProgressDraftAdjudications(agencyId: String): List<DraftAdjudicationDto> {
@@ -243,7 +243,10 @@ class DraftAdjudicationService(
     return (draftOffences ?: listOf<Offence>()).map {
       ReportedOffence(
         offenceCode = it.offenceCode,
-        victimPrisonersNumber = it.victimPrisonersNumber
+        paragraphNumber = it.paragraphNumber,
+        victimPrisonersNumber = it.victimPrisonersNumber,
+        victimStaffUsername = it.victimStaffUsername,
+        victimOtherPersonsName = it.victimOtherPersonsName,
       )
     }.toMutableList()
   }

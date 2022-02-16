@@ -37,18 +37,18 @@ class ReportedAdjudicationService(
     val reportedAdjudication =
       reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
 
-    return reportedAdjudication?.toDto() ?: throwEntityNotFoundException(adjudicationNumber)
+    return reportedAdjudication?.toDto(offenceCodeLookupService) ?: throwEntityNotFoundException(adjudicationNumber)
   }
 
   fun getAllReportedAdjudications(agencyId: String, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val reportedAdjudicationsPage = reportedAdjudicationRepository.findByAgencyId(agencyId, pageable)
-    return reportedAdjudicationsPage.map { it.toDto() }
+    return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
   fun getMyReportedAdjudications(agencyId: String, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val username = authenticationFacade.currentUsername
     val reportedAdjudicationsPage = reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyId(username!!, agencyId, pageable)
-    return reportedAdjudicationsPage.map { it.toDto() }
+    return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
   fun createDraftFromReportedAdjudication(adjudicationNumber: Long): DraftAdjudicationDto {
@@ -87,14 +87,16 @@ class ReportedAdjudicationService(
     return (offences ?: mutableListOf()).map { offence ->
       Offence(
         offenceCode = offence.offenceCode,
-        paragraphNumber = "NIY",
-        victimPrisonersNumber = offence.victimPrisonersNumber
+        paragraphNumber = offence.paragraphNumber,
+        victimPrisonersNumber = offence.victimPrisonersNumber,
+        victimStaffUsername = offence.victimStaffUsername,
+        victimOtherPersonsName = offence.victimOtherPersonsName,
       )
     }.toMutableList()
   }
 }
 
-fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudicationDto(
+fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService): ReportedAdjudicationDto = ReportedAdjudicationDto(
   adjudicationNumber = reportNumber,
   prisonerNumber = prisonerNumber,
   bookingId = bookingId,
@@ -107,7 +109,7 @@ fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudication
     roleCode = incidentRoleCode,
     associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
   ),
-  offences = toReportedOffence(offences),
+  offences = toReportedOffence(offences, offenceCodeLookupService),
   incidentStatement = IncidentStatementDto(
     statement = statement,
     completed = true,
@@ -116,11 +118,15 @@ fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudication
   createdDateTime = createDateTime!!
 )
 
-private fun toReportedOffence(offences: MutableList<ReportedOffence>?): List<OffenceDto> {
+private fun toReportedOffence(offences: MutableList<ReportedOffence>?, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> {
   return (offences ?: mutableListOf()).map { offence ->
     OffenceDto(
       offenceCode = offence.offenceCode,
-      victimPrisonersNumber = offence.victimPrisonersNumber
+      paragraphNumber = offence.paragraphNumber,
+      paragraphDescription = offenceCodeLookupService.getParagraphDescription(offence.offenceCode),
+      victimPrisonersNumber = offence.victimPrisonersNumber,
+      victimStaffUsername = offence.victimStaffUsername,
+      victimOtherPersonsName = offence.victimOtherPersonsName,
     )
   }.toList()
 }

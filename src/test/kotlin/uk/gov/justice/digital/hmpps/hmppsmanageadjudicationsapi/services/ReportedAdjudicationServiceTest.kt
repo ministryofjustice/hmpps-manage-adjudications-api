@@ -28,7 +28,7 @@ import javax.persistence.EntityNotFoundException
 class ReportedAdjudicationServiceTest {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
-  private val offenceCodeLookupService: OffenceCodeLookupService = OffenceCodeLookupService()
+  private val offenceCodeLookupService: OffenceCodeLookupService = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
   private lateinit var reportedAdjudicationService: ReportedAdjudicationService
 
@@ -38,6 +38,11 @@ class ReportedAdjudicationServiceTest {
 
     reportedAdjudicationService =
       ReportedAdjudicationService(draftAdjudicationRepository, reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
+
+    whenever(offenceCodeLookupService.getParagraphNumber(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
+    whenever(offenceCodeLookupService.getParagraphDescription(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
+    whenever(offenceCodeLookupService.getParagraphNumber(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
+    whenever(offenceCodeLookupService.getParagraphDescription(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
   }
 
   @Nested
@@ -61,10 +66,15 @@ class ReportedAdjudicationServiceTest {
           incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
           offences = mutableListOf(
             ReportedOffence(
-              offenceCode = 2
+              offenceCode = 2,
+              paragraphNumber = OFFENCE_CODE_2_PARAGRAPH_NUMBER,
             ),
             ReportedOffence(
-              offenceCode = 3, victimPrisonersNumber = "BB2345B"
+              offenceCode = 3,
+              paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+              victimPrisonersNumber = "BB2345B",
+              victimStaffUsername = "DEF34G",
+              victimOtherPersonsName = "Another Name",
             ),
           ),
           handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
@@ -91,10 +101,10 @@ class ReportedAdjudicationServiceTest {
         .contains("25b", "BB2345B")
 
       assertThat(reportedAdjudicationDto.offences)
-        .extracting("offenceCode", "victimPrisonersNumber")
+        .extracting("offenceCode", "paragraphNumber", "paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
         .contains(
-          Tuple(2, null),
-          Tuple(3, "BB2345B"),
+          Tuple(2, OFFENCE_CODE_2_PARAGRAPH_NUMBER, OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION, null, null, null),
+          Tuple(3, OFFENCE_CODE_3_PARAGRAPH_NUMBER, OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION, "BB2345B", "DEF34G", "Another Name"),
         )
 
       assertThat(reportedAdjudicationDto.incidentStatement)
@@ -120,7 +130,11 @@ class ReportedAdjudicationServiceTest {
         incidentRoleAssociatedPrisonersNumber = "BB2345B",
         offences = mutableListOf(
           ReportedOffence(
-            offenceCode = 3, victimPrisonersNumber = "BB2345B"
+            offenceCode = 3,
+            paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+            victimPrisonersNumber = "BB2345B",
+            victimStaffUsername = "DEF34G",
+            victimOtherPersonsName = "Another Name",
           )
         ),
         statement = INCIDENT_STATEMENT,
@@ -187,7 +201,11 @@ class ReportedAdjudicationServiceTest {
         incidentRoleAssociatedPrisonersNumber = "BB2345B",
         offences = mutableListOf(
           ReportedOffence(
-            offenceCode = 3, victimPrisonersNumber = "BB2345B"
+            offenceCode = 3,
+            paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+            victimPrisonersNumber = "BB2345B",
+            victimStaffUsername = "DEF34G",
+            victimOtherPersonsName = "Another Name",
           )
         ),
         statement = INCIDENT_STATEMENT,
@@ -238,7 +256,11 @@ class ReportedAdjudicationServiceTest {
       incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
       offences = mutableListOf(
         ReportedOffence(
-          offenceCode = 3, victimPrisonersNumber = "BB2345B"
+          offenceCode = 3,
+          paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+          victimPrisonersNumber = "BB2345B",
+          victimStaffUsername = "DEF34G",
+          victimOtherPersonsName = "Another Name",
         )
       ),
       handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
@@ -261,8 +283,10 @@ class ReportedAdjudicationServiceTest {
       offenceDetails = mutableListOf(
         Offence(
           offenceCode = 3,
-          paragraphNumber = "NIY",
-          victimPrisonersNumber = "BB2345B"
+          paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+          victimPrisonersNumber = "BB2345B",
+          victimStaffUsername = "DEF34G",
+          victimOtherPersonsName = "Another Name",
         )
       ),
       incidentStatement = IncidentStatement(
@@ -314,9 +338,9 @@ class ReportedAdjudicationServiceTest {
         .extracting("roleCode", "associatedPrisonersNumber")
         .contains("25b", "BB2345B")
       assertThat(createdDraft.offenceDetails)
-        .extracting("offenceCode", "victimPrisonersNumber")
+        .extracting("offenceCode", "paragraphNumber", "paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
         .contains(
-          Tuple(3, "BB2345B")
+          Tuple(3, OFFENCE_CODE_3_PARAGRAPH_NUMBER, OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION, "BB2345B", "DEF34G", "Another Name")
         )
       assertThat(createdDraft.incidentStatement)
         .extracting("completed", "statement")
@@ -329,5 +353,10 @@ class ReportedAdjudicationServiceTest {
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private const val INCIDENT_STATEMENT = "A statement"
+
+    private const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5"
+    private const val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
+    private const val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6"
+    private const val OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another paragraph description"
   }
 }

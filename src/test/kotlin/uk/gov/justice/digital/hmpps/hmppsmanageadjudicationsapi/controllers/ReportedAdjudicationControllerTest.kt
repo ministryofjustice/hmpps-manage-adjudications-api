@@ -58,7 +58,9 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
           offences = listOf(
             OffenceDto(
-              offenceCode = 2
+              offenceCode = 2,
+              paragraphNumber = "3",
+              paragraphDescription = "A paragraph description",
             )
           ),
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
@@ -110,7 +112,9 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
               incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
               offences = listOf(
                 OffenceDto(
-                  offenceCode = 2
+                  offenceCode = 2,
+                  paragraphNumber = "3",
+                  paragraphDescription = "A paragraph description",
                 )
               ),
               incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
