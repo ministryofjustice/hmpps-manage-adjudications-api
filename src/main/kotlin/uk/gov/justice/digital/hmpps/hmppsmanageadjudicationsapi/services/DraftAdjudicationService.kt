@@ -174,6 +174,13 @@ class DraftAdjudicationService(
       .map { it.toDto(offenceCodeLookupService) }
   }
 
+  fun lookupRuleDetails(offenceCode: Int): OffenceRuleDetailsDto {
+    return OffenceRuleDetailsDto(
+      paragraphNumber = offenceCodeLookupService.getParagraphNumber(offenceCode),
+      paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode),
+    )
+  }
+
   private fun saveToPrisonApi(draftAdjudication: DraftAdjudication, isNew: Boolean): NomisAdjudication {
     if (isNew) {
       return prisonApiGateway.publishAdjudication(

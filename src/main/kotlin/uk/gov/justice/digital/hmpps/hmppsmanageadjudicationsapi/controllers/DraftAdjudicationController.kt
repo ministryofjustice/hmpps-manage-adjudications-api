@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
@@ -105,6 +106,12 @@ class DraftAdjudicationController {
   ): InProgressAdjudicationResponse = InProgressAdjudicationResponse(
     draftAdjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(agencyId)
   )
+
+  @GetMapping("/offence-rule/{offenceCode}")
+  @ApiOperation(value = "Returns details of the offence rule relating to this offence code.")
+  fun getOffenceRule(
+    @PathVariable(name = "offenceCode") offenceCode: Int,
+  ): OffenceRuleDetailsDto = draftAdjudicationService.lookupRuleDetails(offenceCode)
 
   @PostMapping
   @PreAuthorize("hasAuthority('SCOPE_write')")
