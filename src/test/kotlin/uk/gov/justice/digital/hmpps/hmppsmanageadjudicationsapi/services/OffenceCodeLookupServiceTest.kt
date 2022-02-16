@@ -69,9 +69,10 @@ class OffenceCodeLookupServiceTest {
     assertValuesSetForAllItems(58)
   }
 
-  fun assertValuesSetForAllItems(offenceCode: Int) {
+  private fun assertValuesSetForAllItems(offenceCode: Int) {
     assertThat(offenceCodeLookupService.getParagraphNumber(offenceCode)).isNotBlank
     assertThat(offenceCodeLookupService.getParagraphDescription(offenceCode)).isNotBlank
+    assertThat(offenceCodeLookupService.getParagraphCode(offenceCode)).isNotBlank
     assertThat(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(offenceCode)).hasSizeGreaterThan(0)
     assertThat(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(offenceCode)).isNotBlank
   }

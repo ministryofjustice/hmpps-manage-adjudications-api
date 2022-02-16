@@ -61,8 +61,10 @@ class DraftAdjudicationServiceTest {
         dateCalculationService,
         authenticationFacade
       )
+    whenever(offenceCodeLookupService.getParagraphCode(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_CODE)
     whenever(offenceCodeLookupService.getParagraphNumber(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
+    whenever(offenceCodeLookupService.getParagraphCode(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_CODE)
     whenever(offenceCodeLookupService.getParagraphNumber(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
   }
@@ -250,7 +252,7 @@ class DraftAdjudicationServiceTest {
 
     @Test
     fun `edits the offence details of an existing draft adjudication`() {
-      val existingOffenceDetails = mutableListOf(Offence(offenceCode = 1, paragraphNumber = "1"))
+      val existingOffenceDetails = mutableListOf(Offence(offenceCode = 1, paragraphCode = "1"))
       val offenceDetailsToUse = listOf(BASIC_OFFENCE_DETAILS_REQUEST, FULL_OFFENCE_DETAILS_REQUEST)
       val offenceDetailsToSave = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
       val expectedOffenceDetailsResponse = listOf(BASIC_OFFENCE_DETAILS_RESPONSE_DTO, FULL_OFFENCE_DETAILS_RESPONSE_DTO)
@@ -641,15 +643,15 @@ class DraftAdjudicationServiceTest {
           .contains(1L, INCIDENT_TIME, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
 
         assertThat(reportedAdjudicationArgumentCaptor.value.offences)
-          .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+          .extracting("offenceCode", "paragraphCode", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
           .contains(
             Tuple(
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
             Tuple(
-              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
@@ -719,7 +721,7 @@ class DraftAdjudicationServiceTest {
             handoverDeadline = LocalDateTime.now(clock),
             incidentRoleCode = null,
             incidentRoleAssociatedPrisonersNumber = null,
-            offences = mutableListOf(ReportedOffence(offenceCode = 3, paragraphNumber = "4")),
+            offences = mutableListOf(ReportedOffence(offenceCode = 3, paragraphCode = "4")),
             statement = "olddata",
           )
         )
@@ -773,15 +775,15 @@ class DraftAdjudicationServiceTest {
           .contains(1L, LocalDateTime.now(clock), DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
 
         assertThat(reportedAdjudicationArgumentCaptor.value.offences)
-          .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+          .extracting("offenceCode", "paragraphCode", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
           .contains(
             Tuple(
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
             Tuple(
-              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
@@ -925,9 +927,11 @@ class DraftAdjudicationServiceTest {
     private val INCIDENT_ROLE_PARAGRAPH_DESCRIPTION = "Attempts to commit any of the foregoing offences:"
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
 
-    private val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5"
+    private val OFFENCE_CODE_2_PARAGRAPH_CODE = "5b"
+    private val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"
     private val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
-    private val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6"
+    private val OFFENCE_CODE_3_PARAGRAPH_CODE = "6a"
+    private val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6(a)"
     private val OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another paragraph description"
 
     private val BASIC_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(offenceCode = 2)
@@ -940,7 +944,7 @@ class DraftAdjudicationServiceTest {
     )
     private val BASIC_OFFENCE_DETAILS_DB_ENTITY = Offence(
       offenceCode = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-      paragraphNumber = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber
+      paragraphCode = OFFENCE_CODE_2_PARAGRAPH_CODE
     )
 
     private val FULL_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(
@@ -961,7 +965,7 @@ class DraftAdjudicationServiceTest {
     )
     private val FULL_OFFENCE_DETAILS_DB_ENTITY = Offence(
       offenceCode = FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-      paragraphNumber = FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
+      paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
       victimPrisonersNumber = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
       victimStaffUsername = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
       victimOtherPersonsName = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName,

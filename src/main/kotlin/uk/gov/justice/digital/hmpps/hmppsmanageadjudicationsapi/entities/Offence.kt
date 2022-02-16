@@ -8,7 +8,7 @@ import javax.persistence.Table
 data class Offence(
   override val id: Long? = null,
   var offenceCode: Int,
-  var paragraphNumber: String,
+  var paragraphCode: String,
   var victimPrisonersNumber: String? = null,
   var victimStaffUsername: String? = null,
   var victimOtherPersonsName: String? = null,

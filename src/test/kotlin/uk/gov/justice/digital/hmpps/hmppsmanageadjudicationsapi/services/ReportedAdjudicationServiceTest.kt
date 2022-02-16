@@ -67,11 +67,11 @@ class ReportedAdjudicationServiceTest {
           offences = mutableListOf(
             ReportedOffence(
               offenceCode = 2,
-              paragraphNumber = OFFENCE_CODE_2_PARAGRAPH_NUMBER,
+              paragraphCode = OFFENCE_CODE_2_PARAGRAPH_CODE,
             ),
             ReportedOffence(
               offenceCode = 3,
-              paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+              paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
               victimPrisonersNumber = "BB2345B",
               victimStaffUsername = "DEF34G",
               victimOtherPersonsName = "Another Name",
@@ -131,7 +131,7 @@ class ReportedAdjudicationServiceTest {
         offences = mutableListOf(
           ReportedOffence(
             offenceCode = 3,
-            paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+            paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
             victimPrisonersNumber = "BB2345B",
             victimStaffUsername = "DEF34G",
             victimOtherPersonsName = "Another Name",
@@ -202,7 +202,7 @@ class ReportedAdjudicationServiceTest {
         offences = mutableListOf(
           ReportedOffence(
             offenceCode = 3,
-            paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+            paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
             victimPrisonersNumber = "BB2345B",
             victimStaffUsername = "DEF34G",
             victimOtherPersonsName = "Another Name",
@@ -257,7 +257,7 @@ class ReportedAdjudicationServiceTest {
       offences = mutableListOf(
         ReportedOffence(
           offenceCode = 3,
-          paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+          paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
           victimPrisonersNumber = "BB2345B",
           victimStaffUsername = "DEF34G",
           victimOtherPersonsName = "Another Name",
@@ -283,7 +283,7 @@ class ReportedAdjudicationServiceTest {
       offenceDetails = mutableListOf(
         Offence(
           offenceCode = 3,
-          paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+          paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
           victimPrisonersNumber = "BB2345B",
           victimStaffUsername = "DEF34G",
           victimOtherPersonsName = "Another Name",
@@ -354,9 +354,11 @@ class ReportedAdjudicationServiceTest {
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private const val INCIDENT_STATEMENT = "A statement"
 
-    private const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5"
+    private const val OFFENCE_CODE_2_PARAGRAPH_CODE = "5b"
+    private const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"
     private const val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
-    private const val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6"
+    private const val OFFENCE_CODE_3_PARAGRAPH_CODE = "6a"
+    private const val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6(a)"
     private const val OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another paragraph description"
   }
 }
