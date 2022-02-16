@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDet
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -579,6 +580,12 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     private val INCIDENT_ROLE_WITH_ALL_VALUES = IncidentRoleDto("25a", "B23456")
     private val INCIDENT_ROLE_WITH_NO_VALUES = IncidentRoleDto(null, null)
     private val BASIC_OFFENCE_REQUEST = OffenceDetailsRequestItem(offenceCode = 3)
-    private val BASIC_OFFENCE_RESPONSE_DTO = OffenceDetailsDto(offenceCode = 3, paragraphNumber = "3", paragraphDescription = "A description")
+    private val BASIC_OFFENCE_RESPONSE_DTO = OffenceDetailsDto(
+      offenceCode = 3,
+      offenceRule = OffenceRuleDetailsDto(
+        paragraphNumber = "3",
+        paragraphDescription = "A description"
+      )
+    )
   }
 }

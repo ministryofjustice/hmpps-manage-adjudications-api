@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDet
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
@@ -167,16 +168,16 @@ class DraftAdjudicationServiceTest {
         .contains(incidentRoleDtoWithAllValuesSet().roleCode, incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber)
 
       assertThat(draftAdjudicationDto.offenceDetails).hasSize(2)
-        .extracting("offenceCode", "paragraphNumber", "paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+        .extracting("offenceCode", "offenceRule.paragraphNumber", "offenceRule.paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
         .contains(
           Tuple(
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode, BASIC_OFFENCE_DETAILS_RESPONSE_DTO.paragraphNumber,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.paragraphDescription, BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode, BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription, BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
             BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername, BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
           ),
           Tuple(
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode, FULL_OFFENCE_DETAILS_RESPONSE_DTO.paragraphNumber,
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.paragraphDescription, FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode, FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
+            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription, FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
             FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername, FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
           ),
         )
@@ -920,12 +921,14 @@ class DraftAdjudicationServiceTest {
     private val BASIC_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(offenceCode = 2)
     private val BASIC_OFFENCE_DETAILS_RESPONSE_DTO = OffenceDetailsDto(
       offenceCode = BASIC_OFFENCE_DETAILS_REQUEST.offenceCode,
-      paragraphNumber = OFFENCE_CODE_2_PARAGRAPH_NUMBER,
-      paragraphDescription = OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION
+      offenceRule = OffenceRuleDetailsDto(
+        paragraphNumber = OFFENCE_CODE_2_PARAGRAPH_NUMBER,
+        paragraphDescription = OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
+      )
     )
     private val BASIC_OFFENCE_DETAILS_DB_ENTITY = Offence(
       offenceCode = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-      paragraphNumber = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.paragraphNumber
+      paragraphNumber = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber
     )
 
     private val FULL_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(
@@ -936,15 +939,17 @@ class DraftAdjudicationServiceTest {
     )
     private val FULL_OFFENCE_DETAILS_RESPONSE_DTO = OffenceDetailsDto(
       offenceCode = FULL_OFFENCE_DETAILS_REQUEST.offenceCode,
-      paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
-      paragraphDescription = OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
+      offenceRule = OffenceRuleDetailsDto(
+        paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+        paragraphDescription = OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
+      ),
       victimPrisonersNumber = FULL_OFFENCE_DETAILS_REQUEST.victimPrisonersNumber,
       victimStaffUsername = FULL_OFFENCE_DETAILS_REQUEST.victimStaffUsername,
       victimOtherPersonsName = FULL_OFFENCE_DETAILS_REQUEST.victimOtherPersonsName,
     )
     private val FULL_OFFENCE_DETAILS_DB_ENTITY = Offence(
       offenceCode = FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-      paragraphNumber = FULL_OFFENCE_DETAILS_RESPONSE_DTO.paragraphNumber,
+      paragraphNumber = FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
       victimPrisonersNumber = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
       victimStaffUsername = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
       victimOtherPersonsName = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName,

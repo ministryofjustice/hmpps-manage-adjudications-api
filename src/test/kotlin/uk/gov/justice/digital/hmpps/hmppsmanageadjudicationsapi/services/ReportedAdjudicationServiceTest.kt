@@ -101,7 +101,7 @@ class ReportedAdjudicationServiceTest {
         .contains("25b", "BB2345B")
 
       assertThat(reportedAdjudicationDto.offences)
-        .extracting("offenceCode", "paragraphNumber", "paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+        .extracting("offenceCode", "offenceRule.paragraphNumber", "offenceRule.paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
         .contains(
           Tuple(2, OFFENCE_CODE_2_PARAGRAPH_NUMBER, OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION, null, null, null),
           Tuple(3, OFFENCE_CODE_3_PARAGRAPH_NUMBER, OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION, "BB2345B", "DEF34G", "Another Name"),
@@ -338,7 +338,7 @@ class ReportedAdjudicationServiceTest {
         .extracting("roleCode", "associatedPrisonersNumber")
         .contains("25b", "BB2345B")
       assertThat(createdDraft.offenceDetails)
-        .extracting("offenceCode", "paragraphNumber", "paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+        .extracting("offenceCode", "offenceRule.paragraphNumber", "offenceRule.paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
         .contains(
           Tuple(3, OFFENCE_CODE_3_PARAGRAPH_NUMBER, OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION, "BB2345B", "DEF34G", "Another Name")
         )
