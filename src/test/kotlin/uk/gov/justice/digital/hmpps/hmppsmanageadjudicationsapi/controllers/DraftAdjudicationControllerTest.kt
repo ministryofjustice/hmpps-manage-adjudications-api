@@ -164,8 +164,11 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.locationId").value(1))
-        .andExpect(jsonPath("$.draftAdjudication.incidentRole.roleCode").value(
-          INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode))
+        .andExpect(
+          jsonPath("$.draftAdjudication.incidentRole.roleCode").value(
+            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode
+          )
+        )
         .andExpect(jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber))
     }
 
@@ -384,8 +387,11 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.locationId").value(3))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
-        .andExpect(jsonPath("$.draftAdjudication.incidentRole.roleCode").value(
-          INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode))
+        .andExpect(
+          jsonPath("$.draftAdjudication.incidentRole.roleCode").value(
+            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode
+          )
+        )
         .andExpect(jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber))
     }
 
@@ -563,8 +569,11 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.locationId").value(1))
         .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
-        .andExpect(jsonPath("$.draftAdjudications[0].incidentRole.roleCode").value(
-          INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode))
+        .andExpect(
+          jsonPath("$.draftAdjudications[0].incidentRole.roleCode").value(
+            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode
+          )
+        )
         .andExpect(jsonPath("$.draftAdjudications[0].incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber))
         .andExpect(jsonPath("$.draftAdjudications[1].id").value(2))
         .andExpect(jsonPath("$.draftAdjudications[1].prisonerNumber").value("A12346"))
@@ -581,10 +590,9 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
 
-    private val INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST = IncidentRoleRequest("25a",  "B23456")
-    private val INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO = IncidentRoleDto("25a", OffenceRuleDetailsDto("", ""),"B23456")
+    private val INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST = IncidentRoleRequest("25a", "B23456")
+    private val INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO = IncidentRoleDto("25a", OffenceRuleDetailsDto("", ""), "B23456")
 
-    private val INCIDENT_ROLE_WITH_NO_VALUES_REQUEST = IncidentRoleRequest(null, null)
     private val INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO = IncidentRoleDto(null, null, null)
 
     private val BASIC_OFFENCE_REQUEST = OffenceDetailsRequestItem(offenceCode = 3)

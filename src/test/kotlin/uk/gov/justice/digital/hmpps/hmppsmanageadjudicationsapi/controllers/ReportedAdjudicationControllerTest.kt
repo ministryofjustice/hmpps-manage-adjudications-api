@@ -233,6 +233,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         "25(a)",
         "Commits an assault"
       ),
-      "B23456")
+      "B23456"
+    )
   }
 }
