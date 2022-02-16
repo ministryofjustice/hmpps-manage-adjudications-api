@@ -633,12 +633,16 @@ class DraftAdjudicationServiceTest {
         assertThat(reportedAdjudicationArgumentCaptor.value.offences)
           .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
           .contains(
-            Tuple(BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+            Tuple(
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName),
-            Tuple(FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+            ),
+            Tuple(
+              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName),
+              FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+            ),
           )
       }
 
@@ -761,12 +765,16 @@ class DraftAdjudicationServiceTest {
         assertThat(reportedAdjudicationArgumentCaptor.value.offences)
           .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
           .contains(
-            Tuple(BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+            Tuple(
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName),
-            Tuple(FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+            ),
+            Tuple(
+              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName),
+              FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+            ),
           )
       }
 
