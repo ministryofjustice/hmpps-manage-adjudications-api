@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
@@ -37,7 +36,15 @@ data class NewAdjudicationRequest(
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime,
   @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
-  val incidentRole: IncidentRoleDto,
+  val incidentRole: IncidentRoleRequest,
+)
+
+@ApiModel("Request to update the incident details")
+data class IncidentRoleRequest(
+  @ApiModelProperty(value = "The incident role code", notes = "If not set then it is assumed they committed the offence on their own", example = "25a")
+  val roleCode: String?,
+  @ApiModelProperty(value = "The prison number of the other prisoner involved in the incident", notes = "This only applies to role codes 25b and 25c", example = "G2996UX")
+  val associatedPrisonersNumber: String?,
 )
 
 @ApiModel("Request to update the list of offence details for a draft adjudication")
@@ -77,7 +84,7 @@ data class EditIncidentDetailsRequest(
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime? = null,
   @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
-  val incidentRole: IncidentRoleDto? = null,
+  val incidentRole: IncidentRoleRequest? = null,
 )
 
 @ApiModel("Draft adjudication response")

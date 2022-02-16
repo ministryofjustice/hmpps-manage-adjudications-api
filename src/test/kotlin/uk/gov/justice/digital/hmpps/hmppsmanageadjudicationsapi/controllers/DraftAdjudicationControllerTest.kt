@@ -54,7 +54,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
         )
       )
     }
@@ -67,7 +67,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `calls the service to start a new adjudication for a prisoner`() {
-      startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES)
+      startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isCreated)
 
       verify(draftAdjudicationService).startNewAdjudication(
@@ -75,14 +75,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         "MDI",
         1,
         DATE_TIME_OF_INCIDENT,
-        INCIDENT_ROLE_WITH_ALL_VALUES,
+        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
       )
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `returns the newly created draft adjudication`() {
-      startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES)
+      startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isCreated)
         .andExpect(jsonPath("draftAdjudication.id").isNumber)
         .andExpect(jsonPath("draftAdjudication.adjudicationNumber").doesNotExist())
@@ -90,8 +90,8 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("draftAdjudication.incidentDetails.locationId").value(2))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
-        .andExpect(jsonPath("draftAdjudication.incidentRole.roleCode").value(INCIDENT_ROLE_WITH_ALL_VALUES.roleCode))
-        .andExpect(jsonPath("draftAdjudication.incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_ALL_VALUES.associatedPrisonersNumber))
+        .andExpect(jsonPath("draftAdjudication.incidentRole.roleCode").value(INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode))
+        .andExpect(jsonPath("draftAdjudication.incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber))
     }
 
     @Test
@@ -111,7 +111,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       agencyId: String = "MDI",
       locationId: Long? = null,
       dateTimeOfIncident: LocalDateTime? = null,
-      incidentRole: IncidentRoleDto? = null,
+      incidentRole: IncidentRoleRequest? = null,
     ): ResultActions {
       val jsonBody =
         if (locationId == null && dateTimeOfIncident == null && prisonerNumber == null) "" else objectMapper.writeValueAsString(
@@ -154,7 +154,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO
         )
       )
       makeGetDraftAdjudicationRequest(1)
@@ -164,8 +164,12 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.locationId").value(1))
-        .andExpect(jsonPath("$.draftAdjudication.incidentRole.roleCode").value(INCIDENT_ROLE_WITH_ALL_VALUES.roleCode))
-        .andExpect(jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_ALL_VALUES.associatedPrisonersNumber))
+        .andExpect(
+          jsonPath("$.draftAdjudication.incidentRole.roleCode").value(
+            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode
+          )
+        )
+        .andExpect(jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber))
     }
 
     @Test
@@ -181,7 +185,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
-          incidentRole = INCIDENT_ROLE_WITH_NO_VALUES,
+          incidentRole = INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO,
         )
       )
       makeGetDraftAdjudicationRequest(1)
@@ -218,7 +222,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           adjudicationNumber = null,
           prisonerNumber = "A12345",
           incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
           offenceDetails = listOf(BASIC_OFFENCE_RESPONSE_DTO),
         )
       )
@@ -278,7 +282,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           adjudicationNumber = null,
           prisonerNumber = "A12345",
           incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
           incidentStatement = IncidentStatementDto(statement = "test"),
         )
       )
@@ -348,43 +352,47 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           adjudicationNumber = null,
           prisonerNumber = "A12345",
           incidentDetails = IncidentDetailsDto(locationId = 3, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
         )
       )
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
-      editIncidentDetailsRequest(1, 1, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES)
+      editIncidentDetailsRequest(1, 1, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `makes a call to edit the incident details`() {
-      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES)
+      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isOk)
 
       verify(draftAdjudicationService).editIncidentDetails(
         1,
         2,
         DATE_TIME_OF_INCIDENT,
-        INCIDENT_ROLE_WITH_ALL_VALUES
+        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST
       )
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `returns the incident details`() {
-      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES)
+      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isOk)
         .andExpect(jsonPath("$.draftAdjudication.id").isNumber)
         .andExpect(jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.locationId").value(3))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
-        .andExpect(jsonPath("$.draftAdjudication.incidentRole.roleCode").value(INCIDENT_ROLE_WITH_ALL_VALUES.roleCode))
-        .andExpect(jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_ALL_VALUES.associatedPrisonersNumber))
+        .andExpect(
+          jsonPath("$.draftAdjudication.incidentRole.roleCode").value(
+            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode
+          )
+        )
+        .andExpect(jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber))
     }
 
     @Test
@@ -400,7 +408,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       ).thenThrow(
         IllegalStateException::class.java
       )
-      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES)
+      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isBadRequest)
     }
 
@@ -408,7 +416,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       id: Long,
       locationId: Long,
       dateTimeOfIncident: LocalDateTime?,
-      incidentRole: IncidentRoleDto?
+      incidentRole: IncidentRoleRequest?
     ): ResultActions {
       val body =
         objectMapper.writeValueAsString(
@@ -438,7 +446,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           adjudicationNumber = null,
           prisonerNumber = "A12345",
           incidentDetails = IncidentDetailsDto(locationId = 1, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
           incidentStatement = IncidentStatementDto(statement = "new statement"),
         )
       )
@@ -519,7 +527,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
               dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
-            incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+            incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
           ),
           DraftAdjudicationDto(
             id = 2,
@@ -530,7 +538,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
               dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1),
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE.plusMonths(1)
             ),
-            incidentRole = INCIDENT_ROLE_WITH_NO_VALUES,
+            incidentRole = INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO,
           )
         )
       )
@@ -561,8 +569,12 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.locationId").value(1))
         .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
-        .andExpect(jsonPath("$.draftAdjudications[0].incidentRole.roleCode").value(INCIDENT_ROLE_WITH_ALL_VALUES.roleCode))
-        .andExpect(jsonPath("$.draftAdjudications[0].incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_ALL_VALUES.associatedPrisonersNumber))
+        .andExpect(
+          jsonPath("$.draftAdjudications[0].incidentRole.roleCode").value(
+            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode
+          )
+        )
+        .andExpect(jsonPath("$.draftAdjudications[0].incidentRole.associatedPrisonersNumber").value(INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber))
         .andExpect(jsonPath("$.draftAdjudications[1].id").value(2))
         .andExpect(jsonPath("$.draftAdjudications[1].prisonerNumber").value("A12346"))
     }
@@ -577,8 +589,12 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
-    private val INCIDENT_ROLE_WITH_ALL_VALUES = IncidentRoleDto("25a", "B23456")
-    private val INCIDENT_ROLE_WITH_NO_VALUES = IncidentRoleDto(null, null)
+
+    private val INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST = IncidentRoleRequest("25a", "B23456")
+    private val INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO = IncidentRoleDto("25a", OffenceRuleDetailsDto("", ""), "B23456")
+
+    private val INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO = IncidentRoleDto(null, null, null)
+
     private val BASIC_OFFENCE_REQUEST = OffenceDetailsRequestItem(offenceCode = 3)
     private val BASIC_OFFENCE_RESPONSE_DTO = OffenceDetailsDto(
       offenceCode = 3,

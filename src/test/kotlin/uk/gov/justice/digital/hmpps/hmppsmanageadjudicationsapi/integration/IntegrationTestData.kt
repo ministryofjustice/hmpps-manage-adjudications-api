@@ -4,7 +4,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DraftAdjudicationResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.BankHolidayApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
@@ -41,6 +41,8 @@ class IntegrationTestData(
     const val DEFAULT_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-12T10:00:00"
     const val DEFAULT_HANDOVER_DEADLINE_ISO_STRING = "2010-11-15T10:00:00"
     const val DEFAULT_INCIDENT_ROLE_CODE = "25a"
+    const val DEFAULT_INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(a)"
+    const val DEFAULT_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION = "Attempts to commit any of the foregoing offences:"
     const val DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER = "B2345BB"
     val DEFAULT_OFFENCES = listOf(FULL_OFFENCE, BASIC_OFFENCE)
     const val DEFAULT_STATEMENT = "A statement"
@@ -51,6 +53,8 @@ class IntegrationTestData(
     const val UPDATED_HANDOVER_DEADLINE_ISO_STRING = "2010-11-16T10:00:00"
     const val UPDATED_LOCATION_ID = 721899L
     const val UPDATED_INCIDENT_ROLE_CODE = "25b"
+    const val UPDATED_INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(b)"
+    const val UPDATED_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION = "Incites another prisoner to commit any of the foregoing offences:"
     const val UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER = "C3456CC"
     val UPDATED_OFFENCES = listOf(BASIC_OFFENCE)
     const val UPDATED_STATEMENT = "updated test statement"
@@ -66,6 +70,8 @@ class IntegrationTestData(
       dateTimeOfIncident = DEFAULT_DATE_TIME_OF_INCIDENT,
       handoverDeadlineISOString = DEFAULT_HANDOVER_DEADLINE_ISO_STRING,
       incidentRoleCode = DEFAULT_INCIDENT_ROLE_CODE,
+      incidentRoleParagraphNumber = DEFAULT_INCIDENT_ROLE_PARAGRAPH_NUMBER,
+      incidentRoleParagraphDescription = DEFAULT_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION,
       incidentRoleAssociatedPrisonersNumber = DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER,
       offences = DEFAULT_OFFENCES,
       statement = DEFAULT_STATEMENT,
@@ -82,6 +88,8 @@ class IntegrationTestData(
       dateTimeOfIncident = UPDATED_DATE_TIME_OF_INCIDENT,
       handoverDeadlineISOString = UPDATED_HANDOVER_DEADLINE_ISO_STRING,
       incidentRoleCode = UPDATED_INCIDENT_ROLE_CODE,
+      incidentRoleParagraphNumber = UPDATED_INCIDENT_ROLE_PARAGRAPH_NUMBER,
+      incidentRoleParagraphDescription = UPDATED_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION,
       incidentRoleAssociatedPrisonersNumber = UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER,
       offences = UPDATED_OFFENCES,
       statement = UPDATED_STATEMENT,
@@ -98,6 +106,8 @@ class IntegrationTestData(
       dateTimeOfIncident = LocalDateTime.parse("2020-12-13T08:00:00"),
       handoverDeadlineISOString = "2020-12-15T08:00:00",
       incidentRoleCode = "25c",
+      incidentRoleParagraphNumber = "25(c)",
+      incidentRoleParagraphDescription = "Assists another prisoner to commit, or to attempt to commit, any of the foregoing offences:",
       incidentRoleAssociatedPrisonersNumber = "D4567DD",
       offences = DEFAULT_OFFENCES,
       statement = "Test statement",
@@ -114,6 +124,8 @@ class IntegrationTestData(
       dateTimeOfIncident = LocalDateTime.parse("2020-12-14T09:00:00"),
       handoverDeadlineISOString = "2020-12-16T09:00:00",
       incidentRoleCode = "25a",
+      incidentRoleParagraphNumber = "25(a)",
+      incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
       incidentRoleAssociatedPrisonersNumber = "A5678AA",
       offences = DEFAULT_OFFENCES,
       statement = "Different test statement",
@@ -130,6 +142,8 @@ class IntegrationTestData(
       dateTimeOfIncident = LocalDateTime.parse("2020-12-15T10:00:00"),
       handoverDeadlineISOString = "2020-12-17T10:00:00",
       incidentRoleCode = "25c",
+      incidentRoleParagraphNumber = "25(c)",
+      incidentRoleParagraphDescription = "Assists another prisoner to commit, or to attempt to commit, any of the foregoing offences:",
       incidentRoleAssociatedPrisonersNumber = "D4567DD",
       offences = DEFAULT_OFFENCES,
       statement = "Another test statement",
@@ -146,6 +160,8 @@ class IntegrationTestData(
       dateTimeOfIncident = LocalDateTime.parse("2020-12-16T10:00:00"),
       handoverDeadlineISOString = "2020-12-18T10:00:00",
       incidentRoleCode = "25a",
+      incidentRoleParagraphNumber = "25(a)",
+      incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
       incidentRoleAssociatedPrisonersNumber = "A5678AA",
       offences = DEFAULT_OFFENCES,
       statement = "Yet another test statement",
@@ -162,6 +178,8 @@ class IntegrationTestData(
       dateTimeOfIncident = LocalDateTime.parse("2020-12-17T10:00:00"),
       handoverDeadlineISOString = "2020-12-19T10:00:00",
       incidentRoleCode = "25a",
+      incidentRoleParagraphNumber = "25(a)",
+      incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
       incidentRoleAssociatedPrisonersNumber = "A5678AA",
       offences = DEFAULT_OFFENCES,
       statement = "Keep on with the test statements",
@@ -192,7 +210,7 @@ class IntegrationTestData(
           "agencyId" to testDataSet.agencyId,
           "locationId" to testDataSet.locationId,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,
-          "incidentRole" to IncidentRoleDto(testDataSet.incidentRoleCode, testDataSet.incidentRoleAssociatedPrisonersNumber),
+          "incidentRole" to IncidentRoleRequest(testDataSet.incidentRoleCode, testDataSet.incidentRoleAssociatedPrisonersNumber),
         )
       )
       .exchange()
@@ -254,7 +272,7 @@ class IntegrationTestData(
         mapOf(
           "locationId" to testDataSet.locationId,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncidentISOString,
-          "incidentRole" to IncidentRoleDto("25b", "C3456CC"),
+          "incidentRole" to IncidentRoleRequest("25b", "C3456CC"),
         )
       )
       .exchange()
