@@ -631,23 +631,19 @@ class DraftAdjudicationServiceTest {
           .contains(1L, INCIDENT_TIME, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
 
         assertThat(reportedAdjudicationArgumentCaptor.value.offences)
-          // To fix as part of reported adjudication work
-          .extracting("offenceCode", "victimPrisonersNumber")
-          .contains(
-            Tuple(BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber),
-            Tuple(FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber),
-          )
-          /*
           .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
           .contains(
-            Tuple(BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+            Tuple(
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName),
-            Tuple(FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+            ),
+            Tuple(
+              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName),
+              FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+            ),
           )
-           */
       }
 
       @Test
@@ -713,7 +709,7 @@ class DraftAdjudicationServiceTest {
             handoverDeadline = LocalDateTime.now(clock),
             incidentRoleCode = null,
             incidentRoleAssociatedPrisonersNumber = null,
-            offences = mutableListOf(ReportedOffence(offenceCode = 3)),
+            offences = mutableListOf(ReportedOffence(offenceCode = 3, paragraphNumber = "4")),
             statement = "olddata",
           )
         )
@@ -767,23 +763,19 @@ class DraftAdjudicationServiceTest {
           .contains(1L, LocalDateTime.now(clock), DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
 
         assertThat(reportedAdjudicationArgumentCaptor.value.offences)
-          // To fix as part of reported adjudication work
-          .extracting("offenceCode", "victimPrisonersNumber")
-          .contains(
-            Tuple(BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber),
-            Tuple(FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber),
-          )
-          /*
           .extracting("offenceCode", "paragraphNumber", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
           .contains(
-            Tuple(BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+            Tuple(
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName),
-            Tuple(FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+            ),
+            Tuple(
+              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphNumber,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName),
+              FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+            ),
           )
-           */
       }
 
       @Test
