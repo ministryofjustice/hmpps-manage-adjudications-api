@@ -14,6 +14,10 @@ class OffenceCodeLookupService {
     return offenceCodeDetailsByCode[offenceCode]?.notCommittedOnOwnNomisCode ?: OffenceCodeDefaults.DEFAULT_NOMIS_ID
   }
 
+  fun getParagraphCode(offenceCode: Int): String {
+    return offenceCodeDetailsByCode[offenceCode]?.paragraph?.paragraphCode ?: OffenceCodeDefaults.DEFAULT_PARAGRAPH_DATA
+  }
+
   fun getParagraphNumber(offenceCode: Int): String {
     return offenceCodeDetailsByCode[offenceCode]?.paragraph?.paragraphNumber ?: OffenceCodeDefaults.DEFAULT_PARAGRAPH_DATA
   }
@@ -52,7 +56,7 @@ class OffenceCodeLookupBuilder {
     val paragraph22 = OffenceCodeParagraph("22", "Disobeys any lawful order")
     val paragraph23 = OffenceCodeParagraph("23", "Disobeys or fails to comply with any rule or regulation applying to them")
     val paragraph24 = OffenceCodeParagraph("24", "Receives any controlled drug, or, without the consent of an officer, any other article, during the course of a visit (not being an interview such as is mentioned in rule 38, which relates to visits from legal advisors)")
-    val paragraph24a = OffenceCodeParagraph("24a", "Displays, attaches or draws on any part of a prison, or on any other property, threatening, abusive or insulting racist words, drawings, symbols or other material")
+    val paragraph24a = OffenceCodeParagraph("24(a)", "Displays, attaches or draws on any part of a prison, or on any other property, threatening, abusive or insulting racist words, drawings, symbols or other material", "24a")
 
     return OffenceCodeLookupBuilder()
       .code(0).nomisCodes("1A", "1B").notCommittedOnOwnNomisCodes("25D").paragraph(paragraph1)
@@ -170,6 +174,7 @@ data class OffenceCodeDetails(
 data class OffenceCodeParagraph(
   val paragraphNumber: String,
   val paragraphDescription: String,
+  val paragraphCode: String = paragraphNumber,
 )
 
 object OffenceCodeDefaults {

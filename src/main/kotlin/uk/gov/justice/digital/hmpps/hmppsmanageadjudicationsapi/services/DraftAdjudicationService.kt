@@ -81,7 +81,7 @@ class DraftAdjudicationService(
     val newValuesToStore = offenceDetails.map {
       Offence(
         offenceCode = it.offenceCode,
-        paragraphNumber = offenceCodeLookupService.getParagraphNumber(it.offenceCode),
+        paragraphCode = offenceCodeLookupService.getParagraphCode(it.offenceCode),
         victimPrisonersNumber = it.victimPrisonersNumber,
         victimStaffUsername = it.victimStaffUsername,
         victimOtherPersonsName = it.victimOtherPersonsName,
@@ -252,7 +252,7 @@ class DraftAdjudicationService(
     return (draftOffences ?: listOf()).map {
       ReportedOffence(
         offenceCode = it.offenceCode,
-        paragraphNumber = it.paragraphNumber,
+        paragraphCode = it.paragraphCode,
         victimPrisonersNumber = it.victimPrisonersNumber,
         victimStaffUsername = it.victimStaffUsername,
         victimOtherPersonsName = it.victimOtherPersonsName,
@@ -300,7 +300,7 @@ fun IncidentRole.toDto(): IncidentRoleDto = IncidentRoleDto(
 fun Offence.toDto(offenceCodeLookupService: OffenceCodeLookupService): OffenceDetailsDto = OffenceDetailsDto(
   offenceCode = this.offenceCode,
   offenceRule = OffenceRuleDetailsDto(
-    paragraphNumber = this.paragraphNumber,
+    paragraphNumber = offenceCodeLookupService.getParagraphNumber(offenceCode),
     paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode),
   ),
   victimPrisonersNumber = this.victimPrisonersNumber,

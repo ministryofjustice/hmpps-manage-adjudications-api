@@ -88,7 +88,7 @@ class ReportedAdjudicationService(
     return (offences ?: mutableListOf()).map { offence ->
       Offence(
         offenceCode = offence.offenceCode,
-        paragraphNumber = offence.paragraphNumber,
+        paragraphCode = offence.paragraphCode,
         victimPrisonersNumber = offence.victimPrisonersNumber,
         victimStaffUsername = offence.victimStaffUsername,
         victimOtherPersonsName = offence.victimOtherPersonsName,
@@ -125,7 +125,7 @@ private fun toReportedOffence(offences: MutableList<ReportedOffence>?, offenceCo
     OffenceDto(
       offenceCode = offence.offenceCode,
       offenceRule = OffenceRuleDto(
-        paragraphNumber = offence.paragraphNumber,
+        paragraphNumber = offenceCodeLookupService.getParagraphNumber(offence.offenceCode),
         paragraphDescription = offenceCodeLookupService.getParagraphDescription(offence.offenceCode),
       ),
       victimPrisonersNumber = offence.victimPrisonersNumber,
