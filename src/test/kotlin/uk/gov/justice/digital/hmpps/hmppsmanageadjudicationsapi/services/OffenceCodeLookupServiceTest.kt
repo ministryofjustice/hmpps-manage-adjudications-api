@@ -36,7 +36,6 @@ class OffenceCodeLookupServiceTest {
     assertValuesSetForAllItems(23201..23202)
     assertValuesSetForAllItems(24001..24002)
     assertValuesSetForAllItems(24101..24101)
-
   }
 
   private fun assertValuesSetForAllItems(offenceCodes: IntRange) {
