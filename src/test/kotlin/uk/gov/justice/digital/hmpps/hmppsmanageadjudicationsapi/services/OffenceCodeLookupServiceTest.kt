@@ -8,72 +8,43 @@ class OffenceCodeLookupServiceTest {
 
   @Test
   fun `offence codes have values set for all items`() {
-    assertValuesSetForAllItems(0)
-    assertValuesSetForAllItems(1)
-    assertValuesSetForAllItems(2)
-    assertValuesSetForAllItems(3)
-    assertValuesSetForAllItems(4)
-    assertValuesSetForAllItems(5)
-    assertValuesSetForAllItems(6)
-    assertValuesSetForAllItems(7)
-    assertValuesSetForAllItems(8)
-    assertValuesSetForAllItems(9)
-
-    assertValuesSetForAllItems(11)
-    assertValuesSetForAllItems(12)
-    assertValuesSetForAllItems(13)
-    assertValuesSetForAllItems(14)
-
-    assertValuesSetForAllItems(16)
-    assertValuesSetForAllItems(17)
-    assertValuesSetForAllItems(18)
-    assertValuesSetForAllItems(19)
-    assertValuesSetForAllItems(20)
-    assertValuesSetForAllItems(21)
-    assertValuesSetForAllItems(22)
-    assertValuesSetForAllItems(23)
-    assertValuesSetForAllItems(24)
-    assertValuesSetForAllItems(25)
-    assertValuesSetForAllItems(26)
-    assertValuesSetForAllItems(27)
-    assertValuesSetForAllItems(28)
-    assertValuesSetForAllItems(29)
-    assertValuesSetForAllItems(30)
-
-    assertValuesSetForAllItems(32)
-    assertValuesSetForAllItems(33)
-    assertValuesSetForAllItems(34)
-    assertValuesSetForAllItems(35)
-
-    assertValuesSetForAllItems(37)
-    assertValuesSetForAllItems(38)
-    assertValuesSetForAllItems(39)
-    assertValuesSetForAllItems(40)
-    assertValuesSetForAllItems(41)
-
-    assertValuesSetForAllItems(43)
-    assertValuesSetForAllItems(44)
-
-    assertValuesSetForAllItems(46)
-    assertValuesSetForAllItems(47)
-    assertValuesSetForAllItems(48)
-    assertValuesSetForAllItems(49)
-
-    assertValuesSetForAllItems(51)
-    assertValuesSetForAllItems(52)
-    assertValuesSetForAllItems(53)
-    assertValuesSetForAllItems(54)
-
-    assertValuesSetForAllItems(56)
-    assertValuesSetForAllItems(57)
-    assertValuesSetForAllItems(58)
+    assertValuesSetForAllItems(1001..1008)
+    assertValuesSetForAllItems(2001..2004)
+    assertValuesSetForAllItems(3001..3001)
+    assertValuesSetForAllItems(4001..4001)
+    assertValuesSetForAllItems(5001..5001)
+    assertValuesSetForAllItems(6001..6001)
+    assertValuesSetForAllItems(7001..7002)
+    assertValuesSetForAllItems(8001..8002)
+    assertValuesSetForAllItems(9001..9002)
+    assertValuesSetForAllItems(10001..10002)
+    assertValuesSetForAllItems(12001..12002)
+    assertValuesSetForAllItems(12101..12102)
+    assertValuesSetForAllItems(13001..13001)
+    assertValuesSetForAllItems(14001..14001)
+    assertValuesSetForAllItems(15001..15001)
+    assertValuesSetForAllItems(16001..16001)
+    assertValuesSetForAllItems(17001..17002)
+    assertValuesSetForAllItems(18001..18002)
+    assertValuesSetForAllItems(19001..19003)
+    assertValuesSetForAllItems(20001..20002)
+    assertValuesSetForAllItems(21001..21001)
+    assertValuesSetForAllItems(22001..22001)
+    assertValuesSetForAllItems(23101..23101)
+    assertValuesSetForAllItems(23001..23002)
+    assertValuesSetForAllItems(23101..23101)
+    assertValuesSetForAllItems(23201..23202)
+    assertValuesSetForAllItems(24001..24002)
+    assertValuesSetForAllItems(24101..24101)
   }
 
-  private fun assertValuesSetForAllItems(offenceCode: Int) {
-    assertThat(offenceCodeLookupService.getParagraphNumber(offenceCode)).isNotBlank
-    assertThat(offenceCodeLookupService.getParagraphDescription(offenceCode)).isNotBlank
-    assertThat(offenceCodeLookupService.getParagraphCode(offenceCode)).isNotBlank
-    assertThat(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(offenceCode)).hasSizeGreaterThan(0)
-    assertThat(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(offenceCode)).isNotBlank
+  private fun assertValuesSetForAllItems(offenceCodes: IntRange) {
+    offenceCodes.forEach {
+      assertThat(offenceCodeLookupService.getParagraphNumber(it)).isNotBlank
+      assertThat(offenceCodeLookupService.getParagraphDescription(it)).isNotBlank
+      assertThat(offenceCodeLookupService.getParagraphCode(it)).isNotBlank
+      assertThat(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(it)).hasSizeGreaterThan(0)
+      assertThat(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(it)).isNotBlank
+    }
   }
 }

@@ -484,7 +484,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   @Test
   fun `gets offence rule details for a valid offence code`() {
     webTestClient.get()
-      .uri("/draft-adjudications/offence-rule/4")
+      .uri("/draft-adjudications/offence-rule/1005")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk
