@@ -340,7 +340,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       "agencyId" to IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
       "incidentLocationId" to IntegrationTestData.DEFAULT_ADJUDICATION.locationId,
       "incidentTime" to IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString,
-      "statement" to IntegrationTestData.DEFAULT_ADJUDICATION.statement
+      "statement" to IntegrationTestData.DEFAULT_ADJUDICATION.statement,
+      "offenceCodes" to IntegrationTestData.DEFAULT_EXPECTED_NOMIS_DATA.nomisCodes,
+      "victimStaffUsernames" to IntegrationTestData.DEFAULT_EXPECTED_NOMIS_DATA.victimStaffUsernames,
+      "victimOffenderIds" to IntegrationTestData.DEFAULT_EXPECTED_NOMIS_DATA.victimPrisonersNumbers,
+      "connectedOffenderIds" to listOf(DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER),
     )
 
     prisonApiMockServer.verifyPostAdjudication(objectMapper.writeValueAsString(expectedBody))
@@ -399,6 +403,10 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       "incidentLocationId" to IntegrationTestData.UPDATED_ADJUDICATION.locationId,
       "incidentTime" to IntegrationTestData.UPDATED_ADJUDICATION.dateTimeOfIncidentISOString,
       "statement" to IntegrationTestData.UPDATED_ADJUDICATION.statement,
+      "offenceCodes" to IntegrationTestData.UPDATED_EXPECTED_NOMIS_DATA.nomisCodes,
+      "victimStaffUsernames" to IntegrationTestData.UPDATED_EXPECTED_NOMIS_DATA.victimStaffUsernames,
+      "victimOffenderIds" to IntegrationTestData.UPDATED_EXPECTED_NOMIS_DATA.victimPrisonersNumbers,
+      "connectedOffenderIds" to listOf(UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER),
     )
 
     prisonApiMockServer.verifyPutAdjudication(objectMapper.writeValueAsString(expectedBody))

@@ -190,7 +190,11 @@ class DraftAdjudicationService(
           agencyId = draftAdjudication.agencyId,
           incidentTime = draftAdjudication.incidentDetails.dateTimeOfIncident,
           incidentLocationId = draftAdjudication.incidentDetails.locationId,
-          statement = draftAdjudication.incidentStatement?.statement!!
+          statement = draftAdjudication.incidentStatement?.statement!!,
+          offenceCodes = getNomisCodes(draftAdjudication.incidentRole, draftAdjudication.offenceDetails),
+          connectedOffenderIds = getAssociatedOffenders(draftAdjudication.incidentRole.associatedPrisonersNumber),
+          victimOffenderIds = getVictimOffenders(draftAdjudication.offenceDetails),
+          victimStaffUsernames = getVictimStaffUsernames(draftAdjudication.offenceDetails),
         )
       )
     } else {
@@ -199,10 +203,38 @@ class DraftAdjudicationService(
         AdjudicationDetailsToUpdate(
           incidentTime = draftAdjudication.incidentDetails.dateTimeOfIncident,
           incidentLocationId = draftAdjudication.incidentDetails.locationId,
-          statement = draftAdjudication.incidentStatement?.statement!!
+          statement = draftAdjudication.incidentStatement?.statement!!,
+          offenceCodes = getNomisCodes(draftAdjudication.incidentRole, draftAdjudication.offenceDetails),
+          connectedOffenderIds = getAssociatedOffenders(draftAdjudication.incidentRole.associatedPrisonersNumber),
+          victimOffenderIds = getVictimOffenders(draftAdjudication.offenceDetails),
+          victimStaffUsernames = getVictimStaffUsernames(draftAdjudication.offenceDetails),
         )
       )
     }
+  }
+
+  private fun getNomisCodes(roleDetails: IncidentRole, offenceDetails: MutableList<Offence>?): List<String> {
+    if (roleDetails.roleCode != null) { // Null means committed on own
+      return offenceDetails?.map { offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(it.offenceCode) }
+        ?: emptyList()
+    }
+    return offenceDetails?.flatMap { offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(it.offenceCode) }
+      ?: emptyList()
+  }
+
+  private fun getAssociatedOffenders(associatedPrisonersNumber: String?): List<String> {
+    if (associatedPrisonersNumber == null) {
+      return emptyList()
+    }
+    return listOf(associatedPrisonersNumber)
+  }
+
+  private fun getVictimOffenders(offenceDetails: MutableList<Offence>?): List<String> {
+    return offenceDetails?.mapNotNull { it.victimPrisonersNumber } ?: emptyList()
+  }
+
+  private fun getVictimStaffUsernames(offenceDetails: MutableList<Offence>?): List<String> {
+    return offenceDetails?.mapNotNull { it.victimStaffUsername } ?: emptyList()
   }
 
   private fun saveToReportedAdjudications(

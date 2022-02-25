@@ -48,6 +48,11 @@ class IntegrationTestData(
     const val DEFAULT_STATEMENT = "A statement"
     val DEFAULT_REPORTED_DATE_TIME = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
     const val DEFAULT_REPORTED_DATE_TIME_TEXT = "2010-11-13T10:00:00"
+    val DEFAULT_EXPECTED_NOMIS_DATA = NomisOffenceTestDataSet(
+      nomisCodes = listOf("4", "25G"), // 2 offences
+      victimStaffUsernames = listOf("ABC12D"),
+      victimPrisonersNumbers = listOf("A1234AA"),
+    )
 
     const val UPDATED_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-13T10:00:00"
     const val UPDATED_HANDOVER_DEADLINE_ISO_STRING = "2010-11-16T10:00:00"
@@ -59,6 +64,11 @@ class IntegrationTestData(
     val UPDATED_OFFENCES = listOf(BASIC_OFFENCE)
     const val UPDATED_STATEMENT = "updated test statement"
     val UPDATED_DATE_TIME_OF_INCIDENT = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
+    val UPDATED_EXPECTED_NOMIS_DATA = NomisOffenceTestDataSet(
+      nomisCodes = listOf("25G"), // Basic offence only
+      victimStaffUsernames = emptyList(),
+      victimPrisonersNumbers = emptyList(),
+    )
 
     val DEFAULT_ADJUDICATION = AdjudicationIntTestDataSet(
       adjudicationNumber = DEFAULT_ADJUDICATION_NUMBER,
