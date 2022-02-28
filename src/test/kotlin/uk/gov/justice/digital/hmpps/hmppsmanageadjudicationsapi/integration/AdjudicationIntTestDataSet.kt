@@ -28,3 +28,9 @@ data class OffenceTestDataSet(
   val victimStaffUsername: String? = null,
   val victimOtherPersonsName: String? = null,
 )
+
+data class NomisOffenceTestDataSet(
+  val nomisCodes: List<String>,
+  val victimStaffUsernames: List<String>,
+  val victimPrisonersNumbers: List<String>,
+)

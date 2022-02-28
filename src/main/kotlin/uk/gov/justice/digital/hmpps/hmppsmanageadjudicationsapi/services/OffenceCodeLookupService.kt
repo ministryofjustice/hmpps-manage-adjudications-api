@@ -4,6 +4,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class OffenceCodeLookupService {
+  companion object {
+    val NOMIS_CODE_PREFIX = "51:"
+  }
+
   var offenceCodeDetailsByCode: Map<Int, OffenceCodeDetails> = OffenceCodeLookupBuilder().buildlookup()
 
   fun getCommittedOnOwnNomisOffenceCodes(offenceCode: Int): List<String> {
@@ -145,12 +149,12 @@ class OffenceCodeLookupCodeBuilder(
   private var paragraph: OffenceCodeParagraph? = null
 
   fun nomisCodes(vararg codes: String): OffenceCodeLookupCodeBuilder {
-    nomisCodes = codes.toList()
+    nomisCodes = codes.toList().map { OffenceCodeLookupService.NOMIS_CODE_PREFIX + it }
     return this
   }
 
   fun notCommittedOnOwnNomisCodes(code: String): OffenceCodeLookupCodeBuilder {
-    notCommittedOnOwnNomisCode = code
+    notCommittedOnOwnNomisCode = OffenceCodeLookupService.NOMIS_CODE_PREFIX + code
     return this
   }
 
