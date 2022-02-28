@@ -63,9 +63,11 @@ class DraftAdjudicationServiceTest {
       )
     whenever(offenceCodeLookupService.getParagraphCode(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_CODE)
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2)).thenReturn(
-      listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN))
+      listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN)
+    )
     whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(2)).thenReturn(
-      OFFENCE_CODE_2_NOMIS_CODE_ASSISTED)
+      OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
+    )
     whenever(offenceCodeLookupService.getParagraphNumber(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
     whenever(offenceCodeLookupService.getParagraphCode(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_CODE)
