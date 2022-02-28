@@ -44,7 +44,10 @@ class OffenceCodeLookupServiceTest {
       assertThat(offenceCodeLookupService.getParagraphDescription(it)).isNotBlank
       assertThat(offenceCodeLookupService.getParagraphCode(it)).isNotBlank
       assertThat(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(it)).hasSizeGreaterThan(0)
-      assertThat(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(it)).isNotBlank
+      offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(it).forEach { it ->
+        assertThat(it).startsWith("51:")
+      }
+      assertThat(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(it)).startsWith("51:")
     }
   }
 }
