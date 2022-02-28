@@ -82,9 +82,9 @@ class DraftAdjudicationService(
       Offence(
         offenceCode = it.offenceCode,
         paragraphCode = offenceCodeLookupService.getParagraphCode(it.offenceCode),
-        victimPrisonersNumber = it.victimPrisonersNumber,
-        victimStaffUsername = it.victimStaffUsername,
-        victimOtherPersonsName = it.victimOtherPersonsName,
+        victimPrisonersNumber = it.victimPrisonersNumber?.ifBlank { null },
+        victimStaffUsername = it.victimStaffUsername?.ifBlank { null },
+        victimOtherPersonsName = it.victimOtherPersonsName?.ifBlank { null },
       )
     }.toMutableList()
     if (draftAdjudication.offenceDetails != null) {

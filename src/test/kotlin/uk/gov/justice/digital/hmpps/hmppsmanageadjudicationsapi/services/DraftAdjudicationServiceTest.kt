@@ -300,6 +300,66 @@ class DraftAdjudicationServiceTest {
     }
 
     @Test
+    fun `treats empty strings as null values`() {
+      val offenceDetailsToAdd = listOf(
+        OffenceDetailsRequestItem(
+          offenceCode = 2,
+          victimPrisonersNumber = "",
+          victimStaffUsername = "",
+          victimOtherPersonsName = "",
+        )
+      )
+      val offenceDetailsToSave = mutableListOf(
+        Offence(
+          offenceCode = 2,
+          paragraphCode = OFFENCE_CODE_2_PARAGRAPH_CODE,
+        )
+      )
+      val expectedOffenceDetailsResponse = listOf(
+        OffenceDetailsDto(
+          offenceCode = 2,
+          offenceRule = OffenceRuleDetailsDto(
+            paragraphNumber = OFFENCE_CODE_2_PARAGRAPH_NUMBER,
+            paragraphDescription = OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
+          ),
+        )
+      )
+
+      val draftAdjudicationEntity = DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 1,
+          dateTimeOfIncident = LocalDateTime.now(clock),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithNoValuesSet(),
+      )
+
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
+
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(
+        draftAdjudicationEntity.copy(
+          offenceDetails = offenceDetailsToSave
+        )
+      )
+
+      val draftAdjudication = draftAdjudicationService.setOffenceDetails(1, offenceDetailsToAdd)
+
+      assertThat(draftAdjudication)
+        .extracting("id", "prisonerNumber")
+        .contains(1L, "A12345")
+
+      assertThat(draftAdjudication.offenceDetails).isEqualTo(expectedOffenceDetailsResponse)
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails).isEqualTo(offenceDetailsToSave)
+    }
+
+    @Test
     fun `throws an IllegalArgumentException when no offence details are provided`() {
       assertThatThrownBy {
         draftAdjudicationService.setOffenceDetails(1, listOf())
