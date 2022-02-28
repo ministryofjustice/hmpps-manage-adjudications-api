@@ -49,7 +49,7 @@ class IntegrationTestData(
     val DEFAULT_REPORTED_DATE_TIME = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
     const val DEFAULT_REPORTED_DATE_TIME_TEXT = "2010-11-13T10:00:00"
     val DEFAULT_EXPECTED_NOMIS_DATA = NomisOffenceTestDataSet(
-      nomisCodes = listOf("4", "25G"), // 2 offences
+      nomisCodes = listOf("51:4", "51:25G"), // 2 offences
       victimStaffUsernames = listOf("ABC12D"),
       victimPrisonersNumbers = listOf("A1234AA"),
     )
@@ -65,7 +65,7 @@ class IntegrationTestData(
     const val UPDATED_STATEMENT = "updated test statement"
     val UPDATED_DATE_TIME_OF_INCIDENT = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
     val UPDATED_EXPECTED_NOMIS_DATA = NomisOffenceTestDataSet(
-      nomisCodes = listOf("25G"), // Basic offence only
+      nomisCodes = listOf("51:25G"), // Basic offence only
       victimStaffUsernames = emptyList(),
       victimPrisonersNumbers = emptyList(),
     )
