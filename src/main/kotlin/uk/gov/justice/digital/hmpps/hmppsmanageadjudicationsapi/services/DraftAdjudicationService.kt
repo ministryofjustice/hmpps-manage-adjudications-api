@@ -40,7 +40,7 @@ class DraftAdjudicationService(
 
   @Transactional
   fun deleteOrphanedDraftAdjudications() {
-      draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(LocalDateTime.now().minusDays(1))
+    draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(LocalDateTime.now().minusDays(1))
   }
 
   @Transactional
