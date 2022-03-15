@@ -39,6 +39,11 @@ class DraftAdjudicationService(
 ) {
 
   @Transactional
+  fun deleteOrphanedDraftAdjudications() {
+      draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(LocalDateTime.now().minusDays(1))
+  }
+
+  @Transactional
   fun startNewAdjudication(
     prisonerNumber: String,
     agencyId: String,
@@ -170,7 +175,7 @@ class DraftAdjudicationService(
   fun getCurrentUsersInProgressDraftAdjudications(agencyId: String): List<DraftAdjudicationDto> {
     val username = authenticationFacade.currentUsername ?: return emptyList()
 
-    return draftAdjudicationRepository.findUnsubmittedByAgencyIdAndCreatedByUserId(agencyId, username)
+    return draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNotNull(agencyId, username)
       .sortedBy { it.incidentDetails.dateTimeOfIncident }
       .map { it.toDto(offenceCodeLookupService) }
   }
