@@ -30,13 +30,6 @@ class DraftAdjudicationRepositoryTest {
   @Autowired
   lateinit var draftAdjudicationRepository: DraftAdjudicationRepository
 
-//  @MockBean
-//  private val dateTimeProvider: DateTimeProvider? = null
-//
-//  @SpyBean
-//  private val handler: AuditingHandler? = null
-
-
   @Test
   fun `save a new draft adjudication`() {
     val draft = newDraft()
