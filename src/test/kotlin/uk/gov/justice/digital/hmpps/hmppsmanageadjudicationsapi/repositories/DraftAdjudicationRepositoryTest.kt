@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
 import java.time.LocalDateTime
 
-
 @DataJpaTest
 @ActiveProfiles("test")
 @WithMockUser(username = "ITAG_USER")
