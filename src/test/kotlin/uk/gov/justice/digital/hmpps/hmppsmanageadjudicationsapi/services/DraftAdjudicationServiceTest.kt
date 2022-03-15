@@ -1041,7 +1041,7 @@ class DraftAdjudicationServiceTest {
   inner class InProgressDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNotNull(any(), any())).thenReturn(
+      whenever(draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(any(), any())).thenReturn(
         listOf(
           DraftAdjudication(
             id = 1,
@@ -1082,7 +1082,7 @@ class DraftAdjudicationServiceTest {
 
       draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications("MDI")
 
-      verify(draftAdjudicationRepository).findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNotNull("MDI", "ITAG_USER")
+      verify(draftAdjudicationRepository).findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull("MDI", "ITAG_USER")
     }
 
     @Test

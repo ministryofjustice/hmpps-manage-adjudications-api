@@ -175,7 +175,7 @@ class DraftAdjudicationService(
   fun getCurrentUsersInProgressDraftAdjudications(agencyId: String): List<DraftAdjudicationDto> {
     val username = authenticationFacade.currentUsername ?: return emptyList()
 
-    return draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNotNull(agencyId, username)
+    return draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(agencyId, username)
       .sortedBy { it.incidentDetails.dateTimeOfIncident }
       .map { it.toDto(offenceCodeLookupService) }
   }

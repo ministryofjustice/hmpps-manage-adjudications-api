@@ -161,7 +161,7 @@ class DraftAdjudicationRepositoryTest {
         ),
       )
     )
-    val foundAdjudications = draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNotNull("MDI", "ITAG_USER")
+    val foundAdjudications = draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull("MDI", "ITAG_USER")
 
     assertThat(foundAdjudications).hasSize(1)
       .extracting("prisonerNumber")

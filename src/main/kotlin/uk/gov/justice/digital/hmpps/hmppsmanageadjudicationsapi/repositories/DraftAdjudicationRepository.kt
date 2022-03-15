@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 interface DraftAdjudicationRepository : CrudRepository<DraftAdjudication, Long> {
   fun save(draftAdjudication: DraftAdjudication?): DraftAdjudication
 
-  fun findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNotNull(agencyId: String, username: String): List<DraftAdjudication>
+  fun findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(agencyId: String, username: String): List<DraftAdjudication>
 
   fun deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(createdTime: LocalDateTime): List<DraftAdjudication>
 }
