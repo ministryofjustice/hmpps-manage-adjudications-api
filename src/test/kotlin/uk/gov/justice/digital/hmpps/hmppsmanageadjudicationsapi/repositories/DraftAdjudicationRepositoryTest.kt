@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
 import java.time.LocalDateTime
 
+
 @DataJpaTest
 @ActiveProfiles("test")
 @WithMockUser(username = "ITAG_USER")
@@ -28,6 +29,13 @@ class DraftAdjudicationRepositoryTest {
 
   @Autowired
   lateinit var draftAdjudicationRepository: DraftAdjudicationRepository
+
+//  @MockBean
+//  private val dateTimeProvider: DateTimeProvider? = null
+//
+//  @SpyBean
+//  private val handler: AuditingHandler? = null
+
 
   @Test
   fun `save a new draft adjudication`() {
@@ -170,6 +178,32 @@ class DraftAdjudicationRepositoryTest {
       )
   }
 
+  @Test
+  fun `delete orphaned adjudications should do nothing if they are not old enough`() {
+    val deleteBefore = LocalDateTime.now()
+    val draft = draftWithAllData(1L)
+    entityManager.persistAndFlush(draft)
+    // We should not delete anything because the time we use was at the very beginning of the test, before we created anything.
+    val deleted = draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(deleteBefore)
+    assertThat(deleted).hasSize(0)
+  }
+
+  @Test
+  fun `delete orphaned adjudications should completely remove orphaned adjudications if they are old enough`() {
+    val draft = draftWithAllData(1L)
+    val saved = entityManager.persistAndFlush(draft)
+    val deleteBefore = LocalDateTime.now().plusSeconds(1)
+    // We should delete the saved adjudication because the time we use is in the future, after the draft was created.
+    val allDeleted = draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(deleteBefore)
+    assertThat(allDeleted).hasSize(1)
+    val deleted = allDeleted[0]
+    assertThat(entityManager.find(IncidentDetails::class.java, deleted.incidentDetails.id)).isNull()
+    assertThat(entityManager.find(IncidentStatement::class.java, deleted.incidentStatement?.id)).isNull()
+    deleted.offenceDetails?.forEach {
+      assertThat(entityManager.find(Offence::class.java, it.id)).isNull()
+    }
+  }
+
   private fun newDraft(): DraftAdjudication {
     return DraftAdjudication(
       prisonerNumber = "A12345",
@@ -186,8 +220,9 @@ class DraftAdjudicationRepositoryTest {
     )
   }
 
-  private fun draftWithAllData(): DraftAdjudication {
+  private fun draftWithAllData(reportNumber: Long? = null): DraftAdjudication {
     return DraftAdjudication(
+      reportNumber = reportNumber,
       prisonerNumber = "A12345",
       agencyId = "MDI",
       incidentDetails = IncidentDetails(
@@ -200,7 +235,8 @@ class DraftAdjudicationRepositoryTest {
         associatedPrisonersNumber = "B23456"
       ),
       offenceDetails = mutableListOf(
-        Offence( // offence with minimal data set
+        Offence(
+          // offence with minimal data set
           offenceCode = 2,
           paragraphCode = "1",
         ),
