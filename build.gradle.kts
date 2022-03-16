@@ -1,7 +1,7 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.0.3-beta"
-  kotlin("plugin.spring") version "1.5.31"
-  kotlin("plugin.jpa") version "1.5.31"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.1.0"
+  kotlin("plugin.spring") version "1.6.10"
+  kotlin("plugin.jpa") version "1.6.10"
 }
 
 configurations {
@@ -37,13 +37,13 @@ allOpen {
 }
 
 java {
-  toolchain.languageVersion.set(JavaLanguageVersion.of(16))
+  toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
 tasks {
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-      jvmTarget = "16"
+      jvmTarget = "17"
     }
   }
 }
