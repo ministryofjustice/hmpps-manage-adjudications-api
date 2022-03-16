@@ -1,12 +1,12 @@
 version: 2.1
 
 orbs:
-  hmpps: ministryofjustice/hmpps@3.11
+  hmpps: ministryofjustice/hmpps@3.14
 
 executors:
   integration-tests:
     docker:
-      - image: cimg/openjdk:16.0
+      - image: cimg/openjdk:17.0
       - image: circleci/postgres:13.2
         environment:
           - POSTGRES_PASSWORD=test
