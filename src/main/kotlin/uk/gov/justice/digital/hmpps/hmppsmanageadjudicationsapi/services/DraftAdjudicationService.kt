@@ -121,9 +121,14 @@ class DraftAdjudicationService(
     id: Long,
     locationId: Long?,
     dateTimeOfIncident: LocalDateTime?,
-    incidentRole: IncidentRoleRequest?
+    incidentRole: IncidentRoleRequest?,
+    removeExistingOffences: Boolean,
   ): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+
+    if (removeExistingOffences) {
+      draftAdjudication.offenceDetails = mutableListOf()
+    }
 
     locationId?.let { draftAdjudication.incidentDetails.locationId = it }
     dateTimeOfIncident?.let {
