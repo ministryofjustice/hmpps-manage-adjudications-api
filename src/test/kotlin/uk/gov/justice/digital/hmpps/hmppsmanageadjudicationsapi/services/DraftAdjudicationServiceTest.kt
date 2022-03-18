@@ -463,6 +463,7 @@ class DraftAdjudicationServiceTest {
           2,
           DATE_TIME_OF_INCIDENT,
           incidentRoleRequestWithNoValuesSet(),
+          false,
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
@@ -505,7 +506,8 @@ class DraftAdjudicationServiceTest {
         1,
         3,
         editedDateTimeOfIncident,
-        editedIncidentRoleDtoRequest
+        editedIncidentRoleDtoRequest,
+        false,
       )
 
       assertThat(draftAdjudication)

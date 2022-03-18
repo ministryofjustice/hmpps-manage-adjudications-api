@@ -86,6 +86,8 @@ data class EditIncidentDetailsRequest(
   val dateTimeOfIncident: LocalDateTime? = null,
   @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
   val incidentRole: IncidentRoleRequest? = null,
+  @ApiModelProperty(value = "Whether to remove all existing offences")
+  val removeExistingOffences: Boolean = false,
 )
 
 @ApiModel("Draft adjudication response")
@@ -199,6 +201,7 @@ class DraftAdjudicationController {
       editIncidentDetailsRequest.locationId,
       editIncidentDetailsRequest.dateTimeOfIncident,
       editIncidentDetailsRequest.incidentRole,
+      editIncidentDetailsRequest.removeExistingOffences,
     )
 
     return DraftAdjudicationResponse(

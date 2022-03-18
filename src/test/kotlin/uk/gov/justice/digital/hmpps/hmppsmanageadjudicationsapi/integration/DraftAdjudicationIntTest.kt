@@ -13,11 +13,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.Inte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_INCIDENT_ROLE_CODE
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_INCIDENT_ROLE_PARAGRAPH_NUMBER
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class DraftAdjudicationIntTest : IntegrationTestBase() {
+
+  @Autowired
+  lateinit var draftAdjudicationRepository: DraftAdjudicationRepository
 
   @Autowired
   lateinit var reportedAdjudicationRepository: ReportedAdjudicationRepository
@@ -225,6 +229,35 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphNumber").isEqualTo("25(b)")
       .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphDescription").isEqualTo("Incites another prisoner to commit any of the foregoing offences:")
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo("C3456CC")
+  }
+
+  @Test
+  fun `edit the incident details and delete all offences`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
+
+    webTestClient.put()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-details")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "locationId" to 3,
+          "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT.plusMonths(1),
+          "incidentRole" to IncidentRoleRequest("25b", "C3456CC"),
+          "deleteExistingOffences" to true,
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.offenceDetails[0]").doesNotExist()
+
+    // Check it has been removed from the DB
+    val draft = draftAdjudicationRepository.findById(draftAdjudicationResponse.draftAdjudication.id)
+    assertThat(draft.get().offenceDetails).hasSize(0)
   }
 
   @Test

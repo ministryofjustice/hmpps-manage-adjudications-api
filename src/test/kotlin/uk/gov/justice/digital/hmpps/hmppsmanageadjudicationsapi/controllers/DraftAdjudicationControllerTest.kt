@@ -345,6 +345,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           any(),
           any(),
+          any(),
         )
       ).thenReturn(
         DraftAdjudicationDto(
@@ -373,7 +374,8 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         1,
         2,
         DATE_TIME_OF_INCIDENT,
-        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST
+        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
+        false,
       )
     }
 
@@ -404,6 +406,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           any(),
           any(),
+          org.mockito.kotlin.any(),
         )
       ).thenThrow(
         IllegalStateException::class.java
