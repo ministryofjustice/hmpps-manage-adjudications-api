@@ -167,6 +167,9 @@ class DraftAdjudicationService(
     if (draftAdjudication.incidentStatement == null || draftAdjudication.incidentStatement!!.statement == null)
       throw IllegalStateException("Please include an incident statement before completing this draft adjudication")
 
+    if (draftAdjudication.offenceDetails == null || draftAdjudication.offenceDetails!!.isEmpty())
+      throw IllegalStateException("Please supply at least one set of offence details")
+
     val isNew = draftAdjudication.reportNumber == null
     val nomisAdjudication = saveToPrisonApi(draftAdjudication, isNew)
     val generatedReportedAdjudication = saveToReportedAdjudications(draftAdjudication, nomisAdjudication, isNew)
