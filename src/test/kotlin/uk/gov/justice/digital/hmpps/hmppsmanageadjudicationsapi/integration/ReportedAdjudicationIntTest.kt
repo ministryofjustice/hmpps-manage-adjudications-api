@@ -283,6 +283,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
 
