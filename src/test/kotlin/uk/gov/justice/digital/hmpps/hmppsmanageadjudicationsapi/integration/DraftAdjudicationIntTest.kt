@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER
@@ -386,6 +387,29 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `complete draft adjudication rolls back DB if Prison API call fails`() {
+    prisonApiMockServer.stubPostAdjudicationFailure()
+
+    val intTestData = integrationTestData()
+    val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
+
+    val intTestScenario = intTestBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setOffenceData()
+      .addIncidentStatement()
+
+    webTestClient.post()
+      .uri("/draft-adjudications/${intTestScenario.getDraftId()}/complete-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is5xxServerError
+
+    val savedAdjudication = reportedAdjudicationRepository.findByReportNumber(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    assertThat(savedAdjudication).isNull()
+  }
+
+  @Test
   fun `complete draft update of existing adjudication`() {
     prisonApiMockServer.stubPutAdjudication()
     val intTestData = integrationTestData()
@@ -447,6 +471,33 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     intTestData.getDraftAdjudicationDetails(draftAdjudicationResponse).expectStatus().isNotFound
 
     assertThat(reportedAdjudicationRepository.findAll()).hasSize(1)
+  }
+
+  @Test
+  fun `complete draft update does not modify DB if Prison API call fails`() {
+    prisonApiMockServer.stubPutAdjudicationFailure()
+
+    val intTestData = integrationTestData()
+    val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
+
+    intTestBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+
+    val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+    intTestData.editIncidentStatement(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
+
+    webTestClient.post()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/complete-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is5xxServerError
+
+    val savedAdjudication = reportedAdjudicationRepository.findByReportNumber(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    assertThat(savedAdjudication!!.statement).isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.statement)
   }
 
   @Test
