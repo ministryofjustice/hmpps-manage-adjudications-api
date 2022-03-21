@@ -127,7 +127,7 @@ class DraftAdjudicationService(
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     if (removeExistingOffences) {
-      draftAdjudication.offenceDetails = mutableListOf()
+      draftAdjudication.offenceDetails?.let { it.clear() }
     }
 
     locationId?.let { draftAdjudication.incidentDetails.locationId = it }

@@ -235,28 +235,35 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `edit the incident details and delete all offences`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
 
-    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
+    val intTestScenario = intTestBuilder
+      .startDraft(testAdjudication)
+      .setOffenceData()
+
+    // Check we have offences
+    val draftId = intTestScenario.getDraftId()
+    val initialDraft = draftAdjudicationRepository.findById(draftId)
+    assertThat(initialDraft.get().offenceDetails).hasSize(2)
 
     webTestClient.put()
-      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-details")
+      .uri("/draft-adjudications/$draftId/incident-details")
       .headers(setHeaders())
       .bodyValue(
         mapOf(
           "locationId" to 3,
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT.plusMonths(1),
           "incidentRole" to IncidentRoleRequest("25b", "C3456CC"),
-          "deleteExistingOffences" to true,
+          "removeExistingOffences" to true,
         )
       )
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.offenceDetails[0]").doesNotExist()
 
     // Check it has been removed from the DB
-    val draft = draftAdjudicationRepository.findById(draftAdjudicationResponse.draftAdjudication.id)
+    val draft = draftAdjudicationRepository.findById(draftId)
     assertThat(draft.get().offenceDetails).hasSize(0)
   }
 
@@ -386,6 +393,29 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `complete draft adjudication rolls back DB if Prison API call fails`() {
+    prisonApiMockServer.stubPostAdjudicationFailure()
+
+    val intTestData = integrationTestData()
+    val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
+
+    val intTestScenario = intTestBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setOffenceData()
+      .addIncidentStatement()
+
+    webTestClient.post()
+      .uri("/draft-adjudications/${intTestScenario.getDraftId()}/complete-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is5xxServerError
+
+    val savedAdjudication = reportedAdjudicationRepository.findByReportNumber(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    assertThat(savedAdjudication).isNull()
+  }
+
+  @Test
   fun `complete draft update of existing adjudication`() {
     prisonApiMockServer.stubPutAdjudication()
     val intTestData = integrationTestData()
@@ -447,6 +477,33 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     intTestData.getDraftAdjudicationDetails(draftAdjudicationResponse).expectStatus().isNotFound
 
     assertThat(reportedAdjudicationRepository.findAll()).hasSize(1)
+  }
+
+  @Test
+  fun `complete draft update does not modify DB if Prison API call fails`() {
+    prisonApiMockServer.stubPutAdjudicationFailure()
+
+    val intTestData = integrationTestData()
+    val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
+
+    intTestBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+
+    val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+    intTestData.editIncidentStatement(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
+
+    webTestClient.post()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/complete-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is5xxServerError
+
+    val savedAdjudication = reportedAdjudicationRepository.findByReportNumber(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    assertThat(savedAdjudication!!.statement).isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.statement)
   }
 
   @Test
