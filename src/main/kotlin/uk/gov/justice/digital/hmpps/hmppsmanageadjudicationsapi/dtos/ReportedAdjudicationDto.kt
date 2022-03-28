@@ -17,7 +17,7 @@ data class ReportedAdjudicationDto(
   @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
   val incidentRole: IncidentRoleDto,
   @ApiModelProperty(value = "Details about all the offences the prisoner is accused of")
-  val offencesDetails: List<OffenceDto>,
+  val offenceDetails: List<OffenceDto>,
   @ApiModelProperty(value = "Incident statement")
   val incidentStatement: IncidentStatementDto,
   @ApiModelProperty("Created by user id")

@@ -111,7 +111,7 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
     offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleCode),
     associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
   ),
-  offencesDetails = toReportedOffence(offenceDetails, offenceCodeLookupService),
+  offenceDetails = toReportedOffence(offenceDetails, offenceCodeLookupService),
   incidentStatement = IncidentStatementDto(
     statement = statement,
     completed = true,

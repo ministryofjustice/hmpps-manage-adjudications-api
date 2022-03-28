@@ -100,7 +100,7 @@ class ReportedAdjudicationServiceTest {
         .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
         .contains("25b", IncidentRoleRuleLookup.getOffenceRuleDetails("25b"), "BB2345B")
 
-      assertThat(reportedAdjudicationDto.offencesDetails)
+      assertThat(reportedAdjudicationDto.offenceDetails)
         .extracting("offenceCode", "offenceRule.paragraphNumber", "offenceRule.paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
         .contains(
           Tuple(2, OFFENCE_CODE_2_PARAGRAPH_NUMBER, OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION, null, null, null),
