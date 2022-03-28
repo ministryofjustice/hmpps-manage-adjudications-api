@@ -64,7 +64,7 @@ class ReportedAdjudicationServiceTest {
           reportNumber = 1, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
           incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
-          offences = mutableListOf(
+          offenceDetails = mutableListOf(
             ReportedOffence(
               offenceCode = 2,
               paragraphCode = OFFENCE_CODE_2_PARAGRAPH_CODE,
@@ -100,7 +100,7 @@ class ReportedAdjudicationServiceTest {
         .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
         .contains("25b", IncidentRoleRuleLookup.getOffenceRuleDetails("25b"), "BB2345B")
 
-      assertThat(reportedAdjudicationDto.offences)
+      assertThat(reportedAdjudicationDto.offencesDetails)
         .extracting("offenceCode", "offenceRule.paragraphNumber", "offenceRule.paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
         .contains(
           Tuple(2, OFFENCE_CODE_2_PARAGRAPH_NUMBER, OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION, null, null, null),
@@ -128,7 +128,7 @@ class ReportedAdjudicationServiceTest {
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
         incidentRoleCode = "25b",
         incidentRoleAssociatedPrisonersNumber = "BB2345B",
-        offences = mutableListOf(
+        offenceDetails = mutableListOf(
           ReportedOffence(
             offenceCode = 3,
             paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
@@ -152,7 +152,7 @@ class ReportedAdjudicationServiceTest {
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
-        offences = null,
+        offenceDetails = null,
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
@@ -199,7 +199,7 @@ class ReportedAdjudicationServiceTest {
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
         incidentRoleCode = "25b",
         incidentRoleAssociatedPrisonersNumber = "BB2345B",
-        offences = mutableListOf(
+        offenceDetails = mutableListOf(
           ReportedOffence(
             offenceCode = 3,
             paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
@@ -223,7 +223,7 @@ class ReportedAdjudicationServiceTest {
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
-        offences = null,
+        offenceDetails = null,
         statement = INCIDENT_STATEMENT,
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
@@ -254,7 +254,7 @@ class ReportedAdjudicationServiceTest {
       reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
       dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
       incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
-      offences = mutableListOf(
+      offenceDetails = mutableListOf(
         ReportedOffence(
           offenceCode = 3,
           paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,

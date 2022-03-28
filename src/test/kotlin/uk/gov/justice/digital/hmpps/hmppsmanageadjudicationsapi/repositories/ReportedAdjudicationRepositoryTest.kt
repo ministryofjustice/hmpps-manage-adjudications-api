@@ -72,7 +72,7 @@ class ReportedAdjudicationRepositoryTest {
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
         statement = "Example 3",
-        offences = mutableListOf(
+        offenceDetails = mutableListOf(
           ReportedOffence(
             offenceCode = 2,
             paragraphCode = "3",
@@ -106,13 +106,13 @@ class ReportedAdjudicationRepositoryTest {
       .extracting("incidentRoleCode", "incidentRoleAssociatedPrisonersNumber")
       .contains(adjudication.incidentRoleCode, adjudication.incidentRoleAssociatedPrisonersNumber)
 
-    assertThat(savedEntity.offences).hasSize(2)
+    assertThat(savedEntity.offenceDetails).hasSize(2)
       .extracting("offenceCode", "paragraphCode", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
       .contains(
         Tuple(
-          adjudication.offences!![0].offenceCode, adjudication.offences!![0].paragraphCode,
-          adjudication.offences!![0].victimPrisonersNumber, adjudication.offences!![0].victimStaffUsername,
-          adjudication.offences!![0].victimOtherPersonsName
+          adjudication.offenceDetails!![0].offenceCode, adjudication.offenceDetails!![0].paragraphCode,
+          adjudication.offenceDetails!![0].victimPrisonersNumber, adjudication.offenceDetails!![0].victimStaffUsername,
+          adjudication.offenceDetails!![0].victimOtherPersonsName
         ),
       )
   }
@@ -121,7 +121,7 @@ class ReportedAdjudicationRepositoryTest {
   fun `update offence details of an existing reported adjudication`() {
     val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
 
-    adjudication!!.offences =
+    adjudication!!.offenceDetails =
       mutableListOf(
         ReportedOffence(
           offenceCode = 5,
@@ -137,13 +137,13 @@ class ReportedAdjudicationRepositoryTest {
       .extracting("id", "prisonerNumber", "reportNumber", "bookingId", "createdByUserId")
       .contains(adjudication.id, adjudication.prisonerNumber, adjudication.reportNumber, adjudication.bookingId, adjudication.createdByUserId)
 
-    assertThat(savedEntity.offences).hasSize(1)
+    assertThat(savedEntity.offenceDetails).hasSize(1)
       .extracting("offenceCode", "paragraphCode", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
       .contains(
         Tuple(
-          adjudication.offences!![0].offenceCode, adjudication.offences!![0].paragraphCode,
-          adjudication.offences!![0].victimPrisonersNumber, adjudication.offences!![0].victimStaffUsername,
-          adjudication.offences!![0].victimOtherPersonsName
+          adjudication.offenceDetails!![0].offenceCode, adjudication.offenceDetails!![0].paragraphCode,
+          adjudication.offenceDetails!![0].victimPrisonersNumber, adjudication.offenceDetails!![0].victimStaffUsername,
+          adjudication.offenceDetails!![0].victimOtherPersonsName
         ),
       )
   }
@@ -192,7 +192,7 @@ class ReportedAdjudicationRepositoryTest {
       handoverDeadline = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME.plusDays(2),
       incidentRoleCode = "25a",
       incidentRoleAssociatedPrisonersNumber = "B23456",
-      offences = mutableListOf(
+      offenceDetails = mutableListOf(
         ReportedOffence( // offence with minimal data set
           offenceCode = 2,
           paragraphCode = "3"

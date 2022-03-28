@@ -267,7 +267,7 @@ class DraftAdjudicationService(
           handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
           incidentRoleCode = draftAdjudication.incidentRole.roleCode,
           incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber,
-          offences = toReportedOffence(draftAdjudication.offenceDetails),
+          offenceDetails = toReportedOffence(draftAdjudication.offenceDetails),
           statement = draftAdjudication.incidentStatement!!.statement!!
         )
       )
@@ -284,7 +284,7 @@ class DraftAdjudicationService(
       it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline
       it.incidentRoleCode = draftAdjudication.incidentRole.roleCode
       it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber
-      it.offences?.let { offence ->
+      it.offenceDetails?.let { offence ->
         offence.clear()
         offence.addAll(toReportedOffence(draftAdjudication.offenceDetails))
       }

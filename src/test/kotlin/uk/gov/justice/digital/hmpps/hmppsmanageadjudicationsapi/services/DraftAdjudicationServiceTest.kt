@@ -738,7 +738,7 @@ class DraftAdjudicationServiceTest {
           .extracting("locationId", "dateTimeOfIncident", "handoverDeadline", "incidentRoleCode", "incidentRoleAssociatedPrisonersNumber", "statement")
           .contains(1L, INCIDENT_TIME, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
 
-        assertThat(reportedAdjudicationArgumentCaptor.value.offences)
+        assertThat(reportedAdjudicationArgumentCaptor.value.offenceDetails)
           .extracting("offenceCode", "paragraphCode", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
           .contains(
             Tuple(
@@ -886,7 +886,7 @@ class DraftAdjudicationServiceTest {
             handoverDeadline = LocalDateTime.now(clock),
             incidentRoleCode = null,
             incidentRoleAssociatedPrisonersNumber = null,
-            offences = mutableListOf(ReportedOffence(offenceCode = 3, paragraphCode = "4")),
+            offenceDetails = mutableListOf(ReportedOffence(offenceCode = 3, paragraphCode = "4")),
             statement = "olddata",
           )
         )
@@ -939,7 +939,7 @@ class DraftAdjudicationServiceTest {
           .extracting("locationId", "dateTimeOfIncident", "handoverDeadline", "incidentRoleCode", "incidentRoleAssociatedPrisonersNumber", "statement")
           .contains(1L, LocalDateTime.now(clock), DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
 
-        assertThat(reportedAdjudicationArgumentCaptor.value.offences)
+        assertThat(reportedAdjudicationArgumentCaptor.value.offenceDetails)
           .extracting("offenceCode", "paragraphCode", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
           .contains(
             Tuple(
@@ -1020,7 +1020,7 @@ class DraftAdjudicationServiceTest {
             handoverDeadline = LocalDateTime.now(clock),
             incidentRoleCode = null,
             incidentRoleAssociatedPrisonersNumber = null,
-            offences = mutableListOf(ReportedOffence(offenceCode = 3, paragraphCode = "4")),
+            offenceDetails = mutableListOf(ReportedOffence(offenceCode = 3, paragraphCode = "4")),
             statement = "olddata",
           )
         )
