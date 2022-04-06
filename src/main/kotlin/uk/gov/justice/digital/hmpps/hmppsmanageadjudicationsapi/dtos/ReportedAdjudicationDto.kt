@@ -28,9 +28,9 @@ data class ReportedAdjudicationDto(
   @ApiModelProperty("The status of the reported adjudication")
   val status: ReportedAdjudicationStatus,
   @ApiModelProperty("The reason for the status of the reported adjudication")
-  val statusReason: String,
+  val statusReason: String?,
   @ApiModelProperty("The description for the status of the reported adjudication")
-  val statusDetails: String,
+  val statusDetails: String?,
 )
 
 @ApiModel(value = "Details of an offence")

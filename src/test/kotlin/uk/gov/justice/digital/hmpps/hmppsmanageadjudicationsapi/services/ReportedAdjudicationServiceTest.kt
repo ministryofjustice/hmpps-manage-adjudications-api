@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -78,6 +79,9 @@ class ReportedAdjudicationServiceTest {
             ),
           ),
           handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
+          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+          statusReason = null,
+          statusDetails = null,
         )
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -138,6 +142,9 @@ class ReportedAdjudicationServiceTest {
           )
         ),
         statement = INCIDENT_STATEMENT,
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        statusReason = null,
+        statusDetails = null,
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
@@ -154,6 +161,9 @@ class ReportedAdjudicationServiceTest {
         incidentRoleAssociatedPrisonersNumber = null,
         offenceDetails = null,
         statement = INCIDENT_STATEMENT,
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        statusReason = null,
+        statusDetails = null,
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
@@ -209,6 +219,8 @@ class ReportedAdjudicationServiceTest {
           )
         ),
         statement = INCIDENT_STATEMENT,
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
@@ -225,6 +237,9 @@ class ReportedAdjudicationServiceTest {
         incidentRoleAssociatedPrisonersNumber = null,
         offenceDetails = null,
         statement = INCIDENT_STATEMENT,
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        statusReason = null,
+        statusDetails = null,
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
@@ -263,7 +278,10 @@ class ReportedAdjudicationServiceTest {
           victimOtherPersonsName = "Another Name",
         )
       ),
-      handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
+      handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
+      status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+      statusReason = null,
+      statusDetails = null,
     )
 
     private val expectedSavedDraftAdjudication = DraftAdjudication(

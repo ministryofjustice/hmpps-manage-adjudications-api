@@ -39,7 +39,6 @@ data class ReportedAdjudication(
   var statusDetails: String? = null,
 ) : BaseEntity()
 
-
 enum class ReportedAdjudicationStatus {
   ACCEPTED, REJECTED, AWAITING_REVIEW, RETURNED
 }

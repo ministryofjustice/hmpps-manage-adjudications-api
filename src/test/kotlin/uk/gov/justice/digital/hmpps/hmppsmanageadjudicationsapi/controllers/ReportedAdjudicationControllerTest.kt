@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -70,6 +71,9 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
           createdByUserId = "A_SMITH",
           createdDateTime = REPORTED_DATE_TIME,
+          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+          statusReason = null,
+          statusDetails = null,
         )
       )
       makeGetAdjudicationRequest(1)
@@ -126,6 +130,10 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
               incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
               createdByUserId = "A_SMITH",
               createdDateTime = REPORTED_DATE_TIME,
+              status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+              statusReason = null,
+              statusDetails = null,
+
             )
           ),
           Pageable.ofSize(20).withPage(0),
