@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
@@ -268,7 +269,8 @@ class DraftAdjudicationService(
           incidentRoleCode = draftAdjudication.incidentRole.roleCode,
           incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber,
           offenceDetails = toReportedOffence(draftAdjudication.offenceDetails),
-          statement = draftAdjudication.incidentStatement!!.statement!!
+          statement = draftAdjudication.incidentStatement!!.statement!!,
+          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         )
       )
     }
