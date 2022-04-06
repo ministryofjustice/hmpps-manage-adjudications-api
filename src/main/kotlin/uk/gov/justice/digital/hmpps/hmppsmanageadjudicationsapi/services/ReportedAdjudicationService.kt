@@ -119,8 +119,8 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   createdByUserId = createdByUserId!!,
   createdDateTime = createDateTime!!,
   status = status,
-  statusReason = statusReason!!,
-  statusDetails = statusDetails!!,
+  statusReason = statusReason,
+  statusDetails = statusDetails,
 )
 
 private fun toReportedOffence(offences: MutableList<ReportedOffence>?, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> {
