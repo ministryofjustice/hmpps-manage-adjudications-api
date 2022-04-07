@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
@@ -19,6 +20,11 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class DraftAdjudicationIntTest : IntegrationTestBase() {
+
+  @BeforeEach
+  fun setUp() {
+    setAuditTime(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME)
+  }
 
   @Autowired
   lateinit var draftAdjudicationRepository: DraftAdjudicationRepository
