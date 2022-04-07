@@ -13,6 +13,7 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConfiguration
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
 import java.time.LocalDateTime
@@ -43,7 +44,10 @@ class ReportedAdjudicationRepositoryTest {
         handoverDeadline = dateTimeOfIncident.plusDays(2),
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
-        statement = "Example"
+        statement = "Example",
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        statusReason = null,
+        statusDetails = null,
       )
     )
     entityManager.persistAndFlush(
@@ -57,7 +61,10 @@ class ReportedAdjudicationRepositoryTest {
         handoverDeadline = dateTimeOfIncident.plusHours(1).plusDays(2),
         incidentRoleCode = "25a",
         incidentRoleAssociatedPrisonersNumber = "B23456",
-        statement = "Example 2"
+        statement = "Example 2",
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        statusReason = null,
+        statusDetails = null,
       )
     )
     entityManager.persistAndFlush(
@@ -84,7 +91,10 @@ class ReportedAdjudicationRepositoryTest {
             victimStaffUsername = "ABC12D",
             victimOtherPersonsName = "Another Person",
           )
-        )
+        ),
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        statusReason = null,
+        statusDetails = null,
       )
     )
   }
@@ -206,6 +216,9 @@ class ReportedAdjudicationRepositoryTest {
         ),
       ),
       statement = "Example statement",
+      status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+      statusReason = null,
+      statusDetails = null,
     )
   }
 }

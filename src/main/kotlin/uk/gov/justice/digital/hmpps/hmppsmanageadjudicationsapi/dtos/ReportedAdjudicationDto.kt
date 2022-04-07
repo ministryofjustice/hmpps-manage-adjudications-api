@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos
 
 import io.swagger.annotations.ApiModel
 import io.swagger.annotations.ApiModelProperty
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDateTime
 
 @ApiModel(value = "Reported adjudication details")
@@ -24,6 +25,12 @@ data class ReportedAdjudicationDto(
   val createdByUserId: String,
   @ApiModelProperty("When the report was created")
   val createdDateTime: LocalDateTime,
+  @ApiModelProperty("The status of the reported adjudication")
+  val status: ReportedAdjudicationStatus,
+  @ApiModelProperty("The reason for the status of the reported adjudication")
+  val statusReason: String?,
+  @ApiModelProperty("The description for the status of the reported adjudication")
+  val statusDetails: String?,
 )
 
 @ApiModel(value = "Details of an offence")

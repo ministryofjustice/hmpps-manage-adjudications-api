@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
@@ -888,6 +889,9 @@ class DraftAdjudicationServiceTest {
             incidentRoleAssociatedPrisonersNumber = null,
             offenceDetails = mutableListOf(ReportedOffence(offenceCode = 3, paragraphCode = "4")),
             statement = "olddata",
+            status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+            statusReason = null,
+            statusDetails = null,
           )
         )
         whenever(prisonApiGateway.updateAdjudication(any(), any())).thenReturn(
@@ -1022,6 +1026,9 @@ class DraftAdjudicationServiceTest {
             incidentRoleAssociatedPrisonersNumber = null,
             offenceDetails = mutableListOf(ReportedOffence(offenceCode = 3, paragraphCode = "4")),
             statement = "olddata",
+            status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+            statusReason = null,
+            statusDetails = null,
           )
         )
         whenever(prisonApiGateway.updateAdjudication(any(), any())).thenReturn(
