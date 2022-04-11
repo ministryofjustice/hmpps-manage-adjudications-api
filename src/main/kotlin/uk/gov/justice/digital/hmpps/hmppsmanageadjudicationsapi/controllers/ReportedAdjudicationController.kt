@@ -19,7 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 import java.time.LocalDate
-import java.util.*
+import java.util.Optional
 
 @ApiModel("Reported adjudication response")
 data class ReportedAdjudicationResponse(
