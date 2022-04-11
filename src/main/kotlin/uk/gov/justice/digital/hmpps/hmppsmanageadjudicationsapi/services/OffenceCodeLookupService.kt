@@ -94,7 +94,7 @@ class OffenceCodeLookupBuilder {
       .code(12101).nomisCodes("12AQ").notCommittedOnOwnNomisCodes("25X").paragraph(paragraph12)
       .code(12102).nomisCodes("12AQ").notCommittedOnOwnNomisCodes("25X").paragraph(paragraph12)
       .code(10001).nomisCodes("10").notCommittedOnOwnNomisCodes("10").paragraph(paragraph10)
-      .code(10002).nomisCodes("11").notCommittedOnOwnNomisCodes("11").paragraph(paragraph11)
+      .code(11001).nomisCodes("11").notCommittedOnOwnNomisCodes("11").paragraph(paragraph11)
       // Empty line in spreadsheet
       .code(16001).nomisCodes("16").notCommittedOnOwnNomisCodes("25C").paragraph(paragraph16)
       .code(24101).nomisCodes("24A").notCommittedOnOwnNomisCodes("25L").paragraph(paragraph24a)
