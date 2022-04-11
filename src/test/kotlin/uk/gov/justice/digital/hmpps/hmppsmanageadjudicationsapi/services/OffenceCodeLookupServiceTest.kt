@@ -17,7 +17,8 @@ class OffenceCodeLookupServiceTest {
     assertValuesSetForAllItems(7001..7002)
     assertValuesSetForAllItems(8001..8002)
     assertValuesSetForAllItems(9001..9002)
-    assertValuesSetForAllItems(10001..10002)
+    assertValuesSetForAllItems(10001..10001)
+    assertValuesSetForAllItems(11001..11001)
     assertValuesSetForAllItems(12001..12002)
     assertValuesSetForAllItems(12101..12102)
     assertValuesSetForAllItems(13001..13001)
@@ -48,6 +49,8 @@ class OffenceCodeLookupServiceTest {
         assertThat(it).startsWith("51:")
       }
       assertThat(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(it)).startsWith("51:")
+      // Check that the naming convention of starting with the paragraph number is being honoured.
+      assertThat(it.toString()).startsWith(offenceCodeLookupService.getParagraphNumber(it).filter { it.isDigit() })
     }
   }
 }
