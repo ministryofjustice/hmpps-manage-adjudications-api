@@ -2,6 +2,11 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import java.time.format.DateTimeFormatter
 
 class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
@@ -75,44 +80,55 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo("Not found: ReportedAdjudication not found for 15242")
   }
 
-  @Test
-  fun `return a page of reported adjudications completed by the current user`() {
-    val intTestData = integrationTestData()
+  @ParameterizedTest
+  @MethodSource("allFilters")
+  fun `return a page of reported adjudications for agency with filters`(
+    startDate: String, endDate: String, status: ReportedAdjudicationStatus, expectedCount: Int, adjudicationNumber: Long
+  ) {
 
-    val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_2.createdByUserId)
-    val firstDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
-    firstDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_2)
-      .setOffenceData()
-      .addIncidentStatement()
-      .completeDraft()
-
-    val secondDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_3.createdByUserId)
-    val secondDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, secondDraftUserHeaders)
-    secondDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_3)
-      .setOffenceData()
-      .addIncidentStatement()
-      .completeDraft()
-
-    val thirdDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_4.createdByUserId)
-    val thirdDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, thirdDraftUserHeaders)
-    thirdDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_4)
-      .setOffenceData()
-      .addIncidentStatement()
-      .completeDraft()
-
-    val fourthDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_5.createdByUserId)
-    val fourthDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, fourthDraftUserHeaders)
-    fourthDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_5)
-      .setOffenceData()
-      .addIncidentStatement()
-      .completeDraft()
+    initMyReportData()
 
     webTestClient.get()
-      .uri("/reported-adjudications/my/agency/MDI?page=0&size=20")
+      .uri( "/reported-adjudications/agency/MDI?startDate=$startDate&endDate=$endDate&status=$status&page=0&size=20")
+      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(expectedCount)
+      .jsonPath("$.content[0].adjudicationNumber").isEqualTo(adjudicationNumber)
+
+  }
+
+  @ParameterizedTest
+  @MethodSource("myFilters")
+  fun `return a page of reported adjudications completed by the current user with filters`(
+    startDate: String, endDate: String, status: ReportedAdjudicationStatus, expectedCount: Int, adjudicationNumber: Long
+  ) {
+
+    initMyReportData()
+
+    webTestClient.get()
+      .uri("/reported-adjudications/my/agency/MDI?startDate=$startDate&endDate=$endDate&status=$status&page=0&size=20")
+      .headers(setHeaders(username = "P_NESS"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(expectedCount)
+      .jsonPath("$.content[0].adjudicationNumber").isEqualTo(adjudicationNumber)
+
+  }
+
+  @Test
+  fun `return a page of reported adjudications completed by the current user`(
+  ) {
+    initMyReportData()
+
+    val startDate = IntegrationTestData.ADJUDICATION_2.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
+    val endDate = IntegrationTestData.ADJUDICATION_5.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
+
+
+    webTestClient.get()
+      .uri("/reported-adjudications/my/agency/MDI?startDate=$startDate&endDate=$endDate&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -176,8 +192,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .addIncidentStatement()
       .completeDraft()
 
+    val startDate = IntegrationTestData.ADJUDICATION_1.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
+    val endDate = IntegrationTestData.ADJUDICATION_3.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
+
     webTestClient.get()
-      .uri("/reported-adjudications/agency/MDI?page=0&size=20")
+      .uri("/reported-adjudications/agency/MDI?startDate=$startDate&endDate=$endDate&page=0&size=20")
       .headers(setHeaders(username = "NEW_USER", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -309,5 +328,55 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.status").isEqualTo(404)
       .jsonPath("$.userMessage")
       .isEqualTo("Not found: ReportedAdjudication not found for 1524242")
+  }
+
+  companion object {
+    @JvmStatic
+    fun myFilters() = listOf(
+      Arguments.of("2020-12-14", "2020-12-16", ReportedAdjudicationStatus.AWAITING_REVIEW, 2, 1234L),
+      Arguments.of("2020-12-14", "2020-12-14", ReportedAdjudicationStatus.AWAITING_REVIEW, 1, 567L),
+      )
+    @JvmStatic
+    fun allFilters() = listOf(
+      Arguments.of("2020-12-14", "2020-12-17", ReportedAdjudicationStatus.AWAITING_REVIEW, 3, 1234L),
+      Arguments.of("2020-12-15", "2020-12-15", ReportedAdjudicationStatus.AWAITING_REVIEW, 1, 789L),
+    )
+  }
+
+  private fun initMyReportData(){
+    val intTestData = integrationTestData()
+
+    val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_2.createdByUserId)
+    val firstDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
+    firstDraftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.ADJUDICATION_2)
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+
+    val secondDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_3.createdByUserId)
+    val secondDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, secondDraftUserHeaders)
+    secondDraftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.ADJUDICATION_3)
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+
+    val thirdDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_4.createdByUserId)
+    val thirdDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, thirdDraftUserHeaders)
+    thirdDraftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.ADJUDICATION_4)
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+
+    val fourthDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_5.createdByUserId)
+    val fourthDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, fourthDraftUserHeaders)
+    fourthDraftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.ADJUDICATION_5)
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+
   }
 }

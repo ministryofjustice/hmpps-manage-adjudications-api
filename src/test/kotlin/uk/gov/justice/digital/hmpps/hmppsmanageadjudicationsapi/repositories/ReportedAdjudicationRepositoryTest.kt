@@ -16,7 +16,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -171,7 +173,10 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `find reported adjudications by agency id`() {
-    val foundAdjudications = reportedAdjudicationRepository.findByAgencyId("LEI", Pageable.ofSize(10))
+    val foundAdjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn("LEI",
+      LocalDate.now().atStartOfDay(), LocalDate.now().atTime(
+        LocalTime.MAX), ReportedAdjudicationStatus.values().toList(),
+      Pageable.ofSize(10))
 
     assertThat(foundAdjudications.content).hasSize(1)
       .extracting("reportNumber")
@@ -182,7 +187,11 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `find reported adjudications by created user and agency id`() {
-    val foundAdjudications = reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyId("ITAG_USER", "MDI", Pageable.ofSize(10))
+    val foundAdjudications = reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+      "ITAG_USER", "MDI",
+      LocalDate.now().atStartOfDay(), LocalDate.now().atTime(
+        LocalTime.MAX), ReportedAdjudicationStatus.values().toList(),
+      Pageable.ofSize(10))
 
     assertThat(foundAdjudications.content).hasSize(2)
       .extracting("reportNumber")
@@ -190,6 +199,7 @@ class ReportedAdjudicationRepositoryTest {
         1234L, 1235L
       )
   }
+
 
   private fun reportedAdjudication(): ReportedAdjudication {
     return ReportedAdjudication(
