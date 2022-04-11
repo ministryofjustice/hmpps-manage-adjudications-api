@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Dra
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
 import javax.persistence.EntityNotFoundException
@@ -40,16 +41,17 @@ class ReportedAdjudicationService(
 
   fun getAllReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val reportedAdjudicationsPage =
-      reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(agencyId, startDate.atStartOfDay(),endDate.atTime(
-        LocalTime.MAX), status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList()) , pageable)
+      reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+        agencyId, reportsFrom(startDate), reportsTo(endDate), statuses(status), pageable)
     return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
   fun getMyReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val username = authenticationFacade.currentUsername
+
     val reportedAdjudicationsPage =
-    reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(username!!, agencyId, startDate.atStartOfDay(), endDate.atTime(
-      LocalTime.MAX), status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList()), pageable)
+      reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+      username!!, agencyId, reportsFrom(startDate), reportsTo(endDate), statuses(status), pageable)
     return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
@@ -123,6 +125,10 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   statusReason = statusReason,
   statusDetails = statusDetails,
 )
+
+private fun reportsFrom(startDate: LocalDate) : LocalDateTime = startDate.atStartOfDay()
+private fun reportsTo(endDate: LocalDate) : LocalDateTime = endDate.atTime(LocalTime.MAX)
+private fun statuses(status: Optional<ReportedAdjudicationStatus>) : List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
 
 private fun toReportedOffence(offences: MutableList<ReportedOffence>?, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> {
   return (offences ?: mutableListOf()).map { offence ->
