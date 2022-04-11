@@ -37,6 +37,9 @@ class ReportedAdjudicationService(
   companion object {
     fun throwEntityNotFoundException(id: Long): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")
+    fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
+    fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
+    fun statuses(status: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
   }
 
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
@@ -134,10 +137,6 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   statusReason = statusReason,
   statusDetails = statusDetails,
 )
-
-private fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
-private fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
-private fun statuses(status: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
 
 private fun toReportedOffence(offences: MutableList<ReportedOffence>?, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> {
   return (offences ?: mutableListOf()).map { offence ->
