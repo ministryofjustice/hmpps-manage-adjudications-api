@@ -3,8 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.format.DateTimeFormatter
 
@@ -81,7 +80,9 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @ParameterizedTest
-  @MethodSource("allFilters")
+  @CsvSource(
+    "2020-12-14, 2020-12-17, AWAITING_REVIEW, 3, 1234",
+    "2020-12-15, 2020-12-15, AWAITING_REVIEW, 1, 789")
   fun `return a page of reported adjudications for agency with filters`(
     startDate: String, endDate: String, status: ReportedAdjudicationStatus, expectedCount: Int, adjudicationNumber: Long
   ) {
@@ -100,7 +101,9 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @ParameterizedTest
-  @MethodSource("myFilters")
+  @CsvSource(
+   "2020-12-14, 2020-12-16, AWAITING_REVIEW, 2, 1234",
+    "2020-12-14, 2020-12-14, AWAITING_REVIEW, 1, 567")
   fun `return a page of reported adjudications completed by the current user with filters`(
     startDate: String, endDate: String, status: ReportedAdjudicationStatus, expectedCount: Int, adjudicationNumber: Long
   ) {
@@ -328,19 +331,6 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.status").isEqualTo(404)
       .jsonPath("$.userMessage")
       .isEqualTo("Not found: ReportedAdjudication not found for 1524242")
-  }
-
-  companion object {
-    @JvmStatic
-    fun myFilters() = listOf(
-      Arguments.of("2020-12-14", "2020-12-16", ReportedAdjudicationStatus.AWAITING_REVIEW, 2, 1234L),
-      Arguments.of("2020-12-14", "2020-12-14", ReportedAdjudicationStatus.AWAITING_REVIEW, 1, 567L),
-      )
-    @JvmStatic
-    fun allFilters() = listOf(
-      Arguments.of("2020-12-14", "2020-12-17", ReportedAdjudicationStatus.AWAITING_REVIEW, 3, 1234L),
-      Arguments.of("2020-12-15", "2020-12-15", ReportedAdjudicationStatus.AWAITING_REVIEW, 1, 789L),
-    )
   }
 
   private fun initMyReportData(){
