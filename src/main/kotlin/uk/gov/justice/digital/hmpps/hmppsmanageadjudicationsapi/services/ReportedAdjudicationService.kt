@@ -10,7 +10,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentSta
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.*
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -42,7 +49,8 @@ class ReportedAdjudicationService(
   fun getAllReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val reportedAdjudicationsPage =
       reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
-        agencyId, reportsFrom(startDate), reportsTo(endDate), statuses(status), pageable)
+        agencyId, reportsFrom(startDate), reportsTo(endDate), statuses(status), pageable
+      )
     return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
@@ -51,7 +59,8 @@ class ReportedAdjudicationService(
 
     val reportedAdjudicationsPage =
       reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
-      username!!, agencyId, reportsFrom(startDate), reportsTo(endDate), statuses(status), pageable)
+        username!!, agencyId, reportsFrom(startDate), reportsTo(endDate), statuses(status), pageable
+      )
     return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
@@ -126,9 +135,9 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   statusDetails = statusDetails,
 )
 
-private fun reportsFrom(startDate: LocalDate) : LocalDateTime = startDate.atStartOfDay()
-private fun reportsTo(endDate: LocalDate) : LocalDateTime = endDate.atTime(LocalTime.MAX)
-private fun statuses(status: Optional<ReportedAdjudicationStatus>) : List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
+private fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
+private fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
+private fun statuses(status: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
 
 private fun toReportedOffence(offences: MutableList<ReportedOffence>?, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> {
   return (offences ?: mutableListOf()).map { offence ->

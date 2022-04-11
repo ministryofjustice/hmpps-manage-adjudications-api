@@ -14,12 +14,14 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     startDate: LocalDateTime,
     endDate: LocalDateTime,
     statuses: List<ReportedAdjudicationStatus>,
-    pageable: Pageable): Page<ReportedAdjudication>
+    pageable: Pageable
+  ): Page<ReportedAdjudication>
   fun findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
     agencyId: String,
     startDate: LocalDateTime,
     endDate: LocalDateTime,
     statuses: List<ReportedAdjudicationStatus>,
-    pageable: Pageable): Page<ReportedAdjudication>
+    pageable: Pageable
+  ): Page<ReportedAdjudication>
   fun findByReportNumber(adjudicationNumber: Long): ReportedAdjudication?
 }

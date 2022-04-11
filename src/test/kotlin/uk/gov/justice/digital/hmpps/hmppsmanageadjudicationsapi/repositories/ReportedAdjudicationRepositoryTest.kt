@@ -173,10 +173,15 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `find reported adjudications by agency id`() {
-    val foundAdjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn("LEI",
-      LocalDate.now().atStartOfDay(), LocalDate.now().atTime(
-        LocalTime.MAX), ReportedAdjudicationStatus.values().toList(),
-      Pageable.ofSize(10))
+    val foundAdjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+      "LEI",
+      LocalDate.now().atStartOfDay(),
+      LocalDate.now().atTime(
+        LocalTime.MAX
+      ),
+      ReportedAdjudicationStatus.values().toList(),
+      Pageable.ofSize(10)
+    )
 
     assertThat(foundAdjudications.content).hasSize(1)
       .extracting("reportNumber")
@@ -189,9 +194,13 @@ class ReportedAdjudicationRepositoryTest {
   fun `find reported adjudications by created user and agency id`() {
     val foundAdjudications = reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
       "ITAG_USER", "MDI",
-      LocalDate.now().atStartOfDay(), LocalDate.now().atTime(
-        LocalTime.MAX), ReportedAdjudicationStatus.values().toList(),
-      Pageable.ofSize(10))
+      LocalDate.now().atStartOfDay(),
+      LocalDate.now().atTime(
+        LocalTime.MAX
+      ),
+      ReportedAdjudicationStatus.values().toList(),
+      Pageable.ofSize(10)
+    )
 
     assertThat(foundAdjudications.content).hasSize(2)
       .extracting("reportNumber")
@@ -199,7 +208,6 @@ class ReportedAdjudicationRepositoryTest {
         1234L, 1235L
       )
   }
-
 
   private fun reportedAdjudication(): ReportedAdjudication {
     return ReportedAdjudication(

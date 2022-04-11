@@ -26,7 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Authent
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.*
+import java.util.Optional
 import javax.persistence.EntityNotFoundException
 
 class ReportedAdjudicationServiceTest {
@@ -181,9 +181,11 @@ class ReportedAdjudicationServiceTest {
     fun `makes a call to the reported adjudication repository to get the page of adjudications`() {
       reportedAdjudicationService.getAllReportedAdjudications("MDI", LocalDate.now(), LocalDate.now(), Optional.empty(), Pageable.ofSize(20).withPage(0))
 
-      verify(reportedAdjudicationRepository).findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn("MDI",
+      verify(reportedAdjudicationRepository).findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+        "MDI",
         LocalDate.now().atStartOfDay(), LocalDate.now().atTime(LocalTime.MAX), ReportedAdjudicationStatus.values().toList(),
-        Pageable.ofSize(20).withPage(0))
+        Pageable.ofSize(20).withPage(0)
+      )
     }
 
     @Test
