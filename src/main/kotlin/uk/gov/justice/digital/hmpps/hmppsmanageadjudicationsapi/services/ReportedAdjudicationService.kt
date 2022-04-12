@@ -16,11 +16,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import javax.persistence.EntityNotFoundException
+import javax.transaction.Transactional
 
 @Service
 class ReportedAdjudicationService(
@@ -94,6 +96,17 @@ class ReportedAdjudicationService(
         victimOtherPersonsName = offence.victimOtherPersonsName,
       )
     }.toMutableList()
+  }
+
+  fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, reason: String?, details: String?): ReportedAdjudicationDto {
+    val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
+    reportedAdjudication?.let {
+      // TODO - logic for bad request.
+      it.status = status
+      it.statusReason = reason
+      it.statusDetails = details
+      return reportedAdjudicationRepository.save(it).toDto(this.offenceCodeLookupService)
+    } ?: throwEntityNotFoundException(adjudicationNumber)
   }
 }
 

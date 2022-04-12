@@ -15,17 +15,31 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.annotations.ApiIgnore
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
+import javax.validation.Valid
 
 @ApiModel("Reported adjudication response")
 data class ReportedAdjudicationResponse(
   @ApiModelProperty(value = "The reported adjudication")
   val reportedAdjudication: ReportedAdjudicationDto
+)
+
+@ApiModel("Request to set the state for an a reported adjudication")
+data class ReportedAdjudicationStatusRequest(
+  @ApiModelProperty(value = "The status to set the reported adjudication to")
+  val status: ReportedAdjudicationStatus,
+  @ApiModelProperty(value = "The reason the status has been set")
+  val statusReason: String? = null,
+  @ApiModelProperty(value = "Details of why the status has been set")
+  val statusDetails: String? = null,
 )
 
 @RestController
@@ -75,6 +89,26 @@ class ReportedAdjudicationController {
     val draftAdjudication = reportedAdjudicationService.createDraftFromReportedAdjudication(adjudicationNumber)
     return DraftAdjudicationResponse(
       draftAdjudication
+    )
+  }
+
+  @PutMapping(value = ["/{adjudicationNumber}/status"])
+  @ApiOperation(value = "Set the status for the reported adjudication.")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @ResponseStatus(HttpStatus.CREATED)
+  fun setOffenceDetails(
+    @PathVariable(name = "adjudicationNumber") id: Long,
+    @RequestBody @Valid reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = reportedAdjudicationService.setStatus(
+      id,
+      reportedAdjudicationStatusRequest.status,
+      reportedAdjudicationStatusRequest.statusReason,
+      reportedAdjudicationStatusRequest.statusDetails
+    )
+
+    return ReportedAdjudicationResponse(
+      reportedAdjudication
     )
   }
 }
