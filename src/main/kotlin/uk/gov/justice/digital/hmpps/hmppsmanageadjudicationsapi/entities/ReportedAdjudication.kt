@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
 import org.hibernate.validator.constraints.Length
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.toDto
 import java.lang.IllegalStateException
 import java.time.LocalDateTime
 import javax.persistence.CascadeType

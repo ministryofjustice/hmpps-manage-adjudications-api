@@ -174,7 +174,7 @@ class DraftAdjudicationService(
     val isNew = draftAdjudication.reportNumber == null
     if (!isNew) {
       val fromStatus = reportedAdjudicationRepository.findByReportNumber(draftAdjudication.reportNumber!!)!!.status
-      if (!ReportedAdjudicationStatus.AWAITING_REVIEW.canTransitionFrom(fromStatus)){
+      if (!ReportedAdjudicationStatus.AWAITING_REVIEW.canTransitionFrom(fromStatus)) {
         throw IllegalStateException("TODO")
       }
     }

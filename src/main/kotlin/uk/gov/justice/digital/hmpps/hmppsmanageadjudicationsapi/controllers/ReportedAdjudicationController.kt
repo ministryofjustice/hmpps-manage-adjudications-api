@@ -26,9 +26,9 @@ import springfox.documentation.annotations.ApiIgnore
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
-import javax.validation.Valid
 import java.time.LocalDate
 import java.util.Optional
+import javax.validation.Valid
 import javax.validation.constraints.Size
 
 @ApiModel("Reported adjudication response")
