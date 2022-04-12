@@ -101,7 +101,9 @@ class ReportedAdjudicationService(
   fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, reason: String?, details: String?): ReportedAdjudicationDto {
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
     reportedAdjudication?.let {
-      // TODO - logic for bad request.
+      if (it.status === ReportedAdjudicationStatus.REJECTED || it.status === ReportedAdjudicationStatus.ACCEPTED) {
+        throw IllegalStateException("Reported adjudication $adjudicationNumber cannot be changed from state: ${it.status}")
+      }
       it.status = status
       it.statusReason = reason
       it.statusDetails = details
