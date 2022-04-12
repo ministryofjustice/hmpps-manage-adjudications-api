@@ -45,7 +45,7 @@ data class ReportedAdjudication(
       this.statusReason = statusReason
       this.statusDetails = statusDetails
     } else {
-      throw IllegalStateException("ReportedAdjudication ${this.reportNumber} cannot transition from ${this.status} to $status")
+      throw IllegalStateException("ReportedAdjudication ${this.reportNumber} cannot transition from ${this.status} to $to")
     }
   }
 }
