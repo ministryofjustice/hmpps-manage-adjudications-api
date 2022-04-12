@@ -172,6 +172,12 @@ class DraftAdjudicationService(
       throw IllegalStateException("Please supply at least one set of offence details")
 
     val isNew = draftAdjudication.reportNumber == null
+    if (!isNew) {
+      val fromStatus = reportedAdjudicationRepository.findByReportNumber(draftAdjudication.reportNumber!!)!!.status
+      if (!ReportedAdjudicationStatus.AWAITING_REVIEW.canTransitionFrom(fromStatus)){
+        throw IllegalStateException("TODO")
+      }
+    }
     val nomisAdjudication = saveToPrisonApi(draftAdjudication, isNew)
     val generatedReportedAdjudication = saveToReportedAdjudications(draftAdjudication, nomisAdjudication, isNew)
 
@@ -291,6 +297,8 @@ class DraftAdjudicationService(
         offence.addAll(toReportedOffence(draftAdjudication.offenceDetails))
       }
       it.statement = draftAdjudication.incidentStatement!!.statement!!
+      it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
+
       return reportedAdjudicationRepository.save(it)
     } ?: ReportedAdjudicationService.throwEntityNotFoundException(nomisAdjudication.adjudicationNumber)
   }

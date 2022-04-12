@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
 import org.hibernate.validator.constraints.Length
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.toDto
+import java.lang.IllegalStateException
 import java.time.LocalDateTime
 import javax.persistence.CascadeType
 import javax.persistence.Column
@@ -37,7 +39,16 @@ data class ReportedAdjudication(
   var statusReason: String? = null,
   @Length(max = 1000)
   var statusDetails: String? = null,
-) : BaseEntity()
+) : BaseEntity() {
+  fun transition(to: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null) {
+    if (this.status.canTransitionTo(to)) {
+      this.status = status
+      this.statusReason = statusReason
+      this.statusDetails = statusDetails
+    }
+    throw IllegalStateException("ReportedAdjudication ${this.reportNumber} cannot transition from ${this.status} to $status")
+  }
+}
 
 enum class ReportedAdjudicationStatus {
   ACCEPTED,
@@ -53,5 +64,12 @@ enum class ReportedAdjudicationStatus {
     }
   };
   open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
-  fun isFinal(): Boolean = nextStates().isEmpty()
+  fun canTransitionFrom(from: ReportedAdjudicationStatus): Boolean {
+    val to = this
+    return from.nextStates().contains(to)
+  }
+  fun canTransitionTo(to: ReportedAdjudicationStatus): Boolean {
+    val from = this
+    return from.nextStates().contains(to)
+  }
 }

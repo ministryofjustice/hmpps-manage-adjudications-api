@@ -114,16 +114,11 @@ class ReportedAdjudicationService(
     }.toMutableList()
   }
 
-  fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, reason: String? = null, details: String? = null): ReportedAdjudicationDto {
+  fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
     reportedAdjudication?.let {
-      if (it.status.nextStates().contains(status)) {
-        it.status = status
-        it.statusReason = reason
-        it.statusDetails = details
-        return reportedAdjudicationRepository.save(it).toDto(this.offenceCodeLookupService)
-      }
-      throw IllegalStateException("ReportedAdjudication $adjudicationNumber cannot transition from ${it.status} to $status")
+      it.transition(status, statusReason, statusDetails)
+      return reportedAdjudicationRepository.save(it).toDto(this.offenceCodeLookupService)
     } ?: throwEntityNotFoundException(adjudicationNumber)
   }
 }
