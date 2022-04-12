@@ -44,8 +44,9 @@ data class ReportedAdjudication(
       this.status = status
       this.statusReason = statusReason
       this.statusDetails = statusDetails
+    } else {
+      throw IllegalStateException("ReportedAdjudication ${this.reportNumber} cannot transition from ${this.status} to $status")
     }
-    throw IllegalStateException("ReportedAdjudication ${this.reportNumber} cannot transition from ${this.status} to $status")
   }
 }
 
@@ -54,7 +55,7 @@ enum class ReportedAdjudicationStatus {
   REJECTED,
   AWAITING_REVIEW {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(ACCEPTED, REJECTED, RETURNED)
+      return listOf(ACCEPTED, REJECTED, RETURNED, AWAITING_REVIEW)
     }
   },
   RETURNED {
