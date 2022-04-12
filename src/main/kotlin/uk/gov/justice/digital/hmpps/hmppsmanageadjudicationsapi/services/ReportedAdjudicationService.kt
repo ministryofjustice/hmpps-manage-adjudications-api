@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import java.lang.IllegalStateException
 import javax.persistence.EntityNotFoundException
-import javax.transaction.Transactional
 
 @Service
 class ReportedAdjudicationService(
