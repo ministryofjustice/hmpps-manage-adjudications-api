@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Reporte
 import javax.validation.Valid
 import java.time.LocalDate
 import java.util.Optional
+import javax.validation.constraints.Size
 
 @ApiModel("Reported adjudication response")
 data class ReportedAdjudicationResponse(
@@ -41,8 +42,16 @@ data class ReportedAdjudicationStatusRequest(
   @ApiModelProperty(value = "The status to set the reported adjudication to")
   val status: ReportedAdjudicationStatus,
   @ApiModelProperty(value = "The reason the status has been set")
+  @get:Size(
+    max = 128,
+    message = "The reason the status has been set exceeds the maximum character limit of {max}"
+  )
   val statusReason: String? = null,
   @ApiModelProperty(value = "Details of why the status has been set")
+  @get:Size(
+    max = 4000,
+    message = "The details of why the status has been set exceeds the maximum character limit of {max}"
+  )
   val statusDetails: String? = null,
 )
 
@@ -202,7 +211,7 @@ class ReportedAdjudicationController {
   @ApiOperation(value = "Set the status for the reported adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.OK)
-  fun setOffenceDetails(
+  fun reportedAdjudictionSetStatus(
     @PathVariable(name = "adjudicationNumber") id: Long,
     @RequestBody @Valid reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest
   ): ReportedAdjudicationResponse {
