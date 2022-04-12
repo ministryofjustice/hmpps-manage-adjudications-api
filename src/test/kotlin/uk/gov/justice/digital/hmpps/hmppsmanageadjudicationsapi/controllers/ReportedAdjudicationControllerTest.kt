@@ -300,7 +300,8 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     fun `returns a bad request when the maximum reason length has been exceeded`() {
       val largeStatement = IntRange(0, 128).joinToString("") { "A" }
       makeReportedAdjudicationSetStatusRequest(
-        123, mapOf(
+        123,
+        mapOf(
           "status" to ReportedAdjudicationStatus.RETURNED,
           "statusReason" to largeStatement
         )

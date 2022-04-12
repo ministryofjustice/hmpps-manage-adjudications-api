@@ -269,8 +269,7 @@ class ReportedAdjudicationServiceTest {
         ),
         statement = INCIDENT_STATEMENT,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-
-        )
+      )
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
       val reportedAdjudication2 = ReportedAdjudication(
@@ -326,7 +325,6 @@ class ReportedAdjudicationServiceTest {
         )
     }
   }
-
 
   @Nested
   inner class ReportedAdjudicationSetStatus {

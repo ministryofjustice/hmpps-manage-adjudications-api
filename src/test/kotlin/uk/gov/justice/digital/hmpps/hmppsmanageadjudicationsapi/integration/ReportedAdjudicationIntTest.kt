@@ -429,7 +429,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
           "status" to ReportedAdjudicationStatus.RETURNED,
           "statusReason" to "status reason",
           "statusDetails" to "status details"
-        ))
+        )
+      )
       .exchange()
       .expectStatus().isOk
       .expectBody()
@@ -460,13 +461,13 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "status" to ReportedAdjudicationStatus.ACCEPTED,
-        ))
+        )
+      )
       .exchange()
       .expectStatus().isBadRequest
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo("ReportedAdjudication 1524242 cannot transition from REJECTED to ACCEPTED")
   }
-
 
   private fun initMyReportData() {
     val intTestData = integrationTestData()

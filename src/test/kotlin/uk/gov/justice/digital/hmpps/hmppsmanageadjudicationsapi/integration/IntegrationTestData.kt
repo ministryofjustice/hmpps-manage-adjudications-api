@@ -340,7 +340,6 @@ class IntegrationTestData(
       .exchange()
   }
 
-
   fun recallCompletedDraftAdjudication(
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders()
