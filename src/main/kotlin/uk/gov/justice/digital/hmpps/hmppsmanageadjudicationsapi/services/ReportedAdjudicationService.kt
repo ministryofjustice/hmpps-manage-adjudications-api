@@ -75,7 +75,6 @@ class ReportedAdjudicationService(
       reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
 
     val reportedAdjudication = foundReportedAdjudication ?: throwEntityNotFoundException(adjudicationNumber)
-    if (reportedAdjudication.status.isFinal()) throwReportedAdjudicationIsFinal(adjudicationNumber)
 
     val draftAdjudication = DraftAdjudication(
       reportNumber = reportedAdjudication.reportNumber,
