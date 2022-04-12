@@ -53,4 +53,5 @@ enum class ReportedAdjudicationStatus {
     }
   };
   open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
+  fun isFinal(): Boolean = nextStates().isEmpty()
 }
