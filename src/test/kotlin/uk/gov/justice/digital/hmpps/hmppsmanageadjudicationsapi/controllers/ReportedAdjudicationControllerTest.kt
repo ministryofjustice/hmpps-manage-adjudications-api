@@ -28,7 +28,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.Optional
 import javax.persistence.EntityNotFoundException
 
 @WebMvcTest(value = [ReportedAdjudicationController::class])
@@ -105,7 +107,11 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
   inner class MyReportedAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(reportedAdjudicationService.getMyReportedAdjudications(any(), any())).thenReturn(
+      whenever(
+        reportedAdjudicationService.getMyReportedAdjudications(
+          any(), any(), any(), any(), any()
+        )
+      ).thenReturn(
         PageImpl(
           listOf(
             ReportedAdjudicationDto(
@@ -133,7 +139,6 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
               status = ReportedAdjudicationStatus.AWAITING_REVIEW,
               statusReason = null,
               statusDetails = null,
-
             )
           ),
           Pageable.ofSize(20).withPage(0),
@@ -153,6 +158,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       getMyAdjudications().andExpect(status().isOk)
       verify(reportedAdjudicationService).getMyReportedAdjudications(
         "MDI",
+        LocalDate.now(), LocalDate.now(), Optional.empty(),
         PageRequest.ofSize(20).withPage(0).withSort(
           Sort.by(
             Sort.Direction.DESC,
@@ -174,6 +180,30 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
+    @WithMockUser(username = "ITAG_USER")
+    fun `returns my reported adjudications with date and status filter`() {
+      getMyAdjudicationsWithFilter(LocalDate.now().plusDays(5), ReportedAdjudicationStatus.AWAITING_REVIEW)
+        .andExpect(status().isOk)
+        .andExpect(jsonPath("$.totalPages").value(1))
+        .andExpect(jsonPath("$.size").value(20))
+        .andExpect(jsonPath("$.number").value(0))
+        .andExpect(jsonPath("$.content[0].adjudicationNumber").value(1))
+
+      verify(reportedAdjudicationService).getMyReportedAdjudications(
+        "MDI",
+        LocalDate.now().plusDays(5),
+        LocalDate.now().plusDays(5),
+        Optional.of(ReportedAdjudicationStatus.AWAITING_REVIEW),
+        PageRequest.ofSize(20).withPage(0).withSort(
+          Sort.by(
+            Sort.Direction.DESC,
+            "incidentDate"
+          )
+        )
+      )
+    }
+
+    @Test
     fun `paged responds with a unauthorised status code`() {
       getMyAdjudications().andExpect(status().isUnauthorized)
     }
@@ -182,6 +212,14 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           get("/reported-adjudications/my/agency/MDI?page=0&size=20&sort=incidentDate,DESC")
+            .header("Content-Type", "application/json")
+        )
+    }
+
+    private fun getMyAdjudicationsWithFilter(date: LocalDate, status: ReportedAdjudicationStatus): ResultActions {
+      return mockMvc
+        .perform(
+          get("/reported-adjudications/my/agency/MDI?startDate=$date&endDate=$date&status=$status&page=0&size=20&sort=incidentDate,DESC")
             .header("Content-Type", "application/json")
         )
     }

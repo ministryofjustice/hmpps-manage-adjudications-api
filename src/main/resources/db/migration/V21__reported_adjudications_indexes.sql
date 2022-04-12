@@ -1,0 +1,2 @@
+create index reported_adjudications_agency_idx on reported_adjudications(agency_id,date_time_of_incident,status);
+create index reported_adjudications_user_idx on reported_adjudications(agency_id,create_user_id,date_time_of_incident,status);
