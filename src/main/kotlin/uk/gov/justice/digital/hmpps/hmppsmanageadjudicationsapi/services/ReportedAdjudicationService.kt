@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import java.lang.IllegalStateException
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 
@@ -101,13 +102,13 @@ class ReportedAdjudicationService(
   fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, reason: String?, details: String?): ReportedAdjudicationDto {
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
     reportedAdjudication?.let {
-      if (it.status === ReportedAdjudicationStatus.REJECTED || it.status === ReportedAdjudicationStatus.ACCEPTED) {
-        throw IllegalStateException("Reported adjudication $adjudicationNumber cannot be changed from state: ${it.status}")
+      if (it.status.nextStates().contains(status)) {
+        it.status = status
+        it.statusReason = reason
+        it.statusDetails = details
+        return reportedAdjudicationRepository.save(it).toDto(this.offenceCodeLookupService)
       }
-      it.status = status
-      it.statusReason = reason
-      it.statusDetails = details
-      return reportedAdjudicationRepository.save(it).toDto(this.offenceCodeLookupService)
+      throw IllegalStateException("ReportedAdjudication $adjudicationNumber cannot transition from ${it.status} to $status")
     } ?: throwEntityNotFoundException(adjudicationNumber)
   }
 }

@@ -40,5 +40,18 @@ data class ReportedAdjudication(
 ) : BaseEntity()
 
 enum class ReportedAdjudicationStatus {
-  ACCEPTED, REJECTED, AWAITING_REVIEW, RETURNED
+  ACCEPTED,
+  REJECTED,
+  AWAITING_REVIEW {
+    override fun nextStates(): List<ReportedAdjudicationStatus> {
+      return listOf(ACCEPTED, REJECTED, RETURNED)
+    }
+  },
+  RETURNED {
+    override fun nextStates(): List<ReportedAdjudicationStatus> {
+      return listOf(AWAITING_REVIEW)
+    }
+  };
+  open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
 }
+
