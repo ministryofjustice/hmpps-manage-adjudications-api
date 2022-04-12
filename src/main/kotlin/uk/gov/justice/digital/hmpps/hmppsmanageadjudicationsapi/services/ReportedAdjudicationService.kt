@@ -114,7 +114,7 @@ class ReportedAdjudicationService(
     }.toMutableList()
   }
 
-  fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, reason: String?, details: String?): ReportedAdjudicationDto {
+  fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, reason: String? = null, details: String? = null): ReportedAdjudicationDto {
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
     reportedAdjudication?.let {
       if (it.status.nextStates().contains(status)) {
