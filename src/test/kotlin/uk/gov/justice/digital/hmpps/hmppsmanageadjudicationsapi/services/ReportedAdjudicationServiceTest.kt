@@ -3,9 +3,13 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
 import org.assertj.core.groups.Tuple
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -323,6 +327,19 @@ class ReportedAdjudicationServiceTest {
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
       whenever(draftAdjudicationRepository.save(any())).thenReturn(savedDraftAdjudication)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+      "ACCEPTED, 99",
+      "REJECTED, 999"
+    )
+    fun`create draft from reported adjudication responds with 400 for status`(status: ReportedAdjudicationStatus, id: Long) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(id)).thenReturn(reportedAdjudication.also { it.status = status })
+
+      Assertions.assertThrows(IllegalStateException::class.java) {
+        reportedAdjudicationService.createDraftFromReportedAdjudication(id)
+      }
     }
 
     @Test
