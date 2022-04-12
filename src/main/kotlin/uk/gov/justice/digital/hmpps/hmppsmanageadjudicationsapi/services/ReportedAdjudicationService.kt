@@ -37,6 +37,8 @@ class ReportedAdjudicationService(
   companion object {
     fun throwEntityNotFoundException(id: Long): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")
+    fun throwReportedAdjudicationIsFinal(id: Long): Nothing =
+      throw IllegalStateException("ReportedAdjudication $id has final status")
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
     fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
     fun statuses(status: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
@@ -72,6 +74,7 @@ class ReportedAdjudicationService(
       reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
 
     val reportedAdjudication = foundReportedAdjudication ?: throwEntityNotFoundException(adjudicationNumber)
+    if (reportedAdjudication.status.isFinal()) throwReportedAdjudicationIsFinal(adjudicationNumber)
 
     val draftAdjudication = DraftAdjudication(
       reportNumber = reportedAdjudication.reportNumber,
