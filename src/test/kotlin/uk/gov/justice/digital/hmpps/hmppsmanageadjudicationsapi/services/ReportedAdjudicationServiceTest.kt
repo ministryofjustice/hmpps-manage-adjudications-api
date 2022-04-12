@@ -362,9 +362,11 @@ class ReportedAdjudicationServiceTest {
     @Test
     fun `setting status for a reported adjudication throws an illegal state exception for invalid transitions`() {
       invalidTransitions.forEach { (from, to) ->
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication().also {
-          it.status = from
-        })
+        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+          reportedAdjudication().also {
+            it.status = from
+          }
+        )
         Assertions.assertThrows(IllegalStateException::class.java) {
           reportedAdjudicationService.setStatus(1, to)
         }
@@ -374,9 +376,11 @@ class ReportedAdjudicationServiceTest {
     @Test
     fun `setting status for a reported adjudication for valid transitions`() {
       validTransitions.forEach { (from, to) ->
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication().also {
-          it.status = from
-        })
+        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+          reportedAdjudication().also {
+            it.status = from
+          }
+        )
         whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication().also { it.status = to })
         reportedAdjudicationService.setStatus(1, to)
         verify(reportedAdjudicationRepository).save(reportedAdjudication().also { it.status = to })
