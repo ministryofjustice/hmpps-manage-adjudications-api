@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -60,8 +59,7 @@ class ReportedAdjudicationService(
       reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
 
     val reportedAdjudication = foundReportedAdjudication ?: throwEntityNotFoundException(adjudicationNumber)
-    if (reportedAdjudication.status in listOf(ReportedAdjudicationStatus.ACCEPTED, ReportedAdjudicationStatus.REJECTED))
-      throwReportedAdjudicationIsFinal(adjudicationNumber)
+    if (reportedAdjudication.status.isFinal()) throwReportedAdjudicationIsFinal(adjudicationNumber)
 
     val draftAdjudication = DraftAdjudication(
       reportNumber = reportedAdjudication.reportNumber,

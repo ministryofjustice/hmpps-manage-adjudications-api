@@ -40,5 +40,6 @@ data class ReportedAdjudication(
 ) : BaseEntity()
 
 enum class ReportedAdjudicationStatus {
-  ACCEPTED, REJECTED, AWAITING_REVIEW, RETURNED
+  ACCEPTED, REJECTED, AWAITING_REVIEW, RETURNED;
+  fun isFinal(): Boolean = this in listOf(ACCEPTED, REJECTED)
 }
