@@ -331,8 +331,6 @@ class IntegrationTestData(
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders()
   ): WebTestClient.ResponseSpec {
-    prisonApiMockServer.stubPostAdjudication(testDataSet)
-
     return webTestClient.put()
       .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/status")
       .bodyValue(mapOf("status" to reportedAdjudicationStatus))
