@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
@@ -384,6 +385,7 @@ class ReportedAdjudicationServiceTest {
         whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication().also { it.status = to })
         reportedAdjudicationService.setStatus(1, to)
         verify(reportedAdjudicationRepository).save(reportedAdjudication().also { it.status = to })
+        reset(reportedAdjudicationRepository)
       }
     }
   }
