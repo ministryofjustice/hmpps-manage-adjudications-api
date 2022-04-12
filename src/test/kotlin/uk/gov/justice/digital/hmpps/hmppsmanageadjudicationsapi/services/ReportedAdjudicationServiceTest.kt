@@ -27,7 +27,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.util.Optional
 import javax.persistence.EntityNotFoundException
 
 class ReportedAdjudicationServiceTest {
@@ -171,7 +174,7 @@ class ReportedAdjudicationServiceTest {
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
-      whenever(reportedAdjudicationRepository.findByAgencyId(any(), any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(any(), any(), any(), any(), any())).thenReturn(
         PageImpl(
           listOf(reportedAdjudication1, reportedAdjudication2)
         )
@@ -180,14 +183,18 @@ class ReportedAdjudicationServiceTest {
 
     @Test
     fun `makes a call to the reported adjudication repository to get the page of adjudications`() {
-      reportedAdjudicationService.getAllReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
+      reportedAdjudicationService.getAllReportedAdjudications("MDI", LocalDate.now(), LocalDate.now(), Optional.empty(), Pageable.ofSize(20).withPage(0))
 
-      verify(reportedAdjudicationRepository).findByAgencyId("MDI", Pageable.ofSize(20).withPage(0))
+      verify(reportedAdjudicationRepository).findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+        "MDI",
+        LocalDate.now().atStartOfDay(), LocalDate.now().atTime(LocalTime.MAX), ReportedAdjudicationStatus.values().toList(),
+        Pageable.ofSize(20).withPage(0)
+      )
     }
 
     @Test
     fun `returns all reported adjudications`() {
-      val myReportedAdjudications = reportedAdjudicationService.getAllReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
+      val myReportedAdjudications = reportedAdjudicationService.getAllReportedAdjudications("MDI", LocalDate.now(), LocalDate.now(), Optional.empty(), Pageable.ofSize(20).withPage(0))
 
       assertThat(myReportedAdjudications.content)
         .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
@@ -247,7 +254,7 @@ class ReportedAdjudicationServiceTest {
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
-      whenever(reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyId(any(), any(), any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(any(), any(), any(), any(), any(), any())).thenReturn(
         PageImpl(
           listOf(reportedAdjudication1, reportedAdjudication2)
         )
@@ -256,7 +263,7 @@ class ReportedAdjudicationServiceTest {
 
     @Test
     fun `returns my reported adjudications`() {
-      val myReportedAdjudications = reportedAdjudicationService.getMyReportedAdjudications("MDI", Pageable.ofSize(20).withPage(0))
+      val myReportedAdjudications = reportedAdjudicationService.getMyReportedAdjudications("MDI", LocalDate.now(), LocalDate.now(), Optional.empty(), Pageable.ofSize(20).withPage(0))
 
       assertThat(myReportedAdjudications.content)
         .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")

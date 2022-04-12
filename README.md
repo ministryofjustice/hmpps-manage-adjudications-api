@@ -15,4 +15,3 @@ before you start running the tests. Once done you can run the tests by running `
 
 ###Running locally
 `./gradlew bootRun --args='--spring.profiles.active=local,stdout'`
-
