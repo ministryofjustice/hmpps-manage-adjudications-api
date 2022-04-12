@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 
 class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
@@ -309,5 +310,38 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.status").isEqualTo(404)
       .jsonPath("$.userMessage")
       .isEqualTo("Not found: ReportedAdjudication not found for 1524242")
+  }
+
+  @Test
+  fun `transition from one state to another`() {
+    oAuthMockServer.stubGrantToken()
+
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "status" to ReportedAdjudicationStatus.RETURNED,
+          "statusReason" to "status reason",
+          "statusDetails" to "status details"
+        ))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.RETURNED.toString())
+      .jsonPath("$.reportedAdjudication.statusReason").isEqualTo("status reason")
+      .jsonPath("$.reportedAdjudication.statusDetails").isEqualTo("status details")
+
   }
 }

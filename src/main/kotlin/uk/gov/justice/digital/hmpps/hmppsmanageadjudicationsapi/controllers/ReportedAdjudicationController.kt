@@ -95,7 +95,7 @@ class ReportedAdjudicationController {
   @PutMapping(value = ["/{adjudicationNumber}/status"])
   @ApiOperation(value = "Set the status for the reported adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
-  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseStatus(HttpStatus.OK)
   fun setOffenceDetails(
     @PathVariable(name = "adjudicationNumber") id: Long,
     @RequestBody @Valid reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest
