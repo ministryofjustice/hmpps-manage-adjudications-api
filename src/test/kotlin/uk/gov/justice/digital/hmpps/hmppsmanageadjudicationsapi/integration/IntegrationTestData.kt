@@ -5,6 +5,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.BankHolidayApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
@@ -321,6 +322,18 @@ class IntegrationTestData(
 
     return webTestClient.post()
       .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/complete-draft-adjudication")
+      .headers(headers)
+      .exchange()
+  }
+
+  fun reportedAdjudicationStatus(
+    reportedAdjudicationStatus: ReportedAdjudicationStatus,
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.put()
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/status")
+      .bodyValue(mapOf("status" to reportedAdjudicationStatus))
       .headers(headers)
       .exchange()
   }

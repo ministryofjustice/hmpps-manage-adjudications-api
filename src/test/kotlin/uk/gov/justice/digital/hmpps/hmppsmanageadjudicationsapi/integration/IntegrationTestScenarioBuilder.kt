@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DraftAdjudicationResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 
 class IntegrationTestScenarioBuilder(
   private val intTestData: IntegrationTestData,
@@ -38,6 +39,10 @@ class IntegrationTestScenario(
       headers
     )
     return this
+  }
+
+  fun reportedAdjudicationSetStatus(status: ReportedAdjudicationStatus) {
+    intTestData.reportedAdjudicationStatus(status, testAdjudicationDataSet, headers)
   }
 
   fun getDraftId(): Long {

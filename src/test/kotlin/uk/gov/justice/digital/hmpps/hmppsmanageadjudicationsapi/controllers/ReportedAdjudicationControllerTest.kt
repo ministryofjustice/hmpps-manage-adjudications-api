@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.ResultActions
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -265,6 +266,64 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           get("/reported-adjudications/$adjudicationNumber/create-draft-adjudication")
             .header("Content-Type", "application/json")
         )
+    }
+  }
+
+  @Nested
+  inner class ReportedAdjudicationSetStatus {
+
+    private fun makeReportedAdjudicationSetStatusRequest(
+      adjudicationNumber: Long,
+      body: Map<String, Any>
+    ): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.put("/reported-adjudications/$adjudicationNumber/status")
+            .header("Content-Type", "application/json")
+            .content(objectMapper.writeValueAsString(body))
+        )
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `returns a bad request when the maximum details length has been exceeded`() {
+      val largeStatement = IntRange(0, 4001).joinToString("") { "A" }
+      makeReportedAdjudicationSetStatusRequest(
+        123,
+        mapOf("status" to ReportedAdjudicationStatus.RETURNED, "statusDetails" to largeStatement)
+      ).andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.userMessage").value("The details of why the status has been set exceeds the maximum character limit of 4000"))
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `returns a bad request when the maximum reason length has been exceeded`() {
+      val largeStatement = IntRange(0, 128).joinToString("") { "A" }
+      makeReportedAdjudicationSetStatusRequest(
+        123,
+        mapOf(
+          "status" to ReportedAdjudicationStatus.RETURNED,
+          "statusReason" to largeStatement
+        )
+      ).andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.userMessage").value("The reason the status has been set exceeds the maximum character limit of 128"))
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the status of the reported adjudication`() {
+      makeReportedAdjudicationSetStatusRequest(
+        123,
+        mapOf("status" to ReportedAdjudicationStatus.RETURNED, "statusReason" to "reason", "statusDetails" to "details")
+      )
+      verify(reportedAdjudicationService).setStatus(123, ReportedAdjudicationStatus.RETURNED, "reason", "details")
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      makeReportedAdjudicationSetStatusRequest(123, mapOf("status" to ReportedAdjudicationStatus.RETURNED)).andExpect(
+        status().isUnauthorized
+      )
     }
   }
 

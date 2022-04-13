@@ -41,7 +41,9 @@ class DraftAdjudicationService(
 
   @Transactional
   fun deleteOrphanedDraftAdjudications() {
-    draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(LocalDateTime.now().minusDays(1))
+    draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(
+      LocalDateTime.now().minusDays(1)
+    )
   }
 
   @Transactional
@@ -172,6 +174,17 @@ class DraftAdjudicationService(
       throw IllegalStateException("Please supply at least one set of offence details")
 
     val isNew = draftAdjudication.reportNumber == null
+    if (!isNew) {
+      // We need to check that the already reported adjudication is in the correct status here even though it happens
+      // later when we save from the draft. This is because we do not want to call nomis only later to fail validation.
+      val reportNumber = draftAdjudication.reportNumber!!
+      val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(reportNumber)
+        ?: ReportedAdjudicationService.throwEntityNotFoundException(reportNumber)
+      val fromStatus = reportedAdjudication.status
+      if (!ReportedAdjudicationStatus.AWAITING_REVIEW.canTransitionFrom(fromStatus)) {
+        throw IllegalStateException("Unable to complete draft adjudication $id as it is in the state $fromStatus")
+      }
+    }
     val nomisAdjudication = saveToPrisonApi(draftAdjudication, isNew)
     val generatedReportedAdjudication = saveToReportedAdjudications(draftAdjudication, nomisAdjudication, isNew)
 
@@ -184,7 +197,10 @@ class DraftAdjudicationService(
   fun getCurrentUsersInProgressDraftAdjudications(agencyId: String): List<DraftAdjudicationDto> {
     val username = authenticationFacade.currentUsername ?: return emptyList()
 
-    return draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(agencyId, username)
+    return draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(
+      agencyId,
+      username
+    )
       .sortedBy { it.incidentDetails.dateTimeOfIncident }
       .map { it.toDto(offenceCodeLookupService) }
   }
@@ -275,7 +291,8 @@ class DraftAdjudicationService(
       )
     }
 
-    val previousReportedAdjudication = reportedAdjudicationRepository.findByReportNumber(nomisAdjudication.adjudicationNumber)
+    val previousReportedAdjudication =
+      reportedAdjudicationRepository.findByReportNumber(nomisAdjudication.adjudicationNumber)
     previousReportedAdjudication?.let {
       it.bookingId = nomisAdjudication.bookingId
       it.reportNumber = nomisAdjudication.adjudicationNumber
@@ -291,6 +308,8 @@ class DraftAdjudicationService(
         offence.addAll(toReportedOffence(draftAdjudication.offenceDetails))
       }
       it.statement = draftAdjudication.incidentStatement!!.statement!!
+      it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
+
       return reportedAdjudicationRepository.save(it)
     } ?: ReportedAdjudicationService.throwEntityNotFoundException(nomisAdjudication.adjudicationNumber)
   }
@@ -321,16 +340,17 @@ class DraftAdjudicationService(
     throw EntityNotFoundException("DraftAdjudication not found for $id")
 }
 
-fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService): DraftAdjudicationDto = DraftAdjudicationDto(
-  id = this.id!!,
-  prisonerNumber = this.prisonerNumber,
-  incidentStatement = this.incidentStatement?.toDo(),
-  incidentDetails = this.incidentDetails.toDto(),
-  incidentRole = this.incidentRole.toDto(),
-  offenceDetails = this.offenceDetails?.map { it.toDto(offenceCodeLookupService) },
-  adjudicationNumber = this.reportNumber,
-  startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
-)
+fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService): DraftAdjudicationDto =
+  DraftAdjudicationDto(
+    id = this.id!!,
+    prisonerNumber = this.prisonerNumber,
+    incidentStatement = this.incidentStatement?.toDo(),
+    incidentDetails = this.incidentDetails.toDto(),
+    incidentRole = this.incidentRole.toDto(),
+    offenceDetails = this.offenceDetails?.map { it.toDto(offenceCodeLookupService) },
+    adjudicationNumber = this.reportNumber,
+    startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
+  )
 
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
   locationId = this.locationId,

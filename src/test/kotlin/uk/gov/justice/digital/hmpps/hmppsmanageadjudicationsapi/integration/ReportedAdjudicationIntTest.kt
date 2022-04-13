@@ -406,6 +406,69 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo("Not found: ReportedAdjudication not found for 1524242")
   }
 
+  @Test
+  fun `transition from one state to another`() {
+    oAuthMockServer.stubGrantToken()
+
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "status" to ReportedAdjudicationStatus.RETURNED,
+          "statusReason" to "status reason",
+          "statusDetails" to "status details"
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.RETURNED.toString())
+      .jsonPath("$.reportedAdjudication.statusReason").isEqualTo("status reason")
+      .jsonPath("$.reportedAdjudication.statusDetails").isEqualTo("status details")
+  }
+
+  @Test
+  fun `get a 400 when trying to transition to an invalid state`() {
+    oAuthMockServer.stubGrantToken()
+
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+      .reportedAdjudicationSetStatus(ReportedAdjudicationStatus.REJECTED)
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "status" to ReportedAdjudicationStatus.ACCEPTED,
+        )
+      )
+      .exchange()
+      .expectStatus().isBadRequest
+      .expectBody()
+      .jsonPath("$.userMessage").isEqualTo("ReportedAdjudication 1524242 cannot transition from REJECTED to ACCEPTED")
+  }
+
   private fun initMyReportData() {
     val intTestData = integrationTestData()
 
