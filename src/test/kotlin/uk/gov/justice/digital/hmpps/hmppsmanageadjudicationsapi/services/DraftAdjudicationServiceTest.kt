@@ -997,7 +997,7 @@ class DraftAdjudicationServiceTest {
         val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
         verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
         assertThat(reportedAdjudicationArgumentCaptor.value).extracting("status")
-          .isEqualTo(ReportedAdjudicationStatus.RETURNED)
+          .isEqualTo(ReportedAdjudicationStatus.AWAITING_REVIEW)
       }
     }
 
