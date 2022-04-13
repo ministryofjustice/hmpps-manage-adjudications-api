@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -946,18 +948,18 @@ class DraftAdjudicationServiceTest {
       }
 
 
-      @Test
-      fun `cannot complete when the reported adjudication is in the wrong state`() {
-        val invalidFromStates = ReportedAdjudicationStatus.values()
-          .filter { !it.nextStates().contains(ReportedAdjudicationStatus.AWAITING_REVIEW) }
-        invalidFromStates.forEach { invalidFromState ->
+      @ParameterizedTest
+      @CsvSource(
+        "ACCEPTED",
+        "REJECTED"
+      )
+      fun `cannot complete when the reported adjudication is in the wrong state`(from: ReportedAdjudicationStatus) {
           whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication().also {
-            it.status = invalidFromState
+            it.status = from
           })
           Assertions.assertThrows(IllegalStateException::class.java) {
             draftAdjudicationService.completeDraftAdjudication(1)
           }
-        }
       }
 
 //      @Test
@@ -973,7 +975,7 @@ class DraftAdjudicationServiceTest {
 //          }
 //        }
 //      }
-//    }
+    }
 
     @Nested
     inner class CompleteAPreviouslyCompletedAdjudicationCommittedWithAssistance {

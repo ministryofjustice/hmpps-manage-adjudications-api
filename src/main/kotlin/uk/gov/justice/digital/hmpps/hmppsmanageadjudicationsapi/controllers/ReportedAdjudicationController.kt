@@ -211,7 +211,7 @@ class ReportedAdjudicationController {
   @ApiOperation(value = "Set the status for the reported adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.OK)
-  fun reportedAdjudictionSetStatus(
+  fun setStatus(
     @PathVariable(name = "adjudicationNumber") id: Long,
     @RequestBody @Valid reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest
   ): ReportedAdjudicationResponse {
