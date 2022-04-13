@@ -34,9 +34,9 @@ data class ReportedAdjudication(
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var status: ReportedAdjudicationStatus,
-  @Length(max = 64)
+  @Length(max = 128)
   var statusReason: String? = null,
-  @Length(max = 1000)
+  @Length(max = 4000)
   var statusDetails: String? = null,
 ) : BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null) {
