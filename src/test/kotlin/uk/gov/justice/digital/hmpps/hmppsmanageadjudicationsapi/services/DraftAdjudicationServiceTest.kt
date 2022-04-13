@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
 import org.assertj.core.groups.Tuple
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -73,8 +74,14 @@ class DraftAdjudicationServiceTest {
     whenever(offenceCodeLookupService.getParagraphNumber(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
     whenever(offenceCodeLookupService.getParagraphCode(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_CODE)
-    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3)).thenReturn(listOf(OFFENCE_CODE_3_NOMIS_CODE_ON_OWN))
-    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3)).thenReturn(OFFENCE_CODE_3_NOMIS_CODE_ASSISTED)
+    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3)).thenReturn(
+      listOf(
+        OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
+      )
+    )
+    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3)).thenReturn(
+      OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
+    )
     whenever(offenceCodeLookupService.getParagraphNumber(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
   }
@@ -96,7 +103,9 @@ class DraftAdjudicationServiceTest {
           incidentRole = incidentRoleWithAllValuesSet()
         )
       )
-      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
+        DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+      )
     }
 
     @Test
@@ -189,17 +198,30 @@ class DraftAdjudicationServiceTest {
         )
 
       assertThat(draftAdjudicationDto.offenceDetails).hasSize(2)
-        .extracting("offenceCode", "offenceRule.paragraphNumber", "offenceRule.paragraphDescription", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+        .extracting(
+          "offenceCode",
+          "offenceRule.paragraphNumber",
+          "offenceRule.paragraphDescription",
+          "victimPrisonersNumber",
+          "victimStaffUsername",
+          "victimOtherPersonsName"
+        )
         .contains(
           Tuple(
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode, BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription, BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername, BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
           ),
           Tuple(
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode, FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription, FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername, FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
+            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
+            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
+            FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+            FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
+            FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
           ),
         )
 
@@ -473,7 +495,9 @@ class DraftAdjudicationServiceTest {
 
     @Test
     fun `makes changes to the incident details`() {
-      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
+        DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+      )
 
       val editedDateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1)
       val editedIncidentRole = incidentRoleWithNoValuesSet()
@@ -716,7 +740,9 @@ class DraftAdjudicationServiceTest {
             createdByUserId = "A_SMITH"
           )
         )
-        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
+        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
+          DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
+        )
         whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
           val passedInAdjudication = it.arguments[0] as ReportedAdjudication
           passedInAdjudication.createdByUserId = "A_SMITH"
@@ -737,16 +763,38 @@ class DraftAdjudicationServiceTest {
           .contains("A12345", 123456L, 1L, "MDI")
 
         assertThat(reportedAdjudicationArgumentCaptor.value)
-          .extracting("locationId", "dateTimeOfIncident", "handoverDeadline", "incidentRoleCode", "incidentRoleAssociatedPrisonersNumber", "statement")
-          .contains(1L, INCIDENT_TIME, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
+          .extracting(
+            "locationId",
+            "dateTimeOfIncident",
+            "handoverDeadline",
+            "incidentRoleCode",
+            "incidentRoleAssociatedPrisonersNumber",
+            "statement"
+          )
+          .contains(
+            1L,
+            INCIDENT_TIME,
+            DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
+            INCIDENT_ROLE_CODE,
+            INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
+            "test"
+          )
 
         assertThat(reportedAdjudicationArgumentCaptor.value.offenceDetails)
-          .extracting("offenceCode", "paragraphCode", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+          .extracting(
+            "offenceCode",
+            "paragraphCode",
+            "victimPrisonersNumber",
+            "victimStaffUsername",
+            "victimOtherPersonsName"
+          )
           .contains(
             Tuple(
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
             Tuple(
               FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
@@ -824,7 +872,9 @@ class DraftAdjudicationServiceTest {
             createdByUserId = "A_SMITH"
           )
         )
-        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
+        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
+          DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
+        )
         whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
           val passedInAdjudication = it.arguments[0] as ReportedAdjudication
           passedInAdjudication.createdByUserId = "A_SMITH"
@@ -852,6 +902,78 @@ class DraftAdjudicationServiceTest {
         verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
       }
     }
+
+    @Nested
+    inner class CompleteAPreviouslyCompletedAdjudicationCheckStateChange {
+      private val INCIDENT_TIME = LocalDateTime.now(clock)
+
+      private fun reportedAdjudication(): ReportedAdjudication = ReportedAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        bookingId = 1,
+        reportNumber = 123,
+        agencyId = "MDI",
+        locationId = 2,
+        offenceDetails = mutableListOf(),
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        dateTimeOfIncident = LocalDateTime.now(clock),
+        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
+        incidentRoleAssociatedPrisonersNumber = null,
+        incidentRoleCode = null,
+        statement = "test"
+      )
+
+      @BeforeEach
+      fun beforeEach() {
+        whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+          Optional.of(
+            DraftAdjudication(
+              id = 1,
+              prisonerNumber = "A12345",
+              reportNumber = 123,
+              agencyId = "MDI",
+              incidentDetails = IncidentDetails(
+                locationId = 1,
+                dateTimeOfIncident = INCIDENT_TIME,
+                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+              ),
+              incidentRole = incidentRoleWithNoValuesSet(),
+              offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+              incidentStatement = IncidentStatement(statement = "test")
+            )
+          )
+        )
+      }
+
+
+      @Test
+      fun `cannot complete when the reported adjudication is in the wrong state`() {
+        val invalidFromStates = ReportedAdjudicationStatus.values()
+          .filter { !it.nextStates().contains(ReportedAdjudicationStatus.AWAITING_REVIEW) }
+        invalidFromStates.forEach { invalidFromState ->
+          whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication().also {
+            it.status = invalidFromState
+          })
+          Assertions.assertThrows(IllegalStateException::class.java) {
+            draftAdjudicationService.completeDraftAdjudication(1)
+          }
+        }
+      }
+
+//      @Test
+//      fun `completes when the reported adjudication is in a correct state`() {
+//        val validFromStates = ReportedAdjudicationStatus.values()
+//          .filter { it.nextStates().contains(ReportedAdjudicationStatus.AWAITING_REVIEW) }
+//        validFromStates.forEach { validFromState ->
+//          whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication().also {
+//            it.status = validFromState
+//          })
+//          Assertions.assertThrows(IllegalStateException::class.java) {
+//            draftAdjudicationService.completeDraftAdjudication(1)
+//          }
+//        }
+//      }
+//    }
 
     @Nested
     inner class CompleteAPreviouslyCompletedAdjudicationCommittedWithAssistance {
@@ -908,7 +1030,9 @@ class DraftAdjudicationServiceTest {
             createdByUserId = "A_SMITH",
           )
         )
-        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
+        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
+          DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
+        )
         whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
           val passedInAdjudication = it.arguments[0] as ReportedAdjudication
           passedInAdjudication.createdByUserId = "A_SMITH"
@@ -941,16 +1065,38 @@ class DraftAdjudicationServiceTest {
           .contains("A12345", 123L, 33L, "MDI")
 
         assertThat(reportedAdjudicationArgumentCaptor.value)
-          .extracting("locationId", "dateTimeOfIncident", "handoverDeadline", "incidentRoleCode", "incidentRoleAssociatedPrisonersNumber", "statement")
-          .contains(1L, LocalDateTime.now(clock), DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, "test")
+          .extracting(
+            "locationId",
+            "dateTimeOfIncident",
+            "handoverDeadline",
+            "incidentRoleCode",
+            "incidentRoleAssociatedPrisonersNumber",
+            "statement"
+          )
+          .contains(
+            1L,
+            LocalDateTime.now(clock),
+            DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
+            INCIDENT_ROLE_CODE,
+            INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
+            "test"
+          )
 
         assertThat(reportedAdjudicationArgumentCaptor.value.offenceDetails)
-          .extracting("offenceCode", "paragraphCode", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+          .extracting(
+            "offenceCode",
+            "paragraphCode",
+            "victimPrisonersNumber",
+            "victimStaffUsername",
+            "victimOtherPersonsName"
+          )
           .contains(
             Tuple(
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode, BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
+              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
             Tuple(
               FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
@@ -1045,7 +1191,9 @@ class DraftAdjudicationServiceTest {
             createdByUserId = "A_SMITH",
           )
         )
-        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
+        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
+          DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
+        )
         whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
           val passedInAdjudication = it.arguments[0] as ReportedAdjudication
           passedInAdjudication.createdByUserId = "A_SMITH"
@@ -1077,7 +1225,12 @@ class DraftAdjudicationServiceTest {
   inner class InProgressDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(any(), any())).thenReturn(
+      whenever(
+        draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(
+          any(),
+          any()
+        )
+      ).thenReturn(
         listOf(
           DraftAdjudication(
             id = 1,
@@ -1118,7 +1271,10 @@ class DraftAdjudicationServiceTest {
 
       draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications("MDI")
 
-      verify(draftAdjudicationRepository).findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull("MDI", "ITAG_USER")
+      verify(draftAdjudicationRepository).findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(
+        "MDI",
+        "ITAG_USER"
+      )
     }
 
     @Test
