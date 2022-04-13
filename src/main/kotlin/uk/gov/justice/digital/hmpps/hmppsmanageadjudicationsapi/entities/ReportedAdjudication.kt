@@ -34,7 +34,7 @@ data class ReportedAdjudication(
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var status: ReportedAdjudicationStatus,
-  @Length(max = 64)
+  @Length(max = 128)
   var statusReason: String? = null,
   @Length(max = 4000)
   var statusDetails: String? = null,
