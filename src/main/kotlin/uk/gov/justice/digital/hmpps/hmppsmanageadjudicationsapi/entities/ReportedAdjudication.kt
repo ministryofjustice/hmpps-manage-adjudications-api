@@ -36,7 +36,7 @@ data class ReportedAdjudication(
   var status: ReportedAdjudicationStatus,
   @Length(max = 64)
   var statusReason: String? = null,
-  @Length(max = 1000)
+  @Length(max = 4000)
   var statusDetails: String? = null,
 ) : BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null) {
