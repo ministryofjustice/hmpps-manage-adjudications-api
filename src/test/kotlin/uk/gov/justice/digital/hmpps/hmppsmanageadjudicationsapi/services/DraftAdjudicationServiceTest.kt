@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
@@ -930,7 +931,7 @@ class DraftAdjudicationServiceTest {
       fun `updates the completed adjudication record`() {
         draftAdjudicationService.completeDraftAdjudication(1)
 
-        verify(reportedAdjudicationRepository).findByReportNumber(123L)
+        verify(reportedAdjudicationRepository, times(2)).findByReportNumber(123L)
 
         val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
         verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
