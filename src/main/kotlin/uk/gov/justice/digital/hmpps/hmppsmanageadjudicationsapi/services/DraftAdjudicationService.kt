@@ -175,6 +175,8 @@ class DraftAdjudicationService(
 
     val isNew = draftAdjudication.reportNumber == null
     if (!isNew) {
+      // We need to check that the already reported adjudication is in the correct status here even though it happens
+      // later when we save from the draft. This is because we do not want to call nomis only later to fail validation.
       val reportNumber = draftAdjudication.reportNumber!!
       val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(reportNumber)
         ?: ReportedAdjudicationService.throwEntityNotFoundException(reportNumber)
