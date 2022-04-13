@@ -935,7 +935,7 @@ class DraftAdjudicationServiceTest {
               reportNumber = 123,
               agencyId = "MDI",
               incidentDetails = IncidentDetails(
-                locationId = 1,
+                locationId = 2,
                 dateTimeOfIncident = INCIDENT_TIME,
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
@@ -945,6 +945,25 @@ class DraftAdjudicationServiceTest {
             )
           )
         )
+        whenever(prisonApiGateway.updateAdjudication(any(), any())).thenReturn(
+          NomisAdjudication(
+            adjudicationNumber = 123,
+            offenderNo = "A12345",
+            bookingId = 33,
+            agencyId = "MDI",
+            statement = "olddata",
+            incidentLocationId = 2,
+            incidentTime = INCIDENT_TIME,
+            reporterStaffId = 2,
+            createdByUserId = "A_SMITH",
+          )
+        )
+        whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
+          val passedInAdjudication = it.arguments[0] as ReportedAdjudication
+          passedInAdjudication.createdByUserId = "A_SMITH"
+          passedInAdjudication.createDateTime = REPORTED_DATE_TIME
+          passedInAdjudication
+        }
       }
 
 
@@ -954,27 +973,29 @@ class DraftAdjudicationServiceTest {
         "REJECTED"
       )
       fun `cannot complete when the reported adjudication is in the wrong state`(from: ReportedAdjudicationStatus) {
-          whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication().also {
-            it.status = from
-          })
-          Assertions.assertThrows(IllegalStateException::class.java) {
-            draftAdjudicationService.completeDraftAdjudication(1)
-          }
+        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication().also {
+          it.status = from
+        })
+        Assertions.assertThrows(IllegalStateException::class.java) {
+          draftAdjudicationService.completeDraftAdjudication(1)
+        }
       }
 
-//      @Test
-//      fun `completes when the reported adjudication is in a correct state`() {
-//        val validFromStates = ReportedAdjudicationStatus.values()
-//          .filter { it.nextStates().contains(ReportedAdjudicationStatus.AWAITING_REVIEW) }
-//        validFromStates.forEach { validFromState ->
-//          whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication().also {
-//            it.status = validFromState
-//          })
-//          Assertions.assertThrows(IllegalStateException::class.java) {
-//            draftAdjudicationService.completeDraftAdjudication(1)
-//          }
-//        }
-//      }
+      @ParameterizedTest
+      @CsvSource(
+        "AWAITING_REVIEW",
+        "RETURNED"
+      )
+      fun `completes when the reported adjudication is in a correct state`(from: ReportedAdjudicationStatus) {
+        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication().also {
+          it.status = from
+        })
+        draftAdjudicationService.completeDraftAdjudication(1)
+        val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+        verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
+        assertThat(reportedAdjudicationArgumentCaptor.value).extracting("status")
+          .isEqualTo(ReportedAdjudicationStatus.RETURNED)
+      }
     }
 
     @Nested
