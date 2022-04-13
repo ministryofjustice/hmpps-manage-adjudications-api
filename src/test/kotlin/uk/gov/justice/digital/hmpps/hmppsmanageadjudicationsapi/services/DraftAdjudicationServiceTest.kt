@@ -966,16 +966,17 @@ class DraftAdjudicationServiceTest {
         }
       }
 
-
       @ParameterizedTest
       @CsvSource(
         "ACCEPTED",
         "REJECTED"
       )
       fun `cannot complete when the reported adjudication is in the wrong state`(from: ReportedAdjudicationStatus) {
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication().also {
-          it.status = from
-        })
+        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+          reportedAdjudication().also {
+            it.status = from
+          }
+        )
         Assertions.assertThrows(IllegalStateException::class.java) {
           draftAdjudicationService.completeDraftAdjudication(1)
         }
@@ -987,9 +988,11 @@ class DraftAdjudicationServiceTest {
         "RETURNED"
       )
       fun `completes when the reported adjudication is in a correct state`(from: ReportedAdjudicationStatus) {
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication().also {
-          it.status = from
-        })
+        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+          reportedAdjudication().also {
+            it.status = from
+          }
+        )
         draftAdjudicationService.completeDraftAdjudication(1)
         val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
         verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())

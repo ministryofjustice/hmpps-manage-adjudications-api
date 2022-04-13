@@ -355,13 +355,6 @@ class ReportedAdjudicationServiceTest {
       return reportedAdjudication
     }
 
-    private val allTransitions =
-      ReportedAdjudicationStatus.values().map { from -> ReportedAdjudicationStatus.values().map { to -> from to to } }
-        .flatten()
-    private val validTransitions =
-      ReportedAdjudicationStatus.values().map { from -> from.nextStates().map { to -> from to to } }.flatten()
-    private val invalidTransitions = allTransitions.minus(validTransitions)
-
     @ParameterizedTest
     @CsvSource(
       "ACCEPTED, ACCEPTED",
@@ -376,15 +369,18 @@ class ReportedAdjudicationServiceTest {
       "RETURNED, REJECTED",
       "RETURNED, RETURNED"
     )
-    fun `setting status for a reported adjudication throws an illegal state exception for invalid transitions`(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-          reportedAdjudication().also {
-            it.status = from
-          }
-        )
-        Assertions.assertThrows(IllegalStateException::class.java) {
-          reportedAdjudicationService.setStatus(1, to)
+    fun `setting status for a reported adjudication throws an illegal state exception for invalid transitions`(
+      from: ReportedAdjudicationStatus,
+      to: ReportedAdjudicationStatus
+    ) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication().also {
+          it.status = from
         }
+      )
+      Assertions.assertThrows(IllegalStateException::class.java) {
+        reportedAdjudicationService.setStatus(1, to)
+      }
     }
 
     @ParameterizedTest
@@ -395,15 +391,18 @@ class ReportedAdjudicationServiceTest {
       "AWAITING_REVIEW, AWAITING_REVIEW",
       "RETURNED, AWAITING_REVIEW"
     )
-    fun `setting status for a reported adjudication for valid transitions`(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-          reportedAdjudication().also {
-            it.status = from
-          }
-        )
-        whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication().also { it.status = to })
-        reportedAdjudicationService.setStatus(1, to)
-        verify(reportedAdjudicationRepository).save(reportedAdjudication().also { it.status = to })
+    fun `setting status for a reported adjudication for valid transitions`(
+      from: ReportedAdjudicationStatus,
+      to: ReportedAdjudicationStatus
+    ) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication().also {
+          it.status = from
+        }
+      )
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication().also { it.status = to })
+      reportedAdjudicationService.setStatus(1, to)
+      verify(reportedAdjudicationRepository).save(reportedAdjudication().also { it.status = to })
     }
   }
 
