@@ -159,7 +159,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       getMyAdjudications().andExpect(status().isOk)
       verify(reportedAdjudicationService).getMyReportedAdjudications(
         "MDI",
-        LocalDate.now(), LocalDate.now(), Optional.empty(),
+        LocalDate.now().minusDays(3), LocalDate.now(), Optional.empty(),
         PageRequest.ofSize(20).withPage(0).withSort(
           Sort.by(
             Sort.Direction.DESC,
