@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.BankHolidayApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class IntegrationTestData(
@@ -187,6 +188,60 @@ class IntegrationTestData(
       locationId = 15L,
       dateTimeOfIncidentISOString = "2020-12-17T10:00:00",
       dateTimeOfIncident = LocalDateTime.parse("2020-12-17T10:00:00"),
+      handoverDeadlineISOString = "2020-12-19T10:00:00",
+      incidentRoleCode = "25a",
+      incidentRoleParagraphNumber = "25(a)",
+      incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
+      incidentRoleAssociatedPrisonersNumber = "A5678AA",
+      offences = DEFAULT_OFFENCES,
+      statement = "Keep on with the test statements",
+      createdByUserId = "P_NESS"
+    )
+
+    val ADJUDICATION_DEFAULT = AdjudicationIntTestDataSet(
+      adjudicationNumber = 9999L,
+      prisonerNumber = "FF4567F",
+      bookingId = 35L,
+      agencyId = "MDI",
+      locationId = 15L,
+      dateTimeOfIncidentISOString = "2020-12-17T10:00:00",
+      dateTimeOfIncident = LocalDate.now().atStartOfDay().minusHours(68),
+      handoverDeadlineISOString = "2020-12-19T10:00:00",
+      incidentRoleCode = "25a",
+      incidentRoleParagraphNumber = "25(a)",
+      incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
+      incidentRoleAssociatedPrisonersNumber = "A5678AA",
+      offences = DEFAULT_OFFENCES,
+      statement = "Keep on with the test statements",
+      createdByUserId = "P_NESS"
+    )
+
+    val ADJUDICATION_DEFAULT_2 = AdjudicationIntTestDataSet(
+      adjudicationNumber = 99991L,
+      prisonerNumber = "FF4567F",
+      bookingId = 35L,
+      agencyId = "MDI",
+      locationId = 15L,
+      dateTimeOfIncidentISOString = "2020-12-17T10:00:00",
+      dateTimeOfIncident = LocalDate.now().atStartOfDay().plusHours(22),
+      handoverDeadlineISOString = "2020-12-19T10:00:00",
+      incidentRoleCode = "25a",
+      incidentRoleParagraphNumber = "25(a)",
+      incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
+      incidentRoleAssociatedPrisonersNumber = "A5678AA",
+      offences = DEFAULT_OFFENCES,
+      statement = "Keep on with the test statements",
+      createdByUserId = "P_NESS"
+    )
+
+    val ADJUDICATION_DEFAULT_3 = AdjudicationIntTestDataSet(
+      adjudicationNumber = 99992L,
+      prisonerNumber = "FF4567F",
+      bookingId = 35L,
+      agencyId = "MDI",
+      locationId = 15L,
+      dateTimeOfIncidentISOString = "2020-12-17T10:00:00",
+      dateTimeOfIncident = LocalDate.now().atStartOfDay().minusHours(80),
       handoverDeadlineISOString = "2020-12-19T10:00:00",
       incidentRoleCode = "25a",
       incidentRoleParagraphNumber = "25(a)",
