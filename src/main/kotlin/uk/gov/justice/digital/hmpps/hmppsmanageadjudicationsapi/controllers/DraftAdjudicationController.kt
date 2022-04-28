@@ -1,8 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 
-import io.swagger.annotations.ApiModel
-import io.swagger.annotations.ApiModelProperty
-import io.swagger.annotations.ApiOperation
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
@@ -25,50 +24,50 @@ import java.time.LocalDateTime
 import javax.validation.Valid
 import javax.validation.constraints.Size
 
-@ApiModel("Request to create a new draft adjudication")
+@Schema(description = "Request to create a new draft adjudication")
 data class NewAdjudicationRequest(
-  @ApiModelProperty(value = "Prison number assigned to a prisoner", example = "G2996UX")
+  @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
-  @ApiModelProperty(value = "The agency id (or caseload) associated with this adjudication", example = "MDI")
+  @Schema(description = "The agency id (or caseload) associated with this adjudication", example = "MDI")
   val agencyId: String,
-  @ApiModelProperty(value = "The id of the location the incident took place")
+  @Schema(description = "The id of the location the incident took place")
   val locationId: Long,
-  @ApiModelProperty(value = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
+  @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime,
-  @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
+  @Schema(description = "Information about the role of this prisoner in the incident")
   val incidentRole: IncidentRoleRequest,
 )
 
-@ApiModel("Request to update the incident details")
+@Schema(description = "Request to update the incident details")
 data class IncidentRoleRequest(
-  @ApiModelProperty(value = "The incident role code", notes = "If not set then it is assumed they committed the offence on their own", example = "25a")
+  @Schema(description = "The incident role code", title = "If not set then it is assumed they committed the offence on their own", example = "25a")
   val roleCode: String?,
-  @ApiModelProperty(value = "The prison number of the other prisoner involved in the incident", notes = "This only applies to role codes 25b and 25c", example = "G2996UX")
+  @Schema(description = "The prison number of the other prisoner involved in the incident", title = "This only applies to role codes 25b and 25c", example = "G2996UX")
   val associatedPrisonersNumber: String?,
 )
 
-@ApiModel("Request to update the list of offence details for a draft adjudication")
+@Schema(description = "Request to update the list of offence details for a draft adjudication")
 data class OffenceDetailsRequest(
-  @ApiModelProperty(value = "The details of all offences the prisoner is accused of")
+  @Schema(description = "The details of all offences the prisoner is accused of")
   val offenceDetails: List<OffenceDetailsRequestItem>,
 )
 
-@ApiModel(value = "Details of an offence")
+@Schema(description = "Details of an offence")
 data class OffenceDetailsRequestItem(
-  @ApiModelProperty(value = "The offence code", notes = "This is the unique number relating to the type of offence they have been alleged to have committed", example = "3")
+  @Schema(description = "The offence code", title = "This is the unique number relating to the type of offence they have been alleged to have committed", example = "3")
   val offenceCode: Int,
-  @ApiModelProperty(value = "The prison number of the victim involved in the incident, if relevant", example = "G2996UX")
+  @Schema(description = "The prison number of the victim involved in the incident, if relevant", example = "G2996UX")
   val victimPrisonersNumber: String? = null,
-  @ApiModelProperty(value = "The username of the member of staff who is a victim of the incident, if relevant", example = "ABC12D")
+  @Schema(description = "The username of the member of staff who is a victim of the incident, if relevant", example = "ABC12D")
   val victimStaffUsername: String? = null,
-  @ApiModelProperty(value = "The name of the victim (who is not a member of staff or a prisoner) involved in the incident, if relevant", example = "Bob Hope")
+  @Schema(description = "The name of the victim (who is not a member of staff or a prisoner) involved in the incident, if relevant", example = "Bob Hope")
   val victimOtherPersonsName: String? = null,
 )
 
-@ApiModel("Request to add or edit the incident statement for a draft adjudication")
+@Schema(description = "Request to add or edit the incident statement for a draft adjudication")
 data class IncidentStatementRequest(
-  @ApiModelProperty(value = "The statement regarding the incident")
+  @Schema(description = "The statement regarding the incident")
   @get:Size(
     max = 4000,
     message = "The incident statement exceeds the maximum character limit of {max}"
@@ -77,28 +76,28 @@ data class IncidentStatementRequest(
   val completed: Boolean? = false
 )
 
-@ApiModel("Request to edit the incident details")
+@Schema(description = "Request to edit the incident details")
 data class EditIncidentDetailsRequest(
-  @ApiModelProperty(value = "The id of the location the incident took place")
+  @Schema(description = "The id of the location the incident took place")
   val locationId: Long? = null,
-  @ApiModelProperty(value = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
+  @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime? = null,
-  @ApiModelProperty(value = "Information about the role of this prisoner in the incident")
+  @Schema(description = "Information about the role of this prisoner in the incident")
   val incidentRole: IncidentRoleRequest? = null,
-  @ApiModelProperty(value = "Whether to remove all existing offences")
+  @Schema(description = "Whether to remove all existing offences")
   val removeExistingOffences: Boolean = false,
 )
 
-@ApiModel("Draft adjudication response")
+@Schema(description = "Draft adjudication response")
 data class DraftAdjudicationResponse(
-  @ApiModelProperty(value = "The draft adjudication")
+  @Schema(description = "The draft adjudication")
   val draftAdjudication: DraftAdjudicationDto
 )
 
-@ApiModel("In progress draft adjudication response")
+@Schema(description = "In progress draft adjudication response")
 data class InProgressAdjudicationResponse(
-  @ApiModelProperty(value = "All in progress adjudications")
+  @Schema(description = "All in progress adjudications")
   val draftAdjudications: List<DraftAdjudicationDto>
 )
 
@@ -110,7 +109,7 @@ class DraftAdjudicationController {
   lateinit var draftAdjudicationService: DraftAdjudicationService
 
   @GetMapping("/my/agency/{agencyId}")
-  @ApiOperation(value = "Returns all the in progress draft adjudications created by the current user. Default sort is by earliest incident date and time.")
+  @Operation(summary = "Returns all the in progress draft adjudications created by the current user. Default sort is by earliest incident date and time.")
   fun getCurrentUsersInProgressDraftAdjudications(
     @PathVariable(name = "agencyId") agencyId: String,
   ): InProgressAdjudicationResponse = InProgressAdjudicationResponse(
@@ -118,14 +117,14 @@ class DraftAdjudicationController {
   )
 
   @GetMapping("/offence-rule/{offenceCode}")
-  @ApiOperation(value = "Returns details of the offence rule relating to this offence code.")
+  @Operation(summary = "Returns details of the offence rule relating to this offence code.")
   fun getOffenceRule(
     @PathVariable(name = "offenceCode") offenceCode: Int,
   ): OffenceRuleDetailsDto = draftAdjudicationService.lookupRuleDetails(offenceCode)
 
   @PostMapping
   @PreAuthorize("hasAuthority('SCOPE_write')")
-  @ApiOperation(value = "Starts a new draft adjudication.")
+  @Operation(summary = "Starts a new draft adjudication.")
   @ResponseStatus(HttpStatus.CREATED)
   fun startNewAdjudication(@RequestBody newAdjudicationRequest: NewAdjudicationRequest): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService
@@ -143,7 +142,7 @@ class DraftAdjudicationController {
   }
 
   @GetMapping(value = ["/{id}"])
-  @ApiOperation(value = "Returns the draft adjudication details.")
+  @Operation(summary = "Returns the draft adjudication details.")
   fun getDraftAdjudicationDetails(@PathVariable(name = "id") id: Long): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.getDraftAdjudicationDetails(id)
 
@@ -153,7 +152,7 @@ class DraftAdjudicationController {
   }
 
   @PutMapping(value = ["/{id}/offence-details"])
-  @ApiOperation(value = "Set the offence details for the draft adjudication.", notes = "At least one set of offence details must be supplied")
+  @Operation(summary = "Set the offence details for the draft adjudication.", description = "At least one set of offence details must be supplied")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun setOffenceDetails(
@@ -171,7 +170,7 @@ class DraftAdjudicationController {
   }
 
   @PostMapping(value = ["/{id}/incident-statement"])
-  @ApiOperation(value = "Add the incident statement to the draft adjudication.")
+  @Operation(summary = "Add the incident statement to the draft adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun addIncidentStatement(
@@ -190,7 +189,7 @@ class DraftAdjudicationController {
   }
 
   @PutMapping(value = ["/{id}/incident-details"])
-  @ApiOperation(value = "Edit the incident details for a draft adjudication.")
+  @Operation(summary = "Edit the incident details for a draft adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   fun editIncidentDetails(
     @PathVariable(name = "id") id: Long,
@@ -210,7 +209,7 @@ class DraftAdjudicationController {
   }
 
   @PutMapping(value = ["/{id}/incident-statement"])
-  @ApiOperation(value = "Edit the incident statement for a draft adjudication.")
+  @Operation(summary = "Edit the incident statement for a draft adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   fun editIncidentStatement(
     @PathVariable(name = "id") id: Long,
@@ -227,7 +226,7 @@ class DraftAdjudicationController {
   }
 
   @PostMapping(value = ["/{id}/complete-draft-adjudication"])
-  @ApiOperation(value = "Submits the draft adjudication to Prison-API, creates a submitted adjudication record and removes the draft adjudication.")
+  @Operation(summary = "Submits the draft adjudication to Prison-API, creates a submitted adjudication record and removes the draft adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun completeDraftAdjudication(@PathVariable(name = "id") id: Long): ReportedAdjudicationDto =

@@ -1,10 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 
-import io.swagger.annotations.ApiImplicitParam
-import io.swagger.annotations.ApiImplicitParams
-import io.swagger.annotations.ApiModel
-import io.swagger.annotations.ApiModelProperty
-import io.swagger.annotations.ApiOperation
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.Parameters
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -30,23 +29,23 @@ import java.util.Optional
 import javax.validation.Valid
 import javax.validation.constraints.Size
 
-@ApiModel("Reported adjudication response")
+@Schema(description = "Reported adjudication response")
 data class ReportedAdjudicationResponse(
-  @ApiModelProperty(value = "The reported adjudication")
+  @Schema(description = "The reported adjudication")
   val reportedAdjudication: ReportedAdjudicationDto
 )
 
-@ApiModel("Request to set the state for an a reported adjudication")
+@Schema(description = "Request to set the state for an a reported adjudication")
 data class ReportedAdjudicationStatusRequest(
-  @ApiModelProperty(value = "The status to set the reported adjudication to")
+  @Schema(description = "The status to set the reported adjudication to")
   val status: ReportedAdjudicationStatus,
-  @ApiModelProperty(value = "The reason the status has been set")
+  @Schema(description = "The reason the status has been set")
   @get:Size(
     max = 128,
     message = "The reason the status has been set exceeds the maximum character limit of {max}"
   )
   val statusReason: String? = null,
-  @ApiModelProperty(value = "Details of why the status has been set")
+  @Schema(description = "Details of why the status has been set")
   @get:Size(
     max = 4000,
     message = "The details of why the status has been set exceeds the maximum character limit of {max}"
@@ -70,47 +69,34 @@ class ReportedAdjudicationController {
     )
   }
 
-  @ApiOperation(value = "Get all reported adjudications for caseload")
-  @ApiImplicitParams(
-    ApiImplicitParam(
+  @Operation(summary = "Get all reported adjudications for caseload")
+  @Parameters(
+    Parameter(
       name = "page",
-      dataType = "java.lang.Integer",
-      paramType = "query",
-      value = "Results page you want to retrieve (0..N). Default 0, e.g. the first page",
-      example = "0"
+      description = "Results page you want to retrieve (0..N). Default 0, e.g. the first page",
     ),
-    ApiImplicitParam(
+    Parameter(
       name = "size",
-      dataType = "java.lang.Integer",
-      paramType = "query",
-      value = "Number of records per page. Default 20"
+      description = "Number of records per page. Default 20"
     ),
-    ApiImplicitParam(
+    Parameter(
       name = "sort",
-      dataType = "java.lang.String",
-      paramType = "query",
-      value = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to incidentDate,incidentTime ASC"
+      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to incidentDate,incidentTime ASC"
     ),
-    ApiImplicitParam(
+    Parameter(
       name = "startDate",
       required = false,
-      dataType = "java.time.LocalDate",
-      paramType = "query",
-      value = "optional inclusive start date for results, default is today"
+      description = "optional inclusive start date for results, default is today"
     ),
-    ApiImplicitParam(
+    Parameter(
       name = "endDate",
-      dataType = "java.time.LocalDate",
       required = false,
-      paramType = "query",
-      value = "optional inclusive end date for results, default is start date"
+      description = "optional inclusive end date for results, default is start date"
     ),
-    ApiImplicitParam(
+    Parameter(
       name = "status",
-      dataType = "java.lang.String",
       required = false,
-      paramType = "query",
-      value = "optional status filter for reports"
+      description = "optional status filter for reports"
     )
   )
   @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
@@ -132,47 +118,35 @@ class ReportedAdjudicationController {
     )
   }
 
-  @ApiOperation(value = "Get my reported adjudications for caseload")
-  @ApiImplicitParams(
-    ApiImplicitParam(
+  @Operation(summary = "Get my reported adjudications for caseload")
+  @Parameters(
+    Parameter(
       name = "page",
-      dataType = "java.lang.Integer",
-      paramType = "query",
-      value = "Results page you want to retrieve (0..N). Default 0, e.g. the first page",
+      description = "Results page you want to retrieve (0..N). Default 0, e.g. the first page",
       example = "0"
     ),
-    ApiImplicitParam(
+    Parameter(
       name = "size",
-      dataType = "java.lang.Integer",
-      paramType = "query",
-      value = "Number of records per page. Default 20"
+      description = "Number of records per page. Default 20"
     ),
-    ApiImplicitParam(
+    Parameter(
       name = "sort",
-      dataType = "java.lang.String",
-      paramType = "query",
-      value = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to incidentDate,incidentTime ASC"
+      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to incidentDate,incidentTime ASC"
     ),
-    ApiImplicitParam(
+    Parameter(
       name = "startDate",
-      dataType = "java.time.LocalDate",
       required = false,
-      paramType = "query",
-      value = "optional inclusive start date for results, default is today"
+      description = "optional inclusive start date for results, default is today"
     ),
-    ApiImplicitParam(
+    Parameter(
       name = "endDate",
-      dataType = "java.time.LocalDate",
       required = false,
-      paramType = "query",
-      value = "optional inclusive end date for results, default is start date"
+      description = "optional inclusive end date for results, default is start date"
     ),
-    ApiImplicitParam(
+    Parameter(
       name = "status",
-      dataType = "java.lang.String",
       required = false,
-      paramType = "query",
-      value = "optional status filter for reports"
+      description = "optional status filter for reports"
     )
   )
   @GetMapping("/my/agency/{agencyId}")
@@ -194,7 +168,7 @@ class ReportedAdjudicationController {
   }
 
   @PostMapping(value = ["/{adjudicationNumber}/create-draft-adjudication"])
-  @ApiOperation(value = "Creates a draft adjudication from the reported adjudication with the given number.")
+  @Operation(summary = "Creates a draft adjudication from the reported adjudication with the given number.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun createDraftAdjudication(@PathVariable(name = "adjudicationNumber") adjudicationNumber: Long): DraftAdjudicationResponse {
@@ -205,7 +179,7 @@ class ReportedAdjudicationController {
   }
 
   @PutMapping(value = ["/{adjudicationNumber}/status"])
-  @ApiOperation(value = "Set the status for the reported adjudication.")
+  @Operation(summary = "Set the status for the reported adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.OK)
   fun setStatus(
