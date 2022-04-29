@@ -99,19 +99,6 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo("Not found: ReportedAdjudication not found for 15242")
   }
 
-  @Test
-  fun `defaults test for completed reports`() {
-    initDefaultData()
-
-    webTestClient.get()
-      .uri("/reported-adjudications/agency/MDI?page=0&size=20")
-      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.content.size()").isEqualTo(2)
-  }
-
   @ParameterizedTest
   @CsvSource(
     "2020-12-14, 2020-12-17, AWAITING_REVIEW, 3, 1234",
@@ -480,34 +467,6 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isBadRequest
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo("ReportedAdjudication 1524242 cannot transition from REJECTED to ACCEPTED")
-  }
-
-  private fun initDefaultData() {
-    val intTestData = integrationTestData()
-
-    val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_DEFAULT.createdByUserId)
-    val firstDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
-    firstDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_DEFAULT)
-      .setOffenceData()
-      .addIncidentStatement()
-      .completeDraft()
-
-    val secondDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_DEFAULT_2.createdByUserId)
-    val secondDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, secondDraftUserHeaders)
-    secondDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_DEFAULT_2)
-      .setOffenceData()
-      .addIncidentStatement()
-      .completeDraft()
-
-    val thirdDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_DEFAULT_3.createdByUserId)
-    val thirdDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, thirdDraftUserHeaders)
-    thirdDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_DEFAULT_3)
-      .setOffenceData()
-      .addIncidentStatement()
-      .completeDraft()
   }
 
   private fun initMyReportData() {
