@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wire
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Optional
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")

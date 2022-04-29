@@ -41,7 +41,7 @@ import java.time.Clock
 import java.time.Instant.ofEpochMilli
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.*
+import java.util.Optional
 import javax.persistence.EntityNotFoundException
 
 class DraftAdjudicationServiceTest {
