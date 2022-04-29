@@ -41,7 +41,11 @@ class DraftAdjudicationRepositoryTest {
 
     assertThat(savedEntity.incidentDetails)
       .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
-      .contains(draft.incidentDetails.locationId, draft.incidentDetails.dateTimeOfIncident, draft.incidentDetails.handoverDeadline)
+      .contains(
+        draft.incidentDetails.locationId,
+        draft.incidentDetails.dateTimeOfIncident,
+        draft.incidentDetails.handoverDeadline
+      )
 
     assertThat(savedEntity.incidentRole)
       .extracting("roleCode", "associatedPrisonersNumber")
@@ -59,22 +63,38 @@ class DraftAdjudicationRepositoryTest {
 
     assertThat(savedEntity.incidentDetails)
       .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
-      .contains(draft.incidentDetails.locationId, draft.incidentDetails.dateTimeOfIncident, draft.incidentDetails.handoverDeadline)
+      .contains(
+        draft.incidentDetails.locationId,
+        draft.incidentDetails.dateTimeOfIncident,
+        draft.incidentDetails.handoverDeadline
+      )
 
     assertThat(savedEntity.incidentRole)
       .extracting("roleCode", "associatedPrisonersNumber")
       .contains(draft.incidentRole.roleCode, draft.incidentRole.associatedPrisonersNumber)
 
     assertThat(savedEntity.offenceDetails).hasSize(2)
-      .extracting("offenceCode", "paragraphCode", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+      .extracting(
+        "offenceCode",
+        "paragraphCode",
+        "victimPrisonersNumber",
+        "victimStaffUsername",
+        "victimOtherPersonsName"
+      )
       .contains(
         Tuple(
-          draft.offenceDetails!![0].offenceCode, draft.offenceDetails!![0].paragraphCode,
-          draft.offenceDetails!![0].victimPrisonersNumber, draft.offenceDetails!![0].victimStaffUsername, draft.offenceDetails!![0].victimOtherPersonsName
+          draft.offenceDetails!![0].offenceCode,
+          draft.offenceDetails!![0].paragraphCode,
+          draft.offenceDetails!![0].victimPrisonersNumber,
+          draft.offenceDetails!![0].victimStaffUsername,
+          draft.offenceDetails!![0].victimOtherPersonsName
         ),
         Tuple(
-          draft.offenceDetails!![1].offenceCode, draft.offenceDetails!![1].paragraphCode,
-          draft.offenceDetails!![1].victimPrisonersNumber, draft.offenceDetails!![1].victimStaffUsername, draft.offenceDetails!![1].victimOtherPersonsName
+          draft.offenceDetails!![1].offenceCode,
+          draft.offenceDetails!![1].paragraphCode,
+          draft.offenceDetails!![1].victimPrisonersNumber,
+          draft.offenceDetails!![1].victimStaffUsername,
+          draft.offenceDetails!![1].victimOtherPersonsName
         ),
       )
 
@@ -100,7 +120,13 @@ class DraftAdjudicationRepositoryTest {
     val savedEntity = draftAdjudicationRepository.save(updatedDraft)
 
     assertThat(savedEntity.offenceDetails).hasSize(1)
-      .extracting("offenceCode", "paragraphCode", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+      .extracting(
+        "offenceCode",
+        "paragraphCode",
+        "victimPrisonersNumber",
+        "victimStaffUsername",
+        "victimOtherPersonsName"
+      )
       .contains(
         Tuple(
           updatedDraft.offenceDetails!![0].offenceCode, updatedDraft.offenceDetails!![0].paragraphCode,
@@ -161,7 +187,11 @@ class DraftAdjudicationRepositoryTest {
         ),
       )
     )
-    val foundAdjudications = draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull("MDI", "ITAG_USER")
+    val foundAdjudications =
+      draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(
+        "MDI",
+        "ITAG_USER"
+      )
 
     assertThat(foundAdjudications).hasSize(1)
       .extracting("prisonerNumber")
@@ -176,7 +206,8 @@ class DraftAdjudicationRepositoryTest {
     val draft = draftWithAllData(1L)
     entityManager.persistAndFlush(draft)
     // We should not delete anything because the time we use was at the very beginning of the test, before we created anything.
-    val deleted = draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(deleteBefore)
+    val deleted =
+      draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(deleteBefore)
     assertThat(deleted).hasSize(0)
   }
 
@@ -186,7 +217,8 @@ class DraftAdjudicationRepositoryTest {
     val saved = entityManager.persistAndFlush(draft)
     val deleteBefore = LocalDateTime.now().plusSeconds(1)
     // We should delete the saved adjudication because the time we use is in the future, after the draft was created.
-    val allDeleted = draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(deleteBefore)
+    val allDeleted =
+      draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(deleteBefore)
     assertThat(allDeleted).hasSize(1)
     val deleted = allDeleted[0]
     assertThat(entityManager.find(IncidentDetails::class.java, deleted.incidentDetails.id)).isNull()

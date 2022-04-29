@@ -29,7 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Authent
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.Optional
+import java.util.*
 import javax.persistence.EntityNotFoundException
 
 class ReportedAdjudicationServiceTest {

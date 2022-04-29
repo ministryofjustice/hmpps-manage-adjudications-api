@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wire
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import java.time.LocalDateTime
-import java.util.Optional
+import java.util.*
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
@@ -81,7 +81,11 @@ abstract class IntegrationTestBase {
     flyway.migrate()
   }
 
-  fun setHeaders(contentType: MediaType = MediaType.APPLICATION_JSON, username: String? = "ITAG_USER", roles: List<String> = emptyList()): (HttpHeaders) -> Unit = {
+  fun setHeaders(
+    contentType: MediaType = MediaType.APPLICATION_JSON,
+    username: String? = "ITAG_USER",
+    roles: List<String> = emptyList()
+  ): (HttpHeaders) -> Unit = {
     it.setBearerAuth(jwtAuthHelper.createJwt(subject = username, roles = roles, scope = listOf("write")))
     it.contentType = contentType
   }

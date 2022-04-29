@@ -31,7 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.Optional
+import java.util.*
 import javax.persistence.EntityNotFoundException
 
 @WebMvcTest(value = [ReportedAdjudicationController::class])
@@ -170,7 +170,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER",  authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `makes a call to return all reported adjudications`() {
       getAllAdjudications().andExpect(status().isOk)
       verify(reportedAdjudicationService).getAllReportedAdjudications(

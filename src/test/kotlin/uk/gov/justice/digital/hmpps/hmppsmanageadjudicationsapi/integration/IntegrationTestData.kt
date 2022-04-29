@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.BankHolidayApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 class IntegrationTestData(
@@ -61,7 +60,8 @@ class IntegrationTestData(
     const val UPDATED_LOCATION_ID = 721899L
     const val UPDATED_INCIDENT_ROLE_CODE = "25b"
     const val UPDATED_INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(b)"
-    const val UPDATED_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION = "Incites another prisoner to commit any of the foregoing offences:"
+    const val UPDATED_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION =
+      "Incites another prisoner to commit any of the foregoing offences:"
     const val UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER = "C3456CC"
     val UPDATED_OFFENCES = listOf(BASIC_OFFENCE)
     const val UPDATED_STATEMENT = "updated test statement"
@@ -222,7 +222,10 @@ class IntegrationTestData(
           "agencyId" to testDataSet.agencyId,
           "locationId" to testDataSet.locationId,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,
-          "incidentRole" to IncidentRoleRequest(testDataSet.incidentRoleCode, testDataSet.incidentRoleAssociatedPrisonersNumber),
+          "incidentRole" to IncidentRoleRequest(
+            testDataSet.incidentRoleCode,
+            testDataSet.incidentRoleAssociatedPrisonersNumber
+          ),
         )
       )
       .exchange()
@@ -353,7 +356,11 @@ class IntegrationTestData(
       .blockFirst()!!
   }
 
-  fun setHeaders(contentType: MediaType = MediaType.APPLICATION_JSON, username: String? = "ITAG_USER", roles: List<String> = emptyList()): (HttpHeaders) -> Unit = {
+  fun setHeaders(
+    contentType: MediaType = MediaType.APPLICATION_JSON,
+    username: String? = "ITAG_USER",
+    roles: List<String> = emptyList()
+  ): (HttpHeaders) -> Unit = {
     it.setBearerAuth(jwtAuthHelper.createJwt(subject = username, roles = roles, scope = listOf("write")))
     it.contentType = contentType
   }

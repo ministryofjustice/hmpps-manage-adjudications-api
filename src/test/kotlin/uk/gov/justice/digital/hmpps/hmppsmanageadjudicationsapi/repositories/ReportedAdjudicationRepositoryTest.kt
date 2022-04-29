@@ -108,18 +108,36 @@ class ReportedAdjudicationRepositoryTest {
 
     assertThat(savedEntity)
       .extracting("id", "prisonerNumber", "reportNumber", "bookingId", "agencyId", "createdByUserId")
-      .contains(adjudication.id, adjudication.prisonerNumber, adjudication.reportNumber, adjudication.bookingId, adjudication.agencyId, adjudication.createdByUserId)
+      .contains(
+        adjudication.id,
+        adjudication.prisonerNumber,
+        adjudication.reportNumber,
+        adjudication.bookingId,
+        adjudication.agencyId,
+        adjudication.createdByUserId
+      )
 
     assertThat(savedEntity)
       .extracting("locationId", "dateTimeOfIncident", "handoverDeadline", "statement")
-      .contains(adjudication.locationId, adjudication.dateTimeOfIncident, adjudication.handoverDeadline, adjudication.statement)
+      .contains(
+        adjudication.locationId,
+        adjudication.dateTimeOfIncident,
+        adjudication.handoverDeadline,
+        adjudication.statement
+      )
 
     assertThat(savedEntity)
       .extracting("incidentRoleCode", "incidentRoleAssociatedPrisonersNumber")
       .contains(adjudication.incidentRoleCode, adjudication.incidentRoleAssociatedPrisonersNumber)
 
     assertThat(savedEntity.offenceDetails).hasSize(2)
-      .extracting("offenceCode", "paragraphCode", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+      .extracting(
+        "offenceCode",
+        "paragraphCode",
+        "victimPrisonersNumber",
+        "victimStaffUsername",
+        "victimOtherPersonsName"
+      )
       .contains(
         Tuple(
           adjudication.offenceDetails!![0].offenceCode, adjudication.offenceDetails!![0].paragraphCode,
@@ -147,10 +165,22 @@ class ReportedAdjudicationRepositoryTest {
 
     assertThat(savedEntity)
       .extracting("id", "prisonerNumber", "reportNumber", "bookingId", "createdByUserId")
-      .contains(adjudication.id, adjudication.prisonerNumber, adjudication.reportNumber, adjudication.bookingId, adjudication.createdByUserId)
+      .contains(
+        adjudication.id,
+        adjudication.prisonerNumber,
+        adjudication.reportNumber,
+        adjudication.bookingId,
+        adjudication.createdByUserId
+      )
 
     assertThat(savedEntity.offenceDetails).hasSize(1)
-      .extracting("offenceCode", "paragraphCode", "victimPrisonersNumber", "victimStaffUsername", "victimOtherPersonsName")
+      .extracting(
+        "offenceCode",
+        "paragraphCode",
+        "victimPrisonersNumber",
+        "victimStaffUsername",
+        "victimOtherPersonsName"
+      )
       .contains(
         Tuple(
           adjudication.offenceDetails!![0].offenceCode, adjudication.offenceDetails!![0].paragraphCode,
@@ -192,15 +222,16 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `find reported adjudications by created user and agency id`() {
-    val foundAdjudications = reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
-      "ITAG_USER", "MDI",
-      LocalDate.now().atStartOfDay(),
-      LocalDate.now().atTime(
-        LocalTime.MAX
-      ),
-      ReportedAdjudicationStatus.values().toList(),
-      Pageable.ofSize(10)
-    )
+    val foundAdjudications =
+      reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+        "ITAG_USER", "MDI",
+        LocalDate.now().atStartOfDay(),
+        LocalDate.now().atTime(
+          LocalTime.MAX
+        ),
+        ReportedAdjudicationStatus.values().toList(),
+        Pageable.ofSize(10)
+      )
 
     assertThat(foundAdjudications.content).hasSize(2)
       .extracting("reportNumber")
@@ -225,7 +256,8 @@ class ReportedAdjudicationRepositoryTest {
           offenceCode = 2,
           paragraphCode = "3"
         ),
-        ReportedOffence( // offence with all data set
+        ReportedOffence(
+          // offence with all data set
           offenceCode = 3,
           paragraphCode = "4",
           victimPrisonersNumber = "A1234AA",
