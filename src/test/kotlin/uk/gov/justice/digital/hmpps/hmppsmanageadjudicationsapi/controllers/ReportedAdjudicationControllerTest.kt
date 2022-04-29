@@ -159,7 +159,23 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       getMyAdjudications().andExpect(status().isOk)
       verify(reportedAdjudicationService).getMyReportedAdjudications(
         "MDI",
-        LocalDate.now(), LocalDate.now(), Optional.empty(),
+        LocalDate.now().minusDays(3), LocalDate.now(), Optional.empty(),
+        PageRequest.ofSize(20).withPage(0).withSort(
+          Sort.by(
+            Sort.Direction.DESC,
+            "incidentDate"
+          )
+        )
+      )
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `makes a call to return all reported adjudications`() {
+      getAllAdjudications().andExpect(status().isOk)
+      verify(reportedAdjudicationService).getAllReportedAdjudications(
+        "MDI",
+        LocalDate.now().minusDays(3), LocalDate.now(), Optional.empty(),
         PageRequest.ofSize(20).withPage(0).withSort(
           Sort.by(
             Sort.Direction.DESC,
@@ -213,6 +229,14 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           get("/reported-adjudications/my/agency/MDI?page=0&size=20&sort=incidentDate,DESC")
+            .header("Content-Type", "application/json")
+        )
+    }
+
+    private fun getAllAdjudications(): ResultActions {
+      return mockMvc
+        .perform(
+          get("/reported-adjudications/agency/MDI?page=0&size=20&sort=incidentDate,DESC")
             .header("Content-Type", "application/json")
         )
     }

@@ -86,7 +86,7 @@ class ReportedAdjudicationController {
     Parameter(
       name = "startDate",
       required = false,
-      description = "optional inclusive start date for results, default is today"
+      description = "optional inclusive start date for results, default is today - 3 days"
     ),
     Parameter(
       name = "endDate",
@@ -108,11 +108,10 @@ class ReportedAdjudicationController {
     @RequestParam(name = "status") status: Optional<ReportedAdjudicationStatus>,
     @PageableDefault(sort = ["dateTimeOfIncident"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
   ): Page<ReportedAdjudicationDto> {
-    val reportDate = startDate.orElse(LocalDate.now())
     return reportedAdjudicationService.getAllReportedAdjudications(
       agencyId,
-      reportDate,
-      endDate.orElse(reportDate),
+      startDate.orElse(LocalDate.now().minusDays(3)),
+      endDate.orElse(startDate.orElse(LocalDate.now())),
       status,
       pageable
     )
@@ -136,7 +135,7 @@ class ReportedAdjudicationController {
     Parameter(
       name = "startDate",
       required = false,
-      description = "optional inclusive start date for results, default is today"
+      description = "optional inclusive start date for results, default is today - 3 days"
     ),
     Parameter(
       name = "endDate",
@@ -157,11 +156,10 @@ class ReportedAdjudicationController {
     @RequestParam(name = "status") status: Optional<ReportedAdjudicationStatus>,
     @PageableDefault(sort = ["dateTimeOfIncident"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
   ): Page<ReportedAdjudicationDto> {
-    val reportDate = startDate.orElse(LocalDate.now())
     return reportedAdjudicationService.getMyReportedAdjudications(
       agencyId,
-      reportDate,
-      endDate.orElse(reportDate),
+      startDate.orElse(LocalDate.now().minusDays(3)),
+      endDate.orElse(startDate.orElse(LocalDate.now())),
       status,
       pageable
     )
