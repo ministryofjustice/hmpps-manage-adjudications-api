@@ -95,14 +95,8 @@ class DraftAdjudicationService(
         victimOtherPersonsName = it.victimOtherPersonsName?.ifBlank { null },
       )
     }.toMutableList()
-    if (draftAdjudication.offenceDetails != null) {
-      draftAdjudication.offenceDetails!!.clear()
-      draftAdjudication.offenceDetails!!.addAll(newValuesToStore)
-    } else {
-      draftAdjudication.offenceDetails = newValuesToStore
-    }
 
-    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
+    return setOffenceDetails(draftAdjudication, newValuesToStore)
   }
 
   @Transactional
@@ -194,6 +188,13 @@ class DraftAdjudicationService(
       .toDto(offenceCodeLookupService)
   }
 
+  @Transactional
+  fun deleteOffence(id: Long, offenceId: Long): DraftAdjudicationDto {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+
+    return setOffenceDetails(draftAdjudication, draftAdjudication.offenceDetails?.filter { it.id != offenceId }!!.toMutableList())
+  }
+
   fun getCurrentUsersInProgressDraftAdjudications(agencyId: String): List<DraftAdjudicationDto> {
     val username = authenticationFacade.currentUsername ?: return emptyList()
 
@@ -210,6 +211,17 @@ class DraftAdjudicationService(
       paragraphNumber = offenceCodeLookupService.getParagraphNumber(offenceCode),
       paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode),
     )
+  }
+
+  private fun setOffenceDetails(draftAdjudication: DraftAdjudication, offences: MutableList<Offence>): DraftAdjudicationDto {
+    if (draftAdjudication.offenceDetails != null) {
+      draftAdjudication.offenceDetails!!.clear()
+      draftAdjudication.offenceDetails!!.addAll(offences)
+    } else {
+      draftAdjudication.offenceDetails = offences
+    }
+
+    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
 
   private fun saveToPrisonApi(draftAdjudication: DraftAdjudication, isNew: Boolean): NomisAdjudication {
@@ -365,6 +377,7 @@ fun IncidentRole.toDto(): IncidentRoleDto = IncidentRoleDto(
 )
 
 fun Offence.toDto(offenceCodeLookupService: OffenceCodeLookupService): OffenceDetailsDto = OffenceDetailsDto(
+  offenceId = this.id,
   offenceCode = this.offenceCode,
   offenceRule = OffenceRuleDetailsDto(
     paragraphNumber = offenceCodeLookupService.getParagraphNumber(offenceCode),

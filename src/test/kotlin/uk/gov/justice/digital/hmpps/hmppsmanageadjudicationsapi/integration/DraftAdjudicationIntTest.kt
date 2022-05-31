@@ -207,6 +207,23 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `remove offence from adjudication`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+
+    var draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
+    draftAdjudicationResponse = intTestData.setOffenceDetails(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
+
+    webTestClient.delete()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/delete-offence/${draftAdjudicationResponse.draftAdjudication.offenceDetails!![0].offenceId}")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudication.offenceDetails.length()").isEqualTo(0)
+  }
+
+  @Test
   fun `add the incident statement to the draft adjudication`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()

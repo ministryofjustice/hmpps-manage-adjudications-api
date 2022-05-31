@@ -45,6 +45,8 @@ data class IncidentRoleDto(
 
 @Schema(description = "Details of an offence")
 data class OffenceDetailsDto(
+  @Schema(description = "the offence id", example = "1L")
+  val offenceId: Long? = null,
   @Schema(description = "The offence code, This is the unique number relating to the type of offence they have been alleged to have committed", example = "3")
   val offenceCode: Int,
   @Schema(description = "The offence rules they have broken")

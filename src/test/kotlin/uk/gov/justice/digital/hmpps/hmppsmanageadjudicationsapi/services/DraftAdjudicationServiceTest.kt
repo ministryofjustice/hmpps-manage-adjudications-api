@@ -11,6 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -230,6 +231,54 @@ class DraftAdjudicationServiceTest {
       assertThat(draftAdjudicationDto.incidentStatement)
         .extracting("statement", "completed")
         .contains("Example statement", false)
+    }
+  }
+
+  @Nested
+  inner class DeleteOffence {
+    @Test
+    fun `throws exception when adjudication not found`() {
+      whenever(draftAdjudicationRepository.findById(1L)).thenThrow(EntityNotFoundException(""))
+
+      assertThatThrownBy {
+        draftAdjudicationService.deleteOffence(1L, 1L)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+    }
+
+    @Test
+    fun `delete offence test`() {
+      whenever(offenceCodeLookupService.getParagraphNumber(1)).thenReturn("test")
+      whenever(offenceCodeLookupService.getParagraphDescription(1)).thenReturn("test")
+
+      val adjudication = DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithAllValuesSet(),
+        offenceDetails = mutableListOf(Offence(2L, 1, "1"))
+      )
+
+      whenever(draftAdjudicationRepository.findById(1L)).thenReturn(
+        Optional.of(
+          adjudication.also {
+            it.offenceDetails?.add(Offence(1L, 1, "1"))
+          }
+        )
+      )
+
+      whenever(draftAdjudicationRepository.findById(2L)).thenReturn(Optional.of(adjudication))
+      whenever(draftAdjudicationRepository.save(adjudication)).thenReturn(adjudication)
+
+      draftAdjudicationService.deleteOffence(1L, 1L)
+      verify(draftAdjudicationRepository, atLeastOnce()).save(adjudication)
+
+      draftAdjudicationService.deleteOffence(2L, 2L)
+      verify(draftAdjudicationRepository, atLeastOnce()).save(adjudication.also { it.offenceDetails!!.clear() })
     }
   }
 

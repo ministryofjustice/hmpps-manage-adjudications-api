@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.ResultActions
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
@@ -216,6 +217,51 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .perform(
           get("/draft-adjudications/$id")
             .header("Content-Type", "application/json")
+        )
+    }
+  }
+
+  @Nested
+  inner class DeleteOffence {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(draftAdjudicationService.deleteOffence(anyLong(), anyLong())).thenReturn(
+        DraftAdjudicationDto(
+          id = 1L,
+          adjudicationNumber = null,
+          prisonerNumber = "A12345",
+          incidentDetails = IncidentDetailsDto(
+            locationId = 1,
+            DATE_TIME_OF_INCIDENT,
+            DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          ),
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
+          offenceDetails = listOf(BASIC_OFFENCE_RESPONSE_DTO),
+        )
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      makeDeleteOffenceDetailsRequest(1, 1)
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to delete an offence for adjudication`() {
+      makeDeleteOffenceDetailsRequest(1, 1)
+        .andExpect(status().isOk)
+
+      verify(draftAdjudicationService).deleteOffence(1L, 1L)
+    }
+
+    private fun makeDeleteOffenceDetailsRequest(id: Long, offenceId: Long): ResultActions {
+      return mockMvc
+        .perform(
+          delete("/draft-adjudications/$id/delete-offence/$offenceId")
+            .header("Content-Type", "application/json")
+
         )
     }
   }
@@ -633,6 +679,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     private val BASIC_OFFENCE_REQUEST = OffenceDetailsRequestItem(offenceCode = 3)
     private val BASIC_OFFENCE_RESPONSE_DTO = OffenceDetailsDto(
+      offenceId = 1L,
       offenceCode = 3,
       offenceRule = OffenceRuleDetailsDto(
         paragraphNumber = "3",

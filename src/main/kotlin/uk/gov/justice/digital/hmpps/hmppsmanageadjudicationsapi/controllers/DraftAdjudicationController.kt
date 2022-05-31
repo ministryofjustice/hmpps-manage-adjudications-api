@@ -235,4 +235,10 @@ class DraftAdjudicationController {
   @DeleteMapping(value = ["/orphaned"])
   fun deleteOrphanedDraftAdjudications(): Unit =
     draftAdjudicationService.deleteOrphanedDraftAdjudications()
+
+  @DeleteMapping(value = ["/{id}/delete-offence/{offenceId}"])
+  @Operation(summary = "Deletes an offence for an incident")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  fun deleteOffence(@PathVariable(name = "id") id: Long, @PathVariable(name = "offenceId") offenceId: Long): DraftAdjudicationResponse =
+    DraftAdjudicationResponse(draftAdjudicationService.deleteOffence(id, offenceId))
 }
