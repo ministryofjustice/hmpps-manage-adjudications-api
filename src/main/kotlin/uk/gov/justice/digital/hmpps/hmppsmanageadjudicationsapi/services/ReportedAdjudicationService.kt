@@ -18,6 +18,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -31,6 +33,7 @@ import javax.persistence.EntityNotFoundException
 class ReportedAdjudicationService(
   val draftAdjudicationRepository: DraftAdjudicationRepository,
   val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  val prisonApiGateway: PrisonApiGateway,
   val offenceCodeLookupService: OffenceCodeLookupService,
   val authenticationFacade: AuthenticationFacade
 ) {
@@ -113,10 +116,61 @@ class ReportedAdjudicationService(
 
   fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
-    reportedAdjudication?.let {
+      ?: throw EntityNotFoundException("ReportedAdjudication not found for reported adjudication number $adjudicationNumber")
+    val reportedAdjudicationToReturn = reportedAdjudication.let {
       it.transition(status, statusReason, statusDetails)
-      return reportedAdjudicationRepository.save(it).toDto(this.offenceCodeLookupService)
-    } ?: throwEntityNotFoundException(adjudicationNumber)
+      reportedAdjudicationRepository.save(it).toDto(this.offenceCodeLookupService)
+    }
+    if (status.isAccepted()) {
+      saveToPrisonApi(reportedAdjudication)
+    }
+    return reportedAdjudicationToReturn
+  }
+
+  private fun saveToPrisonApi(reportedAdjudication: ReportedAdjudication) {
+    prisonApiGateway.publishAdjudication(
+      AdjudicationDetailsToPublish(
+        offenderNo = reportedAdjudication.prisonerNumber,
+        adjudicationNumber = reportedAdjudication.reportNumber,
+        bookingId = reportedAdjudication.bookingId,
+        reporterName = reportedAdjudication.createdByUserId ?:
+            throw EntityNotFoundException("ReportedAdjudication creator name not set for reported adjudication number ${reportedAdjudication.reportNumber}"),
+        reportedDateTime = reportedAdjudication.createDateTime ?:
+            throw EntityNotFoundException("ReportedAdjudication creation time not set for reported adjudication number ${reportedAdjudication.reportNumber}"),
+        agencyId = reportedAdjudication.agencyId,
+        incidentTime = reportedAdjudication.dateTimeOfIncident,
+        incidentLocationId = reportedAdjudication.locationId,
+        statement = reportedAdjudication.statement,
+        offenceCodes = getNomisCodes(reportedAdjudication.incidentRoleCode, reportedAdjudication.offenceDetails),
+        connectedOffenderIds = getAssociatedOffenders(reportedAdjudication.incidentRoleAssociatedPrisonersNumber),
+        victimOffenderIds = getVictimOffenders(reportedAdjudication.offenceDetails),
+        victimStaffUsernames = getVictimStaffUsernames(reportedAdjudication.offenceDetails),
+      )
+    )
+  }
+
+  private fun getNomisCodes(roleCode: String?, offenceDetails: MutableList<ReportedOffence>?): List<String> {
+    if (roleCode != null) { // Null means committed on own
+      return offenceDetails?.map { offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(it.offenceCode) }
+        ?: emptyList()
+    }
+    return offenceDetails?.flatMap { offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(it.offenceCode) }
+      ?: emptyList()
+  }
+
+  private fun getAssociatedOffenders(associatedPrisonersNumber: String?): List<String> {
+    if (associatedPrisonersNumber == null) {
+      return emptyList()
+    }
+    return listOf(associatedPrisonersNumber)
+  }
+
+  private fun getVictimOffenders(offenceDetails: MutableList<ReportedOffence>?): List<String> {
+    return offenceDetails?.mapNotNull { it.victimPrisonersNumber } ?: emptyList()
+  }
+
+  private fun getVictimStaffUsernames(offenceDetails: MutableList<ReportedOffence>?): List<String> {
+    return offenceDetails?.mapNotNull { it.victimStaffUsername } ?: emptyList()
   }
 }
 
