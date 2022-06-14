@@ -322,7 +322,7 @@ class IntegrationTestData(
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders()
   ): WebTestClient.ResponseSpec {
-    prisonApiMockServer.stubPostAdjudication(testDataSet)
+    prisonApiMockServer.stubPostAdjudicationCreationRequestData(testDataSet)
 
     return webTestClient.post()
       .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/complete-draft-adjudication")

@@ -4,6 +4,10 @@ import java.time.LocalDateTime
 
 data class AdjudicationDetailsToPublish(
   val offenderNo: String,
+  val adjudicationNumber: Long,
+  val bookingId: Long,
+  val reporterName: String,
+  val reportedDateTime: LocalDateTime,
   val agencyId: String,
   val incidentLocationId: Long,
   val incidentTime: LocalDateTime,

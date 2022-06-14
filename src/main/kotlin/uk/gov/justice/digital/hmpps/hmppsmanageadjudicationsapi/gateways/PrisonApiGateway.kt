@@ -6,6 +6,15 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @Service
 class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
+  fun requestAdjudicationCreationData(offenderNo: String): NomisAdjudicationCreationRequest =
+    prisonApiClientCreds
+      .post()
+      .uri("/adjudications/adjudication/request-creation-data")
+      .bodyValue(offenderNo)
+      .retrieve()
+      .bodyToMono(object : ParameterizedTypeReference<NomisAdjudicationCreationRequest>() {})
+      .block()!!
+
   fun publishAdjudication(adjudicationDetailsToPublish: AdjudicationDetailsToPublish): NomisAdjudication =
     prisonApiClientCreds
       .post()

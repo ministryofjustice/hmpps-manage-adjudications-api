@@ -18,9 +18,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -174,19 +171,7 @@ class DraftAdjudicationService(
       throw IllegalStateException("Please supply at least one set of offence details")
 
     val isNew = draftAdjudication.reportNumber == null
-    if (!isNew) {
-      // We need to check that the already reported adjudication is in the correct status here even though it happens
-      // later when we save from the draft. This is because we do not want to call nomis only later to fail validation.
-      val reportNumber = draftAdjudication.reportNumber!!
-      val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(reportNumber)
-        ?: ReportedAdjudicationService.throwEntityNotFoundException(reportNumber)
-      val fromStatus = reportedAdjudication.status
-      if (!ReportedAdjudicationStatus.AWAITING_REVIEW.canTransitionFrom(fromStatus)) {
-        throw IllegalStateException("Unable to complete draft adjudication $id as it is in the state $fromStatus")
-      }
-    }
-    val nomisAdjudication = saveToPrisonApi(draftAdjudication, isNew)
-    val generatedReportedAdjudication = saveToReportedAdjudications(draftAdjudication, nomisAdjudication, isNew)
+    val generatedReportedAdjudication = saveAdjudication(draftAdjudication, isNew)
 
     draftAdjudicationRepository.delete(draftAdjudication)
 
@@ -212,90 +197,56 @@ class DraftAdjudicationService(
     )
   }
 
-  private fun saveToPrisonApi(draftAdjudication: DraftAdjudication, isNew: Boolean): NomisAdjudication {
+  private fun saveAdjudication(draftAdjudication: DraftAdjudication, isNew: Boolean): ReportedAdjudication {
     if (isNew) {
-      return prisonApiGateway.publishAdjudication(
-        AdjudicationDetailsToPublish(
-          offenderNo = draftAdjudication.prisonerNumber,
-          agencyId = draftAdjudication.agencyId,
-          incidentTime = draftAdjudication.incidentDetails.dateTimeOfIncident,
-          incidentLocationId = draftAdjudication.incidentDetails.locationId,
-          statement = draftAdjudication.incidentStatement?.statement!!,
-          offenceCodes = getNomisCodes(draftAdjudication.incidentRole, draftAdjudication.offenceDetails),
-          connectedOffenderIds = getAssociatedOffenders(draftAdjudication.incidentRole.associatedPrisonersNumber),
-          victimOffenderIds = getVictimOffenders(draftAdjudication.offenceDetails),
-          victimStaffUsernames = getVictimStaffUsernames(draftAdjudication.offenceDetails),
-        )
+      return createReportedAdjudication(draftAdjudication)
+    }
+    // We need to check that the already reported adjudication is in the correct status here even though it happens
+    // later when we save from the draft. This is because we do not want to call nomis only later to fail validation.
+    checkStateTransition(draftAdjudication)
+    return updateReportedAdjudication(draftAdjudication)
+  }
+
+  private fun checkStateTransition(draftAdjudication: DraftAdjudication) {
+    val reportNumber = draftAdjudication.reportNumber!!
+    val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(reportNumber)
+      ?: ReportedAdjudicationService.throwEntityNotFoundException(reportNumber)
+    val fromStatus = reportedAdjudication.status
+    if (!ReportedAdjudicationStatus.AWAITING_REVIEW.canTransitionFrom(fromStatus)) {
+      throw IllegalStateException("Unable to complete draft adjudication ${draftAdjudication.reportNumber} as it is in the state $fromStatus")
+    }
+  }
+
+  private fun createReportedAdjudication(draftAdjudication: DraftAdjudication): ReportedAdjudication {
+    val nomisAdjudicationCreationRequestData = prisonApiGateway.requestAdjudicationCreationData(draftAdjudication.prisonerNumber)
+    return reportedAdjudicationRepository.save(
+      ReportedAdjudication(
+        bookingId = nomisAdjudicationCreationRequestData.bookingId,
+        reportNumber = nomisAdjudicationCreationRequestData.adjudicationNumber,
+        prisonerNumber = draftAdjudication.prisonerNumber,
+        agencyId = draftAdjudication.agencyId,
+        locationId = draftAdjudication.incidentDetails.locationId,
+        dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
+        handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
+        incidentRoleCode = draftAdjudication.incidentRole.roleCode,
+        incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber,
+        offenceDetails = toReportedOffence(draftAdjudication.offenceDetails),
+        statement = draftAdjudication.incidentStatement!!.statement!!,
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
       )
-    } else {
-      return prisonApiGateway.updateAdjudication(
-        draftAdjudication.reportNumber!!,
-        AdjudicationDetailsToUpdate(
-          incidentTime = draftAdjudication.incidentDetails.dateTimeOfIncident,
-          incidentLocationId = draftAdjudication.incidentDetails.locationId,
-          statement = draftAdjudication.incidentStatement?.statement!!,
-          offenceCodes = getNomisCodes(draftAdjudication.incidentRole, draftAdjudication.offenceDetails),
-          connectedOffenderIds = getAssociatedOffenders(draftAdjudication.incidentRole.associatedPrisonersNumber),
-          victimOffenderIds = getVictimOffenders(draftAdjudication.offenceDetails),
-          victimStaffUsernames = getVictimStaffUsernames(draftAdjudication.offenceDetails),
-        )
-      )
-    }
+    )
   }
 
-  private fun getNomisCodes(roleDetails: IncidentRole, offenceDetails: MutableList<Offence>?): List<String> {
-    if (roleDetails.roleCode != null) { // Null means committed on own
-      return offenceDetails?.map { offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(it.offenceCode) }
-        ?: emptyList()
-    }
-    return offenceDetails?.flatMap { offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(it.offenceCode) }
-      ?: emptyList()
-  }
-
-  private fun getAssociatedOffenders(associatedPrisonersNumber: String?): List<String> {
-    if (associatedPrisonersNumber == null) {
-      return emptyList()
-    }
-    return listOf(associatedPrisonersNumber)
-  }
-
-  private fun getVictimOffenders(offenceDetails: MutableList<Offence>?): List<String> {
-    return offenceDetails?.mapNotNull { it.victimPrisonersNumber } ?: emptyList()
-  }
-
-  private fun getVictimStaffUsernames(offenceDetails: MutableList<Offence>?): List<String> {
-    return offenceDetails?.mapNotNull { it.victimStaffUsername } ?: emptyList()
-  }
-
-  private fun saveToReportedAdjudications(
+  private fun updateReportedAdjudication(
     draftAdjudication: DraftAdjudication,
-    nomisAdjudication: NomisAdjudication,
-    isNew: Boolean
   ): ReportedAdjudication {
-    if (isNew) {
-      return reportedAdjudicationRepository.save(
-        ReportedAdjudication(
-          bookingId = nomisAdjudication.bookingId,
-          reportNumber = nomisAdjudication.adjudicationNumber,
-          prisonerNumber = draftAdjudication.prisonerNumber,
-          agencyId = draftAdjudication.agencyId,
-          locationId = draftAdjudication.incidentDetails.locationId,
-          dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
-          handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
-          incidentRoleCode = draftAdjudication.incidentRole.roleCode,
-          incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber,
-          offenceDetails = toReportedOffence(draftAdjudication.offenceDetails),
-          statement = draftAdjudication.incidentStatement!!.statement!!,
-          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        )
-      )
-    }
-
+    val reportedAdjudicationNumber = draftAdjudication.reportNumber
+      ?: throw EntityNotFoundException("No reported adjudication number set on the draft adjudication")
     val previousReportedAdjudication =
-      reportedAdjudicationRepository.findByReportNumber(nomisAdjudication.adjudicationNumber)
+      reportedAdjudicationRepository.findByReportNumber(reportedAdjudicationNumber)
     previousReportedAdjudication?.let {
-      it.bookingId = nomisAdjudication.bookingId
-      it.reportNumber = nomisAdjudication.adjudicationNumber
+      it.bookingId = previousReportedAdjudication.bookingId
+      it.reportNumber = previousReportedAdjudication.reportNumber
       it.prisonerNumber = draftAdjudication.prisonerNumber
       it.agencyId = draftAdjudication.agencyId
       it.locationId = draftAdjudication.incidentDetails.locationId
@@ -311,7 +262,7 @@ class DraftAdjudicationService(
       it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
 
       return reportedAdjudicationRepository.save(it)
-    } ?: ReportedAdjudicationService.throwEntityNotFoundException(nomisAdjudication.adjudicationNumber)
+    } ?: ReportedAdjudicationService.throwEntityNotFoundException(reportedAdjudicationNumber)
   }
 
   private fun toReportedOffence(draftOffences: MutableList<Offence>?): MutableList<ReportedOffence> {

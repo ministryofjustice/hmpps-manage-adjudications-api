@@ -384,7 +384,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `complete draft adjudication`() {
-    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+    prisonApiMockServer.stubPostAdjudicationCreationRequestData(IntegrationTestData.DEFAULT_ADJUDICATION)
 
     val intTestData = integrationTestData()
     val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
@@ -437,26 +437,14 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.offenceDetails[1].victimOtherPersonsName").doesNotExist()
       .jsonPath("$.incidentStatement.statement").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.statement)
 
-    val expectedBody = mapOf(
-      "offenderNo" to IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
-      "agencyId" to IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
-      "incidentLocationId" to IntegrationTestData.DEFAULT_ADJUDICATION.locationId,
-      "incidentTime" to IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString,
-      "statement" to IntegrationTestData.DEFAULT_ADJUDICATION.statement,
-      "offenceCodes" to IntegrationTestData.DEFAULT_EXPECTED_NOMIS_DATA.nomisCodes,
-      "victimStaffUsernames" to IntegrationTestData.DEFAULT_EXPECTED_NOMIS_DATA.victimStaffUsernames,
-      "victimOffenderIds" to IntegrationTestData.DEFAULT_EXPECTED_NOMIS_DATA.victimPrisonersNumbers,
-      "connectedOffenderIds" to listOf(DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER),
-    )
-
-    prisonApiMockServer.verifyPostAdjudication(objectMapper.writeValueAsString(expectedBody))
+    prisonApiMockServer.verifyPostAdjudicationCreationRequestData(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber)
 
     intTestScenario.getDraftAdjudicationDetails().expectStatus().isNotFound
   }
 
   @Test
   fun `complete draft adjudication rolls back DB if Prison API call fails`() {
-    prisonApiMockServer.stubPostAdjudicationFailure()
+    prisonApiMockServer.stubPostAdjudicationCreationRequestDataFailure()
 
     val intTestData = integrationTestData()
     val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
@@ -480,7 +468,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `complete draft update of existing adjudication`() {
-    prisonApiMockServer.stubPutAdjudication()
     val intTestData = integrationTestData()
     val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
     val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
@@ -531,55 +518,14 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.offenceDetails[1]").doesNotExist()
       .jsonPath("$.incidentStatement.statement").isEqualTo(IntegrationTestData.UPDATED_ADJUDICATION.statement)
 
-    val expectedBody = mapOf(
-      "incidentLocationId" to IntegrationTestData.UPDATED_ADJUDICATION.locationId,
-      "incidentTime" to IntegrationTestData.UPDATED_ADJUDICATION.dateTimeOfIncidentISOString,
-      "statement" to IntegrationTestData.UPDATED_ADJUDICATION.statement,
-      "offenceCodes" to IntegrationTestData.UPDATED_EXPECTED_NOMIS_DATA.nomisCodes,
-      "victimStaffUsernames" to IntegrationTestData.UPDATED_EXPECTED_NOMIS_DATA.victimStaffUsernames,
-      "victimOffenderIds" to IntegrationTestData.UPDATED_EXPECTED_NOMIS_DATA.victimPrisonersNumbers,
-      "connectedOffenderIds" to listOf(UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER),
-    )
-
-    prisonApiMockServer.verifyPutAdjudication(objectMapper.writeValueAsString(expectedBody))
-
     intTestData.getDraftAdjudicationDetails(draftAdjudicationResponse).expectStatus().isNotFound
 
     assertThat(reportedAdjudicationRepository.findAll()).hasSize(1)
   }
 
   @Test
-  fun `complete draft update does not modify DB if Prison API call fails`() {
-    prisonApiMockServer.stubPutAdjudicationFailure()
-
-    val intTestData = integrationTestData()
-    val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
-
-    intTestBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setOffenceData()
-      .addIncidentStatement()
-      .completeDraft()
-
-    val draftAdjudicationResponse =
-      intTestData.recallCompletedDraftAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
-    intTestData.editIncidentStatement(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
-
-    webTestClient.post()
-      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/complete-draft-adjudication")
-      .headers(setHeaders())
-      .exchange()
-      .expectStatus().is5xxServerError
-
-    val savedAdjudication =
-      reportedAdjudicationRepository.findByReportNumber(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    assertThat(savedAdjudication!!.statement).isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.statement)
-  }
-
-  @Test
   fun `should not delete the draft adjudication when the adjudication report submission fails`() {
-    prisonApiMockServer.stubPostAdjudicationFailure()
+    prisonApiMockServer.stubPostAdjudicationCreationRequestDataFailure()
 
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()

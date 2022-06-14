@@ -11,6 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
@@ -23,6 +24,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -35,6 +38,7 @@ import javax.persistence.EntityNotFoundException
 class ReportedAdjudicationServiceTest {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
+  private val prisonApiGateway: PrisonApiGateway = mock()
   private val offenceCodeLookupService: OffenceCodeLookupService = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
   private lateinit var reportedAdjudicationService: ReportedAdjudicationService
@@ -47,14 +51,20 @@ class ReportedAdjudicationServiceTest {
       ReportedAdjudicationService(
         draftAdjudicationRepository,
         reportedAdjudicationRepository,
+        prisonApiGateway,
         offenceCodeLookupService,
         authenticationFacade
       )
 
     whenever(offenceCodeLookupService.getParagraphNumber(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
+    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2)).thenReturn(listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN))
+    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(2)).thenReturn(OFFENCE_CODE_2_NOMIS_CODE_ASSISTED)
+
     whenever(offenceCodeLookupService.getParagraphNumber(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
+    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3)).thenReturn(listOf(OFFENCE_CODE_3_NOMIS_CODE_ON_OWN))
+    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3)).thenReturn(OFFENCE_CODE_3_NOMIS_CODE_ASSISTED)
   }
 
   @Nested
@@ -384,15 +394,16 @@ class ReportedAdjudicationServiceTest {
 
     @ParameterizedTest
     @CsvSource(
-      "AWAITING_REVIEW, ACCEPTED",
-      "AWAITING_REVIEW, REJECTED",
-      "AWAITING_REVIEW, RETURNED",
-      "AWAITING_REVIEW, AWAITING_REVIEW",
-      "RETURNED, AWAITING_REVIEW"
+      "AWAITING_REVIEW, ACCEPTED, true",
+      "AWAITING_REVIEW, REJECTED, false",
+      "AWAITING_REVIEW, RETURNED, false",
+      "AWAITING_REVIEW, AWAITING_REVIEW, false",
+      "RETURNED, AWAITING_REVIEW, false"
     )
     fun `setting status for a reported adjudication for valid transitions`(
       from: ReportedAdjudicationStatus,
-      to: ReportedAdjudicationStatus
+      to: ReportedAdjudicationStatus,
+      updatesNomis: Boolean,
     ) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication().also {
@@ -402,6 +413,140 @@ class ReportedAdjudicationServiceTest {
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication().also { it.status = to })
       reportedAdjudicationService.setStatus(1, to)
       verify(reportedAdjudicationRepository).save(reportedAdjudication().also { it.status = to })
+      if (updatesNomis) {
+        verify(prisonApiGateway).publishAdjudication(any())
+      } else {
+        verify(prisonApiGateway, never()).publishAdjudication(any())
+      }
+    }
+
+    @Nested
+    inner class WithAnAdjudicationCommittedWithAssistance {
+      private fun existingReportedAdjudication(): ReportedAdjudication {
+        val reportedAdjudication = ReportedAdjudication(
+          id = 1,
+          prisonerNumber = "A12345",
+          reportNumber = 234L,
+          bookingId = 123L,
+          agencyId = "MDI",
+          locationId = 345L,
+          incidentRoleCode = INCIDENT_ROLE_CODE,
+          incidentRoleAssociatedPrisonersNumber = INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
+          dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+          handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
+          statement = INCIDENT_STATEMENT,
+          offenceDetails = mutableListOf(
+            ReportedOffence(
+              offenceCode = 2,
+              paragraphCode = "5b",
+            ),
+            ReportedOffence(
+              offenceCode = 3,
+              paragraphCode = "6a",
+              victimPrisonersNumber = "A1234AA",
+              victimStaffUsername = "ABC12D",
+              victimOtherPersonsName = "A name"
+            ),
+          ),
+          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        )
+        // Add audit information
+        reportedAdjudication.createdByUserId = "A_USER"
+        reportedAdjudication.createDateTime = REPORTED_DATE_TIME
+        return reportedAdjudication
+      }
+
+      @Test
+      fun `submits to prison api with correct data`() {
+        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+          existingReportedAdjudication()
+        )
+        whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+          existingReportedAdjudication().also {
+            it.status = ReportedAdjudicationStatus.ACCEPTED
+          }
+        )
+        reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
+        val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
+          offenderNo = "A12345",
+          adjudicationNumber = 234L,
+          bookingId = 123L,
+          reporterName = "A_USER",
+          reportedDateTime = REPORTED_DATE_TIME,
+          agencyId = "MDI",
+          incidentLocationId = 345L,
+          incidentTime = DATE_TIME_OF_INCIDENT,
+          statement = INCIDENT_STATEMENT,
+          offenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ASSISTED, OFFENCE_CODE_3_NOMIS_CODE_ASSISTED),
+          victimOffenderIds = listOf("A1234AA"),
+          victimStaffUsernames = listOf("ABC12D"),
+          connectedOffenderIds = listOf(INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER),
+        )
+        verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
+      }
+    }
+
+    @Nested
+    inner class WithAnAdjudicationCommittedOnOwn {
+      private fun existingReportedAdjudication(): ReportedAdjudication {
+        val reportedAdjudication = ReportedAdjudication(
+          id = 1,
+          prisonerNumber = "A12345",
+          reportNumber = 234L,
+          bookingId = 123L,
+          agencyId = "MDI",
+          locationId = 345L,
+          incidentRoleCode = null,
+          incidentRoleAssociatedPrisonersNumber = null,
+          dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+          handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
+          statement = INCIDENT_STATEMENT,
+          offenceDetails = mutableListOf(
+            ReportedOffence(
+              offenceCode = 2,
+              paragraphCode = "5b",
+            ),
+            ReportedOffence(
+              offenceCode = 3,
+              paragraphCode = "6a",
+            ),
+          ),
+          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        )
+        // Add audit information
+        reportedAdjudication.createdByUserId = "A_USER"
+        reportedAdjudication.createDateTime = REPORTED_DATE_TIME
+        return reportedAdjudication
+      }
+
+      @Test
+      fun `submits to prison api with correct data`() {
+        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+          existingReportedAdjudication()
+        )
+        whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+          existingReportedAdjudication().also {
+            it.status = ReportedAdjudicationStatus.ACCEPTED
+          }
+        )
+        reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
+        val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
+          offenderNo = "A12345",
+          adjudicationNumber = 234L,
+          bookingId = 123L,
+          reporterName = "A_USER",
+          reportedDateTime = REPORTED_DATE_TIME,
+          agencyId = "MDI",
+          incidentLocationId = 345L,
+          incidentTime = DATE_TIME_OF_INCIDENT,
+          statement = INCIDENT_STATEMENT,
+          offenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN, OFFENCE_CODE_3_NOMIS_CODE_ON_OWN),
+          victimOffenderIds = emptyList(),
+          victimStaffUsernames = emptyList(),
+          connectedOffenderIds = emptyList(),
+        )
+        verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
+      }
     }
   }
 
@@ -536,8 +681,16 @@ class ReportedAdjudicationServiceTest {
     private const val OFFENCE_CODE_2_PARAGRAPH_CODE = "5b"
     private const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"
     private const val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
+    private const val OFFENCE_CODE_2_NOMIS_CODE_ON_OWN = "5b"
+    private const val OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "25z"
+
     private const val OFFENCE_CODE_3_PARAGRAPH_CODE = "6a"
     private const val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6(a)"
     private const val OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another paragraph description"
+    private const val OFFENCE_CODE_3_NOMIS_CODE_ON_OWN = "5f"
+    private const val OFFENCE_CODE_3_NOMIS_CODE_ASSISTED = "25f"
+
+    private val INCIDENT_ROLE_CODE = "25a"
+    private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
   }
 }

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
 import java.time.format.DateTimeFormatter
 
 class ReportedAdjudicationIntTest : IntegrationTestBase() {
@@ -437,6 +438,82 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.RETURNED.toString())
       .jsonPath("$.reportedAdjudication.statusReason").isEqualTo("status reason")
       .jsonPath("$.reportedAdjudication.statusDetails").isEqualTo("status details")
+  }
+
+  @Test
+  fun `accepted reports submit to Prison API`() {
+    oAuthMockServer.stubGrantToken()
+    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "status" to ReportedAdjudicationStatus.ACCEPTED,
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.ACCEPTED.toString())
+
+    val expectedBody = mapOf(
+      "offenderNo" to IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
+      "adjudicationNumber" to IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      "bookingId" to IntegrationTestData.DEFAULT_ADJUDICATION.bookingId,
+      "reporterName" to IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId,
+      "reportedDateTime" to DEFAULT_REPORTED_DATE_TIME,
+      "agencyId" to IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
+      "incidentLocationId" to IntegrationTestData.DEFAULT_ADJUDICATION.locationId,
+      "incidentTime" to IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString,
+      "statement" to IntegrationTestData.DEFAULT_ADJUDICATION.statement,
+      "offenceCodes" to IntegrationTestData.DEFAULT_EXPECTED_NOMIS_DATA.nomisCodes,
+      "victimStaffUsernames" to IntegrationTestData.DEFAULT_EXPECTED_NOMIS_DATA.victimStaffUsernames,
+      "victimOffenderIds" to IntegrationTestData.DEFAULT_EXPECTED_NOMIS_DATA.victimPrisonersNumbers,
+      "connectedOffenderIds" to listOf(IntegrationTestData.DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER),
+    )
+
+    prisonApiMockServer.verifyPostAdjudication(objectMapper.writeValueAsString(expectedBody))
+  }
+
+  @Test
+  fun `accepted reports request fails if Prison API call fails`() {
+    oAuthMockServer.stubGrantToken()
+    prisonApiMockServer.stubPostAdjudicationFailure()
+
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "status" to ReportedAdjudicationStatus.ACCEPTED,
+        )
+      )
+      .exchange()
+      .expectStatus().is5xxServerError
   }
 
   @Test

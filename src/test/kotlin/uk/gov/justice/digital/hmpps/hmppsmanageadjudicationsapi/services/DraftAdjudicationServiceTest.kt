@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -30,9 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToUpdate
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudicationCreationRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -707,7 +706,7 @@ class DraftAdjudicationServiceTest {
     }
 
     @Nested
-    inner class WithAValidDraftAdjudicationCommittedWithAssistance {
+    inner class WithAValidDraftAdjudication {
       private val INCIDENT_TIME = LocalDateTime.now(clock)
 
       @BeforeEach
@@ -729,17 +728,10 @@ class DraftAdjudicationServiceTest {
             )
           )
         )
-        whenever(prisonApiGateway.publishAdjudication(any())).thenReturn(
-          NomisAdjudication(
+        whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
+          NomisAdjudicationCreationRequest(
             adjudicationNumber = 123456L,
-            offenderNo = "A12345",
             bookingId = 1L,
-            agencyId = "MDI",
-            statement = "test",
-            incidentLocationId = 2L,
-            incidentTime = LocalDateTime.now(clock),
-            reporterStaffId = 2,
-            createdByUserId = "A_SMITH"
           )
         )
         whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
@@ -807,22 +799,10 @@ class DraftAdjudicationServiceTest {
       }
 
       @Test
-      fun `makes a call to prison api to publish the draft adjudication`() {
+      fun `makes a call to prison api to get creation data`() {
         draftAdjudicationService.completeDraftAdjudication(1)
 
-        val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
-          offenderNo = "A12345",
-          agencyId = "MDI",
-          incidentLocationId = 1L,
-          incidentTime = LocalDateTime.now(clock),
-          statement = "test",
-          offenceCodes = listOf(BASIC_OFFENCE_DETAILS_NOMIS_CODE_ASSISTED, FULL_OFFENCE_DETAILS_NOMIS_CODE_ASSISTED),
-          victimOffenderIds = listOf(FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber!!),
-          victimStaffUsernames = listOf(FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername!!),
-          connectedOffenderIds = listOf(INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER),
-        )
-
-        verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
+        verify(prisonApiGateway).requestAdjudicationCreationData("A12345")
       }
 
       @Test
@@ -835,73 +815,6 @@ class DraftAdjudicationServiceTest {
         assertThat(argumentCaptor.value)
           .extracting("id", "prisonerNumber")
           .contains(1L, "A12345")
-      }
-    }
-
-    @Nested
-    inner class WithAValidDraftAdjudicationCommittedOnOwn {
-      private val INCIDENT_TIME = LocalDateTime.now(clock)
-
-      @BeforeEach
-      fun beforeEach() {
-        whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-          Optional.of(
-            DraftAdjudication(
-              id = 1,
-              prisonerNumber = "A12345",
-              agencyId = "MDI",
-              incidentDetails = IncidentDetails(
-                locationId = 1,
-                dateTimeOfIncident = INCIDENT_TIME,
-                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-              ),
-              incidentRole = incidentRoleWithNoValuesSet(),
-              offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
-              incidentStatement = IncidentStatement(statement = "test")
-            )
-          )
-        )
-        whenever(prisonApiGateway.publishAdjudication(any())).thenReturn(
-          NomisAdjudication(
-            adjudicationNumber = 123456L,
-            offenderNo = "A12345",
-            bookingId = 1L,
-            agencyId = "MDI",
-            statement = "test",
-            incidentLocationId = 2L,
-            incidentTime = LocalDateTime.now(clock),
-            reporterStaffId = 2,
-            createdByUserId = "A_SMITH"
-          )
-        )
-        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
-          DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
-        )
-        whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
-          val passedInAdjudication = it.arguments[0] as ReportedAdjudication
-          passedInAdjudication.createdByUserId = "A_SMITH"
-          passedInAdjudication.createDateTime = REPORTED_DATE_TIME
-          passedInAdjudication
-        }
-      }
-
-      @Test
-      fun `makes a call to prison api to publish the draft adjudication using th correct committed-on-own codes`() {
-        draftAdjudicationService.completeDraftAdjudication(1)
-
-        val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
-          offenderNo = "A12345",
-          agencyId = "MDI",
-          incidentLocationId = 1L,
-          incidentTime = LocalDateTime.now(clock),
-          statement = "test",
-          offenceCodes = listOf(BASIC_OFFENCE_DETAILS_NOMIS_CODE_ON_OWN, FULL_OFFENCE_DETAILS_NOMIS_CODE_ON_OWN),
-          victimOffenderIds = listOf(FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber!!),
-          victimStaffUsernames = listOf(FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername!!),
-          connectedOffenderIds = emptyList(),
-        )
-
-        verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
       }
     }
 
@@ -945,17 +858,10 @@ class DraftAdjudicationServiceTest {
             )
           )
         )
-        whenever(prisonApiGateway.updateAdjudication(any(), any())).thenReturn(
-          NomisAdjudication(
+        whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
+          NomisAdjudicationCreationRequest(
             adjudicationNumber = 123,
-            offenderNo = "A12345",
             bookingId = 33,
-            agencyId = "MDI",
-            statement = "olddata",
-            incidentLocationId = 2,
-            incidentTime = INCIDENT_TIME,
-            reporterStaffId = 2,
-            createdByUserId = "A_SMITH",
           )
         )
         whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
@@ -1002,7 +908,7 @@ class DraftAdjudicationServiceTest {
     }
 
     @Nested
-    inner class CompleteAPreviouslyCompletedAdjudicationCommittedWithAssistance {
+    inner class CompleteAPreviouslyCompletedAdjudication {
       @BeforeEach
       fun beforeEach() {
         whenever(draftAdjudicationRepository.findById(any())).thenReturn(
@@ -1043,17 +949,10 @@ class DraftAdjudicationServiceTest {
             statusDetails = null,
           )
         )
-        whenever(prisonApiGateway.updateAdjudication(any(), any())).thenReturn(
-          NomisAdjudication(
-            adjudicationNumber = 123L,
-            offenderNo = "A12345",
-            bookingId = 33L,
-            agencyId = "MDI",
-            statement = "olddata",
-            incidentLocationId = 2L,
-            incidentTime = LocalDateTime.now(clock).minusDays(2),
-            reporterStaffId = 2,
-            createdByUserId = "A_SMITH",
+        whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
+          NomisAdjudicationCreationRequest(
+            adjudicationNumber = 123,
+            bookingId = 33,
           )
         )
         whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
@@ -1133,20 +1032,10 @@ class DraftAdjudicationServiceTest {
       }
 
       @Test
-      fun `makes a call to prison api to update the draft adjudication`() {
+      fun `does not call prison api to get creation data`() {
         draftAdjudicationService.completeDraftAdjudication(1)
 
-        val expectedAdjudicationToUpdate = AdjudicationDetailsToUpdate(
-          incidentLocationId = 1L,
-          incidentTime = LocalDateTime.now(clock),
-          statement = "test",
-          offenceCodes = listOf(BASIC_OFFENCE_DETAILS_NOMIS_CODE_ASSISTED, FULL_OFFENCE_DETAILS_NOMIS_CODE_ASSISTED),
-          victimOffenderIds = listOf(FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber!!),
-          victimStaffUsernames = listOf(FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername!!),
-          connectedOffenderIds = listOf(INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER),
-        )
-
-        verify(prisonApiGateway).updateAdjudication(123L, expectedAdjudicationToUpdate)
+        verify(prisonApiGateway, never()).requestAdjudicationCreationData(any())
       }
 
       @Test
@@ -1159,90 +1048,6 @@ class DraftAdjudicationServiceTest {
         assertThat(argumentCaptor.value)
           .extracting("id", "prisonerNumber")
           .contains(1L, "A12345")
-      }
-    }
-
-    @Nested
-    inner class CompleteAPreviouslyCompletedAdjudicationCommittedOnOwn {
-      @BeforeEach
-      fun beforeEach() {
-        whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-          Optional.of(
-            DraftAdjudication(
-              id = 1,
-              prisonerNumber = "A12345",
-              reportNumber = 123L,
-              reportByUserId = "A_SMITH",
-              agencyId = "MDI",
-              incidentDetails = IncidentDetails(
-                locationId = 1,
-                dateTimeOfIncident = LocalDateTime.now(clock),
-                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-              ),
-              incidentRole = incidentRoleWithNoValuesSet(),
-              offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
-              incidentStatement = IncidentStatement(statement = "test")
-            )
-          )
-        )
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-          ReportedAdjudication(
-            id = 1,
-            prisonerNumber = "A12345",
-            bookingId = 33L,
-            reportNumber = 123L,
-            agencyId = "MDI",
-            locationId = 2,
-            dateTimeOfIncident = LocalDateTime.now(clock).minusDays(2),
-            handoverDeadline = LocalDateTime.now(clock),
-            incidentRoleCode = null,
-            incidentRoleAssociatedPrisonersNumber = null,
-            offenceDetails = mutableListOf(ReportedOffence(offenceCode = 3, paragraphCode = "4")),
-            statement = "olddata",
-            status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-            statusReason = null,
-            statusDetails = null,
-          )
-        )
-        whenever(prisonApiGateway.updateAdjudication(any(), any())).thenReturn(
-          NomisAdjudication(
-            adjudicationNumber = 123L,
-            offenderNo = "A12345",
-            bookingId = 33L,
-            agencyId = "MDI",
-            statement = "olddata",
-            incidentLocationId = 2L,
-            incidentTime = LocalDateTime.now(clock).minusDays(2),
-            reporterStaffId = 2,
-            createdByUserId = "A_SMITH",
-          )
-        )
-        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
-          DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
-        )
-        whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
-          val passedInAdjudication = it.arguments[0] as ReportedAdjudication
-          passedInAdjudication.createdByUserId = "A_SMITH"
-          passedInAdjudication.createDateTime = REPORTED_DATE_TIME
-          passedInAdjudication
-        }
-      }
-
-      @Test
-      fun `makes a call to prison api to update the draft adjudication using th correct committed-on-own codes`() {
-        draftAdjudicationService.completeDraftAdjudication(1)
-
-        val expectedAdjudicationToUpdate = AdjudicationDetailsToUpdate(
-          incidentLocationId = 1L,
-          incidentTime = LocalDateTime.now(clock),
-          statement = "test",
-          offenceCodes = listOf(BASIC_OFFENCE_DETAILS_NOMIS_CODE_ON_OWN, FULL_OFFENCE_DETAILS_NOMIS_CODE_ON_OWN),
-          victimOffenderIds = listOf(FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber!!),
-          victimStaffUsernames = listOf(FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername!!),
-          connectedOffenderIds = emptyList(),
-        )
-
-        verify(prisonApiGateway).updateAdjudication(123L, expectedAdjudicationToUpdate)
       }
     }
   }
@@ -1388,8 +1193,6 @@ class DraftAdjudicationServiceTest {
       offenceCode = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
       paragraphCode = OFFENCE_CODE_2_PARAGRAPH_CODE
     )
-    private val BASIC_OFFENCE_DETAILS_NOMIS_CODE_ON_OWN = OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
-    private val BASIC_OFFENCE_DETAILS_NOMIS_CODE_ASSISTED = OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
 
     private val FULL_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(
       offenceCode = 3,
@@ -1414,8 +1217,6 @@ class DraftAdjudicationServiceTest {
       victimStaffUsername = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
       victimOtherPersonsName = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName,
     )
-    private val FULL_OFFENCE_DETAILS_NOMIS_CODE_ON_OWN = OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
-    private val FULL_OFFENCE_DETAILS_NOMIS_CODE_ASSISTED = OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
 
     fun incidentRoleRequestWithAllValuesSet(): IncidentRoleRequest =
       IncidentRoleRequest(

@@ -72,7 +72,7 @@ enum class ReportedAdjudicationStatus {
     val from = this
     return from.nextStates().contains(to)
   }
-  fun isFinal(): Boolean {
-    return nextStates().isEmpty()
+  fun isAccepted(): Boolean {
+    return this == ACCEPTED
   }
 }
