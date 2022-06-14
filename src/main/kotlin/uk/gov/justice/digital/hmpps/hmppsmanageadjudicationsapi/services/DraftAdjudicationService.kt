@@ -240,8 +240,8 @@ class DraftAdjudicationService(
   private fun updateReportedAdjudication(
     draftAdjudication: DraftAdjudication,
   ): ReportedAdjudication {
-    val reportedAdjudicationNumber = draftAdjudication.reportNumber ?:
-      throw EntityNotFoundException("No reported adjudication number set on the draft adjudication")
+    val reportedAdjudicationNumber = draftAdjudication.reportNumber
+      ?: throw EntityNotFoundException("No reported adjudication number set on the draft adjudication")
     val previousReportedAdjudication =
       reportedAdjudicationRepository.findByReportNumber(reportedAdjudicationNumber)
     previousReportedAdjudication?.let {

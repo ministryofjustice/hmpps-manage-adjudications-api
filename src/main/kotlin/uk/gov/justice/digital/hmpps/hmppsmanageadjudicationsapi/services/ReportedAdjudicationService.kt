@@ -133,10 +133,14 @@ class ReportedAdjudicationService(
         offenderNo = reportedAdjudication.prisonerNumber,
         adjudicationNumber = reportedAdjudication.reportNumber,
         bookingId = reportedAdjudication.bookingId,
-        reporterName = reportedAdjudication.createdByUserId ?:
-            throw EntityNotFoundException("ReportedAdjudication creator name not set for reported adjudication number ${reportedAdjudication.reportNumber}"),
-        reportedDateTime = reportedAdjudication.createDateTime ?:
-            throw EntityNotFoundException("ReportedAdjudication creation time not set for reported adjudication number ${reportedAdjudication.reportNumber}"),
+        reporterName = reportedAdjudication.createdByUserId
+          ?: throw EntityNotFoundException(
+            "ReportedAdjudication creator name not set for reported adjudication number ${reportedAdjudication.reportNumber}"
+          ),
+        reportedDateTime = reportedAdjudication.createDateTime
+          ?: throw EntityNotFoundException(
+            "ReportedAdjudication creation time not set for reported adjudication number ${reportedAdjudication.reportNumber}"
+          ),
         agencyId = reportedAdjudication.agencyId,
         incidentTime = reportedAdjudication.dateTimeOfIncident,
         incidentLocationId = reportedAdjudication.locationId,

@@ -461,9 +461,11 @@ class ReportedAdjudicationServiceTest {
         whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
           existingReportedAdjudication()
         )
-        whenever(reportedAdjudicationRepository.save(any())).thenReturn(existingReportedAdjudication().also {
-          it.status = ReportedAdjudicationStatus.ACCEPTED
-        })
+        whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+          existingReportedAdjudication().also {
+            it.status = ReportedAdjudicationStatus.ACCEPTED
+          }
+        )
         reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
         val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
           offenderNo = "A12345",
@@ -522,9 +524,11 @@ class ReportedAdjudicationServiceTest {
         whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
           existingReportedAdjudication()
         )
-        whenever(reportedAdjudicationRepository.save(any())).thenReturn(existingReportedAdjudication().also {
-          it.status = ReportedAdjudicationStatus.ACCEPTED
-        })
+        whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+          existingReportedAdjudication().also {
+            it.status = ReportedAdjudicationStatus.ACCEPTED
+          }
+        )
         reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
         val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
           offenderNo = "A12345",
