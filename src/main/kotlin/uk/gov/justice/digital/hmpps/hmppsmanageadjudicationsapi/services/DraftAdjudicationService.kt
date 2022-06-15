@@ -146,6 +146,28 @@ class DraftAdjudicationService(
   }
 
   @Transactional
+  fun editIncidentRole(
+    id: Long,
+    incidentRole: IncidentRoleRequest?,
+    removeExistingOffences: Boolean,
+  ): DraftAdjudicationDto {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+
+    if (removeExistingOffences) {
+      draftAdjudication.offenceDetails?.let { it.clear() }
+    }
+
+    incidentRole?.let {
+      draftAdjudication.incidentRole.roleCode = it.roleCode
+      draftAdjudication.incidentRole.associatedPrisonersNumber = it.associatedPrisonersNumber
+    }
+
+    return draftAdjudicationRepository
+      .save(draftAdjudication)
+      .toDto(offenceCodeLookupService)
+  }
+
+  @Transactional
   fun editIncidentStatement(id: Long, statement: String?, completed: Boolean?): DraftAdjudicationDto {
     throwIfStatementAndCompletedIsNull(statement, completed)
 

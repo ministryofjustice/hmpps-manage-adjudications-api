@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
@@ -619,6 +620,70 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         get("/draft-adjudications/my/agency/MDI")
           .header("Content-Type", "application/json")
       )
+  }
+
+  @Nested
+  inner class EditIncidentRole {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        draftAdjudicationService.editIncidentRole(
+          anyLong(),
+          any(),
+          anyBoolean(),
+        )
+      ).thenReturn(
+        DraftAdjudicationDto(
+          id = 1L,
+          adjudicationNumber = null,
+          prisonerNumber = "A12345",
+          incidentDetails = IncidentDetailsDto(
+            locationId = 3,
+            DATE_TIME_OF_INCIDENT,
+            DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          ),
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
+        )
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      editIncidentRoleRequest(1, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to edit the incident role`() {
+      editIncidentRoleRequest(1, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+        .andExpect(status().isOk)
+
+      verify(draftAdjudicationService).editIncidentRole(
+        1,
+        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
+        false,
+      )
+    }
+
+    private fun editIncidentRoleRequest(
+      id: Long,
+      incidentRole: IncidentRoleRequest?
+    ): ResultActions {
+      val body =
+        objectMapper.writeValueAsString(
+          mapOf(
+            "incidentRole" to incidentRole,
+            "removeExistingOffences" to false
+          )
+        )
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/incident-role")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
   }
 
   companion object {

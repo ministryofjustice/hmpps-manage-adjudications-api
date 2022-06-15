@@ -89,6 +89,14 @@ data class EditIncidentDetailsRequest(
   val removeExistingOffences: Boolean = false,
 )
 
+@Schema(description = "Request to edit incident role")
+data class EditIncidentRoleRequest(
+  @Schema(description = "Information about the role of this prisoner in the incident")
+  val incidentRole: IncidentRoleRequest? = null,
+  @Schema(description = "Whether to remove all existing offences")
+  val removeExistingOffences: Boolean = false,
+)
+
 @Schema(description = "Draft adjudication response")
 data class DraftAdjudicationResponse(
   @Schema(description = "The draft adjudication")
@@ -201,6 +209,24 @@ class DraftAdjudicationController {
       editIncidentDetailsRequest.dateTimeOfIncident,
       editIncidentDetailsRequest.incidentRole,
       editIncidentDetailsRequest.removeExistingOffences,
+    )
+
+    return DraftAdjudicationResponse(
+      draftAdjudication
+    )
+  }
+
+  @PutMapping(value = ["/{id}/incident-role"])
+  @Operation(summary = "Edit the incident role for a draft adjudication.")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  fun editIncidentRole(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid editIncidentRoleRequest: EditIncidentRoleRequest
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.editIncidentRole(
+      id,
+      editIncidentRoleRequest.incidentRole,
+      editIncidentRoleRequest.removeExistingOffences
     )
 
     return DraftAdjudicationResponse(
