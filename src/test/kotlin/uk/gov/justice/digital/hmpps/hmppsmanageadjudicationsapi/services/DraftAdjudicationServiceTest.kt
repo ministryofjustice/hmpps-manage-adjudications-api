@@ -833,6 +833,7 @@ class DraftAdjudicationServiceTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         dateTimeOfIncident = LocalDateTime.now(clock),
         handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
+        isYouthOffender = false,
         incidentRoleAssociatedPrisonersNumber = null,
         incidentRoleCode = null,
         statement = "test"
@@ -940,6 +941,7 @@ class DraftAdjudicationServiceTest {
             locationId = 2,
             dateTimeOfIncident = LocalDateTime.now(clock).minusDays(2),
             handoverDeadline = LocalDateTime.now(clock),
+            isYouthOffender = false,
             incidentRoleCode = null,
             incidentRoleAssociatedPrisonersNumber = null,
             offenceDetails = mutableListOf(ReportedOffence(offenceCode = 3, paragraphCode = "4")),
