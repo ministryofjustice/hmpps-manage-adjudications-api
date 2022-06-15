@@ -44,6 +44,7 @@ class ReportedAdjudicationRepositoryTest {
         locationId = 2,
         dateTimeOfIncident = dateTimeOfIncident,
         handoverDeadline = dateTimeOfIncident.plusDays(2),
+        isYouthOffender = false,
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
         statement = "Example",
@@ -61,6 +62,7 @@ class ReportedAdjudicationRepositoryTest {
         locationId = 3,
         dateTimeOfIncident = dateTimeOfIncident.plusHours(1),
         handoverDeadline = dateTimeOfIncident.plusHours(1).plusDays(2),
+        isYouthOffender = false,
         incidentRoleCode = "25a",
         incidentRoleAssociatedPrisonersNumber = "B23456",
         statement = "Example 2",
@@ -78,6 +80,7 @@ class ReportedAdjudicationRepositoryTest {
         locationId = 4,
         dateTimeOfIncident = dateTimeOfIncident.plusHours(1),
         handoverDeadline = dateTimeOfIncident.plusHours(1).plusDays(2),
+        isYouthOffender = true,
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
         statement = "Example 3",
@@ -127,8 +130,8 @@ class ReportedAdjudicationRepositoryTest {
       )
 
     assertThat(savedEntity)
-      .extracting("incidentRoleCode", "incidentRoleAssociatedPrisonersNumber")
-      .contains(adjudication.incidentRoleCode, adjudication.incidentRoleAssociatedPrisonersNumber)
+      .extracting("isYouthOffender", "incidentRoleCode", "incidentRoleAssociatedPrisonersNumber")
+      .contains(adjudication.isYouthOffender, adjudication.incidentRoleCode, adjudication.incidentRoleAssociatedPrisonersNumber)
 
     assertThat(savedEntity.offenceDetails).hasSize(2)
       .extracting(
@@ -249,6 +252,7 @@ class ReportedAdjudicationRepositoryTest {
       locationId = 2,
       dateTimeOfIncident = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
       handoverDeadline = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME.plusDays(2),
+      isYouthOffender = false,
       incidentRoleCode = "25a",
       incidentRoleAssociatedPrisonersNumber = "B23456",
       offenceDetails = mutableListOf(

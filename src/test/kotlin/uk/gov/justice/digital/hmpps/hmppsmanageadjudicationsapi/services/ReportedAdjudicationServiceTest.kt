@@ -85,6 +85,7 @@ class ReportedAdjudicationServiceTest {
         ReportedAdjudication(
           reportNumber = 1, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
+          isYouthOffender = false,
           incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
           offenceDetails = mutableListOf(
             ReportedOffence(
@@ -121,6 +122,7 @@ class ReportedAdjudicationServiceTest {
         .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
         .contains(345L, DATE_TIME_OF_INCIDENT, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
 
+      // TODO - youth
       assertThat(reportedAdjudicationDto.incidentRole)
         .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
         .contains("25b", IncidentRoleRuleLookup.getOffenceRuleDetails("25b"), "BB2345B")
@@ -165,6 +167,7 @@ class ReportedAdjudicationServiceTest {
         locationId = 345,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+        isYouthOffender = false,
         incidentRoleCode = "25b",
         incidentRoleAssociatedPrisonersNumber = "BB2345B",
         offenceDetails = mutableListOf(
@@ -192,6 +195,7 @@ class ReportedAdjudicationServiceTest {
         locationId = 345,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+        isYouthOffender = true,
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
         offenceDetails = null,
@@ -268,6 +272,7 @@ class ReportedAdjudicationServiceTest {
         locationId = 345,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+        isYouthOffender = false,
         incidentRoleCode = "25b",
         incidentRoleAssociatedPrisonersNumber = "BB2345B",
         offenceDetails = mutableListOf(
@@ -293,6 +298,7 @@ class ReportedAdjudicationServiceTest {
         locationId = 345,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
+        isYouthOffender = true,
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
         offenceDetails = null,
@@ -344,6 +350,7 @@ class ReportedAdjudicationServiceTest {
       val reportedAdjudication = ReportedAdjudication(
         reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
+        isYouthOffender = false,
         incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
         offenceDetails = mutableListOf(
           ReportedOffence(
@@ -430,6 +437,7 @@ class ReportedAdjudicationServiceTest {
           bookingId = 123L,
           agencyId = "MDI",
           locationId = 345L,
+          isYouthOffender = false,
           incidentRoleCode = INCIDENT_ROLE_CODE,
           incidentRoleAssociatedPrisonersNumber = INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
@@ -496,6 +504,7 @@ class ReportedAdjudicationServiceTest {
           bookingId = 123L,
           agencyId = "MDI",
           locationId = 345L,
+          isYouthOffender = false,
           incidentRoleCode = null,
           incidentRoleAssociatedPrisonersNumber = null,
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
@@ -555,6 +564,7 @@ class ReportedAdjudicationServiceTest {
     private val reportedAdjudication = ReportedAdjudication(
       reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
       dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
+      isYouthOffender = false,
       incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
       offenceDetails = mutableListOf(
         ReportedOffence(

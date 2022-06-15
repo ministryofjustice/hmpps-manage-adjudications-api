@@ -187,6 +187,7 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
     dateTimeOfIncident = dateTimeOfIncident,
     handoverDeadline = handoverDeadline
   ),
+  isYouthOffender = isYouthOffender,
   incidentRole = IncidentRoleDto(
     roleCode = incidentRoleCode,
     offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleCode),

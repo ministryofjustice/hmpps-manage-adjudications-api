@@ -228,6 +228,7 @@ class DraftAdjudicationService(
         locationId = draftAdjudication.incidentDetails.locationId,
         dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
         handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
+        isYouthOffender = false,
         incidentRoleCode = draftAdjudication.incidentRole.roleCode,
         incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber,
         offenceDetails = toReportedOffence(draftAdjudication.offenceDetails),
@@ -252,6 +253,7 @@ class DraftAdjudicationService(
       it.locationId = draftAdjudication.incidentDetails.locationId
       it.dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident
       it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline
+      it.isYouthOffender = false
       it.incidentRoleCode = draftAdjudication.incidentRole.roleCode
       it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber
       it.offenceDetails?.let { offence ->

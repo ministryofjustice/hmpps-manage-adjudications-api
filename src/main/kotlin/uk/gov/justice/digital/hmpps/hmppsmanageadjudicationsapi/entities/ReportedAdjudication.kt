@@ -24,6 +24,7 @@ data class ReportedAdjudication(
   var locationId: Long,
   var dateTimeOfIncident: LocalDateTime,
   var handoverDeadline: LocalDateTime,
+  var isYouthOffender: Boolean,
   var incidentRoleCode: String?,
   var incidentRoleAssociatedPrisonersNumber: String?,
   @Length(max = 4000)
