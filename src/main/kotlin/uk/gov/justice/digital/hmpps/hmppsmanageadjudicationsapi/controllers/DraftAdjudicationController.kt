@@ -92,7 +92,7 @@ data class EditIncidentDetailsRequest(
 @Schema(description = "Request to edit incident role")
 data class EditIncidentRoleRequest(
   @Schema(description = "Information about the role of this prisoner in the incident")
-  val incidentRole: IncidentRoleRequest? = null,
+  val incidentRole: IncidentRoleRequest,
   @Schema(description = "Whether to remove all existing offences")
   val removeExistingOffences: Boolean = false,
 )

@@ -148,7 +148,7 @@ class DraftAdjudicationService(
   @Transactional
   fun editIncidentRole(
     id: Long,
-    incidentRole: IncidentRoleRequest?,
+    incidentRole: IncidentRoleRequest,
     removeExistingOffences: Boolean,
   ): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
@@ -157,7 +157,7 @@ class DraftAdjudicationService(
       draftAdjudication.offenceDetails?.let { it.clear() }
     }
 
-    incidentRole?.let {
+    incidentRole.let {
       draftAdjudication.incidentRole.roleCode = it.roleCode
       draftAdjudication.incidentRole.associatedPrisonersNumber = it.associatedPrisonersNumber
     }
