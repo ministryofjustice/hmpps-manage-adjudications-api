@@ -607,7 +607,8 @@ class ReportedAdjudicationServiceTest {
       incidentStatement = IncidentStatement(
         completed = true,
         statement = INCIDENT_STATEMENT
-      )
+      ),
+      isYouthOffender = false
     )
 
     private val savedDraftAdjudication = expectedSavedDraftAdjudication.copy(
