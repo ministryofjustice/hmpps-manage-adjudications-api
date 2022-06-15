@@ -153,6 +153,7 @@ class DraftAdjudicationRepositoryTest {
           roleCode = "25a",
           associatedPrisonersNumber = "B23456"
         ),
+        isYouthOffender = true
       )
     )
     entityManager.persistAndFlush(
@@ -168,6 +169,7 @@ class DraftAdjudicationRepositoryTest {
           roleCode = null,
           associatedPrisonersNumber = null
         ),
+        isYouthOffender = true
       )
     )
     entityManager.persistAndFlush(
@@ -185,6 +187,7 @@ class DraftAdjudicationRepositoryTest {
           roleCode = null,
           associatedPrisonersNumber = null
         ),
+        isYouthOffender = true
       )
     )
     val foundAdjudications =
@@ -241,6 +244,7 @@ class DraftAdjudicationRepositoryTest {
         roleCode = "25a",
         associatedPrisonersNumber = "B23456"
       ),
+      isYouthOffender = true
     )
   }
 
@@ -276,6 +280,7 @@ class DraftAdjudicationRepositoryTest {
         statement = "Example statement",
         completed = false,
       ),
+      isYouthOffender = true
     )
   }
 

@@ -52,6 +52,7 @@ class BaseEntityTest {
         roleCode = "25a",
         associatedPrisonersNumber = "B23456"
       ),
+      isYouthOffender = true
     )
   }
 

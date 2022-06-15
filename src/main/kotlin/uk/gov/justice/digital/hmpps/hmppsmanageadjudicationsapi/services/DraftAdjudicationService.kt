@@ -65,6 +65,7 @@ class DraftAdjudicationService(
       ),
       reportNumber = null,
       reportByUserId = null,
+      isYouthOffender = false,
     )
     return draftAdjudicationRepository
       .save(draftAdjudication)
@@ -158,6 +159,16 @@ class DraftAdjudicationService(
     completed?.let { draftAdjudication.incidentStatement?.completed = completed }
 
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
+  }
+
+  @Transactional
+  fun setIncidentApplicableRule(id: Long, isYouthOffender: Boolean): DraftAdjudicationDto {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    draftAdjudication.isYouthOffender = isYouthOffender
+
+    return draftAdjudicationRepository
+      .save(draftAdjudication)
+      .toDto(offenceCodeLookupService)
   }
 
   @Transactional
@@ -303,6 +314,7 @@ fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService):
     offenceDetails = this.offenceDetails?.map { it.toDto(offenceCodeLookupService) },
     adjudicationNumber = this.reportNumber,
     startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
+    isYouthOffender = this.isYouthOffender
   )
 
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
