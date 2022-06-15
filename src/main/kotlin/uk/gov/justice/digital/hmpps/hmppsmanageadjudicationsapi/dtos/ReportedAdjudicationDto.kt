@@ -14,6 +14,8 @@ data class ReportedAdjudicationDto(
   val bookingId: Long,
   @Schema(description = "Incident details")
   val incidentDetails: IncidentDetailsDto,
+  @Schema(description = "Is classified as a youth offender")
+  val isYouthOffender: Boolean,
   @Schema(description = "Information about the role of this prisoner in the incident")
   val incidentRole: IncidentRoleDto,
   @Schema(description = "Details about all the offences the prisoner is accused of")

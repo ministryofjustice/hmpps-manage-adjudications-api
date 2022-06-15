@@ -11,6 +11,7 @@ data class AdjudicationIntTestDataSet(
   val dateTimeOfIncident: LocalDateTime,
   val dateTimeOfIncidentISOString: String,
   val handoverDeadlineISOString: String,
+  val isYouthOffender: Boolean,
   val incidentRoleCode: String,
   val incidentRoleParagraphNumber: String,
   val incidentRoleParagraphDescription: String,
