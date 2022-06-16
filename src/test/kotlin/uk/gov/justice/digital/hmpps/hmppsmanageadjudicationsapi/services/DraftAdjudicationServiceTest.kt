@@ -65,26 +65,27 @@ class DraftAdjudicationServiceTest {
         dateCalculationService,
         authenticationFacade
       )
-    whenever(offenceCodeLookupService.getParagraphCode(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_CODE)
-    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2)).thenReturn(
+    // TODO - On merge
+    whenever(offenceCodeLookupService.getParagraphCode(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_CODE)
+    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2, false)).thenReturn(
       listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN)
     )
-    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(2)).thenReturn(
+    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(2, false)).thenReturn(
       OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
     )
-    whenever(offenceCodeLookupService.getParagraphNumber(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
-    whenever(offenceCodeLookupService.getParagraphDescription(2)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
-    whenever(offenceCodeLookupService.getParagraphCode(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_CODE)
-    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3)).thenReturn(
+    whenever(offenceCodeLookupService.getParagraphNumber(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
+    whenever(offenceCodeLookupService.getParagraphDescription(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
+    whenever(offenceCodeLookupService.getParagraphCode(3, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_CODE)
+    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3, false)).thenReturn(
       listOf(
         OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
       )
     )
-    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3)).thenReturn(
+    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3, false)).thenReturn(
       OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
     )
-    whenever(offenceCodeLookupService.getParagraphNumber(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
-    whenever(offenceCodeLookupService.getParagraphDescription(3)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
+    whenever(offenceCodeLookupService.getParagraphNumber(3, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
+    whenever(offenceCodeLookupService.getParagraphDescription(3, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
   }
 
   @Nested
@@ -137,7 +138,8 @@ class DraftAdjudicationServiceTest {
         .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
         .contains(
           incidentRoleDtoWithAllValuesSet().roleCode,
-          IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode),
+          // TODO - On merge (this will be changed)
+          IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode, false),
           incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
         )
     }
@@ -155,6 +157,7 @@ class DraftAdjudicationServiceTest {
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
 
+    // TODO on merge - add test for youth offender
     @Test
     fun `returns the draft adjudication`() {
       val now = LocalDateTime.now()
@@ -196,7 +199,8 @@ class DraftAdjudicationServiceTest {
         .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
         .contains(
           incidentRoleDtoWithAllValuesSet().roleCode,
-          IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode),
+          // TODO On merge
+          IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode, false),
           incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
         )
 
@@ -296,6 +300,7 @@ class DraftAdjudicationServiceTest {
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
 
+    // TODO on merge - add test for youth offender
     @Test
     fun `adds the offence details to a draft adjudication`() {
       val offenceDetailsToAdd = listOf(BASIC_OFFENCE_DETAILS_REQUEST, FULL_OFFENCE_DETAILS_REQUEST)

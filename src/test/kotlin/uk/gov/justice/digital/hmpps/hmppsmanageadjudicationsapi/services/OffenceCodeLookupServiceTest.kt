@@ -41,16 +41,25 @@ class OffenceCodeLookupServiceTest {
 
   private fun assertValuesSetForAllItems(offenceCodes: IntRange) {
     offenceCodes.forEach {
-      assertThat(offenceCodeLookupService.getParagraphNumber(it)).isNotBlank
-      assertThat(offenceCodeLookupService.getParagraphDescription(it)).isNotBlank
-      assertThat(offenceCodeLookupService.getParagraphCode(it)).isNotBlank
-      assertThat(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(it)).hasSizeGreaterThan(0)
-      offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(it).forEach { it ->
-        assertThat(it).startsWith("51:")
-      }
-      assertThat(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(it)).startsWith("51:")
-      // Check that the naming convention of starting with the paragraph number is being honoured.
-      assertThat(it.toString()).startsWith(offenceCodeLookupService.getParagraphNumber(it).filter { it.isDigit() })
+      assertValuesSetForItem(it, false, "51:")
+      assertValuesSetForItem(it, true, "55:")
+    }
+  }
+
+  private fun assertValuesSetForItem(code: Int, isYouthOffender: Boolean, nomisCodePrefix: String) {
+    assertThat(offenceCodeLookupService.getParagraphNumber(code, isYouthOffender)).isNotBlank
+    assertThat(offenceCodeLookupService.getParagraphDescription(code, isYouthOffender)).isNotBlank
+    assertThat(offenceCodeLookupService.getParagraphCode(code, isYouthOffender)).isNotBlank
+    assertThat(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(code, isYouthOffender)).hasSizeGreaterThan(0)
+    offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(code, isYouthOffender).forEach { it ->
+      assertThat(it).startsWith(nomisCodePrefix)
+    }
+    assertThat(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(code, isYouthOffender)).startsWith(nomisCodePrefix)
+    if (!isYouthOffender) {
+      // Check that the naming convention of starting the offence code with the paragraph number is being honoured.
+      assertThat(code.toString()).startsWith(
+        offenceCodeLookupService.getParagraphNumber(code, isYouthOffender).filter { it.isDigit() }
+      )
     }
   }
 }
