@@ -102,6 +102,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     intTestBuilder
       .startDraft(testAdjudication)
+      .setApplicableRules()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -426,6 +427,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val intTestScenario = intTestBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
       .setOffenceData()
       .addIncidentStatement()
 
@@ -486,6 +488,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val intTestScenario = intTestBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
       .setOffenceData()
       .addIncidentStatement()
 
@@ -508,6 +511,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val intTestScenario = intTestBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
       .setOffenceData()
       .addIncidentStatement()
 
@@ -567,6 +571,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
+      .setApplicableRules()
       .setOffenceData()
       .addIncidentStatement()
 

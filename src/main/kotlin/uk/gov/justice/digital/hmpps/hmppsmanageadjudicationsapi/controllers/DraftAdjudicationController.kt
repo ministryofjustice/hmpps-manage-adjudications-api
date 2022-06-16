@@ -134,6 +134,7 @@ class DraftAdjudicationController {
   @Operation(summary = "Returns details of the offence rule relating to this offence code.")
   fun getOffenceRule(
     @PathVariable(name = "offenceCode") offenceCode: Int,
+    // TODO - Add draft id so we know if they are a youth
   ): OffenceRuleDetailsDto = draftAdjudicationService.lookupRuleDetails(offenceCode)
 
   @PostMapping
