@@ -146,7 +146,7 @@ class ReportedAdjudicationService(
         incidentTime = reportedAdjudication.dateTimeOfIncident,
         incidentLocationId = reportedAdjudication.locationId,
         statement = reportedAdjudication.statement,
-        offenceCodes = getNomisCodes(reportedAdjudication.incidentRoleCode, reportedAdjudication.offenceDetails),
+        offenceCodes = getNomisCodes(reportedAdjudication.incidentRoleCode, reportedAdjudication.offenceDetails, reportedAdjudication.isYouthOffender),
         connectedOffenderIds = getAssociatedOffenders(reportedAdjudication.incidentRoleAssociatedPrisonersNumber),
         victimOffenderIds = getVictimOffenders(reportedAdjudication.offenceDetails),
         victimStaffUsernames = getVictimStaffUsernames(reportedAdjudication.offenceDetails),
@@ -154,12 +154,12 @@ class ReportedAdjudicationService(
     )
   }
 
-  private fun getNomisCodes(roleCode: String?, offenceDetails: MutableList<ReportedOffence>?): List<String> {
+  private fun getNomisCodes(roleCode: String?, offenceDetails: MutableList<ReportedOffence>?, isYouthOffender: Boolean): List<String> {
     if (roleCode != null) { // Null means committed on own
-      return offenceDetails?.map { offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(it.offenceCode) }
+      return offenceDetails?.map { offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(it.offenceCode, isYouthOffender) }
         ?: emptyList()
     }
-    return offenceDetails?.flatMap { offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(it.offenceCode) }
+    return offenceDetails?.flatMap { offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(it.offenceCode, isYouthOffender) }
       ?: emptyList()
   }
 
@@ -191,10 +191,10 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   isYouthOffender = isYouthOffender,
   incidentRole = IncidentRoleDto(
     roleCode = incidentRoleCode,
-    offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleCode),
+    offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleCode, isYouthOffender),
     associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
   ),
-  offenceDetails = toReportedOffence(offenceDetails, offenceCodeLookupService),
+  offenceDetails = toReportedOffence(offenceDetails, isYouthOffender, offenceCodeLookupService),
   incidentStatement = IncidentStatementDto(
     statement = statement,
     completed = true,
@@ -206,13 +206,13 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   statusDetails = statusDetails,
 )
 
-private fun toReportedOffence(offences: MutableList<ReportedOffence>?, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> {
+private fun toReportedOffence(offences: MutableList<ReportedOffence>?, isYouthOffender: Boolean, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> {
   return (offences ?: mutableListOf()).map { offence ->
     OffenceDto(
       offenceCode = offence.offenceCode,
       offenceRule = OffenceRuleDto(
-        paragraphNumber = offenceCodeLookupService.getParagraphNumber(offence.offenceCode),
-        paragraphDescription = offenceCodeLookupService.getParagraphDescription(offence.offenceCode),
+        paragraphNumber = offenceCodeLookupService.getParagraphNumber(offence.offenceCode, isYouthOffender),
+        paragraphDescription = offenceCodeLookupService.getParagraphDescription(offence.offenceCode, isYouthOffender),
       ),
       victimPrisonersNumber = offence.victimPrisonersNumber,
       victimStaffUsername = offence.victimStaffUsername,
