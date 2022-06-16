@@ -383,6 +383,40 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `edit the incident role and delete all offences`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+
+    val intTestScenario = intTestBuilder
+      .startDraft(testAdjudication)
+      .setOffenceData()
+
+    // Check we have offences
+    val draftId = intTestScenario.getDraftId()
+    val initialDraft = draftAdjudicationRepository.findById(draftId)
+    assertThat(initialDraft.get().offenceDetails).hasSize(2)
+
+    webTestClient.put()
+      .uri("/draft-adjudications/$draftId/incident-role")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "incidentRole" to IncidentRoleRequest("25b", "C3456CC"),
+          "removeExistingOffences" to true,
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+
+    // Check it has been removed from the DB
+    val draft = draftAdjudicationRepository.findById(draftId)
+    assertThat(draft.get().offenceDetails).hasSize(0)
+  }
+
+  @Test
   fun `complete draft adjudication`() {
     prisonApiMockServer.stubPostAdjudicationCreationRequestData(IntegrationTestData.DEFAULT_ADJUDICATION)
 

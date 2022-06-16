@@ -679,6 +679,71 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class EditIncidentRole {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        draftAdjudicationService.editIncidentRole(
+          anyLong(),
+          any(),
+          anyBoolean(),
+        )
+      ).thenReturn(
+        DraftAdjudicationDto(
+          id = 1L,
+          adjudicationNumber = null,
+          prisonerNumber = "A12345",
+          incidentDetails = IncidentDetailsDto(
+            locationId = 3,
+            DATE_TIME_OF_INCIDENT,
+            DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          ),
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
+          isYouthOffender = true
+        )
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      editIncidentRoleRequest(1, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to edit the incident role`() {
+      editIncidentRoleRequest(1, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+        .andExpect(status().isOk)
+
+      verify(draftAdjudicationService).editIncidentRole(
+        1,
+        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
+        false,
+      )
+    }
+
+    private fun editIncidentRoleRequest(
+      id: Long,
+      incidentRole: IncidentRoleRequest?
+    ): ResultActions {
+      val body =
+        objectMapper.writeValueAsString(
+          mapOf(
+            "incidentRole" to incidentRole,
+            "removeExistingOffences" to false
+          )
+        )
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/incident-role")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)

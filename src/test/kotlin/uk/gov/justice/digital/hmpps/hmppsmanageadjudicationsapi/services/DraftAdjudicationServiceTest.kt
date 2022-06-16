@@ -235,6 +235,56 @@ class DraftAdjudicationServiceTest {
   }
 
   @Nested
+  inner class EditIncidentRole {
+    private val draftAdjudication =
+      DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = LocalDateTime.now(),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithAllValuesSet(),
+        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        incidentStatement = IncidentStatement(
+          statement = "Example statement",
+          completed = false,
+        ),
+        isYouthOffender = true
+      )
+
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest("1", "1"), false)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+
+    @ParameterizedTest
+    @CsvSource("true", "false")
+    fun `saves incident role`(deleteOffences: Boolean) {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+
+      val response = draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest("1", "2"), deleteOffences)
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails!!.isEmpty()).isEqualTo(deleteOffences)
+      assertThat(argumentCaptor.value.incidentRole.roleCode).isEqualTo("1")
+      assertThat(argumentCaptor.value.incidentRole.associatedPrisonersNumber).isEqualTo("2")
+
+      assertThat(response).isNotNull
+    }
+  }
+
+  @Nested
   inner class SetOffenceDetails {
     @Test
     fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
@@ -1214,12 +1264,13 @@ class DraftAdjudicationServiceTest {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
       whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
 
-      draftAdjudicationService.setIncidentApplicableRule(1, true)
+      val response = draftAdjudicationService.setIncidentApplicableRule(1, true)
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.isYouthOffender).isEqualTo(true)
+      assertThat(response).isNotNull
     }
   }
 
