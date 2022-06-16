@@ -659,6 +659,37 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.paragraphDescription").isEqualTo("")
   }
 
+  @Test
+  fun `set the applicable rule`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+
+    val intTestScenario = intTestBuilder
+      .startDraft(testAdjudication)
+      .setOffenceData()
+
+    val draftId = intTestScenario.getDraftId()
+    val initialDraft = draftAdjudicationRepository.findById(draftId)
+    assertThat(initialDraft.get().isYouthOffender).isEqualTo(false)
+
+    webTestClient.put()
+      .uri("/draft-adjudications/$draftId/applicable-rules")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "isYouthOffenderRule" to true,
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+
+    val draft = draftAdjudicationRepository.findById(draftId)
+    assertThat(draft.get().isYouthOffender).isEqualTo(true)
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
   }

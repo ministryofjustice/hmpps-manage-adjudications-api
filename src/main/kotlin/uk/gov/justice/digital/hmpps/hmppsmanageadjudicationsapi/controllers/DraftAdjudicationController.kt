@@ -97,6 +97,12 @@ data class EditIncidentRoleRequest(
   val removeExistingOffences: Boolean = false,
 )
 
+@Schema(description = "Request to set applicable rules")
+data class ApplicableRulesRequest(
+  @Schema(description = "Indicates whether the applicable rules are for a young offender")
+  val isYouthOffenderRule: Boolean = false,
+)
+
 @Schema(description = "Draft adjudication response")
 data class DraftAdjudicationResponse(
   @Schema(description = "The draft adjudication")
@@ -246,6 +252,23 @@ class DraftAdjudicationController {
       statement = editIncidentStatementRequest.statement,
       completed = editIncidentStatementRequest.completed
     )
+    return DraftAdjudicationResponse(
+      draftAdjudication
+    )
+  }
+
+  @PutMapping(value = ["/{id}/applicable-rules"])
+  @Operation(summary = "Set applicable rules for incident")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  fun setApplicableRules(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid applicableRulesRequest: ApplicableRulesRequest
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.setIncidentApplicableRule(
+      id,
+      applicableRulesRequest.isYouthOffenderRule
+    )
+
     return DraftAdjudicationResponse(
       draftAdjudication
     )

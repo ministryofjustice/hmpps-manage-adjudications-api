@@ -56,6 +56,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
+          isYouthOffender = true
         )
       )
     }
@@ -159,7 +160,8 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
+          isYouthOffender = true
         )
       )
       makeGetDraftAdjudicationRequest(1)
@@ -195,6 +197,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO,
+          isYouthOffender = true
         )
       )
       makeGetDraftAdjudicationRequest(1)
@@ -237,6 +240,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           ),
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
           offenceDetails = listOf(BASIC_OFFENCE_RESPONSE_DTO),
+          isYouthOffender = true
         )
       )
     }
@@ -301,6 +305,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           ),
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
           incidentStatement = IncidentStatementDto(statement = "test"),
+          isYouthOffender = true
         )
       )
     }
@@ -375,6 +380,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
+          isYouthOffender = true
         )
       )
     }
@@ -480,6 +486,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           ),
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
           incidentStatement = IncidentStatementDto(statement = "new statement"),
+          isYouthOffender = true
         )
       )
     }
@@ -560,6 +567,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
             incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
+            isYouthOffender = true
           ),
           DraftAdjudicationDto(
             id = 2,
@@ -571,6 +579,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE.plusMonths(1)
             ),
             incidentRole = INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO,
+            isYouthOffender = true
           )
         )
       )
@@ -623,6 +632,54 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   }
 
   @Nested
+  inner class SetApplicableRules {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(draftAdjudicationService.setIncidentApplicableRule(anyLong(), anyBoolean())).thenReturn(
+        DraftAdjudicationDto(
+          id = 1L,
+          adjudicationNumber = null,
+          prisonerNumber = "A12345",
+          incidentDetails = IncidentDetailsDto(
+            locationId = 1,
+            DATE_TIME_OF_INCIDENT,
+            DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          ),
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
+          incidentStatement = IncidentStatementDto(statement = "new statement"),
+          isYouthOffender = true
+        )
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      setApplicableRules(1, false)
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the applicable rule`() {
+      setApplicableRules(1, true)
+        .andExpect(status().isOk)
+
+      verify(draftAdjudicationService).setIncidentApplicableRule(1, true)
+    }
+
+    private fun setApplicableRules(id: Long, isYoungOffender: Boolean): ResultActions {
+      val body = objectMapper.writeValueAsString(mapOf("isYouthOffenderRule" to isYoungOffender))
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/applicable-rules")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
+  @Nested
   inner class EditIncidentRole {
     @BeforeEach
     fun beforeEach() {
@@ -643,6 +700,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
+          isYouthOffender = true
         )
       )
     }

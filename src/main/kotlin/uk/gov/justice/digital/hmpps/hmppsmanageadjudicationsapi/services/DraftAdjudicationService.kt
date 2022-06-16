@@ -65,6 +65,7 @@ class DraftAdjudicationService(
       ),
       reportNumber = null,
       reportByUserId = null,
+      isYouthOffender = false,
     )
     return draftAdjudicationRepository
       .save(draftAdjudication)
@@ -183,6 +184,16 @@ class DraftAdjudicationService(
   }
 
   @Transactional
+  fun setIncidentApplicableRule(id: Long, isYouthOffender: Boolean): DraftAdjudicationDto {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    draftAdjudication.isYouthOffender = isYouthOffender
+
+    return draftAdjudicationRepository
+      .save(draftAdjudication)
+      .toDto(offenceCodeLookupService)
+  }
+
+  @Transactional
   fun completeDraftAdjudication(id: Long): ReportedAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
@@ -250,6 +261,7 @@ class DraftAdjudicationService(
         locationId = draftAdjudication.incidentDetails.locationId,
         dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
         handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
+        isYouthOffender = false,
         incidentRoleCode = draftAdjudication.incidentRole.roleCode,
         incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber,
         offenceDetails = toReportedOffence(draftAdjudication.offenceDetails),
@@ -274,6 +286,7 @@ class DraftAdjudicationService(
       it.locationId = draftAdjudication.incidentDetails.locationId
       it.dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident
       it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline
+      it.isYouthOffender = false
       it.incidentRoleCode = draftAdjudication.incidentRole.roleCode
       it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber
       it.offenceDetails?.let { offence ->
@@ -323,6 +336,7 @@ fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService):
     offenceDetails = this.offenceDetails?.map { it.toDto(offenceCodeLookupService) },
     adjudicationNumber = this.reportNumber,
     startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
+    isYouthOffender = this.isYouthOffender
   )
 
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(

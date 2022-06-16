@@ -94,7 +94,8 @@ class ReportedAdjudicationService(
       incidentStatement = IncidentStatement(
         statement = reportedAdjudication.statement,
         completed = true
-      )
+      ),
+      isYouthOffender = reportedAdjudication.isYouthOffender
     )
 
     return draftAdjudicationRepository
@@ -187,6 +188,7 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
     dateTimeOfIncident = dateTimeOfIncident,
     handoverDeadline = handoverDeadline
   ),
+  isYouthOffender = isYouthOffender,
   incidentRole = IncidentRoleDto(
     roleCode = incidentRoleCode,
     offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleCode),

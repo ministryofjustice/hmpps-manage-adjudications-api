@@ -61,6 +61,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
+          isYouthOffender = false,
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
           offenceDetails = listOf(
             OffenceDto(
@@ -124,6 +125,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
                 dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
+              isYouthOffender = false,
               incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
               offenceDetails = listOf(
                 OffenceDto(
@@ -273,6 +275,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
             associatedPrisonersNumber = "B2345BB"
           ),
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
+          isYouthOffender = true
         )
       )
     }
