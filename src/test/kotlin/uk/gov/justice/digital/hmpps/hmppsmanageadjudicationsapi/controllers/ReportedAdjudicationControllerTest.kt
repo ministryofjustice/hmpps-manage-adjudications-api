@@ -275,6 +275,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
             associatedPrisonersNumber = "B2345BB"
           ),
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
+          isYouthOffender = true
         )
       )
     }

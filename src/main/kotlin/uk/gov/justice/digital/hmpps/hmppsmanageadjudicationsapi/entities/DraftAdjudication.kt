@@ -15,6 +15,7 @@ data class DraftAdjudication(
   val prisonerNumber: String,
   val reportNumber: Long? = null,
   val reportByUserId: String? = null,
+  var isYouthOffender: Boolean,
   val agencyId: String,
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "incident_details_id")

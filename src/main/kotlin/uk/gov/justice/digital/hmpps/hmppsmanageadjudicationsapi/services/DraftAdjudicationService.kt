@@ -65,6 +65,7 @@ class DraftAdjudicationService(
       ),
       reportNumber = null,
       reportByUserId = null,
+      isYouthOffender = false,
     )
     return draftAdjudicationRepository
       .save(draftAdjudication)
@@ -146,6 +147,28 @@ class DraftAdjudicationService(
   }
 
   @Transactional
+  fun editIncidentRole(
+    id: Long,
+    incidentRole: IncidentRoleRequest,
+    removeExistingOffences: Boolean,
+  ): DraftAdjudicationDto {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+
+    if (removeExistingOffences) {
+      draftAdjudication.offenceDetails?.let { it.clear() }
+    }
+
+    incidentRole.let {
+      draftAdjudication.incidentRole.roleCode = it.roleCode
+      draftAdjudication.incidentRole.associatedPrisonersNumber = it.associatedPrisonersNumber
+    }
+
+    return draftAdjudicationRepository
+      .save(draftAdjudication)
+      .toDto(offenceCodeLookupService)
+  }
+
+  @Transactional
   fun editIncidentStatement(id: Long, statement: String?, completed: Boolean?): DraftAdjudicationDto {
     throwIfStatementAndCompletedIsNull(statement, completed)
 
@@ -158,6 +181,16 @@ class DraftAdjudicationService(
     completed?.let { draftAdjudication.incidentStatement?.completed = completed }
 
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
+  }
+
+  @Transactional
+  fun setIncidentApplicableRule(id: Long, isYouthOffender: Boolean): DraftAdjudicationDto {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    draftAdjudication.isYouthOffender = isYouthOffender
+
+    return draftAdjudicationRepository
+      .save(draftAdjudication)
+      .toDto(offenceCodeLookupService)
   }
 
   @Transactional
@@ -303,6 +336,7 @@ fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService):
     offenceDetails = this.offenceDetails?.map { it.toDto(offenceCodeLookupService) },
     adjudicationNumber = this.reportNumber,
     startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
+    isYouthOffender = this.isYouthOffender
   )
 
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(

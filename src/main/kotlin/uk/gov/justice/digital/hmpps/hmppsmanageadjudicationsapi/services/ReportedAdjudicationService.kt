@@ -94,7 +94,8 @@ class ReportedAdjudicationService(
       incidentStatement = IncidentStatement(
         statement = reportedAdjudication.statement,
         completed = true
-      )
+      ),
+      isYouthOffender = reportedAdjudication.isYouthOffender
     )
 
     return draftAdjudicationRepository

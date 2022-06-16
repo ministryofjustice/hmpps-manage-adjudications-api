@@ -89,6 +89,20 @@ data class EditIncidentDetailsRequest(
   val removeExistingOffences: Boolean = false,
 )
 
+@Schema(description = "Request to edit incident role")
+data class EditIncidentRoleRequest(
+  @Schema(description = "Information about the role of this prisoner in the incident")
+  val incidentRole: IncidentRoleRequest,
+  @Schema(description = "Whether to remove all existing offences")
+  val removeExistingOffences: Boolean = false,
+)
+
+@Schema(description = "Request to set applicable rules")
+data class ApplicableRulesRequest(
+  @Schema(description = "Indicates whether the applicable rules are for a young offender")
+  val isYouthOffenderRule: Boolean = false,
+)
+
 @Schema(description = "Draft adjudication response")
 data class DraftAdjudicationResponse(
   @Schema(description = "The draft adjudication")
@@ -208,6 +222,24 @@ class DraftAdjudicationController {
     )
   }
 
+  @PutMapping(value = ["/{id}/incident-role"])
+  @Operation(summary = "Edit the incident role for a draft adjudication.")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  fun editIncidentRole(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid editIncidentRoleRequest: EditIncidentRoleRequest
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.editIncidentRole(
+      id,
+      editIncidentRoleRequest.incidentRole,
+      editIncidentRoleRequest.removeExistingOffences
+    )
+
+    return DraftAdjudicationResponse(
+      draftAdjudication
+    )
+  }
+
   @PutMapping(value = ["/{id}/incident-statement"])
   @Operation(summary = "Edit the incident statement for a draft adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
@@ -220,6 +252,23 @@ class DraftAdjudicationController {
       statement = editIncidentStatementRequest.statement,
       completed = editIncidentStatementRequest.completed
     )
+    return DraftAdjudicationResponse(
+      draftAdjudication
+    )
+  }
+
+  @PutMapping(value = ["/{id}/applicable-rules"])
+  @Operation(summary = "Set applicable rules for incident")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  fun setApplicableRules(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid applicableRulesRequest: ApplicableRulesRequest
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.setIncidentApplicableRule(
+      id,
+      applicableRulesRequest.isYouthOffenderRule
+    )
+
     return DraftAdjudicationResponse(
       draftAdjudication
     )

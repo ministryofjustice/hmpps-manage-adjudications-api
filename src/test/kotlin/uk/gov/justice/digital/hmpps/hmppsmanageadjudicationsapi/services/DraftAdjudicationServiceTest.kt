@@ -101,8 +101,9 @@ class DraftAdjudicationServiceTest {
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
-          incidentRole = incidentRoleWithAllValuesSet()
-        )
+          incidentRole = incidentRoleWithAllValuesSet(),
+          isYouthOffender = true
+        ),
       )
       whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
         DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
@@ -173,6 +174,7 @@ class DraftAdjudicationServiceTest {
             statement = "Example statement",
             completed = false
           ),
+          isYouthOffender = true
         )
       draftAdjudication.createdByUserId = "A_USER" // Add audit information
 
@@ -233,6 +235,56 @@ class DraftAdjudicationServiceTest {
   }
 
   @Nested
+  inner class EditIncidentRole {
+    private val draftAdjudication =
+      DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = LocalDateTime.now(),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithAllValuesSet(),
+        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        incidentStatement = IncidentStatement(
+          statement = "Example statement",
+          completed = false,
+        ),
+        isYouthOffender = true
+      )
+
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest("1", "1"), false)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+
+    @ParameterizedTest
+    @CsvSource("true", "false")
+    fun `saves incident role`(deleteOffences: Boolean) {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+
+      val response = draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest("1", "2"), deleteOffences)
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails!!.isEmpty()).isEqualTo(deleteOffences)
+      assertThat(argumentCaptor.value.incidentRole.roleCode).isEqualTo("1")
+      assertThat(argumentCaptor.value.incidentRole.associatedPrisonersNumber).isEqualTo("2")
+
+      assertThat(response).isNotNull
+    }
+  }
+
+  @Nested
   inner class SetOffenceDetails {
     @Test
     fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
@@ -259,6 +311,7 @@ class DraftAdjudicationServiceTest {
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
         incidentRole = incidentRoleWithNoValuesSet(),
+        isYouthOffender = true
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
@@ -300,6 +353,7 @@ class DraftAdjudicationServiceTest {
         ),
         incidentRole = incidentRoleWithNoValuesSet(),
         offenceDetails = existingOffenceDetails,
+        isYouthOffender = true
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(existingDraftAdjudicationEntity))
@@ -360,6 +414,7 @@ class DraftAdjudicationServiceTest {
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
         incidentRole = incidentRoleWithNoValuesSet(),
+        isYouthOffender = true
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
@@ -417,6 +472,7 @@ class DraftAdjudicationServiceTest {
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
         incidentRole = incidentRoleWithNoValuesSet(),
+        isYouthOffender = true
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
@@ -456,7 +512,8 @@ class DraftAdjudicationServiceTest {
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
               ),
               incidentRole = incidentRoleWithNoValuesSet(),
-              incidentStatement = IncidentStatement(id = 1, statement = "test")
+              incidentStatement = IncidentStatement(id = 1, statement = "test"),
+              isYouthOffender = true
             )
           )
         )
@@ -514,6 +571,7 @@ class DraftAdjudicationServiceTest {
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
         incidentRole = incidentRoleWithAllValuesSet(),
+        isYouthOffender = true
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
@@ -592,6 +650,7 @@ class DraftAdjudicationServiceTest {
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
             incidentRole = incidentRoleWithNoValuesSet(),
+            isYouthOffender = true
           )
         )
       )
@@ -616,7 +675,8 @@ class DraftAdjudicationServiceTest {
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = incidentRoleWithNoValuesSet(),
-          incidentStatement = IncidentStatement(statement = "old statement")
+          incidentStatement = IncidentStatement(statement = "old statement"),
+          isYouthOffender = true
         )
 
         whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
@@ -669,6 +729,7 @@ class DraftAdjudicationServiceTest {
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
             incidentRole = incidentRoleWithAllValuesSet(),
+            isYouthOffender = true
           )
         )
       )
@@ -694,7 +755,8 @@ class DraftAdjudicationServiceTest {
             incidentRole = incidentRoleWithAllValuesSet(),
             incidentStatement = IncidentStatement(
               statement = "A statement",
-            )
+            ),
+            isYouthOffender = true
           )
         )
       )
@@ -724,7 +786,8 @@ class DraftAdjudicationServiceTest {
               ),
               incidentRole = incidentRoleWithAllValuesSet(),
               offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
-              incidentStatement = IncidentStatement(statement = "test")
+              incidentStatement = IncidentStatement(statement = "test"),
+              isYouthOffender = true
             )
           )
         )
@@ -855,7 +918,8 @@ class DraftAdjudicationServiceTest {
               ),
               incidentRole = incidentRoleWithNoValuesSet(),
               offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
-              incidentStatement = IncidentStatement(statement = "test")
+              incidentStatement = IncidentStatement(statement = "test"),
+              isYouthOffender = true
             )
           )
         )
@@ -927,7 +991,8 @@ class DraftAdjudicationServiceTest {
               ),
               incidentRole = incidentRoleWithAllValuesSet(),
               offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
-              incidentStatement = IncidentStatement(statement = "test")
+              incidentStatement = IncidentStatement(statement = "test"),
+              isYouthOffender = true
             )
           )
         )
@@ -1081,6 +1146,7 @@ class DraftAdjudicationServiceTest {
               statement = "Example statement",
               completed = false
             ),
+            isYouthOffender = true
           ),
           DraftAdjudication(
             id = 2,
@@ -1093,6 +1159,7 @@ class DraftAdjudicationServiceTest {
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
             incidentRole = incidentRoleWithNoValuesSet(),
+            isYouthOffender = true
           )
         )
       )
@@ -1158,6 +1225,52 @@ class DraftAdjudicationServiceTest {
           IncidentStatementDto("Example statement", false),
           null as IncidentStatementDto?
         )
+    }
+  }
+
+  @Nested
+  inner class SetApplicableRules {
+    private val draftAdjudication =
+      DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = LocalDateTime.now(),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithAllValuesSet(),
+        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        incidentStatement = IncidentStatement(
+          statement = "Example statement",
+          completed = false
+        ),
+        isYouthOffender = true
+      )
+
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        draftAdjudicationService.setIncidentApplicableRule(1, false)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+
+    @Test
+    fun `saves incident applicable rule`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+
+      val response = draftAdjudicationService.setIncidentApplicableRule(1, true)
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.isYouthOffender).isEqualTo(true)
+      assertThat(response).isNotNull
     }
   }
 
