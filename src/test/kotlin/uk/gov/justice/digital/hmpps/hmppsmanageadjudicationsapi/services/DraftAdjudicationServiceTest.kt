@@ -18,6 +18,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.OffenceDetailsRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
@@ -41,6 +42,7 @@ import java.time.Instant.ofEpochMilli
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Optional
+import java.util.function.Supplier
 import javax.persistence.EntityNotFoundException
 
 class DraftAdjudicationServiceTest {
@@ -157,80 +159,7 @@ class DraftAdjudicationServiceTest {
 
     @Test
     fun `returns the draft adjudication`() {
-      val now = LocalDateTime.now()
-      val draftAdjudication =
-        DraftAdjudication(
-          id = 1,
-          prisonerNumber = "A12345",
-          agencyId = "MDI",
-          incidentDetails = IncidentDetails(
-            locationId = 2,
-            dateTimeOfIncident = now,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          incidentRole = incidentRoleWithAllValuesSet(),
-          offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
-          incidentStatement = IncidentStatement(
-            statement = "Example statement",
-            completed = false
-          ),
-          isYouthOffender = true
-        )
-      draftAdjudication.createdByUserId = "A_USER" // Add audit information
-
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-        Optional.of(draftAdjudication)
-      )
-
-      val draftAdjudicationDto = draftAdjudicationService.getDraftAdjudicationDetails(1)
-
-      assertThat(draftAdjudicationDto)
-        .extracting("id", "prisonerNumber", "startedByUserId")
-        .contains(1L, "A12345", "A_USER")
-
-      assertThat(draftAdjudicationDto.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident")
-        .contains(2L, now)
-
-      assertThat(draftAdjudicationDto.incidentRole)
-        .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
-        .contains(
-          incidentRoleDtoWithAllValuesSet().roleCode,
-          IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode),
-          incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
-        )
-
-      assertThat(draftAdjudicationDto.offenceDetails).hasSize(2)
-        .extracting(
-          "offenceCode",
-          "offenceRule.paragraphNumber",
-          "offenceRule.paragraphDescription",
-          "victimPrisonersNumber",
-          "victimStaffUsername",
-          "victimOtherPersonsName"
-        )
-        .contains(
-          Tuple(
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
-          ),
-          Tuple(
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
-          ),
-        )
-
-      assertThat(draftAdjudicationDto.incidentStatement)
-        .extracting("statement", "completed")
-        .contains("Example statement", false)
+      testDto { draftAdjudicationService.getDraftAdjudicationDetails(1) }
     }
   }
 
@@ -281,6 +210,11 @@ class DraftAdjudicationServiceTest {
       assertThat(argumentCaptor.value.incidentRole.associatedPrisonersNumber).isEqualTo("2")
 
       assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `returns the draft adjudication`() {
+      testDto { draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest(INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER), false) }
     }
   }
 
@@ -1272,6 +1206,10 @@ class DraftAdjudicationServiceTest {
       assertThat(argumentCaptor.value.isYouthOffender).isEqualTo(true)
       assertThat(response).isNotNull
     }
+    @Test
+    fun `returns the draft adjudication`() {
+      testDto { draftAdjudicationService.setIncidentApplicableRule(1, true) }
+    }
   }
 
   companion object {
@@ -1360,5 +1298,86 @@ class DraftAdjudicationServiceTest {
 
     fun incidentRoleWithNoValuesSet(): IncidentRole =
       IncidentRole(null, null, null)
+  }
+
+  fun testDto(toSave: Optional<DraftAdjudication> = Optional.empty(), toTest: Supplier<DraftAdjudicationDto>) {
+    val now = LocalDateTime.now()
+    val draftAdjudication =
+      DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = now,
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithAllValuesSet(),
+        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        incidentStatement = IncidentStatement(
+          statement = "Example statement",
+          completed = false
+        ),
+        isYouthOffender = true
+      )
+    draftAdjudication.createdByUserId = "A_USER" // Add audit information
+
+    whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+      Optional.of(draftAdjudication)
+    )
+
+    whenever(draftAdjudicationRepository.save(any())).thenReturn(
+      toSave.orElse(draftAdjudication)
+    )
+
+    val draftAdjudicationDto = toTest.get()
+
+    assertThat(draftAdjudicationDto)
+      .extracting("id", "prisonerNumber", "startedByUserId")
+      .contains(1L, "A12345", "A_USER")
+
+    assertThat(draftAdjudicationDto.incidentDetails)
+      .extracting("locationId", "dateTimeOfIncident")
+      .contains(2L, now)
+
+    assertThat(draftAdjudicationDto.incidentRole)
+      .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
+      .contains(
+        incidentRoleDtoWithAllValuesSet().roleCode,
+        IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode),
+        incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
+      )
+
+    assertThat(draftAdjudicationDto.offenceDetails).hasSize(2)
+      .extracting(
+        "offenceCode",
+        "offenceRule.paragraphNumber",
+        "offenceRule.paragraphDescription",
+        "victimPrisonersNumber",
+        "victimStaffUsername",
+        "victimOtherPersonsName"
+      )
+      .contains(
+        Tuple(
+          BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+          BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
+          BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
+          BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+          BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
+          BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
+        ),
+        Tuple(
+          FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+          FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
+          FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
+          FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+          FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
+          FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
+        ),
+      )
+
+    assertThat(draftAdjudicationDto.incidentStatement)
+      .extracting("statement", "completed")
+      .contains("Example statement", false)
   }
 }
