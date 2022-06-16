@@ -90,27 +90,43 @@ class ReportedAdjudicationServiceTest {
         .hasMessageContaining("ReportedAdjudication not found for 1")
     }
 
-    @Test
-    fun `returns the reported adjudication`() {
+    @ParameterizedTest
+    @CsvSource(
+      "true",
+      "false",
+    )
+    fun `returns the reported adjudication`(
+      isYouthOffender: Boolean,
+    ) {
+      var offenceDetails = mutableListOf(
+        ReportedOffence(
+          offenceCode = 2,
+          paragraphCode = OFFENCE_CODE_2_PARAGRAPH_CODE,
+        ),
+        ReportedOffence(
+          offenceCode = 3,
+          paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
+          victimPrisonersNumber = "BB2345B",
+          victimStaffUsername = "DEF34G",
+          victimOtherPersonsName = "Another Name",
+        ),
+      )
+      if (isYouthOffender) {
+        offenceDetails = mutableListOf(
+          ReportedOffence(
+            offenceCode = 2,
+            paragraphCode = YOUTH_OFFENCE_CODE_2_PARAGRAPH_CODE,
+          ),
+        )
+      }
+
       val reportedAdjudication =
         ReportedAdjudication(
           reportNumber = 1, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
-          isYouthOffender = false,
+          isYouthOffender = isYouthOffender,
           incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
-          offenceDetails = mutableListOf(
-            ReportedOffence(
-              offenceCode = 2,
-              paragraphCode = OFFENCE_CODE_2_PARAGRAPH_CODE,
-            ),
-            ReportedOffence(
-              offenceCode = 3,
-              paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
-              victimPrisonersNumber = "BB2345B",
-              victimStaffUsername = "DEF34G",
-              victimOtherPersonsName = "Another Name",
-            ),
-          ),
+          offenceDetails = offenceDetails,
           handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
           status = ReportedAdjudicationStatus.AWAITING_REVIEW,
           statusReason = null,
@@ -127,7 +143,7 @@ class ReportedAdjudicationServiceTest {
 
       assertThat(reportedAdjudicationDto)
         .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime", "isYouthOffender")
-        .contains(1L, "AA1234A", 123L, "A_SMITH", REPORTED_DATE_TIME, false)
+        .contains(1L, "AA1234A", 123L, "A_SMITH", REPORTED_DATE_TIME, isYouthOffender)
 
       assertThat(reportedAdjudicationDto.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
@@ -135,28 +151,43 @@ class ReportedAdjudicationServiceTest {
 
       assertThat(reportedAdjudicationDto.incidentRole)
         .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
-        .contains("25b", IncidentRoleRuleLookup.getOffenceRuleDetails("25b", false), "BB2345B")
+        .contains("25b", IncidentRoleRuleLookup.getOffenceRuleDetails("25b", isYouthOffender), "BB2345B")
 
-      assertThat(reportedAdjudicationDto.offenceDetails)
-        .extracting(
-          "offenceCode",
-          "offenceRule.paragraphNumber",
-          "offenceRule.paragraphDescription",
-          "victimPrisonersNumber",
-          "victimStaffUsername",
-          "victimOtherPersonsName"
-        )
-        .contains(
-          Tuple(2, OFFENCE_CODE_2_PARAGRAPH_NUMBER, OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION, null, null, null),
-          Tuple(
-            3,
-            OFFENCE_CODE_3_PARAGRAPH_NUMBER,
-            OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
-            "BB2345B",
-            "DEF34G",
-            "Another Name"
-          ),
-        )
+      if (isYouthOffender) {
+        assertThat(reportedAdjudicationDto.offenceDetails)
+          .extracting(
+            "offenceCode",
+            "offenceRule.paragraphNumber",
+            "offenceRule.paragraphDescription",
+            "victimPrisonersNumber",
+            "victimStaffUsername",
+            "victimOtherPersonsName"
+          )
+          .contains(
+            Tuple(2, YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER, YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION, null, null, null),
+          )
+      } else {
+        assertThat(reportedAdjudicationDto.offenceDetails)
+          .extracting(
+            "offenceCode",
+            "offenceRule.paragraphNumber",
+            "offenceRule.paragraphDescription",
+            "victimPrisonersNumber",
+            "victimStaffUsername",
+            "victimOtherPersonsName"
+          )
+          .contains(
+            Tuple(2, OFFENCE_CODE_2_PARAGRAPH_NUMBER, OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION, null, null, null),
+            Tuple(
+              3,
+              OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+              OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
+              "BB2345B",
+              "DEF34G",
+              "Another Name"
+            ),
+          )
+      }
 
       assertThat(reportedAdjudicationDto.incidentStatement)
         .extracting("statement", "completed")
