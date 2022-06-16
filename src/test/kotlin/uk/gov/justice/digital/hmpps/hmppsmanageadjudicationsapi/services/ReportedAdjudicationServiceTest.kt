@@ -193,57 +193,6 @@ class ReportedAdjudicationServiceTest {
         .extracting("statement", "completed")
         .contains(INCIDENT_STATEMENT, true)
     }
-
-    // TODO - Parameterise?
-    @Nested
-    inner class WithYouthOffender {
-      @Test
-      fun `returns the reported adjudication with the correct offence codes`() {
-        val reportedAdjudication =
-          ReportedAdjudication(
-            reportNumber = 1, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
-            dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
-            isYouthOffender = true,
-            incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
-            offenceDetails = mutableListOf(
-              ReportedOffence(
-                offenceCode = 2,
-                paragraphCode = YOUTH_OFFENCE_CODE_2_PARAGRAPH_CODE,
-              ),
-            ),
-            handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-            status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-            statusReason = null,
-            statusDetails = null,
-          )
-        reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
-        reportedAdjudication.createDateTime = REPORTED_DATE_TIME
-
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-          reportedAdjudication
-        )
-
-        val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-
-        assertThat(reportedAdjudicationDto)
-          .extracting("adjudicationNumber", "isYouthOffender")
-          .contains(1L, true)
-
-        assertThat(reportedAdjudicationDto.incidentRole)
-          .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
-          .contains("25b", IncidentRoleRuleLookup.getOffenceRuleDetails("25b", true), "BB2345B")
-
-        assertThat(reportedAdjudicationDto.offenceDetails)
-          .extracting(
-            "offenceCode",
-            "offenceRule.paragraphNumber",
-            "offenceRule.paragraphDescription",
-          )
-          .contains(
-            Tuple(2, YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER, YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION),
-          )
-      }
-    }
   }
 
   @Nested
@@ -519,22 +468,15 @@ class ReportedAdjudicationServiceTest {
       }
     }
 
-    // TODO - This is too complicated - may as well revert to the existing way
     @ParameterizedTest
     @CsvSource(
-      "true, true, true",
-      "true, true, false",
-      "true, false, true",
-      "true, false, false",
-      "false, false, true",
-      "false, false, false",
+      "true",
+      "false",
     )
-    fun `submits to prison api with correct data`(
+    fun `setting status with different roles submits to prison api with correct data`(
       committedOnOwn: Boolean,
-      hasSecondOffenceWithAllAssociatedPersonsSet: Boolean,
-      isYouthOffender: Boolean,
     ) {
-      val existingReportedAdjudication = existingReportedAdjudication(committedOnOwn, hasSecondOffenceWithAllAssociatedPersonsSet, isYouthOffender)
+      val existingReportedAdjudication = existingReportedAdjudication(committedOnOwn, true, false)
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         existingReportedAdjudication
       )
@@ -550,40 +492,68 @@ class ReportedAdjudicationServiceTest {
 
       reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
 
-      var expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN)
-      if (isYouthOffender) {
-        if (hasSecondOffenceWithAllAssociatedPersonsSet) {
-          expectedOffenceCodes = listOf(YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN, YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN)
-          if (!committedOnOwn) {
-            expectedOffenceCodes =
-              listOf(YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED, YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ASSISTED)
-          }
-        } else {
-          expectedOffenceCodes = listOf(YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN)
-          if (!committedOnOwn) {
-            expectedOffenceCodes =
-              listOf(YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED)
-          }
-        }
-      } else if (!committedOnOwn) {
-        if (hasSecondOffenceWithAllAssociatedPersonsSet) {
-          expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ASSISTED, OFFENCE_CODE_3_NOMIS_CODE_ASSISTED)
-        } else {
-          expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ASSISTED)
-        }
-      } else if (hasSecondOffenceWithAllAssociatedPersonsSet) {
-        expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN, OFFENCE_CODE_3_NOMIS_CODE_ON_OWN)
-      }
+      var expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN, OFFENCE_CODE_3_NOMIS_CODE_ON_OWN)
       var expectedConnectedOffenderIds: List<String> = emptyList()
       if (!committedOnOwn) {
+        expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ASSISTED, OFFENCE_CODE_3_NOMIS_CODE_ASSISTED)
         expectedConnectedOffenderIds = listOf(INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)
       }
+
+      var expectedVictimOffenderIds: List<String> = listOf("A1234AA")
+      var expectedVictimStaffUsernames: List<String> = listOf("ABC12D")
+
+      val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
+        offenderNo = "A12345",
+        adjudicationNumber = 234L,
+        bookingId = 123L,
+        reporterName = "A_USER",
+        reportedDateTime = REPORTED_DATE_TIME,
+        agencyId = "MDI",
+        incidentLocationId = 345L,
+        incidentTime = DATE_TIME_OF_INCIDENT,
+        statement = INCIDENT_STATEMENT,
+        offenceCodes = expectedOffenceCodes,
+        victimOffenderIds = expectedVictimOffenderIds,
+        victimStaffUsernames = expectedVictimStaffUsernames,
+        connectedOffenderIds = expectedConnectedOffenderIds,
+      )
+      verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+      "true",
+      "false",
+    )
+    fun `setting status with different youth offender flag submits to prison api with correct data`(
+      isYouthOffender: Boolean,
+    ) {
+      val existingReportedAdjudication = existingReportedAdjudication(false, false, isYouthOffender)
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        existingReportedAdjudication
+      )
+
+      val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
+        it.status = ReportedAdjudicationStatus.ACCEPTED
+      }
+      returnedReportedAdjudication.createdByUserId = "A_USER"
+      returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        returnedReportedAdjudication
+      )
+
+      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
+
+      var expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ASSISTED)
+      if (isYouthOffender) {
+        expectedOffenceCodes =
+          listOf(YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED)
+      }
+
+      var expectedConnectedOffenderIds = listOf(INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)
       var expectedVictimOffenderIds: List<String> = emptyList()
       var expectedVictimStaffUsernames: List<String> = emptyList()
-      if (hasSecondOffenceWithAllAssociatedPersonsSet) {
-        expectedVictimOffenderIds = listOf("A1234AA")
-        expectedVictimStaffUsernames = listOf("ABC12D")
-      }
+
       val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
         offenderNo = "A12345",
         adjudicationNumber = 234L,
@@ -652,197 +622,6 @@ class ReportedAdjudicationServiceTest {
       reportedAdjudication.createdByUserId = "A_USER"
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
       return reportedAdjudication
-    }
-
-    @Nested
-    inner class WithAnAdjudicationCommittedWithAssistance {
-      private fun existingReportedAdjudication(): ReportedAdjudication {
-        val reportedAdjudication = ReportedAdjudication(
-          id = 1,
-          prisonerNumber = "A12345",
-          reportNumber = 234L,
-          bookingId = 123L,
-          agencyId = "MDI",
-          locationId = 345L,
-          isYouthOffender = false,
-          incidentRoleCode = INCIDENT_ROLE_CODE,
-          incidentRoleAssociatedPrisonersNumber = INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
-          dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-          handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-          statement = INCIDENT_STATEMENT,
-          offenceDetails = mutableListOf(
-            ReportedOffence(
-              offenceCode = 2,
-              paragraphCode = "5b",
-            ),
-            ReportedOffence(
-              offenceCode = 3,
-              paragraphCode = "6a",
-              victimPrisonersNumber = "A1234AA",
-              victimStaffUsername = "ABC12D",
-              victimOtherPersonsName = "A name"
-            ),
-          ),
-          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        )
-        // Add audit information
-        reportedAdjudication.createdByUserId = "A_USER"
-        reportedAdjudication.createDateTime = REPORTED_DATE_TIME
-        return reportedAdjudication
-      }
-
-      @Test
-      fun `submits to prison api with correct data`() {
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-          existingReportedAdjudication()
-        )
-        whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-          existingReportedAdjudication().also {
-            it.status = ReportedAdjudicationStatus.ACCEPTED
-          }
-        )
-        reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
-        val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
-          offenderNo = "A12345",
-          adjudicationNumber = 234L,
-          bookingId = 123L,
-          reporterName = "A_USER",
-          reportedDateTime = REPORTED_DATE_TIME,
-          agencyId = "MDI",
-          incidentLocationId = 345L,
-          incidentTime = DATE_TIME_OF_INCIDENT,
-          statement = INCIDENT_STATEMENT,
-          offenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ASSISTED, OFFENCE_CODE_3_NOMIS_CODE_ASSISTED),
-          victimOffenderIds = listOf("A1234AA"),
-          victimStaffUsernames = listOf("ABC12D"),
-          connectedOffenderIds = listOf(INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER),
-        )
-        verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
-      }
-    }
-
-    @Nested
-    inner class WithAnAdjudicationCommittedOnOwn {
-      private fun existingReportedAdjudication(): ReportedAdjudication {
-        val reportedAdjudication = ReportedAdjudication(
-          id = 1,
-          prisonerNumber = "A12345",
-          reportNumber = 234L,
-          bookingId = 123L,
-          agencyId = "MDI",
-          locationId = 345L,
-          isYouthOffender = false,
-          incidentRoleCode = null,
-          incidentRoleAssociatedPrisonersNumber = null,
-          dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-          handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-          statement = INCIDENT_STATEMENT,
-          offenceDetails = mutableListOf(
-            ReportedOffence(
-              offenceCode = 2,
-              paragraphCode = "5b",
-            ),
-            ReportedOffence(
-              offenceCode = 3,
-              paragraphCode = "6a",
-            ),
-          ),
-          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        )
-        // Add audit information
-        reportedAdjudication.createdByUserId = "A_USER"
-        reportedAdjudication.createDateTime = REPORTED_DATE_TIME
-        return reportedAdjudication
-      }
-
-      @Test
-      fun `submits to prison api with correct data`() {
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-          existingReportedAdjudication()
-        )
-        whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-          existingReportedAdjudication().also {
-            it.status = ReportedAdjudicationStatus.ACCEPTED
-          }
-        )
-        reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
-        val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
-          offenderNo = "A12345",
-          adjudicationNumber = 234L,
-          bookingId = 123L,
-          reporterName = "A_USER",
-          reportedDateTime = REPORTED_DATE_TIME,
-          agencyId = "MDI",
-          incidentLocationId = 345L,
-          incidentTime = DATE_TIME_OF_INCIDENT,
-          statement = INCIDENT_STATEMENT,
-          offenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN, OFFENCE_CODE_3_NOMIS_CODE_ON_OWN),
-          victimOffenderIds = emptyList(),
-          victimStaffUsernames = emptyList(),
-          connectedOffenderIds = emptyList(),
-        )
-        verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
-      }
-    }
-
-    @Nested
-    inner class WithAnAdjudicationForYouthOffender {
-      private fun existingReportedAdjudication(): ReportedAdjudication {
-        val reportedAdjudication = ReportedAdjudication(
-          id = 1,
-          prisonerNumber = "A12345",
-          reportNumber = 234L,
-          bookingId = 123L,
-          agencyId = "MDI",
-          locationId = 345L,
-          isYouthOffender = true,
-          incidentRoleCode = null,
-          incidentRoleAssociatedPrisonersNumber = null,
-          dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-          handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-          statement = INCIDENT_STATEMENT,
-          offenceDetails = mutableListOf(
-            ReportedOffence(
-              offenceCode = 2,
-              paragraphCode = "5b",
-            ),
-          ),
-          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        )
-        // Add audit information
-        reportedAdjudication.createdByUserId = "A_USER"
-        reportedAdjudication.createDateTime = REPORTED_DATE_TIME
-        return reportedAdjudication
-      }
-
-      @Test
-      fun `submits to prison api with correct data`() {
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-          existingReportedAdjudication()
-        )
-        whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-          existingReportedAdjudication().also {
-            it.status = ReportedAdjudicationStatus.ACCEPTED
-          }
-        )
-        reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
-        val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
-          offenderNo = "A12345",
-          adjudicationNumber = 234L,
-          bookingId = 123L,
-          reporterName = "A_USER",
-          reportedDateTime = REPORTED_DATE_TIME,
-          agencyId = "MDI",
-          incidentLocationId = 345L,
-          incidentTime = DATE_TIME_OF_INCIDENT,
-          statement = INCIDENT_STATEMENT,
-          offenceCodes = listOf(YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN),
-          victimOffenderIds = emptyList(),
-          victimStaffUsernames = emptyList(),
-          connectedOffenderIds = emptyList(),
-        )
-        verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
-      }
     }
   }
 
