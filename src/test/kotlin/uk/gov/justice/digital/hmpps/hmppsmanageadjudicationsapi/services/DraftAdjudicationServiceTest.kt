@@ -65,7 +65,8 @@ class DraftAdjudicationServiceTest {
         dateCalculationService,
         authenticationFacade
       )
-    // TODO - On merge
+
+    // Set up offence code mocks
     whenever(offenceCodeLookupService.getParagraphCode(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_CODE)
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2, false)).thenReturn(
       listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN)
@@ -75,6 +76,7 @@ class DraftAdjudicationServiceTest {
     )
     whenever(offenceCodeLookupService.getParagraphNumber(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
+
     whenever(offenceCodeLookupService.getParagraphCode(3, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_CODE)
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3, false)).thenReturn(
       listOf(
@@ -86,6 +88,28 @@ class DraftAdjudicationServiceTest {
     )
     whenever(offenceCodeLookupService.getParagraphNumber(3, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(3, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
+
+    whenever(offenceCodeLookupService.getParagraphCode(2, true)).thenReturn(YOUTH_OFFENCE_CODE_2_PARAGRAPH_CODE)
+    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2, true)).thenReturn(
+      listOf(YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN)
+    )
+    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(2, true)).thenReturn(
+      YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
+    )
+    whenever(offenceCodeLookupService.getParagraphNumber(2, true)).thenReturn(YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER)
+    whenever(offenceCodeLookupService.getParagraphDescription(2, true)).thenReturn(YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
+
+    whenever(offenceCodeLookupService.getParagraphCode(3, true)).thenReturn(YOUTH_OFFENCE_CODE_3_PARAGRAPH_CODE)
+    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3, true)).thenReturn(
+      listOf(
+        YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
+      )
+    )
+    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3, true)).thenReturn(
+      YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
+    )
+    whenever(offenceCodeLookupService.getParagraphNumber(3, true)).thenReturn(YOUTH_OFFENCE_CODE_3_PARAGRAPH_NUMBER)
+    whenever(offenceCodeLookupService.getParagraphDescription(3, true)).thenReturn(YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
   }
 
   @Nested
@@ -103,7 +127,7 @@ class DraftAdjudicationServiceTest {
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = incidentRoleWithAllValuesSet(),
-          isYouthOffender = true
+          isYouthOffender = false
         ),
       )
       whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
@@ -138,7 +162,7 @@ class DraftAdjudicationServiceTest {
         .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
         .contains(
           incidentRoleDtoWithAllValuesSet().roleCode,
-          // TODO - On merge (this will be changed)
+          // TODO - Remove when role removed
           IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode, false),
           incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
         )
@@ -157,7 +181,7 @@ class DraftAdjudicationServiceTest {
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
 
-    // TODO on merge - add test for youth offender
+    // TODO on merge - add test for youth offender (paramertised?)
     @Test
     fun `returns the draft adjudication`() {
       val now = LocalDateTime.now()
@@ -177,7 +201,7 @@ class DraftAdjudicationServiceTest {
             statement = "Example statement",
             completed = false
           ),
-          isYouthOffender = true
+          isYouthOffender = false
         )
       draftAdjudication.createdByUserId = "A_USER" // Add audit information
 
@@ -199,8 +223,7 @@ class DraftAdjudicationServiceTest {
         .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
         .contains(
           incidentRoleDtoWithAllValuesSet().roleCode,
-          // TODO On merge
-          IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode, false),
+          IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode, draftAdjudication.isYouthOffender),
           incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
         )
 
@@ -300,7 +323,7 @@ class DraftAdjudicationServiceTest {
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
 
-    // TODO on merge - add test for youth offender
+    // TODO on merge - add test for youth offender (parameterised?)
     @Test
     fun `adds the offence details to a draft adjudication`() {
       val offenceDetailsToAdd = listOf(BASIC_OFFENCE_DETAILS_REQUEST, FULL_OFFENCE_DETAILS_REQUEST)
@@ -316,7 +339,7 @@ class DraftAdjudicationServiceTest {
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
         incidentRole = incidentRoleWithNoValuesSet(),
-        isYouthOffender = true
+        isYouthOffender = false
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
@@ -358,7 +381,7 @@ class DraftAdjudicationServiceTest {
         ),
         incidentRole = incidentRoleWithNoValuesSet(),
         offenceDetails = existingOffenceDetails,
-        isYouthOffender = true
+        isYouthOffender = false
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(existingDraftAdjudicationEntity))
@@ -419,7 +442,7 @@ class DraftAdjudicationServiceTest {
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
         incidentRole = incidentRoleWithNoValuesSet(),
-        isYouthOffender = true
+        isYouthOffender = false
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
@@ -1151,7 +1174,7 @@ class DraftAdjudicationServiceTest {
               statement = "Example statement",
               completed = false
             ),
-            isYouthOffender = true
+            isYouthOffender = false
           ),
           DraftAdjudication(
             id = 2,
@@ -1164,7 +1187,7 @@ class DraftAdjudicationServiceTest {
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
             incidentRole = incidentRoleWithNoValuesSet(),
-            isYouthOffender = true
+            isYouthOffender = false
           )
         )
       )
@@ -1290,16 +1313,27 @@ class DraftAdjudicationServiceTest {
     private val INCIDENT_ROLE_PARAGRAPH_DESCRIPTION = "Attempts to commit any of the foregoing offences:"
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
 
-    private val OFFENCE_CODE_2_PARAGRAPH_CODE = "5b"
-    private val OFFENCE_CODE_2_NOMIS_CODE_ON_OWN = "5b"
-    private val OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "25z"
-    private val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"
-    private val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
-    private val OFFENCE_CODE_3_PARAGRAPH_CODE = "6a"
-    private val OFFENCE_CODE_3_NOMIS_CODE_ON_OWN = "5f"
-    private val OFFENCE_CODE_3_NOMIS_CODE_ASSISTED = "25f"
-    private val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6(a)"
-    private val OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another paragraph description"
+    private const val OFFENCE_CODE_2_PARAGRAPH_CODE = "5b"
+    private const val OFFENCE_CODE_2_NOMIS_CODE_ON_OWN = "5b"
+    private const val OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "25z"
+    private const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"
+    private const val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
+    private const val OFFENCE_CODE_3_PARAGRAPH_CODE = "6a"
+    private const val OFFENCE_CODE_3_NOMIS_CODE_ON_OWN = "5f"
+    private const val OFFENCE_CODE_3_NOMIS_CODE_ASSISTED = "25f"
+    private const val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6(a)"
+    private const val OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another paragraph description"
+
+    private const val YOUTH_OFFENCE_CODE_2_PARAGRAPH_CODE = "7b"
+    private const val YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER = "7(b)"
+    private const val YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A youth paragraph description"
+    private const val YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN = "7b"
+    private const val YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "29z"
+    private const val YOUTH_OFFENCE_CODE_3_PARAGRAPH_CODE = "17b"
+    private const val YOUTH_OFFENCE_CODE_3_PARAGRAPH_NUMBER = "17(b)"
+    private const val YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another youth paragraph description"
+    private const val YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN = "17b"
+    private const val YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ASSISTED = "29f"
 
     private val BASIC_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(offenceCode = 2)
     private val BASIC_OFFENCE_DETAILS_RESPONSE_DTO = OffenceDetailsDto(

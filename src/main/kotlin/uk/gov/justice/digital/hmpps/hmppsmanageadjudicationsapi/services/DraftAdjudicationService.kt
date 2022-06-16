@@ -87,8 +87,7 @@ class DraftAdjudicationService(
     val newValuesToStore = offenceDetails.map {
       Offence(
         offenceCode = it.offenceCode,
-        // TODO - on merge
-        paragraphCode = offenceCodeLookupService.getParagraphCode(it.offenceCode, false),
+        paragraphCode = offenceCodeLookupService.getParagraphCode(it.offenceCode, draftAdjudication.isYouthOffender),
         victimPrisonersNumber = it.victimPrisonersNumber?.ifBlank { null },
         victimStaffUsername = it.victimStaffUsername?.ifBlank { null },
         victimOtherPersonsName = it.victimOtherPersonsName?.ifBlank { null },
@@ -225,7 +224,6 @@ class DraftAdjudicationService(
   }
 
   fun lookupRuleDetails(offenceCode: Int): OffenceRuleDetailsDto {
-    // TODO - On merge
     return OffenceRuleDetailsDto(
       paragraphNumber = offenceCodeLookupService.getParagraphNumber(offenceCode, false),
       paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode, false),
@@ -263,7 +261,7 @@ class DraftAdjudicationService(
         locationId = draftAdjudication.incidentDetails.locationId,
         dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
         handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
-        isYouthOffender = false,
+        isYouthOffender = draftAdjudication.isYouthOffender,
         incidentRoleCode = draftAdjudication.incidentRole.roleCode,
         incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber,
         offenceDetails = toReportedOffence(draftAdjudication.offenceDetails),
@@ -288,7 +286,7 @@ class DraftAdjudicationService(
       it.locationId = draftAdjudication.incidentDetails.locationId
       it.dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident
       it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline
-      it.isYouthOffender = false
+      it.isYouthOffender = draftAdjudication.isYouthOffender
       it.incidentRoleCode = draftAdjudication.incidentRole.roleCode
       it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber
       it.offenceDetails?.let { offence ->
@@ -334,8 +332,8 @@ fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService):
     prisonerNumber = this.prisonerNumber,
     incidentStatement = this.incidentStatement?.toDo(),
     incidentDetails = this.incidentDetails.toDto(),
-    incidentRole = this.incidentRole.toDto(),
-    offenceDetails = this.offenceDetails?.map { it.toDto(offenceCodeLookupService) },
+    incidentRole = this.incidentRole.toDto(this.isYouthOffender),
+    offenceDetails = this.offenceDetails?.map { it.toDto(offenceCodeLookupService, this.isYouthOffender) },
     adjudicationNumber = this.reportNumber,
     startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
     isYouthOffender = this.isYouthOffender
@@ -347,19 +345,17 @@ fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
   handoverDeadline = this.handoverDeadline,
 )
 
-fun IncidentRole.toDto(): IncidentRoleDto = IncidentRoleDto(
+fun IncidentRole.toDto(isYouthOffender: Boolean): IncidentRoleDto = IncidentRoleDto(
   roleCode = this.roleCode,
-  // TODO - On merge
-  offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(this.roleCode, false),
+  offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(this.roleCode, isYouthOffender),
   associatedPrisonersNumber = this.associatedPrisonersNumber,
 )
 
-fun Offence.toDto(offenceCodeLookupService: OffenceCodeLookupService): OffenceDetailsDto = OffenceDetailsDto(
+fun Offence.toDto(offenceCodeLookupService: OffenceCodeLookupService, isYouthOffender: Boolean): OffenceDetailsDto = OffenceDetailsDto(
   offenceCode = this.offenceCode,
   offenceRule = OffenceRuleDetailsDto(
-    // TODO - On merge
-    paragraphNumber = offenceCodeLookupService.getParagraphNumber(offenceCode, false),
-    paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode, false),
+    paragraphNumber = offenceCodeLookupService.getParagraphNumber(offenceCode, isYouthOffender),
+    paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode, isYouthOffender),
   ),
   victimPrisonersNumber = this.victimPrisonersNumber,
   victimStaffUsername = this.victimStaffUsername,

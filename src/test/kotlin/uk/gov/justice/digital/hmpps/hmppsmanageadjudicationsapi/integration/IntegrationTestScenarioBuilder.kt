@@ -22,6 +22,11 @@ class IntegrationTestScenario(
   private val draftCreationResponse: DraftAdjudicationResponse,
   private val testAdjudicationDataSet: AdjudicationIntTestDataSet
 ) {
+  fun setApplicableRules(): IntegrationTestScenario {
+    intTestData.setApplicableRules(draftCreationResponse, testAdjudicationDataSet, headers)
+    return this
+  }
+
   fun setOffenceData(): IntegrationTestScenario {
     intTestData.setOffenceDetails(draftCreationResponse, testAdjudicationDataSet, headers)
     return this

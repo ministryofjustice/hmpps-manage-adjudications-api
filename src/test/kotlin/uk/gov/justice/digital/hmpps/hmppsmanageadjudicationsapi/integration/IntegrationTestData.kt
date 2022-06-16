@@ -32,6 +32,11 @@ class IntegrationTestData(
       victimStaffUsername = "ABC12D",
       victimOtherPersonsName = "A. User",
     )
+    val YOUTH_OFFENCE = OffenceTestDataSet(
+      offenceCode = 4001,
+      paragraphNumber = "5",
+      paragraphDescription = "Fights with any person",
+    )
 
     const val DEFAULT_ADJUDICATION_NUMBER = 1524242L
     const val DEFAULT_PRISONER_NUMBER = "AA1234A"
@@ -46,6 +51,7 @@ class IntegrationTestData(
     const val DEFAULT_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION = "Attempts to commit any of the foregoing offences:"
     const val DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER = "B2345BB"
     val DEFAULT_OFFENCES = listOf(FULL_OFFENCE, BASIC_OFFENCE)
+    val DEFAULT_YOUTH_OFFENCES = listOf(YOUTH_OFFENCE)
     const val DEFAULT_STATEMENT = "A statement"
     val DEFAULT_REPORTED_DATE_TIME = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
     const val DEFAULT_REPORTED_DATE_TIME_TEXT = "2010-11-13T10:00:00"
@@ -140,10 +146,10 @@ class IntegrationTestData(
       handoverDeadlineISOString = "2020-12-16T09:00:00",
       isYouthOffender = true,
       incidentRoleCode = "25a",
-      incidentRoleParagraphNumber = "25(a)",
+      incidentRoleParagraphNumber = "29(a)",
       incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
       incidentRoleAssociatedPrisonersNumber = "A5678AA",
-      offences = DEFAULT_OFFENCES,
+      offences = DEFAULT_YOUTH_OFFENCES,
       statement = "Different test statement",
       createdByUserId = "P_NESS"
     )
@@ -178,10 +184,10 @@ class IntegrationTestData(
       handoverDeadlineISOString = "2020-12-18T10:00:00",
       isYouthOffender = true,
       incidentRoleCode = "25a",
-      incidentRoleParagraphNumber = "25(a)",
+      incidentRoleParagraphNumber = "29(a)",
       incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
       incidentRoleAssociatedPrisonersNumber = "A5678AA",
-      offences = DEFAULT_OFFENCES,
+      offences = DEFAULT_YOUTH_OFFENCES,
       statement = "Yet another test statement",
       createdByUserId = "P_NESS"
     )
@@ -233,6 +239,26 @@ class IntegrationTestData(
             testDataSet.incidentRoleCode,
             testDataSet.incidentRoleAssociatedPrisonersNumber
           ),
+        )
+      )
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
+  fun setApplicableRules(
+    draftCreationData: DraftAdjudicationResponse,
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ): DraftAdjudicationResponse {
+    return webTestClient.put()
+      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/applicable-rules")
+      .headers(headers)
+      .bodyValue(
+        mapOf(
+          "isYouthOffenderRule" to testDataSet.isYouthOffender,
         )
       )
       .exchange()
