@@ -181,10 +181,20 @@ class DraftAdjudicationServiceTest {
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
 
-    // TODO on merge - add test for youth offender (paramertised?)
-    @Test
-    fun `returns the draft adjudication`() {
+    @ParameterizedTest
+    @CsvSource(
+      "true",
+      "false",
+    )
+    fun `returns the draft adjudication`(
+      isYouthOffender: Boolean,
+    ) {
       val now = LocalDateTime.now()
+      var offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
+      if (isYouthOffender) {
+        offenceDetails = mutableListOf(YOUTH_OFFENCE_DETAILS_DB_ENTITY)
+      }
+
       val draftAdjudication =
         DraftAdjudication(
           id = 1,
@@ -196,12 +206,12 @@ class DraftAdjudicationServiceTest {
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = incidentRoleWithAllValuesSet(),
-          offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+          offenceDetails = offenceDetails,
           incidentStatement = IncidentStatement(
             statement = "Example statement",
             completed = false
           ),
-          isYouthOffender = false
+          isYouthOffender = isYouthOffender
         )
       draftAdjudication.createdByUserId = "A_USER" // Add audit information
 
@@ -227,33 +237,55 @@ class DraftAdjudicationServiceTest {
           incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
         )
 
-      assertThat(draftAdjudicationDto.offenceDetails).hasSize(2)
-        .extracting(
-          "offenceCode",
-          "offenceRule.paragraphNumber",
-          "offenceRule.paragraphDescription",
-          "victimPrisonersNumber",
-          "victimStaffUsername",
-          "victimOtherPersonsName"
-        )
-        .contains(
-          Tuple(
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
-          ),
-          Tuple(
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
-            FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
-          ),
-        )
+      if (isYouthOffender) {
+        assertThat(draftAdjudicationDto.offenceDetails).hasSize(1)
+          .extracting(
+            "offenceCode",
+            "offenceRule.paragraphNumber",
+            "offenceRule.paragraphDescription",
+            "victimPrisonersNumber",
+            "victimStaffUsername",
+            "victimOtherPersonsName"
+          )
+          .contains(
+            Tuple(
+              YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+              YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
+              YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
+              YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+              YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
+              YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
+            ),
+          )
+      } else {
+        assertThat(draftAdjudicationDto.offenceDetails).hasSize(2)
+          .extracting(
+            "offenceCode",
+            "offenceRule.paragraphNumber",
+            "offenceRule.paragraphDescription",
+            "victimPrisonersNumber",
+            "victimStaffUsername",
+            "victimOtherPersonsName"
+          )
+          .contains(
+            Tuple(
+              BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+              BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
+              BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
+              BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+              BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
+              BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
+            ),
+            Tuple(
+              FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+              FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
+              FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
+              FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+              FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
+              FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
+            ),
+          )
+      }
 
       assertThat(draftAdjudicationDto.incidentStatement)
         .extracting("statement", "completed")
@@ -323,12 +355,23 @@ class DraftAdjudicationServiceTest {
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
 
-    // TODO on merge - add test for youth offender (parameterised?)
-    @Test
-    fun `adds the offence details to a draft adjudication`() {
-      val offenceDetailsToAdd = listOf(BASIC_OFFENCE_DETAILS_REQUEST, FULL_OFFENCE_DETAILS_REQUEST)
-      val offenceDetailsToSave = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
-      val expectedOffenceDetailsResponse = listOf(BASIC_OFFENCE_DETAILS_RESPONSE_DTO, FULL_OFFENCE_DETAILS_RESPONSE_DTO)
+    @ParameterizedTest
+    @CsvSource(
+      "true",
+      "false",
+    )
+    fun `adds the offence details to a draft adjudication`(
+      isYouthOffender: Boolean,
+    ) {
+      var offenceDetailsToAdd = listOf(BASIC_OFFENCE_DETAILS_REQUEST, FULL_OFFENCE_DETAILS_REQUEST)
+      var offenceDetailsToSave = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
+      var expectedOffenceDetailsResponse = listOf(BASIC_OFFENCE_DETAILS_RESPONSE_DTO, FULL_OFFENCE_DETAILS_RESPONSE_DTO)
+      if (isYouthOffender) {
+        offenceDetailsToAdd = listOf(YOUTH_OFFENCE_DETAILS_REQUEST)
+        offenceDetailsToSave = mutableListOf(YOUTH_OFFENCE_DETAILS_DB_ENTITY)
+        expectedOffenceDetailsResponse = listOf(YOUTH_OFFENCE_DETAILS_RESPONSE_DTO)
+      }
+
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
@@ -339,7 +382,7 @@ class DraftAdjudicationServiceTest {
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
         incidentRole = incidentRoleWithNoValuesSet(),
-        isYouthOffender = false
+        isYouthOffender = isYouthOffender
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
@@ -1370,6 +1413,19 @@ class DraftAdjudicationServiceTest {
       victimPrisonersNumber = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
       victimStaffUsername = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
       victimOtherPersonsName = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName,
+    )
+
+    private val YOUTH_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(offenceCode = 2)
+    private val YOUTH_OFFENCE_DETAILS_RESPONSE_DTO = OffenceDetailsDto(
+      offenceCode = YOUTH_OFFENCE_DETAILS_REQUEST.offenceCode,
+      offenceRule = OffenceRuleDetailsDto(
+        paragraphNumber = YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER,
+        paragraphDescription = YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
+      )
+    )
+    private val YOUTH_OFFENCE_DETAILS_DB_ENTITY = Offence(
+      offenceCode = YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+      paragraphCode = YOUTH_OFFENCE_CODE_2_PARAGRAPH_CODE
     )
 
     fun incidentRoleRequestWithAllValuesSet(): IncidentRoleRequest =
