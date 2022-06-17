@@ -116,36 +116,42 @@ class DraftAdjudicationServiceTest {
 
   @Nested
   inner class StartDraftAdjudications {
+    val draftAdjudication = DraftAdjudication(
+      id = 1,
+      prisonerNumber = "A12345",
+      agencyId = "MDI",
+      incidentDetails = IncidentDetails(
+        locationId = 2,
+        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+      ),
+      isYouthOffender = false
+    )
+
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(
-        DraftAdjudication(
-          id = 1,
-          prisonerNumber = "A12345",
-          agencyId = "MDI",
-          incidentDetails = IncidentDetails(
-            locationId = 2,
-            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          incidentRole = incidentRoleWithAllValuesSet(),
-          isYouthOffender = false
-        ),
-      )
       whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
         DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
       )
     }
 
-    @Test
-    fun `makes a call to the repository to save the draft adjudication`() {
+    @ParameterizedTest
+    @CsvSource("true", "false")
+    fun `makes a call to the repository to save the draft adjudication`(withIncidentRole: Boolean) {
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(
+        draftAdjudication.also {
+          if (withIncidentRole)
+            it.incidentRole = incidentRoleWithAllValuesSet()
+        }
+      )
+
       val draftAdjudication =
         draftAdjudicationService.startNewAdjudication(
           "A12345",
           "MDI",
           2L,
           DATE_TIME_OF_INCIDENT,
-          incidentRoleRequestWithAllValuesSet()
+          if (withIncidentRole) incidentRoleRequestWithAllValuesSet() else null
         )
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
@@ -160,14 +166,17 @@ class DraftAdjudicationServiceTest {
         .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
         .contains(2L, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
 
-      assertThat(draftAdjudication.incidentRole)
-        .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
-        .contains(
-          incidentRoleDtoWithAllValuesSet().roleCode,
-          // TODO - Remove when role removed
-          IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode, false),
-          incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
-        )
+      if (withIncidentRole) {
+        assertThat(draftAdjudication.incidentRole)
+          .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
+          .contains(
+            incidentRoleDtoWithAllValuesSet().roleCode,
+            IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode, false),
+            incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
+          )
+      } else {
+        assertThat(draftAdjudication.incidentRole).isNull()
+      }
     }
   }
 
@@ -315,7 +324,6 @@ class DraftAdjudicationServiceTest {
           dateTimeOfIncident = LocalDateTime.now(),
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
-        incidentRole = incidentRoleWithAllValuesSet(),
         offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
@@ -335,10 +343,22 @@ class DraftAdjudicationServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource("true", "false")
-    fun `saves incident role`(deleteOffences: Boolean) {
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+    @CsvSource("true, true", "false, true", "true, false", "false, false")
+    fun `saves incident role`(deleteOffences: Boolean, isNew: Boolean) {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(
+          draftAdjudication.also {
+            if (!isNew)
+              it.incidentRole = incidentRoleWithNoValuesSet()
+          }
+        )
+      )
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(
+        draftAdjudication.also {
+          if (!isNew)
+            it.incidentRole = incidentRoleWithNoValuesSet()
+        }
+      )
 
       val response = draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest("1", "2"), deleteOffences)
 
@@ -346,8 +366,8 @@ class DraftAdjudicationServiceTest {
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.offenceDetails!!.isEmpty()).isEqualTo(deleteOffences)
-      assertThat(argumentCaptor.value.incidentRole.roleCode).isEqualTo("1")
-      assertThat(argumentCaptor.value.incidentRole.associatedPrisonersNumber).isEqualTo("2")
+      assertThat(argumentCaptor.value.incidentRole!!.roleCode).isEqualTo("1")
+      assertThat(argumentCaptor.value.incidentRole!!.associatedPrisonersNumber).isEqualTo("2")
 
       assertThat(response).isNotNull
     }
@@ -637,8 +657,9 @@ class DraftAdjudicationServiceTest {
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
 
-    @Test
-    fun `makes changes to the incident details`() {
+    @ParameterizedTest
+    @CsvSource("true", "false")
+    fun `makes changes to the incident details`(hasIncidentRole: Boolean) {
       whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
         DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
       )
@@ -656,11 +677,17 @@ class DraftAdjudicationServiceTest {
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
-        incidentRole = incidentRoleWithAllValuesSet(),
         isYouthOffender = true
       )
 
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(
+          draftAdjudicationEntity.also {
+            if (hasIncidentRole)
+              it.incidentRole = incidentRoleWithAllValuesSet()
+          }
+        )
+      )
       whenever(draftAdjudicationRepository.save(any())).thenReturn(
         draftAdjudicationEntity.copy(
           incidentDetails = IncidentDetails(

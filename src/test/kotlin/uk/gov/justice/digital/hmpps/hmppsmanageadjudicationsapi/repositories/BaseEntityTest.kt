@@ -31,12 +31,12 @@ class BaseEntityTest {
 
     Thread.sleep(2000)
 
-    savedEntity.incidentRole.roleCode = "25c"
+    savedEntity.incidentRole?.roleCode = "25c"
     val updatedEntity = entityManager.persistAndFlush(savedEntity)
 
-    assertThat(updatedEntity.incidentRole.createdByUserId).isEqualTo("ITAG_USER")
-    assertThat(updatedEntity.incidentRole.modifiedByUserId).isEqualTo("ITAG_USER")
-    assertThat(updatedEntity.incidentRole.modifiedDateTime).isGreaterThan(updatedEntity.incidentRole.createDateTime)
+    assertThat(updatedEntity.incidentRole?.createdByUserId).isEqualTo("ITAG_USER")
+    assertThat(updatedEntity.incidentRole?.modifiedByUserId).isEqualTo("ITAG_USER")
+    assertThat(updatedEntity.incidentRole?.modifiedDateTime).isGreaterThan(updatedEntity.incidentRole?.createDateTime)
   }
 
   private fun newDraft(): DraftAdjudication {

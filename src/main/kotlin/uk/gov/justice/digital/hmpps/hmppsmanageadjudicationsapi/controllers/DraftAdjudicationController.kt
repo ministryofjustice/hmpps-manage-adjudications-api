@@ -37,7 +37,7 @@ data class NewAdjudicationRequest(
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime,
   @Schema(description = "Information about the role of this prisoner in the incident")
-  val incidentRole: IncidentRoleRequest,
+  val incidentRole: IncidentRoleRequest?,
 )
 
 @Schema(description = "Request to update the incident details")
