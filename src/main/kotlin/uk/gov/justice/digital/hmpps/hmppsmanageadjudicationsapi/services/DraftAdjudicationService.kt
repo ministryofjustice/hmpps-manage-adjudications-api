@@ -139,9 +139,9 @@ class DraftAdjudicationService(
       draftAdjudication.incidentDetails.dateTimeOfIncident = it
       draftAdjudication.incidentDetails.handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(it)
     }
-    draftAdjudication.incidentRole = draftAdjudication.incidentRole ?: IncidentRole(roleCode = null, associatedPrisonersNumber = null)
 
     incidentRole?.let {
+      draftAdjudication.incidentRole = draftAdjudication.incidentRole ?: IncidentRole(roleCode = null, associatedPrisonersNumber = null)
       draftAdjudication.incidentRole!!.roleCode = it.roleCode
       draftAdjudication.incidentRole!!.associatedPrisonersNumber = it.associatedPrisonersNumber
     }
