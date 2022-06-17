@@ -210,6 +210,9 @@ class DraftAdjudicationService(
     if (draftAdjudication.offenceDetails == null || draftAdjudication.offenceDetails!!.isEmpty())
       throw IllegalStateException("Please supply at least one set of offence details")
 
+    if (draftAdjudication.incidentRole == null)
+      throw IllegalStateException("Please supply an incident role")
+
     val isNew = draftAdjudication.reportNumber == null
     val generatedReportedAdjudication = saveAdjudication(draftAdjudication, isNew)
 
@@ -296,11 +299,8 @@ class DraftAdjudicationService(
       it.isYouthOffender = draftAdjudication.isYouthOffender
       it.incidentRoleCode = draftAdjudication.incidentRole!!.roleCode
       it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber
-      // TODO raise to Steve
-      it.offenceDetails?.let { offence ->
-        offence.clear()
-        offence.addAll(toReportedOffence(draftAdjudication.offenceDetails))
-      }
+      it.offenceDetails!!.clear()
+      it.offenceDetails!!.addAll(toReportedOffence(draftAdjudication.offenceDetails))
       it.statement = draftAdjudication.incidentStatement!!.statement!!
       it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
 

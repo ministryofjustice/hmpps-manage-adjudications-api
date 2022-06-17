@@ -880,6 +880,33 @@ class DraftAdjudicationServiceTest {
         .hasMessageContaining("Please supply at least one set of offence details")
     }
 
+    @Test
+    fun `throws an IllegalStateException when the draft adjudication is missing the incident role`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(
+          DraftAdjudication(
+            prisonerNumber = "A12345",
+            agencyId = "MDI",
+            incidentDetails = IncidentDetails(
+              locationId = 1,
+              dateTimeOfIncident = LocalDateTime.now(),
+              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+            ),
+            incidentStatement = IncidentStatement(
+              statement = "A statement",
+            ),
+            offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+            isYouthOffender = true
+          )
+        )
+      )
+
+      assertThatThrownBy {
+        draftAdjudicationService.completeDraftAdjudication(1)
+      }.isInstanceOf(IllegalStateException::class.java)
+        .hasMessageContaining("Please supply an incident role")
+    }
+
     @Nested
     inner class WithAValidDraftAdjudication {
       private val INCIDENT_TIME = LocalDateTime.now(clock)
