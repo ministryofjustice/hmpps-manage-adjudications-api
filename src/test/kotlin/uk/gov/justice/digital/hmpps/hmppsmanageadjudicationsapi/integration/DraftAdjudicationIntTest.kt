@@ -641,15 +641,27 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `gets offence rule details for a valid offence code`() {
+  fun `gets adult offence rule details if no youthOffender flag provided`() {
     webTestClient.get()
-      .uri("/draft-adjudications/offence-rule/1005")
+      .uri("/draft-adjudications/offence-rule/3001")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.paragraphNumber").isEqualTo(1)
-      .jsonPath("$.paragraphDescription").isEqualTo("Commits any assault")
+      .jsonPath("$.paragraphNumber").isEqualTo(3)
+      .jsonPath("$.paragraphDescription").isEqualTo("Denies access to any part of the prison to any officer or any person (other than a prisoner) who is at the prison for the purpose of working there")
+  }
+
+  @Test
+  fun `gets youth offence rule details`() {
+    webTestClient.get()
+      .uri("/draft-adjudications/offence-rule/3001?youthOffender=true")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.paragraphNumber").isEqualTo(4)
+      .jsonPath("$.paragraphDescription").isEqualTo("Denies access to any part of the young offender institution to any officer or any person (other than an inmate) who is at the young offender institution for the purpose of working there")
   }
 
   @Test
