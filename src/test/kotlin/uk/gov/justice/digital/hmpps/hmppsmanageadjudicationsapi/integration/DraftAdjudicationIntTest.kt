@@ -63,6 +63,31 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `makes a request to start a new draft adjudication without incidentRole`() {
+    webTestClient.post()
+      .uri("/draft-adjudications")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "prisonerNumber" to "A12345",
+          "agencyId" to "MDI",
+          "locationId" to 1,
+          "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT,
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(1)
+      .jsonPath("$.draftAdjudication.incidentRole").doesNotExist()
+  }
+
+  @Test
   fun `get draft adjudication details`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()

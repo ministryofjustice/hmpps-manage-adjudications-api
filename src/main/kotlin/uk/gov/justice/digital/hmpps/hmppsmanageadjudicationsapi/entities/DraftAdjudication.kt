@@ -22,7 +22,7 @@ data class DraftAdjudication(
   val incidentDetails: IncidentDetails,
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "incident_role_id")
-  var incidentRole: IncidentRole,
+  var incidentRole: IncidentRole? = null,
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "draft_adjudication_fk_id")
   var offenceDetails: MutableList<Offence>? = null,

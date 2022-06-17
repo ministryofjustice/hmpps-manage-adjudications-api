@@ -49,7 +49,7 @@ class DraftAdjudicationService(
     agencyId: String,
     locationId: Long,
     dateTimeOfIncident: LocalDateTime,
-    incidentRole: IncidentRoleRequest
+    incidentRole: IncidentRoleRequest?
   ): DraftAdjudicationDto {
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
@@ -59,14 +59,17 @@ class DraftAdjudicationService(
         dateTimeOfIncident = dateTimeOfIncident,
         handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(dateTimeOfIncident)
       ),
-      incidentRole = IncidentRole(
-        roleCode = incidentRole.roleCode,
-        associatedPrisonersNumber = incidentRole.associatedPrisonersNumber,
-      ),
       reportNumber = null,
       reportByUserId = null,
       isYouthOffender = false,
-    )
+    ).also {
+      incidentRole?.let { role ->
+        it.incidentRole = IncidentRole(
+          roleCode = role.roleCode,
+          associatedPrisonersNumber = role.associatedPrisonersNumber,
+        )
+      }
+    }
     return draftAdjudicationRepository
       .save(draftAdjudication)
       .toDto(offenceCodeLookupService)
@@ -136,9 +139,11 @@ class DraftAdjudicationService(
       draftAdjudication.incidentDetails.dateTimeOfIncident = it
       draftAdjudication.incidentDetails.handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(it)
     }
+
     incidentRole?.let {
-      draftAdjudication.incidentRole.roleCode = it.roleCode
-      draftAdjudication.incidentRole.associatedPrisonersNumber = it.associatedPrisonersNumber
+      draftAdjudication.incidentRole = draftAdjudication.incidentRole ?: IncidentRole(roleCode = null, associatedPrisonersNumber = null)
+      draftAdjudication.incidentRole!!.roleCode = it.roleCode
+      draftAdjudication.incidentRole!!.associatedPrisonersNumber = it.associatedPrisonersNumber
     }
 
     return draftAdjudicationRepository
@@ -159,8 +164,10 @@ class DraftAdjudicationService(
     }
 
     incidentRole.let {
-      draftAdjudication.incidentRole.roleCode = it.roleCode
-      draftAdjudication.incidentRole.associatedPrisonersNumber = it.associatedPrisonersNumber
+      draftAdjudication.incidentRole = draftAdjudication.incidentRole ?: IncidentRole(roleCode = null, associatedPrisonersNumber = null)
+
+      draftAdjudication.incidentRole!!.roleCode = it.roleCode
+      draftAdjudication.incidentRole!!.associatedPrisonersNumber = it.associatedPrisonersNumber
     }
 
     return draftAdjudicationRepository
@@ -202,6 +209,9 @@ class DraftAdjudicationService(
 
     if (draftAdjudication.offenceDetails == null || draftAdjudication.offenceDetails!!.isEmpty())
       throw IllegalStateException("Please supply at least one set of offence details")
+
+    if (draftAdjudication.incidentRole == null)
+      throw IllegalStateException("Please supply an incident role")
 
     val isNew = draftAdjudication.reportNumber == null
     val generatedReportedAdjudication = saveAdjudication(draftAdjudication, isNew)
@@ -262,8 +272,8 @@ class DraftAdjudicationService(
         dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
         handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
         isYouthOffender = draftAdjudication.isYouthOffender,
-        incidentRoleCode = draftAdjudication.incidentRole.roleCode,
-        incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber,
+        incidentRoleCode = draftAdjudication.incidentRole!!.roleCode,
+        incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber,
         offenceDetails = toReportedOffence(draftAdjudication.offenceDetails),
         statement = draftAdjudication.incidentStatement!!.statement!!,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
@@ -287,12 +297,10 @@ class DraftAdjudicationService(
       it.dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident
       it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline
       it.isYouthOffender = draftAdjudication.isYouthOffender
-      it.incidentRoleCode = draftAdjudication.incidentRole.roleCode
-      it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole.associatedPrisonersNumber
-      it.offenceDetails?.let { offence ->
-        offence.clear()
-        offence.addAll(toReportedOffence(draftAdjudication.offenceDetails))
-      }
+      it.incidentRoleCode = draftAdjudication.incidentRole!!.roleCode
+      it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber
+      it.offenceDetails!!.clear()
+      it.offenceDetails!!.addAll(toReportedOffence(draftAdjudication.offenceDetails))
       it.statement = draftAdjudication.incidentStatement!!.statement!!
       it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
 
@@ -332,7 +340,7 @@ fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService):
     prisonerNumber = this.prisonerNumber,
     incidentStatement = this.incidentStatement?.toDo(),
     incidentDetails = this.incidentDetails.toDto(),
-    incidentRole = this.incidentRole.toDto(this.isYouthOffender),
+    incidentRole = this.incidentRole?.toDto(this.isYouthOffender),
     offenceDetails = this.offenceDetails?.map { it.toDto(offenceCodeLookupService, this.isYouthOffender) },
     adjudicationNumber = this.reportNumber,
     startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,

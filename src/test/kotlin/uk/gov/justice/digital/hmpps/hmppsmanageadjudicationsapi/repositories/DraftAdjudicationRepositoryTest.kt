@@ -49,7 +49,7 @@ class DraftAdjudicationRepositoryTest {
 
     assertThat(savedEntity.incidentRole)
       .extracting("roleCode", "associatedPrisonersNumber")
-      .contains(draft.incidentRole.roleCode, draft.incidentRole.associatedPrisonersNumber)
+      .contains(draft.incidentRole!!.roleCode, draft.incidentRole!!.associatedPrisonersNumber)
   }
 
   @Test
@@ -71,7 +71,7 @@ class DraftAdjudicationRepositoryTest {
 
     assertThat(savedEntity.incidentRole)
       .extracting("roleCode", "associatedPrisonersNumber")
-      .contains(draft.incidentRole.roleCode, draft.incidentRole.associatedPrisonersNumber)
+      .contains(draft.incidentRole!!.roleCode, draft.incidentRole!!.associatedPrisonersNumber)
 
     assertThat(savedEntity.offenceDetails).hasSize(2)
       .extracting(
