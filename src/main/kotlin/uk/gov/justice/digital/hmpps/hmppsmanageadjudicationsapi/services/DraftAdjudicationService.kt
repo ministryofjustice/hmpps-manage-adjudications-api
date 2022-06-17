@@ -223,10 +223,10 @@ class DraftAdjudicationService(
       .map { it.toDto(offenceCodeLookupService) }
   }
 
-  fun lookupRuleDetails(offenceCode: Int): OffenceRuleDetailsDto {
+  fun lookupRuleDetails(offenceCode: Int, isYouthOffender: Boolean): OffenceRuleDetailsDto {
     return OffenceRuleDetailsDto(
-      paragraphNumber = offenceCodeLookupService.getParagraphNumber(offenceCode, false),
-      paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode, false),
+      paragraphNumber = offenceCodeLookupService.getParagraphNumber(offenceCode, isYouthOffender),
+      paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode, isYouthOffender),
     )
   }
 

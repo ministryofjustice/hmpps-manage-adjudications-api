@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
@@ -134,8 +135,8 @@ class DraftAdjudicationController {
   @Operation(summary = "Returns details of the offence rule relating to this offence code.")
   fun getOffenceRule(
     @PathVariable(name = "offenceCode") offenceCode: Int,
-    // TODO - Add draft id so we know if they are a youth
-  ): OffenceRuleDetailsDto = draftAdjudicationService.lookupRuleDetails(offenceCode)
+    @RequestParam(value = "youthOffender", required = false) isYouthOffender: Boolean?,
+  ): OffenceRuleDetailsDto = draftAdjudicationService.lookupRuleDetails(offenceCode, isYouthOffender ?: false)
 
   @PostMapping
   @PreAuthorize("hasAuthority('SCOPE_write')")
