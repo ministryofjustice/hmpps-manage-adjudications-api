@@ -229,6 +229,10 @@ class DraftAdjudicationService(
   @Transactional
   fun setIncidentApplicableRule(id: Long, isYouthOffender: Boolean): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+
+    if (draftAdjudication.offenceDetails != null && draftAdjudication.offenceDetails!!.size > 0)
+      throw IllegalStateException("Cannot set applicable rules when the offence details are already set")
+
     draftAdjudication.isYouthOffender = isYouthOffender
 
     return draftAdjudicationRepository

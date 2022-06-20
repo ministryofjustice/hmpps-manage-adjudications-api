@@ -711,7 +711,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
-      .setOffenceData()
 
     val draftId = intTestScenario.getDraftId()
     val initialDraft = draftAdjudicationRepository.findById(draftId)
