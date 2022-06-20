@@ -26,6 +26,35 @@ import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 
+enum class ValidationChecks(val errorMessage: String) {
+  APPLICABLE_RULES("No applicable rules set") {
+    override fun validate(draftAdjudication: DraftAdjudication) {
+      if (draftAdjudication.isYouthOffender == null)
+        throw IllegalStateException(errorMessage)
+    }
+  },
+  INCIDENT_ROLE("Please supply an incident role") {
+    override fun validate(draftAdjudication: DraftAdjudication) {
+      if (draftAdjudication.incidentRole == null)
+        throw IllegalStateException(errorMessage)
+    }
+  },
+  OFFENCE_DETAILS("Please supply at least one set of offence details") {
+    override fun validate(draftAdjudication: DraftAdjudication) {
+      if (draftAdjudication.offenceDetails == null || draftAdjudication.offenceDetails!!.isEmpty())
+        throw IllegalStateException(errorMessage)
+    }
+  },
+  INCIDENT_STATEMENT("Please include an incident statement before completing this draft adjudication") {
+    override fun validate(draftAdjudication: DraftAdjudication) {
+      if (draftAdjudication.incidentStatement == null || draftAdjudication.incidentStatement!!.statement == null)
+        throw IllegalStateException(errorMessage)
+    }
+  };
+
+  abstract fun validate(draftAdjudication: DraftAdjudication)
+}
+
 @Service
 class DraftAdjudicationService(
   val draftAdjudicationRepository: DraftAdjudicationRepository,
@@ -61,9 +90,11 @@ class DraftAdjudicationService(
       ),
       reportNumber = null,
       reportByUserId = null,
-      isYouthOffender = false,
     ).also {
       incidentRole?.let { role ->
+        // NOTE existing API allows creation of roles at start.
+        // Therefore we must default the isYouthOffender flag for legacy creation until roles creation is removed from this function
+        it.isYouthOffender = false
         it.incidentRole = IncidentRole(
           roleCode = role.roleCode,
           associatedPrisonersNumber = role.associatedPrisonersNumber,
@@ -86,11 +117,14 @@ class DraftAdjudicationService(
     throwIfNoOffenceDetails(offenceDetails)
 
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    // NOTE: new flow sets isYouthOffender first, therefore if we do not have this set we must throw as .Dto requires it
+    if (draftAdjudication.isYouthOffender == null)
+      throw IllegalStateException("No applicable rules set")
 
     val newValuesToStore = offenceDetails.map {
       Offence(
         offenceCode = it.offenceCode,
-        paragraphCode = offenceCodeLookupService.getParagraphCode(it.offenceCode, draftAdjudication.isYouthOffender),
+        paragraphCode = offenceCodeLookupService.getParagraphCode(it.offenceCode, draftAdjudication.isYouthOffender!!),
         victimPrisonersNumber = it.victimPrisonersNumber?.ifBlank { null },
         victimStaffUsername = it.victimStaffUsername?.ifBlank { null },
         victimOtherPersonsName = it.victimOtherPersonsName?.ifBlank { null },
@@ -159,6 +193,10 @@ class DraftAdjudicationService(
   ): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
+    // NOTE: new flow sets isYouthOffender first, therefore if we do not have this set we must throw as .Dto requires it
+    if (draftAdjudication.isYouthOffender == null)
+      throw IllegalStateException("No applicable rules set")
+
     if (removeExistingOffences) {
       draftAdjudication.offenceDetails?.let { it.clear() }
     }
@@ -204,14 +242,8 @@ class DraftAdjudicationService(
   fun completeDraftAdjudication(id: Long): ReportedAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
-    if (draftAdjudication.incidentStatement == null || draftAdjudication.incidentStatement!!.statement == null)
-      throw IllegalStateException("Please include an incident statement before completing this draft adjudication")
-
-    if (draftAdjudication.offenceDetails == null || draftAdjudication.offenceDetails!!.isEmpty())
-      throw IllegalStateException("Please supply at least one set of offence details")
-
-    if (draftAdjudication.incidentRole == null)
-      throw IllegalStateException("Please supply an incident role")
+    ValidationChecks.values().toList().stream()
+      .forEach { it.validate(draftAdjudication) }
 
     val isNew = draftAdjudication.reportNumber == null
     val generatedReportedAdjudication = saveAdjudication(draftAdjudication, isNew)
@@ -271,7 +303,7 @@ class DraftAdjudicationService(
         locationId = draftAdjudication.incidentDetails.locationId,
         dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
         handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
-        isYouthOffender = draftAdjudication.isYouthOffender,
+        isYouthOffender = draftAdjudication.isYouthOffender!!,
         incidentRoleCode = draftAdjudication.incidentRole!!.roleCode,
         incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber,
         offenceDetails = toReportedOffence(draftAdjudication.offenceDetails),
@@ -296,7 +328,7 @@ class DraftAdjudicationService(
       it.locationId = draftAdjudication.incidentDetails.locationId
       it.dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident
       it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline
-      it.isYouthOffender = draftAdjudication.isYouthOffender
+      it.isYouthOffender = draftAdjudication.isYouthOffender!!
       it.incidentRoleCode = draftAdjudication.incidentRole!!.roleCode
       it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber
       it.offenceDetails!!.clear()
@@ -340,8 +372,8 @@ fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService):
     prisonerNumber = this.prisonerNumber,
     incidentStatement = this.incidentStatement?.toDo(),
     incidentDetails = this.incidentDetails.toDto(),
-    incidentRole = this.incidentRole?.toDto(this.isYouthOffender),
-    offenceDetails = this.offenceDetails?.map { it.toDto(offenceCodeLookupService, this.isYouthOffender) },
+    incidentRole = this.incidentRole?.toDto(this.isYouthOffender!!),
+    offenceDetails = this.offenceDetails?.map { it.toDto(offenceCodeLookupService, this.isYouthOffender!!) },
     adjudicationNumber = this.reportNumber,
     startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
     isYouthOffender = this.isYouthOffender
