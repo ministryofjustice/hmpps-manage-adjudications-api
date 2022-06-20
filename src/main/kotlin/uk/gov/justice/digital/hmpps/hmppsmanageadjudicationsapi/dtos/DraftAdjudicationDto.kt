@@ -22,7 +22,7 @@ data class DraftAdjudicationDto(
   @Schema(description = "The id of the user who started the adjudication")
   val startedByUserId: String? = null,
   @Schema(description = "Is classified as a youth offender")
-  val isYouthOffender: Boolean,
+  val isYouthOffender: Boolean? = null,
 )
 
 @Schema(description = "Incident details")

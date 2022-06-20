@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -125,7 +126,6 @@ class DraftAdjudicationServiceTest {
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
       ),
-      isYouthOffender = false
     )
 
     @BeforeEach
@@ -140,8 +140,10 @@ class DraftAdjudicationServiceTest {
     fun `makes a call to the repository to save the draft adjudication`(withIncidentRole: Boolean) {
       whenever(draftAdjudicationRepository.save(any())).thenReturn(
         draftAdjudication.also {
-          if (withIncidentRole)
+          if (withIncidentRole) {
             it.incidentRole = incidentRoleWithAllValuesSet()
+            it.isYouthOffender = false
+          }
         }
       )
 
@@ -174,8 +176,10 @@ class DraftAdjudicationServiceTest {
             IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode, false),
             incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
           )
+        assertThat(draftAdjudication.isYouthOffender).isEqualTo(false)
       } else {
         assertThat(draftAdjudication.incidentRole).isNull()
+        assertThat(draftAdjudication.isYouthOffender).isNull()
       }
     }
   }
@@ -251,7 +255,7 @@ class DraftAdjudicationServiceTest {
           incidentRoleDtoWithAllValuesSet().roleCode,
           IncidentRoleRuleLookup.getOffenceRuleDetails(
             incidentRoleDtoWithAllValuesSet().roleCode,
-            draftAdjudication.isYouthOffender
+            draftAdjudication.isYouthOffender!!
           ),
           incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
         )
@@ -342,6 +346,20 @@ class DraftAdjudicationServiceTest {
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
 
+    @Test
+    fun `throws state exception if isYouthOffender is not set`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(
+          draftAdjudication.also { it.isYouthOffender = null }
+        )
+      )
+
+      assertThatThrownBy {
+        draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest("1", "1"), false)
+      }.isInstanceOf(IllegalStateException::class.java)
+        .hasMessageContaining(ValidationChecks.APPLICABLE_RULES.errorMessage)
+    }
+
     @ParameterizedTest
     @CsvSource("true, true", "false, true", "true, false", "false, false")
     fun `saves incident role`(deleteOffences: Boolean, isNew: Boolean) {
@@ -380,6 +398,18 @@ class DraftAdjudicationServiceTest {
 
   @Nested
   inner class SetOffenceDetails {
+    private val draftAdjudicationEntity = DraftAdjudication(
+      id = 1,
+      prisonerNumber = "A12345",
+      agencyId = "MDI",
+      incidentDetails = IncidentDetails(
+        locationId = 1,
+        dateTimeOfIncident = LocalDateTime.now(clock),
+        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+      ),
+      incidentRole = incidentRoleWithNoValuesSet(),
+    )
+
     @Test
     fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
@@ -388,6 +418,16 @@ class DraftAdjudicationServiceTest {
         draftAdjudicationService.setOffenceDetails(1, listOf(BASIC_OFFENCE_DETAILS_REQUEST))
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+
+    @Test
+    fun `throws state exception if isYouthOffender is not set`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
+
+      assertThatThrownBy {
+        draftAdjudicationService.setOffenceDetails(1, listOf(BASIC_OFFENCE_DETAILS_REQUEST))
+      }.isInstanceOf(IllegalStateException::class.java)
+        .hasMessageContaining(ValidationChecks.APPLICABLE_RULES.errorMessage)
     }
 
     @ParameterizedTest
@@ -407,20 +447,13 @@ class DraftAdjudicationServiceTest {
         expectedOffenceDetailsResponse = listOf(YOUTH_OFFENCE_DETAILS_RESPONSE_DTO)
       }
 
-      val draftAdjudicationEntity = DraftAdjudication(
-        id = 1,
-        prisonerNumber = "A12345",
-        agencyId = "MDI",
-        incidentDetails = IncidentDetails(
-          locationId = 1,
-          dateTimeOfIncident = LocalDateTime.now(clock),
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-        ),
-        incidentRole = incidentRoleWithNoValuesSet(),
-        isYouthOffender = isYouthOffender
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(
+          draftAdjudicationEntity.also {
+            it.isYouthOffender = isYouthOffender
+          }
+        )
       )
-
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
 
       whenever(draftAdjudicationRepository.save(any())).thenReturn(
         draftAdjudicationEntity.copy(
@@ -829,8 +862,8 @@ class DraftAdjudicationServiceTest {
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
 
-    @Test
-    fun `throws an IllegalStateException when the draft adjudication is missing the incident statement`() {
+    @ParameterizedTest
+    @EnumSource(ValidationChecks::class) fun `illegal state exception test`(validationCheck: ValidationChecks) {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(
         Optional.of(
           DraftAdjudication(
@@ -841,70 +874,30 @@ class DraftAdjudicationServiceTest {
               dateTimeOfIncident = LocalDateTime.now(),
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
-            incidentRole = incidentRoleWithAllValuesSet(),
-            isYouthOffender = true
-          )
+          ).also {
+            when (validationCheck) {
+              ValidationChecks.INCIDENT_ROLE -> {
+                it.isYouthOffender = false
+              }
+              ValidationChecks.OFFENCE_DETAILS -> {
+                it.incidentRole = incidentRoleWithAllValuesSet()
+                it.isYouthOffender = false
+              }
+              ValidationChecks.INCIDENT_STATEMENT -> {
+                it.isYouthOffender = false
+                it.incidentRole = incidentRoleWithAllValuesSet()
+                it.offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
+              }
+              else -> {}
+            }
+          }
         )
       )
 
       assertThatThrownBy {
         draftAdjudicationService.completeDraftAdjudication(1)
       }.isInstanceOf(IllegalStateException::class.java)
-        .hasMessageContaining("Please include an incident statement before completing this draft adjudication")
-    }
-
-    @Test
-    fun `throws an IllegalStateException when the draft adjudication is missing offence details`() {
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-        Optional.of(
-          DraftAdjudication(
-            prisonerNumber = "A12345",
-            agencyId = "MDI",
-            incidentDetails = IncidentDetails(
-              locationId = 1,
-              dateTimeOfIncident = LocalDateTime.now(),
-              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-            ),
-            incidentRole = incidentRoleWithAllValuesSet(),
-            incidentStatement = IncidentStatement(
-              statement = "A statement",
-            ),
-            isYouthOffender = true
-          )
-        )
-      )
-
-      assertThatThrownBy {
-        draftAdjudicationService.completeDraftAdjudication(1)
-      }.isInstanceOf(IllegalStateException::class.java)
-        .hasMessageContaining("Please supply at least one set of offence details")
-    }
-
-    @Test
-    fun `throws an IllegalStateException when the draft adjudication is missing the incident role`() {
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-        Optional.of(
-          DraftAdjudication(
-            prisonerNumber = "A12345",
-            agencyId = "MDI",
-            incidentDetails = IncidentDetails(
-              locationId = 1,
-              dateTimeOfIncident = LocalDateTime.now(),
-              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-            ),
-            incidentStatement = IncidentStatement(
-              statement = "A statement",
-            ),
-            offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
-            isYouthOffender = true
-          )
-        )
-      )
-
-      assertThatThrownBy {
-        draftAdjudicationService.completeDraftAdjudication(1)
-      }.isInstanceOf(IllegalStateException::class.java)
-        .hasMessageContaining("Please supply an incident role")
+        .hasMessageContaining(validationCheck.errorMessage)
     }
 
     @Nested

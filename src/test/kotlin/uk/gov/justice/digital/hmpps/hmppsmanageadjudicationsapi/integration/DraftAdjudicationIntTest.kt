@@ -60,6 +60,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphDescription")
       .isEqualTo("Attempts to commit any of the foregoing offences:")
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo("B2345BB")
+      .jsonPath("$.draftAdjudication.isYouthOffender").isEqualTo("false")
   }
 
   @Test
@@ -85,6 +86,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(1)
       .jsonPath("$.draftAdjudication.incidentRole").doesNotExist()
+      .jsonPath("$.draftAdjudication.isYouthOffender").doesNotExist()
   }
 
   @Test
