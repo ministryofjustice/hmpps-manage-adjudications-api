@@ -1378,6 +1378,7 @@ class DraftAdjudicationServiceTest {
           statement = "Example statement",
           completed = false
         ),
+        offenceDetails = mutableListOf(),
         isYouthOffender = true
       )
 
@@ -1393,9 +1394,13 @@ class DraftAdjudicationServiceTest {
 
     @Test
     fun `throws an exception if the draft adjudication has the offence details already set`() {
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication.copy().also {
-        it.offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
-      }))
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(
+          draftAdjudication.copy().also {
+            it.offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
+          }
+        )
+      )
 
       assertThatThrownBy {
         draftAdjudicationService.setIncidentApplicableRule(1, false)
