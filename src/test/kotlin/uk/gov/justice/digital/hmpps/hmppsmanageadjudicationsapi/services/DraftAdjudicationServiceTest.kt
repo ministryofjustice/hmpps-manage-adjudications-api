@@ -1374,7 +1374,6 @@ class DraftAdjudicationServiceTest {
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
         incidentRole = incidentRoleWithAllValuesSet(),
-        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
           completed = false
@@ -1393,6 +1392,18 @@ class DraftAdjudicationServiceTest {
     }
 
     @Test
+    fun `throws an exception if the draft adjudication has the offence details already set`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication.copy().also {
+        it.offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
+      }))
+
+      assertThatThrownBy {
+        draftAdjudicationService.setIncidentApplicableRule(1, false)
+      }.isInstanceOf(IllegalStateException::class.java)
+        .hasMessageContaining("Cannot set applicable rules when the offence details are already set")
+    }
+
+    @Test
     fun `saves incident applicable rule`() {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
       whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
@@ -1405,9 +1416,10 @@ class DraftAdjudicationServiceTest {
       assertThat(argumentCaptor.value.isYouthOffender).isEqualTo(true)
       assertThat(response).isNotNull
     }
+
     @Test
     fun `returns the draft adjudication`() {
-      testDto { draftAdjudicationService.setIncidentApplicableRule(1, false) }
+      testDto(Optional.of(draftAdjudication)) { draftAdjudicationService.setIncidentApplicableRule(1, false) }
     }
   }
 
@@ -1523,7 +1535,7 @@ class DraftAdjudicationServiceTest {
       IncidentRole(null, null, null)
   }
 
-  fun testDto(toSave: Optional<DraftAdjudication> = Optional.empty(), toTest: Supplier<DraftAdjudicationDto>) {
+  fun testDto(toFind: Optional<DraftAdjudication> = Optional.empty(), toTest: Supplier<DraftAdjudicationDto>) {
     val now = LocalDateTime.now()
     val draftAdjudication =
       DraftAdjudication(
@@ -1546,11 +1558,11 @@ class DraftAdjudicationServiceTest {
     draftAdjudication.createdByUserId = "A_USER" // Add audit information
 
     whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-      Optional.of(draftAdjudication)
+      Optional.of(toFind.orElse(draftAdjudication))
     )
 
     whenever(draftAdjudicationRepository.save(any())).thenReturn(
-      toSave.orElse(draftAdjudication)
+      draftAdjudication
     )
 
     val draftAdjudicationDto = toTest.get()
