@@ -357,7 +357,7 @@ class DraftAdjudicationServiceTest {
       assertThatThrownBy {
         draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest("1", "1"), false)
       }.isInstanceOf(IllegalStateException::class.java)
-        .hasMessageContaining("No applicable rules set")
+        .hasMessageContaining(ValidationChecks.APPLICABLE_RULES.errorMessage)
     }
 
     @ParameterizedTest
@@ -427,7 +427,7 @@ class DraftAdjudicationServiceTest {
       assertThatThrownBy {
         draftAdjudicationService.setOffenceDetails(1, listOf(BASIC_OFFENCE_DETAILS_REQUEST))
       }.isInstanceOf(IllegalStateException::class.java)
-        .hasMessageContaining("No applicable rules set")
+        .hasMessageContaining(ValidationChecks.APPLICABLE_RULES.errorMessage)
     }
 
     @ParameterizedTest
