@@ -118,8 +118,7 @@ class DraftAdjudicationService(
 
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
     // NOTE: new flow sets isYouthOffender first, therefore if we do not have this set we must throw as .Dto requires it
-    if (draftAdjudication.isYouthOffender == null)
-      throw IllegalStateException("No applicable rules set")
+    ValidationChecks.APPLICABLE_RULES.validate(draftAdjudication)
 
     val newValuesToStore = offenceDetails.map {
       Offence(
@@ -194,8 +193,7 @@ class DraftAdjudicationService(
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     // NOTE: new flow sets isYouthOffender first, therefore if we do not have this set we must throw as .Dto requires it
-    if (draftAdjudication.isYouthOffender == null)
-      throw IllegalStateException("No applicable rules set")
+    ValidationChecks.APPLICABLE_RULES.validate(draftAdjudication)
 
     if (removeExistingOffences) {
       draftAdjudication.offenceDetails?.let { it.clear() }
