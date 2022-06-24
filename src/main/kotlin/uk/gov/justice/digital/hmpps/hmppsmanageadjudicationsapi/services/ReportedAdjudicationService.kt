@@ -107,7 +107,6 @@ class ReportedAdjudicationService(
     return (offences ?: mutableListOf()).map { offence ->
       Offence(
         offenceCode = offence.offenceCode,
-        paragraphCode = offence.paragraphCode,
         victimPrisonersNumber = offence.victimPrisonersNumber,
         victimStaffUsername = offence.victimStaffUsername,
         victimOtherPersonsName = offence.victimOtherPersonsName,

@@ -76,7 +76,6 @@ class DraftAdjudicationRepositoryTest {
     assertThat(savedEntity.offenceDetails).hasSize(2)
       .extracting(
         "offenceCode",
-        "paragraphCode",
         "victimPrisonersNumber",
         "victimStaffUsername",
         "victimOtherPersonsName"
@@ -84,14 +83,12 @@ class DraftAdjudicationRepositoryTest {
       .contains(
         Tuple(
           draft.offenceDetails!![0].offenceCode,
-          draft.offenceDetails!![0].paragraphCode,
           draft.offenceDetails!![0].victimPrisonersNumber,
           draft.offenceDetails!![0].victimStaffUsername,
           draft.offenceDetails!![0].victimOtherPersonsName
         ),
         Tuple(
           draft.offenceDetails!![1].offenceCode,
-          draft.offenceDetails!![1].paragraphCode,
           draft.offenceDetails!![1].victimPrisonersNumber,
           draft.offenceDetails!![1].victimStaffUsername,
           draft.offenceDetails!![1].victimOtherPersonsName
@@ -110,7 +107,6 @@ class DraftAdjudicationRepositoryTest {
       offenceDetails = mutableListOf(
         Offence(
           offenceCode = 4,
-          paragraphCode = "2",
           victimPrisonersNumber = "B2345BB",
           victimStaffUsername = "ABC12D",
           victimOtherPersonsName = "Someones Name Here"
@@ -122,14 +118,13 @@ class DraftAdjudicationRepositoryTest {
     assertThat(savedEntity.offenceDetails).hasSize(1)
       .extracting(
         "offenceCode",
-        "paragraphCode",
         "victimPrisonersNumber",
         "victimStaffUsername",
         "victimOtherPersonsName"
       )
       .contains(
         Tuple(
-          updatedDraft.offenceDetails!![0].offenceCode, updatedDraft.offenceDetails!![0].paragraphCode,
+          updatedDraft.offenceDetails!![0].offenceCode,
           updatedDraft.offenceDetails!![0].victimPrisonersNumber, updatedDraft.offenceDetails!![0].victimStaffUsername,
           updatedDraft.offenceDetails!![0].victimOtherPersonsName
         ),
@@ -266,11 +261,9 @@ class DraftAdjudicationRepositoryTest {
         Offence(
           // offence with minimal data set
           offenceCode = 2,
-          paragraphCode = "1",
         ),
         Offence( // offence with all data set
           offenceCode = 3,
-          paragraphCode = "2",
           victimPrisonersNumber = "A1234AA",
           victimStaffUsername = "ABC12D",
           victimOtherPersonsName = "Someones Name Here"
