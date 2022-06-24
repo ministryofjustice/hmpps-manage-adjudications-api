@@ -664,7 +664,6 @@ class ReportedAdjudicationServiceTest {
       offenceDetails = mutableListOf(
         Offence(
           offenceCode = 3,
-          paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
           victimPrisonersNumber = "BB2345B",
           victimStaffUsername = "DEF34G",
           victimOtherPersonsName = "Another Name",

@@ -123,7 +123,6 @@ class DraftAdjudicationService(
     val newValuesToStore = offenceDetails.map {
       Offence(
         offenceCode = it.offenceCode,
-        paragraphCode = offenceCodeLookupService.getParagraphCode(it.offenceCode, draftAdjudication.isYouthOffender!!),
         victimPrisonersNumber = it.victimPrisonersNumber?.ifBlank { null },
         victimStaffUsername = it.victimStaffUsername?.ifBlank { null },
         victimOtherPersonsName = it.victimOtherPersonsName?.ifBlank { null },
@@ -230,9 +229,6 @@ class DraftAdjudicationService(
   fun setIncidentApplicableRule(id: Long, isYouthOffender: Boolean): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
-    if (draftAdjudication.offenceDetails != null && draftAdjudication.offenceDetails!!.size > 0)
-      throw IllegalStateException("Cannot set applicable rules when the offence details are already set")
-
     draftAdjudication.isYouthOffender = isYouthOffender
 
     return draftAdjudicationRepository
@@ -308,7 +304,7 @@ class DraftAdjudicationService(
         isYouthOffender = draftAdjudication.isYouthOffender!!,
         incidentRoleCode = draftAdjudication.incidentRole!!.roleCode,
         incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber,
-        offenceDetails = toReportedOffence(draftAdjudication.offenceDetails),
+        offenceDetails = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication),
         statement = draftAdjudication.incidentStatement!!.statement!!,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
       )
@@ -334,7 +330,7 @@ class DraftAdjudicationService(
       it.incidentRoleCode = draftAdjudication.incidentRole!!.roleCode
       it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber
       it.offenceDetails!!.clear()
-      it.offenceDetails!!.addAll(toReportedOffence(draftAdjudication.offenceDetails))
+      it.offenceDetails!!.addAll(toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication))
       it.statement = draftAdjudication.incidentStatement!!.statement!!
       it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
 
@@ -342,11 +338,11 @@ class DraftAdjudicationService(
     } ?: ReportedAdjudicationService.throwEntityNotFoundException(reportedAdjudicationNumber)
   }
 
-  private fun toReportedOffence(draftOffences: MutableList<Offence>?): MutableList<ReportedOffence> {
+  private fun toReportedOffence(draftOffences: MutableList<Offence>?, draftAdjudication: DraftAdjudication): MutableList<ReportedOffence> {
     return (draftOffences ?: listOf()).map {
       ReportedOffence(
         offenceCode = it.offenceCode,
-        paragraphCode = it.paragraphCode,
+        paragraphCode = offenceCodeLookupService.getParagraphCode(it.offenceCode, draftAdjudication.isYouthOffender!!),
         victimPrisonersNumber = it.victimPrisonersNumber,
         victimStaffUsername = it.victimStaffUsername,
         victimOtherPersonsName = it.victimOtherPersonsName,

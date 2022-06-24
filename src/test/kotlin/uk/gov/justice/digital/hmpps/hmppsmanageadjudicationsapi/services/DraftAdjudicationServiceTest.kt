@@ -477,7 +477,7 @@ class DraftAdjudicationServiceTest {
 
     @Test
     fun `edits the offence details of an existing draft adjudication`() {
-      val existingOffenceDetails = mutableListOf(Offence(offenceCode = 1, paragraphCode = "1"))
+      val existingOffenceDetails = mutableListOf(Offence(offenceCode = 1))
       val offenceDetailsToUse = listOf(BASIC_OFFENCE_DETAILS_REQUEST, FULL_OFFENCE_DETAILS_REQUEST)
       val offenceDetailsToSave = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
       val expectedOffenceDetailsResponse = listOf(BASIC_OFFENCE_DETAILS_RESPONSE_DTO, FULL_OFFENCE_DETAILS_RESPONSE_DTO)
@@ -530,7 +530,6 @@ class DraftAdjudicationServiceTest {
       val offenceDetailsToSave = mutableListOf(
         Offence(
           offenceCode = 2,
-          paragraphCode = OFFENCE_CODE_2_PARAGRAPH_CODE,
         )
       )
       val expectedOffenceDetailsResponse = listOf(
@@ -920,7 +919,7 @@ class DraftAdjudicationServiceTest {
               incidentRole = incidentRoleWithAllValuesSet(),
               offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
               incidentStatement = IncidentStatement(statement = "test"),
-              isYouthOffender = true
+              isYouthOffender = false
             )
           )
         )
@@ -981,13 +980,13 @@ class DraftAdjudicationServiceTest {
           .contains(
             Tuple(
               BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
+              BASIC_OFFENCE_DETAILS_PARAGRAPH_CODE,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
             Tuple(
-              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
+              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_PARAGRAPH_CODE,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
@@ -1125,7 +1124,7 @@ class DraftAdjudicationServiceTest {
               incidentRole = incidentRoleWithAllValuesSet(),
               offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
               incidentStatement = IncidentStatement(statement = "test"),
-              isYouthOffender = true
+              isYouthOffender = false
             )
           )
         )
@@ -1218,13 +1217,13 @@ class DraftAdjudicationServiceTest {
           .contains(
             Tuple(
               BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
+              BASIC_OFFENCE_DETAILS_PARAGRAPH_CODE,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
             Tuple(
-              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_DB_ENTITY.paragraphCode,
+              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_PARAGRAPH_CODE,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
@@ -1393,22 +1392,6 @@ class DraftAdjudicationServiceTest {
     }
 
     @Test
-    fun `throws an exception if the draft adjudication has the offence details already set`() {
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-        Optional.of(
-          draftAdjudication.copy().also {
-            it.offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
-          }
-        )
-      )
-
-      assertThatThrownBy {
-        draftAdjudicationService.setIncidentApplicableRule(1, false)
-      }.isInstanceOf(IllegalStateException::class.java)
-        .hasMessageContaining("Cannot set applicable rules when the offence details are already set")
-    }
-
-    @Test
     fun `saves incident applicable rule`() {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
       whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
@@ -1471,8 +1454,8 @@ class DraftAdjudicationServiceTest {
     )
     private val BASIC_OFFENCE_DETAILS_DB_ENTITY = Offence(
       offenceCode = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-      paragraphCode = OFFENCE_CODE_2_PARAGRAPH_CODE
     )
+    private val BASIC_OFFENCE_DETAILS_PARAGRAPH_CODE = OFFENCE_CODE_2_PARAGRAPH_CODE
 
     private val FULL_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(
       offenceCode = 3,
@@ -1492,11 +1475,11 @@ class DraftAdjudicationServiceTest {
     )
     private val FULL_OFFENCE_DETAILS_DB_ENTITY = Offence(
       offenceCode = FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-      paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
       victimPrisonersNumber = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
       victimStaffUsername = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
       victimOtherPersonsName = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName,
     )
+    private val FULL_OFFENCE_DETAILS_PARAGRAPH_CODE = OFFENCE_CODE_3_PARAGRAPH_CODE
 
     private val YOUTH_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(offenceCode = 2)
     private val YOUTH_OFFENCE_DETAILS_RESPONSE_DTO = OffenceDetailsDto(
@@ -1508,7 +1491,6 @@ class DraftAdjudicationServiceTest {
     )
     private val YOUTH_OFFENCE_DETAILS_DB_ENTITY = Offence(
       offenceCode = YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-      paragraphCode = YOUTH_OFFENCE_CODE_2_PARAGRAPH_CODE
     )
 
     fun incidentRoleRequestWithAllValuesSet(): IncidentRoleRequest =
