@@ -163,7 +163,7 @@ class DraftAdjudicationService(
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     if (removeExistingOffences) {
-      draftAdjudication.offenceDetails?.let { it.clear() }
+      draftAdjudication.offenceDetails?.clear()
     }
 
     locationId?.let { draftAdjudication.incidentDetails.locationId = it }
@@ -195,7 +195,7 @@ class DraftAdjudicationService(
     ValidationChecks.APPLICABLE_RULES.validate(draftAdjudication)
 
     if (removeExistingOffences) {
-      draftAdjudication.offenceDetails?.let { it.clear() }
+      draftAdjudication.offenceDetails?.clear()
     }
 
     incidentRole.let {
@@ -226,8 +226,16 @@ class DraftAdjudicationService(
   }
 
   @Transactional
-  fun setIncidentApplicableRule(id: Long, isYouthOffender: Boolean): DraftAdjudicationDto {
+  fun setIncidentApplicableRule(
+    id: Long,
+    isYouthOffender: Boolean,
+    removeExistingOffences: Boolean,
+  ): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+
+    if (removeExistingOffences) {
+      draftAdjudication.offenceDetails?.clear()
+    }
 
     draftAdjudication.isYouthOffender = isYouthOffender
 

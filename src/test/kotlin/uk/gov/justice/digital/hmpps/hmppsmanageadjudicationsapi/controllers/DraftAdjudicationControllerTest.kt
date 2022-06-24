@@ -675,7 +675,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.setIncidentApplicableRule(anyLong(), anyBoolean())).thenReturn(
+      whenever(draftAdjudicationService.setIncidentApplicableRule(anyLong(), anyBoolean(), anyBoolean())).thenReturn(
         DraftAdjudicationDto(
           id = 1L,
           adjudicationNumber = null,
@@ -704,7 +704,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       setApplicableRules(1, true)
         .andExpect(status().isOk)
 
-      verify(draftAdjudicationService).setIncidentApplicableRule(1, true)
+      verify(draftAdjudicationService).setIncidentApplicableRule(1, true, false)
     }
 
     private fun setApplicableRules(id: Long, isYoungOffender: Boolean): ResultActions {

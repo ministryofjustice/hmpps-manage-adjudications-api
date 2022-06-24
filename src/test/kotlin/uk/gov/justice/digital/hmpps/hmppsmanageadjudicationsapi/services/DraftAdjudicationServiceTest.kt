@@ -1377,7 +1377,7 @@ class DraftAdjudicationServiceTest {
           statement = "Example statement",
           completed = false
         ),
-        offenceDetails = mutableListOf(),
+        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
         isYouthOffender = true
       )
 
@@ -1386,28 +1386,30 @@ class DraftAdjudicationServiceTest {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
 
       assertThatThrownBy {
-        draftAdjudicationService.setIncidentApplicableRule(1, false)
+        draftAdjudicationService.setIncidentApplicableRule(1, false, true)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
 
-    @Test
-    fun `saves incident applicable rule`() {
+    @ParameterizedTest
+    @CsvSource("true", "false")
+    fun `saves incident applicable rule`(deleteOffences: Boolean) {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
       whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
 
-      val response = draftAdjudicationService.setIncidentApplicableRule(1, true)
+      val response = draftAdjudicationService.setIncidentApplicableRule(1, true, deleteOffences)
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
+      assertThat(argumentCaptor.value.offenceDetails!!.isEmpty()).isEqualTo(deleteOffences)
       assertThat(argumentCaptor.value.isYouthOffender).isEqualTo(true)
       assertThat(response).isNotNull
     }
 
     @Test
     fun `returns the draft adjudication`() {
-      testDto(Optional.of(draftAdjudication)) { draftAdjudicationService.setIncidentApplicableRule(1, false) }
+      testDto(Optional.of(draftAdjudication)) { draftAdjudicationService.setIncidentApplicableRule(1, false, true) }
     }
   }
 
