@@ -704,13 +704,14 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `set the applicable rule`() {
+  fun `set the applicable rule and delete all offences`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
     val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
+      .setOffenceData()
 
     val draftId = intTestScenario.getDraftId()
     val initialDraft = draftAdjudicationRepository.findById(draftId)
@@ -722,6 +723,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "isYouthOffenderRule" to true,
+          "removeExistingOffences" to true,
         )
       )
       .exchange()
@@ -731,6 +733,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val draft = draftAdjudicationRepository.findById(draftId)
     assertThat(draft.get().isYouthOffender).isEqualTo(true)
+    // Check it has been removed from the DB
+    assertThat(draft.get().offenceDetails).hasSize(0)
   }
 
   companion object {

@@ -102,6 +102,8 @@ data class EditIncidentRoleRequest(
 data class ApplicableRulesRequest(
   @Schema(description = "Indicates whether the applicable rules are for a young offender")
   val isYouthOffenderRule: Boolean = false,
+  @Schema(description = "Whether to remove all existing offences")
+  val removeExistingOffences: Boolean = false,
 )
 
 @Schema(description = "Draft adjudication response")
@@ -268,7 +270,8 @@ class DraftAdjudicationController {
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.setIncidentApplicableRule(
       id,
-      applicableRulesRequest.isYouthOffenderRule
+      applicableRulesRequest.isYouthOffenderRule,
+      applicableRulesRequest.removeExistingOffences,
     )
 
     return DraftAdjudicationResponse(
