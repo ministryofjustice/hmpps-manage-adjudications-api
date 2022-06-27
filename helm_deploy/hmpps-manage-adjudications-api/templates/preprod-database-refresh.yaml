@@ -37,6 +37,7 @@ spec:
       activeDeadlineSeconds: 1200
       template:
         spec:
+          ttlSecondsAfterFinished: 345600
           securityContext:
             runAsUser: 999
           containers:
