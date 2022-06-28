@@ -1,14 +1,20 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import java.time.format.DateTimeFormatter
 
 class ReportedAdjudicationIntTest : IntegrationTestBase() {
+
+  @Autowired
+  lateinit var reportedAdjudicationRepository: ReportedAdjudicationRepository
 
   @BeforeEach
   fun setUp() {
@@ -504,6 +510,10 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       )
       .exchange()
       .expectStatus().is5xxServerError
+
+    val savedAdjudication =
+      reportedAdjudicationRepository.findByReportNumber(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    Assertions.assertThat(savedAdjudication!!.status).isEqualTo(ReportedAdjudicationStatus.AWAITING_REVIEW)
   }
 
   @Test
