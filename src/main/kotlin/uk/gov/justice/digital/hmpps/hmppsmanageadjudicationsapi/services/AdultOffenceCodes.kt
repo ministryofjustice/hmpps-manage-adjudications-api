@@ -27,7 +27,7 @@ class AdultOffenceCodes {
       )
       val paragraph9 = OffenceCodeParagraph(
         "9",
-        "Administers a controlled drug to themself or fails to prevent the administration of a controlled drug to them by another person (but subject to rule 52 - defences to rule 51(9))"
+        "Is found with any substance in his urine which demonstrates that a controlled drug (or specified drug) has, whether in prison or while on temporary release under rule 9 (or rule 9A), been administered to him by himself or by another person (but subject to rule 52)"
       )
       val paragraph10 =
         OffenceCodeParagraph("10", "Is intoxicated as a consequence of knowingly consuming any alcoholic beverage")
