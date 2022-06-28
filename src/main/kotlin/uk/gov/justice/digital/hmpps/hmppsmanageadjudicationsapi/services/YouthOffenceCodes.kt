@@ -116,9 +116,9 @@ class YouthOffenceCodes {
         .code(17001).nomisCodes("17").notCommittedOnOwnNomisCodes("17").paragraph(paragraph17)
         .code(17002).nomisCodes("17").notCommittedOnOwnNomisCodes("17").paragraph(paragraph17)
         // Empty line in spreadsheet
-        .code(19001).nomisCodes("21B").notCommittedOnOwnNomisCodes("25AE").paragraph(paragraph21)
-        .code(19002).nomisCodes("21C").notCommittedOnOwnNomisCodes("25AF").paragraph(paragraph21)
-        .code(19003).nomisCodes("21A").notCommittedOnOwnNomisCodes("25D").paragraph(paragraph21)
+        .code(19001).nomisCodes("21B").notCommittedOnOwnNomisCodes("29AE").paragraph(paragraph21)
+        .code(19002).nomisCodes("21C").notCommittedOnOwnNomisCodes("29AF").paragraph(paragraph21)
+        .code(19003).nomisCodes("21A").notCommittedOnOwnNomisCodes("29AD").paragraph(paragraph21)
         .code(20001).nomisCodes("23").notCommittedOnOwnNomisCodes("23").paragraph(paragraph23)
         .code(20002).nomisCodes("20").notCommittedOnOwnNomisCodes("29AC").paragraph(paragraph22)
         // Empty line in spreadsheet
