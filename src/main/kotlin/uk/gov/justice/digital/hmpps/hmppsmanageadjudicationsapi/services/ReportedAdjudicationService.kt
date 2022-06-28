@@ -28,6 +28,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.Optional
 import javax.persistence.EntityNotFoundException
+import javax.transaction.Transactional
 
 @Service
 class ReportedAdjudicationService(
@@ -114,6 +115,7 @@ class ReportedAdjudicationService(
     }.toMutableList()
   }
 
+  @Transactional
   fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
       ?: throw EntityNotFoundException("ReportedAdjudication not found for reported adjudication number $adjudicationNumber")
