@@ -57,28 +57,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           isYouthOffender = true
         )
       )
-
-      whenever(
-        draftAdjudicationService.startNewAdjudication(
-          any(),
-          any(),
-          any(),
-          any(),
-        )
-      ).thenReturn(
-        DraftAdjudicationDto(
-          id = 1,
-          adjudicationNumber = null,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 2,
-            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
-          isYouthOffender = true
-        )
-      )
     }
 
     @Test
@@ -111,12 +89,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("draftAdjudication.incidentDetails.locationId").value(2))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
-        .andExpect(jsonPath("draftAdjudication.incidentRole.roleCode").value(INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode))
-        .andExpect(
-          jsonPath("draftAdjudication.incidentRole.associatedPrisonersNumber").value(
-            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber
-          )
-        )
     }
 
     @Test
