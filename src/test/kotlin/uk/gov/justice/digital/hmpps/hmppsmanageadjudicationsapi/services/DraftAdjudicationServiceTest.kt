@@ -135,17 +135,9 @@ class DraftAdjudicationServiceTest {
       )
     }
 
-    @ParameterizedTest
-    @CsvSource("true", "false")
-    fun `makes a call to the repository to save the draft adjudication`(withIncidentRole: Boolean) {
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(
-        draftAdjudication.also {
-          if (withIncidentRole) {
-            it.incidentRole = incidentRoleWithAllValuesSet()
-            it.isYouthOffender = false
-          }
-        }
-      )
+    @Test
+    fun `makes a call to the repository to save the draft adjudication`() {
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
 
       val draftAdjudication =
         draftAdjudicationService.startNewAdjudication(
@@ -153,7 +145,6 @@ class DraftAdjudicationServiceTest {
           "MDI",
           2L,
           DATE_TIME_OF_INCIDENT,
-          if (withIncidentRole) incidentRoleRequestWithAllValuesSet() else null
         )
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
@@ -168,19 +159,8 @@ class DraftAdjudicationServiceTest {
         .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
         .contains(2L, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
 
-      if (withIncidentRole) {
-        assertThat(draftAdjudication.incidentRole)
-          .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
-          .contains(
-            incidentRoleDtoWithAllValuesSet().roleCode,
-            IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode, false),
-            incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
-          )
-        assertThat(draftAdjudication.isYouthOffender).isEqualTo(false)
-      } else {
-        assertThat(draftAdjudication.incidentRole).isNull()
-        assertThat(draftAdjudication.isYouthOffender).isNull()
-      }
+      assertThat(draftAdjudication.incidentRole).isNull()
+      assertThat(draftAdjudication.isYouthOffender).isNull()
     }
   }
 
@@ -682,23 +662,19 @@ class DraftAdjudicationServiceTest {
           1,
           2,
           DATE_TIME_OF_INCIDENT,
-          incidentRoleRequestWithNoValuesSet(),
-          false,
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
 
-    @ParameterizedTest
-    @CsvSource("true", "false")
-    fun `makes changes to the incident details`(hasIncidentRole: Boolean) {
+    @Test
+    fun `makes changes to the incident details`() {
       whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
         DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
       )
 
       val editedDateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1)
       val editedIncidentRole = incidentRoleWithNoValuesSet()
-      val editedIncidentRoleDtoRequest = incidentRoleRequestWithNoValuesSet()
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
@@ -713,12 +689,7 @@ class DraftAdjudicationServiceTest {
       )
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-        Optional.of(
-          draftAdjudicationEntity.also {
-            if (hasIncidentRole)
-              it.incidentRole = incidentRoleWithAllValuesSet()
-          }
-        )
+        Optional.of(draftAdjudicationEntity)
       )
       whenever(draftAdjudicationRepository.save(any())).thenReturn(
         draftAdjudicationEntity.copy(
@@ -736,8 +707,6 @@ class DraftAdjudicationServiceTest {
         1,
         3,
         editedDateTimeOfIncident,
-        editedIncidentRoleDtoRequest,
-        false,
       )
 
       assertThat(draftAdjudication)
@@ -754,10 +723,6 @@ class DraftAdjudicationServiceTest {
       assertThat(argumentCaptor.value.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident")
         .contains(3L, editedDateTimeOfIncident)
-
-      assertThat(argumentCaptor.value.incidentRole)
-        .extracting("roleCode", "associatedPrisonersNumber")
-        .contains(editedIncidentRole.roleCode, editedIncidentRole.associatedPrisonersNumber)
     }
 
     @Test

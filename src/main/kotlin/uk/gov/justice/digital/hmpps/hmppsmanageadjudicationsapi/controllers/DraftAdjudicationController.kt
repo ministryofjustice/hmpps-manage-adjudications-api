@@ -36,8 +36,6 @@ data class NewAdjudicationRequest(
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime,
-  @Schema(description = "Information about the role of this prisoner in the incident")
-  val incidentRole: IncidentRoleRequest? = null,
 )
 
 @Schema(description = "Request to update the incident details")
@@ -84,10 +82,6 @@ data class EditIncidentDetailsRequest(
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime? = null,
-  @Schema(description = "Information about the role of this prisoner in the incident")
-  val incidentRole: IncidentRoleRequest? = null,
-  @Schema(description = "Whether to remove all existing offences")
-  val removeExistingOffences: Boolean = false,
 )
 
 @Schema(description = "Request to edit incident role")
@@ -137,8 +131,8 @@ class DraftAdjudicationController {
   @Operation(summary = "Returns details of the offence rule relating to this offence code.")
   fun getOffenceRule(
     @PathVariable(name = "offenceCode") offenceCode: Int,
-    @RequestParam(value = "youthOffender", required = false) isYouthOffender: Boolean?,
-  ): OffenceRuleDetailsDto = draftAdjudicationService.lookupRuleDetails(offenceCode, isYouthOffender ?: false)
+    @RequestParam(value = "youthOffender") isYouthOffender: Boolean,
+  ): OffenceRuleDetailsDto = draftAdjudicationService.lookupRuleDetails(offenceCode, isYouthOffender)
 
   @PostMapping
   @PreAuthorize("hasAuthority('SCOPE_write')")
@@ -151,7 +145,6 @@ class DraftAdjudicationController {
         newAdjudicationRequest.agencyId,
         newAdjudicationRequest.locationId,
         newAdjudicationRequest.dateTimeOfIncident,
-        newAdjudicationRequest.incidentRole,
       )
 
     return DraftAdjudicationResponse(
@@ -217,8 +210,6 @@ class DraftAdjudicationController {
       id,
       editIncidentDetailsRequest.locationId,
       editIncidentDetailsRequest.dateTimeOfIncident,
-      editIncidentDetailsRequest.incidentRole,
-      editIncidentDetailsRequest.removeExistingOffences,
     )
 
     return DraftAdjudicationResponse(

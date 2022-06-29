@@ -43,37 +43,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
           "agencyId" to "MDI",
           "locationId" to 1,
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT,
-          "incidentRole" to IncidentRoleRequest("25a", "B2345BB"),
-        )
-      )
-      .exchange()
-      .expectStatus().isCreated
-      .expectBody()
-      .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
-      .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
-      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
-      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(1)
-      .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo("25a")
-      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphNumber").isEqualTo("25(a)")
-      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphDescription")
-      .isEqualTo("Attempts to commit any of the foregoing offences:")
-      .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo("B2345BB")
-      .jsonPath("$.draftAdjudication.isYouthOffender").isEqualTo("false")
-  }
-
-  @Test
-  fun `makes a request to start a new draft adjudication without incidentRole`() {
-    webTestClient.post()
-      .uri("/draft-adjudications")
-      .headers(setHeaders())
-      .bodyValue(
-        mapOf(
-          "prisonerNumber" to "A12345",
-          "agencyId" to "MDI",
-          "locationId" to 1,
-          "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT,
         )
       )
       .exchange()
@@ -93,11 +62,16 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `get draft adjudication details`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
+    val userHeaders = setHeaders(username = testAdjudication.createdByUserId)
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, userHeaders)
 
-    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
+    val intTestScenario = intTestBuilder
+      .startDraft(testAdjudication)
+      .setApplicableRules()
+      .setIncidentRole()
 
     webTestClient.get()
-      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}")
+      .uri("/draft-adjudications/${intTestScenario.getDraftId()}")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -130,6 +104,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     intTestBuilder
       .startDraft(testAdjudication)
       .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -185,11 +160,16 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `add offence details to the draft adjudication`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
+    val userHeaders = setHeaders(username = testAdjudication.createdByUserId)
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, userHeaders)
 
-    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
+    val intTestScenario = intTestBuilder
+      .startDraft(testAdjudication)
+      .setApplicableRules()
+      .setIncidentRole()
 
     webTestClient.put()
-      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/offence-details")
+      .uri("/draft-adjudications/${intTestScenario.getDraftId()}/offence-details")
       .headers(setHeaders())
       .bodyValue(
         mapOf(
@@ -259,13 +239,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline")
       .isEqualTo(testAdjudication.handoverDeadlineISOString)
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
-      .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
-      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphNumber")
-      .isEqualTo(testAdjudication.incidentRoleParagraphNumber)
-      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphDescription")
-      .isEqualTo(testAdjudication.incidentRoleParagraphDescription)
-      .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber")
-      .isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("test")
   }
 
@@ -283,7 +256,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "locationId" to 3,
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT.plusMonths(1),
-          "incidentRole" to IncidentRoleRequest("25b", "C3456CC"),
         )
       )
       .exchange()
@@ -294,47 +266,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-11-12T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-11-15T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(3)
-      .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo("25b")
-      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphNumber").isEqualTo("25(b)")
-      .jsonPath("$.draftAdjudication.incidentRole.offenceRule.paragraphDescription")
-      .isEqualTo("Incites another prisoner to commit any of the foregoing offences:")
-      .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo("C3456CC")
-  }
-
-  @Test
-  fun `edit the incident details and delete all offences`() {
-    val testAdjudication = IntegrationTestData.ADJUDICATION_1
-    val intTestData = integrationTestData()
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
-
-    val intTestScenario = intTestBuilder
-      .startDraft(testAdjudication)
-      .setOffenceData()
-
-    // Check we have offences
-    val draftId = intTestScenario.getDraftId()
-    val initialDraft = draftAdjudicationRepository.findById(draftId)
-    assertThat(initialDraft.get().offenceDetails).hasSize(2)
-
-    webTestClient.put()
-      .uri("/draft-adjudications/$draftId/incident-details")
-      .headers(setHeaders())
-      .bodyValue(
-        mapOf(
-          "locationId" to 3,
-          "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT.plusMonths(1),
-          "incidentRole" to IncidentRoleRequest("25b", "C3456CC"),
-          "removeExistingOffences" to true,
-        )
-      )
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.draftAdjudication.id").isNumber
-
-    // Check it has been removed from the DB
-    val draft = draftAdjudicationRepository.findById(draftId)
-    assertThat(draft.get().offenceDetails).hasSize(0)
   }
 
   @Test
@@ -345,6 +276,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
+      .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
 
     webTestClient.put()
@@ -418,6 +351,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
+      .setApplicableRules()
       .setOffenceData()
 
     // Check we have offences
@@ -455,6 +389,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val intTestScenario = intTestBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
       .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
 
@@ -516,6 +451,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val intTestScenario = intTestBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
       .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
 
@@ -539,6 +475,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val intTestScenario = intTestBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
       .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
 
@@ -550,6 +487,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val draftAdjudicationResponse =
       intTestData.recallCompletedDraftAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
     intTestData.editIncidentDetails(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
+    intTestData.setIncidentRole(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
     intTestData.setOffenceDetails(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
     intTestData.editIncidentStatement(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
 
@@ -599,6 +537,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
       .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
 
@@ -631,13 +570,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudications[0].incidentDetails.handoverDeadline")
       .isEqualTo(testAdjudication.handoverDeadlineISOString)
       .jsonPath("$.draftAdjudications[0].incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
-      .jsonPath("$.draftAdjudications[0].incidentRole.roleCode").isEqualTo(testAdjudication.incidentRoleCode)
-      .jsonPath("$.draftAdjudications[0].incidentRole.offenceRule.paragraphNumber")
-      .isEqualTo(testAdjudication.incidentRoleParagraphNumber)
-      .jsonPath("$.draftAdjudications[0].incidentRole.offenceRule.paragraphDescription")
-      .isEqualTo(testAdjudication.incidentRoleParagraphDescription)
-      .jsonPath("$.draftAdjudications[0].incidentRole.associatedPrisonersNumber")
-      .isEqualTo(testAdjudication.incidentRoleAssociatedPrisonersNumber)
   }
 
   @Test
@@ -668,9 +600,9 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `gets adult offence rule details if no youthOffender flag provided`() {
+  fun `gets adult offence rule details`() {
     webTestClient.get()
-      .uri("/draft-adjudications/offence-rule/3001")
+      .uri("/draft-adjudications/offence-rule/3001?youthOffender=false")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk
@@ -694,7 +626,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   @Test
   fun `gets default offence rule details for an invalid offence code`() {
     webTestClient.get()
-      .uri("/draft-adjudications/offence-rule/999")
+      .uri("/draft-adjudications/offence-rule/999?youthOffender=false")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk
@@ -711,6 +643,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
+      .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
 
     val draftId = intTestScenario.getDraftId()

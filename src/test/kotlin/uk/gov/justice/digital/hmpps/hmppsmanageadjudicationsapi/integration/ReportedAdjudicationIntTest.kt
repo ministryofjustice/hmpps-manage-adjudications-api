@@ -32,6 +32,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -211,6 +213,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val firstDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
     firstDraftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.ADJUDICATION_1)
+      .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -219,6 +223,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val secondDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, secondDraftUserHeaders)
     secondDraftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.ADJUDICATION_2)
+      .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -227,6 +233,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val thirdDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, thirdDraftUserHeaders)
     thirdDraftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.ADJUDICATION_3)
+      .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -308,6 +316,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -375,6 +385,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -414,6 +426,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -448,6 +462,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -496,6 +512,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -527,6 +545,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -554,6 +574,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     firstDraftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.ADJUDICATION_2)
       .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -563,6 +584,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     secondDraftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.ADJUDICATION_3)
       .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -572,6 +594,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     thirdDraftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.ADJUDICATION_4)
       .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -581,6 +604,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     fourthDraftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.ADJUDICATION_5)
       .setApplicableRules()
+      .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()

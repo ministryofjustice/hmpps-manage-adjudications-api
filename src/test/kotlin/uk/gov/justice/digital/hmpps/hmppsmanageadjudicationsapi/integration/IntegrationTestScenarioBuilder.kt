@@ -27,6 +27,11 @@ class IntegrationTestScenario(
     return this
   }
 
+  fun setIncidentRole(): IntegrationTestScenario {
+    intTestData.setIncidentRole(draftCreationResponse, testAdjudicationDataSet, headers)
+    return this
+  }
+
   fun setOffenceData(): IntegrationTestScenario {
     intTestData.setOffenceDetails(draftCreationResponse, testAdjudicationDataSet, headers)
     return this
