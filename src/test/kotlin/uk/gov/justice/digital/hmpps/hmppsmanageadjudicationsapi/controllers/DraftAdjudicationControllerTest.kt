@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.kotlin.any
-import org.mockito.kotlin.isNull
-import org.mockito.kotlin.notNull
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -45,7 +43,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           any(),
           any(),
           any(),
-          isNull(),
         )
       ).thenReturn(
         DraftAdjudicationDto(
@@ -57,29 +54,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
-          isYouthOffender = true
-        )
-      )
-
-      whenever(
-        draftAdjudicationService.startNewAdjudication(
-          any(),
-          any(),
-          any(),
-          any(),
-          notNull(),
-        )
-      ).thenReturn(
-        DraftAdjudicationDto(
-          id = 1,
-          adjudicationNumber = null,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 2,
-            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
           isYouthOffender = true
         )
       )
@@ -101,22 +75,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         "MDI",
         1,
         DATE_TIME_OF_INCIDENT,
-        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
-      )
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `calls the service to start a new adjudication for a prisoner without incident roles`() {
-      startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT)
-        .andExpect(status().isCreated)
-
-      verify(draftAdjudicationService).startNewAdjudication(
-        "A12345",
-        "MDI",
-        1,
-        DATE_TIME_OF_INCIDENT,
-        null,
       )
     }
 
@@ -131,12 +89,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("draftAdjudication.incidentDetails.locationId").value(2))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
-        .andExpect(jsonPath("draftAdjudication.incidentRole.roleCode").value(INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode))
-        .andExpect(
-          jsonPath("draftAdjudication.incidentRole.associatedPrisonersNumber").value(
-            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber
-          )
-        )
     }
 
     @Test
@@ -405,8 +357,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           anyLong(),
           any(),
-          any(),
-          any(),
         )
       ).thenReturn(
         DraftAdjudicationDto(
@@ -440,8 +390,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         1,
         2,
         DATE_TIME_OF_INCIDENT,
-        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
-        false,
       )
     }
 
@@ -475,8 +423,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           anyLong(),
           any(),
-          any(),
-          org.mockito.kotlin.any(),
         )
       ).thenThrow(
         IllegalStateException::class.java

@@ -77,8 +77,7 @@ class DraftAdjudicationService(
     prisonerNumber: String,
     agencyId: String,
     locationId: Long,
-    dateTimeOfIncident: LocalDateTime,
-    incidentRole: IncidentRoleRequest?
+    dateTimeOfIncident: LocalDateTime
   ): DraftAdjudicationDto {
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
@@ -90,17 +89,7 @@ class DraftAdjudicationService(
       ),
       reportNumber = null,
       reportByUserId = null,
-    ).also {
-      incidentRole?.let { role ->
-        // NOTE existing API allows creation of roles at start.
-        // Therefore we must default the isYouthOffender flag for legacy creation until roles creation is removed from this function
-        it.isYouthOffender = false
-        it.incidentRole = IncidentRole(
-          roleCode = role.roleCode,
-          associatedPrisonersNumber = role.associatedPrisonersNumber,
-        )
-      }
-    }
+    )
     return draftAdjudicationRepository
       .save(draftAdjudication)
       .toDto(offenceCodeLookupService)
@@ -156,26 +145,14 @@ class DraftAdjudicationService(
   fun editIncidentDetails(
     id: Long,
     locationId: Long?,
-    dateTimeOfIncident: LocalDateTime?,
-    incidentRole: IncidentRoleRequest?,
-    removeExistingOffences: Boolean,
+    dateTimeOfIncident: LocalDateTime?
   ): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
-
-    if (removeExistingOffences) {
-      draftAdjudication.offenceDetails?.clear()
-    }
 
     locationId?.let { draftAdjudication.incidentDetails.locationId = it }
     dateTimeOfIncident?.let {
       draftAdjudication.incidentDetails.dateTimeOfIncident = it
       draftAdjudication.incidentDetails.handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(it)
-    }
-
-    incidentRole?.let {
-      draftAdjudication.incidentRole = draftAdjudication.incidentRole ?: IncidentRole(roleCode = null, associatedPrisonersNumber = null)
-      draftAdjudication.incidentRole!!.roleCode = it.roleCode
-      draftAdjudication.incidentRole!!.associatedPrisonersNumber = it.associatedPrisonersNumber
     }
 
     return draftAdjudicationRepository

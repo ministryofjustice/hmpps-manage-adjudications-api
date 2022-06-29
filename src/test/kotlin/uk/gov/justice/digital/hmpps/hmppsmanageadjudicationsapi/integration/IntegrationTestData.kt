@@ -64,7 +64,7 @@ class IntegrationTestData(
     const val UPDATED_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-13T10:00:00"
     const val UPDATED_HANDOVER_DEADLINE_ISO_STRING = "2010-11-16T10:00:00"
     const val UPDATED_LOCATION_ID = 721899L
-    const val UPDATED_INCIDENT_ROLE_CODE = "25b"
+    const val UPDATED_INCIDENT_ROLE_CODE = "25b" // seems to be 25a now.
     const val UPDATED_INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(b)"
     const val UPDATED_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION =
       "Incites another prisoner to commit any of the foregoing offences:"
@@ -72,11 +72,6 @@ class IntegrationTestData(
     val UPDATED_OFFENCES = listOf(BASIC_OFFENCE)
     const val UPDATED_STATEMENT = "updated test statement"
     val UPDATED_DATE_TIME_OF_INCIDENT = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
-    val UPDATED_EXPECTED_NOMIS_DATA = NomisOffenceTestDataSet(
-      nomisCodes = listOf("51:1A"), // Basic offence only
-      victimStaffUsernames = emptyList(),
-      victimPrisonersNumbers = emptyList(),
-    )
 
     val DEFAULT_ADJUDICATION = AdjudicationIntTestDataSet(
       adjudicationNumber = DEFAULT_ADJUDICATION_NUMBER,
@@ -235,13 +230,33 @@ class IntegrationTestData(
           "agencyId" to testDataSet.agencyId,
           "locationId" to testDataSet.locationId,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,
+        )
+      )
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
+  fun setIncidentRole(
+    draftCreationData: DraftAdjudicationResponse,
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+
+  ): DraftAdjudicationResponse {
+    return webTestClient.put()
+      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/incident-role")
+      .headers(headers)
+      .bodyValue(
+        mapOf(
           "incidentRole" to IncidentRoleRequest(
             testDataSet.incidentRoleCode,
             testDataSet.incidentRoleAssociatedPrisonersNumber
           ),
+          "removeExistingOffences" to true,
         )
-      )
-      .exchange()
+      ).exchange()
       .expectStatus().is2xxSuccessful
       .returnResult(DraftAdjudicationResponse::class.java)
       .responseBody
