@@ -7,7 +7,7 @@ management.endpoint:
 
 prison.api.endpoint.url: http://localhost:8979
 oauth.endpoint.url: http://localhost:8070/auth
-bank-holiday.api.url: http://localhost:8978
+#bank-holiday.api.url: http://localhost:8978
 
 spring:
   datasource:

@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.actuate.health.Status
 import org.springframework.cache.CacheManager
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.EnableCaching
@@ -10,21 +12,29 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.health.BankHolidayApiHealthCheck
 import java.util.concurrent.TimeUnit
 
 @Configuration
 @EnableCaching
 @EnableScheduling
-class CacheConfiguration {
+class CacheConfiguration @Autowired constructor(
+  val bankHolidayApiHealthCheck: BankHolidayApiHealthCheck
+) {
 
   @Bean
   fun cacheManager(): CacheManager {
     return ConcurrentMapCacheManager(BANK_HOLIDAYS_CACHE_NAME)
   }
 
+  @Scheduled(fixedDelay = TTL_DAYS, timeUnit = TimeUnit.MILLISECONDS)
+  fun scheduledEvict() {
+     if(bankHolidayApiHealthCheck.health().status == Status.UP)
+       cacheEvict()
+  }
+
   @CacheEvict(allEntries = true, cacheNames = [BANK_HOLIDAYS_CACHE_NAME])
-  @Scheduled(fixedDelay = TTL_DAYS, timeUnit = TimeUnit.DAYS)
-  fun cacheEvict() {
+  fun cacheEvict(){
     log.info("Evicting cache $BANK_HOLIDAYS_CACHE_NAME")
   }
 
