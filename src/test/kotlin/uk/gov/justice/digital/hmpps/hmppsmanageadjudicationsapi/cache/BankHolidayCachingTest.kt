@@ -69,7 +69,7 @@ class BankHolidayCachingTest {
 
   @Test
   fun `testing cache eviction and load, with health check to update`() {
-    // 1 confirm the cache is empty
+    // 1 confirm the cache is empty and we have not called the api
     assertNull(
       cacheConfiguration.cacheManager().getCache(BANK_HOLIDAYS_CACHE_NAME).get(SimpleKey.EMPTY)
     )
@@ -77,16 +77,14 @@ class BankHolidayCachingTest {
 
     // 2 call to get data and confirm we have called the api
     assertThat(bankHolidayFacade.getBankHolidays().englandAndWales.division).isEqualTo("1")
-
     verify(bankHolidayApiGateway, atLeast(1)).getBankHolidays()
 
     // 3 call to get data and confirm we have called the cache
     assertThat(bankHolidayFacade.getBankHolidays().englandAndWales.division).isEqualTo("1")
     verify(bankHolidayApiGateway, atMost(1)).getBankHolidays()
 
-    // update cache via health check
+    // update cache via health check and confirm we have new values in the cache
     assertThat(bankHolidayApiHealthCheck.health().status).isEqualTo(UP)
-
     assertThat(bankHolidayFacade.getBankHolidays().englandAndWales.division).isEqualTo("4")
     verify(bankHolidayApiGateway, atLeast(2)).getBankHolidays()
   }
