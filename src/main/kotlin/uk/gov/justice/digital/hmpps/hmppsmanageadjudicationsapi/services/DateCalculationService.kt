@@ -1,17 +1,17 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.BankHolidayApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.BankHolidayFacade
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Service
 class DateCalculationService(
-  val bankHolidayApiGateway: BankHolidayApiGateway,
+  val bankHolidayFacade: BankHolidayFacade,
 ) {
   fun calculate48WorkingHoursFrom(dateTimeOfIncident: LocalDateTime): LocalDateTime {
-    val bankHolidayDetails = bankHolidayApiGateway.getBankHolidays()
+    val bankHolidayDetails = bankHolidayFacade.getBankHolidays()
     val bankHolidays = bankHolidayDetails.englandAndWales.events
     val bankHolidayDays = bankHolidays.map { it.date }
 

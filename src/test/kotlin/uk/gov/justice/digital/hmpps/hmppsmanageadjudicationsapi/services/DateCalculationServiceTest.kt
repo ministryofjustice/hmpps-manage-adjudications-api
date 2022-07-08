@@ -8,7 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.BankHoliday
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.BankHolidayApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.BankHolidayFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.BankHolidays
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.RegionBankHolidays
 import java.time.LocalDate
@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 import java.util.stream.Stream
 
 class DateCalculationServiceTest {
-  private val bankHolidayApi: BankHolidayApiGateway = mock()
+  private val bankHolidayApi: BankHolidayFacade = mock()
   private lateinit var dateCalculationService: DateCalculationService
 
   @BeforeEach

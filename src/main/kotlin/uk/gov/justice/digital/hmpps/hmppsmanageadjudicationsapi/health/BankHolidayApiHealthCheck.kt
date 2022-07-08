@@ -5,15 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.actuate.health.HealthIndicator
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.BankHolidayApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.BankHolidayFacade
 
 @Component
 class BankHolidayApiHealthCheck @Autowired constructor(
-  val bankHolidayApiGateway: BankHolidayApiGateway
+  val bankHolidayFacade: BankHolidayFacade
 ) : HealthIndicator {
   override fun health(): Health {
     try {
-      bankHolidayApiGateway.getBankHolidays()
+      bankHolidayFacade.updateCache()
     } catch (e: Exception) {
       log.info(e.message)
       return Health.down(e).build()

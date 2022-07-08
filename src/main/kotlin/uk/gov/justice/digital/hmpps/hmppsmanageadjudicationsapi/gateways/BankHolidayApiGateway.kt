@@ -10,7 +10,6 @@ class BankHolidayApiGateway(@Qualifier("bankHolidayApiWebClient") private val we
   private inline fun <reified T> typeReference() = object : ParameterizedTypeReference<T>() {}
 
   fun getBankHolidays(): BankHolidays {
-    println("getting actual data")
     return webClient.get()
       .uri("/bank-holidays.json")
       .retrieve()
