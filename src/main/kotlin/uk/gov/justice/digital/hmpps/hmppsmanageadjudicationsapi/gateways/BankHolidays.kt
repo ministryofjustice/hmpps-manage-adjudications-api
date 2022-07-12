@@ -21,5 +21,6 @@ data class BankHolidays(
   @JsonProperty("scotland")
   val scotland: RegionBankHolidays,
   @JsonProperty("northern-ireland")
-  val northernIreland: RegionBankHolidays
+  val northernIreland: RegionBankHolidays,
+  val lastUpdated: Long = System.currentTimeMillis()
 )

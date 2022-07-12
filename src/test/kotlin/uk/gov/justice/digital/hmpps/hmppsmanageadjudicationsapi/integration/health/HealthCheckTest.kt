@@ -5,13 +5,29 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.CacheManager
+import org.springframework.cache.interceptor.SimpleKey
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.CacheConfiguration
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.BankHolidays
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.RegionBankHolidays
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestBase
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.function.Consumer
 
 class HealthCheckTest : IntegrationTestBase() {
+
+  private val bankHolidays =
+    BankHolidays(
+      englandAndWales = RegionBankHolidays(
+        division = "4", events = listOf()
+      ),
+      scotland = RegionBankHolidays(
+        division = "5", events = listOf()
+      ),
+      northernIreland = RegionBankHolidays(
+        division = "6", events = listOf()
+      )
+    )
 
   @Autowired
   lateinit var cacheManager: CacheManager
@@ -29,6 +45,8 @@ class HealthCheckTest : IntegrationTestBase() {
 
   @Test
   fun `Health page reports ok`() {
+    cacheManager.getCache(CacheConfiguration.BANK_HOLIDAYS_CACHE_NAME).put(SimpleKey.EMPTY, bankHolidays)
+
     webTestClient.get()
       .uri("/health")
       .exchange()
@@ -40,6 +58,8 @@ class HealthCheckTest : IntegrationTestBase() {
 
   @Test
   fun `Health info reports version`() {
+    cacheManager.getCache(CacheConfiguration.BANK_HOLIDAYS_CACHE_NAME).put(SimpleKey.EMPTY, bankHolidays)
+
     webTestClient.get().uri("/health")
       .exchange()
       .expectStatus().isOk
@@ -95,6 +115,7 @@ class HealthCheckTest : IntegrationTestBase() {
 
   @Test
   fun `Prison API and Bank Holiday API health reports UP and OK`() {
+    cacheManager.getCache(CacheConfiguration.BANK_HOLIDAYS_CACHE_NAME).put(SimpleKey.EMPTY, bankHolidays)
     webTestClient.get().uri("/health")
       .exchange()
       .expectStatus().isOk
