@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.netty.channel.ChannelOption
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
+import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.http.codec.ClientCodecConfigurer
 import org.springframework.http.codec.json.Jackson2JsonDecoder
 import org.springframework.http.codec.json.Jackson2JsonEncoder
@@ -21,6 +23,8 @@ import org.springframework.security.oauth2.client.web.reactive.function.client.S
 import org.springframework.web.context.annotation.RequestScope
 import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.netty.http.client.HttpClient
+import java.time.Duration
 
 @Configuration
 class WebClientConfig(
@@ -46,7 +50,13 @@ class WebClientConfig(
 
   @Bean
   fun bankHolidayApiWebClient(builder: WebClient.Builder): WebClient {
-    return builder.baseUrl(bankHolidayApiUrl).build()
+    val client: HttpClient = HttpClient.create()
+      .responseTimeout(Duration.ofSeconds(10))
+      .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
+
+    return builder.baseUrl(bankHolidayApiUrl)
+      .clientConnector(ReactorClientHttpConnector(client))
+      .build()
   }
 
   private fun getClientCredsWebClient(
