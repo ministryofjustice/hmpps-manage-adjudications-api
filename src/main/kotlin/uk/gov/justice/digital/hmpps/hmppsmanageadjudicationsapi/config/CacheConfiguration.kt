@@ -28,6 +28,7 @@ class CacheConfiguration @Autowired constructor(
   @Scheduled(fixedDelay = TTL, initialDelay = 1, timeUnit = TimeUnit.MINUTES)
   fun update() {
     bankHolidayFacade.updateCache()
+    //  cacheManager().getCache(BANK_HOLIDAYS_CACHE_NAME).put("timestamp",System.currentTimeMillis())
     log.info("updating cache $BANK_HOLIDAYS_CACHE_NAME")
   }
 
