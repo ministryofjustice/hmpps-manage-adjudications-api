@@ -29,7 +29,7 @@ class BankHolidayApiHealthCheck @Autowired constructor(
 
   fun withCacheCheck(e: Exception?): Health {
     val cache = cacheConfiguration.cacheManager().getCache(BANK_HOLIDAYS_CACHE_NAME) ?: return Health.up().build()
-    val data = cache.get(SimpleKey.EMPTY)?.get() ?: return Health.down().build()
+    val data = cache.get(SimpleKey.EMPTY)?.get() ?: return if (e == null) Health.up().build() else Health.down(e).build()
     if ((data as BankHolidays).lastUpdated > System.currentTimeMillis() - Duration.ofDays(100).toMillis()) return Health.up().build()
 
     return Health.down(e ?: Exception("$BANK_HOLIDAYS_CACHE_NAME cache invalid")).build()

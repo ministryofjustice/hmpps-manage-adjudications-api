@@ -81,6 +81,13 @@ class BankHolidayApiHealthCheckTest {
   }
 
   @Test
+  fun `expect health UP when gateway is up and cache is empty`() {
+    Mockito.`when`(bankHolidayApiGateway.getBankHolidays()).thenReturn(bankHolidaysValid)
+    cacheConfiguration.cacheManager().getCache(CacheConfiguration.BANK_HOLIDAYS_CACHE_NAME).evict(SimpleKey.EMPTY)
+    assertThat(bankHolidayApiHealthCheck.health().status).isEqualTo(Status.UP)
+  }
+
+  @Test
   fun `expect health UP when gateway is down and cache is within last 100 days`() {
     Mockito.`when`(bankHolidayApiGateway.getBankHolidays()).thenThrow(RuntimeException())
     cacheConfiguration.cacheManager().getCache(CacheConfiguration.BANK_HOLIDAYS_CACHE_NAME).put(SimpleKey.EMPTY, bankHolidaysValid)
