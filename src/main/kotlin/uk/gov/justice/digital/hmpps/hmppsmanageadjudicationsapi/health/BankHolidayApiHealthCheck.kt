@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.CacheConfiguration
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.CacheConfiguration.Companion.BANK_HOLIDAYS_CACHE_NAME
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.BankHolidayApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.BankHolidays
+import java.time.Duration
 
 @Component
 class BankHolidayApiHealthCheck @Autowired constructor(
@@ -27,9 +29,10 @@ class BankHolidayApiHealthCheck @Autowired constructor(
 
   fun withCacheCheck(e: Exception?): Health {
     val cache = cacheConfiguration.cacheManager().getCache(BANK_HOLIDAYS_CACHE_NAME) ?: return Health.up().build()
-    if (cache.get(SimpleKey.EMPTY) != null) return Health.up().build()
+    val data = cache.get(SimpleKey.EMPTY)?.get() ?: return Health.down().build()
+    if ((data as BankHolidays).lastUpdated > System.currentTimeMillis() - Duration.ofDays(100).toMillis()) return Health.up().build()
 
-    return Health.down(e ?: Exception("$BANK_HOLIDAYS_CACHE_NAME has no data")).build()
+    return Health.down(e ?: Exception("$BANK_HOLIDAYS_CACHE_NAME cache invalid")).build()
   }
 
   companion object {
