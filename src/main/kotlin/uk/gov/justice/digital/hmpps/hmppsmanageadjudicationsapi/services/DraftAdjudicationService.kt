@@ -64,10 +64,15 @@ class DraftAdjudicationService(
   val authenticationFacade: AuthenticationFacade,
 ) {
 
+  companion object {
+    const val DAYS_TO_ACTION = 2L
+    const val DAYS_TO_DELETE = 1L
+  }
+
   @Transactional
   fun deleteOrphanedDraftAdjudications() {
     draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(
-      LocalDateTime.now().minusDays(1)
+      LocalDateTime.now().minusDays(DAYS_TO_DELETE)
     )
   }
 
@@ -84,7 +89,7 @@ class DraftAdjudicationService(
       incidentDetails = IncidentDetails(
         locationId = locationId,
         dateTimeOfIncident = dateTimeOfIncident,
-        handoverDeadline = dateTimeOfIncident.plusDays(2)
+        handoverDeadline = dateTimeOfIncident.plusDays(DAYS_TO_ACTION)
       ),
       reportNumber = null,
       reportByUserId = null,
@@ -151,7 +156,7 @@ class DraftAdjudicationService(
     locationId?.let { draftAdjudication.incidentDetails.locationId = it }
     dateTimeOfIncident?.let {
       draftAdjudication.incidentDetails.dateTimeOfIncident = it
-      draftAdjudication.incidentDetails.handoverDeadline = it.plusDays(2)
+      draftAdjudication.incidentDetails.handoverDeadline = it.plusDays(DAYS_TO_ACTION)
     }
 
     return draftAdjudicationRepository
