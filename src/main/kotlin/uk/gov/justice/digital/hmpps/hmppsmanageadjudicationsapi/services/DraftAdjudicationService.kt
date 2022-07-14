@@ -61,7 +61,6 @@ class DraftAdjudicationService(
   val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   val prisonApiGateway: PrisonApiGateway,
   val offenceCodeLookupService: OffenceCodeLookupService,
-  val dateCalculationService: DateCalculationService,
   val authenticationFacade: AuthenticationFacade,
 ) {
 
@@ -85,7 +84,7 @@ class DraftAdjudicationService(
       incidentDetails = IncidentDetails(
         locationId = locationId,
         dateTimeOfIncident = dateTimeOfIncident,
-        handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(dateTimeOfIncident)
+        handoverDeadline = dateTimeOfIncident.plusDays(2)
       ),
       reportNumber = null,
       reportByUserId = null,
@@ -152,7 +151,7 @@ class DraftAdjudicationService(
     locationId?.let { draftAdjudication.incidentDetails.locationId = it }
     dateTimeOfIncident?.let {
       draftAdjudication.incidentDetails.dateTimeOfIncident = it
-      draftAdjudication.incidentDetails.handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(it)
+      draftAdjudication.incidentDetails.handoverDeadline = it.plusDays(2)
     }
 
     return draftAdjudicationRepository

@@ -51,7 +51,6 @@ class DraftAdjudicationServiceTest {
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
   private val prisonApiGateway: PrisonApiGateway = mock()
   private val offenceCodeLookupService: OffenceCodeLookupService = mock()
-  private val dateCalculationService: DateCalculationService = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
   private val clock: Clock = Clock.fixed(ofEpochMilli(0), ZoneId.systemDefault())
 
@@ -65,7 +64,6 @@ class DraftAdjudicationServiceTest {
         reportedAdjudicationRepository,
         prisonApiGateway,
         offenceCodeLookupService,
-        dateCalculationService,
         authenticationFacade
       )
 
@@ -127,13 +125,6 @@ class DraftAdjudicationServiceTest {
         handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
       ),
     )
-
-    @BeforeEach
-    fun beforeEach() {
-      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
-        DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-      )
-    }
 
     @Test
     fun `makes a call to the repository to save the draft adjudication`() {
@@ -669,10 +660,6 @@ class DraftAdjudicationServiceTest {
 
     @Test
     fun `makes changes to the incident details`() {
-      whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
-        DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-      )
-
       val editedDateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1)
       val editedIncidentRole = incidentRoleWithNoValuesSet()
       val draftAdjudicationEntity = DraftAdjudication(
@@ -893,9 +880,6 @@ class DraftAdjudicationServiceTest {
             adjudicationNumber = 123456L,
             bookingId = 1L,
           )
-        )
-        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
-          DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
         )
         whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
           val passedInAdjudication = it.arguments[0] as ReportedAdjudication
@@ -1118,9 +1102,6 @@ class DraftAdjudicationServiceTest {
             adjudicationNumber = 123,
             bookingId = 33,
           )
-        )
-        whenever(dateCalculationService.calculate48WorkingHoursFrom(any())).thenReturn(
-          DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
         )
         whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
           val passedInAdjudication = it.arguments[0] as ReportedAdjudication

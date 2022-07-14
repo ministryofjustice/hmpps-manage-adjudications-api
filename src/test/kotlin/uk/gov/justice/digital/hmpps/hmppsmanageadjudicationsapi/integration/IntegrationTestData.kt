@@ -6,7 +6,6 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.BankHolidayApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import java.time.LocalDateTime
@@ -14,7 +13,6 @@ import java.time.LocalDateTime
 class IntegrationTestData(
   private val webTestClient: WebTestClient,
   private val jwtAuthHelper: JwtAuthHelper,
-  private val bankHolidayApiMockServer: BankHolidayApiMockServer,
   private val prisonApiMockServer: PrisonApiMockServer
 ) {
 
@@ -44,8 +42,8 @@ class IntegrationTestData(
     const val DEFAULT_AGENCY_ID = "MDI"
     const val DEFAULT_CREATED_USER_ID = "B_MILLS"
     val DEFAULT_DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 11, 12, 10, 0)
-    const val DEFAULT_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-12T10:00:00"
-    const val DEFAULT_HANDOVER_DEADLINE_ISO_STRING = "2010-11-15T10:00:00"
+    const val DEFAULT_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-12T10:00:00" // this is a friday
+    const val DEFAULT_HANDOVER_DEADLINE_ISO_STRING = "2010-11-14T10:00:00"
     const val DEFAULT_INCIDENT_ROLE_CODE = "25a"
     const val DEFAULT_INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(a)"
     const val DEFAULT_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION = "Attempts to commit any of the foregoing offences:"
@@ -61,8 +59,8 @@ class IntegrationTestData(
       victimPrisonersNumbers = listOf("A1234AA"),
     )
 
-    const val UPDATED_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-13T10:00:00"
-    const val UPDATED_HANDOVER_DEADLINE_ISO_STRING = "2010-11-16T10:00:00"
+    const val UPDATED_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-13T10:00:00" // 13 is saturday
+    const val UPDATED_HANDOVER_DEADLINE_ISO_STRING = "2010-11-15T10:00:00"
     const val UPDATED_LOCATION_ID = 721899L
     const val UPDATED_INCIDENT_ROLE_CODE = "25b" // seems to be 25a now.
     const val UPDATED_INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(b)"
@@ -219,7 +217,6 @@ class IntegrationTestData(
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders()
   ): DraftAdjudicationResponse {
-    bankHolidayApiMockServer.stubGetBankHolidays()
 
     return webTestClient.post()
       .uri("/draft-adjudications")
