@@ -61,14 +61,20 @@ class DraftAdjudicationService(
   val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   val prisonApiGateway: PrisonApiGateway,
   val offenceCodeLookupService: OffenceCodeLookupService,
-  val dateCalculationService: DateCalculationService,
   val authenticationFacade: AuthenticationFacade,
 ) {
+
+  companion object {
+    private const val DAYS_TO_ACTION = 2L
+    const val DAYS_TO_DELETE = 1L
+
+    fun daysToActionFromIncident(incidentDate: LocalDateTime): LocalDateTime = incidentDate.plusDays(DAYS_TO_ACTION)
+  }
 
   @Transactional
   fun deleteOrphanedDraftAdjudications() {
     draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(
-      LocalDateTime.now().minusDays(1)
+      LocalDateTime.now().minusDays(DAYS_TO_DELETE)
     )
   }
 
@@ -85,7 +91,7 @@ class DraftAdjudicationService(
       incidentDetails = IncidentDetails(
         locationId = locationId,
         dateTimeOfIncident = dateTimeOfIncident,
-        handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(dateTimeOfIncident)
+        handoverDeadline = daysToActionFromIncident(dateTimeOfIncident)
       ),
       reportNumber = null,
       reportByUserId = null,
@@ -152,7 +158,7 @@ class DraftAdjudicationService(
     locationId?.let { draftAdjudication.incidentDetails.locationId = it }
     dateTimeOfIncident?.let {
       draftAdjudication.incidentDetails.dateTimeOfIncident = it
-      draftAdjudication.incidentDetails.handoverDeadline = dateCalculationService.calculate48WorkingHoursFrom(it)
+      draftAdjudication.incidentDetails.handoverDeadline = daysToActionFromIncident(it)
     }
 
     return draftAdjudicationRepository
