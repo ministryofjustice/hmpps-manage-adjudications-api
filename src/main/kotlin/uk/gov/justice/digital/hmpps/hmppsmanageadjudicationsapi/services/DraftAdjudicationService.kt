@@ -65,8 +65,10 @@ class DraftAdjudicationService(
 ) {
 
   companion object {
-    const val DAYS_TO_ACTION = 2L
+    private const val DAYS_TO_ACTION = 2L
     const val DAYS_TO_DELETE = 1L
+
+    fun daysToActionFromIncident(incidentDate: LocalDateTime): LocalDateTime = incidentDate.plusDays(DAYS_TO_ACTION)
   }
 
   @Transactional
@@ -89,7 +91,7 @@ class DraftAdjudicationService(
       incidentDetails = IncidentDetails(
         locationId = locationId,
         dateTimeOfIncident = dateTimeOfIncident,
-        handoverDeadline = dateTimeOfIncident.plusDays(DAYS_TO_ACTION)
+        handoverDeadline = daysToActionFromIncident(dateTimeOfIncident)
       ),
       reportNumber = null,
       reportByUserId = null,
@@ -156,7 +158,7 @@ class DraftAdjudicationService(
     locationId?.let { draftAdjudication.incidentDetails.locationId = it }
     dateTimeOfIncident?.let {
       draftAdjudication.incidentDetails.dateTimeOfIncident = it
-      draftAdjudication.incidentDetails.handoverDeadline = it.plusDays(DAYS_TO_ACTION)
+      draftAdjudication.incidentDetails.handoverDeadline = daysToActionFromIncident(it)
     }
 
     return draftAdjudicationRepository
