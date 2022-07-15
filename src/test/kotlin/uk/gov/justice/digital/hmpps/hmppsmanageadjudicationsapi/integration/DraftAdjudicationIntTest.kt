@@ -39,6 +39,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(1)
   }
 
   @Test
@@ -114,6 +119,24 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.offenceDetails[0].offenceRule.paragraphNumber")
+      .isEqualTo(testAdjudication.offences[0].paragraphNumber)
+      .jsonPath("$.draftAdjudication.offenceDetails[0].offenceRule.paragraphDescription")
+      .isEqualTo(testAdjudication.offences[0].paragraphDescription)
+      .jsonPath("$.draftAdjudication.offenceDetails[0].victimPrisonersNumber")
+      .isEqualTo(testAdjudication.offences[0].victimPrisonersNumber!!)
+      .jsonPath("$.draftAdjudication.offenceDetails[0].victimStaffUsername")
+      .isEqualTo(testAdjudication.offences[0].victimStaffUsername!!)
+      .jsonPath("$.draftAdjudication.offenceDetails[0].victimOtherPersonsName")
+      .isEqualTo(testAdjudication.offences[0].victimOtherPersonsName!!)
+      .jsonPath("$.draftAdjudication.offenceDetails[1].offenceCode").isEqualTo(testAdjudication.offences[1].offenceCode)
+      .jsonPath("$.draftAdjudication.offenceDetails[1].offenceRule.paragraphNumber")
+      .isEqualTo(testAdjudication.offences[1].paragraphNumber)
+      .jsonPath("$.draftAdjudication.offenceDetails[1].offenceRule.paragraphDescription")
+      .isEqualTo(testAdjudication.offences[1].paragraphDescription)
+      .jsonPath("$.draftAdjudication.offenceDetails[1].victimPrisonersNumber").doesNotExist()
+      .jsonPath("$.draftAdjudication.offenceDetails[1].victimStaffUsername").doesNotExist()
+      .jsonPath("$.draftAdjudication.offenceDetails[1].victimOtherPersonsName").doesNotExist()
   }
 
   @Test
@@ -135,6 +158,39 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
+      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident")
+      .isEqualTo(testAdjudication.dateTimeOfIncidentISOString)
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline")
+      .isEqualTo(testAdjudication.handoverDeadlineISOString)
+      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
+      .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("test")
+  }
+
+  @Test
+  fun `edit the incident statement`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+
+    val intTestScenario = intTestBuilder
+      .startDraft(testAdjudication)
+      .addIncidentStatement()
+
+    webTestClient.put()
+      .uri("/draft-adjudications/${intTestScenario.getDraftId()}/incident-statement")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "statement" to "new statement"
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
+      .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("new statement")
   }
 
   @Test
@@ -157,6 +213,10 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
+      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-11-12T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-11-14T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(3)
   }
 
   @Test
