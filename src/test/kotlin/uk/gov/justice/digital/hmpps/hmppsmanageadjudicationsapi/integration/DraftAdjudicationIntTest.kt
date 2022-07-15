@@ -168,7 +168,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `edit the incident statement`() {
+  fun `edit the incident statement and mark as complete`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
     val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
@@ -182,7 +182,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders())
       .bodyValue(
         mapOf(
-          "statement" to "new statement"
+          "statement" to "new statement",
+          "completed" to true
         )
       )
       .exchange()
@@ -191,6 +192,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("new statement")
+      .jsonPath("$.draftAdjudication.incidentStatement.completed").isEqualTo(true)
   }
 
   @Test
@@ -383,33 +385,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.draftAdjudications[0].id").isEqualTo(draftAdjudicationResponse.draftAdjudication.id)
-  }
-
-  @Test
-  fun `mark the incident statement as being complete`() {
-    val testAdjudication = IntegrationTestData.ADJUDICATION_1
-    val intTestData = integrationTestData()
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
-
-    val intTestScenario = intTestBuilder
-      .startDraft(testAdjudication)
-      .addIncidentStatement()
-
-    webTestClient.put()
-      .uri("/draft-adjudications/${intTestScenario.getDraftId()}/incident-statement")
-      .headers(setHeaders())
-      .bodyValue(
-        mapOf(
-          "completed" to true
-        )
-      )
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
-      .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo(testAdjudication.statement)
-      .jsonPath("$.draftAdjudication.incidentStatement.completed").isEqualTo(true)
   }
 
   @Test
