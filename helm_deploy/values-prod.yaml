@@ -17,5 +17,7 @@ generic-service:
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
 generic-prometheus-alerts:
   alertSeverity: digital-prison-service
+  rdsAlertsDatabases:
+    cloud-platform-5b6e8eb8ba215b7b: "Manage Adjudications API"
 
 environment: prod
