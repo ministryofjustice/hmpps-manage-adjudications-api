@@ -9,7 +9,9 @@ class OffenceCodeLookupServiceTest {
   @Test
   fun `offence codes have values set for all items`() {
     assertValuesSetForAllItems(1001..1008)
+    assertValuesSetForAllItems(1021..1022)
     assertValuesSetForAllItems(2001..2004)
+    assertValuesSetForAllItems(2021..2021)
     assertValuesSetForAllItems(3001..3001)
     assertValuesSetForAllItems(4001..4001)
     assertValuesSetForAllItems(5001..5001)
