@@ -84,6 +84,8 @@ class YouthOffenceCodes {
         .code(1004).nomisCodes("1L").notCommittedOnOwnNomisCodes("29F").paragraph(paragraph1)
         .code(1005).nomisCodes("2").notCommittedOnOwnNomisCodes("2").paragraph(paragraph1)
         .code(1006).nomisCodes("1M").notCommittedOnOwnNomisCodes("29G").paragraph(paragraph1)
+        .code(1021).nomisCodes("2").notCommittedOnOwnNomisCodes("2").paragraph(paragraph1)
+        .code(1022).nomisCodes("1A").notCommittedOnOwnNomisCodes("29D").paragraph(paragraph1)
         .code(1007).nomisCodes("2").notCommittedOnOwnNomisCodes("2").paragraph(paragraph1)
         .code(1008).nomisCodes("1E").notCommittedOnOwnNomisCodes("29E").paragraph(paragraph1)
         .code(4001).nomisCodes("5").notCommittedOnOwnNomisCodes("5").paragraph(paragraph5)
@@ -128,6 +130,7 @@ class YouthOffenceCodes {
         .code(2001).nomisCodes("3A").notCommittedOnOwnNomisCodes("29K").paragraph(paragraph3)
         .code(2002).nomisCodes("3C").notCommittedOnOwnNomisCodes("29M").paragraph(paragraph3)
         .code(2003).nomisCodes("3D").notCommittedOnOwnNomisCodes("29N").paragraph(paragraph3)
+        .code(2021).nomisCodes("3A").notCommittedOnOwnNomisCodes("29K").paragraph(paragraph3)
         .code(2004).nomisCodes("3B").notCommittedOnOwnNomisCodes("29L").paragraph(paragraph3)
         // Empty line in spreadsheet
         .code(3001).nomisCodes("4").notCommittedOnOwnNomisCodes("29H").paragraph(paragraph4)
