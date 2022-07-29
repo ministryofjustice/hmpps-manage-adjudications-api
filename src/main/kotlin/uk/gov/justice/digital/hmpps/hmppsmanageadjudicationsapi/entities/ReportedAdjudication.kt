@@ -40,7 +40,7 @@ data class ReportedAdjudication(
   @Length(max = 4000)
   var statusDetails: String? = null,
   var reviewUserId: String? = null,
-  ) : BaseEntity() {
+) : BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reviewUserId: String? = null, statusReason: String? = null, statusDetails: String? = null) {
     if (this.status.canTransitionTo(to)) {
       this.status = to
