@@ -466,10 +466,12 @@ class ReportedAdjudicationServiceTest {
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication().also { it.status = to })
       reportedAdjudicationService.setStatus(1, to)
-      verify(reportedAdjudicationRepository).save(reportedAdjudication().also {
-        it.status = to
-        it.reviewUserId = if (to == ReportedAdjudicationStatus.AWAITING_REVIEW) null else "ITAG_USER"
-      })
+      verify(reportedAdjudicationRepository).save(
+        reportedAdjudication().also {
+          it.status = to
+          it.reviewUserId = if (to == ReportedAdjudicationStatus.AWAITING_REVIEW) null else "ITAG_USER"
+        }
+      )
       if (updatesNomis) {
         verify(prisonApiGateway).publishAdjudication(any())
       } else {
