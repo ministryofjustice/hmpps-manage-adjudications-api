@@ -194,6 +194,29 @@ class ReportedAdjudicationRepositoryTest {
   }
 
   @Test
+  fun `set the status an existing reported adjudication`() {
+    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+
+    adjudication!!.transition(
+      ReportedAdjudicationStatus.REJECTED,
+      "A_REVIEWER",
+      "Status Reason",
+      "Status Details"
+    )
+    val savedEntity = reportedAdjudicationRepository.save(adjudication)
+
+    assertThat(savedEntity)
+      .extracting("id", "status", "reviewUserId", "statusReason", "statusDetails")
+      .contains(
+        adjudication.id,
+        adjudication.status,
+        adjudication.reviewUserId,
+        adjudication.statusReason,
+        adjudication.statusDetails
+      )
+  }
+
+  @Test
   fun `find reported adjudications by report number`() {
     val foundAdjudication = reportedAdjudicationRepository.findByReportNumber(1234L)
 

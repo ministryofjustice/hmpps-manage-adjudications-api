@@ -39,10 +39,12 @@ data class ReportedAdjudication(
   var statusReason: String? = null,
   @Length(max = 4000)
   var statusDetails: String? = null,
-) : BaseEntity() {
-  fun transition(to: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null) {
+  var reviewUserId: String? = null,
+  ) : BaseEntity() {
+  fun transition(to: ReportedAdjudicationStatus, reviewUserId: String? = null, statusReason: String? = null, statusDetails: String? = null) {
     if (this.status.canTransitionTo(to)) {
       this.status = to
+      this.reviewUserId = reviewUserId
       this.statusReason = statusReason
       this.statusDetails = statusDetails
     } else {

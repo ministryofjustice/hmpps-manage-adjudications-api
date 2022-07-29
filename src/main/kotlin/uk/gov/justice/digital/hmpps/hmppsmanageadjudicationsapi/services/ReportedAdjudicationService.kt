@@ -117,10 +117,11 @@ class ReportedAdjudicationService(
 
   @Transactional
   fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
+    val username = if (status == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
       ?: throw EntityNotFoundException("ReportedAdjudication not found for reported adjudication number $adjudicationNumber")
     val reportedAdjudicationToReturn = reportedAdjudication.let {
-      it.transition(status, statusReason, statusDetails)
+      it.transition(status, username, statusReason, statusDetails)
       reportedAdjudicationRepository.save(it).toDto(this.offenceCodeLookupService)
     }
     if (status.isAccepted()) {
@@ -203,6 +204,7 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   createdByUserId = createdByUserId!!,
   createdDateTime = createDateTime!!,
   status = status,
+  reviewedByUserId = reviewUserId,
   statusReason = statusReason,
   statusDetails = statusDetails,
 )
