@@ -128,9 +128,10 @@ class ReportedAdjudicationServiceTest {
           incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
           offenceDetails = offenceDetails,
           handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-          statusReason = null,
-          statusDetails = null,
+          status = ReportedAdjudicationStatus.REJECTED,
+          reviewUserId = "A_REVIEWER",
+          statusReason = "Status Reason",
+          statusDetails = "Status Reason String",
         )
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -152,6 +153,10 @@ class ReportedAdjudicationServiceTest {
       assertThat(reportedAdjudicationDto.incidentRole)
         .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
         .contains("25b", IncidentRoleRuleLookup.getOffenceRuleDetails("25b", isYouthOffender), "BB2345B")
+
+      assertThat(reportedAdjudicationDto)
+        .extracting("status", "reviewedByUserId", "statusReason", "statusDetails")
+        .contains(ReportedAdjudicationStatus.REJECTED, "A_REVIEWER", "Status Reason", "Status Reason String")
 
       if (isYouthOffender) {
         assertThat(reportedAdjudicationDto.offenceDetails)
@@ -404,6 +409,7 @@ class ReportedAdjudicationServiceTest {
         ),
         handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        reviewUserId = null,
         statusReason = null,
         statusDetails = null,
       )
@@ -460,12 +466,43 @@ class ReportedAdjudicationServiceTest {
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication().also { it.status = to })
       reportedAdjudicationService.setStatus(1, to)
-      verify(reportedAdjudicationRepository).save(reportedAdjudication().also { it.status = to })
+      verify(reportedAdjudicationRepository).save(
+        reportedAdjudication().also {
+          it.status = to
+          it.reviewUserId = if (to == ReportedAdjudicationStatus.AWAITING_REVIEW) null else "ITAG_USER"
+        }
+      )
       if (updatesNomis) {
         verify(prisonApiGateway).publishAdjudication(any())
       } else {
         verify(prisonApiGateway, never()).publishAdjudication(any())
       }
+    }
+
+    fun `returns correct status information`() {
+      val existingReportedAdjudication = existingReportedAdjudication(true, true, false)
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        existingReportedAdjudication
+      )
+
+      val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
+        it.status = ReportedAdjudicationStatus.REJECTED
+        it.statusReason = "Status Reason"
+        it.statusDetails = "Status Reason String"
+      }
+      returnedReportedAdjudication.createdByUserId = "A_USER"
+      returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        returnedReportedAdjudication
+      )
+
+      val actualReturnedReportedAdjudication = reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
+
+      verify(reportedAdjudicationRepository).save(returnedReportedAdjudication)
+      assertThat(actualReturnedReportedAdjudication.status).isEqualTo(ReportedAdjudicationStatus.REJECTED)
+      assertThat(actualReturnedReportedAdjudication.reviewedByUserId).isEqualTo("ITAG_USER")
+      assertThat(actualReturnedReportedAdjudication.statusReason).isEqualTo("Status Reason")
+      assertThat(actualReturnedReportedAdjudication.statusDetails).isEqualTo("Status Reason String")
     }
 
     @ParameterizedTest

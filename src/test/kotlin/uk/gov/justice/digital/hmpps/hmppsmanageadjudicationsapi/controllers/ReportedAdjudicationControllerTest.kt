@@ -76,6 +76,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           createdByUserId = "A_SMITH",
           createdDateTime = REPORTED_DATE_TIME,
           status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+          reviewedByUserId = null,
           statusReason = null,
           statusDetails = null,
         )
@@ -140,6 +141,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
               createdByUserId = "A_SMITH",
               createdDateTime = REPORTED_DATE_TIME,
               status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+              reviewedByUserId = null,
               statusReason = null,
               statusDetails = null,
             )

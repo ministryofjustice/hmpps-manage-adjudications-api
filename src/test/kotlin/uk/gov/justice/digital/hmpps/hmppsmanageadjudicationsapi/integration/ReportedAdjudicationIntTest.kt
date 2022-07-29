@@ -289,6 +289,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.RETURNED.toString())
+      .jsonPath("$.reportedAdjudication.reviewedByUserId").isEqualTo("ITAG_USER")
       .jsonPath("$.reportedAdjudication.statusReason").isEqualTo("status reason")
       .jsonPath("$.reportedAdjudication.statusDetails").isEqualTo("status details")
   }
