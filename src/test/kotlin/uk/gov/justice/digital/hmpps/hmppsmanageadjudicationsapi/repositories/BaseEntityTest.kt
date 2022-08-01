@@ -50,7 +50,8 @@ class BaseEntityTest {
       ),
       incidentRole = IncidentRole(
         roleCode = "25a",
-        associatedPrisonersNumber = "B23456"
+        associatedPrisonersNumber = "B23456",
+        associatedPrisonersName = "Associated Prisoner",
       ),
       isYouthOffender = true
     )

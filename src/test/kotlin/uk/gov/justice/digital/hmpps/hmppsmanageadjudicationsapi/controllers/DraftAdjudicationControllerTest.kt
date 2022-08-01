@@ -729,15 +729,74 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class SetAssociatedPrisoner {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        draftAdjudicationService.setIncidentRoleAssociatedPrisoner(
+          anyLong(),
+          any(),
+        )
+      ).thenReturn(
+        DraftAdjudicationDto(
+          id = 1L,
+          adjudicationNumber = null,
+          prisonerNumber = "A12345",
+          incidentDetails = IncidentDetailsDto(
+            locationId = 3,
+            DATE_TIME_OF_INCIDENT,
+            DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          ),
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
+          isYouthOffender = true
+        )
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      setAssociatedPrisonerRequest(1, ASSOCIATED_PRISONER_WITH_ALL_VALUES_REQUEST)
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the associated prisoner information`() {
+      setAssociatedPrisonerRequest(1, ASSOCIATED_PRISONER_WITH_ALL_VALUES_REQUEST)
+        .andExpect(status().isOk)
+
+      verify(draftAdjudicationService).setIncidentRoleAssociatedPrisoner(
+        1,
+        ASSOCIATED_PRISONER_WITH_ALL_VALUES_REQUEST,
+      )
+    }
+
+    private fun setAssociatedPrisonerRequest(
+      id: Long,
+      associatedPrisoner: IncidentRoleAssociatedPrisonerRequest?
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(associatedPrisoner)
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/associated-prisoner")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
 
     private val INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST = IncidentRoleRequest("25a", "B23456")
     private val INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO =
-      IncidentRoleDto("25a", OffenceRuleDetailsDto("", ""), "B23456")
+      IncidentRoleDto("25a", OffenceRuleDetailsDto("", ""), "B23456", "Associated Prisoner")
 
-    private val INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO = IncidentRoleDto(null, null, null)
+    private val INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO = IncidentRoleDto(null, null, null, null)
+
+    private val ASSOCIATED_PRISONER_WITH_ALL_VALUES_REQUEST = IncidentRoleAssociatedPrisonerRequest("B23456", "Associated Prisoner")
 
     private val BASIC_OFFENCE_REQUEST = OffenceDetailsRequestItem(offenceCode = 3)
     private val BASIC_OFFENCE_RESPONSE_DTO = OffenceDetailsDto(
