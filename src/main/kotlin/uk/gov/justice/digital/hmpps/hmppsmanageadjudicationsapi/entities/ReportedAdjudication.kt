@@ -27,6 +27,7 @@ data class ReportedAdjudication(
   var isYouthOffender: Boolean,
   var incidentRoleCode: String?,
   var incidentRoleAssociatedPrisonersNumber: String?,
+  var incidentRoleAssociatedPrisonersName: String?,
   @Length(max = 4000)
   var statement: String,
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)

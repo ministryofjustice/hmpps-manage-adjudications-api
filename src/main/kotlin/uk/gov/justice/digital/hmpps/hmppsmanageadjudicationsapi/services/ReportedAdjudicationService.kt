@@ -90,6 +90,7 @@ class ReportedAdjudicationService(
       incidentRole = IncidentRole(
         roleCode = reportedAdjudication.incidentRoleCode,
         associatedPrisonersNumber = reportedAdjudication.incidentRoleAssociatedPrisonersNumber,
+        associatedPrisonersName = reportedAdjudication.incidentRoleAssociatedPrisonersName,
       ),
       offenceDetails = toDraftOffence(reportedAdjudication.offenceDetails),
       incidentStatement = IncidentStatement(
@@ -195,6 +196,7 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
     roleCode = incidentRoleCode,
     offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleCode, isYouthOffender),
     associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
+    associatedPrisonersName = incidentRoleAssociatedPrisonersName,
   ),
   offenceDetails = toReportedOffence(offenceDetails, isYouthOffender, offenceCodeLookupService),
   incidentStatement = IncidentStatementDto(

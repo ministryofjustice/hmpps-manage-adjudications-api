@@ -17,6 +17,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleAssociatedPrisonerRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.OffenceDetailsRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
@@ -221,14 +222,15 @@ class DraftAdjudicationServiceTest {
         .contains(2L, now)
 
       assertThat(draftAdjudicationDto.incidentRole)
-        .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
+        .extracting("roleCode", "offenceRule", "associatedPrisonersNumber", "associatedPrisonersName")
         .contains(
           incidentRoleDtoWithAllValuesSet().roleCode,
           IncidentRoleRuleLookup.getOffenceRuleDetails(
             incidentRoleDtoWithAllValuesSet().roleCode,
             draftAdjudication.isYouthOffender!!
           ),
-          incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
+          incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber,
+          incidentRoleDtoWithAllValuesSet().associatedPrisonersName,
         )
 
       if (isYouthOffender) {
@@ -363,7 +365,105 @@ class DraftAdjudicationServiceTest {
 
     @Test
     fun `returns the draft adjudication`() {
-      testDto { draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest(INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER), false) }
+      testDto {
+        draftAdjudicationService.editIncidentRole(
+          1,
+          IncidentRoleRequest(INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER),
+          false,
+        )
+      }
+    }
+  }
+
+  @Nested
+  inner class SetIncidentRoleAssociatedPrisoner {
+    private val draftAdjudication =
+      DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = LocalDateTime.now(),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithNoValuesSet(),
+        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        incidentStatement = IncidentStatement(
+          statement = "Example statement",
+          completed = false,
+        ),
+        isYouthOffender = true
+      )
+
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        draftAdjudicationService.setIncidentRoleAssociatedPrisoner(
+          1,
+          IncidentRoleAssociatedPrisonerRequest("A1234AA", "A name")
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+
+    @Test
+    fun `throws state exception if incident role is not set`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(
+          draftAdjudication.also { it.incidentRole = null }
+        )
+      )
+
+      assertThatThrownBy {
+        draftAdjudicationService.setIncidentRoleAssociatedPrisoner(
+          1,
+          IncidentRoleAssociatedPrisonerRequest("A1234AA", "A name")
+        )
+      }.isInstanceOf(IllegalStateException::class.java)
+        .hasMessageContaining(ValidationChecks.INCIDENT_ROLE.errorMessage)
+    }
+
+    @Test
+    fun `saves associated prisoner`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(
+          draftAdjudication
+        )
+      )
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(
+        draftAdjudication.also {
+          it.incidentRole = incidentRoleWithAllValuesSet()
+        }
+      )
+
+      val response = draftAdjudicationService.setIncidentRoleAssociatedPrisoner(
+        1,
+        IncidentRoleAssociatedPrisonerRequest("A1234AA", "A prisoner")
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.incidentRole!!.associatedPrisonersNumber).isEqualTo("A1234AA")
+      assertThat(argumentCaptor.value.incidentRole!!.associatedPrisonersName).isEqualTo("A prisoner")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `returns the draft adjudication`() {
+      testDto {
+        draftAdjudicationService.setIncidentRoleAssociatedPrisoner(
+          1,
+          IncidentRoleAssociatedPrisonerRequest(
+            INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
+            INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME
+          )
+        )
+      }
     }
   }
 
@@ -830,6 +930,14 @@ class DraftAdjudicationServiceTest {
               ValidationChecks.INCIDENT_ROLE -> {
                 it.isYouthOffender = false
               }
+              ValidationChecks.INCIDENT_ROLE_ASSOCIATED_PRISONER -> {
+                it.isYouthOffender = false
+                it.incidentRole = IncidentRole(
+                  null,
+                  "25b",
+                  null, null
+                )
+              }
               ValidationChecks.OFFENCE_DETAILS -> {
                 it.incidentRole = incidentRoleWithAllValuesSet()
                 it.isYouthOffender = false
@@ -907,6 +1015,7 @@ class DraftAdjudicationServiceTest {
             "handoverDeadline",
             "incidentRoleCode",
             "incidentRoleAssociatedPrisonersNumber",
+            "incidentRoleAssociatedPrisonersName",
             "statement"
           )
           .contains(
@@ -915,6 +1024,7 @@ class DraftAdjudicationServiceTest {
             DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
             INCIDENT_ROLE_CODE,
             INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
+            INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
             "test"
           )
 
@@ -979,6 +1089,7 @@ class DraftAdjudicationServiceTest {
         handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
         isYouthOffender = false,
         incidentRoleAssociatedPrisonersNumber = null,
+        incidentRoleAssociatedPrisonersName = null,
         incidentRoleCode = null,
         statement = "test"
       )
@@ -1090,6 +1201,7 @@ class DraftAdjudicationServiceTest {
             isYouthOffender = false,
             incidentRoleCode = null,
             incidentRoleAssociatedPrisonersNumber = null,
+            incidentRoleAssociatedPrisonersName = null,
             offenceDetails = mutableListOf(ReportedOffence(offenceCode = 3, paragraphCode = "4")),
             statement = "olddata",
             status = ReportedAdjudicationStatus.AWAITING_REVIEW,
@@ -1141,6 +1253,7 @@ class DraftAdjudicationServiceTest {
             "handoverDeadline",
             "incidentRoleCode",
             "incidentRoleAssociatedPrisonersNumber",
+            "incidentRoleAssociatedPrisonersName",
             "statement"
           )
           .contains(
@@ -1149,6 +1262,7 @@ class DraftAdjudicationServiceTest {
             DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
             INCIDENT_ROLE_CODE,
             INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
+            INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
             "test"
           )
 
@@ -1369,6 +1483,7 @@ class DraftAdjudicationServiceTest {
     private val INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(a)"
     private val INCIDENT_ROLE_PARAGRAPH_DESCRIPTION = "Attempts to commit any of the foregoing offences:"
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
+    private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
 
     private const val OFFENCE_CODE_2_PARAGRAPH_CODE = "5b"
     private const val OFFENCE_CODE_2_NOMIS_CODE_ON_OWN = "5b"
@@ -1441,12 +1556,6 @@ class DraftAdjudicationServiceTest {
       offenceCode = YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
     )
 
-    fun incidentRoleRequestWithAllValuesSet(): IncidentRoleRequest =
-      IncidentRoleRequest(
-        INCIDENT_ROLE_CODE,
-        INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER
-      )
-
     fun incidentRoleDtoWithAllValuesSet(): IncidentRoleDto =
       IncidentRoleDto(
         INCIDENT_ROLE_CODE,
@@ -1454,20 +1563,18 @@ class DraftAdjudicationServiceTest {
           INCIDENT_ROLE_PARAGRAPH_NUMBER,
           INCIDENT_ROLE_PARAGRAPH_DESCRIPTION,
         ),
-        INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER
+        INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
+        INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
       )
 
-    fun incidentRoleRequestWithNoValuesSet(): IncidentRoleRequest =
-      IncidentRoleRequest(null, null)
-
     fun incidentRoleDtoWithNoValuesSet(): IncidentRoleDto =
-      IncidentRoleDto(null, null, null)
+      IncidentRoleDto(null, null, null, null)
 
     fun incidentRoleWithAllValuesSet(): IncidentRole =
-      IncidentRole(null, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)
+      IncidentRole(null, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME)
 
     fun incidentRoleWithNoValuesSet(): IncidentRole =
-      IncidentRole(null, null, null)
+      IncidentRole(null, null, null, null)
   }
 
   fun testDto(toFind: Optional<DraftAdjudication> = Optional.empty(), toTest: Supplier<DraftAdjudicationDto>) {
@@ -1511,11 +1618,12 @@ class DraftAdjudicationServiceTest {
       .contains(2L, now)
 
     assertThat(draftAdjudicationDto.incidentRole)
-      .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
+      .extracting("roleCode", "offenceRule", "associatedPrisonersNumber", "associatedPrisonersName")
       .contains(
         incidentRoleDtoWithAllValuesSet().roleCode,
         IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleDtoWithAllValuesSet().roleCode, false),
-        incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber
+        incidentRoleDtoWithAllValuesSet().associatedPrisonersNumber,
+        incidentRoleDtoWithAllValuesSet().associatedPrisonersName,
       )
 
     assertThat(draftAdjudicationDto.offenceDetails).hasSize(2)

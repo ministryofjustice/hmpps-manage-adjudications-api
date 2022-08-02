@@ -9,4 +9,5 @@ data class IncidentRole(
   override val id: Long? = null,
   var roleCode: String?,
   var associatedPrisonersNumber: String?,
+  var associatedPrisonersName: String?,
 ) : BaseEntity()

@@ -274,7 +274,8 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
               paragraphNumber = "25(a)",
               paragraphDescription = "Commits an assault"
             ),
-            associatedPrisonersNumber = "B2345BB"
+            associatedPrisonersNumber = "B2345BB",
+            associatedPrisonersName = "Associated Prisoner",
           ),
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
           isYouthOffender = true
@@ -367,7 +368,8 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         "25(a)",
         "Commits an assault"
       ),
-      "B23456"
+      "B23456",
+      "Associated Prisoner",
     )
   }
 }

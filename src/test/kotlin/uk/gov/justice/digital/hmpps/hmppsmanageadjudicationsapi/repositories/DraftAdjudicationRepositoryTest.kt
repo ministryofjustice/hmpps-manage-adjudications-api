@@ -48,8 +48,12 @@ class DraftAdjudicationRepositoryTest {
       )
 
     assertThat(savedEntity.incidentRole)
-      .extracting("roleCode", "associatedPrisonersNumber")
-      .contains(draft.incidentRole!!.roleCode, draft.incidentRole!!.associatedPrisonersNumber)
+      .extracting("roleCode", "associatedPrisonersNumber", "associatedPrisonersName")
+      .contains(
+        draft.incidentRole!!.roleCode,
+        draft.incidentRole!!.associatedPrisonersNumber,
+        draft.incidentRole!!.associatedPrisonersName,
+      )
   }
 
   @Test
@@ -70,8 +74,12 @@ class DraftAdjudicationRepositoryTest {
       )
 
     assertThat(savedEntity.incidentRole)
-      .extracting("roleCode", "associatedPrisonersNumber")
-      .contains(draft.incidentRole!!.roleCode, draft.incidentRole!!.associatedPrisonersNumber)
+      .extracting("roleCode", "associatedPrisonersNumber", "associatedPrisonersName")
+      .contains(
+        draft.incidentRole!!.roleCode,
+        draft.incidentRole!!.associatedPrisonersNumber,
+        draft.incidentRole!!.associatedPrisonersName,
+      )
 
     assertThat(savedEntity.offenceDetails).hasSize(2)
       .extracting(
@@ -146,7 +154,8 @@ class DraftAdjudicationRepositoryTest {
         ),
         incidentRole = IncidentRole(
           roleCode = "25a",
-          associatedPrisonersNumber = "B23456"
+          associatedPrisonersNumber = "B23456",
+          associatedPrisonersName = "Associated Prisoner",
         ),
         isYouthOffender = true
       )
@@ -162,7 +171,8 @@ class DraftAdjudicationRepositoryTest {
         ),
         incidentRole = IncidentRole(
           roleCode = null,
-          associatedPrisonersNumber = null
+          associatedPrisonersNumber = null,
+          associatedPrisonersName = null,
         ),
         isYouthOffender = true
       )
@@ -180,7 +190,8 @@ class DraftAdjudicationRepositoryTest {
         ),
         incidentRole = IncidentRole(
           roleCode = null,
-          associatedPrisonersNumber = null
+          associatedPrisonersNumber = null,
+          associatedPrisonersName = null,
         ),
         isYouthOffender = true
       )
@@ -237,7 +248,8 @@ class DraftAdjudicationRepositoryTest {
       ),
       incidentRole = IncidentRole(
         roleCode = "25a",
-        associatedPrisonersNumber = "B23456"
+        associatedPrisonersNumber = "B23456",
+        associatedPrisonersName = "Associated Prisoner",
       ),
       isYouthOffender = true
     )
@@ -255,7 +267,8 @@ class DraftAdjudicationRepositoryTest {
       ),
       incidentRole = IncidentRole(
         roleCode = "25a",
-        associatedPrisonersNumber = "B23456"
+        associatedPrisonersNumber = "B23456",
+        associatedPrisonersName = "Associated Prisoner",
       ),
       offenceDetails = mutableListOf(
         Offence(

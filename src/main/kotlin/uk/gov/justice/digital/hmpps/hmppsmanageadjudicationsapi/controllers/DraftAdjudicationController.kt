@@ -38,12 +38,20 @@ data class NewAdjudicationRequest(
   val dateTimeOfIncident: LocalDateTime,
 )
 
-@Schema(description = "Request to update the incident details")
+@Schema(description = "Request to update the incident role")
 data class IncidentRoleRequest(
   @Schema(description = "The incident role code", title = "If not set then it is assumed they committed the offence on their own", example = "25a")
   val roleCode: String?,
   @Schema(description = "The prison number of the other prisoner involved in the incident", title = "This only applies to role codes 25b and 25c", example = "G2996UX")
   val associatedPrisonersNumber: String?,
+)
+
+@Schema(description = "Request to set the associated prisoner")
+data class IncidentRoleAssociatedPrisonerRequest(
+  @Schema(required = true, description = "The prison number of the other prisoner involved in the incident", example = "G2996UX")
+  val associatedPrisonersNumber: String,
+  @Schema(description = "The name of the other prisoner involved in the incident", title = "This only applies if the associated prisoner is from outside the establishment")
+  val associatedPrisonersName: String?,
 )
 
 @Schema(description = "Request to update the list of offence details for a draft adjudication")
@@ -95,7 +103,7 @@ data class EditIncidentRoleRequest(
 @Schema(description = "Request to set applicable rules")
 data class ApplicableRulesRequest(
   @Schema(description = "Indicates whether the applicable rules are for a young offender")
-  val isYouthOffenderRule: Boolean = false,
+  val isYouthOffenderRule: Boolean,
   @Schema(description = "Whether to remove all existing offences")
   val removeExistingOffences: Boolean = false,
 )
@@ -228,6 +236,23 @@ class DraftAdjudicationController {
       id,
       editIncidentRoleRequest.incidentRole,
       editIncidentRoleRequest.removeExistingOffences
+    )
+
+    return DraftAdjudicationResponse(
+      draftAdjudication
+    )
+  }
+
+  @PutMapping(value = ["/{id}/associated-prisoner"])
+  @Operation(summary = "Set the associated prisoner for a draft adjudication.")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  fun setIncidentRoleAssociatedPrisoner(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid associatedPrisonerRequest: IncidentRoleAssociatedPrisonerRequest
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.setIncidentRoleAssociatedPrisoner(
+      id,
+      associatedPrisonerRequest,
     )
 
     return DraftAdjudicationResponse(

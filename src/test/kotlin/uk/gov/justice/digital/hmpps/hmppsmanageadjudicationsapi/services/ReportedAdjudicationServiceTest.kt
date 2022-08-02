@@ -125,7 +125,9 @@ class ReportedAdjudicationServiceTest {
           reportNumber = 1, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
           isYouthOffender = isYouthOffender,
-          incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
+          incidentRoleCode = "25b",
+          incidentRoleAssociatedPrisonersNumber = "BB2345B",
+          incidentRoleAssociatedPrisonersName = "Associated Prisoner",
           offenceDetails = offenceDetails,
           handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
           status = ReportedAdjudicationStatus.REJECTED,
@@ -216,6 +218,7 @@ class ReportedAdjudicationServiceTest {
         isYouthOffender = false,
         incidentRoleCode = "25b",
         incidentRoleAssociatedPrisonersNumber = "BB2345B",
+        incidentRoleAssociatedPrisonersName = "Associated Prisoner",
         offenceDetails = mutableListOf(
           ReportedOffence(
             offenceCode = 3,
@@ -244,6 +247,7 @@ class ReportedAdjudicationServiceTest {
         isYouthOffender = true,
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
+        incidentRoleAssociatedPrisonersName = null,
         offenceDetails = null,
         statement = INCIDENT_STATEMENT,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
@@ -321,6 +325,7 @@ class ReportedAdjudicationServiceTest {
         isYouthOffender = false,
         incidentRoleCode = "25b",
         incidentRoleAssociatedPrisonersNumber = "BB2345B",
+        incidentRoleAssociatedPrisonersName = "Associated Prisoner",
         offenceDetails = mutableListOf(
           ReportedOffence(
             offenceCode = 3,
@@ -347,6 +352,7 @@ class ReportedAdjudicationServiceTest {
         isYouthOffender = true,
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
+        incidentRoleAssociatedPrisonersName = null,
         offenceDetails = null,
         statement = INCIDENT_STATEMENT,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
@@ -397,7 +403,9 @@ class ReportedAdjudicationServiceTest {
         reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
         isYouthOffender = false,
-        incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
+        incidentRoleCode = "25b",
+        incidentRoleAssociatedPrisonersNumber = "BB2345B",
+        incidentRoleAssociatedPrisonersName = "Associated Prisoner",
         offenceDetails = mutableListOf(
           ReportedOffence(
             offenceCode = 3,
@@ -479,6 +487,7 @@ class ReportedAdjudicationServiceTest {
       }
     }
 
+    @Test
     fun `returns correct status information`() {
       val existingReportedAdjudication = existingReportedAdjudication(true, true, false)
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
@@ -490,13 +499,19 @@ class ReportedAdjudicationServiceTest {
         it.statusReason = "Status Reason"
         it.statusDetails = "Status Reason String"
       }
+      returnedReportedAdjudication.reviewUserId = "ITAG_USER"
       returnedReportedAdjudication.createdByUserId = "A_USER"
       returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         returnedReportedAdjudication
       )
 
-      val actualReturnedReportedAdjudication = reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
+      val actualReturnedReportedAdjudication = reportedAdjudicationService.setStatus(
+        1,
+        ReportedAdjudicationStatus.REJECTED,
+        "Status Reason",
+        "Status Reason String",
+      )
 
       verify(reportedAdjudicationRepository).save(returnedReportedAdjudication)
       assertThat(actualReturnedReportedAdjudication.status).isEqualTo(ReportedAdjudicationStatus.REJECTED)
@@ -616,9 +631,11 @@ class ReportedAdjudicationServiceTest {
     ): ReportedAdjudication {
       var incidentRoleCode: String? = null
       var incidentRoleAssociatedPrisonersNumber: String? = null
+      var incidentRoleAssociatedPrisonersName: String? = null
       if (!committedOnOwn) {
         incidentRoleCode = INCIDENT_ROLE_CODE
         incidentRoleAssociatedPrisonersNumber = INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER
+        incidentRoleAssociatedPrisonersName = INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME
       }
 
       val offenceDetails = mutableListOf(
@@ -649,6 +666,7 @@ class ReportedAdjudicationServiceTest {
         isYouthOffender = isYouthOffender,
         incidentRoleCode = incidentRoleCode,
         incidentRoleAssociatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
+        incidentRoleAssociatedPrisonersName = incidentRoleAssociatedPrisonersName,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
         statement = INCIDENT_STATEMENT,
@@ -668,7 +686,9 @@ class ReportedAdjudicationServiceTest {
       reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
       dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
       isYouthOffender = false,
-      incidentRoleCode = "25b", incidentRoleAssociatedPrisonersNumber = "BB2345B",
+      incidentRoleCode = "25b",
+      incidentRoleAssociatedPrisonersNumber = "BB2345B",
+      incidentRoleAssociatedPrisonersName = "Associated Prisoner",
       offenceDetails = mutableListOf(
         ReportedOffence(
           offenceCode = 3,
@@ -697,6 +717,7 @@ class ReportedAdjudicationServiceTest {
       incidentRole = IncidentRole(
         roleCode = "25b",
         associatedPrisonersNumber = "BB2345B",
+        associatedPrisonersName = "Associated Prisoner",
       ),
       offenceDetails = mutableListOf(
         Offence(
@@ -816,5 +837,6 @@ class ReportedAdjudicationServiceTest {
 
     private val INCIDENT_ROLE_CODE = "25a"
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
+    private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
   }
 }

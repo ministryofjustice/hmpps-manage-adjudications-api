@@ -47,6 +47,7 @@ class ReportedAdjudicationRepositoryTest {
         isYouthOffender = false,
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
+        incidentRoleAssociatedPrisonersName = null,
         statement = "Example",
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
@@ -65,6 +66,7 @@ class ReportedAdjudicationRepositoryTest {
         isYouthOffender = false,
         incidentRoleCode = "25a",
         incidentRoleAssociatedPrisonersNumber = "B23456",
+        incidentRoleAssociatedPrisonersName = "Associated Prisoner",
         statement = "Example 2",
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
@@ -83,6 +85,7 @@ class ReportedAdjudicationRepositoryTest {
         isYouthOffender = true,
         incidentRoleCode = null,
         incidentRoleAssociatedPrisonersNumber = null,
+        incidentRoleAssociatedPrisonersName = null,
         statement = "Example 3",
         offenceDetails = mutableListOf(
           ReportedOffence(
@@ -130,8 +133,13 @@ class ReportedAdjudicationRepositoryTest {
       )
 
     assertThat(savedEntity)
-      .extracting("isYouthOffender", "incidentRoleCode", "incidentRoleAssociatedPrisonersNumber")
-      .contains(adjudication.isYouthOffender, adjudication.incidentRoleCode, adjudication.incidentRoleAssociatedPrisonersNumber)
+      .extracting("isYouthOffender", "incidentRoleCode", "incidentRoleAssociatedPrisonersNumber", "incidentRoleAssociatedPrisonersName")
+      .contains(
+        adjudication.isYouthOffender,
+        adjudication.incidentRoleCode,
+        adjudication.incidentRoleAssociatedPrisonersNumber,
+        adjudication.incidentRoleAssociatedPrisonersName,
+      )
 
     assertThat(savedEntity.offenceDetails).hasSize(2)
       .extracting(
@@ -278,6 +286,7 @@ class ReportedAdjudicationRepositoryTest {
       isYouthOffender = false,
       incidentRoleCode = "25a",
       incidentRoleAssociatedPrisonersNumber = "B23456",
+      incidentRoleAssociatedPrisonersName = "Associated Prisoner",
       offenceDetails = mutableListOf(
         ReportedOffence( // offence with minimal data set
           offenceCode = 2,
