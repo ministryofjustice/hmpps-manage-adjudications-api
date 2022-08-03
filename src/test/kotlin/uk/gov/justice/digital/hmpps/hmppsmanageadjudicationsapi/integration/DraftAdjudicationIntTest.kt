@@ -257,6 +257,37 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `set the associated prisoner`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+
+    val intTestScenario = intTestBuilder
+      .startDraft(testAdjudication)
+      .setApplicableRules()
+      .setIncidentRole()
+
+    val draftId = intTestScenario.getDraftId()
+
+    webTestClient.put()
+      .uri("/draft-adjudications/$draftId/associated-prisoner")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "associatedPrisonersNumber" to "A1234AA",
+          "associatedPrisonersName" to "Associated Prisoner Name",
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(IntegrationTestData.ADJUDICATION_1.incidentRoleCode)
+      .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo("A1234AA")
+      .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersName").isEqualTo("Associated Prisoner Name")
+  }
+
+  @Test
   fun `complete draft adjudication`() {
     prisonApiMockServer.stubPostAdjudicationCreationRequestData(IntegrationTestData.DEFAULT_ADJUDICATION)
 

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleAssociatedPrisonerRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.OffenceDetailsRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
@@ -36,6 +37,15 @@ enum class ValidationChecks(val errorMessage: String) {
   INCIDENT_ROLE("Please supply an incident role") {
     override fun validate(draftAdjudication: DraftAdjudication) {
       if (draftAdjudication.incidentRole == null)
+        throw IllegalStateException(errorMessage)
+    }
+  },
+  INCIDENT_ROLE_ASSOCIATED_PRISONER("Please supply the prisoner associated with the incident") {
+    override fun validate(draftAdjudication: DraftAdjudication) {
+      if (
+        IncidentRoleRuleLookup.associatedPrisonerInformationRequired(draftAdjudication.incidentRole?.roleCode) &&
+        draftAdjudication.incidentRole?.associatedPrisonersNumber == null
+      )
         throw IllegalStateException(errorMessage)
     }
   },
@@ -182,10 +192,34 @@ class DraftAdjudicationService(
     }
 
     incidentRole.let {
-      draftAdjudication.incidentRole = draftAdjudication.incidentRole ?: IncidentRole(roleCode = null, associatedPrisonersNumber = null)
+      draftAdjudication.incidentRole = draftAdjudication.incidentRole ?: IncidentRole(
+        roleCode = null,
+        associatedPrisonersNumber = null,
+        associatedPrisonersName = null,
+      )
 
       draftAdjudication.incidentRole!!.roleCode = it.roleCode
       draftAdjudication.incidentRole!!.associatedPrisonersNumber = it.associatedPrisonersNumber
+      draftAdjudication.incidentRole!!.associatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName
+    }
+
+    return draftAdjudicationRepository
+      .save(draftAdjudication)
+      .toDto(offenceCodeLookupService)
+  }
+
+  @Transactional
+  fun setIncidentRoleAssociatedPrisoner(
+    id: Long,
+    incidentRoleAssociatedPrisoner: IncidentRoleAssociatedPrisonerRequest,
+  ): DraftAdjudicationDto {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+
+    ValidationChecks.INCIDENT_ROLE.validate(draftAdjudication)
+
+    incidentRoleAssociatedPrisoner.let {
+      draftAdjudication.incidentRole!!.associatedPrisonersNumber = it.associatedPrisonersNumber
+      draftAdjudication.incidentRole!!.associatedPrisonersName = it.associatedPrisonersName
     }
 
     return draftAdjudicationRepository
@@ -295,6 +329,7 @@ class DraftAdjudicationService(
         isYouthOffender = draftAdjudication.isYouthOffender!!,
         incidentRoleCode = draftAdjudication.incidentRole!!.roleCode,
         incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber,
+        incidentRoleAssociatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName,
         offenceDetails = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication),
         statement = draftAdjudication.incidentStatement!!.statement!!,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
@@ -320,6 +355,7 @@ class DraftAdjudicationService(
       it.isYouthOffender = draftAdjudication.isYouthOffender!!
       it.incidentRoleCode = draftAdjudication.incidentRole!!.roleCode
       it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber
+      it.incidentRoleAssociatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName
       it.offenceDetails!!.clear()
       it.offenceDetails!!.addAll(toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication))
       it.statement = draftAdjudication.incidentStatement!!.statement!!
@@ -378,6 +414,7 @@ fun IncidentRole.toDto(isYouthOffender: Boolean): IncidentRoleDto = IncidentRole
   roleCode = this.roleCode,
   offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(this.roleCode, isYouthOffender),
   associatedPrisonersNumber = this.associatedPrisonersNumber,
+  associatedPrisonersName = this.associatedPrisonersName,
 )
 
 fun Offence.toDto(offenceCodeLookupService: OffenceCodeLookupService, isYouthOffender: Boolean): OffenceDetailsDto = OffenceDetailsDto(

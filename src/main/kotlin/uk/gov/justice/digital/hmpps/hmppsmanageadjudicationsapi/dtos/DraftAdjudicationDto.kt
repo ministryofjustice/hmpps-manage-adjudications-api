@@ -43,6 +43,8 @@ data class IncidentRoleDto(
   val offenceRule: OffenceRuleDetailsDto?,
   @Schema(description = "The prison number of the other prisoner involved in the incident, This only applies to role codes 25b and 25c", example = "G2996UX")
   val associatedPrisonersNumber: String?,
+  @Schema(description = "The name of the other prisoner involved in the incident, This only applies when the prisoner is from outside the establishment", example = "G2996UX")
+  val associatedPrisonersName: String?,
 )
 
 @Schema(description = "Details of an offence")
