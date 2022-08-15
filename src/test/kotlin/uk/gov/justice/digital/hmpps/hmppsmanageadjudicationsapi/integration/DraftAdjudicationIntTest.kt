@@ -79,6 +79,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .startDraft(testAdjudication)
       .setApplicableRules()
       .setIncidentRole()
+      .setAssociatedPrisoner()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -350,6 +351,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
       .setApplicableRules()
       .setIncidentRole()
+      .setAssociatedPrisoner()
       .setOffenceData()
       .addIncidentStatement()
 
@@ -390,6 +392,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .startDraft(testAdjudication)
       .setApplicableRules()
       .setIncidentRole()
+      .setAssociatedPrisoner()
       .setOffenceData()
       .addIncidentStatement()
 

@@ -259,6 +259,26 @@ class IntegrationTestData(
       .blockFirst()!!
   }
 
+  fun setAssociatedPrisoner(
+    draftCreationData: DraftAdjudicationResponse,
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ): DraftAdjudicationResponse {
+
+    return webTestClient.put()
+      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/associated-prisoner")
+      .headers(headers)
+      .bodyValue(
+        mapOf(
+          "associatedPrisonersNumber" to testDataSet.incidentRoleAssociatedPrisonersNumber,
+        ),
+      ).exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
   fun setApplicableRules(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,

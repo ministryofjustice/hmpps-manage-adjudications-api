@@ -32,6 +32,11 @@ class IntegrationTestScenario(
     return this
   }
 
+  fun setAssociatedPrisoner(): IntegrationTestScenario {
+    intTestData.setAssociatedPrisoner(draftCreationResponse, testAdjudicationDataSet, headers)
+    return this
+  }
+
   fun setOffenceData(): IntegrationTestScenario {
     intTestData.setOffenceDetails(draftCreationResponse, testAdjudicationDataSet, headers)
     return this
