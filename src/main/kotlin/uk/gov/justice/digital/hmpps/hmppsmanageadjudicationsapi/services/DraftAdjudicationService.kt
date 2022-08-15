@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonA
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup.Companion.associatedPrisonerInformationRequired
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
@@ -199,8 +200,10 @@ class DraftAdjudicationService(
       )
 
       draftAdjudication.incidentRole!!.roleCode = it.roleCode
-      draftAdjudication.incidentRole!!.associatedPrisonersNumber = it.associatedPrisonersNumber
-      draftAdjudication.incidentRole!!.associatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName
+      if (!associatedPrisonerInformationRequired(it.roleCode)) {
+        draftAdjudication.incidentRole!!.associatedPrisonersNumber = null
+        draftAdjudication.incidentRole!!.associatedPrisonersName = null
+      }
     }
 
     return draftAdjudicationRepository

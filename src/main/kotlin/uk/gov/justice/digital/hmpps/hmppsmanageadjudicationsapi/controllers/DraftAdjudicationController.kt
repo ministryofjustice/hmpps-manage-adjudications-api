@@ -42,8 +42,6 @@ data class NewAdjudicationRequest(
 data class IncidentRoleRequest(
   @Schema(description = "The incident role code", title = "If not set then it is assumed they committed the offence on their own", example = "25a")
   val roleCode: String?,
-  @Schema(description = "The prison number of the other prisoner involved in the incident", title = "This only applies to role codes 25b and 25c", example = "G2996UX")
-  val associatedPrisonersNumber: String?,
 )
 
 @Schema(description = "Request to set the associated prisoner")

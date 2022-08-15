@@ -249,10 +249,29 @@ class IntegrationTestData(
         mapOf(
           "incidentRole" to IncidentRoleRequest(
             testDataSet.incidentRoleCode,
-            testDataSet.incidentRoleAssociatedPrisonersNumber
           ),
           "removeExistingOffences" to true,
         )
+      ).exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
+  fun setAssociatedPrisoner(
+    draftCreationData: DraftAdjudicationResponse,
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ): DraftAdjudicationResponse {
+
+    return webTestClient.put()
+      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/associated-prisoner")
+      .headers(headers)
+      .bodyValue(
+        mapOf(
+          "associatedPrisonersNumber" to testDataSet.incidentRoleAssociatedPrisonersNumber,
+        ),
       ).exchange()
       .expectStatus().is2xxSuccessful
       .returnResult(DraftAdjudicationResponse::class.java)
@@ -332,7 +351,7 @@ class IntegrationTestData(
         mapOf(
           "locationId" to testDataSet.locationId,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncidentISOString,
-          "incidentRole" to IncidentRoleRequest("25b", "C3456CC"),
+          "incidentRole" to IncidentRoleRequest("25b"),
         )
       )
       .exchange()

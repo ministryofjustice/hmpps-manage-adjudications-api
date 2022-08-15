@@ -22,12 +22,14 @@ class SpringOauthIntegrationTest : IntegrationTestBase() {
     draftCreationResponseForAdjudication1 = intTestData.startNewAdjudication(IntegrationTestData.ADJUDICATION_1)
     intTestData.setApplicableRules(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1)
     intTestData.setIncidentRole(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1)
+    intTestData.setAssociatedPrisoner(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1)
     intTestData.setOffenceDetails(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1)
     intTestData.addIncidentStatement(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1)
 
     draftCreationResponseForAdjudication2 = intTestData.startNewAdjudication(IntegrationTestData.ADJUDICATION_2)
     intTestData.setApplicableRules(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2)
     intTestData.setIncidentRole(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2)
+    intTestData.setAssociatedPrisoner(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2)
     intTestData.setOffenceDetails(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2)
     intTestData.addIncidentStatement(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2)
   }

@@ -79,6 +79,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .startDraft(testAdjudication)
       .setApplicableRules()
       .setIncidentRole()
+      .setAssociatedPrisoner()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -242,7 +243,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders())
       .bodyValue(
         mapOf(
-          "incidentRole" to IncidentRoleRequest("25b", "C3456CC"),
+          "incidentRole" to IncidentRoleRequest("25b"),
           "removeExistingOffences" to true,
         )
       )
@@ -350,6 +351,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
       .setApplicableRules()
       .setIncidentRole()
+      .setAssociatedPrisoner()
       .setOffenceData()
       .addIncidentStatement()
 
@@ -390,6 +392,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .startDraft(testAdjudication)
       .setApplicableRules()
       .setIncidentRole()
+      .setAssociatedPrisoner()
       .setOffenceData()
       .addIncidentStatement()
 
