@@ -249,7 +249,6 @@ class IntegrationTestData(
         mapOf(
           "incidentRole" to IncidentRoleRequest(
             testDataSet.incidentRoleCode,
-            testDataSet.incidentRoleAssociatedPrisonersNumber
           ),
           "removeExistingOffences" to true,
         )
@@ -332,7 +331,7 @@ class IntegrationTestData(
         mapOf(
           "locationId" to testDataSet.locationId,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncidentISOString,
-          "incidentRole" to IncidentRoleRequest("25b", "C3456CC"),
+          "incidentRole" to IncidentRoleRequest("25b"),
         )
       )
       .exchange()

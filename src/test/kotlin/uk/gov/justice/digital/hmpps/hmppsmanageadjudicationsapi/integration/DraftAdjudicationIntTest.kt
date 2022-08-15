@@ -242,7 +242,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders())
       .bodyValue(
         mapOf(
-          "incidentRole" to IncidentRoleRequest("25b", "C3456CC"),
+          "incidentRole" to IncidentRoleRequest("25b"),
           "removeExistingOffences" to true,
         )
       )

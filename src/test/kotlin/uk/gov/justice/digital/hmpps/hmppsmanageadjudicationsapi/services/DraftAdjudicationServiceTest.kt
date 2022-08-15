@@ -309,12 +309,31 @@ class DraftAdjudicationServiceTest {
         isYouthOffender = true
       )
 
+    private fun draftAdjudicationWithRole(roleCode: String?) =
+      DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = LocalDateTime.now(),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        incidentStatement = IncidentStatement(
+          statement = "Example statement",
+          completed = false,
+        ),
+        incidentRole = incidentRoleWithValuesSetForRoleCode(roleCode),
+        isYouthOffender = true
+      )
+
     @Test
     fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
 
       assertThatThrownBy {
-        draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest("1", "1"), false)
+        draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest("1"), false)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
@@ -328,47 +347,100 @@ class DraftAdjudicationServiceTest {
       )
 
       assertThatThrownBy {
-        draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest("1", "1"), false)
+        draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest("1"), false)
       }.isInstanceOf(IllegalStateException::class.java)
         .hasMessageContaining(ValidationChecks.APPLICABLE_RULES.errorMessage)
     }
 
     @ParameterizedTest
-    @CsvSource("true, true", "false, true", "true, false", "false, false")
-    fun `saves incident role`(deleteOffences: Boolean, isNew: Boolean) {
+    @CsvSource("25b", "25c")
+    fun `saves incident role with assisted or incited and retains previous values`(roleCode: String) {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-        Optional.of(
-          draftAdjudication.also {
-            if (!isNew)
-              it.incidentRole = incidentRoleWithNoValuesSet()
-          }
-        )
-      )
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(
-        draftAdjudication.also {
-          if (!isNew)
-            it.incidentRole = incidentRoleWithNoValuesSet()
-        }
+        Optional.of(draftAdjudicationWithRole(roleCode))
       )
 
-      val response = draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest("1", "2"), deleteOffences)
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudicationWithRole(roleCode))
+
+      val response = draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest(roleCode), false)
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.incidentRole!!.roleCode).isEqualTo(roleCode)
+      assertThat(argumentCaptor.value.incidentRole!!.associatedPrisonersNumber).isEqualTo("2")
+      assertThat(argumentCaptor.value.incidentRole!!.associatedPrisonersName).isEqualTo("3")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `saves existing incident role and removes associated name and number`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(draftAdjudicationWithRole(null))
+      )
+
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudicationWithRole(null))
+
+      val response = draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest(null), false)
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.incidentRole!!.roleCode).isEqualTo(null)
+      assertThat(argumentCaptor.value.incidentRole!!.associatedPrisonersNumber).isEqualTo(null)
+      assertThat(argumentCaptor.value.incidentRole!!.associatedPrisonersName).isEqualTo(null)
+
+      assertThat(response).isNotNull
+    }
+
+    @ParameterizedTest
+    @CsvSource("true", "false")
+    fun `saves new incident role`(deleteOffences: Boolean) {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(draftAdjudication)
+      )
+
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+
+      val response = draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest(null), deleteOffences)
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.offenceDetails!!.isEmpty()).isEqualTo(deleteOffences)
-      assertThat(argumentCaptor.value.incidentRole!!.roleCode).isEqualTo("1")
-      assertThat(argumentCaptor.value.incidentRole!!.associatedPrisonersNumber).isEqualTo("2")
+      assertThat(argumentCaptor.value.incidentRole!!.roleCode).isEqualTo(null)
+      assertThat(argumentCaptor.value.incidentRole!!.associatedPrisonersNumber).isEqualTo(null)
 
       assertThat(response).isNotNull
     }
 
     @Test
     fun `returns the draft adjudication`() {
-      testDto {
+      testDto(
+        Optional.of(
+          DraftAdjudication(
+            id = 1,
+            prisonerNumber = "A12345",
+            agencyId = "MDI",
+            incidentDetails = IncidentDetails(
+              locationId = 2,
+              dateTimeOfIncident = LocalDateTime.now(),
+              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+            ),
+            incidentRole = IncidentRole(null, "25a", null, null),
+            offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+            incidentStatement = IncidentStatement(
+              statement = "Example statement",
+              completed = false
+            ),
+            isYouthOffender = false
+          )
+
+        )
+      ) {
         draftAdjudicationService.editIncidentRole(
           1,
-          IncidentRoleRequest(INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER),
+          IncidentRoleRequest("25a"),
           false,
         )
       }
@@ -1575,6 +1647,9 @@ class DraftAdjudicationServiceTest {
 
     fun incidentRoleWithNoValuesSet(): IncidentRole =
       IncidentRole(null, null, null, null)
+
+    fun incidentRoleWithValuesSetForRoleCode(roleCode: String?): IncidentRole =
+      IncidentRole(null, roleCode, "2", "3")
   }
 
   fun testDto(toFind: Optional<DraftAdjudication> = Optional.empty(), toTest: Supplier<DraftAdjudicationDto>) {

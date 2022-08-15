@@ -77,6 +77,8 @@ class DraftAdjudicationService(
   companion object {
     private const val DAYS_TO_ACTION = 2L
     const val DAYS_TO_DELETE = 1L
+    const val INCITED = "25b"
+    const val ASSISTED = "25c"
 
     fun daysToActionFromIncident(incidentDate: LocalDateTime): LocalDateTime = incidentDate.plusDays(DAYS_TO_ACTION)
   }
@@ -199,8 +201,10 @@ class DraftAdjudicationService(
       )
 
       draftAdjudication.incidentRole!!.roleCode = it.roleCode
-      draftAdjudication.incidentRole!!.associatedPrisonersNumber = it.associatedPrisonersNumber
-      draftAdjudication.incidentRole!!.associatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName
+      if (!listOf(INCITED, ASSISTED).contains(it.roleCode)) {
+        draftAdjudication.incidentRole!!.associatedPrisonersNumber = null
+        draftAdjudication.incidentRole!!.associatedPrisonersName = null
+      }
     }
 
     return draftAdjudicationRepository
