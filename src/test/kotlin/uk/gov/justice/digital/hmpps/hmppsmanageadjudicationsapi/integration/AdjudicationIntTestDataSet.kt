@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import java.time.LocalDateTime
 
 data class AdjudicationIntTestDataSet(
@@ -18,7 +19,8 @@ data class AdjudicationIntTestDataSet(
   val incidentRoleAssociatedPrisonersNumber: String,
   val offences: List<OffenceTestDataSet>,
   val statement: String,
-  val createdByUserId: String
+  val createdByUserId: String,
+  val damages: List<DamagesTestDataSet>
 )
 
 data class OffenceTestDataSet(
@@ -28,6 +30,11 @@ data class OffenceTestDataSet(
   val victimPrisonersNumber: String? = null,
   val victimStaffUsername: String? = null,
   val victimOtherPersonsName: String? = null,
+)
+
+data class DamagesTestDataSet(
+  val code: DamageCode,
+  val details: String
 )
 
 data class NomisOffenceTestDataSet(

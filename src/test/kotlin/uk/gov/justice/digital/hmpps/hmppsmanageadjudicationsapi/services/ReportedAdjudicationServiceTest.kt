@@ -134,6 +134,7 @@ class ReportedAdjudicationServiceTest {
           reviewUserId = "A_REVIEWER",
           statusReason = "Status Reason",
           statusDetails = "Status Reason String",
+          damages = mutableListOf()
         )
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -232,6 +233,7 @@ class ReportedAdjudicationServiceTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
         statusDetails = null,
+        damages = mutableListOf()
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
@@ -253,6 +255,7 @@ class ReportedAdjudicationServiceTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
         statusDetails = null,
+        damages = mutableListOf()
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
@@ -337,6 +340,7 @@ class ReportedAdjudicationServiceTest {
         ),
         statement = INCIDENT_STATEMENT,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        damages = mutableListOf()
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
@@ -358,6 +362,7 @@ class ReportedAdjudicationServiceTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
         statusDetails = null,
+        damages = mutableListOf()
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
@@ -420,6 +425,7 @@ class ReportedAdjudicationServiceTest {
         reviewUserId = null,
         statusReason = null,
         statusDetails = null,
+        damages = mutableListOf()
       )
       reportedAdjudication.createdByUserId = "A_SMITH"
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -672,6 +678,7 @@ class ReportedAdjudicationServiceTest {
         statement = INCIDENT_STATEMENT,
         offenceDetails = offenceDetails,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        damages = mutableListOf()
       )
       // Add audit information
       reportedAdjudication.createdByUserId = "A_USER"
@@ -702,6 +709,7 @@ class ReportedAdjudicationServiceTest {
       status = ReportedAdjudicationStatus.AWAITING_REVIEW,
       statusReason = null,
       statusDetails = null,
+      damages = mutableListOf()
     )
 
     private val expectedSavedDraftAdjudication = DraftAdjudication(

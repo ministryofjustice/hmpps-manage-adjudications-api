@@ -4,7 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import java.time.LocalDateTime
@@ -491,6 +493,44 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     assertThat(draft.get().isYouthOffender).isEqualTo(true)
     // Check it has been removed from the DB
     assertThat(draft.get().offenceDetails).hasSize(0)
+  }
+
+  @Test
+  fun `add damages to the draft adjudication`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+
+    val intTestScenario = intTestBuilder
+      .startDraft(testAdjudication)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+
+    val draftId = intTestScenario.getDraftId()
+
+    webTestClient.put()
+      .uri("/draft-adjudications/$draftId/damages")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "damages" to listOf(
+            DamageRequestItem(
+              code = DamageCode.CLEANING, details = "details"
+            )
+          ),
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.damages[0].code")
+      .isEqualTo(DamageCode.CLEANING.name)
+      .jsonPath("$.draftAdjudication.damages[0].details")
+      .isEqualTo("details")
+      .jsonPath("$.draftAdjudication.damages[0].reporter")
+      .isEqualTo("ITAG_USER")
   }
 
   companion object {

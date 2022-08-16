@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.beans.factory.annotation.Autowired
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -36,6 +37,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
+      .addDamages()
       .completeDraft()
 
     webTestClient.get()
@@ -46,6 +48,12 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.adjudicationNumber")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.reportedAdjudication.damages[0].code")
+      .isEqualTo(DamageCode.CLEANING.name)
+      .jsonPath("$.reportedAdjudication.damages[0].details")
+      .isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.damages[0].reporter")
+      .isEqualTo("B_MILLS")
   }
 
   @Test

@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Import
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConfiguration
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
@@ -90,17 +92,29 @@ class DraftAdjudicationRepositoryTest {
       )
       .contains(
         Tuple(
-          draft.offenceDetails!![0].offenceCode,
-          draft.offenceDetails!![0].victimPrisonersNumber,
-          draft.offenceDetails!![0].victimStaffUsername,
-          draft.offenceDetails!![0].victimOtherPersonsName
+          draft.offenceDetails!!.first().offenceCode,
+          draft.offenceDetails!!.first().victimPrisonersNumber,
+          draft.offenceDetails!!.first().victimStaffUsername,
+          draft.offenceDetails!!.first().victimOtherPersonsName
         ),
         Tuple(
-          draft.offenceDetails!![1].offenceCode,
-          draft.offenceDetails!![1].victimPrisonersNumber,
-          draft.offenceDetails!![1].victimStaffUsername,
-          draft.offenceDetails!![1].victimOtherPersonsName
+          draft.offenceDetails!!.last().offenceCode,
+          draft.offenceDetails!!.last().victimPrisonersNumber,
+          draft.offenceDetails!!.last().victimStaffUsername,
+          draft.offenceDetails!!.last().victimOtherPersonsName
         ),
+      )
+
+    assertThat(savedEntity.damages).hasSize(1)
+      .extracting(
+        "code",
+        "details",
+      )
+      .contains(
+        Tuple(
+          draft.damages!!.first().code,
+          draft.damages!!.first().details,
+        )
       )
 
     assertThat(savedEntity.incidentStatement)
@@ -132,9 +146,9 @@ class DraftAdjudicationRepositoryTest {
       )
       .contains(
         Tuple(
-          updatedDraft.offenceDetails!![0].offenceCode,
-          updatedDraft.offenceDetails!![0].victimPrisonersNumber, updatedDraft.offenceDetails!![0].victimStaffUsername,
-          updatedDraft.offenceDetails!![0].victimOtherPersonsName
+          updatedDraft.offenceDetails!!.first().offenceCode,
+          updatedDraft.offenceDetails!!.first().victimPrisonersNumber, updatedDraft.offenceDetails!!.first().victimStaffUsername,
+          updatedDraft.offenceDetails!!.first().victimOtherPersonsName
         ),
       )
   }
@@ -286,7 +300,13 @@ class DraftAdjudicationRepositoryTest {
         statement = "Example statement",
         completed = false,
       ),
-      isYouthOffender = true
+      isYouthOffender = true,
+      damages = mutableListOf(
+        Damage(
+          code = DamageCode.CLEANING,
+          details = "details"
+        ),
+      )
     )
   }
 
