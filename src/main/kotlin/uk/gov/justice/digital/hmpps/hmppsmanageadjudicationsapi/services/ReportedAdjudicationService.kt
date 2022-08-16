@@ -11,15 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedDamageDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.*
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
@@ -76,6 +68,7 @@ class ReportedAdjudicationService(
     return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
+  @Transactional
   fun createDraftFromReportedAdjudication(adjudicationNumber: Long): DraftAdjudicationDto {
     val foundReportedAdjudication =
       reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
@@ -102,7 +95,8 @@ class ReportedAdjudicationService(
         statement = reportedAdjudication.statement,
         completed = true
       ),
-      isYouthOffender = reportedAdjudication.isYouthOffender
+      isYouthOffender = reportedAdjudication.isYouthOffender,
+      damages = toDraftDamages(reportedAdjudication.damages)
     )
 
     return draftAdjudicationRepository
@@ -117,6 +111,16 @@ class ReportedAdjudicationService(
         victimPrisonersNumber = offence.victimPrisonersNumber,
         victimStaffUsername = offence.victimStaffUsername,
         victimOtherPersonsName = offence.victimOtherPersonsName,
+      )
+    }.toMutableList()
+  }
+
+  private fun toDraftDamages(damages: MutableList<ReportedDamage>?): MutableList<Damage> {
+    return (damages ?: mutableListOf()).map {
+      Damage(
+        code = it.code,
+        details = it.details,
+        reporter = it.reporter
       )
     }.toMutableList()
   }
@@ -237,7 +241,7 @@ private fun toReportedDamages(damages: MutableList<ReportedDamage>?): List<Repor
     ReportedDamageDto(
       code = it.code,
       details = it.details,
-      reporter = it.createdByUserId
+      reporter = it.reporter
     )
   }.toList()
 }

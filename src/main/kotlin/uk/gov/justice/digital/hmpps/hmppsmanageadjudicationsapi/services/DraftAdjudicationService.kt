@@ -282,6 +282,7 @@ class DraftAdjudicationService(
         Damage(
           code = it.code,
           details = it.details,
+          reporter = authenticationFacade.currentUsername!!
         )
       }
     )
@@ -390,8 +391,8 @@ class DraftAdjudicationService(
       it.offenceDetails!!.addAll(toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication))
       it.statement = draftAdjudication.incidentStatement!!.statement!!
       it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
-      it.damages!!.clear()
-      draftAdjudication.damages?.let { d -> it.damages!!.addAll(toReportedDamages(d)) }
+      it.damages.clear()
+      draftAdjudication.damages?.let { d -> it.damages.addAll(toReportedDamages(d)) }
 
       return reportedAdjudicationRepository.save(it)
     } ?: ReportedAdjudicationService.throwEntityNotFoundException(reportedAdjudicationNumber)
@@ -413,7 +414,8 @@ class DraftAdjudicationService(
     return damages.map {
       ReportedDamage(
         code = it.code,
-        details = it.details
+        details = it.details,
+        reporter = it.reporter
       )
     }.toMutableList()
   }
@@ -483,5 +485,5 @@ fun IncidentStatement.toDo(): IncidentStatementDto = IncidentStatementDto(
 fun Damage.toDto(): DamageDto = DamageDto(
   code = this.code,
   details = this.details,
-  reporter = this.createdByUserId
+  reporter = this.reporter
 )

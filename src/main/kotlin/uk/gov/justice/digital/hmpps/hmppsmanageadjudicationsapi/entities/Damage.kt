@@ -21,7 +21,9 @@ data class Damage(
   @Length(max = 32)
   var code: DamageCode,
   @Length(max = 4000)
-  var details: String
+  var details: String,
+  @Length(max = 32)
+  var reporter: String
 ) : BaseEntity()
 
 @Entity
@@ -31,5 +33,7 @@ data class ReportedDamage(
   @Length(max = 32)
   var code: DamageCode,
   @Length(max = 4000)
-  var details: String
+  var details: String,
+  @Length(max = 32)
+  var reporter: String
 ) : BaseEntity()

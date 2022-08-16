@@ -68,5 +68,5 @@ data class ReportedDamageDto(
   @Schema(description = "The details of the damage", example = "the kettle was broken")
   val details: String,
   @Schema(description = "The username of the person who added this record", example = "ABC12D")
-  val reporter: String? = null,
+  val reporter: String,
 )

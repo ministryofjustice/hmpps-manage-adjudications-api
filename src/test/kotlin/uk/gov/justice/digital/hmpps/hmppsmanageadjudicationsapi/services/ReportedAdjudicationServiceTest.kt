@@ -16,6 +16,8 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
@@ -23,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -709,7 +712,9 @@ class ReportedAdjudicationServiceTest {
       status = ReportedAdjudicationStatus.AWAITING_REVIEW,
       statusReason = null,
       statusDetails = null,
-      damages = mutableListOf()
+      damages = mutableListOf(
+        ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
+      )
     )
 
     private val expectedSavedDraftAdjudication = DraftAdjudication(
@@ -739,7 +744,10 @@ class ReportedAdjudicationServiceTest {
         completed = true,
         statement = INCIDENT_STATEMENT
       ),
-      isYouthOffender = false
+      isYouthOffender = false,
+      damages = mutableListOf(
+        Damage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
+      )
     )
 
     private val savedDraftAdjudication = expectedSavedDraftAdjudication.copy(
@@ -811,6 +819,13 @@ class ReportedAdjudicationServiceTest {
       assertThat(createdDraft.incidentStatement)
         .extracting("completed", "statement")
         .contains(true, INCIDENT_STATEMENT)
+      assertThat(createdDraft.damages)
+        .extracting("code", "details", "reporter")
+        .contains(
+          Tuple(
+            DamageCode.CLEANING, "details", "Fred"
+          )
+        )
     }
   }
 

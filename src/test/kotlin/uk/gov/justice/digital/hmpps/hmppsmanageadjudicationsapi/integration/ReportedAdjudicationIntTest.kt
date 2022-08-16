@@ -214,6 +214,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
+      .addDamages()
       .completeDraft()
 
     webTestClient.post()
@@ -224,6 +225,12 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.draftAdjudication.adjudicationNumber")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.draftAdjudication.damages[0].code")
+      .isEqualTo(DamageCode.CLEANING.name)
+      .jsonPath("$.draftAdjudication.damages[0].details")
+      .isEqualTo("details")
+      .jsonPath("$.draftAdjudication.damages[0].reporter")
+      .isEqualTo("B_MILLS")
   }
 
   @Test

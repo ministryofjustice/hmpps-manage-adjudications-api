@@ -1570,7 +1570,7 @@ class DraftAdjudicationServiceTest {
         offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
         isYouthOffender = true,
         damages = mutableListOf(
-          Damage(code = DamageCode.CLEANING, details = "details")
+          Damage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
         )
       )
 
@@ -1578,6 +1578,7 @@ class DraftAdjudicationServiceTest {
     fun init() {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
       whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+      whenever(authenticationFacade.currentUsername).thenReturn("Fred")
     }
 
     @Test

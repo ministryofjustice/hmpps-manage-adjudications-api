@@ -304,7 +304,8 @@ class DraftAdjudicationRepositoryTest {
       damages = mutableListOf(
         Damage(
           code = DamageCode.CLEANING,
-          details = "details"
+          details = "details",
+          reporter = "Fred"
         ),
       )
     )

@@ -325,7 +325,8 @@ class ReportedAdjudicationRepositoryTest {
       damages = mutableListOf(
         ReportedDamage(
           code = DamageCode.CLEANING,
-          details = "details"
+          details = "details",
+          reporter = "Fred"
         )
       )
     )
