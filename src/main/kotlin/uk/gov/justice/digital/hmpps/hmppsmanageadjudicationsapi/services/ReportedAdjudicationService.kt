@@ -33,6 +33,7 @@ import java.util.Optional
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 
+@Transactional
 @Service
 class ReportedAdjudicationService(
   val draftAdjudicationRepository: DraftAdjudicationRepository,
@@ -49,7 +50,6 @@ class ReportedAdjudicationService(
     fun statuses(status: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
   }
 
-  @Transactional
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
     val reportedAdjudication =
       reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
@@ -57,7 +57,6 @@ class ReportedAdjudicationService(
     return reportedAdjudication?.toDto(offenceCodeLookupService) ?: throwEntityNotFoundException(adjudicationNumber)
   }
 
-  @Transactional
   fun getAllReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val reportedAdjudicationsPage =
       reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
@@ -66,7 +65,6 @@ class ReportedAdjudicationService(
     return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
-  @Transactional
   fun getMyReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val username = authenticationFacade.currentUsername
 
@@ -77,7 +75,6 @@ class ReportedAdjudicationService(
     return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
-  @Transactional
   fun createDraftFromReportedAdjudication(adjudicationNumber: Long): DraftAdjudicationDto {
     val foundReportedAdjudication =
       reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
@@ -134,7 +131,6 @@ class ReportedAdjudicationService(
     }.toMutableList()
   }
 
-  @Transactional
   fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
     val username = if (status == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)

@@ -710,7 +710,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       setDamagesRequest(1, DAMAGES_REQUEST)
         .andExpect(status().isCreated)
 
-      verify(draftAdjudicationService).setDamages(1, DAMAGES_REQUEST.damages,)
+      verify(draftAdjudicationService).setDamages(1, DAMAGES_REQUEST.damages)
     }
 
     private fun setDamagesRequest(
@@ -721,6 +721,46 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           put("/draft-adjudications/$id/damages")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
+  @Nested
+  inner class UpdateDamages {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        draftAdjudicationService.updateDamages(
+          anyLong(),
+          any(),
+        )
+      ).thenReturn(draftAdjudicationDto())
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      setDamagesRequest(1, DAMAGES_REQUEST).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the damages`() {
+      setDamagesRequest(1, DAMAGES_REQUEST)
+        .andExpect(status().isOk)
+
+      verify(draftAdjudicationService).updateDamages(1, DAMAGES_REQUEST.damages)
+    }
+
+    private fun setDamagesRequest(
+      id: Long,
+      damages: DamagesRequest?
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(damages)
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/damages/edit")
             .header("Content-Type", "application/json")
             .content(body)
         )
