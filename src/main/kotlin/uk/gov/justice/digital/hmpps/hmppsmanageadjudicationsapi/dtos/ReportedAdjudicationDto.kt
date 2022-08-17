@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos
 
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDateTime
 
@@ -34,6 +35,8 @@ data class ReportedAdjudicationDto(
   val statusReason: String?,
   @Schema(description = "The name for the status of the reported adjudication")
   val statusDetails: String?,
+  @Schema(description = "Damages related to incident")
+  val damages: List<ReportedDamageDto>
 )
 
 @Schema(description = "Details of an offence")
@@ -56,4 +59,14 @@ data class OffenceRuleDto(
   val paragraphNumber: String,
   @Schema(description = "The name relating to the paragraph description", example = "Committed an assault")
   val paragraphDescription: String,
+)
+
+@Schema(description = "Reported damages")
+data class ReportedDamageDto(
+  @Schema(description = "The damage code based on an enum for defined damages", example = "3")
+  val code: DamageCode,
+  @Schema(description = "The details of the damage", example = "the kettle was broken")
+  val details: String,
+  @Schema(description = "The username of the person who added this record", example = "ABC12D")
+  val reporter: String,
 )

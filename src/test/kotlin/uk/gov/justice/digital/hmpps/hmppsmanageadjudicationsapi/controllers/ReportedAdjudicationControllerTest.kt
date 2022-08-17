@@ -79,6 +79,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           reviewedByUserId = null,
           statusReason = null,
           statusDetails = null,
+          damages = listOf()
         )
       )
       makeGetAdjudicationRequest(1)
@@ -144,6 +145,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
               reviewedByUserId = null,
               statusReason = null,
               statusDetails = null,
+              damages = listOf()
             )
           ),
           Pageable.ofSize(20).withPage(0),

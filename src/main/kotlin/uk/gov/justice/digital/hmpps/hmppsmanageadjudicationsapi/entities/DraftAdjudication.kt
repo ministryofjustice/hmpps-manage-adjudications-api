@@ -29,4 +29,7 @@ data class DraftAdjudication(
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "incident_statement_id")
   var incidentStatement: IncidentStatement? = null,
+  @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "draft_adjudication_fk_id")
+  var damages: MutableList<Damage>? = null,
 ) : BaseEntity()

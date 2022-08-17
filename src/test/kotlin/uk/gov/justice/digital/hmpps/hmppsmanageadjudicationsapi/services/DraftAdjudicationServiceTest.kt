@@ -17,6 +17,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleAssociatedPrisonerRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.OffenceDetailsRequestItem
@@ -26,6 +27,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRol
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
@@ -1163,7 +1166,8 @@ class DraftAdjudicationServiceTest {
         incidentRoleAssociatedPrisonersNumber = null,
         incidentRoleAssociatedPrisonersName = null,
         incidentRoleCode = null,
-        statement = "test"
+        statement = "test",
+        damages = mutableListOf()
       )
 
       @BeforeEach
@@ -1279,6 +1283,7 @@ class DraftAdjudicationServiceTest {
             status = ReportedAdjudicationStatus.AWAITING_REVIEW,
             statusReason = null,
             statusDetails = null,
+            damages = mutableListOf()
           )
         )
         whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
@@ -1542,6 +1547,75 @@ class DraftAdjudicationServiceTest {
     @Test
     fun `returns the draft adjudication`() {
       testDto(Optional.of(draftAdjudication)) { draftAdjudicationService.setIncidentApplicableRule(1, false, true) }
+    }
+  }
+
+  @Nested
+  inner class AddDamages {
+    private val draftAdjudication =
+      DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = LocalDateTime.now(),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithAllValuesSet(),
+        incidentStatement = IncidentStatement(
+          statement = "Example statement",
+          completed = false
+        ),
+        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        isYouthOffender = true,
+        damages = mutableListOf(
+          Damage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
+        )
+      )
+
+    @BeforeEach
+    fun init() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+      whenever(authenticationFacade.currentUsername).thenReturn("Fred")
+    }
+
+    @Test
+    fun `add damages to adjudication`() {
+      val response = draftAdjudicationService.setDamages(
+        1,
+        listOf(
+          DamageRequestItem(DamageCode.CLEANING, "details")
+        )
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.damages!!.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.damages!!.first().code).isEqualTo(DamageCode.CLEANING)
+      assertThat(argumentCaptor.value.damages!!.first().details).isEqualTo("details")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        draftAdjudicationService.setDamages(1, listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+
+    @Test
+    fun `throws an IllegalArgumentException when no damages are provided`() {
+      assertThatThrownBy {
+        draftAdjudicationService.setDamages(1, listOf())
+      }.isInstanceOf(IllegalArgumentException::class.java)
+        .hasMessageContaining("Please supply at least one set of damages")
     }
   }
 

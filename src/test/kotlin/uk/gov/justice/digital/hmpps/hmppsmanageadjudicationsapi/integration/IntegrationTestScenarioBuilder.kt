@@ -47,6 +47,11 @@ class IntegrationTestScenario(
     return this
   }
 
+  fun addDamages(): IntegrationTestScenario {
+    intTestData.addDamages(draftCreationResponse, testAdjudicationDataSet, headers)
+    return this
+  }
+
   fun completeDraft(): IntegrationTestScenario {
     intTestData.completeDraftAdjudication(
       draftCreationResponse,

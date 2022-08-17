@@ -10,6 +10,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentSta
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedDamageDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
@@ -17,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -46,6 +49,7 @@ class ReportedAdjudicationService(
     fun statuses(status: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
   }
 
+  @Transactional
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
     val reportedAdjudication =
       reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
@@ -53,6 +57,7 @@ class ReportedAdjudicationService(
     return reportedAdjudication?.toDto(offenceCodeLookupService) ?: throwEntityNotFoundException(adjudicationNumber)
   }
 
+  @Transactional
   fun getAllReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val reportedAdjudicationsPage =
       reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
@@ -61,6 +66,7 @@ class ReportedAdjudicationService(
     return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
+  @Transactional
   fun getMyReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val username = authenticationFacade.currentUsername
 
@@ -71,6 +77,7 @@ class ReportedAdjudicationService(
     return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
+  @Transactional
   fun createDraftFromReportedAdjudication(adjudicationNumber: Long): DraftAdjudicationDto {
     val foundReportedAdjudication =
       reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
@@ -97,7 +104,8 @@ class ReportedAdjudicationService(
         statement = reportedAdjudication.statement,
         completed = true
       ),
-      isYouthOffender = reportedAdjudication.isYouthOffender
+      isYouthOffender = reportedAdjudication.isYouthOffender,
+      damages = toDraftDamages(reportedAdjudication.damages)
     )
 
     return draftAdjudicationRepository
@@ -112,6 +120,16 @@ class ReportedAdjudicationService(
         victimPrisonersNumber = offence.victimPrisonersNumber,
         victimStaffUsername = offence.victimStaffUsername,
         victimOtherPersonsName = offence.victimOtherPersonsName,
+      )
+    }.toMutableList()
+  }
+
+  private fun toDraftDamages(damages: MutableList<ReportedDamage>?): MutableList<Damage> {
+    return (damages ?: mutableListOf()).map {
+      Damage(
+        code = it.code,
+        details = it.details,
+        reporter = it.reporter
       )
     }.toMutableList()
   }
@@ -209,6 +227,7 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   reviewedByUserId = reviewUserId,
   statusReason = statusReason,
   statusDetails = statusDetails,
+  damages = toReportedDamages(damages)
 )
 
 private fun toReportedOffence(offences: MutableList<ReportedOffence>?, isYouthOffender: Boolean, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> {
@@ -222,6 +241,16 @@ private fun toReportedOffence(offences: MutableList<ReportedOffence>?, isYouthOf
       victimPrisonersNumber = offence.victimPrisonersNumber,
       victimStaffUsername = offence.victimStaffUsername,
       victimOtherPersonsName = offence.victimOtherPersonsName,
+    )
+  }.toList()
+}
+
+private fun toReportedDamages(damages: MutableList<ReportedDamage>?): List<ReportedDamageDto> {
+  return (damages ?: mutableListOf()).map {
+    ReportedDamageDto(
+      code = it.code,
+      details = it.details,
+      reporter = it.reporter
     )
   }.toList()
 }

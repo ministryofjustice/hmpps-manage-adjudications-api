@@ -16,6 +16,8 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
@@ -23,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -134,6 +137,7 @@ class ReportedAdjudicationServiceTest {
           reviewUserId = "A_REVIEWER",
           statusReason = "Status Reason",
           statusDetails = "Status Reason String",
+          damages = mutableListOf()
         )
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -232,6 +236,7 @@ class ReportedAdjudicationServiceTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
         statusDetails = null,
+        damages = mutableListOf()
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
@@ -253,6 +258,7 @@ class ReportedAdjudicationServiceTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
         statusDetails = null,
+        damages = mutableListOf()
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
@@ -337,6 +343,7 @@ class ReportedAdjudicationServiceTest {
         ),
         statement = INCIDENT_STATEMENT,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        damages = mutableListOf()
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
@@ -358,6 +365,7 @@ class ReportedAdjudicationServiceTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
         statusDetails = null,
+        damages = mutableListOf()
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
@@ -420,6 +428,7 @@ class ReportedAdjudicationServiceTest {
         reviewUserId = null,
         statusReason = null,
         statusDetails = null,
+        damages = mutableListOf()
       )
       reportedAdjudication.createdByUserId = "A_SMITH"
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -672,6 +681,7 @@ class ReportedAdjudicationServiceTest {
         statement = INCIDENT_STATEMENT,
         offenceDetails = offenceDetails,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        damages = mutableListOf()
       )
       // Add audit information
       reportedAdjudication.createdByUserId = "A_USER"
@@ -702,6 +712,9 @@ class ReportedAdjudicationServiceTest {
       status = ReportedAdjudicationStatus.AWAITING_REVIEW,
       statusReason = null,
       statusDetails = null,
+      damages = mutableListOf(
+        ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
+      )
     )
 
     private val expectedSavedDraftAdjudication = DraftAdjudication(
@@ -731,7 +744,10 @@ class ReportedAdjudicationServiceTest {
         completed = true,
         statement = INCIDENT_STATEMENT
       ),
-      isYouthOffender = false
+      isYouthOffender = false,
+      damages = mutableListOf(
+        Damage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
+      )
     )
 
     private val savedDraftAdjudication = expectedSavedDraftAdjudication.copy(
@@ -803,6 +819,13 @@ class ReportedAdjudicationServiceTest {
       assertThat(createdDraft.incidentStatement)
         .extracting("completed", "statement")
         .contains(true, INCIDENT_STATEMENT)
+      assertThat(createdDraft.damages)
+        .extracting("code", "details", "reporter")
+        .contains(
+          Tuple(
+            DamageCode.CLEANING, "details", "Fred"
+          )
+        )
     }
   }
 

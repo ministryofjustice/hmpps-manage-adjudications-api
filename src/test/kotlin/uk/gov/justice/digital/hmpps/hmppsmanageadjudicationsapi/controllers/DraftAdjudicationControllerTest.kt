@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRol
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -45,17 +46,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           any(),
         )
       ).thenReturn(
-        DraftAdjudicationDto(
-          id = 1,
-          adjudicationNumber = null,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 2,
-            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          isYouthOffender = true
-        )
+        draftAdjudicationDto()
       )
     }
 
@@ -86,7 +77,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("draftAdjudication.id").isNumber)
         .andExpect(jsonPath("draftAdjudication.adjudicationNumber").doesNotExist())
         .andExpect(jsonPath("draftAdjudication.prisonerNumber").value("A12345"))
-        .andExpect(jsonPath("draftAdjudication.incidentDetails.locationId").value(2))
+        .andExpect(jsonPath("draftAdjudication.incidentDetails.locationId").value(3))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
     }
@@ -220,19 +211,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(draftAdjudicationService.setOffenceDetails(anyLong(), any())).thenReturn(
-        DraftAdjudicationDto(
-          id = 1L,
-          adjudicationNumber = null,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 1,
-            DATE_TIME_OF_INCIDENT,
-            DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
-          offenceDetails = listOf(BASIC_OFFENCE_RESPONSE_DTO),
-          isYouthOffender = true
-        )
+        draftAdjudicationDto()
       )
     }
 
@@ -284,21 +263,8 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class AddIncidentStatement {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.addIncidentStatement(anyLong(), any(), any())).thenReturn(
-        DraftAdjudicationDto(
-          id = 1L,
-          adjudicationNumber = null,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 1,
-            DATE_TIME_OF_INCIDENT,
-            DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
-          incidentStatement = IncidentStatementDto(statement = "test"),
-          isYouthOffender = true
-        )
-      )
+      whenever(draftAdjudicationService.addIncidentStatement(anyLong(), any(), any()))
+        .thenReturn(draftAdjudicationDto())
     }
 
     @Test
@@ -358,20 +324,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           any(),
         )
-      ).thenReturn(
-        DraftAdjudicationDto(
-          id = 1L,
-          adjudicationNumber = null,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 3,
-            DATE_TIME_OF_INCIDENT,
-            DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
-          isYouthOffender = true
-        )
-      )
+      ).thenReturn(draftAdjudicationDto())
     }
 
     @Test
@@ -459,21 +412,8 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.editIncidentStatement(anyLong(), any(), any())).thenReturn(
-        DraftAdjudicationDto(
-          id = 1L,
-          adjudicationNumber = null,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 1,
-            DATE_TIME_OF_INCIDENT,
-            DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
-          incidentStatement = IncidentStatementDto(statement = "new statement"),
-          isYouthOffender = true
-        )
-      )
+      whenever(draftAdjudicationService.editIncidentStatement(anyLong(), any(), any()))
+        .thenReturn(draftAdjudicationDto("new statement"))
     }
 
     @Test
@@ -621,21 +561,8 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.setIncidentApplicableRule(anyLong(), anyBoolean(), anyBoolean())).thenReturn(
-        DraftAdjudicationDto(
-          id = 1L,
-          adjudicationNumber = null,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 1,
-            DATE_TIME_OF_INCIDENT,
-            DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
-          incidentStatement = IncidentStatementDto(statement = "new statement"),
-          isYouthOffender = true
-        )
-      )
+      whenever(draftAdjudicationService.setIncidentApplicableRule(anyLong(), anyBoolean(), anyBoolean()))
+        .thenReturn(draftAdjudicationDto())
     }
 
     @Test
@@ -674,20 +601,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           any(),
           anyBoolean(),
         )
-      ).thenReturn(
-        DraftAdjudicationDto(
-          id = 1L,
-          adjudicationNumber = null,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 3,
-            DATE_TIME_OF_INCIDENT,
-            DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
-          isYouthOffender = true
-        )
-      )
+      ).thenReturn(draftAdjudicationDto())
     }
 
     @Test
@@ -738,20 +652,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           any(),
         )
-      ).thenReturn(
-        DraftAdjudicationDto(
-          id = 1L,
-          adjudicationNumber = null,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 3,
-            DATE_TIME_OF_INCIDENT,
-            DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
-          isYouthOffender = true
-        )
-      )
+      ).thenReturn(draftAdjudicationDto())
     }
 
     @Test
@@ -786,6 +687,46 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class Damages {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        draftAdjudicationService.setDamages(
+          anyLong(),
+          any(),
+        )
+      ).thenReturn(draftAdjudicationDto())
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      setDamagesRequest(1, DAMAGES_REQUEST).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the damages`() {
+      setDamagesRequest(1, DAMAGES_REQUEST)
+        .andExpect(status().isCreated)
+
+      verify(draftAdjudicationService).setDamages(1, DAMAGES_REQUEST.damages,)
+    }
+
+    private fun setDamagesRequest(
+      id: Long,
+      damages: DamagesRequest?
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(damages)
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/damages")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
@@ -797,7 +738,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     private val INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO = IncidentRoleDto(null, null, null, null)
 
     private val ASSOCIATED_PRISONER_WITH_ALL_VALUES_REQUEST = IncidentRoleAssociatedPrisonerRequest("B23456", "Associated Prisoner")
-
+    private val DAMAGES_REQUEST = DamagesRequest(listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
     private val BASIC_OFFENCE_REQUEST = OffenceDetailsRequestItem(offenceCode = 3)
     private val BASIC_OFFENCE_RESPONSE_DTO = OffenceDetailsDto(
       offenceCode = 3,
@@ -805,6 +746,20 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         paragraphNumber = "3",
         paragraphDescription = "A description"
       )
+    )
+    private fun draftAdjudicationDto(statement: String = "test") = DraftAdjudicationDto(
+      id = 1L,
+      adjudicationNumber = null,
+      prisonerNumber = "A12345",
+      incidentDetails = IncidentDetailsDto(
+        locationId = 3,
+        DATE_TIME_OF_INCIDENT,
+        DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+      ),
+      incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
+      isYouthOffender = true,
+      incidentStatement = IncidentStatementDto(statement = statement),
+      offenceDetails = listOf(BASIC_OFFENCE_RESPONSE_DTO),
     )
   }
 }

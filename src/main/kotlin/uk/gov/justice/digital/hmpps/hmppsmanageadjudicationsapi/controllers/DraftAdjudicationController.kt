@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
 import javax.validation.Valid
@@ -116,6 +117,20 @@ data class DraftAdjudicationResponse(
 data class InProgressAdjudicationResponse(
   @Schema(description = "All in progress adjudications")
   val draftAdjudications: List<DraftAdjudicationDto>
+)
+
+@Schema(description = "Request to update the list of damagesfor a draft adjudication")
+data class DamagesRequest(
+  @Schema(description = "The details of all damages the prisoner is accused of")
+  val damages: List<DamageRequestItem>,
+)
+
+@Schema(description = "Details of Damage")
+data class DamageRequestItem(
+  @Schema(description = "The damage code", example = "3")
+  val code: DamageCode,
+  @Schema(description = "details of the damage", example = "the kettle was broken")
+  val details: String,
 )
 
 @RestController
@@ -291,6 +306,22 @@ class DraftAdjudicationController {
     return DraftAdjudicationResponse(
       draftAdjudication
     )
+  }
+
+  @PutMapping(value = ["/{id}/damages"])
+  @Operation(summary = "Set the damages for the draft adjudication.", description = "0 or more damages to be supplied")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @ResponseStatus(HttpStatus.CREATED)
+  fun setDamages(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid damagesRequest: DamagesRequest
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.setDamages(
+      id,
+      damagesRequest.damages
+    )
+
+    return DraftAdjudicationResponse(draftAdjudication)
   }
 
   @PostMapping(value = ["/{id}/complete-draft-adjudication"])
