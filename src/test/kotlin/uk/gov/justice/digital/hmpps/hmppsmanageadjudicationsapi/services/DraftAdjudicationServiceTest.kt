@@ -1596,6 +1596,7 @@ class DraftAdjudicationServiceTest {
       assertThat(argumentCaptor.value.damages!!.size).isEqualTo(1)
       assertThat(argumentCaptor.value.damages!!.first().code).isEqualTo(DamageCode.CLEANING)
       assertThat(argumentCaptor.value.damages!!.first().details).isEqualTo("details")
+      assertThat(argumentCaptor.value.damages!!.first().reporter).isEqualTo("Fred")
 
       assertThat(response).isNotNull
     }
@@ -1652,6 +1653,39 @@ class DraftAdjudicationServiceTest {
     }
 
     @Test
+    fun `update damages when not initialized `() { // note this case should never occur when editing from a reported adjudication, but is guarded against
+      val draftAdjudicationNoDamages =
+        DraftAdjudication(
+          id = 1,
+          prisonerNumber = "A12345",
+          agencyId = "MDI",
+          incidentDetails = IncidentDetails(
+            locationId = 2,
+            dateTimeOfIncident = LocalDateTime.now(),
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          )
+        )
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationNoDamages))
+
+      val response = draftAdjudicationService.updateDamages(
+        1,
+        listOf(
+          DamageRequestItem(DamageCode.ELECTRICAL_REPAIR, "details 2", "Fred")
+        )
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.damages!!.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.damages!!.first().code).isEqualTo(DamageCode.ELECTRICAL_REPAIR)
+      assertThat(argumentCaptor.value.damages!!.first().details).isEqualTo("details 2")
+      assertThat(argumentCaptor.value.damages!!.first().reporter).isEqualTo("Fred")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
     fun `update damages for adjudication`() {
       val response = draftAdjudicationService.updateDamages(
         1,
@@ -1671,8 +1705,10 @@ class DraftAdjudicationServiceTest {
       assertThat(argumentCaptor.value.damages!!.size).isEqualTo(2)
       assertThat(argumentCaptor.value.damages!!.first().code).isEqualTo(DamageCode.CLEANING)
       assertThat(argumentCaptor.value.damages!!.first().details).isEqualTo("details")
+      assertThat(argumentCaptor.value.damages!!.first().reporter).isEqualTo("Rod")
       assertThat(argumentCaptor.value.damages!!.last().code).isEqualTo(DamageCode.ELECTRICAL_REPAIR)
       assertThat(argumentCaptor.value.damages!!.last().details).isEqualTo("details 2")
+      assertThat(argumentCaptor.value.damages!!.last().reporter).isEqualTo("Fred")
 
       assertThat(response).isNotNull
     }
