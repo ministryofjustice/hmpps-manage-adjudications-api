@@ -119,7 +119,7 @@ data class InProgressAdjudicationResponse(
   val draftAdjudications: List<DraftAdjudicationDto>
 )
 
-@Schema(description = "Request to update the list of damagesfor a draft adjudication")
+@Schema(description = "Request to update the list of damages for a draft adjudication")
 data class DamagesRequest(
   @Schema(description = "The details of all damages the prisoner is accused of")
   val damages: List<DamageRequestItem>,
@@ -127,10 +127,12 @@ data class DamagesRequest(
 
 @Schema(description = "Details of Damage")
 data class DamageRequestItem(
-  @Schema(description = "The damage code", example = "3")
+  @Schema(description = "The damage code", example = "CLEANING")
   val code: DamageCode,
   @Schema(description = "details of the damage", example = "the kettle was broken")
   val details: String,
+  @Schema(description = "optional reporter as per token, used when editing", example = "A_USER")
+  val reporter: String? = null,
 )
 
 @RestController
@@ -317,6 +319,22 @@ class DraftAdjudicationController {
     @RequestBody @Valid damagesRequest: DamagesRequest
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.setDamages(
+      id,
+      damagesRequest.damages
+    )
+
+    return DraftAdjudicationResponse(draftAdjudication)
+  }
+
+  @PutMapping(value = ["/{id}/damages/edit"])
+  @Operation(summary = "Updates the damages for the draft adjudication.", description = "0 or more damages to be supplied, only updates records owned by current user")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @ResponseStatus(HttpStatus.OK)
+  fun updateDamages(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid damagesRequest: DamagesRequest
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.updateDamages(
       id,
       damagesRequest.damages
     )

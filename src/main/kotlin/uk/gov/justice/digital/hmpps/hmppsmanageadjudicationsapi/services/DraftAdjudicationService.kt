@@ -70,6 +70,7 @@ enum class ValidationChecks(val errorMessage: String) {
   abstract fun validate(draftAdjudication: DraftAdjudication)
 }
 
+@Transactional
 @Service
 class DraftAdjudicationService(
   val draftAdjudicationRepository: DraftAdjudicationRepository,
@@ -86,14 +87,12 @@ class DraftAdjudicationService(
     fun daysToActionFromIncident(incidentDate: LocalDateTime): LocalDateTime = incidentDate.plusDays(DAYS_TO_ACTION)
   }
 
-  @Transactional
   fun deleteOrphanedDraftAdjudications() {
     draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(
       LocalDateTime.now().minusDays(DAYS_TO_DELETE)
     )
   }
 
-  @Transactional
   fun startNewAdjudication(
     prisonerNumber: String,
     agencyId: String,
@@ -116,14 +115,12 @@ class DraftAdjudicationService(
       .toDto(offenceCodeLookupService)
   }
 
-  @Transactional
   fun getDraftAdjudicationDetails(id: Long): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     return draftAdjudication.toDto(offenceCodeLookupService)
   }
 
-  @Transactional
   fun setOffenceDetails(id: Long, offenceDetails: List<OffenceDetailsRequestItem>): DraftAdjudicationDto {
     throwIfNoOffenceDetails(offenceDetails)
 
@@ -149,7 +146,6 @@ class DraftAdjudicationService(
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
 
-  @Transactional
   fun addIncidentStatement(id: Long, statement: String?, completed: Boolean?): DraftAdjudicationDto {
     throwIfStatementAndCompletedIsNull(statement, completed)
 
@@ -163,7 +159,6 @@ class DraftAdjudicationService(
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
 
-  @Transactional
   fun editIncidentDetails(
     id: Long,
     locationId: Long?,
@@ -182,7 +177,6 @@ class DraftAdjudicationService(
       .toDto(offenceCodeLookupService)
   }
 
-  @Transactional
   fun editIncidentRole(
     id: Long,
     incidentRole: IncidentRoleRequest,
@@ -216,7 +210,6 @@ class DraftAdjudicationService(
       .toDto(offenceCodeLookupService)
   }
 
-  @Transactional
   fun setIncidentRoleAssociatedPrisoner(
     id: Long,
     incidentRoleAssociatedPrisoner: IncidentRoleAssociatedPrisonerRequest,
@@ -235,7 +228,6 @@ class DraftAdjudicationService(
       .toDto(offenceCodeLookupService)
   }
 
-  @Transactional
   fun editIncidentStatement(id: Long, statement: String?, completed: Boolean?): DraftAdjudicationDto {
     throwIfStatementAndCompletedIsNull(statement, completed)
 
@@ -250,7 +242,6 @@ class DraftAdjudicationService(
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
 
-  @Transactional
   fun setIncidentApplicableRule(
     id: Long,
     isYouthOffender: Boolean,
@@ -269,7 +260,6 @@ class DraftAdjudicationService(
       .toDto(offenceCodeLookupService)
   }
 
-  @Transactional
   fun setDamages(id: Long, damages: List<DamageRequestItem>): DraftAdjudicationDto {
     throwIfNoDamages(damages)
 
@@ -290,7 +280,27 @@ class DraftAdjudicationService(
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
 
-  @Transactional
+  fun updateDamages(id: Long, damages: List<DamageRequestItem>): DraftAdjudicationDto {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val reporter = authenticationFacade.currentUsername!!
+    val toPreserve = (draftAdjudication.damages ?: mutableListOf()).filter { it.reporter != reporter }
+
+    draftAdjudication.damages = draftAdjudication.damages ?: mutableListOf()
+    draftAdjudication.damages!!.clear()
+    draftAdjudication.damages!!.addAll(toPreserve)
+    draftAdjudication.damages!!.addAll(
+      damages.filter { it.reporter == reporter }.map {
+        Damage(
+          code = it.code,
+          details = it.details,
+          reporter = reporter
+        )
+      }
+    )
+
+    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
+  }
+
   fun completeDraftAdjudication(id: Long): ReportedAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
@@ -306,7 +316,6 @@ class DraftAdjudicationService(
       .toDto(offenceCodeLookupService)
   }
 
-  @Transactional
   fun getCurrentUsersInProgressDraftAdjudications(agencyId: String): List<DraftAdjudicationDto> {
     val username = authenticationFacade.currentUsername ?: return emptyList()
 

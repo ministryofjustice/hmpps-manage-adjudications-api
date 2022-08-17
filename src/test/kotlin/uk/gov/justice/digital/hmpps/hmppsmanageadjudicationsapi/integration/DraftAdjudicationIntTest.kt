@@ -533,6 +533,58 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo("ITAG_USER")
   }
 
+  @Test
+  fun `update damages to the draft adjudication`() {
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addIncidentStatement()
+      .addDamages()
+      .completeDraft()
+
+    val createdDraftDetails = intTestData.recallCompletedDraftAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+
+    webTestClient.put()
+      .uri("/draft-adjudications/${createdDraftDetails.draftAdjudication.id}/damages/edit")
+      .headers(setHeaders(username = "ITAG_ALO"))
+      .bodyValue(
+        mapOf(
+          "damages" to listOf(
+            DamageRequestItem(
+              code = DamageCode.ELECTRICAL_REPAIR, details = "details 2", reporter = "ITAG_ALO"
+            ),
+            DamageRequestItem(
+              code = DamageCode.CLEANING, details = "details", reporter = "B_MILLS"
+            )
+          ),
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.damages[0].code")
+      .isEqualTo(DamageCode.CLEANING.name)
+      .jsonPath("$.draftAdjudication.damages[0].details")
+      .isEqualTo("details")
+      .jsonPath("$.draftAdjudication.damages[0].reporter")
+      .isEqualTo("B_MILLS")
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.damages[1].code")
+      .isEqualTo(DamageCode.ELECTRICAL_REPAIR.name)
+      .jsonPath("$.draftAdjudication.damages[1].details")
+      .isEqualTo("details 2")
+      .jsonPath("$.draftAdjudication.damages[1].reporter")
+      .isEqualTo("ITAG_ALO")
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
   }

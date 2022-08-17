@@ -82,7 +82,7 @@ data class IncidentStatementDto(
 
 @Schema(description = "damages")
 data class DamageDto(
-  @Schema(description = "The damage code based on an enum for defined damages", example = "3")
+  @Schema(description = "The damage code based on an enum for defined damages", example = "CLEANING")
   val code: DamageCode,
   @Schema(description = "The details of the damage", example = "the kettle was broken")
   val details: String,
