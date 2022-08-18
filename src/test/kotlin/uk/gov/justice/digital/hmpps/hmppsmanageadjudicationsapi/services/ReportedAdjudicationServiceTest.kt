@@ -19,6 +19,8 @@ import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
@@ -26,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -137,7 +140,8 @@ class ReportedAdjudicationServiceTest {
           reviewUserId = "A_REVIEWER",
           statusReason = "Status Reason",
           statusDetails = "Status Reason String",
-          damages = mutableListOf()
+          damages = mutableListOf(),
+          evidence = mutableListOf()
         )
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -236,7 +240,8 @@ class ReportedAdjudicationServiceTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
         statusDetails = null,
-        damages = mutableListOf()
+        damages = mutableListOf(),
+        evidence = mutableListOf()
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
@@ -258,7 +263,8 @@ class ReportedAdjudicationServiceTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
         statusDetails = null,
-        damages = mutableListOf()
+        damages = mutableListOf(),
+        evidence = mutableListOf()
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
@@ -343,7 +349,8 @@ class ReportedAdjudicationServiceTest {
         ),
         statement = INCIDENT_STATEMENT,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        damages = mutableListOf()
+        damages = mutableListOf(),
+        evidence = mutableListOf()
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
@@ -365,7 +372,8 @@ class ReportedAdjudicationServiceTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
         statusDetails = null,
-        damages = mutableListOf()
+        damages = mutableListOf(),
+        evidence = mutableListOf()
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
@@ -428,7 +436,8 @@ class ReportedAdjudicationServiceTest {
         reviewUserId = null,
         statusReason = null,
         statusDetails = null,
-        damages = mutableListOf()
+        damages = mutableListOf(),
+        evidence = mutableListOf()
       )
       reportedAdjudication.createdByUserId = "A_SMITH"
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -681,7 +690,8 @@ class ReportedAdjudicationServiceTest {
         statement = INCIDENT_STATEMENT,
         offenceDetails = offenceDetails,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        damages = mutableListOf()
+        damages = mutableListOf(),
+        evidence = mutableListOf()
       )
       // Add audit information
       reportedAdjudication.createdByUserId = "A_USER"
@@ -714,6 +724,9 @@ class ReportedAdjudicationServiceTest {
       statusDetails = null,
       damages = mutableListOf(
         ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
+      ),
+      evidence = mutableListOf(
+        ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Fred")
       )
     )
 
@@ -747,6 +760,9 @@ class ReportedAdjudicationServiceTest {
       isYouthOffender = false,
       damages = mutableListOf(
         Damage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
+      ),
+      evidence = mutableListOf(
+        Evidence(code = EvidenceCode.PHOTO, identifier = null, details = "details", reporter = "Fred")
       )
     )
 
@@ -824,6 +840,13 @@ class ReportedAdjudicationServiceTest {
         .contains(
           Tuple(
             DamageCode.CLEANING, "details", "Fred"
+          )
+        )
+      assertThat(createdDraft.evidence)
+        .extracting("code", "details", "reporter")
+        .contains(
+          Tuple(
+            EvidenceCode.PHOTO, "details", "Fred"
           )
         )
     }

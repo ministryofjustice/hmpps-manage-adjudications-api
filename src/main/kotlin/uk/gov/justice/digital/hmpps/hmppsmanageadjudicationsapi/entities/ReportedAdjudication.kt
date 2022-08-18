@@ -44,6 +44,9 @@ data class ReportedAdjudication(
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")
   var damages: MutableList<ReportedDamage>,
+  @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "reported_adjudication_fk_id")
+  var evidence: MutableList<ReportedEvidence>,
 ) : BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reviewUserId: String? = null, statusReason: String? = null, statusDetails: String? = null) {
     if (this.status.canTransitionTo(to)) {

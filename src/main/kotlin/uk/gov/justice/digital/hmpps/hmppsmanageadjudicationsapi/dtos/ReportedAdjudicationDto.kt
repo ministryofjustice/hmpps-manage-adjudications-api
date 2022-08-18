@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos
 
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDateTime
 
@@ -36,7 +37,9 @@ data class ReportedAdjudicationDto(
   @Schema(description = "The name for the status of the reported adjudication")
   val statusDetails: String?,
   @Schema(description = "Damages related to incident")
-  val damages: List<ReportedDamageDto>
+  val damages: List<ReportedDamageDto>,
+  @Schema(description = "Evidence related to incident")
+  val evidence: List<ReportedEvidenceDto>
 )
 
 @Schema(description = "Details of an offence")
@@ -66,6 +69,18 @@ data class ReportedDamageDto(
   @Schema(description = "The damage code based on an enum for defined damages", example = "CLEANING")
   val code: DamageCode,
   @Schema(description = "The details of the damage", example = "the kettle was broken")
+  val details: String,
+  @Schema(description = "The username of the person who added this record", example = "ABC12D")
+  val reporter: String,
+)
+
+@Schema(description = "Reported evidence")
+data class ReportedEvidenceDto(
+  @Schema(description = "The evidence code based on an enum for defined evidence", example = "PHOTO")
+  val code: EvidenceCode,
+  @Schema(description = "Evidence identifier", example = "Tag number or Camera number")
+  val identifier: String? = null,
+  @Schema(description = "The details of the evidence", example = "ie what does the photo describe")
   val details: String,
   @Schema(description = "The username of the person who added this record", example = "ABC12D")
   val reporter: String,

@@ -5,8 +5,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.EvidenceRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import java.time.LocalDateTime
@@ -597,6 +599,44 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo("details 2")
       .jsonPath("$.draftAdjudication.damages[1].reporter")
       .isEqualTo("ITAG_ALO")
+  }
+
+  @Test
+  fun `add evidence to the draft adjudication`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+
+    val intTestScenario = intTestBuilder
+      .startDraft(testAdjudication)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+
+    val draftId = intTestScenario.getDraftId()
+
+    webTestClient.put()
+      .uri("/draft-adjudications/$draftId/evidence")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "evidence" to listOf(
+            EvidenceRequestItem(
+              code = EvidenceCode.PHOTO, details = "details"
+            )
+          ),
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.evidence[0].code")
+      .isEqualTo(EvidenceCode.PHOTO.name)
+      .jsonPath("$.draftAdjudication.evidence[0].details")
+      .isEqualTo("details")
+      .jsonPath("$.draftAdjudication.evidence[0].reporter")
+      .isEqualTo("ITAG_USER")
   }
 
   companion object {

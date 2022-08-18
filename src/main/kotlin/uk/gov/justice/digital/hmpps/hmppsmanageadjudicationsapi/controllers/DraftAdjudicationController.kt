@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudi
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
 import javax.validation.Valid
@@ -130,6 +131,24 @@ data class DamageRequestItem(
   @Schema(description = "The damage code", example = "CLEANING")
   val code: DamageCode,
   @Schema(description = "details of the damage", example = "the kettle was broken")
+  val details: String,
+  @Schema(description = "optional reporter as per token, used when editing", example = "A_USER")
+  val reporter: String? = null,
+)
+
+@Schema(description = "Request to update the list of evidence for a draft adjudication")
+data class EvidenceRequest(
+  @Schema(description = "The details of all evidence")
+  val evidence: List<EvidenceRequestItem>,
+)
+
+@Schema(description = "Details of Evidence")
+data class EvidenceRequestItem(
+  @Schema(description = "The evidence code", example = "PHOTO")
+  val code: EvidenceCode,
+  @Schema(description = "Evidence identifier", example = "Tag number or Camera number")
+  val identifier: String? = null,
+  @Schema(description = "details of the evidence", example = "ie description of photo")
   val details: String,
   @Schema(description = "optional reporter as per token, used when editing", example = "A_USER")
   val reporter: String? = null,
@@ -337,6 +356,22 @@ class DraftAdjudicationController {
     val draftAdjudication = draftAdjudicationService.updateDamages(
       id,
       damagesRequest.damages
+    )
+
+    return DraftAdjudicationResponse(draftAdjudication)
+  }
+
+  @PutMapping(value = ["/{id}/evidence"])
+  @Operation(summary = "Set the evidence for the draft adjudication.", description = "0 or more evidence to be supplied")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @ResponseStatus(HttpStatus.CREATED)
+  fun setEvidence(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid evidenceRequest: EvidenceRequest
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.setEvidence(
+      id,
+      evidenceRequest.evidence
     )
 
     return DraftAdjudicationResponse(draftAdjudication)

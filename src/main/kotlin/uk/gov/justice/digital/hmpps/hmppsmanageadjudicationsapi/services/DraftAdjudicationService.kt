@@ -2,11 +2,13 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.EvidenceRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleAssociatedPrisonerRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.OffenceDetailsRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DamageDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.EvidenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
@@ -15,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
@@ -22,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
@@ -122,7 +126,7 @@ class DraftAdjudicationService(
   }
 
   fun setOffenceDetails(id: Long, offenceDetails: List<OffenceDetailsRequestItem>): DraftAdjudicationDto {
-    throwIfNoOffenceDetails(offenceDetails)
+    throwIfEmpty(offenceDetails)
 
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
     // NOTE: new flow sets isYouthOffender first, therefore if we do not have this set we must throw as .Dto requires it
@@ -261,9 +265,10 @@ class DraftAdjudicationService(
   }
 
   fun setDamages(id: Long, damages: List<DamageRequestItem>): DraftAdjudicationDto {
-    throwIfNoDamages(damages)
+    throwIfEmpty(damages)
 
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val reporter = authenticationFacade.currentUsername!!
 
     draftAdjudication.damages = draftAdjudication.damages ?: mutableListOf()
     draftAdjudication.damages!!.clear()
@@ -272,7 +277,7 @@ class DraftAdjudicationService(
         Damage(
           code = it.code,
           details = it.details,
-          reporter = authenticationFacade.currentUsername!!
+          reporter = reporter
         )
       }
     )
@@ -292,6 +297,28 @@ class DraftAdjudicationService(
       damages.filter { it.reporter == reporter }.map {
         Damage(
           code = it.code,
+          details = it.details,
+          reporter = reporter
+        )
+      }
+    )
+
+    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
+  }
+
+  fun setEvidence(id: Long, evidence: List<EvidenceRequestItem>): DraftAdjudicationDto {
+    throwIfEmpty(evidence)
+
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val reporter = authenticationFacade.currentUsername!!
+
+    draftAdjudication.evidence = draftAdjudication.evidence ?: mutableListOf()
+    draftAdjudication.evidence!!.clear()
+    draftAdjudication.evidence!!.addAll(
+      evidence.map {
+        Evidence(
+          code = it.code,
+          identifier = it.identifier,
           details = it.details,
           reporter = reporter
         )
@@ -373,6 +400,7 @@ class DraftAdjudicationService(
         statement = draftAdjudication.incidentStatement!!.statement!!,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         damages = toReportedDamages(draftAdjudication.damages ?: mutableListOf()),
+        evidence = toReportedEvidence(draftAdjudication.evidence ?: mutableListOf()),
       )
     )
   }
@@ -407,6 +435,10 @@ class DraftAdjudicationService(
       draftAdjudication.damages?.let { damages ->
         it.damages.addAll(toReportedDamages(damages.filter { damage -> damage.reporter == reporter }.toMutableList()))
       }
+      it.evidence.clear()
+      draftAdjudication.evidence?.let { evidence ->
+        it.evidence.addAll(toReportedEvidence(evidence))
+      }
 
       return reportedAdjudicationRepository.save(it)
     } ?: ReportedAdjudicationService.throwEntityNotFoundException(reportedAdjudicationNumber)
@@ -434,19 +466,25 @@ class DraftAdjudicationService(
     }.toMutableList()
   }
 
+  private fun toReportedEvidence(evidence: MutableList<Evidence>): MutableList<ReportedEvidence> {
+    return evidence.map {
+      ReportedEvidence(
+        code = it.code,
+        identifier = it.identifier,
+        details = it.details,
+        reporter = it.reporter
+      )
+    }.toMutableList()
+  }
+
   private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {
     if (statement == null && completed == null)
       throw IllegalArgumentException("Please supply either a statement or the completed value")
   }
 
-  private fun throwIfNoOffenceDetails(offenceDetails: List<OffenceDetailsRequestItem>) {
-    if (offenceDetails.isEmpty())
-      throw IllegalArgumentException("Please supply at least one set of offence details")
-  }
-
-  private fun throwIfNoDamages(damages: List<DamageRequestItem>) {
-    if (damages.isEmpty())
-      throw IllegalArgumentException("Please supply at least one set of damages")
+  private fun throwIfEmpty(toTest: List<Any>) {
+    if (toTest.isEmpty())
+      throw IllegalArgumentException("Please supply at least one set of items")
   }
 
   fun throwEntityNotFoundException(id: Long): Nothing =
@@ -464,7 +502,8 @@ fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService):
     adjudicationNumber = this.reportNumber,
     startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
     isYouthOffender = this.isYouthOffender,
-    damages = this.damages?.map { it.toDto() }
+    damages = this.damages?.map { it.toDto() },
+    evidence = this.evidence?.map { it.toDto() }
   )
 
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
@@ -498,6 +537,13 @@ fun IncidentStatement.toDo(): IncidentStatementDto = IncidentStatementDto(
 
 fun Damage.toDto(): DamageDto = DamageDto(
   code = this.code,
+  details = this.details,
+  reporter = this.reporter
+)
+
+fun Evidence.toDto(): EvidenceDto = EvidenceDto(
+  code = this.code,
+  identifier = this.identifier,
   details = this.details,
   reporter = this.reporter
 )

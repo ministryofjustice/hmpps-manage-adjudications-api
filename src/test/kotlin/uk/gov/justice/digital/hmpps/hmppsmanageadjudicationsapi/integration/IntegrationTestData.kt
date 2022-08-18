@@ -6,6 +6,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
@@ -61,6 +62,8 @@ class IntegrationTestData(
     )
     val DEFAULT_DAMAGES = listOf(DamagesTestDataSet(code = DamageCode.CLEANING, details = "details"))
     val UPDATED_DAMAGES = listOf(DamagesTestDataSet(code = DamageCode.REDECORATION, details = "details"))
+    val DEFAULT_EVIDENCE = listOf(EvidenceTestDataSet(code = EvidenceCode.PHOTO, details = "details"))
+    val UPDATED_EVIDENCE = listOf(EvidenceTestDataSet(code = EvidenceCode.BAGGED_AND_TAGGED, details = "details"))
 
     const val UPDATED_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-13T10:00:00" // 13 is saturday
     const val UPDATED_HANDOVER_DEADLINE_ISO_STRING = "2010-11-15T10:00:00"
@@ -91,7 +94,8 @@ class IntegrationTestData(
       offences = DEFAULT_OFFENCES,
       statement = DEFAULT_STATEMENT,
       createdByUserId = DEFAULT_CREATED_USER_ID,
-      damages = DEFAULT_DAMAGES
+      damages = DEFAULT_DAMAGES,
+      evidence = DEFAULT_EVIDENCE
     )
 
     val UPDATED_ADJUDICATION = AdjudicationIntTestDataSet(
@@ -111,7 +115,8 @@ class IntegrationTestData(
       offences = UPDATED_OFFENCES,
       statement = UPDATED_STATEMENT,
       createdByUserId = DEFAULT_CREATED_USER_ID,
-      damages = UPDATED_DAMAGES
+      damages = UPDATED_DAMAGES,
+      evidence = UPDATED_EVIDENCE
     )
 
     val ADJUDICATION_1 = AdjudicationIntTestDataSet(
@@ -131,7 +136,8 @@ class IntegrationTestData(
       offences = DEFAULT_OFFENCES,
       statement = "Test statement",
       createdByUserId = "A_NESS",
-      damages = DEFAULT_DAMAGES
+      damages = DEFAULT_DAMAGES,
+      evidence = DEFAULT_EVIDENCE
     )
 
     val ADJUDICATION_2 = AdjudicationIntTestDataSet(
@@ -151,7 +157,8 @@ class IntegrationTestData(
       offences = DEFAULT_YOUTH_OFFENCES,
       statement = "Different test statement",
       createdByUserId = "P_NESS",
-      damages = DEFAULT_DAMAGES
+      damages = DEFAULT_DAMAGES,
+      evidence = DEFAULT_EVIDENCE
     )
 
     val ADJUDICATION_3 = AdjudicationIntTestDataSet(
@@ -171,7 +178,8 @@ class IntegrationTestData(
       offences = DEFAULT_OFFENCES,
       statement = "Another test statement",
       createdByUserId = "L_NESS",
-      damages = DEFAULT_DAMAGES
+      damages = DEFAULT_DAMAGES,
+      evidence = DEFAULT_EVIDENCE
     )
 
     val ADJUDICATION_4 = AdjudicationIntTestDataSet(
@@ -191,7 +199,8 @@ class IntegrationTestData(
       offences = DEFAULT_YOUTH_OFFENCES,
       statement = "Yet another test statement",
       createdByUserId = "P_NESS",
-      damages = DEFAULT_DAMAGES
+      damages = DEFAULT_DAMAGES,
+      evidence = DEFAULT_EVIDENCE
     )
 
     val ADJUDICATION_5 = AdjudicationIntTestDataSet(
@@ -211,7 +220,8 @@ class IntegrationTestData(
       offences = DEFAULT_OFFENCES,
       statement = "Keep on with the test statements",
       createdByUserId = "P_NESS",
-      damages = DEFAULT_DAMAGES
+      damages = DEFAULT_DAMAGES,
+      evidence = DEFAULT_EVIDENCE
     )
   }
 
@@ -360,6 +370,26 @@ class IntegrationTestData(
       .bodyValue(
         mapOf(
           "damages" to testDataSet.damages,
+        )
+      )
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
+  fun addEvidence(
+    draftCreationData: DraftAdjudicationResponse,
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ): DraftAdjudicationResponse {
+    return webTestClient.put()
+      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/evidence")
+      .headers(headers)
+      .bodyValue(
+        mapOf(
+          "evidence" to testDataSet.evidence,
         )
       )
       .exchange()
