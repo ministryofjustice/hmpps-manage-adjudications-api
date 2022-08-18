@@ -11,8 +11,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedDamageDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedEvidenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
@@ -20,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -102,7 +105,8 @@ class ReportedAdjudicationService(
         completed = true
       ),
       isYouthOffender = reportedAdjudication.isYouthOffender,
-      damages = toDraftDamages(reportedAdjudication.damages)
+      damages = toDraftDamages(reportedAdjudication.damages),
+      evidence = toDraftEvidence(reportedAdjudication.evidence)
     )
 
     return draftAdjudicationRepository
@@ -124,6 +128,16 @@ class ReportedAdjudicationService(
   private fun toDraftDamages(damages: MutableList<ReportedDamage>?): MutableList<Damage> {
     return (damages ?: mutableListOf()).map {
       Damage(
+        code = it.code,
+        details = it.details,
+        reporter = it.reporter
+      )
+    }.toMutableList()
+  }
+
+  private fun toDraftEvidence(evidence: MutableList<ReportedEvidence>?): MutableList<Evidence> {
+    return (evidence ?: mutableListOf()).map {
+      Evidence(
         code = it.code,
         details = it.details,
         reporter = it.reporter
@@ -223,7 +237,8 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   reviewedByUserId = reviewUserId,
   statusReason = statusReason,
   statusDetails = statusDetails,
-  damages = toReportedDamages(damages)
+  damages = toReportedDamages(damages),
+  evidence = toReportedEvidence(evidence)
 )
 
 private fun toReportedOffence(offences: MutableList<ReportedOffence>?, isYouthOffender: Boolean, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> {
@@ -245,6 +260,17 @@ private fun toReportedDamages(damages: MutableList<ReportedDamage>?): List<Repor
   return (damages ?: mutableListOf()).map {
     ReportedDamageDto(
       code = it.code,
+      details = it.details,
+      reporter = it.reporter
+    )
+  }.toList()
+}
+
+private fun toReportedEvidence(evidence: MutableList<ReportedEvidence>?): List<ReportedEvidenceDto> {
+  return (evidence ?: mutableListOf()).map {
+    ReportedEvidenceDto(
+      code = it.code,
+      identifier = it.identifier,
       details = it.details,
       reporter = it.reporter
     )

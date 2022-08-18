@@ -13,9 +13,11 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConfiguration
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
 import java.time.LocalDate
@@ -54,7 +56,8 @@ class ReportedAdjudicationRepositoryTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
         statusDetails = null,
-        damages = mutableListOf()
+        damages = mutableListOf(),
+        evidence = mutableListOf()
       )
     )
     entityManager.persistAndFlush(
@@ -74,7 +77,8 @@ class ReportedAdjudicationRepositoryTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
         statusDetails = null,
-        damages = mutableListOf()
+        damages = mutableListOf(),
+        evidence = mutableListOf()
       )
     )
     entityManager.persistAndFlush(
@@ -107,7 +111,8 @@ class ReportedAdjudicationRepositoryTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         statusReason = null,
         statusDetails = null,
-        damages = mutableListOf()
+        damages = mutableListOf(),
+        evidence = mutableListOf()
       )
     )
   }
@@ -169,8 +174,20 @@ class ReportedAdjudicationRepositoryTest {
       )
       .contains(
         Tuple(
-          adjudication.damages!![0].code,
-          adjudication.damages!![0].details,
+          adjudication.damages[0].code,
+          adjudication.damages[0].details,
+        ),
+      )
+
+    assertThat(savedEntity.evidence).hasSize(1)
+      .extracting(
+        "code",
+        "details",
+      )
+      .contains(
+        Tuple(
+          adjudication.evidence[0].code,
+          adjudication.evidence[0].details,
         ),
       )
   }
@@ -325,6 +342,13 @@ class ReportedAdjudicationRepositoryTest {
       damages = mutableListOf(
         ReportedDamage(
           code = DamageCode.CLEANING,
+          details = "details",
+          reporter = "Fred"
+        )
+      ),
+      evidence = mutableListOf(
+        ReportedEvidence(
+          code = EvidenceCode.PHOTO,
           details = "details",
           reporter = "Fred"
         )

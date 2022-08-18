@@ -18,6 +18,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.EvidenceRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleAssociatedPrisonerRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.OffenceDetailsRequestItem
@@ -30,6 +31,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
@@ -37,6 +40,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudicationCreationRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -729,7 +733,7 @@ class DraftAdjudicationServiceTest {
       assertThatThrownBy {
         draftAdjudicationService.setOffenceDetails(1, listOf())
       }.isInstanceOf(IllegalArgumentException::class.java)
-        .hasMessageContaining("Please supply at least one set of offence details")
+        .hasMessageContaining("Please supply at least one set of items")
     }
   }
 
@@ -1168,7 +1172,8 @@ class DraftAdjudicationServiceTest {
         incidentRoleAssociatedPrisonersName = null,
         incidentRoleCode = null,
         statement = "test",
-        damages = mutableListOf()
+        damages = mutableListOf(),
+        evidence = mutableListOf()
       )
 
       @BeforeEach
@@ -1291,6 +1296,9 @@ class DraftAdjudicationServiceTest {
             statusDetails = null,
             damages = mutableListOf(
               ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod")
+            ),
+            evidence = mutableListOf(
+              ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Rod")
             )
           )
         )
@@ -1645,7 +1653,7 @@ class DraftAdjudicationServiceTest {
       assertThatThrownBy {
         draftAdjudicationService.setDamages(1, listOf())
       }.isInstanceOf(IllegalArgumentException::class.java)
-        .hasMessageContaining("Please supply at least one set of damages")
+        .hasMessageContaining("Please supply at least one set of items")
     }
   }
 
@@ -1750,6 +1758,76 @@ class DraftAdjudicationServiceTest {
         draftAdjudicationService.updateDamages(1, listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+  }
+
+  @Nested
+  inner class AddEvidence {
+    private val draftAdjudication =
+      DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = LocalDateTime.now(),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithAllValuesSet(),
+        incidentStatement = IncidentStatement(
+          statement = "Example statement",
+          completed = false
+        ),
+        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        isYouthOffender = true,
+        evidence = mutableListOf(
+          Evidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Fred")
+        )
+      )
+
+    @BeforeEach
+    fun init() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+      whenever(authenticationFacade.currentUsername).thenReturn("Fred")
+    }
+
+    @Test
+    fun `add evidence to adjudication`() {
+      val response = draftAdjudicationService.setEvidence(
+        1,
+        listOf(
+          EvidenceRequestItem(code = EvidenceCode.PHOTO, details = "details")
+        )
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.evidence!!.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.evidence!!.first().code).isEqualTo(EvidenceCode.PHOTO)
+      assertThat(argumentCaptor.value.evidence!!.first().details).isEqualTo("details")
+      assertThat(argumentCaptor.value.evidence!!.first().reporter).isEqualTo("Fred")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        draftAdjudicationService.setEvidence(1, listOf(EvidenceRequestItem(code = EvidenceCode.PHOTO, details = "details")))
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+
+    @Test
+    fun `throws an IllegalArgumentException when no evidence are provided`() {
+      assertThatThrownBy {
+        draftAdjudicationService.setEvidence(1, listOf())
+      }.isInstanceOf(IllegalArgumentException::class.java)
+        .hasMessageContaining("Please supply at least one set of items")
     }
   }
 

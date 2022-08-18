@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -38,6 +39,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .setOffenceData()
       .addIncidentStatement()
       .addDamages()
+      .addEvidence()
       .completeDraft()
 
     webTestClient.get()
@@ -53,6 +55,12 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.damages[0].details")
       .isEqualTo("details")
       .jsonPath("$.reportedAdjudication.damages[0].reporter")
+      .isEqualTo("B_MILLS")
+      .jsonPath("$.reportedAdjudication.evidence[0].code")
+      .isEqualTo(EvidenceCode.PHOTO.name)
+      .jsonPath("$.reportedAdjudication.evidence[0].details")
+      .isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.evidence[0].reporter")
       .isEqualTo("B_MILLS")
   }
 
@@ -215,6 +223,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .setOffenceData()
       .addIncidentStatement()
       .addDamages()
+      .addEvidence()
       .completeDraft()
 
     webTestClient.post()
@@ -230,6 +239,12 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.damages[0].details")
       .isEqualTo("details")
       .jsonPath("$.draftAdjudication.damages[0].reporter")
+      .isEqualTo("B_MILLS")
+      .jsonPath("$.draftAdjudication.evidence[0].code")
+      .isEqualTo(EvidenceCode.PHOTO.name)
+      .jsonPath("$.draftAdjudication.evidence[0].details")
+      .isEqualTo("details")
+      .jsonPath("$.draftAdjudication.evidence[0].reporter")
       .isEqualTo("B_MILLS")
   }
 
