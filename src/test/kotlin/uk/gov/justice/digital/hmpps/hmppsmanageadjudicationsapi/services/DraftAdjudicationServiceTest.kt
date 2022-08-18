@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudicationCreationRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -1172,6 +1173,8 @@ class DraftAdjudicationServiceTest {
 
       @BeforeEach
       fun beforeEach() {
+        whenever(authenticationFacade.currentUsername).thenReturn("Fred")
+
         whenever(draftAdjudicationRepository.findById(any())).thenReturn(
           Optional.of(
             DraftAdjudication(
@@ -1260,7 +1263,10 @@ class DraftAdjudicationServiceTest {
               incidentRole = incidentRoleWithAllValuesSet(),
               offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
               incidentStatement = IncidentStatement(statement = "test"),
-              isYouthOffender = false
+              isYouthOffender = false,
+              damages = mutableListOf(
+                Damage(code = DamageCode.REDECORATION, details = "details", reporter = "Fred")
+              )
             )
           )
         )
@@ -1283,7 +1289,9 @@ class DraftAdjudicationServiceTest {
             status = ReportedAdjudicationStatus.AWAITING_REVIEW,
             statusReason = null,
             statusDetails = null,
-            damages = mutableListOf()
+            damages = mutableListOf(
+              ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod")
+            )
           )
         )
         whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
@@ -1298,6 +1306,8 @@ class DraftAdjudicationServiceTest {
           passedInAdjudication.createDateTime = REPORTED_DATE_TIME
           passedInAdjudication
         }
+
+        whenever(authenticationFacade.currentUsername).thenReturn("Fred")
       }
 
       @Test
@@ -1363,6 +1373,25 @@ class DraftAdjudicationServiceTest {
               FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_PARAGRAPH_CODE,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+            ),
+          )
+        assertThat(reportedAdjudicationArgumentCaptor.value.damages.size).isEqualTo(2)
+        assertThat(reportedAdjudicationArgumentCaptor.value.damages)
+          .extracting(
+            "code",
+            "details",
+            "reporter",
+          )
+          .contains(
+            Tuple(
+              DamageCode.CLEANING,
+              "details",
+              "Rod"
+            ),
+            Tuple(
+              DamageCode.REDECORATION,
+              "details",
+              "Fred"
             ),
           )
       }
