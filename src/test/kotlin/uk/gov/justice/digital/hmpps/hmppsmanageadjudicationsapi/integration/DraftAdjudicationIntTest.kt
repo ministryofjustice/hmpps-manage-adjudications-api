@@ -303,6 +303,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .setApplicableRules()
       .setIncidentRole()
       .setOffenceData()
+      .addDamages()
       .addIncidentStatement()
 
     webTestClient.post()
@@ -355,6 +356,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .setIncidentRole()
       .setAssociatedPrisoner()
       .setOffenceData()
+      .addDamages()
       .addIncidentStatement()
 
     assertThat(reportedAdjudicationRepository.findAll()).hasSize(0)
@@ -367,6 +369,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     intTestData.editIncidentDetails(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
     intTestData.setIncidentRole(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
     intTestData.setOffenceDetails(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
+    intTestData.addDamages(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
     intTestData.editIncidentStatement(draftAdjudicationResponse, IntegrationTestData.UPDATED_ADJUDICATION)
 
     webTestClient.post()
@@ -376,9 +379,20 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.adjudicationNumber").isEqualTo(IntegrationTestData.UPDATED_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.damages[0].code")
+      .isEqualTo(DamageCode.CLEANING.name)
+      .jsonPath("$.damages[0].details")
+      .isEqualTo("details")
+      .jsonPath("$.damages[0].reporter")
+      .isEqualTo("B_MILLS")
+      .jsonPath("$.damages[1].code")
+      .isEqualTo(DamageCode.REDECORATION.name)
+      .jsonPath("$.damages[1].details")
+      .isEqualTo("details")
+      .jsonPath("$.damages[1].reporter")
+      .isEqualTo("ITAG_USER")
 
     intTestData.getDraftAdjudicationDetails(draftAdjudicationResponse).expectStatus().isNotFound
-
     assertThat(reportedAdjudicationRepository.findAll()).hasSize(1)
   }
 

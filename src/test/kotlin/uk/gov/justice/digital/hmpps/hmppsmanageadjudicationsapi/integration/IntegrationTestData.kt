@@ -60,6 +60,7 @@ class IntegrationTestData(
       victimPrisonersNumbers = listOf("A1234AA"),
     )
     val DEFAULT_DAMAGES = listOf(DamagesTestDataSet(code = DamageCode.CLEANING, details = "details"))
+    val UPDATED_DAMAGES = listOf(DamagesTestDataSet(code = DamageCode.REDECORATION, details = "details"))
 
     const val UPDATED_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-13T10:00:00" // 13 is saturday
     const val UPDATED_HANDOVER_DEADLINE_ISO_STRING = "2010-11-15T10:00:00"
@@ -110,7 +111,7 @@ class IntegrationTestData(
       offences = UPDATED_OFFENCES,
       statement = UPDATED_STATEMENT,
       createdByUserId = DEFAULT_CREATED_USER_ID,
-      damages = DEFAULT_DAMAGES
+      damages = UPDATED_DAMAGES
     )
 
     val ADJUDICATION_1 = AdjudicationIntTestDataSet(

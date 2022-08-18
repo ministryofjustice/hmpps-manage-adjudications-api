@@ -384,6 +384,7 @@ class DraftAdjudicationService(
       ?: throw EntityNotFoundException("No reported adjudication number set on the draft adjudication")
     val previousReportedAdjudication =
       reportedAdjudicationRepository.findByReportNumber(reportedAdjudicationNumber)
+    val reporter = authenticationFacade.currentUsername!!
     previousReportedAdjudication?.let {
       it.bookingId = previousReportedAdjudication.bookingId
       it.reportNumber = previousReportedAdjudication.reportNumber
@@ -400,8 +401,12 @@ class DraftAdjudicationService(
       it.offenceDetails!!.addAll(toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication))
       it.statement = draftAdjudication.incidentStatement!!.statement!!
       it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
+      val toPreserve = it.damages.filter { damage -> damage.reporter != reporter }
       it.damages.clear()
-      draftAdjudication.damages?.let { d -> it.damages.addAll(toReportedDamages(d)) }
+      it.damages.addAll(toPreserve)
+      draftAdjudication.damages?.let { damages ->
+        it.damages.addAll(toReportedDamages(damages.filter { damage -> damage.reporter == reporter }.toMutableList()))
+      }
 
       return reportedAdjudicationRepository.save(it)
     } ?: ReportedAdjudicationService.throwEntityNotFoundException(reportedAdjudicationNumber)
