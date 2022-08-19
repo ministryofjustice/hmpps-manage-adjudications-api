@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.EvidenceRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.WitnessRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import java.time.LocalDateTime
@@ -636,6 +638,44 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.evidence[0].details")
       .isEqualTo("details")
       .jsonPath("$.draftAdjudication.evidence[0].reporter")
+      .isEqualTo("ITAG_USER")
+  }
+
+  @Test
+  fun `add witnesses to the draft adjudication`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+
+    val intTestScenario = intTestBuilder
+      .startDraft(testAdjudication)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+
+    val draftId = intTestScenario.getDraftId()
+
+    webTestClient.put()
+      .uri("/draft-adjudications/$draftId/witnesses")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "witnesses" to listOf(
+            WitnessRequestItem(
+              code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer"
+            )
+          ),
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.witnesses[0].code")
+      .isEqualTo(WitnessCode.PRISON_OFFICER.name)
+      .jsonPath("$.draftAdjudication.witnesses[0].firstName")
+      .isEqualTo("prison")
+      .jsonPath("$.draftAdjudication.witnesses[0].reporter")
       .isEqualTo("ITAG_USER")
   }
 

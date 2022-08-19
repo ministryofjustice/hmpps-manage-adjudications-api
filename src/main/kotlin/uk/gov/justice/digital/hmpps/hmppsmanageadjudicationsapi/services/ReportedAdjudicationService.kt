@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedDamageDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedEvidenceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedWitnessDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
@@ -24,6 +25,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
@@ -106,7 +109,8 @@ class ReportedAdjudicationService(
       ),
       isYouthOffender = reportedAdjudication.isYouthOffender,
       damages = toDraftDamages(reportedAdjudication.damages),
-      evidence = toDraftEvidence(reportedAdjudication.evidence)
+      evidence = toDraftEvidence(reportedAdjudication.evidence),
+      witnesses = toDraftWitnesses(reportedAdjudication.witnesses)
     )
 
     return draftAdjudicationRepository
@@ -140,6 +144,17 @@ class ReportedAdjudicationService(
       Evidence(
         code = it.code,
         details = it.details,
+        reporter = it.reporter
+      )
+    }.toMutableList()
+  }
+
+  private fun toDraftWitnesses(witnesses: MutableList<ReportedWitness>?): MutableList<Witness> {
+    return (witnesses ?: mutableListOf()).map {
+      Witness(
+        code = it.code,
+        firstName = it.firstName,
+        lastName = it.lastName,
         reporter = it.reporter
       )
     }.toMutableList()
@@ -238,7 +253,8 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   statusReason = statusReason,
   statusDetails = statusDetails,
   damages = toReportedDamages(damages),
-  evidence = toReportedEvidence(evidence)
+  evidence = toReportedEvidence(evidence),
+  witnesses = toReportedWitnesses(witnesses)
 )
 
 private fun toReportedOffence(offences: MutableList<ReportedOffence>?, isYouthOffender: Boolean, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> {
@@ -272,6 +288,17 @@ private fun toReportedEvidence(evidence: MutableList<ReportedEvidence>?): List<R
       code = it.code,
       identifier = it.identifier,
       details = it.details,
+      reporter = it.reporter
+    )
+  }.toList()
+}
+
+private fun toReportedWitnesses(witnesses: MutableList<ReportedWitness>?): List<ReportedWitnessDto> {
+  return (witnesses ?: mutableListOf()).map {
+    ReportedWitnessDto(
+      code = it.code,
+      firstName = it.firstName,
+      lastName = it.lastName,
       reporter = it.reporter
     )
   }.toList()

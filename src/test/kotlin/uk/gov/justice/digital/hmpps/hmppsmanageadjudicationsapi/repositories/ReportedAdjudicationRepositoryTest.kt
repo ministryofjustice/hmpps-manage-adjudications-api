@@ -19,6 +19,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -57,7 +59,8 @@ class ReportedAdjudicationRepositoryTest {
         statusReason = null,
         statusDetails = null,
         damages = mutableListOf(),
-        evidence = mutableListOf()
+        evidence = mutableListOf(),
+        witnesses = mutableListOf()
       )
     )
     entityManager.persistAndFlush(
@@ -78,7 +81,8 @@ class ReportedAdjudicationRepositoryTest {
         statusReason = null,
         statusDetails = null,
         damages = mutableListOf(),
-        evidence = mutableListOf()
+        evidence = mutableListOf(),
+        witnesses = mutableListOf()
       )
     )
     entityManager.persistAndFlush(
@@ -112,7 +116,8 @@ class ReportedAdjudicationRepositoryTest {
         statusReason = null,
         statusDetails = null,
         damages = mutableListOf(),
-        evidence = mutableListOf()
+        evidence = mutableListOf(),
+        witnesses = mutableListOf()
       )
     )
   }
@@ -188,6 +193,20 @@ class ReportedAdjudicationRepositoryTest {
         Tuple(
           adjudication.evidence[0].code,
           adjudication.evidence[0].details,
+        ),
+      )
+
+    assertThat(savedEntity.witnesses).hasSize(1)
+      .extracting(
+        "code",
+        "firstName",
+        "lastName"
+      )
+      .contains(
+        Tuple(
+          adjudication.witnesses[0].code,
+          adjudication.witnesses[0].firstName,
+          adjudication.witnesses[0].lastName,
         ),
       )
   }
@@ -352,6 +371,14 @@ class ReportedAdjudicationRepositoryTest {
           details = "details",
           reporter = "Fred"
         )
+      ),
+      witnesses = mutableListOf(
+        ReportedWitness(
+          code = WitnessCode.PRISON_OFFICER,
+          firstName = "prison",
+          lastName = "officer",
+          reporter = "Fred"
+        ),
       )
     )
   }

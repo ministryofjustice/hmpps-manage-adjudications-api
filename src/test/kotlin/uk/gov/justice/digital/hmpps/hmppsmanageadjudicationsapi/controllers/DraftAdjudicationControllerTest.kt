@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDeta
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -808,6 +809,46 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class Witnesses {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        draftAdjudicationService.setWitnesses(
+          anyLong(),
+          any(),
+        )
+      ).thenReturn(draftAdjudicationDto())
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      setWitnessesRequest(1, WITNESSES_REQUEST).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the evidence`() {
+      setWitnessesRequest(1, WITNESSES_REQUEST)
+        .andExpect(status().isCreated)
+
+      verify(draftAdjudicationService).setWitnesses(1, WITNESSES_REQUEST.witnesses)
+    }
+
+    private fun setWitnessesRequest(
+      id: Long,
+      witnesses: WitnessesRequest?
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(witnesses)
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/witnesses")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
@@ -821,6 +862,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     private val ASSOCIATED_PRISONER_WITH_ALL_VALUES_REQUEST = IncidentRoleAssociatedPrisonerRequest("B23456", "Associated Prisoner")
     private val DAMAGES_REQUEST = DamagesRequest(listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
     private val EVIDENCE_REQUEST = EvidenceRequest(listOf(EvidenceRequestItem(code = EvidenceCode.PHOTO, details = "details")))
+    private val WITNESSES_REQUEST = WitnessesRequest(listOf(WitnessRequestItem(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer")))
     private val BASIC_OFFENCE_REQUEST = OffenceDetailsRequestItem(offenceCode = 3)
     private val BASIC_OFFENCE_RESPONSE_DTO = OffenceDetailsDto(
       offenceCode = 3,

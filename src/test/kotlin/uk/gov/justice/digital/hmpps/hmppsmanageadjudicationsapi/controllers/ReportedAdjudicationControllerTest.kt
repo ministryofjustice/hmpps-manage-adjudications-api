@@ -80,7 +80,8 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           statusReason = null,
           statusDetails = null,
           damages = listOf(),
-          evidence = listOf()
+          evidence = listOf(),
+          witnesses = listOf()
         )
       )
       makeGetAdjudicationRequest(1)
@@ -147,7 +148,8 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
               statusReason = null,
               statusDetails = null,
               damages = listOf(),
-              evidence = listOf()
+              evidence = listOf(),
+              witnesses = listOf()
             )
           ),
           Pageable.ofSize(20).withPage(0),

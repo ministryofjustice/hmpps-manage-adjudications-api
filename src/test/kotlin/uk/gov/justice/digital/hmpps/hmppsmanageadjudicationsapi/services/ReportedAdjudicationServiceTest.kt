@@ -30,6 +30,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
@@ -141,7 +144,8 @@ class ReportedAdjudicationServiceTest {
           statusReason = "Status Reason",
           statusDetails = "Status Reason String",
           damages = mutableListOf(),
-          evidence = mutableListOf()
+          evidence = mutableListOf(),
+          witnesses = mutableListOf()
         )
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -241,7 +245,8 @@ class ReportedAdjudicationServiceTest {
         statusReason = null,
         statusDetails = null,
         damages = mutableListOf(),
-        evidence = mutableListOf()
+        evidence = mutableListOf(),
+        witnesses = mutableListOf()
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
@@ -264,7 +269,8 @@ class ReportedAdjudicationServiceTest {
         statusReason = null,
         statusDetails = null,
         damages = mutableListOf(),
-        evidence = mutableListOf()
+        evidence = mutableListOf(),
+        witnesses = mutableListOf()
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
@@ -350,7 +356,8 @@ class ReportedAdjudicationServiceTest {
         statement = INCIDENT_STATEMENT,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         damages = mutableListOf(),
-        evidence = mutableListOf()
+        evidence = mutableListOf(),
+        witnesses = mutableListOf()
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
@@ -373,7 +380,8 @@ class ReportedAdjudicationServiceTest {
         statusReason = null,
         statusDetails = null,
         damages = mutableListOf(),
-        evidence = mutableListOf()
+        evidence = mutableListOf(),
+        witnesses = mutableListOf()
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
@@ -437,7 +445,8 @@ class ReportedAdjudicationServiceTest {
         statusReason = null,
         statusDetails = null,
         damages = mutableListOf(),
-        evidence = mutableListOf()
+        evidence = mutableListOf(),
+        witnesses = mutableListOf()
       )
       reportedAdjudication.createdByUserId = "A_SMITH"
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -691,7 +700,8 @@ class ReportedAdjudicationServiceTest {
         offenceDetails = offenceDetails,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         damages = mutableListOf(),
-        evidence = mutableListOf()
+        evidence = mutableListOf(),
+        witnesses = mutableListOf()
       )
       // Add audit information
       reportedAdjudication.createdByUserId = "A_USER"
@@ -727,6 +737,9 @@ class ReportedAdjudicationServiceTest {
       ),
       evidence = mutableListOf(
         ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Fred")
+      ),
+      witnesses = mutableListOf(
+        ReportedWitness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
       )
     )
 
@@ -763,6 +776,9 @@ class ReportedAdjudicationServiceTest {
       ),
       evidence = mutableListOf(
         Evidence(code = EvidenceCode.PHOTO, identifier = null, details = "details", reporter = "Fred")
+      ),
+      witnesses = mutableListOf(
+        Witness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
       )
     )
 
@@ -847,6 +863,13 @@ class ReportedAdjudicationServiceTest {
         .contains(
           Tuple(
             EvidenceCode.PHOTO, "details", "Fred"
+          )
+        )
+      assertThat(createdDraft.witnesses)
+        .extracting("code", "firstName", "lastName", "reporter")
+        .contains(
+          Tuple(
+            WitnessCode.PRISON_OFFICER, "prison", "officer", "Fred"
           )
         )
     }

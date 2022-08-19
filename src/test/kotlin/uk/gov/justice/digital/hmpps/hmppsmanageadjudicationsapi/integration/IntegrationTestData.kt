@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Inci
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import java.time.LocalDateTime
@@ -64,6 +65,8 @@ class IntegrationTestData(
     val UPDATED_DAMAGES = listOf(DamagesTestDataSet(code = DamageCode.REDECORATION, details = "details"))
     val DEFAULT_EVIDENCE = listOf(EvidenceTestDataSet(code = EvidenceCode.PHOTO, details = "details"))
     val UPDATED_EVIDENCE = listOf(EvidenceTestDataSet(code = EvidenceCode.BAGGED_AND_TAGGED, details = "details"))
+    val DEFAULT_WITNESSES = listOf(WitnessTestDataSet(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer"))
+    val UPDATED_WITNESSES = listOf(WitnessTestDataSet(code = WitnessCode.STAFF, firstName = "staff", lastName = "member"))
 
     const val UPDATED_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-13T10:00:00" // 13 is saturday
     const val UPDATED_HANDOVER_DEADLINE_ISO_STRING = "2010-11-15T10:00:00"
@@ -95,7 +98,8 @@ class IntegrationTestData(
       statement = DEFAULT_STATEMENT,
       createdByUserId = DEFAULT_CREATED_USER_ID,
       damages = DEFAULT_DAMAGES,
-      evidence = DEFAULT_EVIDENCE
+      evidence = DEFAULT_EVIDENCE,
+      witnesses = DEFAULT_WITNESSES
     )
 
     val UPDATED_ADJUDICATION = AdjudicationIntTestDataSet(
@@ -116,7 +120,8 @@ class IntegrationTestData(
       statement = UPDATED_STATEMENT,
       createdByUserId = DEFAULT_CREATED_USER_ID,
       damages = UPDATED_DAMAGES,
-      evidence = UPDATED_EVIDENCE
+      evidence = UPDATED_EVIDENCE,
+      witnesses = UPDATED_WITNESSES
     )
 
     val ADJUDICATION_1 = AdjudicationIntTestDataSet(
@@ -137,7 +142,8 @@ class IntegrationTestData(
       statement = "Test statement",
       createdByUserId = "A_NESS",
       damages = DEFAULT_DAMAGES,
-      evidence = DEFAULT_EVIDENCE
+      evidence = DEFAULT_EVIDENCE,
+      witnesses = DEFAULT_WITNESSES
     )
 
     val ADJUDICATION_2 = AdjudicationIntTestDataSet(
@@ -158,7 +164,8 @@ class IntegrationTestData(
       statement = "Different test statement",
       createdByUserId = "P_NESS",
       damages = DEFAULT_DAMAGES,
-      evidence = DEFAULT_EVIDENCE
+      evidence = DEFAULT_EVIDENCE,
+      witnesses = DEFAULT_WITNESSES
     )
 
     val ADJUDICATION_3 = AdjudicationIntTestDataSet(
@@ -179,7 +186,8 @@ class IntegrationTestData(
       statement = "Another test statement",
       createdByUserId = "L_NESS",
       damages = DEFAULT_DAMAGES,
-      evidence = DEFAULT_EVIDENCE
+      evidence = DEFAULT_EVIDENCE,
+      witnesses = DEFAULT_WITNESSES
     )
 
     val ADJUDICATION_4 = AdjudicationIntTestDataSet(
@@ -200,7 +208,8 @@ class IntegrationTestData(
       statement = "Yet another test statement",
       createdByUserId = "P_NESS",
       damages = DEFAULT_DAMAGES,
-      evidence = DEFAULT_EVIDENCE
+      evidence = DEFAULT_EVIDENCE,
+      witnesses = DEFAULT_WITNESSES
     )
 
     val ADJUDICATION_5 = AdjudicationIntTestDataSet(
@@ -221,7 +230,8 @@ class IntegrationTestData(
       statement = "Keep on with the test statements",
       createdByUserId = "P_NESS",
       damages = DEFAULT_DAMAGES,
-      evidence = DEFAULT_EVIDENCE
+      evidence = DEFAULT_EVIDENCE,
+      witnesses = DEFAULT_WITNESSES
     )
   }
 
@@ -390,6 +400,26 @@ class IntegrationTestData(
       .bodyValue(
         mapOf(
           "evidence" to testDataSet.evidence,
+        )
+      )
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
+  fun addWitnesses(
+    draftCreationData: DraftAdjudicationResponse,
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ): DraftAdjudicationResponse {
+    return webTestClient.put()
+      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/witnesses")
+      .headers(headers)
+      .bodyValue(
+        mapOf(
+          "witnesses" to testDataSet.witnesses,
         )
       )
       .exchange()

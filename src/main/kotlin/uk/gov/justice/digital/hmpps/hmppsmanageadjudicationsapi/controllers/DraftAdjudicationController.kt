@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
 import java.time.LocalDateTime
 import javax.validation.Valid
@@ -150,6 +151,24 @@ data class EvidenceRequestItem(
   val identifier: String? = null,
   @Schema(description = "details of the evidence", example = "ie description of photo")
   val details: String,
+  @Schema(description = "optional reporter as per token, used when editing", example = "A_USER")
+  val reporter: String? = null,
+)
+
+@Schema(description = "Request to update the list of witnesses for a draft adjudication")
+data class WitnessesRequest(
+  @Schema(description = "The details of all evidence")
+  val witnesses: List<WitnessRequestItem>,
+)
+
+@Schema(description = "Details of Witness")
+data class WitnessRequestItem(
+  @Schema(description = "The witness code", example = "PRISON_OFFICER")
+  val code: WitnessCode,
+  @Schema(description = "Witness first name", example = "Fred")
+  val firstName: String,
+  @Schema(description = "Witness last name", example = "Kruger")
+  val lastName: String,
   @Schema(description = "optional reporter as per token, used when editing", example = "A_USER")
   val reporter: String? = null,
 )
@@ -372,6 +391,22 @@ class DraftAdjudicationController {
     val draftAdjudication = draftAdjudicationService.setEvidence(
       id,
       evidenceRequest.evidence
+    )
+
+    return DraftAdjudicationResponse(draftAdjudication)
+  }
+
+  @PutMapping(value = ["/{id}/witnesses"])
+  @Operation(summary = "Set the witnesses for the draft adjudication.", description = "0 or more witnesses to be supplied")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @ResponseStatus(HttpStatus.CREATED)
+  fun setWitnesses(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid witnessesRequest: WitnessesRequest
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.setWitnesses(
+      id,
+      witnessesRequest.witnesses
     )
 
     return DraftAdjudicationResponse(draftAdjudication)
