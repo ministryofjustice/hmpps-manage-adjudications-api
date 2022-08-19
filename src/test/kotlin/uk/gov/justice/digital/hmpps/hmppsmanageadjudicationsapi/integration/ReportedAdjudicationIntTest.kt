@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import java.time.format.DateTimeFormatter
@@ -40,6 +41,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .addIncidentStatement()
       .addDamages()
       .addEvidence()
+      .addWitnesses()
       .completeDraft()
 
     webTestClient.get()
@@ -61,6 +63,12 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.evidence[0].details")
       .isEqualTo("details")
       .jsonPath("$.reportedAdjudication.evidence[0].reporter")
+      .isEqualTo("B_MILLS")
+      .jsonPath("$.reportedAdjudication.witnesses[0].code")
+      .isEqualTo(WitnessCode.PRISON_OFFICER.name)
+      .jsonPath("$.reportedAdjudication.witnesses[0].firstName")
+      .isEqualTo("prison")
+      .jsonPath("$.reportedAdjudication.witnesses[0].reporter")
       .isEqualTo("B_MILLS")
   }
 
@@ -224,6 +232,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .addIncidentStatement()
       .addDamages()
       .addEvidence()
+      .addWitnesses()
       .completeDraft()
 
     webTestClient.post()
@@ -245,6 +254,12 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.evidence[0].details")
       .isEqualTo("details")
       .jsonPath("$.draftAdjudication.evidence[0].reporter")
+      .isEqualTo("B_MILLS")
+      .jsonPath("$.draftAdjudication.witnesses[0].code")
+      .isEqualTo(WitnessCode.PRISON_OFFICER.name)
+      .jsonPath("$.draftAdjudication.witnesses[0].firstName")
+      .isEqualTo("prison")
+      .jsonPath("$.draftAdjudication.witnesses[0].reporter")
       .isEqualTo("B_MILLS")
   }
 

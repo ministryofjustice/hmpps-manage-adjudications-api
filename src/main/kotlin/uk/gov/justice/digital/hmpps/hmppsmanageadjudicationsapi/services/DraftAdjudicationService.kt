@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Evid
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleAssociatedPrisonerRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.OffenceDetailsRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.WitnessRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DamageDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.EvidenceDto
@@ -15,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentSta
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.WitnessDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
@@ -27,6 +29,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -328,6 +332,28 @@ class DraftAdjudicationService(
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
 
+  fun setWitnesses(id: Long, witnesses: List<WitnessRequestItem>): DraftAdjudicationDto {
+    throwIfEmpty(witnesses)
+
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val reporter = authenticationFacade.currentUsername!!
+
+    draftAdjudication.witnesses = draftAdjudication.witnesses ?: mutableListOf()
+    draftAdjudication.witnesses!!.clear()
+    draftAdjudication.witnesses!!.addAll(
+      witnesses.map {
+        Witness(
+          code = it.code,
+          firstName = it.firstName,
+          lastName = it.lastName,
+          reporter = reporter
+        )
+      }
+    )
+
+    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
+  }
+
   fun completeDraftAdjudication(id: Long): ReportedAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
@@ -401,6 +427,7 @@ class DraftAdjudicationService(
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         damages = toReportedDamages(draftAdjudication.damages ?: mutableListOf()),
         evidence = toReportedEvidence(draftAdjudication.evidence ?: mutableListOf()),
+        witnesses = toReportedWitnesses(draftAdjudication.witnesses ?: mutableListOf()),
       )
     )
   }
@@ -440,6 +467,11 @@ class DraftAdjudicationService(
         it.evidence.addAll(toReportedEvidence(evidence))
       }
 
+      it.witnesses.clear()
+      draftAdjudication.witnesses?.let { witness ->
+        it.witnesses.addAll(toReportedWitnesses(witness))
+      }
+
       return reportedAdjudicationRepository.save(it)
     } ?: ReportedAdjudicationService.throwEntityNotFoundException(reportedAdjudicationNumber)
   }
@@ -477,6 +509,16 @@ class DraftAdjudicationService(
     }.toMutableList()
   }
 
+  private fun toReportedWitnesses(witnesses: MutableList<Witness>): MutableList<ReportedWitness> {
+    return witnesses.map {
+      ReportedWitness(
+        code = it.code,
+        firstName = it.firstName,
+        lastName = it.lastName,
+        reporter = it.reporter
+      )
+    }.toMutableList()
+  }
   private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {
     if (statement == null && completed == null)
       throw IllegalArgumentException("Please supply either a statement or the completed value")
@@ -495,7 +537,7 @@ fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService):
   DraftAdjudicationDto(
     id = this.id!!,
     prisonerNumber = this.prisonerNumber,
-    incidentStatement = this.incidentStatement?.toDo(),
+    incidentStatement = this.incidentStatement?.toDto(),
     incidentDetails = this.incidentDetails.toDto(),
     incidentRole = this.incidentRole?.toDto(this.isYouthOffender!!),
     offenceDetails = this.offenceDetails?.map { it.toDto(offenceCodeLookupService, this.isYouthOffender!!) },
@@ -503,7 +545,9 @@ fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService):
     startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
     isYouthOffender = this.isYouthOffender,
     damages = this.damages?.map { it.toDto() },
-    evidence = this.evidence?.map { it.toDto() }
+    evidence = this.evidence?.map { it.toDto() },
+    witnesses = this.witnesses?.map { it.toDto() }
+
   )
 
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
@@ -530,7 +574,7 @@ fun Offence.toDto(offenceCodeLookupService: OffenceCodeLookupService, isYouthOff
   victimOtherPersonsName = this.victimOtherPersonsName,
 )
 
-fun IncidentStatement.toDo(): IncidentStatementDto = IncidentStatementDto(
+fun IncidentStatement.toDto(): IncidentStatementDto = IncidentStatementDto(
   statement = this.statement!!,
   completed = this.completed,
 )
@@ -545,5 +589,12 @@ fun Evidence.toDto(): EvidenceDto = EvidenceDto(
   code = this.code,
   identifier = this.identifier,
   details = this.details,
+  reporter = this.reporter
+)
+
+fun Witness.toDto(): WitnessDto = WitnessDto(
+  code = this.code,
+  firstName = this.firstName,
+  lastName = this.lastName,
   reporter = this.reporter
 )

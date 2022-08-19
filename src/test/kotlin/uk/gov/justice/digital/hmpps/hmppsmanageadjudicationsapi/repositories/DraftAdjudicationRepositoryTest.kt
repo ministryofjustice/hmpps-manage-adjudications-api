@@ -13,10 +13,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
 import java.time.LocalDateTime
 
@@ -114,6 +118,32 @@ class DraftAdjudicationRepositoryTest {
         Tuple(
           draft.damages!!.first().code,
           draft.damages!!.first().details,
+        )
+      )
+
+    assertThat(savedEntity.evidence).hasSize(1)
+      .extracting(
+        "code",
+        "details",
+      )
+      .contains(
+        Tuple(
+          draft.evidence!!.first().code,
+          draft.evidence!!.first().details,
+        )
+      )
+
+    assertThat(savedEntity.witnesses).hasSize(1)
+      .extracting(
+        "code",
+        "firstName",
+        "lastName"
+      )
+      .contains(
+        Tuple(
+          draft.witnesses!!.first().code,
+          draft.witnesses!!.first().firstName,
+          draft.witnesses!!.first().lastName,
         )
       )
 
@@ -307,7 +337,22 @@ class DraftAdjudicationRepositoryTest {
           details = "details",
           reporter = "Fred"
         ),
-      )
+      ),
+      evidence = mutableListOf(
+        Evidence(
+          code = EvidenceCode.PHOTO,
+          details = "details",
+          reporter = "Fred"
+        ),
+      ),
+      witnesses = mutableListOf(
+        Witness(
+          code = WitnessCode.PRISON_OFFICER,
+          firstName = "prison",
+          lastName = "officer",
+          reporter = "Fred"
+        ),
+      ),
     )
   }
 

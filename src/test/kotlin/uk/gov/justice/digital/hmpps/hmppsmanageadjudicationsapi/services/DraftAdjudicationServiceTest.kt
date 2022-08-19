@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Evid
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleAssociatedPrisonerRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.OffenceDetailsRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.WitnessRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
@@ -42,6 +43,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudicationCreationRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
@@ -1173,7 +1177,8 @@ class DraftAdjudicationServiceTest {
         incidentRoleCode = null,
         statement = "test",
         damages = mutableListOf(),
-        evidence = mutableListOf()
+        evidence = mutableListOf(),
+        witnesses = mutableListOf()
       )
 
       @BeforeEach
@@ -1271,6 +1276,12 @@ class DraftAdjudicationServiceTest {
               isYouthOffender = false,
               damages = mutableListOf(
                 Damage(code = DamageCode.REDECORATION, details = "details", reporter = "Fred")
+              ),
+              evidence = mutableListOf(
+                Evidence(code = EvidenceCode.BAGGED_AND_TAGGED, details = "details", reporter = "Fred")
+              ),
+              witnesses = mutableListOf(
+                Witness(code = WitnessCode.STAFF, firstName = "prison", lastName = "officer", reporter = "Fred")
               )
             )
           )
@@ -1299,6 +1310,9 @@ class DraftAdjudicationServiceTest {
             ),
             evidence = mutableListOf(
               ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Rod")
+            ),
+            witnesses = mutableListOf(
+              ReportedWitness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Rod")
             )
           )
         )
@@ -1399,6 +1413,34 @@ class DraftAdjudicationServiceTest {
             Tuple(
               DamageCode.REDECORATION,
               "details",
+              "Fred"
+            ),
+          )
+        assertThat(reportedAdjudicationArgumentCaptor.value.evidence)
+          .extracting(
+            "code",
+            "details",
+            "reporter",
+          )
+          .contains(
+            Tuple(
+              EvidenceCode.BAGGED_AND_TAGGED,
+              "details",
+              "Fred"
+            ),
+          )
+        assertThat(reportedAdjudicationArgumentCaptor.value.witnesses)
+          .extracting(
+            "code",
+            "firstName",
+            "lastName",
+            "reporter",
+          )
+          .contains(
+            Tuple(
+              WitnessCode.STAFF,
+              "prison",
+              "officer",
               "Fred"
             ),
           )
@@ -1826,6 +1868,77 @@ class DraftAdjudicationServiceTest {
     fun `throws an IllegalArgumentException when no evidence are provided`() {
       assertThatThrownBy {
         draftAdjudicationService.setEvidence(1, listOf())
+      }.isInstanceOf(IllegalArgumentException::class.java)
+        .hasMessageContaining("Please supply at least one set of items")
+    }
+  }
+
+  @Nested
+  inner class AddWitnesses {
+    private val draftAdjudication =
+      DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = LocalDateTime.now(),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithAllValuesSet(),
+        incidentStatement = IncidentStatement(
+          statement = "Example statement",
+          completed = false
+        ),
+        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        isYouthOffender = true,
+        witnesses = mutableListOf(
+          Witness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
+        )
+      )
+
+    @BeforeEach
+    fun init() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+      whenever(authenticationFacade.currentUsername).thenReturn("Fred")
+    }
+
+    @Test
+    fun `add witnesses to adjudication`() {
+      val response = draftAdjudicationService.setWitnesses(
+        1,
+        listOf(
+          WitnessRequestItem(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer")
+        )
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.witnesses!!.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.witnesses!!.first().code).isEqualTo(WitnessCode.PRISON_OFFICER)
+      assertThat(argumentCaptor.value.witnesses!!.first().firstName).isEqualTo("prison")
+      assertThat(argumentCaptor.value.witnesses!!.first().lastName).isEqualTo("officer")
+      assertThat(argumentCaptor.value.witnesses!!.first().reporter).isEqualTo("Fred")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        draftAdjudicationService.setWitnesses(1, listOf(WitnessRequestItem(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer")))
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+
+    @Test
+    fun `throws an IllegalArgumentException when no evidence are provided`() {
+      assertThatThrownBy {
+        draftAdjudicationService.setWitnesses(1, listOf())
       }.isInstanceOf(IllegalArgumentException::class.java)
         .hasMessageContaining("Please supply at least one set of items")
     }

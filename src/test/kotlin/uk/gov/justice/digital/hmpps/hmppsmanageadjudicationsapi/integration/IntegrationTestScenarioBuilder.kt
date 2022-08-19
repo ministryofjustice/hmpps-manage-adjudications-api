@@ -57,6 +57,11 @@ class IntegrationTestScenario(
     return this
   }
 
+  fun addWitnesses(): IntegrationTestScenario {
+    intTestData.addWitnesses(draftCreationResponse, testAdjudicationDataSet, headers)
+    return this
+  }
+
   fun completeDraft(): IntegrationTestScenario {
     intTestData.completeDraftAdjudication(
       draftCreationResponse,
