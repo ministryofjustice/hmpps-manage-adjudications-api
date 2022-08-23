@@ -513,7 +513,6 @@ class ReportedAdjudicationServiceTest {
           it.status = to
           it.reviewUserId = if (to == ReportedAdjudicationStatus.AWAITING_REVIEW) null else "ITAG_USER"
           it.statusAudit = mutableListOf(
-            ReportedAdjudicationStatusAudit(status = from),
             ReportedAdjudicationStatusAudit(status = to)
           )
         }

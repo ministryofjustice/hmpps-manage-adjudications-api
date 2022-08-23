@@ -13,11 +13,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.transaction.Transactional
 
-interface AuditService {
-  fun getDraftAdjudicationReport(writer: Writer, historic: Boolean? = false)
-  fun getReportedAdjudicationReport(writer: Writer, historic: Boolean? = false)
-}
-
 class ReportDate(val now: LocalDateTime = LocalDate.now().atStartOfDay()) {
 
   fun getStartOfWeek(): LocalDateTime {
@@ -35,13 +30,12 @@ class ReportDate(val now: LocalDateTime = LocalDate.now().atStartOfDay()) {
 
 @Transactional
 @Service
-class AuditServiceImpl(
+class AuditService(
   val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   val draftAdjudicationRepository: DraftAdjudicationRepository,
   val reportDate: ReportDate = ReportDate()
-) : AuditService {
-  override fun getDraftAdjudicationReport(writer: Writer, historic: Boolean?) {
-
+) {
+  fun getDraftAdjudicationReport(writer: Writer, historic: Boolean?) {
     val startDate = if (historic != null && historic) LocalDate.parse(
       "2022-01-01", DateTimeFormatter.ISO_LOCAL_DATE
     ).atStartOfDay() else reportDate.getStartOfWeek()
@@ -54,7 +48,7 @@ class AuditServiceImpl(
     writer.flush()
   }
 
-  override fun getReportedAdjudicationReport(writer: Writer, historic: Boolean?) {
+  fun getReportedAdjudicationReport(writer: Writer, historic: Boolean?) {
     val startDate = if (historic != null && historic) LocalDate.parse(
       "2022-01-01", DateTimeFormatter.ISO_LOCAL_DATE
     ).atStartOfDay() else reportDate.getStartOfWeek()

@@ -56,13 +56,6 @@ data class ReportedAdjudication(
 ) : BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reviewUserId: String? = null, statusReason: String? = null, statusDetails: String? = null) {
     if (this.status.canTransitionTo(to)) {
-      if (this.statusAudit.isEmpty()) {
-        this.statusAudit.add(
-          ReportedAdjudicationStatusAudit(
-            status = this.status, statusReason = this.statusReason, statusDetails = this.statusDetails
-          )
-        )
-      }
       this.status = to
       this.reviewUserId = reviewUserId
       this.statusReason = statusReason

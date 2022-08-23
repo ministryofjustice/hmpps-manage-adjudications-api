@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AuditServiceImpl
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AuditService
 import java.time.LocalDateTime
 
 class AuditReportIntTest : IntegrationTestBase() {
@@ -37,7 +37,7 @@ class AuditReportIntTest : IntegrationTestBase() {
 
     val csv = String(result.responseBody!!).split("\n")
 
-    assertThat(csv[0]).isEqualTo(AuditServiceImpl.DRAFT_ADJUDICATION_CSV_HEADERS)
+    assertThat(csv[0]).isEqualTo(AuditService.DRAFT_ADJUDICATION_CSV_HEADERS)
     assertThat(csv[1].isNotEmpty()).isEqualTo(true)
   }
 
@@ -69,7 +69,7 @@ class AuditReportIntTest : IntegrationTestBase() {
 
     val csv = String(result.responseBody!!).split("\n")
 
-    assertThat(csv[0]).isEqualTo(AuditServiceImpl.REPORTED_ADJUDICATION_CSV_HEADERS)
+    assertThat(csv[0]).isEqualTo(AuditService.REPORTED_ADJUDICATION_CSV_HEADERS)
     assertThat(csv[1].isNotEmpty()).isEqualTo(true)
   }
 }

@@ -38,7 +38,7 @@ import java.time.format.DateTimeFormatter
 class AuditServiceTest {
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
-  private val auditService: AuditService = AuditServiceImpl(
+  private val auditService: AuditService = AuditService(
     reportedAdjudicationRepository, draftAdjudicationRepository,
     ReportDate(now = LocalDate.parse("2022-08-15", DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay())
   )
@@ -279,7 +279,7 @@ class AuditServiceTest {
     assertThat(
       lines.containsAll(
         listOf(
-          AuditServiceImpl.DRAFT_ADJUDICATION_CSV_HEADERS,
+          AuditService.DRAFT_ADJUDICATION_CSV_HEADERS,
           "MDI,Fred,$now,A12345,$now,2,true,1,\"[10]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",false,\"Example statement\""
         )
       )
@@ -300,7 +300,7 @@ class AuditServiceTest {
     val lines = File("reported.csv").bufferedReader().readLines()
 
     val results = mutableListOf(
-      AuditServiceImpl.REPORTED_ADJUDICATION_CSV_HEADERS,
+      AuditService.REPORTED_ADJUDICATION_CSV_HEADERS,
       "1,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",RETURNED,null,\"null\",1",
       "1,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",AWAITING_REVIEW,null,\"null\",1",
       "1,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",ACCEPTED,null,\"null\",1",
