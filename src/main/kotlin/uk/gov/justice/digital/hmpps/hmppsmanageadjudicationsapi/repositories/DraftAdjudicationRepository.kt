@@ -9,4 +9,6 @@ interface DraftAdjudicationRepository : CrudRepository<DraftAdjudication, Long> 
   fun findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(agencyId: String, username: String): List<DraftAdjudication>
 
   fun deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(createdTime: LocalDateTime): List<DraftAdjudication>
+
+  fun findByCreateDateTimeAfterAndReportNumberIsNull(createdTime: LocalDateTime): List<DraftAdjudication>
 }

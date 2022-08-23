@@ -50,13 +50,28 @@ data class ReportedAdjudication(
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")
   var witnesses: MutableList<ReportedWitness>,
+  @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "reported_adjudication_fk_id")
+  var statusAudit: MutableList<ReportedAdjudicationStatusAudit>,
 ) : BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reviewUserId: String? = null, statusReason: String? = null, statusDetails: String? = null) {
     if (this.status.canTransitionTo(to)) {
+      if (this.statusAudit.isEmpty()) {
+        this.statusAudit.add(
+          ReportedAdjudicationStatusAudit(
+            status = this.status, statusReason = this.statusReason, statusDetails = this.statusDetails
+          )
+        )
+      }
       this.status = to
       this.reviewUserId = reviewUserId
       this.statusReason = statusReason
       this.statusDetails = statusDetails
+      this.statusAudit.add(
+        ReportedAdjudicationStatusAudit(
+          status = to, statusReason = statusReason, statusDetails = statusDetails
+        )
+      )
     } else {
       throw IllegalStateException("ReportedAdjudication ${this.reportNumber} cannot transition from ${this.status} to $to")
     }
@@ -89,3 +104,16 @@ enum class ReportedAdjudicationStatus {
     return this == ACCEPTED
   }
 }
+
+@Entity
+@Table(name = "reported_adjudication_status_audit")
+data class ReportedAdjudicationStatusAudit(
+  override val id: Long? = null,
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  var status: ReportedAdjudicationStatus,
+  @Length(max = 128)
+  var statusReason: String? = null,
+  @Length(max = 4000)
+  var statusDetails: String? = null,
+) : BaseEntity()

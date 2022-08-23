@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatusAudit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -1178,7 +1179,8 @@ class DraftAdjudicationServiceTest {
         statement = "test",
         damages = mutableListOf(),
         evidence = mutableListOf(),
-        witnesses = mutableListOf()
+        witnesses = mutableListOf(),
+        statusAudit = mutableListOf()
       )
 
       @BeforeEach
@@ -1313,6 +1315,11 @@ class DraftAdjudicationServiceTest {
             ),
             witnesses = mutableListOf(
               ReportedWitness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Rod")
+            ),
+            statusAudit = mutableListOf(
+              ReportedAdjudicationStatusAudit(
+                status = ReportedAdjudicationStatus.AWAITING_REVIEW
+              )
             )
           )
         )
@@ -1442,6 +1449,24 @@ class DraftAdjudicationServiceTest {
               "prison",
               "officer",
               "Fred"
+            ),
+          )
+
+        assertThat(reportedAdjudicationArgumentCaptor.value.statusAudit.size).isEqualTo(2)
+        assertThat(reportedAdjudicationArgumentCaptor.value.statusAudit)
+          .extracting(
+            "status",
+            "statusReason",
+            "statusDetails",
+          )
+          .contains(
+            Tuple(
+              ReportedAdjudicationStatus.AWAITING_REVIEW,
+              null, null
+            ),
+            Tuple(
+              ReportedAdjudicationStatus.AWAITING_REVIEW,
+              null, null
             ),
           )
       }

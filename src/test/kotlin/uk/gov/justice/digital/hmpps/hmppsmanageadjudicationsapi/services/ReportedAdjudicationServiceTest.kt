@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatusAudit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -145,7 +146,8 @@ class ReportedAdjudicationServiceTest {
           statusDetails = "Status Reason String",
           damages = mutableListOf(),
           evidence = mutableListOf(),
-          witnesses = mutableListOf()
+          witnesses = mutableListOf(),
+          statusAudit = mutableListOf()
         )
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -246,7 +248,8 @@ class ReportedAdjudicationServiceTest {
         statusDetails = null,
         damages = mutableListOf(),
         evidence = mutableListOf(),
-        witnesses = mutableListOf()
+        witnesses = mutableListOf(),
+        statusAudit = mutableListOf()
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
@@ -270,7 +273,8 @@ class ReportedAdjudicationServiceTest {
         statusDetails = null,
         damages = mutableListOf(),
         evidence = mutableListOf(),
-        witnesses = mutableListOf()
+        witnesses = mutableListOf(),
+        statusAudit = mutableListOf()
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
@@ -357,7 +361,8 @@ class ReportedAdjudicationServiceTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         damages = mutableListOf(),
         evidence = mutableListOf(),
-        witnesses = mutableListOf()
+        witnesses = mutableListOf(),
+        statusAudit = mutableListOf()
       )
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
@@ -381,7 +386,8 @@ class ReportedAdjudicationServiceTest {
         statusDetails = null,
         damages = mutableListOf(),
         evidence = mutableListOf(),
-        witnesses = mutableListOf()
+        witnesses = mutableListOf(),
+        statusAudit = mutableListOf()
       )
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
@@ -446,7 +452,8 @@ class ReportedAdjudicationServiceTest {
         statusDetails = null,
         damages = mutableListOf(),
         evidence = mutableListOf(),
-        witnesses = mutableListOf()
+        witnesses = mutableListOf(),
+        statusAudit = mutableListOf()
       )
       reportedAdjudication.createdByUserId = "A_SMITH"
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -505,6 +512,10 @@ class ReportedAdjudicationServiceTest {
         reportedAdjudication().also {
           it.status = to
           it.reviewUserId = if (to == ReportedAdjudicationStatus.AWAITING_REVIEW) null else "ITAG_USER"
+          it.statusAudit = mutableListOf(
+            ReportedAdjudicationStatusAudit(status = from),
+            ReportedAdjudicationStatusAudit(status = to)
+          )
         }
       )
       if (updatesNomis) {
@@ -701,7 +712,8 @@ class ReportedAdjudicationServiceTest {
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         damages = mutableListOf(),
         evidence = mutableListOf(),
-        witnesses = mutableListOf()
+        witnesses = mutableListOf(),
+        statusAudit = mutableListOf()
       )
       // Add audit information
       reportedAdjudication.createdByUserId = "A_USER"
@@ -740,6 +752,9 @@ class ReportedAdjudicationServiceTest {
       ),
       witnesses = mutableListOf(
         ReportedWitness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
+      ),
+      statusAudit = mutableListOf(
+        ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.AWAITING_REVIEW)
       )
     )
 

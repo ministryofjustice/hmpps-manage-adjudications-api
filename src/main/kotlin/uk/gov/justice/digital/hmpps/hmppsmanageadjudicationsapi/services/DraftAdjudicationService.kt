@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatusAudit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -56,7 +57,7 @@ enum class ValidationChecks(val errorMessage: String) {
   INCIDENT_ROLE_ASSOCIATED_PRISONER("Please supply the prisoner associated with the incident") {
     override fun validate(draftAdjudication: DraftAdjudication) {
       if (
-        IncidentRoleRuleLookup.associatedPrisonerInformationRequired(draftAdjudication.incidentRole?.roleCode) &&
+        associatedPrisonerInformationRequired(draftAdjudication.incidentRole?.roleCode) &&
         draftAdjudication.incidentRole?.associatedPrisonersNumber == null
       )
         throw IllegalStateException(errorMessage)
@@ -428,6 +429,11 @@ class DraftAdjudicationService(
         damages = toReportedDamages(draftAdjudication.damages ?: mutableListOf()),
         evidence = toReportedEvidence(draftAdjudication.evidence ?: mutableListOf()),
         witnesses = toReportedWitnesses(draftAdjudication.witnesses ?: mutableListOf()),
+        statusAudit = mutableListOf(
+          ReportedAdjudicationStatusAudit(
+            status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+          )
+        )
       )
     )
   }

@@ -86,7 +86,7 @@ abstract class IntegrationTestBase {
 
   fun setAuditTime(auditDateTime: LocalDateTime) {
     auditingHandler.setDateTimeProvider(dateTimeProvider)
-    whenever(dateTimeProvider.now).thenReturn(Optional.of(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME))
+    whenever(dateTimeProvider.now).thenReturn(Optional.of(auditDateTime))
   }
 
   fun integrationTestData(): IntegrationTestData {

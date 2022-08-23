@@ -24,4 +24,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     pageable: Pageable
   ): Page<ReportedAdjudication>
   fun findByReportNumber(adjudicationNumber: Long): ReportedAdjudication?
+  fun findByCreateDateTimeAfter(createdTime: LocalDateTime): List<ReportedAdjudication>
+  fun findByCreateDateTimeBefore(createdTime: LocalDateTime): List<ReportedAdjudication>
 }

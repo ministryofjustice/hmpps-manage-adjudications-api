@@ -8,6 +8,6 @@ import javax.persistence.Table
 data class IncidentRole(
   override val id: Long? = null,
   var roleCode: String?,
-  var associatedPrisonersNumber: String?,
-  var associatedPrisonersName: String?,
+  var associatedPrisonersNumber: String? = null,
+  var associatedPrisonersName: String? = null,
 ) : BaseEntity()

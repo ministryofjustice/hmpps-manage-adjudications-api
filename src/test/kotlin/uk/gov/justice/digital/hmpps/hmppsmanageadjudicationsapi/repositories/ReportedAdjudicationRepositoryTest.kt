@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageC
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatusAudit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -60,7 +61,8 @@ class ReportedAdjudicationRepositoryTest {
         statusDetails = null,
         damages = mutableListOf(),
         evidence = mutableListOf(),
-        witnesses = mutableListOf()
+        witnesses = mutableListOf(),
+        statusAudit = mutableListOf()
       )
     )
     entityManager.persistAndFlush(
@@ -82,7 +84,8 @@ class ReportedAdjudicationRepositoryTest {
         statusDetails = null,
         damages = mutableListOf(),
         evidence = mutableListOf(),
-        witnesses = mutableListOf()
+        witnesses = mutableListOf(),
+        statusAudit = mutableListOf()
       )
     )
     entityManager.persistAndFlush(
@@ -117,7 +120,8 @@ class ReportedAdjudicationRepositoryTest {
         statusDetails = null,
         damages = mutableListOf(),
         evidence = mutableListOf(),
-        witnesses = mutableListOf()
+        witnesses = mutableListOf(),
+        statusAudit = mutableListOf()
       )
     )
   }
@@ -208,6 +212,14 @@ class ReportedAdjudicationRepositoryTest {
           adjudication.witnesses[0].firstName,
           adjudication.witnesses[0].lastName,
         ),
+      )
+
+    assertThat(savedEntity.statusAudit).hasSize(1)
+      .extracting(
+        "status",
+      )
+      .contains(
+        adjudication.statusAudit[0].status,
       )
   }
 
@@ -379,6 +391,11 @@ class ReportedAdjudicationRepositoryTest {
           lastName = "officer",
           reporter = "Fred"
         ),
+      ),
+      statusAudit = mutableListOf(
+        ReportedAdjudicationStatusAudit(
+          status = ReportedAdjudicationStatus.AWAITING_REVIEW
+        )
       )
     )
   }
