@@ -269,8 +269,6 @@ class DraftAdjudicationService(
   }
 
   fun setDamages(id: Long, damages: List<DamageRequestItem>): DraftAdjudicationDto {
-    throwIfEmpty(damages)
-
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
     val reporter = authenticationFacade.currentUsername!!
 
@@ -311,8 +309,6 @@ class DraftAdjudicationService(
   }
 
   fun setEvidence(id: Long, evidence: List<EvidenceRequestItem>): DraftAdjudicationDto {
-    throwIfEmpty(evidence)
-
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
     val reporter = authenticationFacade.currentUsername!!
 
@@ -333,8 +329,6 @@ class DraftAdjudicationService(
   }
 
   fun setWitnesses(id: Long, witnesses: List<WitnessRequestItem>): DraftAdjudicationDto {
-    throwIfEmpty(witnesses)
-
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
     val reporter = authenticationFacade.currentUsername!!
 
