@@ -322,7 +322,6 @@ class AuditServiceTest {
       lines.forEachIndexed { index, s ->
         assertThat(lines[index]).isEqualTo(results[index])
       }
-
     } else {
       lines.forEachIndexed { index, s ->
         assertThat(lines[index]).isEqualTo(results[index])

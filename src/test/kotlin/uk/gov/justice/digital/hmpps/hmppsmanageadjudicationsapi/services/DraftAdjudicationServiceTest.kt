@@ -1716,11 +1716,13 @@ class DraftAdjudicationServiceTest {
     }
 
     @Test
-    fun `throws an IllegalArgumentException when no damages are provided`() {
-      assertThatThrownBy {
-        draftAdjudicationService.setDamages(1, listOf())
-      }.isInstanceOf(IllegalArgumentException::class.java)
-        .hasMessageContaining("Please supply at least one set of items")
+    fun `saves when no damages are provided`() {
+      draftAdjudicationService.setDamages(1, listOf())
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.damages!!.isEmpty()).isEqualTo(true)
     }
   }
 
@@ -1890,11 +1892,13 @@ class DraftAdjudicationServiceTest {
     }
 
     @Test
-    fun `throws an IllegalArgumentException when no evidence are provided`() {
-      assertThatThrownBy {
-        draftAdjudicationService.setEvidence(1, listOf())
-      }.isInstanceOf(IllegalArgumentException::class.java)
-        .hasMessageContaining("Please supply at least one set of items")
+    fun `saves when no evidence are provided`() {
+      draftAdjudicationService.setEvidence(1, listOf())
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.evidence!!.isEmpty()).isEqualTo(true)
     }
   }
 
@@ -1961,11 +1965,12 @@ class DraftAdjudicationServiceTest {
     }
 
     @Test
-    fun `throws an IllegalArgumentException when no evidence are provided`() {
-      assertThatThrownBy {
-        draftAdjudicationService.setWitnesses(1, listOf())
-      }.isInstanceOf(IllegalArgumentException::class.java)
-        .hasMessageContaining("Please supply at least one set of items")
+    fun `saves when no evidence are provided`() {
+      draftAdjudicationService.setWitnesses(1, listOf())
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.witnesses!!.isEmpty()).isEqualTo(true)
     }
   }
 
