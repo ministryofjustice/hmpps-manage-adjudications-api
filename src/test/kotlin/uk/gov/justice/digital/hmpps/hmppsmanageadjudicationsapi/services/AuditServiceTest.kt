@@ -237,12 +237,12 @@ class AuditServiceTest {
     draftAdjudication.createDateTime = now
 
     reportedAdjudication.statusAudit.forEach {
-      it.createdByUserId = "Fred"
+      it.createdByUserId = "Rod"
       it.createDateTime = now
     }
 
     reportedAdjudication2.statusAudit.forEach {
-      it.createdByUserId = "Fred"
+      it.createdByUserId = "Jane"
       it.createDateTime = now
     }
 
@@ -253,7 +253,7 @@ class AuditServiceTest {
     reportedAdjudication4.createDateTime = now.minusWeeks(2)
 
     reportedAdjudication4.statusAudit.forEach {
-      it.createdByUserId = "Fred"
+      it.createdByUserId = "Jane"
       it.createDateTime = now
     }
 
@@ -261,7 +261,7 @@ class AuditServiceTest {
     reportedAdjudication5.createDateTime = now.minusWeeks(2)
 
     reportedAdjudication5.statusAudit.forEach {
-      it.createdByUserId = "Fred"
+      it.createdByUserId = "Rod"
       it.createDateTime = now
     }
   }
@@ -269,21 +269,24 @@ class AuditServiceTest {
   @ParameterizedTest
   @CsvSource("true,false")
   fun `get draft adjudications report`(historic: Boolean) {
-    whenever(draftAdjudicationRepository.findByCreateDateTimeAfterAndReportNumberIsNull(any())).thenReturn(listOf(draftAdjudication))
+    whenever(draftAdjudicationRepository.findByCreateDateTimeAfterAndReportNumberIsNull(any())).thenReturn(
+      listOf(
+        draftAdjudication
+      )
+    )
 
     val printWriter = PrintWriter("draft.csv")
     auditService.getDraftAdjudicationReport(printWriter, historic)
 
     val lines = File("draft.csv").bufferedReader().readLines()
+    val results = listOf(
+      AuditService.DRAFT_ADJUDICATION_CSV_HEADERS,
+      "MDI,Fred,$now,A12345,$now,2,true,1,\"[10]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",false,\"Example statement\""
+    )
 
-    assertThat(
-      lines.containsAll(
-        listOf(
-          AuditService.DRAFT_ADJUDICATION_CSV_HEADERS,
-          "MDI,Fred,$now,A12345,$now,2,true,1,\"[10]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",false,\"Example statement\""
-        )
-      )
-    ).isEqualTo(true)
+    lines.forEachIndexed { index, s ->
+      assertThat(lines[index]).isEqualTo(results[index])
+    }
   }
 
   @ParameterizedTest
@@ -299,24 +302,31 @@ class AuditServiceTest {
 
     val lines = File("reported.csv").bufferedReader().readLines()
 
+    lines.forEach {
+      println(it)
+    }
+
     val results = mutableListOf(
       AuditService.REPORTED_ADJUDICATION_CSV_HEADERS,
-      "1,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",RETURNED,null,\"null\",1",
-      "1,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",AWAITING_REVIEW,null,\"null\",1",
-      "1,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",ACCEPTED,null,\"null\",1",
-      "3,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[]\",\"[]\",\"[]\",\"statement\",AWAITING_REVIEW,null,\"null\",0",
-      "2,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[REDECORATION]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",RETURNED,reason,\"details\",2",
-      "2,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[REDECORATION]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",ACCEPTED,null,\"null\",2",
-      "2,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[REDECORATION]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",AWAITING_REVIEW,null,\"null\",2",
-      "2,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[REDECORATION]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",RETURNED,null,\"null\",2"
+      "1,MDI,Rod,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",RETURNED,null,\"null\",1",
+      "1,MDI,Rod,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",AWAITING_REVIEW,null,\"null\",1",
+      "1,MDI,Rod,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",ACCEPTED,null,\"null\",1",
+      "2,MDI,Jane,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[REDECORATION]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",RETURNED,reason,\"details\",2",
+      "2,MDI,Jane,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[REDECORATION]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",AWAITING_REVIEW,null,\"null\",2",
+      "2,MDI,Jane,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[REDECORATION]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",ACCEPTED,null,\"null\",2",
+      "2,MDI,Jane,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[REDECORATION]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",RETURNED,null,\"null\",2",
+      "3,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[]\",\"[]\",\"[]\",\"statement\",AWAITING_REVIEW,null,\"null\",0"
     )
     if (!historic) {
       results.add("4,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[]\",\"[]\",\"[]\",\"statement\",ACCEPTED,null,\"null\",0")
-      assertThat(
-        lines.containsAll(results)
-      ).isEqualTo(true)
+      lines.forEachIndexed { index, s ->
+        assertThat(lines[index]).isEqualTo(results[index])
+      }
+
     } else {
-      lines.containsAll(results)
+      lines.forEachIndexed { index, s ->
+        assertThat(lines[index]).isEqualTo(results[index])
+      }
     }
   }
 

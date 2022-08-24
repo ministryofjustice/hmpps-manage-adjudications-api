@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AuditService
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.servlet.http.HttpServletResponse
 
 @RestController
@@ -26,7 +28,7 @@ class AuditController {
     response: HttpServletResponse
   ) {
     response.contentType = "text/csv"
-    response.addHeader("Content-Disposition", "attachment; filename=\"draftAdjudications.csv\"")
+    response.addHeader("Content-Disposition", "attachment; filename=\"draftAdjudications_${getReportDate()}.csv\"")
     auditService.getDraftAdjudicationReport(response.writer, historic)
   }
 
@@ -38,7 +40,9 @@ class AuditController {
     response: HttpServletResponse
   ) {
     response.contentType = "text/csv"
-    response.addHeader("Content-Disposition", "attachment; filename=\"reportedAdjudications.csv\"")
+    response.addHeader("Content-Disposition", "attachment; filename=\"reportedAdjudications_${getReportDate()}.csv\"")
     auditService.getReportedAdjudicationReport(response.writer, historic)
   }
+
+  private fun getReportDate(): String = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
 }
