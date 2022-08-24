@@ -6,6 +6,7 @@ create table reported_adjudication_status_audit
     reported_adjudication_fk_id    bigint references reported_adjudications (id),
     status                         varchar(32)  not null,
     status_reason                  varchar(128),
+    offence_codes                  varchar(4000) not null,
     status_details                 varchar(4000),
     create_user_id                 varchar(32)   not null,
     create_datetime                timestamp     not null,

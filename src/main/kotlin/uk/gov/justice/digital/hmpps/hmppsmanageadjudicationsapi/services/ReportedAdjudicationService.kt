@@ -165,7 +165,9 @@ class ReportedAdjudicationService(
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
       ?: throw EntityNotFoundException("ReportedAdjudication not found for reported adjudication number $adjudicationNumber")
     val reportedAdjudicationToReturn = reportedAdjudication.let {
-      it.transition(status, username, statusReason, statusDetails)
+      it.transition(
+        status, username, statusReason, statusDetails, reportedAdjudication.offenceDetails!!
+      )
       reportedAdjudicationRepository.save(it).toDto(this.offenceCodeLookupService)
     }
     if (status.isAccepted()) {

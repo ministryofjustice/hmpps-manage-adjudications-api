@@ -65,10 +65,10 @@ class AuditServiceTest {
         completed = false
       ),
       damages = mutableListOf(
-        Damage(code = DamageCode.CLEANING, details = "t", reporter = "")
+        Damage(code = DamageCode.CLEANING, details = "details", reporter = "")
       ),
       evidence = mutableListOf(
-        Evidence(code = EvidenceCode.PHOTO, details = "", reporter = "")
+        Evidence(code = EvidenceCode.PHOTO, details = "details", identifier = "identifier", reporter = "")
       ),
       witnesses = mutableListOf(
         Witness(code = WitnessCode.STAFF, reporter = "", firstName = "", lastName = "")
@@ -97,18 +97,18 @@ class AuditServiceTest {
     statusReason = null,
     statusDetails = null,
     damages = mutableListOf(
-      ReportedDamage(code = DamageCode.CLEANING, details = "t", reporter = "")
+      ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "")
     ),
     evidence = mutableListOf(
-      ReportedEvidence(code = EvidenceCode.PHOTO, details = "", reporter = "")
+      ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", identifier = "identifier", reporter = "")
     ),
     witnesses = mutableListOf(
       ReportedWitness(code = WitnessCode.STAFF, reporter = "", firstName = "", lastName = "")
     ),
     statusAudit = mutableListOf(
-      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.RETURNED),
-      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.AWAITING_REVIEW),
-      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.ACCEPTED),
+      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.RETURNED, offenceCodes = "[(2, 1)]"),
+      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.AWAITING_REVIEW, offenceCodes = "[(2, 1)]"),
+      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.ACCEPTED, offenceCodes = "[(2, 1)]"),
     )
   )
 
@@ -133,19 +133,19 @@ class AuditServiceTest {
     statusReason = null,
     statusDetails = null,
     damages = mutableListOf(
-      ReportedDamage(code = DamageCode.REDECORATION, details = "t", reporter = "")
+      ReportedDamage(code = DamageCode.REDECORATION, details = "details", reporter = "")
     ),
     evidence = mutableListOf(
-      ReportedEvidence(code = EvidenceCode.PHOTO, details = "", reporter = "")
+      ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", identifier = "identifier", reporter = "")
     ),
     witnesses = mutableListOf(
       ReportedWitness(code = WitnessCode.STAFF, reporter = "", firstName = "", lastName = "")
     ),
     statusAudit = mutableListOf(
-      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.RETURNED, statusReason = "reason", statusDetails = "details"),
-      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.AWAITING_REVIEW),
-      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.ACCEPTED),
-      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.RETURNED),
+      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.RETURNED, statusReason = "statement", statusDetails = "details", offenceCodes = "[(2, 1)]"),
+      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.AWAITING_REVIEW, offenceCodes = "[(1, 2),(1, 3)]"),
+      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.ACCEPTED, offenceCodes = "[(1, 2),(1, 3)]"),
+      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.RETURNED, offenceCodes = "[(1, 2),(1, 3)]", statusReason = "offence"),
     )
   )
 
@@ -172,7 +172,12 @@ class AuditServiceTest {
     damages = mutableListOf(),
     evidence = mutableListOf(),
     witnesses = mutableListOf(),
-    statusAudit = mutableListOf()
+    statusAudit = mutableListOf(
+      ReportedAdjudicationStatusAudit(
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        offenceCodes = "[(1, 2),(1, 3)]"
+      )
+    )
   )
   // should be picked up as reviewed this week, created before report date
   private val reportedAdjudication4 = ReportedAdjudication(
@@ -199,7 +204,7 @@ class AuditServiceTest {
     evidence = mutableListOf(),
     witnesses = mutableListOf(),
     statusAudit = mutableListOf(
-      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.ACCEPTED),
+      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.ACCEPTED, offenceCodes = "[(1, 2),(1, 3)]"),
     )
   )
   // should not be picked up as wrong review status
@@ -227,7 +232,7 @@ class AuditServiceTest {
     evidence = mutableListOf(),
     witnesses = mutableListOf(),
     statusAudit = mutableListOf(
-      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.AWAITING_REVIEW),
+      ReportedAdjudicationStatusAudit(status = ReportedAdjudicationStatus.AWAITING_REVIEW, offenceCodes = "[(1, 2),(1, 3)]"),
     )
   )
 
@@ -281,7 +286,7 @@ class AuditServiceTest {
     val lines = File("draft.csv").bufferedReader().readLines()
     val results = listOf(
       AuditService.DRAFT_ADJUDICATION_CSV_HEADERS,
-      "MDI,Fred,$now,A12345,$now,2,true,1,\"[10]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",false,\"Example statement\""
+      "MDI,Fred,$now,A12345,$now,2,true,1,\"[10]\",\"[(CLEANING, details)]\",\"[(PHOTO, details, identifier)]\",\"[STAFF]\",false,\"Example statement\""
     )
 
     lines.forEachIndexed { index, s ->
@@ -302,23 +307,19 @@ class AuditServiceTest {
 
     val lines = File("reported.csv").bufferedReader().readLines()
 
-    lines.forEach {
-      println(it)
-    }
-
     val results = mutableListOf(
       AuditService.REPORTED_ADJUDICATION_CSV_HEADERS,
-      "1,MDI,Rod,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",RETURNED,null,\"null\",1",
-      "1,MDI,Rod,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",AWAITING_REVIEW,null,\"null\",1",
-      "1,MDI,Rod,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[CLEANING]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",ACCEPTED,null,\"null\",1",
-      "2,MDI,Jane,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[REDECORATION]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",RETURNED,reason,\"details\",2",
-      "2,MDI,Jane,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[REDECORATION]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",AWAITING_REVIEW,null,\"null\",2",
-      "2,MDI,Jane,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[REDECORATION]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",ACCEPTED,null,\"null\",2",
-      "2,MDI,Jane,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[REDECORATION]\",\"[PHOTO]\",\"[STAFF]\",\"statement\",RETURNED,null,\"null\",2",
-      "3,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[]\",\"[]\",\"[]\",\"statement\",AWAITING_REVIEW,null,\"null\",0"
+      "1,MDI,null,null,Rod,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[(CLEANING, details)]\",\"[(PHOTO, details, identifier)]\",\"[STAFF]\",\"statement\",RETURNED,null,\"null\",1,0,0,0",
+      "1,MDI,null,null,Rod,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[(CLEANING, details)]\",\"[(PHOTO, details, identifier)]\",\"[STAFF]\",\"statement\",AWAITING_REVIEW,null,\"null\",1,0,0,0",
+      "1,MDI,null,null,Rod,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[(CLEANING, details)]\",\"[(PHOTO, details, identifier)]\",\"[STAFF]\",\"statement\",ACCEPTED,null,\"null\",1,0,0,0",
+      "2,MDI,null,null,Jane,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[(REDECORATION, details)]\",\"[(PHOTO, details, identifier)]\",\"[STAFF]\",\"statement\",RETURNED,statement,\"details\",2,0,1,1",
+      "2,MDI,null,null,Jane,$now,AA1234B,$now,345,true,21,\"[(1, 2),(1, 3)]\",\"[(REDECORATION, details)]\",\"[(PHOTO, details, identifier)]\",\"[STAFF]\",\"statement\",AWAITING_REVIEW,null,\"null\",2,0,1,1",
+      "2,MDI,null,null,Jane,$now,AA1234B,$now,345,true,21,\"[(1, 2),(1, 3)]\",\"[(REDECORATION, details)]\",\"[(PHOTO, details, identifier)]\",\"[STAFF]\",\"statement\",ACCEPTED,null,\"null\",2,0,1,1",
+      "2,MDI,null,null,Jane,$now,AA1234B,$now,345,true,21,\"[(1, 2),(1, 3)]\",\"[(REDECORATION, details)]\",\"[(PHOTO, details, identifier)]\",\"[STAFF]\",\"statement\",RETURNED,offence,\"null\",2,0,1,1",
+      "3,MDI,Fred,$now,null,null,AA1234B,$now,345,true,21,\"[(1, 2),(1, 3)]\",\"[]\",\"[]\",\"[]\",\"statement\",AWAITING_REVIEW,null,\"null\",0,0,0,0"
     )
     if (!historic) {
-      results.add("4,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[]\",\"[]\",\"[]\",\"statement\",ACCEPTED,null,\"null\",0")
+      results.add("4,null,null,,MDI,Fred,$now,AA1234B,$now,345,true,21,\"[(2, 1)]\",\"[]\",\"[]\",\"[]\",\"statement\",ACCEPTED,null,\"null\",0,0,0,0")
       lines.forEachIndexed { index, s ->
         assertThat(lines[index]).isEqualTo(results[index])
       }

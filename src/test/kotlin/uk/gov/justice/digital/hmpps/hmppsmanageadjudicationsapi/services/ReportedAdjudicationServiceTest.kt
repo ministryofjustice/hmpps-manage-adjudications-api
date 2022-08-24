@@ -513,7 +513,11 @@ class ReportedAdjudicationServiceTest {
           it.status = to
           it.reviewUserId = if (to == ReportedAdjudicationStatus.AWAITING_REVIEW) null else "ITAG_USER"
           it.statusAudit = mutableListOf(
-            ReportedAdjudicationStatusAudit(status = to)
+            ReportedAdjudicationStatusAudit(
+              status = to,
+              offenceCodes =
+              it.offenceDetails!!.map { m -> Pair(m.paragraphCode, m.offenceCode) }.toString()
+            )
           )
         }
       )

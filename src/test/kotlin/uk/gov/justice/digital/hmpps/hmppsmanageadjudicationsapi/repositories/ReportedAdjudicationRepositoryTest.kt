@@ -274,7 +274,8 @@ class ReportedAdjudicationRepositoryTest {
       ReportedAdjudicationStatus.REJECTED,
       "A_REVIEWER",
       "Status Reason",
-      "Status Details"
+      "Status Details",
+      adjudication.offenceDetails!!
     )
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
@@ -285,7 +286,7 @@ class ReportedAdjudicationRepositoryTest {
         adjudication.status,
         adjudication.reviewUserId,
         adjudication.statusReason,
-        adjudication.statusDetails
+        adjudication.statusDetails,
       )
   }
 
@@ -394,7 +395,8 @@ class ReportedAdjudicationRepositoryTest {
       ),
       statusAudit = mutableListOf(
         ReportedAdjudicationStatusAudit(
-          status = ReportedAdjudicationStatus.AWAITING_REVIEW
+          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+          offenceCodes = ""
         )
       )
     )

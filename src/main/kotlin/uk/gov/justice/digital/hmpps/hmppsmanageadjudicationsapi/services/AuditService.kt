@@ -73,18 +73,26 @@ class AuditService(
 
   private fun createReportedAdjudicationCsvRows(writer: Writer, reportedAdjudication: ReportedAdjudication) {
     if (reportedAdjudication.statusAudit.isEmpty())
-      writer.appendLine(reportedAdjudication.toCsvLine(0))
+      writer.appendLine(
+        reportedAdjudication.toCsvLine(
+          returnedCounter = 0, returnedDetailsCounter = 0, returnedOffencesCounter = 0, returnedStatementCounter = 0
+        )
+      )
     else
       reportedAdjudication.statusAudit.forEach {
         reportedAdjudication.status = it.status
         reportedAdjudication.statusReason = it.statusReason
         reportedAdjudication.statusDetails = it.statusDetails
-        reportedAdjudication.createDateTime = it.createDateTime
-        reportedAdjudication.createdByUserId = it.createdByUserId
+        reportedAdjudication.modifiedDateTime = it.createDateTime
+        reportedAdjudication.modifiedByUserId = it.createdByUserId
 
         writer.appendLine(
           reportedAdjudication.toCsvLine(
-            reportedAdjudication.statusAudit.count { status -> status.status == ReportedAdjudicationStatus.RETURNED }
+            it.offenceCodes,
+            reportedAdjudication.statusAudit.count { status -> status.status == ReportedAdjudicationStatus.RETURNED },
+            reportedAdjudication.statusAudit.count { status -> status.statusReason == "offence" },
+            reportedAdjudication.statusAudit.count { status -> status.statusReason == "details" },
+            reportedAdjudication.statusAudit.count { status -> status.statusReason == "statement" },
           )
         )
       }
@@ -93,18 +101,20 @@ class AuditService(
   private fun DraftAdjudication.toCsvLine(): String =
     "${this.agencyId},${this.createdByUserId},${this.createDateTime},${this.prisonerNumber},${this.incidentDetails.dateTimeOfIncident}," +
       "${this.incidentDetails.locationId},${this.isYouthOffender},${this.incidentRole?.roleCode}," +
-      "\"${this.offenceDetails?.map { it.offenceCode }}\",\"${this.damages?.map { it.code.name }}\"," +
-      "\"${this.evidence?.map { it.code.name }}\",\"${this.witnesses?.map { it.code.name }}\",${this.incidentStatement?.completed},\"${this.incidentStatement?.statement}\""
+      "\"${this.offenceDetails?.map { it.offenceCode }}\",\"${this.damages?.map { Pair(it.code.name, it.details) }}\"," +
+      "\"${this.evidence?.map { Triple(it.code.name, it.details, it.identifier) }}\",\"${this.witnesses?.map { it.code.name }}\",${this.incidentStatement?.completed},\"${this.incidentStatement?.statement}\""
 
-  private fun ReportedAdjudication.toCsvLine(returnedCounter: Int): String =
-    "${this.reportNumber},${this.agencyId},${this.createdByUserId},${this.createDateTime},${this.prisonerNumber},${this.dateTimeOfIncident}," +
-      "${this.locationId},${this.isYouthOffender},${this.incidentRoleCode}," +
-      "\"${this.offenceDetails?.map { Pair(it.paragraphCode,it.offenceCode) }}\",\"${this.damages.map { it.code.name }}\"," +
-      "\"${this.evidence.map { it.code.name }}\",\"${this.witnesses.map { it.code.name }}\",\"${this.statement}\",${this.status},${this.statusReason},\"${this.statusDetails}\"," +
-      "$returnedCounter"
+  private fun ReportedAdjudication.toCsvLine(offenceCodes: String? = null, returnedCounter: Int, returnedOffencesCounter: Int, returnedDetailsCounter: Int, returnedStatementCounter: Int): String =
+    "${this.reportNumber},${this.agencyId},${this.createdByUserId},${this.createDateTime},${this.modifiedByUserId},${this.modifiedDateTime}," +
+      "${this.prisonerNumber},${this.dateTimeOfIncident},${this.locationId},${this.isYouthOffender},${this.incidentRoleCode}," +
+      "\"$offenceCodes\",\"${this.damages.map { Pair(it.code.name, it.details) }}\"," +
+      "\"${this.evidence.map { Triple(it.code.name, it.details, it.identifier) }}\",\"${this.witnesses.map { it.code.name }}\"," +
+      "\"${this.statement}\",${this.status},${this.statusReason},\"${this.statusDetails}\"," +
+      "$returnedCounter,$returnedDetailsCounter,$returnedOffencesCounter,$returnedStatementCounter"
 
   companion object {
     const val DRAFT_ADJUDICATION_CSV_HEADERS = "agency_id,created_by,created_on,prisoner_number,date_of_incident,location_id,youth_offender,role_code,offence_codes,damages,evidence,witnesses,statement_complete,statement"
-    const val REPORTED_ADJUDICATION_CSV_HEADERS = "report_number,agency_id,created_by,created_on,prisoner_number,date_of_incident,location_id,youth_offender,role_code,offence_codes,damages,evidence,witnesses,statement,status,status_reason,status_details,returned_counter"
+    const val REPORTED_ADJUDICATION_CSV_HEADERS = "report_number,agency_id,created_by,created_on,updated_by,updated_on,prisoner_number,date_of_incident,location_id,youth_offender,role_code,offence_codes,damages,evidence," +
+      "witnesses,statement,status,status_reason,status_details,returned_counter,returned_details_counter,returned_statement_counter,returned_offences_counter"
   }
 }

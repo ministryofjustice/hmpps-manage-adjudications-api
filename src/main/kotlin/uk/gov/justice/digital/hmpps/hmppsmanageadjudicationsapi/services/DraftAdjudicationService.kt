@@ -410,6 +410,7 @@ class DraftAdjudicationService(
 
   private fun createReportedAdjudication(draftAdjudication: DraftAdjudication): ReportedAdjudication {
     val nomisAdjudicationCreationRequestData = prisonApiGateway.requestAdjudicationCreationData(draftAdjudication.prisonerNumber)
+    val reportedOffences = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication)
     return reportedAdjudicationRepository.save(
       ReportedAdjudication(
         bookingId = nomisAdjudicationCreationRequestData.bookingId,
@@ -423,7 +424,7 @@ class DraftAdjudicationService(
         incidentRoleCode = draftAdjudication.incidentRole!!.roleCode,
         incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber,
         incidentRoleAssociatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName,
-        offenceDetails = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication),
+        offenceDetails = reportedOffences,
         statement = draftAdjudication.incidentStatement!!.statement!!,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         damages = toReportedDamages(draftAdjudication.damages ?: mutableListOf()),
@@ -432,6 +433,7 @@ class DraftAdjudicationService(
         statusAudit = mutableListOf(
           ReportedAdjudicationStatusAudit(
             status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+            offenceCodes = reportedOffences.map { Pair(it.paragraphCode, it.offenceCode) }.toString()
           )
         )
       )
@@ -446,6 +448,7 @@ class DraftAdjudicationService(
     val previousReportedAdjudication =
       reportedAdjudicationRepository.findByReportNumber(reportedAdjudicationNumber)
     val reporter = authenticationFacade.currentUsername!!
+    val offenceDetails = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication)
     previousReportedAdjudication?.let {
       it.bookingId = previousReportedAdjudication.bookingId
       it.reportNumber = previousReportedAdjudication.reportNumber
@@ -459,9 +462,9 @@ class DraftAdjudicationService(
       it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber
       it.incidentRoleAssociatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName
       it.offenceDetails!!.clear()
-      it.offenceDetails!!.addAll(toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication))
+      it.offenceDetails!!.addAll(offenceDetails)
       it.statement = draftAdjudication.incidentStatement!!.statement!!
-      it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
+      it.transition(to = ReportedAdjudicationStatus.AWAITING_REVIEW, offenceDetails = offenceDetails)
       val toPreserve = it.damages.filter { damage -> damage.reporter != reporter }
       it.damages.clear()
       it.damages.addAll(toPreserve)

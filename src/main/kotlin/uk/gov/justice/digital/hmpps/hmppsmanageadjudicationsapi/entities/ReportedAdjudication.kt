@@ -54,7 +54,7 @@ data class ReportedAdjudication(
   @JoinColumn(name = "reported_adjudication_fk_id")
   var statusAudit: MutableList<ReportedAdjudicationStatusAudit>,
 ) : BaseEntity() {
-  fun transition(to: ReportedAdjudicationStatus, reviewUserId: String? = null, statusReason: String? = null, statusDetails: String? = null) {
+  fun transition(to: ReportedAdjudicationStatus, reviewUserId: String? = null, statusReason: String? = null, statusDetails: String? = null, offenceDetails: MutableList<ReportedOffence>) {
     if (this.status.canTransitionTo(to)) {
       this.status = to
       this.reviewUserId = reviewUserId
@@ -62,7 +62,9 @@ data class ReportedAdjudication(
       this.statusDetails = statusDetails
       this.statusAudit.add(
         ReportedAdjudicationStatusAudit(
-          status = to, statusReason = statusReason, statusDetails = statusDetails
+          status = to, statusReason = statusReason, statusDetails = statusDetails,
+          offenceCodes =
+          offenceDetails.map { Pair(it.paragraphCode, it.offenceCode) }.toString()
         )
       )
     } else {
@@ -109,4 +111,6 @@ data class ReportedAdjudicationStatusAudit(
   var statusReason: String? = null,
   @Length(max = 4000)
   var statusDetails: String? = null,
+  @Length(max = 4000)
+  var offenceCodes: String? = null,
 ) : BaseEntity()
