@@ -49,6 +49,7 @@ class ReportedAdjudicationRepositoryTest {
         bookingId = 44L,
         agencyId = "MDI",
         locationId = 2,
+        draftCreatedAt = LocalDateTime.now(),
         dateTimeOfIncident = dateTimeOfIncident,
         handoverDeadline = dateTimeOfIncident.plusDays(2),
         isYouthOffender = false,
@@ -72,6 +73,7 @@ class ReportedAdjudicationRepositoryTest {
         bookingId = 44L,
         agencyId = "MDI",
         locationId = 3,
+        draftCreatedAt = LocalDateTime.now(),
         dateTimeOfIncident = dateTimeOfIncident.plusHours(1),
         handoverDeadline = dateTimeOfIncident.plusHours(1).plusDays(2),
         isYouthOffender = false,
@@ -95,6 +97,7 @@ class ReportedAdjudicationRepositoryTest {
         bookingId = 55L,
         agencyId = "LEI",
         locationId = 4,
+        draftCreatedAt = LocalDateTime.now(),
         dateTimeOfIncident = dateTimeOfIncident.plusHours(1),
         handoverDeadline = dateTimeOfIncident.plusHours(1).plusDays(2),
         isYouthOffender = true,
@@ -273,9 +276,8 @@ class ReportedAdjudicationRepositoryTest {
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity.getLatestStatus())
-      .extracting("id", "status", "statusReason", "statusDetails")
+      .extracting("status", "statusReason", "statusDetails")
       .contains(
-        adjudication.id,
         adjudication.getLatestStatus().status,
         adjudication.getLatestStatus().statusReason,
         adjudication.getLatestStatus().statusDetails
@@ -339,6 +341,7 @@ class ReportedAdjudicationRepositoryTest {
       prisonerNumber = "A12345",
       agencyId = "MDI",
       locationId = 2,
+      draftCreatedAt = LocalDateTime.now(),
       dateTimeOfIncident = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
       handoverDeadline = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME.plusDays(2),
       isYouthOffender = false,

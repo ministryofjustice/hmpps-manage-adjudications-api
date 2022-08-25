@@ -22,4 +22,6 @@ SELECT  nextval('reported_adjudication_status_id_seq'), id, status, status_reaso
 
 ALTER TABLE reported_adjudications DROP COLUMN status_reason;
 ALTER TABLE reported_adjudications DROP COLUMN status_details;
+ALTER TABLE reported_adjudications ADD COLUMN draft_created_at timestamp;
+UPDATE reported_adjudications SET draft_created_at = create_datetime
 

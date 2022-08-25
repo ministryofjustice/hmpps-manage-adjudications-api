@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.hibernate.validator.constraints.Length
 import java.lang.IllegalStateException
 import java.time.LocalDateTime
@@ -22,6 +23,7 @@ data class ReportedAdjudication(
   var reportNumber: Long,
   var agencyId: String,
   var locationId: Long,
+  var draftCreatedAt: LocalDateTime,
   var dateTimeOfIncident: LocalDateTime,
   var handoverDeadline: LocalDateTime,
   var isYouthOffender: Boolean,
@@ -52,6 +54,7 @@ data class ReportedAdjudication(
   fun transition(to: ReportedAdjudicationStatus, reviewUserId: String? = null) {
     val status = this.getLatestStatus()
     if (status.status.canTransitionTo(to.status)) {
+      to.snapshot = Snapshot(this.statement, this.offenceDetails!!.map { m -> Pair(m.paragraphCode, m.offenceCode) }).get()
       this.statuses.add(to)
       this.status = to.status
       this.reviewUserId = reviewUserId
@@ -103,4 +106,11 @@ enum class Status {
   fun isAccepted(): Boolean {
     return this == ACCEPTED
   }
+}
+
+data class Snapshot(
+  val statement: String,
+  val offences: List<Pair<String, Int>>
+) {
+  fun get(): String = ObjectMapper().writeValueAsString(this)
 }

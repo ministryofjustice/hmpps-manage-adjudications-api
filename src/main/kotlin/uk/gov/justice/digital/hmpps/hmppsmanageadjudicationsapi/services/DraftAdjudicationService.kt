@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Snapshot
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -404,6 +405,7 @@ class DraftAdjudicationService(
 
   private fun createReportedAdjudication(draftAdjudication: DraftAdjudication): ReportedAdjudication {
     val nomisAdjudicationCreationRequestData = prisonApiGateway.requestAdjudicationCreationData(draftAdjudication.prisonerNumber)
+    var offences = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication)
     return reportedAdjudicationRepository.save(
       ReportedAdjudication(
         bookingId = nomisAdjudicationCreationRequestData.bookingId,
@@ -411,17 +413,23 @@ class DraftAdjudicationService(
         prisonerNumber = draftAdjudication.prisonerNumber,
         agencyId = draftAdjudication.agencyId,
         locationId = draftAdjudication.incidentDetails.locationId,
+        draftCreatedAt = draftAdjudication.createDateTime!!,
         dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
         handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
         isYouthOffender = draftAdjudication.isYouthOffender!!,
         incidentRoleCode = draftAdjudication.incidentRole!!.roleCode,
         incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber,
         incidentRoleAssociatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName,
-        offenceDetails = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication),
+        offenceDetails = offences,
         statement = draftAdjudication.incidentStatement!!.statement!!,
         status = Status.AWAITING_REVIEW,
         statuses = mutableListOf(
-          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+          ReportedAdjudicationStatus(
+            status = Status.AWAITING_REVIEW,
+            snapshot = Snapshot(
+              draftAdjudication.incidentStatement!!.statement!!, offences.map { m -> Pair(m.paragraphCode, m.offenceCode) }
+            ).get()
+          )
         ),
         damages = toReportedDamages(draftAdjudication.damages ?: mutableListOf()),
         evidence = toReportedEvidence(draftAdjudication.evidence ?: mutableListOf()),

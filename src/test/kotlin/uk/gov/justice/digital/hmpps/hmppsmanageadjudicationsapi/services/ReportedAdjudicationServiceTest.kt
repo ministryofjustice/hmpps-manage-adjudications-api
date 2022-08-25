@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Snapshot
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
@@ -135,6 +136,7 @@ class ReportedAdjudicationServiceTest {
       val reportedAdjudication =
         ReportedAdjudication(
           reportNumber = 1, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
+          draftCreatedAt = DATE_TIME_OF_INCIDENT,
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
           isYouthOffender = isYouthOffender,
           incidentRoleCode = "25b",
@@ -145,7 +147,9 @@ class ReportedAdjudicationServiceTest {
           status = Status.AWAITING_REVIEW,
           statuses = mutableListOf(
             ReportedAdjudicationStatus(
-              status = Status.REJECTED
+              status = Status.REJECTED,
+              statusReason = "Status Reason",
+              statusDetails = "Status Reason String"
             )
           ),
           reviewUserId = "A_REVIEWER",
@@ -231,6 +235,7 @@ class ReportedAdjudicationServiceTest {
         reportNumber = 1,
         agencyId = "MDI",
         locationId = 345,
+        draftCreatedAt = DATE_TIME_OF_INCIDENT,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
         isYouthOffender = false,
@@ -264,6 +269,7 @@ class ReportedAdjudicationServiceTest {
         reportNumber = 2,
         agencyId = "MDI",
         locationId = 345,
+        draftCreatedAt = DATE_TIME_OF_INCIDENT,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
         isYouthOffender = true,
@@ -346,6 +352,7 @@ class ReportedAdjudicationServiceTest {
         reportNumber = 1,
         agencyId = "MDI",
         locationId = 345,
+        draftCreatedAt = DATE_TIME_OF_INCIDENT,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
         isYouthOffender = false,
@@ -379,6 +386,7 @@ class ReportedAdjudicationServiceTest {
         reportNumber = 2,
         agencyId = "MDI",
         locationId = 345,
+        draftCreatedAt = DATE_TIME_OF_INCIDENT,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
         isYouthOffender = true,
@@ -437,6 +445,7 @@ class ReportedAdjudicationServiceTest {
     private fun reportedAdjudication(): ReportedAdjudication {
       val reportedAdjudication = ReportedAdjudication(
         reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
+        draftCreatedAt = DATE_TIME_OF_INCIDENT,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
         isYouthOffender = false,
         incidentRoleCode = "25b",
@@ -486,7 +495,13 @@ class ReportedAdjudicationServiceTest {
     ) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication().also {
-          it.getLatestStatus().status = from
+          it.status = from
+          it.statuses = mutableListOf(
+            ReportedAdjudicationStatus(status = from),
+          )
+          it.statuses.forEach { s ->
+            s.createDateTime = LocalDateTime.now().minusDays(1)
+          }
         }
       )
       Assertions.assertThrows(IllegalStateException::class.java) {
@@ -509,15 +524,39 @@ class ReportedAdjudicationServiceTest {
     ) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication().also {
-          it.getLatestStatus().status = from
+          it.status = from
+          it.statuses = mutableListOf(
+            ReportedAdjudicationStatus(status = from)
+          )
+          it.statuses.forEach { m ->
+            m.createDateTime = LocalDateTime.now()
+          }
         }
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication().also { it.getLatestStatus().status = to })
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        reportedAdjudication().also {
+          it.status = to
+          it.statuses.forEach { m ->
+            m.createDateTime = LocalDateTime.now()
+          }
+        }
+      )
       reportedAdjudicationService.setStatus(1, to)
       verify(reportedAdjudicationRepository).save(
         reportedAdjudication().also {
-          it.getLatestStatus().status = to
+          it.status = to
           it.reviewUserId = if (to == Status.AWAITING_REVIEW) null else "ITAG_USER"
+          it.statuses = mutableListOf(
+            ReportedAdjudicationStatus(
+              status = from
+            ),
+            ReportedAdjudicationStatus(
+              status = to,
+              snapshot = Snapshot(
+                statement = it.statement, offences = it.offenceDetails!!.map { m -> Pair(m.paragraphCode, m.offenceCode) }
+              ).get()
+            )
+          )
         }
       )
       if (updatesNomis) {
@@ -535,9 +574,21 @@ class ReportedAdjudicationServiceTest {
       )
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
+        it.status = Status.REJECTED
         it.statuses = mutableListOf(
-          ReportedAdjudicationStatus(status = Status.REJECTED)
+          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW),
+          ReportedAdjudicationStatus(
+            status = Status.REJECTED, statusReason = "Status Reason", statusDetails = "Status Reason String",
+            snapshot = Snapshot(
+              statement = it.statement,
+              offences = it.offenceDetails!!.map { m -> Pair(m.paragraphCode, m.offenceCode) }
+            ).get()
+          )
         )
+        it.statuses.forEach {
+          m ->
+          m.createDateTime = LocalDateTime.now()
+        }
       }
       returnedReportedAdjudication.reviewUserId = "ITAG_USER"
       returnedReportedAdjudication.createdByUserId = "A_USER"
@@ -550,7 +601,7 @@ class ReportedAdjudicationServiceTest {
         1,
         Status.REJECTED,
         "Status Reason",
-        "Status Reason String",
+        "Status Reason String"
       )
 
       verify(reportedAdjudicationRepository).save(returnedReportedAdjudication)
@@ -574,12 +625,21 @@ class ReportedAdjudicationServiceTest {
       )
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
-        it.getLatestStatus().status = Status.ACCEPTED
+        it.status = Status.ACCEPTED
       }
       returnedReportedAdjudication.createdByUserId = "A_USER"
       returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-        returnedReportedAdjudication
+        returnedReportedAdjudication.also {
+          it.status = Status.AWAITING_REVIEW
+          it.statuses = mutableListOf(
+            ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+          )
+          it.statuses.forEach {
+            m ->
+            m.createDateTime = LocalDateTime.now()
+          }
+        }
       )
 
       reportedAdjudicationService.setStatus(1, Status.ACCEPTED)
@@ -626,7 +686,14 @@ class ReportedAdjudicationServiceTest {
       )
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
-        it.getLatestStatus().status = Status.ACCEPTED
+        it.status = Status.ACCEPTED
+        it.statuses = mutableListOf(
+          ReportedAdjudicationStatus(status = it.status)
+        )
+        it.statuses.forEach {
+          m ->
+          m.createDateTime = LocalDateTime.now()
+        }
       }
       returnedReportedAdjudication.createdByUserId = "A_USER"
       returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -707,6 +774,7 @@ class ReportedAdjudicationServiceTest {
         incidentRoleCode = incidentRoleCode,
         incidentRoleAssociatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
         incidentRoleAssociatedPrisonersName = incidentRoleAssociatedPrisonersName,
+        draftCreatedAt = DATE_TIME_OF_INCIDENT,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
         statement = INCIDENT_STATEMENT,
@@ -732,6 +800,7 @@ class ReportedAdjudicationServiceTest {
   inner class CreateDraftFromReported {
     private val reportedAdjudication = ReportedAdjudication(
       reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
+      draftCreatedAt = DATE_TIME_OF_INCIDENT,
       dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
       isYouthOffender = false,
       incidentRoleCode = "25b",
@@ -901,6 +970,7 @@ class ReportedAdjudicationServiceTest {
 
     private val reportedAdjudication = ReportedAdjudication(
       reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
+      draftCreatedAt = DATE_TIME_OF_INCIDENT,
       dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
       isYouthOffender = false,
       incidentRoleCode = "25b",
