@@ -32,14 +32,14 @@ class AuditControllerTest : TestControllerBase() {
     auditRequest("/adjudications-audit/reported").andExpect(MockMvcResultMatchers.status().isUnauthorized)
   }
 
-  @WithMockUser(username = "ITAG_AUDIT_USER", authorities = ["ADJUDICATIONS_AUDIT"])
+  @WithMockUser(username = "ITAG_AUDIT_USER", roles = ["ADJUDICATIONS_AUDIT"])
   @Test
   fun `get draft adjudications report`() {
     auditRequest("/adjudications-audit/draft").andExpect(MockMvcResultMatchers.status().isOk)
     verify(auditService).getDraftAdjudicationReport(any(), anyOrNull())
   }
 
-  @WithMockUser(username = "ITAG_AUDIT_USER", authorities = ["ADJUDICATIONS_AUDIT"])
+  @WithMockUser(username = "ITAG_AUDIT_USER", roles = ["ADJUDICATIONS_AUDIT"])
   @Test
   fun `get reported adjudications report`() {
     auditRequest("/adjudications-audit/reported").andExpect(MockMvcResultMatchers.status().isOk)

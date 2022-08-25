@@ -22,7 +22,7 @@ class AuditController {
 
   @GetMapping("/draft")
   @Operation(summary = "Returns CSV for draft adjudications weekly report")
-  @PreAuthorize("hasAuthority('ADJUDICATIONS_AUDIT')")
+  @PreAuthorize("hasRole('ADJUDICATIONS_AUDIT')")
   fun getDraftAdjudicationReport(
     @RequestParam("historic") historic: Boolean?,
     response: HttpServletResponse
@@ -34,7 +34,7 @@ class AuditController {
 
   @GetMapping("/reported")
   @Operation(summary = "Returns CSV for reported adjudications weekly report")
-  @PreAuthorize("hasAuthority('ADJUDICATIONS_AUDIT')")
+  @PreAuthorize("hasRole('ADJUDICATIONS_AUDIT')")
   fun getReportedAdjudicationReport(
     @RequestParam("historic") historic: Boolean?,
     response: HttpServletResponse
