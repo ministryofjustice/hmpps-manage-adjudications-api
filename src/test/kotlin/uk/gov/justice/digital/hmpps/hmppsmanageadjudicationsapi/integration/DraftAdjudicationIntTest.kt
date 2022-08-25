@@ -618,12 +618,56 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.put()
       .uri("/draft-adjudications/$draftId/evidence")
-      .headers(setHeaders())
+      .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
           "evidence" to listOf(
             EvidenceRequestItem(
               code = EvidenceCode.PHOTO, details = "details"
+            ),
+          ),
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.evidence[0].code")
+      .isEqualTo(EvidenceCode.PHOTO.name)
+      .jsonPath("$.draftAdjudication.evidence[0].details")
+      .isEqualTo("details")
+      .jsonPath("$.draftAdjudication.evidence[0].reporter")
+      .isEqualTo("B_MILLS")
+  }
+
+
+  @Test
+  fun `update evidence to the draft adjudication`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+
+    val intTestScenario = intTestBuilder
+      .startDraft(testAdjudication)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addEvidence()
+      .completeDraft()
+
+    val draftId = intTestScenario.getDraftId()
+
+    webTestClient.put()
+      .uri("/draft-adjudications/$draftId/evidence/edit")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "evidence" to listOf(
+            EvidenceRequestItem(
+              code = EvidenceCode.PHOTO, details = "details", reporter = ""
+            ),
+            EvidenceRequestItem(
+              code = EvidenceCode.BAGGED_AND_TAGGED, details = "details", reporter = "ITAG_ALO"
             )
           ),
         )
@@ -638,7 +682,14 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo("details")
       .jsonPath("$.draftAdjudication.evidence[0].reporter")
       .isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.evidence[1].code")
+      .isEqualTo(EvidenceCode.BAGGED_AND_TAGGED.name)
+      .jsonPath("$.draftAdjudication.evidence[1].details")
+      .isEqualTo("details")
+      .jsonPath("$.draftAdjudication.evidence[1].reporter")
+      .isEqualTo("B_MILLS")
   }
+
 
   @Test
   fun `add witnesses to the draft adjudication`() {

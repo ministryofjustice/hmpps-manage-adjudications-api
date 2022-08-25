@@ -1428,6 +1428,11 @@ class DraftAdjudicationServiceTest {
               "details",
               "Fred"
             ),
+            Tuple(
+              EvidenceCode.PHOTO,
+              "details",
+              "Rod"
+            ),
           )
         assertThat(reportedAdjudicationArgumentCaptor.value.witnesses)
           .extracting(
@@ -1442,6 +1447,12 @@ class DraftAdjudicationServiceTest {
               "prison",
               "officer",
               "Fred"
+            ),
+            Tuple(
+              WitnessCode.PRISON_OFFICER,
+              "prison",
+              "officer",
+              "Rod"
             ),
           )
       }
@@ -1876,6 +1887,113 @@ class DraftAdjudicationServiceTest {
   }
 
   @Nested
+  inner class UpdateEvidence {
+    private val draftAdjudication =
+      DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = LocalDateTime.now(),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithAllValuesSet(),
+        incidentStatement = IncidentStatement(
+          statement = "Example statement",
+          completed = false
+        ),
+        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        isYouthOffender = true,
+        evidence = mutableListOf(
+          Evidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Rod"),
+          Evidence(code = EvidenceCode.BAGGED_AND_TAGGED, details = "details", reporter = "Fred")
+        )
+      )
+
+    @BeforeEach
+    fun init() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+      whenever(authenticationFacade.currentUsername).thenReturn("Fred")
+    }
+
+    @Test
+    fun `update evidence when not initialized `() { // note this case should never occur when editing from a reported adjudication, but is guarded against
+      val draftAdjudicationNoDamages =
+        DraftAdjudication(
+          id = 1,
+          prisonerNumber = "A12345",
+          agencyId = "MDI",
+          incidentDetails = IncidentDetails(
+            locationId = 2,
+            dateTimeOfIncident = LocalDateTime.now(),
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          )
+        )
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationNoDamages))
+
+      val response = draftAdjudicationService.updateEvidence(
+        1,
+        listOf(
+          EvidenceRequestItem(EvidenceCode.PHOTO, "identifier", "details", "Fred")
+        )
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.evidence!!.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.evidence!!.first().code).isEqualTo(EvidenceCode.PHOTO)
+      assertThat(argumentCaptor.value.evidence!!.first().details).isEqualTo("details")
+      assertThat(argumentCaptor.value.evidence!!.first().reporter).isEqualTo("Fred")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `update evidence for adjudication`() {
+      val response = draftAdjudicationService.updateEvidence(
+        1,
+        listOf(
+          EvidenceRequestItem(
+            draftAdjudication.evidence!!.first().code,
+            draftAdjudication.evidence!!.first().identifier,
+            draftAdjudication.evidence!!.first().details,
+            draftAdjudication.evidence!!.first().reporter
+          ),
+          EvidenceRequestItem(EvidenceCode.BODY_WORN_CAMERA, "identifier", "details", "Fred")
+        )
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.evidence!!.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.evidence!!.first().code).isEqualTo(EvidenceCode.PHOTO)
+      assertThat(argumentCaptor.value.evidence!!.first().details).isEqualTo("details")
+      assertThat(argumentCaptor.value.evidence!!.first().identifier).isEqualTo(null)
+      assertThat(argumentCaptor.value.evidence!!.first().reporter).isEqualTo("Rod")
+      assertThat(argumentCaptor.value.evidence!!.last().code).isEqualTo(EvidenceCode.BODY_WORN_CAMERA)
+      assertThat(argumentCaptor.value.evidence!!.last().details).isEqualTo("details")
+      assertThat(argumentCaptor.value.evidence!!.last().identifier).isEqualTo("identifier")
+      assertThat(argumentCaptor.value.evidence!!.last().reporter).isEqualTo("Fred")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        draftAdjudicationService.updateEvidence(1, listOf(EvidenceRequestItem(EvidenceCode.PHOTO, "identifier", "details")))
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+  }
+
+  @Nested
   inner class AddWitnesses {
     private val draftAdjudication =
       DraftAdjudication(
@@ -1944,6 +2062,114 @@ class DraftAdjudicationServiceTest {
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.witnesses!!.isEmpty()).isTrue()
+    }
+  }
+
+  @Nested
+  inner class UpdateWitnesses {
+    private val draftAdjudication =
+      DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          locationId = 2,
+          dateTimeOfIncident = LocalDateTime.now(),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        incidentRole = incidentRoleWithAllValuesSet(),
+        incidentStatement = IncidentStatement(
+          statement = "Example statement",
+          completed = false
+        ),
+        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        isYouthOffender = true,
+        witnesses = mutableListOf(
+          Witness(code = WitnessCode.STAFF, firstName = "first", lastName = "last", reporter = "Rod"),
+          Witness(code = WitnessCode.PRISON_OFFICER, firstName = "details", lastName = "last", reporter = "Fred")
+        )
+      )
+
+    @BeforeEach
+    fun init() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+      whenever(authenticationFacade.currentUsername).thenReturn("Fred")
+    }
+
+    @Test
+    fun `update witnesses when not initialized `() { // note this case should never occur when editing from a reported adjudication, but is guarded against
+      val draftAdjudicationNoDamages =
+        DraftAdjudication(
+          id = 1,
+          prisonerNumber = "A12345",
+          agencyId = "MDI",
+          incidentDetails = IncidentDetails(
+            locationId = 2,
+            dateTimeOfIncident = LocalDateTime.now(),
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          )
+        )
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationNoDamages))
+
+      val response = draftAdjudicationService.updateWitnesses(
+        1,
+        listOf(
+          WitnessRequestItem(WitnessCode.STAFF, "first", "last", "Fred")
+        )
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.witnesses!!.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.witnesses!!.first().code).isEqualTo(WitnessCode.STAFF)
+      assertThat(argumentCaptor.value.witnesses!!.first().firstName).isEqualTo("first")
+      assertThat(argumentCaptor.value.witnesses!!.first().lastName).isEqualTo("last")
+      assertThat(argumentCaptor.value.witnesses!!.first().reporter).isEqualTo("Fred")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `update witnesses for adjudication`() {
+      val response = draftAdjudicationService.updateWitnesses(
+        1,
+        listOf(
+          WitnessRequestItem(
+            draftAdjudication.witnesses!!.first().code,
+            draftAdjudication.witnesses!!.first().firstName,
+            draftAdjudication.witnesses!!.first().lastName,
+            draftAdjudication.witnesses!!.first().reporter
+          ),
+          WitnessRequestItem(WitnessCode.PRISON_OFFICER, "first", "last", "Fred")
+        )
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.witnesses!!.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.witnesses!!.first().code).isEqualTo(WitnessCode.STAFF)
+      assertThat(argumentCaptor.value.witnesses!!.first().firstName).isEqualTo("first")
+      assertThat(argumentCaptor.value.witnesses!!.first().lastName).isEqualTo("last")
+      assertThat(argumentCaptor.value.witnesses!!.first().reporter).isEqualTo("Rod")
+      assertThat(argumentCaptor.value.witnesses!!.last().code).isEqualTo(WitnessCode.PRISON_OFFICER)
+      assertThat(argumentCaptor.value.witnesses!!.last().firstName).isEqualTo("first")
+      assertThat(argumentCaptor.value.witnesses!!.last().lastName).isEqualTo("last")
+      assertThat(argumentCaptor.value.witnesses!!.last().reporter).isEqualTo("Fred")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
+
+      assertThatThrownBy {
+        draftAdjudicationService.updateWitnesses(1, listOf(WitnessRequestItem(WitnessCode.STAFF, "first", "last")))
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
     }
   }
 
