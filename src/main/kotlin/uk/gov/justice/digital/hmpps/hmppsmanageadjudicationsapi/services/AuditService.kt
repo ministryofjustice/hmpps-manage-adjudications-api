@@ -13,9 +13,10 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.transaction.Transactional
 
-class ReportDate(val now: LocalDateTime = LocalDate.now().atStartOfDay()) {
+class ReportDate(private val fixed: LocalDateTime? = null) {
 
   fun getStartOfWeek(): LocalDateTime {
+    val now = fixed ?: LocalDate.now().atStartOfDay()
     return when (now.dayOfWeek!!) {
       DayOfWeek.MONDAY -> now.minusWeeks(1)
       DayOfWeek.TUESDAY -> now.minusDays(8)

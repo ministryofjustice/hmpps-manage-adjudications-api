@@ -40,7 +40,7 @@ class AuditServiceTest {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val auditService: AuditService = AuditService(
     reportedAdjudicationRepository, draftAdjudicationRepository,
-    ReportDate(now = LocalDate.parse("2022-08-15", DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay())
+    ReportDate(fixed = LocalDate.parse("2022-08-15", DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay())
   )
 
   private val now = LocalDateTime.now()
