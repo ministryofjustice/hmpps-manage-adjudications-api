@@ -341,7 +341,7 @@ class ReportedAdjudicationRepositoryTest {
       prisonerNumber = "A12345",
       agencyId = "MDI",
       locationId = 2,
-      draftCreatedAt = LocalDateTime.now(),
+      draftCreatedAt = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
       dateTimeOfIncident = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
       handoverDeadline = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME.plusDays(2),
       isYouthOffender = false,
