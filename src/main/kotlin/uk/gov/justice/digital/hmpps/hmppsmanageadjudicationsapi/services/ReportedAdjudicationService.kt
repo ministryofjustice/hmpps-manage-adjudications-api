@@ -175,8 +175,9 @@ class ReportedAdjudicationService(
     return reportedAdjudicationToReturn
   }
 
-  fun updateDamages(id: Long, damages: List<DamageRequestItem>): ReportedAdjudicationDto {
-    val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(id) ?: throwEntityNotFoundException(id)
+  fun updateDamages(adjudicationNumber: Long, damages: List<DamageRequestItem>): ReportedAdjudicationDto {
+    val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
+      ?: throwEntityNotFoundException(adjudicationNumber)
     val reporter = authenticationFacade.currentUsername!!
     val toPreserve = reportedAdjudication.damages.filter { it.reporter != reporter }
 
