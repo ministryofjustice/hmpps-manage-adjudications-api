@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.beans.factory.annotation.Autowired
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -455,6 +456,56 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isBadRequest
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo("ReportedAdjudication 1524242 cannot transition from REJECTED to ACCEPTED")
+  }
+
+  @Test
+  fun `update damages to the reported adjudication`() {
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addIncidentStatement()
+      .addDamages()
+      .addEvidence()
+      .addWitnesses()
+      .completeDraft()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/damages/edit")
+      .headers(setHeaders(username = "ITAG_ALO"))
+      .bodyValue(
+        mapOf(
+          "damages" to listOf(
+            DamageRequestItem(
+              code = DamageCode.ELECTRICAL_REPAIR, details = "details 2", reporter = "ITAG_ALO"
+            ),
+            DamageRequestItem(
+              code = DamageCode.CLEANING, details = "details", reporter = "B_MILLS"
+            )
+          ),
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.damages[0].code")
+      .isEqualTo(DamageCode.CLEANING.name)
+      .jsonPath("$.reportedAdjudication.damages[0].details")
+      .isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.damages[0].reporter")
+      .isEqualTo("B_MILLS")
+      .jsonPath("$.reportedAdjudication.damages[1].code")
+      .isEqualTo(DamageCode.ELECTRICAL_REPAIR.name)
+      .jsonPath("$.reportedAdjudication.damages[1].details")
+      .isEqualTo("details 2")
+      .jsonPath("$.reportedAdjudication.damages[1].reporter")
+      .isEqualTo("ITAG_ALO")
   }
 
   private fun initMyReportData() {

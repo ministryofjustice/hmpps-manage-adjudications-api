@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 import java.time.LocalDate
@@ -363,11 +364,84 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class UpdateDamages {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        reportedAdjudicationService.updateDamages(
+          anyLong(),
+          any(),
+        )
+      ).thenReturn(
+        ReportedAdjudicationDto(
+          adjudicationNumber = 1,
+          prisonerNumber = "A12345",
+          bookingId = 123,
+          incidentDetails = IncidentDetailsDto(
+            locationId = 2,
+            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          ),
+          isYouthOffender = false,
+          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+          offenceDetails = listOf(
+            OffenceDto(
+              offenceCode = 2,
+              OffenceRuleDto(
+                paragraphNumber = "3",
+                paragraphDescription = "A paragraph description",
+              )
+            )
+          ),
+          incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
+          createdByUserId = "A_SMITH",
+          createdDateTime = REPORTED_DATE_TIME,
+          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+          reviewedByUserId = null,
+          statusReason = null,
+          statusDetails = null,
+          damages = listOf(),
+          evidence = listOf(),
+          witnesses = listOf()
+        )
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      setDamagesRequest(1, DAMAGES_REQUEST).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the damages`() {
+      setDamagesRequest(1, DAMAGES_REQUEST)
+        .andExpect(status().isOk)
+
+      verify(reportedAdjudicationService).updateDamages(1, DAMAGES_REQUEST.damages)
+    }
+
+    private fun setDamagesRequest(
+      id: Long,
+      damages: DamagesRequest?
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(damages)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/damages/edit")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private const val INCIDENT_STATEMENT = "A statement"
+    private val DAMAGES_REQUEST = DamagesRequest(listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
     private val INCIDENT_ROLE_WITH_ALL_VALUES = IncidentRoleDto(
       "25a",
       OffenceRuleDetailsDto(
