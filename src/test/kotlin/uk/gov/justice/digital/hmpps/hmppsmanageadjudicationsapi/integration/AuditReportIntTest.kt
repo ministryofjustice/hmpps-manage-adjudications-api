@@ -29,7 +29,7 @@ class AuditReportIntTest : IntegrationTestBase() {
 
     val result = webTestClient.get()
       .uri("/adjudications-audit/draft" + if (historic) "?historic=true" else "")
-      .headers(setHeaders(roles = listOf("ADJUDICATIONS_AUDIT")))
+      .headers(setHeaders(roles = listOf("ROLE_ADJUDICATIONS_AUDIT")))
       .exchange()
       .expectStatus().isOk
       .expectBody()
@@ -61,7 +61,7 @@ class AuditReportIntTest : IntegrationTestBase() {
 
     val result = webTestClient.get()
       .uri("/adjudications-audit/reported" + if (historic) "?historic=true" else "")
-      .headers(setHeaders(roles = listOf("ADJUDICATIONS_AUDIT")))
+      .headers(setHeaders(roles = listOf("ROLE_ADJUDICATIONS_AUDIT")))
       .exchange()
       .expectStatus().isOk
       .expectBody()
