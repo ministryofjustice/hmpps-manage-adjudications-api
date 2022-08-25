@@ -4,7 +4,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.CrudRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import java.time.LocalDateTime
 
 interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, Long> {
@@ -13,14 +13,14 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     agencyId: String,
     startDate: LocalDateTime,
     endDate: LocalDateTime,
-    statuses: List<ReportedAdjudicationStatus>,
+    statuses: List<Status>,
     pageable: Pageable
   ): Page<ReportedAdjudication>
   fun findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
     agencyId: String,
     startDate: LocalDateTime,
     endDate: LocalDateTime,
-    statuses: List<ReportedAdjudicationStatus>,
+    statuses: List<Status>,
     pageable: Pageable
   ): Page<ReportedAdjudication>
   fun findByReportNumber(adjudicationNumber: Long): ReportedAdjudication?

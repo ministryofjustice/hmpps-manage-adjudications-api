@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
 import java.time.LocalDate
@@ -55,9 +56,10 @@ class ReportedAdjudicationRepositoryTest {
         incidentRoleAssociatedPrisonersNumber = null,
         incidentRoleAssociatedPrisonersName = null,
         statement = "Example",
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        statusReason = null,
-        statusDetails = null,
+        status = Status.AWAITING_REVIEW,
+        statuses = mutableListOf(
+          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+        ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
         witnesses = mutableListOf()
@@ -77,9 +79,10 @@ class ReportedAdjudicationRepositoryTest {
         incidentRoleAssociatedPrisonersNumber = "B23456",
         incidentRoleAssociatedPrisonersName = "Associated Prisoner",
         statement = "Example 2",
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        statusReason = null,
-        statusDetails = null,
+        status = Status.AWAITING_REVIEW,
+        statuses = mutableListOf(
+          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+        ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
         witnesses = mutableListOf()
@@ -112,9 +115,10 @@ class ReportedAdjudicationRepositoryTest {
             victimOtherPersonsName = "Another Person",
           )
         ),
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        statusReason = null,
-        statusDetails = null,
+        status = Status.AWAITING_REVIEW,
+        statuses = mutableListOf(
+          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+        ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
         witnesses = mutableListOf()
@@ -259,21 +263,22 @@ class ReportedAdjudicationRepositoryTest {
     val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
 
     adjudication!!.transition(
-      ReportedAdjudicationStatus.REJECTED,
+      ReportedAdjudicationStatus(
+        status = Status.REJECTED,
+        statusReason = "Status Reason",
+        statusDetails = "Status Details"
+      ),
       "A_REVIEWER",
-      "Status Reason",
-      "Status Details"
     )
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
-    assertThat(savedEntity)
-      .extracting("id", "status", "reviewUserId", "statusReason", "statusDetails")
+    assertThat(savedEntity.getLatestStatus())
+      .extracting("id", "status", "statusReason", "statusDetails")
       .contains(
         adjudication.id,
-        adjudication.status,
-        adjudication.reviewUserId,
-        adjudication.statusReason,
-        adjudication.statusDetails
+        adjudication.getLatestStatus().status,
+        adjudication.getLatestStatus().statusReason,
+        adjudication.getLatestStatus().statusDetails
       )
   }
 
@@ -296,7 +301,7 @@ class ReportedAdjudicationRepositoryTest {
       LocalDate.now().atTime(
         LocalTime.MAX
       ),
-      ReportedAdjudicationStatus.values().toList(),
+      Status.values().toList(),
       Pageable.ofSize(10)
     )
 
@@ -316,7 +321,7 @@ class ReportedAdjudicationRepositoryTest {
         LocalDate.now().atTime(
           LocalTime.MAX
         ),
-        ReportedAdjudicationStatus.values().toList(),
+        Status.values().toList(),
         Pageable.ofSize(10)
       )
 
@@ -355,9 +360,10 @@ class ReportedAdjudicationRepositoryTest {
         ),
       ),
       statement = "Example statement",
-      status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-      statusReason = null,
-      statusDetails = null,
+      status = Status.AWAITING_REVIEW,
+      statuses = mutableListOf(
+        ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+      ),
       damages = mutableListOf(
         ReportedDamage(
           code = DamageCode.CLEANING,

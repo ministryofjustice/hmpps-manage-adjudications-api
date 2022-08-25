@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
@@ -141,10 +142,13 @@ class ReportedAdjudicationServiceTest {
           incidentRoleAssociatedPrisonersName = "Associated Prisoner",
           offenceDetails = offenceDetails,
           handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-          status = ReportedAdjudicationStatus.REJECTED,
+          status = Status.AWAITING_REVIEW,
+          statuses = mutableListOf(
+            ReportedAdjudicationStatus(
+              status = Status.REJECTED
+            )
+          ),
           reviewUserId = "A_REVIEWER",
-          statusReason = "Status Reason",
-          statusDetails = "Status Reason String",
           damages = mutableListOf(),
           evidence = mutableListOf(),
           witnesses = mutableListOf()
@@ -172,7 +176,7 @@ class ReportedAdjudicationServiceTest {
 
       assertThat(reportedAdjudicationDto)
         .extracting("status", "reviewedByUserId", "statusReason", "statusDetails")
-        .contains(ReportedAdjudicationStatus.REJECTED, "A_REVIEWER", "Status Reason", "Status Reason String")
+        .contains(Status.REJECTED, "A_REVIEWER", "Status Reason", "Status Reason String")
 
       if (isYouthOffender) {
         assertThat(reportedAdjudicationDto.offenceDetails)
@@ -243,9 +247,10 @@ class ReportedAdjudicationServiceTest {
           )
         ),
         statement = INCIDENT_STATEMENT,
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        statusReason = null,
-        statusDetails = null,
+        status = Status.AWAITING_REVIEW,
+        statuses = mutableListOf(
+          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+        ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
         witnesses = mutableListOf()
@@ -267,9 +272,10 @@ class ReportedAdjudicationServiceTest {
         incidentRoleAssociatedPrisonersName = null,
         offenceDetails = null,
         statement = INCIDENT_STATEMENT,
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        statusReason = null,
-        statusDetails = null,
+        status = Status.AWAITING_REVIEW,
+        statuses = mutableListOf(
+          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+        ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
         witnesses = mutableListOf()
@@ -305,7 +311,7 @@ class ReportedAdjudicationServiceTest {
         "MDI",
         LocalDate.now().atStartOfDay(),
         LocalDate.now().atTime(LocalTime.MAX),
-        ReportedAdjudicationStatus.values().toList(),
+        Status.values().toList(),
         Pageable.ofSize(20).withPage(0)
       )
     }
@@ -356,7 +362,10 @@ class ReportedAdjudicationServiceTest {
           )
         ),
         statement = INCIDENT_STATEMENT,
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        status = Status.AWAITING_REVIEW,
+        statuses = mutableListOf(
+          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+        ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
         witnesses = mutableListOf()
@@ -378,9 +387,10 @@ class ReportedAdjudicationServiceTest {
         incidentRoleAssociatedPrisonersName = null,
         offenceDetails = null,
         statement = INCIDENT_STATEMENT,
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        statusReason = null,
-        statusDetails = null,
+        status = Status.AWAITING_REVIEW,
+        statuses = mutableListOf(
+          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+        ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
         witnesses = mutableListOf()
@@ -442,10 +452,11 @@ class ReportedAdjudicationServiceTest {
           )
         ),
         handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        status = Status.AWAITING_REVIEW,
+        statuses = mutableListOf(
+          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+        ),
         reviewUserId = null,
-        statusReason = null,
-        statusDetails = null,
         damages = mutableListOf(),
         evidence = mutableListOf(),
         witnesses = mutableListOf()
@@ -470,12 +481,12 @@ class ReportedAdjudicationServiceTest {
       "RETURNED, RETURNED"
     )
     fun `setting status for a reported adjudication throws an illegal state exception for invalid transitions`(
-      from: ReportedAdjudicationStatus,
-      to: ReportedAdjudicationStatus
+      from: Status,
+      to: Status
     ) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication().also {
-          it.status = from
+          it.getLatestStatus().status = from
         }
       )
       Assertions.assertThrows(IllegalStateException::class.java) {
@@ -492,21 +503,21 @@ class ReportedAdjudicationServiceTest {
       "RETURNED, AWAITING_REVIEW, false"
     )
     fun `setting status for a reported adjudication for valid transitions`(
-      from: ReportedAdjudicationStatus,
-      to: ReportedAdjudicationStatus,
+      from: Status,
+      to: Status,
       updatesNomis: Boolean,
     ) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication().also {
-          it.status = from
+          it.getLatestStatus().status = from
         }
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication().also { it.status = to })
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication().also { it.getLatestStatus().status = to })
       reportedAdjudicationService.setStatus(1, to)
       verify(reportedAdjudicationRepository).save(
         reportedAdjudication().also {
-          it.status = to
-          it.reviewUserId = if (to == ReportedAdjudicationStatus.AWAITING_REVIEW) null else "ITAG_USER"
+          it.getLatestStatus().status = to
+          it.reviewUserId = if (to == Status.AWAITING_REVIEW) null else "ITAG_USER"
         }
       )
       if (updatesNomis) {
@@ -524,9 +535,9 @@ class ReportedAdjudicationServiceTest {
       )
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
-        it.status = ReportedAdjudicationStatus.REJECTED
-        it.statusReason = "Status Reason"
-        it.statusDetails = "Status Reason String"
+        it.statuses = mutableListOf(
+          ReportedAdjudicationStatus(status = Status.REJECTED)
+        )
       }
       returnedReportedAdjudication.reviewUserId = "ITAG_USER"
       returnedReportedAdjudication.createdByUserId = "A_USER"
@@ -537,13 +548,13 @@ class ReportedAdjudicationServiceTest {
 
       val actualReturnedReportedAdjudication = reportedAdjudicationService.setStatus(
         1,
-        ReportedAdjudicationStatus.REJECTED,
+        Status.REJECTED,
         "Status Reason",
         "Status Reason String",
       )
 
       verify(reportedAdjudicationRepository).save(returnedReportedAdjudication)
-      assertThat(actualReturnedReportedAdjudication.status).isEqualTo(ReportedAdjudicationStatus.REJECTED)
+      assertThat(actualReturnedReportedAdjudication.status).isEqualTo(Status.REJECTED)
       assertThat(actualReturnedReportedAdjudication.reviewedByUserId).isEqualTo("ITAG_USER")
       assertThat(actualReturnedReportedAdjudication.statusReason).isEqualTo("Status Reason")
       assertThat(actualReturnedReportedAdjudication.statusDetails).isEqualTo("Status Reason String")
@@ -563,7 +574,7 @@ class ReportedAdjudicationServiceTest {
       )
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
-        it.status = ReportedAdjudicationStatus.ACCEPTED
+        it.getLatestStatus().status = Status.ACCEPTED
       }
       returnedReportedAdjudication.createdByUserId = "A_USER"
       returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -571,7 +582,7 @@ class ReportedAdjudicationServiceTest {
         returnedReportedAdjudication
       )
 
-      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
+      reportedAdjudicationService.setStatus(1, Status.ACCEPTED)
 
       var expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN, OFFENCE_CODE_3_NOMIS_CODE_ON_OWN)
       var expectedConnectedOffenderIds: List<String> = emptyList()
@@ -615,7 +626,7 @@ class ReportedAdjudicationServiceTest {
       )
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
-        it.status = ReportedAdjudicationStatus.ACCEPTED
+        it.getLatestStatus().status = Status.ACCEPTED
       }
       returnedReportedAdjudication.createdByUserId = "A_USER"
       returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -623,7 +634,7 @@ class ReportedAdjudicationServiceTest {
         returnedReportedAdjudication
       )
 
-      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
+      reportedAdjudicationService.setStatus(1, Status.ACCEPTED)
 
       var expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ASSISTED)
       if (isYouthOffender) {
@@ -700,7 +711,12 @@ class ReportedAdjudicationServiceTest {
         handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
         statement = INCIDENT_STATEMENT,
         offenceDetails = offenceDetails,
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        status = Status.AWAITING_REVIEW,
+        statuses = mutableListOf(
+          ReportedAdjudicationStatus(
+            status = Status.AWAITING_REVIEW
+          )
+        ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
         witnesses = mutableListOf()
@@ -731,9 +747,12 @@ class ReportedAdjudicationServiceTest {
         )
       ),
       handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-      status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-      statusReason = null,
-      statusDetails = null,
+      status = Status.AWAITING_REVIEW,
+      statuses = mutableListOf(
+        ReportedAdjudicationStatus(
+          status = Status.AWAITING_REVIEW
+        )
+      ),
       damages = mutableListOf(
         ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
       ),
@@ -897,9 +916,12 @@ class ReportedAdjudicationServiceTest {
         )
       ),
       handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-      status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-      statusReason = null,
-      statusDetails = null,
+      status = Status.AWAITING_REVIEW,
+      statuses = mutableListOf(
+        ReportedAdjudicationStatus(
+          status = Status.AWAITING_REVIEW
+        )
+      ),
       damages = mutableListOf(
         ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod"),
         ReportedDamage(code = DamageCode.REDECORATION, details = "details 3", reporter = "Fred")

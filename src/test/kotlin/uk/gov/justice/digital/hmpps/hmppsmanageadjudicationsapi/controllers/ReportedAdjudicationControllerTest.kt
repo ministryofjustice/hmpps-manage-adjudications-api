@@ -28,7 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -76,7 +76,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
           createdByUserId = "A_SMITH",
           createdDateTime = REPORTED_DATE_TIME,
-          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+          status = Status.AWAITING_REVIEW,
           reviewedByUserId = null,
           statusReason = null,
           statusDetails = null,
@@ -144,7 +144,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
               incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
               createdByUserId = "A_SMITH",
               createdDateTime = REPORTED_DATE_TIME,
-              status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+              status = Status.AWAITING_REVIEW,
               reviewedByUserId = null,
               statusReason = null,
               statusDetails = null,
@@ -210,7 +210,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER")
     fun `returns my reported adjudications with date and status filter`() {
-      getMyAdjudicationsWithFilter(LocalDate.now().plusDays(5), ReportedAdjudicationStatus.AWAITING_REVIEW)
+      getMyAdjudicationsWithFilter(LocalDate.now().plusDays(5), Status.AWAITING_REVIEW)
         .andExpect(status().isOk)
         .andExpect(jsonPath("$.totalPages").value(1))
         .andExpect(jsonPath("$.size").value(20))
@@ -221,7 +221,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         "MDI",
         LocalDate.now().plusDays(5),
         LocalDate.now().plusDays(5),
-        Optional.of(ReportedAdjudicationStatus.AWAITING_REVIEW),
+        Optional.of(Status.AWAITING_REVIEW),
         PageRequest.ofSize(20).withPage(0).withSort(
           Sort.by(
             Sort.Direction.DESC,
@@ -252,7 +252,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         )
     }
 
-    private fun getMyAdjudicationsWithFilter(date: LocalDate, status: ReportedAdjudicationStatus): ResultActions {
+    private fun getMyAdjudicationsWithFilter(date: LocalDate, status: Status): ResultActions {
       return mockMvc
         .perform(
           get("/reported-adjudications/my/agency/MDI?startDate=$date&endDate=$date&status=$status&page=0&size=20&sort=incidentDate,DESC")
@@ -327,7 +327,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       val largeStatement = IntRange(0, 4001).joinToString("") { "A" }
       makeReportedAdjudicationSetStatusRequest(
         123,
-        mapOf("status" to ReportedAdjudicationStatus.RETURNED, "statusDetails" to largeStatement)
+        mapOf("status" to Status.RETURNED, "statusDetails" to largeStatement)
       ).andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.userMessage").value("The details of why the status has been set exceeds the maximum character limit of 4000"))
     }
@@ -339,7 +339,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       makeReportedAdjudicationSetStatusRequest(
         123,
         mapOf(
-          "status" to ReportedAdjudicationStatus.RETURNED,
+          "status" to Status.RETURNED,
           "statusReason" to largeStatement
         )
       ).andExpect(status().isBadRequest)
@@ -351,14 +351,14 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     fun `makes a call to set the status of the reported adjudication`() {
       makeReportedAdjudicationSetStatusRequest(
         123,
-        mapOf("status" to ReportedAdjudicationStatus.RETURNED, "statusReason" to "reason", "statusDetails" to "details")
+        mapOf("status" to Status.RETURNED, "statusReason" to "reason", "statusDetails" to "details")
       )
-      verify(reportedAdjudicationService).setStatus(123, ReportedAdjudicationStatus.RETURNED, "reason", "details")
+      verify(reportedAdjudicationService).setStatus(123, Status.RETURNED, "reason", "details")
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
-      makeReportedAdjudicationSetStatusRequest(123, mapOf("status" to ReportedAdjudicationStatus.RETURNED)).andExpect(
+      makeReportedAdjudicationSetStatusRequest(123, mapOf("status" to Status.RETURNED)).andExpect(
         status().isUnauthorized
       )
     }
@@ -397,7 +397,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
           createdByUserId = "A_SMITH",
           createdDateTime = REPORTED_DATE_TIME,
-          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+          status = Status.AWAITING_REVIEW,
           reviewedByUserId = null,
           statusReason = null,
           statusDetails = null,

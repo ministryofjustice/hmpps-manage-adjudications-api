@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
@@ -395,9 +396,9 @@ class DraftAdjudicationService(
     val reportNumber = draftAdjudication.reportNumber!!
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(reportNumber)
       ?: ReportedAdjudicationService.throwEntityNotFoundException(reportNumber)
-    val fromStatus = reportedAdjudication.status
-    if (!ReportedAdjudicationStatus.AWAITING_REVIEW.canTransitionFrom(fromStatus)) {
-      throw IllegalStateException("Unable to complete draft adjudication ${draftAdjudication.reportNumber} as it is in the state $fromStatus")
+    val fromStatus = reportedAdjudication.getLatestStatus()
+    if (!Status.AWAITING_REVIEW.canTransitionFrom(fromStatus.status)) {
+      throw IllegalStateException("Unable to complete draft adjudication ${draftAdjudication.reportNumber} as it is in the state ${fromStatus.status}")
     }
   }
 
@@ -418,7 +419,10 @@ class DraftAdjudicationService(
         incidentRoleAssociatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName,
         offenceDetails = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication),
         statement = draftAdjudication.incidentStatement!!.statement!!,
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        status = Status.AWAITING_REVIEW,
+        statuses = mutableListOf(
+          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+        ),
         damages = toReportedDamages(draftAdjudication.damages ?: mutableListOf()),
         evidence = toReportedEvidence(draftAdjudication.evidence ?: mutableListOf()),
         witnesses = toReportedWitnesses(draftAdjudication.witnesses ?: mutableListOf()),
@@ -449,7 +453,7 @@ class DraftAdjudicationService(
       it.offenceDetails!!.clear()
       it.offenceDetails!!.addAll(toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication))
       it.statement = draftAdjudication.incidentStatement!!.statement!!
-      it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
+      it.transition(ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW))
       val toPreserve = it.damages.filter { damage -> damage.reporter != reporter }
       it.damages.clear()
       it.damages.addAll(toPreserve)

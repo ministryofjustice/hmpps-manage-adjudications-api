@@ -44,6 +44,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudicationCreationRequest
@@ -1168,7 +1169,10 @@ class DraftAdjudicationServiceTest {
         agencyId = "MDI",
         locationId = 2,
         offenceDetails = mutableListOf(),
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        status = Status.AWAITING_REVIEW,
+        statuses = mutableListOf(
+          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+        ),
         dateTimeOfIncident = LocalDateTime.now(clock),
         handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
         isYouthOffender = false,
@@ -1223,10 +1227,10 @@ class DraftAdjudicationServiceTest {
         "ACCEPTED",
         "REJECTED"
       )
-      fun `cannot complete when the reported adjudication is in the wrong state`(from: ReportedAdjudicationStatus) {
+      fun `cannot complete when the reported adjudication is in the wrong state`(from: Status) {
         whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
           reportedAdjudication().also {
-            it.status = from
+            it.getLatestStatus().status = from
           }
         )
         Assertions.assertThrows(IllegalStateException::class.java) {
@@ -1239,17 +1243,17 @@ class DraftAdjudicationServiceTest {
         "AWAITING_REVIEW",
         "RETURNED"
       )
-      fun `completes when the reported adjudication is in a correct state`(from: ReportedAdjudicationStatus) {
+      fun `completes when the reported adjudication is in a correct state`(from: Status) {
         whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
           reportedAdjudication().also {
-            it.status = from
+            it.getLatestStatus().status = from
           }
         )
         draftAdjudicationService.completeDraftAdjudication(1)
         val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
         verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
         assertThat(reportedAdjudicationArgumentCaptor.value).extracting("status")
-          .isEqualTo(ReportedAdjudicationStatus.AWAITING_REVIEW)
+          .isEqualTo(Status.AWAITING_REVIEW)
       }
     }
 
@@ -1302,9 +1306,8 @@ class DraftAdjudicationServiceTest {
             incidentRoleAssociatedPrisonersName = null,
             offenceDetails = mutableListOf(ReportedOffence(offenceCode = 3, paragraphCode = "4")),
             statement = "olddata",
-            status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-            statusReason = null,
-            statusDetails = null,
+            status = Status.AWAITING_REVIEW,
+            statuses = mutableListOf(ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)),
             damages = mutableListOf(
               ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod")
             ),

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 import java.time.LocalDate
 import java.util.Optional
@@ -38,7 +38,7 @@ data class ReportedAdjudicationResponse(
 @Schema(description = "Request to set the state for an a reported adjudication")
 data class ReportedAdjudicationStatusRequest(
   @Schema(description = "The status to set the reported adjudication to")
-  val status: ReportedAdjudicationStatus,
+  val status: Status,
   @Schema(description = "The reason the status has been set")
   @get:Size(
     max = 128,
@@ -105,7 +105,7 @@ class ReportedAdjudicationController {
     @PathVariable(name = "agencyId") agencyId: String,
     @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: Optional<LocalDate>,
     @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: Optional<LocalDate>,
-    @RequestParam(name = "status") status: Optional<ReportedAdjudicationStatus>,
+    @RequestParam(name = "status") status: Optional<Status>,
     @PageableDefault(sort = ["dateTimeOfIncident"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
   ): Page<ReportedAdjudicationDto> {
     return reportedAdjudicationService.getAllReportedAdjudications(
@@ -153,7 +153,7 @@ class ReportedAdjudicationController {
     @PathVariable(name = "agencyId") agencyId: String,
     @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: Optional<LocalDate>,
     @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: Optional<LocalDate>,
-    @RequestParam(name = "status") status: Optional<ReportedAdjudicationStatus>,
+    @RequestParam(name = "status") status: Optional<Status>,
     @PageableDefault(sort = ["dateTimeOfIncident"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
   ): Page<ReportedAdjudicationDto> {
     return reportedAdjudicationService.getMyReportedAdjudications(

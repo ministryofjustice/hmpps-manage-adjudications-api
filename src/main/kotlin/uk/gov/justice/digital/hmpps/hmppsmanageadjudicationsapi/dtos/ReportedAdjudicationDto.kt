@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDateTime
 
@@ -30,7 +30,7 @@ data class ReportedAdjudicationDto(
   @Schema(description = "When the report was created")
   val createdDateTime: LocalDateTime,
   @Schema(description = "The status of the reported adjudication")
-  val status: ReportedAdjudicationStatus,
+  val status: Status,
   @Schema(description = "Reviewed by user id")
   val reviewedByUserId: String?,
   @Schema(description = "The reason for the status of the reported adjudication")

@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -54,7 +55,7 @@ class ReportedAdjudicationService(
       throw EntityNotFoundException("ReportedAdjudication not found for $id")
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
     fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
-    fun statuses(status: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
+    fun statuses(status: Optional<Status>): List<Status> = status.map { listOf(it) }.orElse(Status.values().toList())
   }
 
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
@@ -64,7 +65,7 @@ class ReportedAdjudicationService(
     return reportedAdjudication?.toDto(offenceCodeLookupService) ?: throwEntityNotFoundException(adjudicationNumber)
   }
 
-  fun getAllReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
+  fun getAllReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<Status>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val reportedAdjudicationsPage =
       reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
         agencyId, reportsFrom(startDate), reportsTo(endDate), statuses(status), pageable
@@ -72,7 +73,7 @@ class ReportedAdjudicationService(
     return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
-  fun getMyReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
+  fun getMyReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<Status>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val username = authenticationFacade.currentUsername
 
     val reportedAdjudicationsPage =
@@ -161,12 +162,14 @@ class ReportedAdjudicationService(
     }.toMutableList()
   }
 
-  fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
-    val username = if (status == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername
+  fun setStatus(adjudicationNumber: Long, status: Status, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
+    val username = if (status == Status.AWAITING_REVIEW) null else authenticationFacade.currentUsername
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
       ?: throw EntityNotFoundException("ReportedAdjudication not found for reported adjudication number $adjudicationNumber")
     val reportedAdjudicationToReturn = reportedAdjudication.let {
-      it.transition(status, username, statusReason, statusDetails)
+      it.transition(
+        ReportedAdjudicationStatus(status = status, statusReason = statusReason, statusDetails = statusDetails), username
+      )
       reportedAdjudicationRepository.save(it).toDto(this.offenceCodeLookupService)
     }
     if (status.isAccepted()) {
@@ -270,13 +273,13 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   ),
   createdByUserId = createdByUserId!!,
   createdDateTime = createDateTime!!,
-  status = status,
   reviewedByUserId = reviewUserId,
-  statusReason = statusReason,
-  statusDetails = statusDetails,
   damages = toReportedDamages(damages),
   evidence = toReportedEvidence(evidence),
-  witnesses = toReportedWitnesses(witnesses)
+  witnesses = toReportedWitnesses(witnesses),
+  status = getLatestStatus().status,
+  statusReason = getLatestStatus().statusReason,
+  statusDetails = getLatestStatus().statusDetails
 )
 
 private fun toReportedOffence(offences: MutableList<ReportedOffence>?, isYouthOffender: Boolean, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> {

@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -96,7 +96,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
   fun `return a page of reported adjudications for agency with filters`(
     startDate: String,
     endDate: String,
-    status: ReportedAdjudicationStatus,
+    status: Status,
     expectedCount: Int,
     adjudicationNumber: Long
   ) {
@@ -121,7 +121,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
   fun `return a page of reported adjudications completed by the current user with filters`(
     startDate: String,
     endDate: String,
-    status: ReportedAdjudicationStatus,
+    status: Status,
     expectedCount: Int,
     adjudicationNumber: Long
   ) {
@@ -327,7 +327,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders())
       .bodyValue(
         mapOf(
-          "status" to ReportedAdjudicationStatus.RETURNED,
+          "status" to Status.RETURNED,
           "statusReason" to "status reason",
           "statusDetails" to "status details"
         )
@@ -335,7 +335,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.RETURNED.toString())
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(Status.RETURNED.toString())
       .jsonPath("$.reportedAdjudication.reviewedByUserId").isEqualTo("ITAG_USER")
       .jsonPath("$.reportedAdjudication.statusReason").isEqualTo("status reason")
       .jsonPath("$.reportedAdjudication.statusDetails").isEqualTo("status details")
@@ -365,13 +365,13 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders())
       .bodyValue(
         mapOf(
-          "status" to ReportedAdjudicationStatus.ACCEPTED,
+          "status" to Status.ACCEPTED,
         )
       )
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.ACCEPTED.toString())
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(Status.ACCEPTED.toString())
 
     val expectedBody = mapOf(
       "offenderNo" to IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
@@ -415,7 +415,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders())
       .bodyValue(
         mapOf(
-          "status" to ReportedAdjudicationStatus.ACCEPTED,
+          "status" to Status.ACCEPTED,
         )
       )
       .exchange()
@@ -423,7 +423,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
     val savedAdjudication =
       reportedAdjudicationRepository.findByReportNumber(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    Assertions.assertThat(savedAdjudication!!.status).isEqualTo(ReportedAdjudicationStatus.AWAITING_REVIEW)
+    Assertions.assertThat(savedAdjudication!!.getLatestStatus()).isEqualTo(Status.AWAITING_REVIEW)
   }
 
   @Test
@@ -442,14 +442,14 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
-      .reportedAdjudicationSetStatus(ReportedAdjudicationStatus.REJECTED)
+      .reportedAdjudicationSetStatus(Status.REJECTED)
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
       .headers(setHeaders())
       .bodyValue(
         mapOf(
-          "status" to ReportedAdjudicationStatus.ACCEPTED,
+          "status" to Status.ACCEPTED,
         )
       )
       .exchange()
