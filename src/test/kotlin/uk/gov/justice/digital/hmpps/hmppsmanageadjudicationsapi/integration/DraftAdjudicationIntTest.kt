@@ -594,7 +594,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo("details")
       .jsonPath("$.draftAdjudication.damages[0].reporter")
       .isEqualTo("B_MILLS")
-      .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.damages[1].code")
       .isEqualTo(DamageCode.ELECTRICAL_REPAIR.name)
       .jsonPath("$.draftAdjudication.damages[1].details")

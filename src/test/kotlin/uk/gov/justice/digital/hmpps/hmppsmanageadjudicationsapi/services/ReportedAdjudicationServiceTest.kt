@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -16,6 +17,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
@@ -872,6 +874,89 @@ class ReportedAdjudicationServiceTest {
             WitnessCode.PRISON_OFFICER, "prison", "officer", "Fred"
           )
         )
+    }
+  }
+
+  @Nested
+  inner class UpdateDamages {
+
+    private val reportedAdjudication = ReportedAdjudication(
+      reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
+      dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
+      isYouthOffender = false,
+      incidentRoleCode = "25b",
+      incidentRoleAssociatedPrisonersNumber = "BB2345B",
+      incidentRoleAssociatedPrisonersName = "Associated Prisoner",
+      offenceDetails = mutableListOf(
+        ReportedOffence(
+          offenceCode = 3,
+          paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
+          victimPrisonersNumber = "BB2345B",
+          victimStaffUsername = "DEF34G",
+          victimOtherPersonsName = "Another Name",
+        )
+      ),
+      handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
+      status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+      statusReason = null,
+      statusDetails = null,
+      damages = mutableListOf(
+        ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod"),
+        ReportedDamage(code = DamageCode.REDECORATION, details = "details 3", reporter = "Fred")
+      ),
+      evidence = mutableListOf(
+        ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Fred")
+      ),
+      witnesses = mutableListOf(
+        ReportedWitness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
+      )
+    )
+
+    @BeforeEach
+    fun init() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+      whenever(authenticationFacade.currentUsername).thenReturn("Fred")
+      reportedAdjudication.createdByUserId = "Jane"
+      reportedAdjudication.createDateTime = LocalDateTime.now()
+    }
+
+    @Test
+    fun `update damages for adjudication`() {
+      val response = reportedAdjudicationService.updateDamages(
+        1,
+        listOf(
+          DamageRequestItem(
+            reportedAdjudication.damages.first().code,
+            reportedAdjudication.damages.first().details,
+            reportedAdjudication.damages.first().reporter
+          ),
+          DamageRequestItem(DamageCode.ELECTRICAL_REPAIR, "details 2", "Fred")
+        )
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.damages.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.damages.first().code).isEqualTo(DamageCode.CLEANING)
+      assertThat(argumentCaptor.value.damages.first().details).isEqualTo("details")
+      assertThat(argumentCaptor.value.damages.first().reporter).isEqualTo("Rod")
+      assertThat(argumentCaptor.value.damages.last().code).isEqualTo(DamageCode.ELECTRICAL_REPAIR)
+      assertThat(argumentCaptor.value.damages.last().details).isEqualTo("details 2")
+      assertThat(argumentCaptor.value.damages.last().reporter).isEqualTo("Fred")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
+
+      assertThatThrownBy {
+        reportedAdjudicationService.updateDamages(1, listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("ReportedAdjudication not found for 1")
     }
   }
 

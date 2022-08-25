@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
@@ -172,6 +173,27 @@ class ReportedAdjudicationService(
       saveToPrisonApi(reportedAdjudication)
     }
     return reportedAdjudicationToReturn
+  }
+
+  fun updateDamages(adjudicationNumber: Long, damages: List<DamageRequestItem>): ReportedAdjudicationDto {
+    val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
+      ?: throwEntityNotFoundException(adjudicationNumber)
+    val reporter = authenticationFacade.currentUsername!!
+    val toPreserve = reportedAdjudication.damages.filter { it.reporter != reporter }
+
+    reportedAdjudication.damages.clear()
+    reportedAdjudication.damages.addAll(toPreserve)
+    reportedAdjudication.damages.addAll(
+      damages.filter { it.reporter == reporter }.map {
+        ReportedDamage(
+          code = it.code,
+          details = it.details,
+          reporter = reporter
+        )
+      }
+    )
+
+    return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
   }
 
   private fun saveToPrisonApi(reportedAdjudication: ReportedAdjudication) {
