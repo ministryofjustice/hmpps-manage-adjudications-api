@@ -405,7 +405,7 @@ class DraftAdjudicationService(
 
   private fun createReportedAdjudication(draftAdjudication: DraftAdjudication): ReportedAdjudication {
     val nomisAdjudicationCreationRequestData = prisonApiGateway.requestAdjudicationCreationData(draftAdjudication.prisonerNumber)
-    var offences = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication)
+    val offences = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication)
     return reportedAdjudicationRepository.save(
       ReportedAdjudication(
         bookingId = nomisAdjudicationCreationRequestData.bookingId,
