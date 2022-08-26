@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatusAudit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -59,7 +59,7 @@ class ReportedAdjudicationRepositoryTest {
         statement = "Example",
         status = Status.AWAITING_REVIEW,
         statuses = mutableListOf(
-          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
         ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
@@ -83,7 +83,7 @@ class ReportedAdjudicationRepositoryTest {
         statement = "Example 2",
         status = Status.AWAITING_REVIEW,
         statuses = mutableListOf(
-          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
         ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
@@ -120,7 +120,7 @@ class ReportedAdjudicationRepositoryTest {
         ),
         status = Status.AWAITING_REVIEW,
         statuses = mutableListOf(
-          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
         ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
@@ -266,7 +266,7 @@ class ReportedAdjudicationRepositoryTest {
     val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
 
     adjudication!!.transition(
-      ReportedAdjudicationStatus(
+      ReportedAdjudicationStatusAudit(
         status = Status.REJECTED,
         statusReason = "Status Reason",
         statusDetails = "Status Details"
@@ -365,7 +365,7 @@ class ReportedAdjudicationRepositoryTest {
       statement = "Example statement",
       status = Status.AWAITING_REVIEW,
       statuses = mutableListOf(
-        ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+        ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
       ),
       damages = mutableListOf(
         ReportedDamage(

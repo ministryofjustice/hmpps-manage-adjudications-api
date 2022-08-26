@@ -25,12 +25,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatusAudit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Snapshot
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -424,11 +423,8 @@ class DraftAdjudicationService(
         statement = draftAdjudication.incidentStatement!!.statement!!,
         status = Status.AWAITING_REVIEW,
         statuses = mutableListOf(
-          ReportedAdjudicationStatus(
-            status = Status.AWAITING_REVIEW,
-            snapshot = Snapshot(
-              draftAdjudication.incidentStatement!!.statement!!, offences.map { m -> Pair(m.paragraphCode, m.offenceCode) }
-            ).get()
+          ReportedAdjudicationStatusAudit(
+            status = Status.AWAITING_REVIEW
           )
         ),
         damages = toReportedDamages(draftAdjudication.damages ?: mutableListOf()),
@@ -461,7 +457,7 @@ class DraftAdjudicationService(
       it.offenceDetails!!.clear()
       it.offenceDetails!!.addAll(toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication))
       it.statement = draftAdjudication.incidentStatement!!.statement!!
-      it.transition(ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW))
+      it.transition(ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW))
       val toPreserve = it.damages.filter { damage -> damage.reporter != reporter }
       it.damages.clear()
       it.damages.addAll(toPreserve)

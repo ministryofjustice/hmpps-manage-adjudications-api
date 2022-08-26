@@ -28,12 +28,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatusAudit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Snapshot
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
@@ -146,7 +145,7 @@ class ReportedAdjudicationServiceTest {
           handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
           status = Status.AWAITING_REVIEW,
           statuses = mutableListOf(
-            ReportedAdjudicationStatus(
+            ReportedAdjudicationStatusAudit(
               status = Status.REJECTED,
               statusReason = "Status Reason",
               statusDetails = "Status Reason String"
@@ -254,7 +253,7 @@ class ReportedAdjudicationServiceTest {
         statement = INCIDENT_STATEMENT,
         status = Status.AWAITING_REVIEW,
         statuses = mutableListOf(
-          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
         ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
@@ -280,7 +279,7 @@ class ReportedAdjudicationServiceTest {
         statement = INCIDENT_STATEMENT,
         status = Status.AWAITING_REVIEW,
         statuses = mutableListOf(
-          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
         ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
@@ -371,7 +370,7 @@ class ReportedAdjudicationServiceTest {
         statement = INCIDENT_STATEMENT,
         status = Status.AWAITING_REVIEW,
         statuses = mutableListOf(
-          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
         ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
@@ -397,7 +396,7 @@ class ReportedAdjudicationServiceTest {
         statement = INCIDENT_STATEMENT,
         status = Status.AWAITING_REVIEW,
         statuses = mutableListOf(
-          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
         ),
         damages = mutableListOf(),
         evidence = mutableListOf(),
@@ -463,7 +462,7 @@ class ReportedAdjudicationServiceTest {
         handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
         status = Status.AWAITING_REVIEW,
         statuses = mutableListOf(
-          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
         ),
         reviewUserId = null,
         damages = mutableListOf(),
@@ -497,7 +496,7 @@ class ReportedAdjudicationServiceTest {
         reportedAdjudication().also {
           it.status = from
           it.statuses = mutableListOf(
-            ReportedAdjudicationStatus(status = from),
+            ReportedAdjudicationStatusAudit(status = from),
           )
           it.statuses.forEach { s ->
             s.createDateTime = LocalDateTime.now().minusDays(1)
@@ -526,7 +525,7 @@ class ReportedAdjudicationServiceTest {
         reportedAdjudication().also {
           it.status = from
           it.statuses = mutableListOf(
-            ReportedAdjudicationStatus(status = from)
+            ReportedAdjudicationStatusAudit(status = from)
           )
           it.statuses.forEach { m ->
             m.createDateTime = LocalDateTime.now()
@@ -547,15 +546,10 @@ class ReportedAdjudicationServiceTest {
           it.status = to
           it.reviewUserId = if (to == Status.AWAITING_REVIEW) null else "ITAG_USER"
           it.statuses = mutableListOf(
-            ReportedAdjudicationStatus(
+            ReportedAdjudicationStatusAudit(
               status = from
             ),
-            ReportedAdjudicationStatus(
-              status = to,
-              snapshot = Snapshot(
-                statement = it.statement, offences = it.offenceDetails!!.map { m -> Pair(m.paragraphCode, m.offenceCode) }
-              ).get()
-            )
+            ReportedAdjudicationStatusAudit(status = to)
           )
         }
       )
@@ -576,13 +570,9 @@ class ReportedAdjudicationServiceTest {
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
         it.status = Status.REJECTED
         it.statuses = mutableListOf(
-          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW),
-          ReportedAdjudicationStatus(
+          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW),
+          ReportedAdjudicationStatusAudit(
             status = Status.REJECTED, statusReason = "Status Reason", statusDetails = "Status Reason String",
-            snapshot = Snapshot(
-              statement = it.statement,
-              offences = it.offenceDetails!!.map { m -> Pair(m.paragraphCode, m.offenceCode) }
-            ).get()
           )
         )
         it.statuses.forEach {
@@ -633,7 +623,7 @@ class ReportedAdjudicationServiceTest {
         returnedReportedAdjudication.also {
           it.status = Status.AWAITING_REVIEW
           it.statuses = mutableListOf(
-            ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+            ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
           )
           it.statuses.forEach {
             m ->
@@ -688,7 +678,7 @@ class ReportedAdjudicationServiceTest {
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
         it.status = Status.ACCEPTED
         it.statuses = mutableListOf(
-          ReportedAdjudicationStatus(status = it.status)
+          ReportedAdjudicationStatusAudit(status = it.status)
         )
         it.statuses.forEach {
           m ->
@@ -781,7 +771,7 @@ class ReportedAdjudicationServiceTest {
         offenceDetails = offenceDetails,
         status = Status.AWAITING_REVIEW,
         statuses = mutableListOf(
-          ReportedAdjudicationStatus(
+          ReportedAdjudicationStatusAudit(
             status = Status.AWAITING_REVIEW
           )
         ),
@@ -818,7 +808,7 @@ class ReportedAdjudicationServiceTest {
       handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
       status = Status.AWAITING_REVIEW,
       statuses = mutableListOf(
-        ReportedAdjudicationStatus(
+        ReportedAdjudicationStatusAudit(
           status = Status.AWAITING_REVIEW
         )
       ),
@@ -988,7 +978,7 @@ class ReportedAdjudicationServiceTest {
       handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
       status = Status.AWAITING_REVIEW,
       statuses = mutableListOf(
-        ReportedAdjudicationStatus(
+        ReportedAdjudicationStatusAudit(
           status = Status.AWAITING_REVIEW
         )
       ),

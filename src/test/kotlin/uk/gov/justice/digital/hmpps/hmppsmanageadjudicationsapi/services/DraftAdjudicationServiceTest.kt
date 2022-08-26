@@ -39,7 +39,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatusAudit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -1083,7 +1083,7 @@ class DraftAdjudicationServiceTest {
           passedInAdjudication.status = Status.AWAITING_REVIEW
           passedInAdjudication.draftCreatedAt = LocalDateTime.now()
           passedInAdjudication.statuses = mutableListOf(
-            ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+            ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
           )
           passedInAdjudication.statuses.forEach {
             m ->
@@ -1182,7 +1182,7 @@ class DraftAdjudicationServiceTest {
         offenceDetails = mutableListOf(),
         status = Status.AWAITING_REVIEW,
         statuses = mutableListOf(
-          ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
         ),
         draftCreatedAt = LocalDateTime.now(),
         dateTimeOfIncident = LocalDateTime.now(clock),
@@ -1232,7 +1232,7 @@ class DraftAdjudicationServiceTest {
           passedInAdjudication.createDateTime = REPORTED_DATE_TIME
           passedInAdjudication.status = Status.AWAITING_REVIEW
           passedInAdjudication.statuses = mutableListOf(
-            ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+            ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
           )
           passedInAdjudication.statuses.forEach {
             m ->
@@ -1268,7 +1268,7 @@ class DraftAdjudicationServiceTest {
           reportedAdjudication().also {
             it.status = from
             it.statuses = mutableListOf(
-              ReportedAdjudicationStatus(status = from)
+              ReportedAdjudicationStatusAudit(status = from)
             )
             it.statuses.forEach { m -> m.createDateTime = LocalDateTime.now().plusDays(1) }
           }
@@ -1301,7 +1301,7 @@ class DraftAdjudicationServiceTest {
         offenceDetails = mutableListOf(ReportedOffence(offenceCode = 3, paragraphCode = "4")),
         statement = "olddata",
         status = Status.AWAITING_REVIEW,
-        statuses = mutableListOf(ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)),
+        statuses = mutableListOf(ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)),
         damages = mutableListOf(
           ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod")
         ),
@@ -1347,7 +1347,7 @@ class DraftAdjudicationServiceTest {
         whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
           reportedAdjudication.also {
             it.statuses = mutableListOf(
-              ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+              ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
             )
             it.statuses.forEach {
               m ->
@@ -1366,7 +1366,7 @@ class DraftAdjudicationServiceTest {
           passedInAdjudication.createdByUserId = "A_SMITH"
           passedInAdjudication.createDateTime = REPORTED_DATE_TIME
           passedInAdjudication.statuses = mutableListOf(
-            ReportedAdjudicationStatus(status = Status.AWAITING_REVIEW)
+            ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
           )
           passedInAdjudication.statuses.forEach { m -> m.createDateTime = LocalDateTime.now() }
           passedInAdjudication

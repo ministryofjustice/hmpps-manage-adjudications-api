@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatusAudit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -168,7 +168,7 @@ class ReportedAdjudicationService(
       ?: throw EntityNotFoundException("ReportedAdjudication not found for reported adjudication number $adjudicationNumber")
     val reportedAdjudicationToReturn = reportedAdjudication.let {
       it.transition(
-        ReportedAdjudicationStatus(status = status, statusReason = statusReason, statusDetails = statusDetails), username
+        ReportedAdjudicationStatusAudit(status = status, statusReason = statusReason, statusDetails = statusDetails), username
       )
       reportedAdjudicationRepository.save(it).toDto(this.offenceCodeLookupService)
     }

@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.hibernate.validator.constraints.Length
 import java.lang.IllegalStateException
 import java.time.LocalDateTime
@@ -49,36 +48,33 @@ data class ReportedAdjudication(
   var witnesses: MutableList<ReportedWitness>,
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")
-  var statuses: MutableList<ReportedAdjudicationStatus>,
+  var statuses: MutableList<ReportedAdjudicationStatusAudit>,
 ) : BaseEntity() {
-  fun transition(to: ReportedAdjudicationStatus, reviewUserId: String? = null) {
-    val status = this.getLatestStatus()
-    if (status.status.canTransitionTo(to.status)) {
-      to.snapshot = Snapshot(this.statement, this.offenceDetails!!.map { m -> Pair(m.paragraphCode, m.offenceCode) }).get()
+  fun transition(to: ReportedAdjudicationStatusAudit, reviewUserId: String? = null) {
+
+    if (this.status.canTransitionTo(to.status)) {
       this.statuses.add(to)
       this.status = to.status
       this.reviewUserId = reviewUserId
     } else {
-      throw IllegalStateException("ReportedAdjudication ${this.reportNumber} cannot transition from ${status.status} to ${to.status}")
+      throw IllegalStateException("ReportedAdjudication ${this.reportNumber} cannot transition from ${this.status} to ${to.status}")
     }
   }
-  fun getLatestStatus(): ReportedAdjudicationStatus =
+  fun getLatestStatus(): ReportedAdjudicationStatusAudit =
     statuses.sortedBy { it.createDateTime!! }.reversed().first()
 }
 
 @Entity
-@Table(name = "reported_adjudication_status")
-data class ReportedAdjudicationStatus(
+@Table(name = "reported_adjudication_status_audit")
+data class ReportedAdjudicationStatusAudit(
   override val id: Long? = null,
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var status: Status,
-  @Length(max = 128)
+  @field:Length(max = 128)
   var statusReason: String? = null,
-  @Length(max = 4000)
+  @field:Length(max = 4000)
   var statusDetails: String? = null,
-  @Length(max = 10000)
-  var snapshot: String? = null,
 ) : BaseEntity()
 
 enum class Status {
@@ -106,11 +102,4 @@ enum class Status {
   fun isAccepted(): Boolean {
     return this == ACCEPTED
   }
-}
-
-data class Snapshot(
-  val statement: String,
-  val offences: List<Pair<String, Int>>
-) {
-  fun get(): String = ObjectMapper().writeValueAsString(this)
 }
