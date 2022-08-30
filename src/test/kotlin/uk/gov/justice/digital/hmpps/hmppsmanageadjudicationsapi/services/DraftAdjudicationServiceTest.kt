@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
 import org.assertj.core.groups.Tuple
@@ -65,6 +66,7 @@ class DraftAdjudicationServiceTest {
   private val prisonApiGateway: PrisonApiGateway = mock()
   private val offenceCodeLookupService: OffenceCodeLookupService = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
+  private val telemetryClient: TelemetryClient = mock()
   private val clock: Clock = Clock.fixed(ofEpochMilli(0), ZoneId.systemDefault())
 
   private lateinit var draftAdjudicationService: DraftAdjudicationService
@@ -77,7 +79,8 @@ class DraftAdjudicationServiceTest {
         reportedAdjudicationRepository,
         prisonApiGateway,
         offenceCodeLookupService,
-        authenticationFacade
+        authenticationFacade,
+        telemetryClient
       )
 
     // Set up offence code mocks
@@ -154,6 +157,15 @@ class DraftAdjudicationServiceTest {
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
 
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+      verify(telemetryClient).trackEvent(
+        DraftAdjudicationService.TELEMETRY_EVENT,
+        mapOf(
+          "adjudicationNumber" to draftAdjudication.id.toString(),
+          "submitted" to "false",
+          "reportNumber" to "null"
+        ),
+        null
+      )
 
       assertThat(draftAdjudication)
         .extracting("id", "prisonerNumber")
@@ -1134,6 +1146,16 @@ class DraftAdjudicationServiceTest {
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
           )
+
+        verify(telemetryClient).trackEvent(
+          DraftAdjudicationService.TELEMETRY_EVENT,
+          mapOf(
+            "adjudicationNumber" to "1",
+            "submitted" to "true",
+            "reportNumber" to "123456"
+          ),
+          null
+        )
       }
 
       @Test

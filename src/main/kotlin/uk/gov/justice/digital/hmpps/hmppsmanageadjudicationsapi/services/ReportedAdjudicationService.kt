@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -47,9 +48,11 @@ class ReportedAdjudicationService(
   val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   val prisonApiGateway: PrisonApiGateway,
   val offenceCodeLookupService: OffenceCodeLookupService,
-  val authenticationFacade: AuthenticationFacade
+  val authenticationFacade: AuthenticationFacade,
+  val telemetryClient: TelemetryClient
 ) {
   companion object {
+    const val TELEMETRY_EVENT = "ReportedAdjudicationStatusEvent"
     fun throwEntityNotFoundException(id: Long): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
@@ -172,6 +175,18 @@ class ReportedAdjudicationService(
     if (status.isAccepted()) {
       saveToPrisonApi(reportedAdjudication)
     }
+
+    telemetryClient.trackEvent(
+      TELEMETRY_EVENT,
+      mapOf(
+        "reportNumber" to reportedAdjudication.reportNumber.toString(),
+        "status" to status.name,
+        "reason" to statusReason,
+        "details" to statusDetails
+      ),
+      null
+    )
+
     return reportedAdjudicationToReturn
   }
 
