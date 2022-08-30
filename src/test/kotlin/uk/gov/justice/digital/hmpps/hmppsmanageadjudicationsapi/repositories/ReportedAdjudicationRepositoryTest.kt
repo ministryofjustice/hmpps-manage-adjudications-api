@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories
 
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
@@ -13,19 +14,16 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConfiguration
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatusAudit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import javax.validation.ConstraintViolationException
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -38,100 +36,20 @@ class ReportedAdjudicationRepositoryTest {
   @Autowired
   lateinit var reportedAdjudicationRepository: ReportedAdjudicationRepository
 
+  private val entityBuilder: EntityBuilder = EntityBuilder()
+
   @BeforeEach
   fun setUp() {
     val dateTimeOfIncident = LocalDateTime.now()
 
-    entityManager.persistAndFlush(
-      ReportedAdjudication(
-        prisonerNumber = "A12345",
-        reportNumber = 1234L,
-        bookingId = 44L,
-        agencyId = "MDI",
-        locationId = 2,
-        draftCreatedAt = LocalDateTime.now(),
-        dateTimeOfIncident = dateTimeOfIncident,
-        handoverDeadline = dateTimeOfIncident.plusDays(2),
-        isYouthOffender = false,
-        incidentRoleCode = null,
-        incidentRoleAssociatedPrisonersNumber = null,
-        incidentRoleAssociatedPrisonersName = null,
-        statement = "Example",
-        status = Status.AWAITING_REVIEW,
-        statuses = mutableListOf(
-          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
-        ),
-        damages = mutableListOf(),
-        evidence = mutableListOf(),
-        witnesses = mutableListOf()
-      )
-    )
-    entityManager.persistAndFlush(
-      ReportedAdjudication(
-        prisonerNumber = "A12345",
-        reportNumber = 1235L,
-        bookingId = 44L,
-        agencyId = "MDI",
-        locationId = 3,
-        draftCreatedAt = LocalDateTime.now(),
-        dateTimeOfIncident = dateTimeOfIncident.plusHours(1),
-        handoverDeadline = dateTimeOfIncident.plusHours(1).plusDays(2),
-        isYouthOffender = false,
-        incidentRoleCode = "25a",
-        incidentRoleAssociatedPrisonersNumber = "B23456",
-        incidentRoleAssociatedPrisonersName = "Associated Prisoner",
-        statement = "Example 2",
-        status = Status.AWAITING_REVIEW,
-        statuses = mutableListOf(
-          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
-        ),
-        damages = mutableListOf(),
-        evidence = mutableListOf(),
-        witnesses = mutableListOf()
-      )
-    )
-    entityManager.persistAndFlush(
-      ReportedAdjudication(
-        prisonerNumber = "A12347",
-        reportNumber = 1236L,
-        bookingId = 55L,
-        agencyId = "LEI",
-        locationId = 4,
-        draftCreatedAt = LocalDateTime.now(),
-        dateTimeOfIncident = dateTimeOfIncident.plusHours(1),
-        handoverDeadline = dateTimeOfIncident.plusHours(1).plusDays(2),
-        isYouthOffender = true,
-        incidentRoleCode = null,
-        incidentRoleAssociatedPrisonersNumber = null,
-        incidentRoleAssociatedPrisonersName = null,
-        statement = "Example 3",
-        offenceDetails = mutableListOf(
-          ReportedOffence(
-            offenceCode = 2,
-            paragraphCode = "3",
-          ),
-          ReportedOffence(
-            offenceCode = 3,
-            paragraphCode = "4",
-            victimPrisonersNumber = "B1234BB",
-            victimStaffUsername = "ABC12D",
-            victimOtherPersonsName = "Another Person",
-          )
-        ),
-        status = Status.AWAITING_REVIEW,
-        statuses = mutableListOf(
-          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
-        ),
-        damages = mutableListOf(),
-        evidence = mutableListOf(),
-        witnesses = mutableListOf()
-      )
-    )
+    entityManager.persistAndFlush(entityBuilder.reportedAdjudication(1234L, dateTimeOfIncident))
+    entityManager.persistAndFlush(entityBuilder.reportedAdjudication(1235L, dateTimeOfIncident.plusHours(1)))
+    entityManager.persistAndFlush(entityBuilder.reportedAdjudication(1236L, dateTimeOfIncident.plusHours(1), "LEI"))
   }
 
   @Test
   fun `save a new reported adjudication`() {
-    val adjudication = reportedAdjudication()
+    val adjudication = entityBuilder.reportedAdjudication(1238L)
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity)
@@ -291,7 +209,7 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(foundAdjudication)
       .extracting("reportNumber", "statement")
       .contains(
-        1234L, "Example"
+        1234L, "Example statement"
       )
   }
 
@@ -334,61 +252,14 @@ class ReportedAdjudicationRepositoryTest {
       )
   }
 
-  private fun reportedAdjudication(): ReportedAdjudication {
-    return ReportedAdjudication(
-      reportNumber = 123L,
-      bookingId = 234L,
-      prisonerNumber = "A12345",
-      agencyId = "MDI",
-      locationId = 2,
-      draftCreatedAt = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
-      dateTimeOfIncident = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
-      handoverDeadline = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME.plusDays(2),
-      isYouthOffender = false,
-      incidentRoleCode = "25a",
-      incidentRoleAssociatedPrisonersNumber = "B23456",
-      incidentRoleAssociatedPrisonersName = "Associated Prisoner",
-      offenceDetails = mutableListOf(
-        ReportedOffence( // offence with minimal data set
-          offenceCode = 2,
-          paragraphCode = "3"
-        ),
-        ReportedOffence(
-          // offence with all data set
-          offenceCode = 3,
-          paragraphCode = "4",
-          victimPrisonersNumber = "A1234AA",
-          victimStaffUsername = "ABC12D",
-          victimOtherPersonsName = "A Person",
-        ),
-      ),
-      statement = "Example statement",
-      status = Status.AWAITING_REVIEW,
-      statuses = mutableListOf(
-        ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
-      ),
-      damages = mutableListOf(
-        ReportedDamage(
-          code = DamageCode.CLEANING,
-          details = "details",
-          reporter = "Fred"
-        )
-      ),
-      evidence = mutableListOf(
-        ReportedEvidence(
-          code = EvidenceCode.PHOTO,
-          details = "details",
-          reporter = "Fred"
-        )
-      ),
-      witnesses = mutableListOf(
-        ReportedWitness(
-          code = WitnessCode.PRISON_OFFICER,
-          firstName = "prison",
-          lastName = "officer",
-          reporter = "Fred"
-        ),
+  @Test
+  fun `validation error to confirm annotation works`() {
+    assertThatThrownBy {
+      entityManager.persistAndFlush(
+        entityBuilder.reportedAdjudication(1237L).also {
+          it.damages.add(ReportedDamage(code = DamageCode.REDECORATION, details = "", reporter = "11111111111111111111111111111111111111111111111111111"))
+        }
       )
-    )
+    }.isInstanceOf(ConstraintViolationException::class.java)
   }
 }

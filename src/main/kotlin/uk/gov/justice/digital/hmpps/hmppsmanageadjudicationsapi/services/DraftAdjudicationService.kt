@@ -396,15 +396,14 @@ class DraftAdjudicationService(
     val reportNumber = draftAdjudication.reportNumber!!
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(reportNumber)
       ?: ReportedAdjudicationService.throwEntityNotFoundException(reportNumber)
-    val fromStatus = reportedAdjudication.getLatestStatus()
-    if (!Status.AWAITING_REVIEW.canTransitionFrom(fromStatus.status)) {
-      throw IllegalStateException("Unable to complete draft adjudication ${draftAdjudication.reportNumber} as it is in the state ${fromStatus.status}")
+    val fromStatus = reportedAdjudication.status
+    if (!Status.AWAITING_REVIEW.canTransitionFrom(fromStatus)) {
+      throw IllegalStateException("Unable to complete draft adjudication ${draftAdjudication.reportNumber} as it is in the state $fromStatus")
     }
   }
 
   private fun createReportedAdjudication(draftAdjudication: DraftAdjudication): ReportedAdjudication {
     val nomisAdjudicationCreationRequestData = prisonApiGateway.requestAdjudicationCreationData(draftAdjudication.prisonerNumber)
-    val offences = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication)
     return reportedAdjudicationRepository.save(
       ReportedAdjudication(
         bookingId = nomisAdjudicationCreationRequestData.bookingId,
@@ -419,10 +418,10 @@ class DraftAdjudicationService(
         incidentRoleCode = draftAdjudication.incidentRole!!.roleCode,
         incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber,
         incidentRoleAssociatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName,
-        offenceDetails = offences,
+        offenceDetails = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication),
         statement = draftAdjudication.incidentStatement!!.statement!!,
         status = Status.AWAITING_REVIEW,
-        statuses = mutableListOf(
+        statusAudit = mutableListOf(
           ReportedAdjudicationStatusAudit(
             status = Status.AWAITING_REVIEW
           )

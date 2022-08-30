@@ -30,9 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatusAudit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
@@ -41,6 +39,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonA
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -131,51 +130,36 @@ class ReportedAdjudicationServiceTest {
           ),
         )
       }
-
-      val reportedAdjudication =
-        ReportedAdjudication(
-          reportNumber = 1, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
-          draftCreatedAt = DATE_TIME_OF_INCIDENT,
-          dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
-          isYouthOffender = isYouthOffender,
-          incidentRoleCode = "25b",
-          incidentRoleAssociatedPrisonersNumber = "BB2345B",
-          incidentRoleAssociatedPrisonersName = "Associated Prisoner",
-          offenceDetails = offenceDetails,
-          handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-          status = Status.AWAITING_REVIEW,
-          statuses = mutableListOf(
-            ReportedAdjudicationStatusAudit(
-              status = Status.REJECTED,
-              statusReason = "Status Reason",
-              statusDetails = "Status Reason String"
-            )
-          ),
-          reviewUserId = "A_REVIEWER",
-          damages = mutableListOf(),
-          evidence = mutableListOf(),
-          witnesses = mutableListOf()
-        )
+      val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
 
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        reportedAdjudication
+        reportedAdjudication.also {
+          it.isYouthOffender = isYouthOffender
+          it.offenceDetails = offenceDetails
+          it.status = Status.REJECTED
+          it.reviewUserId = "A_REVIEWER"
+          it.statusAudit.add(
+            ReportedAdjudicationStatusAudit(status = Status.REJECTED, statusReason = "Status Reason", statusDetails = "Status Reason String")
+          )
+          it.statusAudit.forEach { s -> s.createDateTime = LocalDateTime.now() }
+        }
       )
 
       val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails(1)
 
       assertThat(reportedAdjudicationDto)
         .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime", "isYouthOffender")
-        .contains(1L, "AA1234A", 123L, "A_SMITH", REPORTED_DATE_TIME, isYouthOffender)
+        .contains(1235L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME, isYouthOffender)
 
       assertThat(reportedAdjudicationDto.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
-        .contains(345L, DATE_TIME_OF_INCIDENT, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
+        .contains(2L, DATE_TIME_OF_INCIDENT, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
 
       assertThat(reportedAdjudicationDto.incidentRole)
         .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
-        .contains("25b", IncidentRoleRuleLookup.getOffenceRuleDetails("25b", isYouthOffender), "BB2345B")
+        .contains("25a", IncidentRoleRuleLookup.getOffenceRuleDetails("25a", isYouthOffender), "B23456")
 
       assertThat(reportedAdjudicationDto)
         .extracting("status", "reviewedByUserId", "statusReason", "statusDetails")
@@ -227,64 +211,10 @@ class ReportedAdjudicationServiceTest {
   inner class AllReportedAdjudications {
     @BeforeEach
     fun beforeEach() {
-      val reportedAdjudication1 = ReportedAdjudication(
-        id = 1,
-        prisonerNumber = "AA1234A",
-        bookingId = 123,
-        reportNumber = 1,
-        agencyId = "MDI",
-        locationId = 345,
-        draftCreatedAt = DATE_TIME_OF_INCIDENT,
-        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-        handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
-        isYouthOffender = false,
-        incidentRoleCode = "25b",
-        incidentRoleAssociatedPrisonersNumber = "BB2345B",
-        incidentRoleAssociatedPrisonersName = "Associated Prisoner",
-        offenceDetails = mutableListOf(
-          ReportedOffence(
-            offenceCode = 3,
-            paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
-            victimPrisonersNumber = "BB2345B",
-            victimStaffUsername = "DEF34G",
-            victimOtherPersonsName = "Another Name",
-          )
-        ),
-        statement = INCIDENT_STATEMENT,
-        status = Status.AWAITING_REVIEW,
-        statuses = mutableListOf(
-          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
-        ),
-        damages = mutableListOf(),
-        evidence = mutableListOf(),
-        witnesses = mutableListOf()
-      )
+      val reportedAdjudication1 = entityBuilder.reportedAdjudication(reportNumber = 1L, dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
-      val reportedAdjudication2 = ReportedAdjudication(
-        id = 2,
-        prisonerNumber = "AA1234B",
-        bookingId = 456,
-        reportNumber = 2,
-        agencyId = "MDI",
-        locationId = 345,
-        draftCreatedAt = DATE_TIME_OF_INCIDENT,
-        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-        handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
-        isYouthOffender = true,
-        incidentRoleCode = null,
-        incidentRoleAssociatedPrisonersNumber = null,
-        incidentRoleAssociatedPrisonersName = null,
-        offenceDetails = null,
-        statement = INCIDENT_STATEMENT,
-        status = Status.AWAITING_REVIEW,
-        statuses = mutableListOf(
-          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
-        ),
-        damages = mutableListOf(),
-        evidence = mutableListOf(),
-        witnesses = mutableListOf()
-      )
+      val reportedAdjudication2 = entityBuilder.reportedAdjudication(reportNumber = 2L, dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
       whenever(
@@ -334,8 +264,8 @@ class ReportedAdjudicationServiceTest {
       assertThat(myReportedAdjudications.content)
         .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
         .contains(
-          Tuple.tuple(1L, "AA1234A", 123L, "A_SMITH", REPORTED_DATE_TIME),
-          Tuple.tuple(2L, "AA1234B", 456L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2))
+          Tuple.tuple(1L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME),
+          Tuple.tuple(2L, "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2))
         )
     }
   }
@@ -344,64 +274,10 @@ class ReportedAdjudicationServiceTest {
   inner class MyReportedAdjudications {
     @BeforeEach
     fun beforeEach() {
-      val reportedAdjudication1 = ReportedAdjudication(
-        id = 1,
-        prisonerNumber = "AA1234A",
-        bookingId = 123,
-        reportNumber = 1,
-        agencyId = "MDI",
-        locationId = 345,
-        draftCreatedAt = DATE_TIME_OF_INCIDENT,
-        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-        handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
-        isYouthOffender = false,
-        incidentRoleCode = "25b",
-        incidentRoleAssociatedPrisonersNumber = "BB2345B",
-        incidentRoleAssociatedPrisonersName = "Associated Prisoner",
-        offenceDetails = mutableListOf(
-          ReportedOffence(
-            offenceCode = 3,
-            paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
-            victimPrisonersNumber = "BB2345B",
-            victimStaffUsername = "DEF34G",
-            victimOtherPersonsName = "Another Name",
-          )
-        ),
-        statement = INCIDENT_STATEMENT,
-        status = Status.AWAITING_REVIEW,
-        statuses = mutableListOf(
-          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
-        ),
-        damages = mutableListOf(),
-        evidence = mutableListOf(),
-        witnesses = mutableListOf()
-      )
+      val reportedAdjudication1 = entityBuilder.reportedAdjudication(reportNumber = 1L, dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
-      val reportedAdjudication2 = ReportedAdjudication(
-        id = 2,
-        prisonerNumber = "AA1234B",
-        bookingId = 456,
-        reportNumber = 2,
-        agencyId = "MDI",
-        locationId = 345,
-        draftCreatedAt = DATE_TIME_OF_INCIDENT,
-        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-        handoverDeadline = DATE_TIME_OF_INCIDENT.plusDays(2),
-        isYouthOffender = true,
-        incidentRoleCode = null,
-        incidentRoleAssociatedPrisonersNumber = null,
-        incidentRoleAssociatedPrisonersName = null,
-        offenceDetails = null,
-        statement = INCIDENT_STATEMENT,
-        status = Status.AWAITING_REVIEW,
-        statuses = mutableListOf(
-          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
-        ),
-        damages = mutableListOf(),
-        evidence = mutableListOf(),
-        witnesses = mutableListOf()
-      )
+      val reportedAdjudication2 = entityBuilder.reportedAdjudication(reportNumber = 2L, dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
       whenever(
@@ -433,46 +309,14 @@ class ReportedAdjudicationServiceTest {
       assertThat(myReportedAdjudications.content)
         .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
         .contains(
-          Tuple.tuple(1L, "AA1234A", 123L, "A_SMITH", REPORTED_DATE_TIME),
-          Tuple.tuple(2L, "AA1234B", 456L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2))
+          Tuple.tuple(1L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME),
+          Tuple.tuple(2L, "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2))
         )
     }
   }
 
   @Nested
   inner class ReportedAdjudicationSetStatus {
-    private fun reportedAdjudication(): ReportedAdjudication {
-      val reportedAdjudication = ReportedAdjudication(
-        reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
-        draftCreatedAt = DATE_TIME_OF_INCIDENT,
-        dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
-        isYouthOffender = false,
-        incidentRoleCode = "25b",
-        incidentRoleAssociatedPrisonersNumber = "BB2345B",
-        incidentRoleAssociatedPrisonersName = "Associated Prisoner",
-        offenceDetails = mutableListOf(
-          ReportedOffence(
-            offenceCode = 3,
-            paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
-            victimPrisonersNumber = "BB2345B",
-            victimStaffUsername = "DEF34G",
-            victimOtherPersonsName = "Another Name",
-          )
-        ),
-        handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-        status = Status.AWAITING_REVIEW,
-        statuses = mutableListOf(
-          ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
-        ),
-        reviewUserId = null,
-        damages = mutableListOf(),
-        evidence = mutableListOf(),
-        witnesses = mutableListOf()
-      )
-      reportedAdjudication.createdByUserId = "A_SMITH"
-      reportedAdjudication.createDateTime = REPORTED_DATE_TIME
-      return reportedAdjudication
-    }
 
     @ParameterizedTest
     @CsvSource(
@@ -493,14 +337,12 @@ class ReportedAdjudicationServiceTest {
       to: Status
     ) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        reportedAdjudication().also {
+        entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = from
-          it.statuses = mutableListOf(
+          it.statusAudit = mutableListOf(
             ReportedAdjudicationStatusAudit(status = from),
           )
-          it.statuses.forEach { s ->
-            s.createDateTime = LocalDateTime.now().minusDays(1)
-          }
+          it.statusAudit.forEach { s -> s.createDateTime = LocalDateTime.now().minusDays(1) }
         }
       )
       Assertions.assertThrows(IllegalStateException::class.java) {
@@ -522,30 +364,30 @@ class ReportedAdjudicationServiceTest {
       updatesNomis: Boolean,
     ) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        reportedAdjudication().also {
+        entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = from
-          it.statuses = mutableListOf(
+          it.statusAudit = mutableListOf(
             ReportedAdjudicationStatusAudit(status = from)
           )
-          it.statuses.forEach { m ->
-            m.createDateTime = LocalDateTime.now()
-          }
+          it.statusAudit.forEach { m -> m.createDateTime = LocalDateTime.now() }
+          it.createdByUserId = "A_SMITH"
+          it.createDateTime = REPORTED_DATE_TIME
         }
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-        reportedAdjudication().also {
+        entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = to
-          it.statuses.forEach { m ->
-            m.createDateTime = LocalDateTime.now()
-          }
+          it.statusAudit.forEach { m -> m.createDateTime = LocalDateTime.now() }
+          it.createdByUserId = "A_SMITH"
+          it.createDateTime = REPORTED_DATE_TIME
         }
       )
       reportedAdjudicationService.setStatus(1, to)
       verify(reportedAdjudicationRepository).save(
-        reportedAdjudication().also {
+        entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = to
           it.reviewUserId = if (to == Status.AWAITING_REVIEW) null else "ITAG_USER"
-          it.statuses = mutableListOf(
+          it.statusAudit = mutableListOf(
             ReportedAdjudicationStatusAudit(
               status = from
             ),
@@ -569,14 +411,13 @@ class ReportedAdjudicationServiceTest {
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
         it.status = Status.REJECTED
-        it.statuses = mutableListOf(
+        it.statusAudit = mutableListOf(
           ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW),
           ReportedAdjudicationStatusAudit(
             status = Status.REJECTED, statusReason = "Status Reason", statusDetails = "Status Reason String",
           )
         )
-        it.statuses.forEach {
-          m ->
+        it.statusAudit.forEach { m ->
           m.createDateTime = LocalDateTime.now()
         }
       }
@@ -622,13 +463,10 @@ class ReportedAdjudicationServiceTest {
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         returnedReportedAdjudication.also {
           it.status = Status.AWAITING_REVIEW
-          it.statuses = mutableListOf(
+          it.statusAudit = mutableListOf(
             ReportedAdjudicationStatusAudit(status = Status.AWAITING_REVIEW)
           )
-          it.statuses.forEach {
-            m ->
-            m.createDateTime = LocalDateTime.now()
-          }
+          it.statusAudit.forEach { m -> m.createDateTime = LocalDateTime.now() }
         }
       )
 
@@ -641,17 +479,17 @@ class ReportedAdjudicationServiceTest {
         expectedConnectedOffenderIds = listOf(INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)
       }
 
-      var expectedVictimOffenderIds: List<String> = listOf("A1234AA")
-      var expectedVictimStaffUsernames: List<String> = listOf("ABC12D")
+      val expectedVictimOffenderIds: List<String> = listOf("A1234AA")
+      val expectedVictimStaffUsernames: List<String> = listOf("ABC12D")
 
       val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
         offenderNo = "A12345",
-        adjudicationNumber = 234L,
-        bookingId = 123L,
+        adjudicationNumber = 1235L,
+        bookingId = 234L,
         reporterName = "A_USER",
         reportedDateTime = REPORTED_DATE_TIME,
         agencyId = "MDI",
-        incidentLocationId = 345L,
+        incidentLocationId = 2L,
         incidentTime = DATE_TIME_OF_INCIDENT,
         statement = INCIDENT_STATEMENT,
         offenceCodes = expectedOffenceCodes,
@@ -671,19 +509,14 @@ class ReportedAdjudicationServiceTest {
       isYouthOffender: Boolean,
     ) {
       val existingReportedAdjudication = existingReportedAdjudication(false, false, isYouthOffender)
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        existingReportedAdjudication
-      )
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(existingReportedAdjudication)
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
         it.status = Status.ACCEPTED
-        it.statuses = mutableListOf(
+        it.statusAudit = mutableListOf(
           ReportedAdjudicationStatusAudit(status = it.status)
         )
-        it.statuses.forEach {
-          m ->
-          m.createDateTime = LocalDateTime.now()
-        }
+        it.statusAudit.forEach { m -> m.createDateTime = LocalDateTime.now() }
       }
       returnedReportedAdjudication.createdByUserId = "A_USER"
       returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -699,18 +532,18 @@ class ReportedAdjudicationServiceTest {
           listOf(YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED)
       }
 
-      var expectedConnectedOffenderIds = listOf(INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)
-      var expectedVictimOffenderIds: List<String> = emptyList()
-      var expectedVictimStaffUsernames: List<String> = emptyList()
+      val expectedConnectedOffenderIds = listOf(INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)
+      val expectedVictimOffenderIds: List<String> = emptyList()
+      val expectedVictimStaffUsernames: List<String> = emptyList()
 
       val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
         offenderNo = "A12345",
-        adjudicationNumber = 234L,
-        bookingId = 123L,
+        adjudicationNumber = 1235L,
+        bookingId = 234L,
         reporterName = "A_USER",
         reportedDateTime = REPORTED_DATE_TIME,
         agencyId = "MDI",
-        incidentLocationId = 345L,
+        incidentLocationId = 2L,
         incidentTime = DATE_TIME_OF_INCIDENT,
         statement = INCIDENT_STATEMENT,
         offenceCodes = expectedOffenceCodes,
@@ -753,32 +586,14 @@ class ReportedAdjudicationServiceTest {
         )
       }
 
-      val reportedAdjudication = ReportedAdjudication(
-        id = 1,
-        prisonerNumber = "A12345",
-        reportNumber = 234L,
-        bookingId = 123L,
-        agencyId = "MDI",
-        locationId = 345L,
-        isYouthOffender = isYouthOffender,
-        incidentRoleCode = incidentRoleCode,
-        incidentRoleAssociatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
-        incidentRoleAssociatedPrisonersName = incidentRoleAssociatedPrisonersName,
-        draftCreatedAt = DATE_TIME_OF_INCIDENT,
-        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-        handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-        statement = INCIDENT_STATEMENT,
-        offenceDetails = offenceDetails,
-        status = Status.AWAITING_REVIEW,
-        statuses = mutableListOf(
-          ReportedAdjudicationStatusAudit(
-            status = Status.AWAITING_REVIEW
-          )
-        ),
-        damages = mutableListOf(),
-        evidence = mutableListOf(),
-        witnesses = mutableListOf()
-      )
+      val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+        .also {
+          it.offenceDetails = offenceDetails
+          it.isYouthOffender = isYouthOffender
+          it.incidentRoleCode = incidentRoleCode
+          it.incidentRoleAssociatedPrisonersName = incidentRoleAssociatedPrisonersName
+          it.incidentRoleAssociatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber
+        }
       // Add audit information
       reportedAdjudication.createdByUserId = "A_USER"
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -788,63 +603,34 @@ class ReportedAdjudicationServiceTest {
 
   @Nested
   inner class CreateDraftFromReported {
-    private val reportedAdjudication = ReportedAdjudication(
-      reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
-      draftCreatedAt = DATE_TIME_OF_INCIDENT,
-      dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
-      isYouthOffender = false,
-      incidentRoleCode = "25b",
-      incidentRoleAssociatedPrisonersNumber = "BB2345B",
-      incidentRoleAssociatedPrisonersName = "Associated Prisoner",
-      offenceDetails = mutableListOf(
-        ReportedOffence(
-          offenceCode = 3,
-          paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
-          victimPrisonersNumber = "BB2345B",
-          victimStaffUsername = "DEF34G",
-          victimOtherPersonsName = "Another Name",
-        )
-      ),
-      handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-      status = Status.AWAITING_REVIEW,
-      statuses = mutableListOf(
-        ReportedAdjudicationStatusAudit(
-          status = Status.AWAITING_REVIEW
-        )
-      ),
-      damages = mutableListOf(
-        ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
-      ),
-      evidence = mutableListOf(
-        ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Fred")
-      ),
-      witnesses = mutableListOf(
-        ReportedWitness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
-      )
-    )
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
 
     private val expectedSavedDraftAdjudication = DraftAdjudication(
-      prisonerNumber = "AA1234A",
-      reportNumber = 123L,
+      prisonerNumber = "A12345",
+      reportNumber = 1235L,
       reportByUserId = "A_SMITH",
       agencyId = "MDI",
       incidentDetails = IncidentDetails(
-        locationId = 345L,
+        locationId = 2L,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
       ),
       incidentRole = IncidentRole(
-        roleCode = "25b",
-        associatedPrisonersNumber = "BB2345B",
+        roleCode = "25a",
+        associatedPrisonersNumber = "B23456",
         associatedPrisonersName = "Associated Prisoner",
       ),
       offenceDetails = mutableListOf(
+        Offence( // offence with minimal data set
+          offenceCode = 2,
+        ),
         Offence(
+          // offence with all data set
           offenceCode = 3,
-          victimPrisonersNumber = "BB2345B",
-          victimStaffUsername = "DEF34G",
-          victimOtherPersonsName = "Another Name",
-        )
+          victimPrisonersNumber = "A1234AA",
+          victimStaffUsername = "ABC12D",
+          victimOtherPersonsName = "A Person",
+        ),
       ),
       incidentStatement = IncidentStatement(
         completed = true,
@@ -897,10 +683,10 @@ class ReportedAdjudicationServiceTest {
 
       assertThat(createdDraft)
         .extracting("prisonerNumber", "id", "adjudicationNumber", "startedByUserId")
-        .contains("AA1234A", 1L, 123L, "A_SMITH")
+        .contains("A12345", 1L, 1235L, "A_SMITH")
       assertThat(createdDraft.incidentDetails)
         .extracting("dateTimeOfIncident", "handoverDeadline", "locationId")
-        .contains(DATE_TIME_OF_INCIDENT, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, 345L)
+        .contains(DATE_TIME_OF_INCIDENT, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, 2L)
       assertThat(createdDraft.incidentRole)
         .extracting(
           "roleCode",
@@ -908,7 +694,7 @@ class ReportedAdjudicationServiceTest {
           "offenceRule.paragraphDescription",
           "associatedPrisonersNumber"
         )
-        .contains("25b", "25(b)", "Incites another prisoner to commit any of the foregoing offences:", "BB2345B")
+        .contains("25a", "25(a)", "Attempts to commit any of the foregoing offences:", "B23456")
       assertThat(createdDraft.offenceDetails)
         .extracting(
           "offenceCode",
@@ -923,9 +709,9 @@ class ReportedAdjudicationServiceTest {
             3,
             OFFENCE_CODE_3_PARAGRAPH_NUMBER,
             OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
-            "BB2345B",
-            "DEF34G",
-            "Another Name"
+            "A1234AA",
+            "ABC12D",
+            "A Person"
           )
         )
       assertThat(createdDraft.incidentStatement)
@@ -958,41 +744,13 @@ class ReportedAdjudicationServiceTest {
   @Nested
   inner class UpdateDamages {
 
-    private val reportedAdjudication = ReportedAdjudication(
-      reportNumber = 123, prisonerNumber = "AA1234A", bookingId = 123, agencyId = "MDI",
-      draftCreatedAt = DATE_TIME_OF_INCIDENT,
-      dateTimeOfIncident = DATE_TIME_OF_INCIDENT, locationId = 345, statement = INCIDENT_STATEMENT,
-      isYouthOffender = false,
-      incidentRoleCode = "25b",
-      incidentRoleAssociatedPrisonersNumber = "BB2345B",
-      incidentRoleAssociatedPrisonersName = "Associated Prisoner",
-      offenceDetails = mutableListOf(
-        ReportedOffence(
-          offenceCode = 3,
-          paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
-          victimPrisonersNumber = "BB2345B",
-          victimStaffUsername = "DEF34G",
-          victimOtherPersonsName = "Another Name",
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+      .also {
+        it.damages = mutableListOf(
+          ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod"),
+          ReportedDamage(code = DamageCode.REDECORATION, details = "details 3", reporter = "Fred")
         )
-      ),
-      handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-      status = Status.AWAITING_REVIEW,
-      statuses = mutableListOf(
-        ReportedAdjudicationStatusAudit(
-          status = Status.AWAITING_REVIEW
-        )
-      ),
-      damages = mutableListOf(
-        ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod"),
-        ReportedDamage(code = DamageCode.REDECORATION, details = "details 3", reporter = "Fred")
-      ),
-      evidence = mutableListOf(
-        ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Fred")
-      ),
-      witnesses = mutableListOf(
-        ReportedWitness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
-      )
-    )
+      }
 
     @BeforeEach
     fun init() {
@@ -1043,10 +801,11 @@ class ReportedAdjudicationServiceTest {
   }
 
   companion object {
+    private val entityBuilder: EntityBuilder = EntityBuilder()
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
-    private const val INCIDENT_STATEMENT = "A statement"
+    private const val INCIDENT_STATEMENT = "Example statement"
 
     private const val OFFENCE_CODE_2_PARAGRAPH_CODE = "5b"
     private const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"

@@ -1,7 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
 import org.hibernate.validator.constraints.Length
+import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.Table
 
 enum class DamageCode {
@@ -18,11 +21,12 @@ enum class DamageCode {
 @Table(name = "damages")
 data class Damage(
   override val id: Long? = null,
-  @Length(max = 32)
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   var code: DamageCode,
-  @Length(max = 4000)
+  @field:Length(max = 4000)
   var details: String,
-  @Length(max = 32)
+  @field:Length(max = 32)
   var reporter: String
 ) : BaseEntity()
 
@@ -30,10 +34,11 @@ data class Damage(
 @Table(name = "reported_damages")
 data class ReportedDamage(
   override val id: Long? = null,
-  @Length(max = 32)
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   var code: DamageCode,
-  @Length(max = 4000)
+  @field:Length(max = 4000)
   var details: String,
-  @Length(max = 32)
+  @field:Length(max = 32)
   var reporter: String
 ) : BaseEntity()

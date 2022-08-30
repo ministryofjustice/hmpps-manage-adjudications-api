@@ -48,12 +48,12 @@ data class ReportedAdjudication(
   var witnesses: MutableList<ReportedWitness>,
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")
-  var statuses: MutableList<ReportedAdjudicationStatusAudit>,
+  var statusAudit: MutableList<ReportedAdjudicationStatusAudit>,
 ) : BaseEntity() {
   fun transition(to: ReportedAdjudicationStatusAudit, reviewUserId: String? = null) {
 
     if (this.status.canTransitionTo(to.status)) {
-      this.statuses.add(to)
+      this.statusAudit.add(to)
       this.status = to.status
       this.reviewUserId = reviewUserId
     } else {
@@ -61,7 +61,7 @@ data class ReportedAdjudication(
     }
   }
   fun getLatestStatus(): ReportedAdjudicationStatusAudit =
-    statuses.sortedBy { it.createDateTime!! }.reversed().first()
+    statusAudit.sortedBy { it.createDateTime!! }.reversed().first()
 }
 
 @Entity
