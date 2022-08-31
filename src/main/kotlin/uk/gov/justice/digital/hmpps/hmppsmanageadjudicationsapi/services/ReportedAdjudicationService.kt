@@ -181,8 +181,7 @@ class ReportedAdjudicationService(
       mapOf(
         "reportNumber" to reportedAdjudication.reportNumber.toString(),
         "status" to status.name,
-        "reason" to statusReason,
-        "details" to statusDetails
+        "reason" to statusReason
       ),
       null
     )

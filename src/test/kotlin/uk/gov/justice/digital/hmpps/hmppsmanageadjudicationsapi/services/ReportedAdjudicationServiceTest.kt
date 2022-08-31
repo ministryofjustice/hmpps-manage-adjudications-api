@@ -524,7 +524,6 @@ class ReportedAdjudicationServiceTest {
           "reportNumber" to reportedAdjudication().reportNumber.toString(),
           "status" to to.name,
           "reason" to null,
-          "details" to null
         ),
         null
       )
@@ -567,8 +566,7 @@ class ReportedAdjudicationServiceTest {
         mapOf(
           "reportNumber" to existingReportedAdjudication.reportNumber.toString(),
           "status" to ReportedAdjudicationStatus.REJECTED.name,
-          "reason" to "Status Reason",
-          "details" to "Status Reason String"
+          "reason" to "Status Reason"
         ),
         null
       )
