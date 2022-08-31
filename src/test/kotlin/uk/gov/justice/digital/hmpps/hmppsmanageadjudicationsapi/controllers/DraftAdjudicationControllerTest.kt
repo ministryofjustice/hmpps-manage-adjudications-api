@@ -743,19 +743,19 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @Test
     fun `responds with a unauthorised status code`() {
-      setDamagesRequest(1, DAMAGES_REQUEST).andExpect(status().isUnauthorized)
+      updateDamagesRequest(1, DAMAGES_REQUEST).andExpect(status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `makes a call to set the damages`() {
-      setDamagesRequest(1, DAMAGES_REQUEST)
+    fun `makes a call to update the damages`() {
+      updateDamagesRequest(1, DAMAGES_REQUEST)
         .andExpect(status().isOk)
 
       verify(draftAdjudicationService).updateDamages(1, DAMAGES_REQUEST.damages)
     }
 
-    private fun setDamagesRequest(
+    private fun updateDamagesRequest(
       id: Long,
       damages: DamagesRequest?
     ): ResultActions {
@@ -788,7 +788,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `makes a call to set the evidence`() {
+    fun `makes a call to update the evidence`() {
       setEvidenceRequest(1, EVIDENCE_REQUEST)
         .andExpect(status().isCreated)
 
@@ -803,6 +803,46 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           put("/draft-adjudications/$id/evidence")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
+  @Nested
+  inner class UpdateEvidence {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        draftAdjudicationService.updateEvidence(
+          anyLong(),
+          any(),
+        )
+      ).thenReturn(draftAdjudicationDto())
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      updateEvidenceRequest(1, EVIDENCE_REQUEST).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the evidence`() {
+      updateEvidenceRequest(1, EVIDENCE_REQUEST)
+        .andExpect(status().isOk)
+
+      verify(draftAdjudicationService).updateEvidence(1, EVIDENCE_REQUEST.evidence)
+    }
+
+    private fun updateEvidenceRequest(
+      id: Long,
+      evidence: EvidenceRequest?
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(evidence)
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/evidence/edit")
             .header("Content-Type", "application/json")
             .content(body)
         )
@@ -828,7 +868,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `makes a call to set the evidence`() {
+    fun `makes a call to update the witnesses`() {
       setWitnessesRequest(1, WITNESSES_REQUEST)
         .andExpect(status().isCreated)
 
@@ -843,6 +883,46 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           put("/draft-adjudications/$id/witnesses")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
+  @Nested
+  inner class UpdateWitnesses {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        draftAdjudicationService.updateWitnesses(
+          anyLong(),
+          any(),
+        )
+      ).thenReturn(draftAdjudicationDto())
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      updateWitnessesRequest(1, WITNESSES_REQUEST).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the evidence`() {
+      updateWitnessesRequest(1, WITNESSES_REQUEST)
+        .andExpect(status().isOk)
+
+      verify(draftAdjudicationService).updateWitnesses(1, WITNESSES_REQUEST.witnesses)
+    }
+
+    private fun updateWitnessesRequest(
+      id: Long,
+      witnesses: WitnessesRequest?
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(witnesses)
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/witnesses/edit")
             .header("Content-Type", "application/json")
             .content(body)
         )

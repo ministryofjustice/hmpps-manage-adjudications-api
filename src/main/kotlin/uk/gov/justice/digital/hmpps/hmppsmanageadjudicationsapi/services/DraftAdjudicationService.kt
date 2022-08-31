@@ -329,6 +329,27 @@ class DraftAdjudicationService(
         )
       }
     )
+    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
+  }
+
+  fun updateEvidence(id: Long, evidence: List<EvidenceRequestItem>): DraftAdjudicationDto {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val reporter = authenticationFacade.currentUsername!!
+    val toPreserve = (draftAdjudication.evidence ?: mutableListOf()).filter { it.reporter != reporter }
+
+    draftAdjudication.evidence = draftAdjudication.evidence ?: mutableListOf()
+    draftAdjudication.evidence!!.clear()
+    draftAdjudication.evidence!!.addAll(toPreserve)
+    draftAdjudication.evidence!!.addAll(
+      evidence.filter { it.reporter == reporter }.map {
+        Evidence(
+          code = it.code,
+          identifier = it.identifier,
+          details = it.details,
+          reporter = reporter
+        )
+      }
+    )
 
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
@@ -341,6 +362,27 @@ class DraftAdjudicationService(
     draftAdjudication.witnesses!!.clear()
     draftAdjudication.witnesses!!.addAll(
       witnesses.map {
+        Witness(
+          code = it.code,
+          firstName = it.firstName,
+          lastName = it.lastName,
+          reporter = reporter
+        )
+      }
+    )
+    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
+  }
+
+  fun updateWitnesses(id: Long, witnesses: List<WitnessRequestItem>): DraftAdjudicationDto {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val reporter = authenticationFacade.currentUsername!!
+    val toPreserve = (draftAdjudication.witnesses ?: mutableListOf()).filter { it.reporter != reporter }
+
+    draftAdjudication.witnesses = draftAdjudication.witnesses ?: mutableListOf()
+    draftAdjudication.witnesses!!.clear()
+    draftAdjudication.witnesses!!.addAll(toPreserve)
+    draftAdjudication.witnesses!!.addAll(
+      witnesses.filter { it.reporter == reporter }.map {
         Witness(
           code = it.code,
           firstName = it.firstName,
@@ -468,20 +510,29 @@ class DraftAdjudicationService(
       it.offenceDetails!!.addAll(toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication))
       it.statement = draftAdjudication.incidentStatement!!.statement!!
       it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
-      val toPreserve = it.damages.filter { damage -> damage.reporter != reporter }
+
+      val damagesPreserve = it.damages.filter { damage -> damage.reporter != reporter }
+      val evidencePreserve = it.evidence.filter { evidence -> evidence.reporter != reporter }
+      val witnessesPreserve = it.witnesses.filter { witness -> witness.reporter != reporter }
+
       it.damages.clear()
-      it.damages.addAll(toPreserve)
-      draftAdjudication.damages?.let { damages ->
-        it.damages.addAll(toReportedDamages(damages.filter { damage -> damage.reporter == reporter }.toMutableList()))
-      }
       it.evidence.clear()
-      draftAdjudication.evidence?.let { evidence ->
-        it.evidence.addAll(toReportedEvidence(evidence))
+      it.witnesses.clear()
+
+      it.damages.addAll(damagesPreserve)
+      it.evidence.addAll(evidencePreserve)
+      it.witnesses.addAll(witnessesPreserve)
+
+      draftAdjudication.damages?.let { damages ->
+        it.damages.addAll(toReportedDamages(damages.filter { d -> d.reporter == reporter }.toMutableList()))
       }
 
-      it.witnesses.clear()
+      draftAdjudication.evidence?.let { evidence ->
+        it.evidence.addAll(toReportedEvidence(evidence.filter { e -> e.reporter == reporter }.toMutableList()))
+      }
+
       draftAdjudication.witnesses?.let { witness ->
-        it.witnesses.addAll(toReportedWitnesses(witness))
+        it.witnesses.addAll(toReportedWitnesses(witness.filter { w -> w.reporter == reporter }.toMutableList()))
       }
 
       return reportedAdjudicationRepository.save(it)

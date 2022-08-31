@@ -71,8 +71,8 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun reportedAdjudicationSetStatus(status: ReportedAdjudicationStatus) {
-    intTestData.reportedAdjudicationStatus(status, testAdjudicationDataSet, headers)
+  fun reportedAdjudicationSetStatus(reportedAdjudicationStatus: ReportedAdjudicationStatus) {
+    intTestData.reportedAdjudicationStatus(reportedAdjudicationStatus, testAdjudicationDataSet, headers)
   }
 
   fun getDraftId(): Long {

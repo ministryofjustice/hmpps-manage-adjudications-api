@@ -169,7 +169,7 @@ class ReportedAdjudicationService(
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
       ?: throw EntityNotFoundException("ReportedAdjudication not found for reported adjudication number $adjudicationNumber")
     val reportedAdjudicationToReturn = reportedAdjudication.let {
-      it.transition(status, username, statusReason, statusDetails)
+      it.transition(to = status, reason = statusReason, details = statusDetails, reviewUserId = username)
       reportedAdjudicationRepository.save(it).toDto(this.offenceCodeLookupService)
     }
     if (status.isAccepted()) {
@@ -285,13 +285,13 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   ),
   createdByUserId = createdByUserId!!,
   createdDateTime = createDateTime!!,
-  status = status,
   reviewedByUserId = reviewUserId,
-  statusReason = statusReason,
-  statusDetails = statusDetails,
   damages = toReportedDamages(damages),
   evidence = toReportedEvidence(evidence),
-  witnesses = toReportedWitnesses(witnesses)
+  witnesses = toReportedWitnesses(witnesses),
+  status = status,
+  statusReason = statusReason,
+  statusDetails = statusDetails
 )
 
 private fun toReportedOffence(offences: MutableList<ReportedOffence>?, isYouthOffender: Boolean, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> {
