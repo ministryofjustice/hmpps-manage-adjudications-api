@@ -640,7 +640,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo("B_MILLS")
   }
 
-
   @Test
   fun `update evidence to the draft adjudication`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
@@ -689,7 +688,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.evidence[1].reporter")
       .isEqualTo("B_MILLS")
   }
-
 
   @Test
   fun `add witnesses to the draft adjudication`() {
