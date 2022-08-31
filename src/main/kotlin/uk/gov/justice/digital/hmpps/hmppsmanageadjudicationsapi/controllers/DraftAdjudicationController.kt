@@ -431,7 +431,7 @@ class DraftAdjudicationController {
   @PutMapping(value = ["/{id}/witnesses/edit"])
   @Operation(summary = "Update the witnesses for the draft adjudication.", description = "0 or more witnesses to be supplied")
   @PreAuthorize("hasAuthority('SCOPE_write')")
-  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseStatus(HttpStatus.OK)
   fun updateWitnesses(
     @PathVariable(name = "id") id: Long,
     @RequestBody @Valid witnessesRequest: WitnessesRequest

@@ -743,19 +743,19 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @Test
     fun `responds with a unauthorised status code`() {
-      setDamagesRequest(1, DAMAGES_REQUEST).andExpect(status().isUnauthorized)
+      updateDamagesRequest(1, DAMAGES_REQUEST).andExpect(status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `makes a call to set the damages`() {
-      setDamagesRequest(1, DAMAGES_REQUEST)
+    fun `makes a call to update the damages`() {
+      updateDamagesRequest(1, DAMAGES_REQUEST)
         .andExpect(status().isOk)
 
       verify(draftAdjudicationService).updateDamages(1, DAMAGES_REQUEST.damages)
     }
 
-    private fun setDamagesRequest(
+    private fun updateDamagesRequest(
       id: Long,
       damages: DamagesRequest?
     ): ResultActions {
@@ -788,7 +788,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `makes a call to set the evidence`() {
+    fun `makes a call to update the evidence`() {
       setEvidenceRequest(1, EVIDENCE_REQUEST)
         .andExpect(status().isCreated)
 
@@ -830,7 +830,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `makes a call to set the evidence`() {
       updateEvidenceRequest(1, EVIDENCE_REQUEST)
-        .andExpect(status().isCreated)
+        .andExpect(status().isOk)
 
       verify(draftAdjudicationService).updateEvidence(1, EVIDENCE_REQUEST.evidence)
     }
@@ -868,7 +868,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `makes a call to set the evidence`() {
+    fun `makes a call to update the witnesses`() {
       setWitnessesRequest(1, WITNESSES_REQUEST)
         .andExpect(status().isCreated)
 
@@ -910,7 +910,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `makes a call to set the evidence`() {
       updateWitnessesRequest(1, WITNESSES_REQUEST)
-        .andExpect(status().isCreated)
+        .andExpect(status().isOk)
 
       verify(draftAdjudicationService).updateWitnesses(1, WITNESSES_REQUEST.witnesses)
     }

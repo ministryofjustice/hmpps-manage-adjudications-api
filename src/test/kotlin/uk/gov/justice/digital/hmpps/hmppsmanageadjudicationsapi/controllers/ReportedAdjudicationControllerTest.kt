@@ -252,10 +252,10 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         )
     }
 
-    private fun getMyAdjudicationsWithFilter(date: LocalDate, status: ReportedAdjudicationStatus): ResultActions {
+    private fun getMyAdjudicationsWithFilter(date: LocalDate, reportedAdjudicationStatus: ReportedAdjudicationStatus): ResultActions {
       return mockMvc
         .perform(
-          get("/reported-adjudications/my/agency/MDI?startDate=$date&endDate=$date&status=$status&page=0&size=20&sort=incidentDate,DESC")
+          get("/reported-adjudications/my/agency/MDI?startDate=$date&endDate=$date&status=$reportedAdjudicationStatus&page=0&size=20&sort=incidentDate,DESC")
             .header("Content-Type", "application/json")
         )
     }
@@ -307,7 +307,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
   }
 
   @Nested
-  inner class ReportedAdjudicationSetStatus {
+  inner class ReportedAdjudicationSetReportedAdjudicationStatus {
 
     private fun makeReportedAdjudicationSetStatusRequest(
       adjudicationNumber: Long,

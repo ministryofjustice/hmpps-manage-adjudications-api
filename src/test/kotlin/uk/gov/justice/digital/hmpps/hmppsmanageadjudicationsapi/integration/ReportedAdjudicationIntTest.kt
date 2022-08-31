@@ -1,24 +1,18 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
-import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import java.time.format.DateTimeFormatter
 
 class ReportedAdjudicationIntTest : IntegrationTestBase() {
-
-  @Autowired
-  lateinit var reportedAdjudicationRepository: ReportedAdjudicationRepository
 
   @BeforeEach
   fun setUp() {
@@ -96,7 +90,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
   fun `return a page of reported adjudications for agency with filters`(
     startDate: String,
     endDate: String,
-    status: ReportedAdjudicationStatus,
+    reportedAdjudicationStatus: ReportedAdjudicationStatus,
     expectedCount: Int,
     adjudicationNumber: Long
   ) {
@@ -104,7 +98,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     initMyReportData()
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/MDI?startDate=$startDate&endDate=$endDate&status=$status&page=0&size=20")
+      .uri("/reported-adjudications/agency/MDI?startDate=$startDate&endDate=$endDate&status=$reportedAdjudicationStatus&page=0&size=20")
       .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -121,7 +115,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
   fun `return a page of reported adjudications completed by the current user with filters`(
     startDate: String,
     endDate: String,
-    status: ReportedAdjudicationStatus,
+    reportedAdjudicationStatus: ReportedAdjudicationStatus,
     expectedCount: Int,
     adjudicationNumber: Long
   ) {
@@ -129,7 +123,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     initMyReportData()
 
     webTestClient.get()
-      .uri("/reported-adjudications/my/agency/MDI?startDate=$startDate&endDate=$endDate&status=$status&page=0&size=20")
+      .uri("/reported-adjudications/my/agency/MDI?startDate=$startDate&endDate=$endDate&status=$reportedAdjudicationStatus&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -420,10 +414,6 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       )
       .exchange()
       .expectStatus().is5xxServerError
-
-    val savedAdjudication =
-      reportedAdjudicationRepository.findByReportNumber(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    Assertions.assertThat(savedAdjudication!!.status).isEqualTo(ReportedAdjudicationStatus.AWAITING_REVIEW)
   }
 
   @Test

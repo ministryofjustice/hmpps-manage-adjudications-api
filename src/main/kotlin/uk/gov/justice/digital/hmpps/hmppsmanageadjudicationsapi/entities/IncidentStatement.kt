@@ -8,7 +8,7 @@ import javax.persistence.Table
 @Table(name = "incident_statement")
 data class IncidentStatement(
   override val id: Long? = null,
-  @Length(max = 4000)
+  @field:Length(max = 4000)
   var statement: String? = null,
   var completed: Boolean? = false
 ) : BaseEntity()

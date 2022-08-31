@@ -43,7 +43,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
@@ -52,6 +51,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonA
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.Clock
 import java.time.Instant.ofEpochMilli
 import java.time.LocalDateTime
@@ -1061,24 +1061,26 @@ class DraftAdjudicationServiceTest {
 
       @BeforeEach
       fun beforeEach() {
-        whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-          Optional.of(
-            DraftAdjudication(
-              id = 1,
-              prisonerNumber = "A12345",
-              agencyId = "MDI",
-              incidentDetails = IncidentDetails(
-                locationId = 1,
-                dateTimeOfIncident = INCIDENT_TIME,
-                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-              ),
-              incidentRole = incidentRoleWithAllValuesSet(),
-              offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
-              incidentStatement = IncidentStatement(statement = "test"),
-              isYouthOffender = false
-            )
-          )
+        val draft = DraftAdjudication(
+          id = 1,
+          prisonerNumber = "A12345",
+          agencyId = "MDI",
+          incidentDetails = IncidentDetails(
+            locationId = 1,
+            dateTimeOfIncident = INCIDENT_TIME,
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          ),
+          incidentRole = incidentRoleWithAllValuesSet(),
+          offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+          incidentStatement = IncidentStatement(statement = "test"),
+          isYouthOffender = false
         )
+        draft.createDateTime = LocalDateTime.now()
+
+        whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+          Optional.of(draft)
+        )
+
         whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
           NomisAdjudicationCreationRequest(
             adjudicationNumber = 123456L,
@@ -1089,6 +1091,7 @@ class DraftAdjudicationServiceTest {
           val passedInAdjudication = it.arguments[0] as ReportedAdjudication
           passedInAdjudication.createdByUserId = "A_SMITH"
           passedInAdjudication.createDateTime = REPORTED_DATE_TIME
+          passedInAdjudication.status = ReportedAdjudicationStatus.AWAITING_REVIEW
           passedInAdjudication
         }
       }
@@ -1181,27 +1184,7 @@ class DraftAdjudicationServiceTest {
     @Nested
     inner class CompleteAPreviouslyCompletedAdjudicationCheckStateChange {
       private val INCIDENT_TIME = LocalDateTime.now(clock)
-
-      private fun reportedAdjudication(): ReportedAdjudication = ReportedAdjudication(
-        id = 1,
-        prisonerNumber = "A12345",
-        bookingId = 1,
-        reportNumber = 123,
-        agencyId = "MDI",
-        locationId = 2,
-        offenceDetails = mutableListOf(),
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        dateTimeOfIncident = LocalDateTime.now(clock),
-        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
-        isYouthOffender = false,
-        incidentRoleAssociatedPrisonersNumber = null,
-        incidentRoleAssociatedPrisonersName = null,
-        incidentRoleCode = null,
-        statement = "test",
-        damages = mutableListOf(),
-        evidence = mutableListOf(),
-        witnesses = mutableListOf()
-      )
+      private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = INCIDENT_TIME)
 
       @BeforeEach
       fun beforeEach() {
@@ -1236,6 +1219,7 @@ class DraftAdjudicationServiceTest {
           val passedInAdjudication = it.arguments[0] as ReportedAdjudication
           passedInAdjudication.createdByUserId = "A_SMITH"
           passedInAdjudication.createDateTime = REPORTED_DATE_TIME
+          passedInAdjudication.status = ReportedAdjudicationStatus.AWAITING_REVIEW
           passedInAdjudication
         }
       }
@@ -1247,9 +1231,7 @@ class DraftAdjudicationServiceTest {
       )
       fun `cannot complete when the reported adjudication is in the wrong state`(from: ReportedAdjudicationStatus) {
         whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-          reportedAdjudication().also {
-            it.status = from
-          }
+          reportedAdjudication.also { it.status = from }
         )
         Assertions.assertThrows(IllegalStateException::class.java) {
           draftAdjudicationService.completeDraftAdjudication(1)
@@ -1263,7 +1245,7 @@ class DraftAdjudicationServiceTest {
       )
       fun `completes when the reported adjudication is in a correct state`(from: ReportedAdjudicationStatus) {
         whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-          reportedAdjudication().also {
+          reportedAdjudication.also {
             it.status = from
           }
         )
@@ -1277,6 +1259,9 @@ class DraftAdjudicationServiceTest {
 
     @Nested
     inner class CompleteAPreviouslyCompletedAdjudication {
+
+      private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = LocalDateTime.now(clock).minusDays(2))
+
       @BeforeEach
       fun beforeEach() {
         whenever(draftAdjudicationRepository.findById(any())).thenReturn(
@@ -1303,40 +1288,23 @@ class DraftAdjudicationServiceTest {
                 Evidence(code = EvidenceCode.BAGGED_AND_TAGGED, details = "details", reporter = "Fred")
               ),
               witnesses = mutableListOf(
-                Witness(code = WitnessCode.STAFF, firstName = "prison", lastName = "officer", reporter = "Fred")
+                Witness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
               )
             )
           )
         )
         whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-          ReportedAdjudication(
-            id = 1,
-            prisonerNumber = "A12345",
-            bookingId = 33L,
-            reportNumber = 123L,
-            agencyId = "MDI",
-            locationId = 2,
-            dateTimeOfIncident = LocalDateTime.now(clock).minusDays(2),
-            handoverDeadline = LocalDateTime.now(clock),
-            isYouthOffender = false,
-            incidentRoleCode = null,
-            incidentRoleAssociatedPrisonersNumber = null,
-            incidentRoleAssociatedPrisonersName = null,
-            offenceDetails = mutableListOf(ReportedOffence(offenceCode = 3, paragraphCode = "4")),
-            statement = "olddata",
-            status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-            statusReason = null,
-            statusDetails = null,
-            damages = mutableListOf(
+          reportedAdjudication.also {
+            it.damages = mutableListOf(
               ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod")
-            ),
-            evidence = mutableListOf(
-              ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Rod")
-            ),
-            witnesses = mutableListOf(
-              ReportedWitness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Rod")
             )
-          )
+            it.evidence = mutableListOf(
+              ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Rod")
+            )
+            it.witnesses = mutableListOf(
+              ReportedWitness(code = WitnessCode.STAFF, firstName = "staff", lastName = "member", reporter = "Rod")
+            )
+          }
         )
         whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
           NomisAdjudicationCreationRequest(
@@ -1375,7 +1343,7 @@ class DraftAdjudicationServiceTest {
 
         assertThat(reportedAdjudicationArgumentCaptor.value)
           .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId")
-          .contains("A12345", 123L, 33L, "MDI")
+          .contains("A12345", 1235L, 234L, "MDI")
 
         assertThat(reportedAdjudicationArgumentCaptor.value)
           .extracting(
@@ -1465,15 +1433,15 @@ class DraftAdjudicationServiceTest {
           )
           .contains(
             Tuple(
-              WitnessCode.STAFF,
+              WitnessCode.PRISON_OFFICER,
               "prison",
               "officer",
               "Fred"
             ),
             Tuple(
-              WitnessCode.PRISON_OFFICER,
-              "prison",
-              "officer",
+              WitnessCode.STAFF,
+              "staff",
+              "member",
               "Rod"
             ),
           )
@@ -2196,6 +2164,7 @@ class DraftAdjudicationServiceTest {
   }
 
   companion object {
+    private val entityBuilder: EntityBuilder = EntityBuilder()
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
