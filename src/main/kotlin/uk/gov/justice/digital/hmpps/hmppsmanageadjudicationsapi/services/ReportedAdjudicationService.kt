@@ -57,7 +57,7 @@ class ReportedAdjudicationService(
       throw EntityNotFoundException("ReportedAdjudication not found for $id")
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
     fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
-    fun statuses(reportedAdjudicationStatus: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = reportedAdjudicationStatus.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
+    fun statuses(status: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
   }
 
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
@@ -164,15 +164,15 @@ class ReportedAdjudicationService(
     }.toMutableList()
   }
 
-  fun setStatus(adjudicationNumber: Long, reportedAdjudicationStatus: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
-    val username = if (reportedAdjudicationStatus == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername
+  fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
+    val username = if (status == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername
     val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
       ?: throw EntityNotFoundException("ReportedAdjudication not found for reported adjudication number $adjudicationNumber")
     val reportedAdjudicationToReturn = reportedAdjudication.let {
-      it.transition(to = reportedAdjudicationStatus, reason = statusReason, details = statusDetails, reviewUserId = username)
+      it.transition(to = status, reason = statusReason, details = statusDetails, reviewUserId = username)
       reportedAdjudicationRepository.save(it).toDto(this.offenceCodeLookupService)
     }
-    if (reportedAdjudicationStatus.isAccepted()) {
+    if (status.isAccepted()) {
       saveToPrisonApi(reportedAdjudication)
     }
 
@@ -181,7 +181,7 @@ class ReportedAdjudicationService(
       mapOf(
         "reportNumber" to reportedAdjudication.reportNumber.toString(),
         "agencyId" to reportedAdjudication.agencyId,
-        "status" to reportedAdjudicationStatus.name,
+        "status" to status.name,
         "reason" to statusReason
       ),
       null
