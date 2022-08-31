@@ -392,7 +392,6 @@ class DraftAdjudicationService(
       TELEMETRY_EVENT,
       mapOf(
         "adjudicationNumber" to draftAdjudication.id.toString(),
-        "submitted" to (reportNumber != null).toString(),
         "reportNumber" to reportNumber.toString()
       ),
       null
