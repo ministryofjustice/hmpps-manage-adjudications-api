@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
 import org.assertj.core.groups.Tuple
@@ -52,6 +53,7 @@ class ReportedAdjudicationServiceTest {
   private val prisonApiGateway: PrisonApiGateway = mock()
   private val offenceCodeLookupService: OffenceCodeLookupService = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
+  private val telemetryClient: TelemetryClient = mock()
   private lateinit var reportedAdjudicationService: ReportedAdjudicationService
 
   @BeforeEach
@@ -64,7 +66,8 @@ class ReportedAdjudicationServiceTest {
         reportedAdjudicationRepository,
         prisonApiGateway,
         offenceCodeLookupService,
-        authenticationFacade
+        authenticationFacade,
+        telemetryClient
       )
 
     whenever(offenceCodeLookupService.getParagraphNumber(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
@@ -514,6 +517,17 @@ class ReportedAdjudicationServiceTest {
       } else {
         verify(prisonApiGateway, never()).publishAdjudication(any())
       }
+
+      verify(telemetryClient).trackEvent(
+        ReportedAdjudicationService.TELEMETRY_EVENT,
+        mapOf(
+          "reportNumber" to reportedAdjudication().reportNumber.toString(),
+          "agencyId" to reportedAdjudication().agencyId,
+          "status" to to.name,
+          "reason" to null,
+        ),
+        null
+      )
     }
 
     @Test
@@ -547,6 +561,17 @@ class ReportedAdjudicationServiceTest {
       assertThat(actualReturnedReportedAdjudication.reviewedByUserId).isEqualTo("ITAG_USER")
       assertThat(actualReturnedReportedAdjudication.statusReason).isEqualTo("Status Reason")
       assertThat(actualReturnedReportedAdjudication.statusDetails).isEqualTo("Status Reason String")
+
+      verify(telemetryClient).trackEvent(
+        ReportedAdjudicationService.TELEMETRY_EVENT,
+        mapOf(
+          "reportNumber" to existingReportedAdjudication.reportNumber.toString(),
+          "agencyId" to existingReportedAdjudication.agencyId,
+          "status" to ReportedAdjudicationStatus.REJECTED.name,
+          "reason" to "Status Reason"
+        ),
+        null
+      )
     }
 
     @ParameterizedTest
