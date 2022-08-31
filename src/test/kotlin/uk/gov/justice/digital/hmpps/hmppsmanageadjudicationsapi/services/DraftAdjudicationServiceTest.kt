@@ -161,6 +161,7 @@ class DraftAdjudicationServiceTest {
         DraftAdjudicationService.TELEMETRY_EVENT,
         mapOf(
           "adjudicationNumber" to draftAdjudication.id.toString(),
+          "agencyId" to "MDI",
           "reportNumber" to "null"
         ),
         null
@@ -1150,6 +1151,7 @@ class DraftAdjudicationServiceTest {
           DraftAdjudicationService.TELEMETRY_EVENT,
           mapOf(
             "adjudicationNumber" to "1",
+            "agencyId" to "MDI",
             "reportNumber" to "123456"
           ),
           null

@@ -180,6 +180,7 @@ class ReportedAdjudicationService(
       TELEMETRY_EVENT,
       mapOf(
         "reportNumber" to reportedAdjudication.reportNumber.toString(),
+        "agencyId" to reportedAdjudication.agencyId,
         "status" to status.name,
         "reason" to statusReason
       ),

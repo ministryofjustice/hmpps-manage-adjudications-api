@@ -522,6 +522,7 @@ class ReportedAdjudicationServiceTest {
         ReportedAdjudicationService.TELEMETRY_EVENT,
         mapOf(
           "reportNumber" to reportedAdjudication().reportNumber.toString(),
+          "agencyId" to reportedAdjudication().agencyId,
           "status" to to.name,
           "reason" to null,
         ),
@@ -565,6 +566,7 @@ class ReportedAdjudicationServiceTest {
         ReportedAdjudicationService.TELEMETRY_EVENT,
         mapOf(
           "reportNumber" to existingReportedAdjudication.reportNumber.toString(),
+          "agencyId" to existingReportedAdjudication.agencyId,
           "status" to ReportedAdjudicationStatus.REJECTED.name,
           "reason" to "Status Reason"
         ),
