@@ -1288,7 +1288,7 @@ class DraftAdjudicationServiceTest {
                 Evidence(code = EvidenceCode.BAGGED_AND_TAGGED, details = "details", reporter = "Fred")
               ),
               witnesses = mutableListOf(
-                Witness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
+                Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
               )
             )
           )
@@ -1433,7 +1433,7 @@ class DraftAdjudicationServiceTest {
           )
           .contains(
             Tuple(
-              WitnessCode.PRISON_OFFICER,
+              WitnessCode.OFFICER,
               "prison",
               "officer",
               "Fred"
@@ -2003,7 +2003,7 @@ class DraftAdjudicationServiceTest {
         offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
         isYouthOffender = true,
         witnesses = mutableListOf(
-          Witness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
+          Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
         )
       )
 
@@ -2019,7 +2019,7 @@ class DraftAdjudicationServiceTest {
       val response = draftAdjudicationService.setWitnesses(
         1,
         listOf(
-          WitnessRequestItem(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer")
+          WitnessRequestItem(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer")
         )
       )
 
@@ -2027,7 +2027,7 @@ class DraftAdjudicationServiceTest {
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.witnesses!!.size).isEqualTo(1)
-      assertThat(argumentCaptor.value.witnesses!!.first().code).isEqualTo(WitnessCode.PRISON_OFFICER)
+      assertThat(argumentCaptor.value.witnesses!!.first().code).isEqualTo(WitnessCode.OFFICER)
       assertThat(argumentCaptor.value.witnesses!!.first().firstName).isEqualTo("prison")
       assertThat(argumentCaptor.value.witnesses!!.first().lastName).isEqualTo("officer")
       assertThat(argumentCaptor.value.witnesses!!.first().reporter).isEqualTo("Fred")
@@ -2040,7 +2040,7 @@ class DraftAdjudicationServiceTest {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
 
       assertThatThrownBy {
-        draftAdjudicationService.setWitnesses(1, listOf(WitnessRequestItem(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer")))
+        draftAdjudicationService.setWitnesses(1, listOf(WitnessRequestItem(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer")))
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
     }
@@ -2076,7 +2076,7 @@ class DraftAdjudicationServiceTest {
         isYouthOffender = true,
         witnesses = mutableListOf(
           Witness(code = WitnessCode.STAFF, firstName = "first", lastName = "last", reporter = "Rod"),
-          Witness(code = WitnessCode.PRISON_OFFICER, firstName = "details", lastName = "last", reporter = "Fred")
+          Witness(code = WitnessCode.OFFICER, firstName = "details", lastName = "last", reporter = "Fred")
         )
       )
 
@@ -2132,7 +2132,7 @@ class DraftAdjudicationServiceTest {
             draftAdjudication.witnesses!!.first().lastName,
             draftAdjudication.witnesses!!.first().reporter
           ),
-          WitnessRequestItem(WitnessCode.PRISON_OFFICER, "first", "last", "Fred")
+          WitnessRequestItem(WitnessCode.OFFICER, "first", "last", "Fred")
         )
       )
 
@@ -2144,7 +2144,7 @@ class DraftAdjudicationServiceTest {
       assertThat(argumentCaptor.value.witnesses!!.first().firstName).isEqualTo("first")
       assertThat(argumentCaptor.value.witnesses!!.first().lastName).isEqualTo("last")
       assertThat(argumentCaptor.value.witnesses!!.first().reporter).isEqualTo("Rod")
-      assertThat(argumentCaptor.value.witnesses!!.last().code).isEqualTo(WitnessCode.PRISON_OFFICER)
+      assertThat(argumentCaptor.value.witnesses!!.last().code).isEqualTo(WitnessCode.OFFICER)
       assertThat(argumentCaptor.value.witnesses!!.last().firstName).isEqualTo("first")
       assertThat(argumentCaptor.value.witnesses!!.last().lastName).isEqualTo("last")
       assertThat(argumentCaptor.value.witnesses!!.last().reporter).isEqualTo("Fred")

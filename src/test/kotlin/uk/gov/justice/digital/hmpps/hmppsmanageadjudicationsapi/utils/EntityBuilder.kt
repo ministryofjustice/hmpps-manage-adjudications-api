@@ -63,7 +63,7 @@ class EntityBuilder {
       ),
       witnesses = mutableListOf(
         ReportedWitness(
-          code = WitnessCode.PRISON_OFFICER,
+          code = WitnessCode.OFFICER,
           firstName = "prison",
           lastName = "officer",
           reporter = "Fred"

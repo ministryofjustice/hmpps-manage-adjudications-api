@@ -710,7 +710,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "witnesses" to listOf(
             WitnessRequestItem(
-              code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer"
+              code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer"
             )
           ),
         )
@@ -720,7 +720,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.witnesses[0].code")
-      .isEqualTo(WitnessCode.PRISON_OFFICER.name)
+      .isEqualTo(WitnessCode.OFFICER.name)
       .jsonPath("$.draftAdjudication.witnesses[0].firstName")
       .isEqualTo("prison")
       .jsonPath("$.draftAdjudication.witnesses[0].reporter")
@@ -750,7 +750,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "witnesses" to listOf(
             WitnessRequestItem(
-              code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer"
+              code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer"
             ),
             WitnessRequestItem(
               code = WitnessCode.STAFF, firstName = "staff", lastName = "member", reporter = "ITAG_ALO"
@@ -763,7 +763,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.witnesses[0].code")
-      .isEqualTo(WitnessCode.PRISON_OFFICER.name)
+      .isEqualTo(WitnessCode.OFFICER.name)
       .jsonPath("$.draftAdjudication.witnesses[0].firstName")
       .isEqualTo("prison")
       .jsonPath("$.draftAdjudication.witnesses[0].reporter")
