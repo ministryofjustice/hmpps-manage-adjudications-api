@@ -942,7 +942,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     private val ASSOCIATED_PRISONER_WITH_ALL_VALUES_REQUEST = IncidentRoleAssociatedPrisonerRequest("B23456", "Associated Prisoner")
     private val DAMAGES_REQUEST = DamagesRequest(listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
     private val EVIDENCE_REQUEST = EvidenceRequest(listOf(EvidenceRequestItem(code = EvidenceCode.PHOTO, details = "details")))
-    private val WITNESSES_REQUEST = WitnessesRequest(listOf(WitnessRequestItem(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer")))
+    private val WITNESSES_REQUEST = WitnessesRequest(listOf(WitnessRequestItem(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer")))
     private val BASIC_OFFENCE_REQUEST = OffenceDetailsRequestItem(offenceCode = 3)
     private val BASIC_OFFENCE_RESPONSE_DTO = OffenceDetailsDto(
       offenceCode = 3,

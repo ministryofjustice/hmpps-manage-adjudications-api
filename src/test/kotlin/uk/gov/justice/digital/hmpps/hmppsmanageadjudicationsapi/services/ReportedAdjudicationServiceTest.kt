@@ -693,7 +693,7 @@ class ReportedAdjudicationServiceTest {
         Evidence(code = EvidenceCode.PHOTO, identifier = null, details = "details", reporter = "Fred")
       ),
       witnesses = mutableListOf(
-        Witness(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
+        Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
       )
     )
 
@@ -784,7 +784,7 @@ class ReportedAdjudicationServiceTest {
         .extracting("code", "firstName", "lastName", "reporter")
         .contains(
           Tuple(
-            WitnessCode.PRISON_OFFICER, "prison", "officer", "Fred"
+            WitnessCode.OFFICER, "prison", "officer", "Fred"
           )
         )
     }

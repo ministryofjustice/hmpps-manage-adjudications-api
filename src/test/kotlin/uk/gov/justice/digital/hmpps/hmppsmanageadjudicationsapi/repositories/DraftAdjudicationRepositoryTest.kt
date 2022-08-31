@@ -347,7 +347,7 @@ class DraftAdjudicationRepositoryTest {
       ),
       witnesses = mutableListOf(
         Witness(
-          code = WitnessCode.PRISON_OFFICER,
+          code = WitnessCode.OFFICER,
           firstName = "prison",
           lastName = "officer",
           reporter = "Fred"

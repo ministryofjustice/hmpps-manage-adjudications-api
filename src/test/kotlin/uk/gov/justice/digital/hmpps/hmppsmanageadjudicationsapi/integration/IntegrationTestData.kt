@@ -65,7 +65,7 @@ class IntegrationTestData(
     val UPDATED_DAMAGES = listOf(DamagesTestDataSet(code = DamageCode.REDECORATION, details = "details"))
     val DEFAULT_EVIDENCE = listOf(EvidenceTestDataSet(code = EvidenceCode.PHOTO, details = "details"))
     val UPDATED_EVIDENCE = listOf(EvidenceTestDataSet(code = EvidenceCode.BAGGED_AND_TAGGED, details = "details"))
-    val DEFAULT_WITNESSES = listOf(WitnessTestDataSet(code = WitnessCode.PRISON_OFFICER, firstName = "prison", lastName = "officer"))
+    val DEFAULT_WITNESSES = listOf(WitnessTestDataSet(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer"))
     val UPDATED_WITNESSES = listOf(WitnessTestDataSet(code = WitnessCode.STAFF, firstName = "staff", lastName = "member"))
 
     const val UPDATED_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-13T10:00:00" // 13 is saturday

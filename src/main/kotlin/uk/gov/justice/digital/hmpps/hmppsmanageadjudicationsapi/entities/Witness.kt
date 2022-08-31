@@ -8,9 +8,9 @@ import javax.persistence.Enumerated
 import javax.persistence.Table
 
 enum class WitnessCode {
-  PRISON_OFFICER,
+  OFFICER,
   STAFF,
-  OTHER,
+  OTHER_PERSON,
 }
 
 @Entity
