@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
+import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.EvidenceRequestItem
@@ -86,11 +87,13 @@ class DraftAdjudicationService(
   val prisonApiGateway: PrisonApiGateway,
   val offenceCodeLookupService: OffenceCodeLookupService,
   val authenticationFacade: AuthenticationFacade,
+  val telemetryClient: TelemetryClient
 ) {
 
   companion object {
     private const val DAYS_TO_ACTION = 2L
     const val DAYS_TO_DELETE = 1L
+    const val TELEMETRY_EVENT = "DraftAdjudicationEvent"
 
     fun daysToActionFromIncident(incidentDate: LocalDateTime): LocalDateTime = incidentDate.plusDays(DAYS_TO_ACTION)
   }
@@ -118,9 +121,11 @@ class DraftAdjudicationService(
       reportNumber = null,
       reportByUserId = null,
     )
-    return draftAdjudicationRepository
-      .save(draftAdjudication)
-      .toDto(offenceCodeLookupService)
+
+    val saved = draftAdjudicationRepository.save(draftAdjudication)
+    telemetryCapture(draftAdjudication = saved, reportNumber = null)
+
+    return saved.toDto(offenceCodeLookupService)
   }
 
   fun getDraftAdjudicationDetails(id: Long): DraftAdjudicationDto {
@@ -356,6 +361,7 @@ class DraftAdjudicationService(
 
     val isNew = draftAdjudication.reportNumber == null
     val generatedReportedAdjudication = saveAdjudication(draftAdjudication, isNew)
+    telemetryCapture(draftAdjudication, generatedReportedAdjudication.reportNumber)
 
     draftAdjudicationRepository.delete(draftAdjudication)
 
@@ -378,6 +384,18 @@ class DraftAdjudicationService(
     return OffenceRuleDetailsDto(
       paragraphNumber = offenceCodeLookupService.getParagraphNumber(offenceCode, isYouthOffender),
       paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode, isYouthOffender),
+    )
+  }
+
+  private fun telemetryCapture(draftAdjudication: DraftAdjudication, reportNumber: Long?) {
+    telemetryClient.trackEvent(
+      TELEMETRY_EVENT,
+      mapOf(
+        "adjudicationNumber" to draftAdjudication.id.toString(),
+        "agencyId" to draftAdjudication.agencyId,
+        "reportNumber" to reportNumber.toString()
+      ),
+      null
     )
   }
 
