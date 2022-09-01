@@ -552,57 +552,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `update damages to the draft adjudication`() {
-    val intTestData = integrationTestData()
-
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .completeDraft()
-
-    val createdDraftDetails = intTestData.recallCompletedDraftAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
-
-    webTestClient.put()
-      .uri("/draft-adjudications/${createdDraftDetails.draftAdjudication.id}/damages/edit")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "damages" to listOf(
-            DamageRequestItem(
-              code = DamageCode.ELECTRICAL_REPAIR, details = "details 2", reporter = "ITAG_ALO"
-            ),
-            DamageRequestItem(
-              code = DamageCode.CLEANING, details = "details", reporter = "B_MILLS"
-            )
-          ),
-        )
-      )
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.damages[0].code")
-      .isEqualTo(DamageCode.CLEANING.name)
-      .jsonPath("$.draftAdjudication.damages[0].details")
-      .isEqualTo("details")
-      .jsonPath("$.draftAdjudication.damages[0].reporter")
-      .isEqualTo("B_MILLS")
-      .jsonPath("$.draftAdjudication.damages[1].code")
-      .isEqualTo(DamageCode.ELECTRICAL_REPAIR.name)
-      .jsonPath("$.draftAdjudication.damages[1].details")
-      .isEqualTo("details 2")
-      .jsonPath("$.draftAdjudication.damages[1].reporter")
-      .isEqualTo("ITAG_ALO")
-  }
-
-  @Test
   fun `add evidence to the draft adjudication`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
@@ -641,55 +590,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `update evidence to the draft adjudication`() {
-    val testAdjudication = IntegrationTestData.ADJUDICATION_1
-    val intTestData = integrationTestData()
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
-
-    val intTestScenario = intTestBuilder
-      .startDraft(testAdjudication)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addEvidence()
-      .completeDraft()
-
-    val draftId = intTestScenario.getDraftId()
-
-    webTestClient.put()
-      .uri("/draft-adjudications/$draftId/evidence/edit")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "evidence" to listOf(
-            EvidenceRequestItem(
-              code = EvidenceCode.PHOTO, details = "details", reporter = ""
-            ),
-            EvidenceRequestItem(
-              code = EvidenceCode.BAGGED_AND_TAGGED, details = "details", reporter = "ITAG_ALO"
-            )
-          ),
-        )
-      )
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.evidence[0].code")
-      .isEqualTo(EvidenceCode.PHOTO.name)
-      .jsonPath("$.draftAdjudication.evidence[0].details")
-      .isEqualTo("details")
-      .jsonPath("$.draftAdjudication.evidence[0].reporter")
-      .isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.evidence[1].code")
-      .isEqualTo(EvidenceCode.BAGGED_AND_TAGGED.name)
-      .jsonPath("$.draftAdjudication.evidence[1].details")
-      .isEqualTo("details")
-      .jsonPath("$.draftAdjudication.evidence[1].reporter")
-      .isEqualTo("ITAG_ALO")
-  }
-
-  @Test
   fun `add witnesses to the draft adjudication`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
@@ -725,57 +625,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo("prison")
       .jsonPath("$.draftAdjudication.witnesses[0].reporter")
       .isEqualTo("ITAG_USER")
-  }
-
-  @Test
-  fun `update witnesses to the draft adjudication`() {
-    val testAdjudication = IntegrationTestData.ADJUDICATION_1
-    val intTestData = integrationTestData()
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
-
-    val intTestScenario = intTestBuilder
-      .startDraft(testAdjudication)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addWitnesses()
-      .completeDraft()
-
-    val draftId = intTestScenario.getDraftId()
-
-    webTestClient.put()
-      .uri("/draft-adjudications/$draftId/witnesses/edit")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "witnesses" to listOf(
-            WitnessRequestItem(
-              code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer"
-            ),
-            WitnessRequestItem(
-              code = WitnessCode.STAFF, firstName = "staff", lastName = "member", reporter = "ITAG_ALO"
-            )
-          ),
-        )
-      )
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.witnesses[0].code")
-      .isEqualTo(WitnessCode.OFFICER.name)
-      .jsonPath("$.draftAdjudication.witnesses[0].firstName")
-      .isEqualTo("prison")
-      .jsonPath("$.draftAdjudication.witnesses[0].reporter")
-      .isEqualTo("ITAG_USER")
-      .jsonPath("$.draftAdjudication.witnesses[1].code")
-      .isEqualTo(WitnessCode.STAFF.name)
-      .jsonPath("$.draftAdjudication.witnesses[1].firstName")
-      .isEqualTo("staff")
-      .jsonPath("$.draftAdjudication.witnesses[1].lastName")
-      .isEqualTo("member")
-      .jsonPath("$.draftAdjudication.witnesses[1].reporter")
-      .isEqualTo("ITAG_ALO")
   }
 
   companion object {

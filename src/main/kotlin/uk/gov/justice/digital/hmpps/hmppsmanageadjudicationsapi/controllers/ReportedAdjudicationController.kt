@@ -211,4 +211,36 @@ class ReportedAdjudicationController {
 
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
+
+  @PutMapping(value = ["/{adjudicationNumber}/evidence/edit"])
+  @Operation(summary = "Updates the evidence for the reported adjudication.", description = "0 or more evidence to be supplied, only updates records owned by current user")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @ResponseStatus(HttpStatus.OK)
+  fun updateEvidence(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody @Valid evidenceRequest: EvidenceRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = reportedAdjudicationService.updateEvidence(
+      adjudicationNumber,
+      evidenceRequest.evidence
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @PutMapping(value = ["/{adjudicationNumber}/witnesses/edit"])
+  @Operation(summary = "Updates the witnesses for the reported adjudication.", description = "0 or more witnesses to be supplied, only updates records owned by current user")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @ResponseStatus(HttpStatus.OK)
+  fun updateWitnesses(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody @Valid witnessesRequest: WitnessesRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = reportedAdjudicationService.updateWitnesses(
+      adjudicationNumber,
+      witnessesRequest.witnesses
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
 }

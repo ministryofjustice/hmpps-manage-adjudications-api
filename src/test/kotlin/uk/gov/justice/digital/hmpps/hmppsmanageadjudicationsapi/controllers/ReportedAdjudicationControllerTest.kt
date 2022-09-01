@@ -28,7 +28,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -52,39 +54,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER")
     fun `returns the adjudication for a given id`() {
-      whenever(reportedAdjudicationService.getReportedAdjudicationDetails(anyLong())).thenReturn(
-        ReportedAdjudicationDto(
-          adjudicationNumber = 1,
-          prisonerNumber = "A12345",
-          bookingId = 123,
-          incidentDetails = IncidentDetailsDto(
-            locationId = 2,
-            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          isYouthOffender = false,
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
-          offenceDetails = listOf(
-            OffenceDto(
-              offenceCode = 2,
-              OffenceRuleDto(
-                paragraphNumber = "3",
-                paragraphDescription = "A paragraph description",
-              )
-            )
-          ),
-          incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
-          createdByUserId = "A_SMITH",
-          createdDateTime = REPORTED_DATE_TIME,
-          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-          reviewedByUserId = null,
-          statusReason = null,
-          statusDetails = null,
-          damages = listOf(),
-          evidence = listOf(),
-          witnesses = listOf()
-        )
-      )
+      whenever(reportedAdjudicationService.getReportedAdjudicationDetails(anyLong())).thenReturn(REPORTED_ADJUDICATION_DTO)
       makeGetAdjudicationRequest(1)
         .andExpect(status().isOk)
         .andExpect(jsonPath("$.reportedAdjudication.adjudicationNumber").value(1))
@@ -120,39 +90,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         )
       ).thenReturn(
         PageImpl(
-          listOf(
-            ReportedAdjudicationDto(
-              adjudicationNumber = 1,
-              prisonerNumber = "A12345",
-              bookingId = 123,
-              incidentDetails = IncidentDetailsDto(
-                locationId = 2,
-                dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-              ),
-              isYouthOffender = false,
-              incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
-              offenceDetails = listOf(
-                OffenceDto(
-                  offenceCode = 2,
-                  OffenceRuleDto(
-                    paragraphNumber = "3",
-                    paragraphDescription = "A paragraph description",
-                  )
-                )
-              ),
-              incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
-              createdByUserId = "A_SMITH",
-              createdDateTime = REPORTED_DATE_TIME,
-              status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-              reviewedByUserId = null,
-              statusReason = null,
-              statusDetails = null,
-              damages = listOf(),
-              evidence = listOf(),
-              witnesses = listOf()
-            )
-          ),
+          listOf(REPORTED_ADJUDICATION_DTO),
           Pageable.ofSize(20).withPage(0),
           1
         ),
@@ -373,39 +311,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           any(),
         )
-      ).thenReturn(
-        ReportedAdjudicationDto(
-          adjudicationNumber = 1,
-          prisonerNumber = "A12345",
-          bookingId = 123,
-          incidentDetails = IncidentDetailsDto(
-            locationId = 2,
-            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          isYouthOffender = false,
-          incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
-          offenceDetails = listOf(
-            OffenceDto(
-              offenceCode = 2,
-              OffenceRuleDto(
-                paragraphNumber = "3",
-                paragraphDescription = "A paragraph description",
-              )
-            )
-          ),
-          incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
-          createdByUserId = "A_SMITH",
-          createdDateTime = REPORTED_DATE_TIME,
-          status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-          reviewedByUserId = null,
-          statusReason = null,
-          statusDetails = null,
-          damages = listOf(),
-          evidence = listOf(),
-          witnesses = listOf()
-        )
-      )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
@@ -436,12 +342,94 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class UpdateEvidence {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        reportedAdjudicationService.updateEvidence(
+          anyLong(),
+          any(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      setEvidenceRequest(1, EVIDENCE_REQUEST).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the evidence`() {
+      setEvidenceRequest(1, EVIDENCE_REQUEST)
+        .andExpect(status().isOk)
+
+      verify(reportedAdjudicationService).updateEvidence(1, EVIDENCE_REQUEST.evidence)
+    }
+
+    private fun setEvidenceRequest(
+      id: Long,
+      evidence: EvidenceRequest?
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(evidence)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/evidence/edit")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
+  @Nested
+  inner class UpdateWitnesses {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        reportedAdjudicationService.updateWitnesses(
+          anyLong(),
+          any(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      setWitnessesRequest(1, WITNESSES_REQUEST).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the witnesses`() {
+      setWitnessesRequest(1, WITNESSES_REQUEST)
+        .andExpect(status().isOk)
+
+      verify(reportedAdjudicationService).updateWitnesses(1, WITNESSES_REQUEST.witnesses)
+    }
+
+    private fun setWitnessesRequest(
+      id: Long,
+      witnesses: WitnessesRequest?
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(witnesses)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/witnesses/edit")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private const val INCIDENT_STATEMENT = "A statement"
     private val DAMAGES_REQUEST = DamagesRequest(listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
+    private val WITNESSES_REQUEST = WitnessesRequest(listOf(WitnessRequestItem(WitnessCode.STAFF, "first", "last")))
+    private val EVIDENCE_REQUEST = EvidenceRequest(listOf(EvidenceRequestItem(EvidenceCode.PHOTO, "identifier", "details")))
     private val INCIDENT_ROLE_WITH_ALL_VALUES = IncidentRoleDto(
       "25a",
       OffenceRuleDetailsDto(
@@ -451,5 +439,38 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       "B23456",
       "Associated Prisoner",
     )
+
+    private val REPORTED_ADJUDICATION_DTO =
+      ReportedAdjudicationDto(
+        adjudicationNumber = 1,
+        prisonerNumber = "A12345",
+        bookingId = 123,
+        incidentDetails = IncidentDetailsDto(
+          locationId = 2,
+          dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        isYouthOffender = false,
+        incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+        offenceDetails = listOf(
+          OffenceDto(
+            offenceCode = 2,
+            OffenceRuleDto(
+              paragraphNumber = "3",
+              paragraphDescription = "A paragraph description",
+            )
+          )
+        ),
+        incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
+        createdByUserId = "A_SMITH",
+        createdDateTime = REPORTED_DATE_TIME,
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        reviewedByUserId = null,
+        statusReason = null,
+        statusDetails = null,
+        damages = listOf(),
+        evidence = listOf(),
+        witnesses = listOf()
+      )
   }
 }

@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.EvidenceRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.WitnessRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -495,6 +497,106 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.damages[1].details")
       .isEqualTo("details 2")
       .jsonPath("$.reportedAdjudication.damages[1].reporter")
+      .isEqualTo("ITAG_ALO")
+  }
+
+  @Test
+  fun `update evidence to the reported adjudication`() {
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addIncidentStatement()
+      .addDamages()
+      .addEvidence()
+      .addWitnesses()
+      .completeDraft()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/evidence/edit")
+      .headers(setHeaders(username = "ITAG_ALO"))
+      .bodyValue(
+        mapOf(
+          "evidence" to listOf(
+            EvidenceRequestItem(
+              code = EvidenceCode.BODY_WORN_CAMERA, details = "details 2", reporter = "ITAG_ALO"
+            ),
+            EvidenceRequestItem(
+              code = EvidenceCode.PHOTO, details = "details", reporter = "B_MILLS"
+            )
+          ),
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.evidence[0].code")
+      .isEqualTo(EvidenceCode.PHOTO.name)
+      .jsonPath("$.reportedAdjudication.evidence[0].details")
+      .isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.evidence[0].reporter")
+      .isEqualTo("B_MILLS")
+      .jsonPath("$.reportedAdjudication.evidence[1].code")
+      .isEqualTo(EvidenceCode.BODY_WORN_CAMERA.name)
+      .jsonPath("$.reportedAdjudication.evidence[1].details")
+      .isEqualTo("details 2")
+      .jsonPath("$.reportedAdjudication.evidence[1].reporter")
+      .isEqualTo("ITAG_ALO")
+  }
+
+  @Test
+  fun `update witnesses to the reported adjudication`() {
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addIncidentStatement()
+      .addDamages()
+      .addEvidence()
+      .addWitnesses()
+      .completeDraft()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/witnesses/edit")
+      .headers(setHeaders(username = "ITAG_ALO"))
+      .bodyValue(
+        mapOf(
+          "witnesses" to listOf(
+            WitnessRequestItem(
+              code = WitnessCode.STAFF, firstName = "first", lastName = "last", reporter = "ITAG_ALO"
+            ),
+            WitnessRequestItem(
+              code = WitnessCode.OFFICER, firstName = "first", lastName = "last", reporter = "B_MILLS"
+            )
+          ),
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.witnesses[0].code")
+      .isEqualTo(WitnessCode.OFFICER.name)
+      .jsonPath("$.reportedAdjudication.witnesses[0].firstName")
+      .isEqualTo("prison")
+      .jsonPath("$.reportedAdjudication.witnesses[0].reporter")
+      .isEqualTo("B_MILLS")
+      .jsonPath("$.reportedAdjudication.witnesses[1].code")
+      .isEqualTo(WitnessCode.STAFF.name)
+      .jsonPath("$.reportedAdjudication.witnesses[1].firstName")
+      .isEqualTo("first")
+      .jsonPath("$.reportedAdjudication.witnesses[1].reporter")
       .isEqualTo("ITAG_ALO")
   }
 

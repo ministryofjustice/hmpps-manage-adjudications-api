@@ -292,27 +292,6 @@ class DraftAdjudicationService(
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
 
-  fun updateDamages(id: Long, damages: List<DamageRequestItem>): DraftAdjudicationDto {
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
-    val reporter = authenticationFacade.currentUsername!!
-    val toPreserve = (draftAdjudication.damages ?: mutableListOf()).filter { it.reporter != reporter }
-
-    draftAdjudication.damages = draftAdjudication.damages ?: mutableListOf()
-    draftAdjudication.damages!!.clear()
-    draftAdjudication.damages!!.addAll(toPreserve)
-    draftAdjudication.damages!!.addAll(
-      damages.filter { it.reporter == reporter }.map {
-        Damage(
-          code = it.code,
-          details = it.details,
-          reporter = reporter
-        )
-      }
-    )
-
-    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
-  }
-
   fun setEvidence(id: Long, evidence: List<EvidenceRequestItem>): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
     val reporter = authenticationFacade.currentUsername!!
@@ -332,28 +311,6 @@ class DraftAdjudicationService(
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
 
-  fun updateEvidence(id: Long, evidence: List<EvidenceRequestItem>): DraftAdjudicationDto {
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
-    val reporter = authenticationFacade.currentUsername!!
-    val toPreserve = (draftAdjudication.evidence ?: mutableListOf()).filter { it.reporter != reporter }
-
-    draftAdjudication.evidence = draftAdjudication.evidence ?: mutableListOf()
-    draftAdjudication.evidence!!.clear()
-    draftAdjudication.evidence!!.addAll(toPreserve)
-    draftAdjudication.evidence!!.addAll(
-      evidence.filter { it.reporter == reporter }.map {
-        Evidence(
-          code = it.code,
-          identifier = it.identifier,
-          details = it.details,
-          reporter = reporter
-        )
-      }
-    )
-
-    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
-  }
-
   fun setWitnesses(id: Long, witnesses: List<WitnessRequestItem>): DraftAdjudicationDto {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
     val reporter = authenticationFacade.currentUsername!!
@@ -370,28 +327,6 @@ class DraftAdjudicationService(
         )
       }
     )
-    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
-  }
-
-  fun updateWitnesses(id: Long, witnesses: List<WitnessRequestItem>): DraftAdjudicationDto {
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
-    val reporter = authenticationFacade.currentUsername!!
-    val toPreserve = (draftAdjudication.witnesses ?: mutableListOf()).filter { it.reporter != reporter }
-
-    draftAdjudication.witnesses = draftAdjudication.witnesses ?: mutableListOf()
-    draftAdjudication.witnesses!!.clear()
-    draftAdjudication.witnesses!!.addAll(toPreserve)
-    draftAdjudication.witnesses!!.addAll(
-      witnesses.filter { it.reporter == reporter }.map {
-        Witness(
-          code = it.code,
-          firstName = it.firstName,
-          lastName = it.lastName,
-          reporter = reporter
-        )
-      }
-    )
-
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
 

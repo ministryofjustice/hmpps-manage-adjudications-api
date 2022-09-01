@@ -364,22 +364,6 @@ class DraftAdjudicationController {
     return DraftAdjudicationResponse(draftAdjudication)
   }
 
-  @PutMapping(value = ["/{id}/damages/edit"])
-  @Operation(summary = "Updates the damages for the draft adjudication.", description = "0 or more damages to be supplied, only updates records owned by current user")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
-  @ResponseStatus(HttpStatus.OK)
-  fun updateDamages(
-    @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid damagesRequest: DamagesRequest
-  ): DraftAdjudicationResponse {
-    val draftAdjudication = draftAdjudicationService.updateDamages(
-      id,
-      damagesRequest.damages
-    )
-
-    return DraftAdjudicationResponse(draftAdjudication)
-  }
-
   @PutMapping(value = ["/{id}/evidence"])
   @Operation(summary = "Set the evidence for the draft adjudication.", description = "0 or more evidence to be supplied")
   @PreAuthorize("hasAuthority('SCOPE_write')")
@@ -396,22 +380,6 @@ class DraftAdjudicationController {
     return DraftAdjudicationResponse(draftAdjudication)
   }
 
-  @PutMapping(value = ["/{id}/evidence/edit"])
-  @Operation(summary = "Updates the evidence for the draft adjudication.", description = "0 or more evidence to be supplied")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
-  @ResponseStatus(HttpStatus.OK)
-  fun updateEvidence(
-    @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid evidenceRequest: EvidenceRequest
-  ): DraftAdjudicationResponse {
-    val draftAdjudication = draftAdjudicationService.updateEvidence(
-      id,
-      evidenceRequest.evidence
-    )
-
-    return DraftAdjudicationResponse(draftAdjudication)
-  }
-
   @PutMapping(value = ["/{id}/witnesses"])
   @Operation(summary = "Set the witnesses for the draft adjudication.", description = "0 or more witnesses to be supplied")
   @PreAuthorize("hasAuthority('SCOPE_write')")
@@ -421,22 +389,6 @@ class DraftAdjudicationController {
     @RequestBody @Valid witnessesRequest: WitnessesRequest
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.setWitnesses(
-      id,
-      witnessesRequest.witnesses
-    )
-
-    return DraftAdjudicationResponse(draftAdjudication)
-  }
-
-  @PutMapping(value = ["/{id}/witnesses/edit"])
-  @Operation(summary = "Update the witnesses for the draft adjudication.", description = "0 or more witnesses to be supplied")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
-  @ResponseStatus(HttpStatus.OK)
-  fun updateWitnesses(
-    @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid witnessesRequest: WitnessesRequest
-  ): DraftAdjudicationResponse {
-    val draftAdjudication = draftAdjudicationService.updateWitnesses(
       id,
       witnessesRequest.witnesses
     )
