@@ -5,6 +5,8 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.EvidenceRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.WitnessRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
@@ -203,6 +205,50 @@ class ReportedAdjudicationService(
         ReportedDamage(
           code = it.code,
           details = it.details,
+          reporter = reporter
+        )
+      }
+    )
+
+    return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
+  }
+
+  fun updateEvidence(adjudicationNumber: Long, evidence: List<EvidenceRequestItem>): ReportedAdjudicationDto {
+    val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
+      ?: throwEntityNotFoundException(adjudicationNumber)
+    val reporter = authenticationFacade.currentUsername!!
+    val toPreserve = reportedAdjudication.evidence.filter { it.reporter != reporter }
+
+    reportedAdjudication.evidence.clear()
+    reportedAdjudication.evidence.addAll(toPreserve)
+    reportedAdjudication.evidence.addAll(
+      evidence.filter { it.reporter == reporter }.map {
+        ReportedEvidence(
+          code = it.code,
+          identifier = it.identifier,
+          details = it.details,
+          reporter = reporter
+        )
+      }
+    )
+
+    return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
+  }
+
+  fun updateWitnesses(adjudicationNumber: Long, witnesses: List<WitnessRequestItem>): ReportedAdjudicationDto {
+    val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
+      ?: throwEntityNotFoundException(adjudicationNumber)
+    val reporter = authenticationFacade.currentUsername!!
+    val toPreserve = reportedAdjudication.witnesses.filter { it.reporter != reporter }
+
+    reportedAdjudication.witnesses.clear()
+    reportedAdjudication.witnesses.addAll(toPreserve)
+    reportedAdjudication.witnesses.addAll(
+      witnesses.filter { it.reporter == reporter }.map {
+        ReportedWitness(
+          code = it.code,
+          firstName = it.firstName,
+          lastName = it.lastName,
           reporter = reporter
         )
       }
