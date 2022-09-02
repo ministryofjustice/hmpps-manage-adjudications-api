@@ -452,17 +452,9 @@ class DraftAdjudicationService(
       it.evidence.addAll(evidencePreserve)
       it.witnesses.addAll(witnessesPreserve)
 
-      draftAdjudication.damages.let { damages ->
-        it.damages.addAll(toReportedDamages(damages.filter { d -> d.reporter == reporter }.toMutableList()))
-      }
-
-      draftAdjudication.evidence.let { evidence ->
-        it.evidence.addAll(toReportedEvidence(evidence.filter { e -> e.reporter == reporter }.toMutableList()))
-      }
-
-      draftAdjudication.witnesses.let { witness ->
-        it.witnesses.addAll(toReportedWitnesses(witness.filter { w -> w.reporter == reporter }.toMutableList()))
-      }
+      it.damages.addAll(toReportedDamages(draftAdjudication.damages.filter { d -> d.reporter == reporter }.toMutableList()))
+      it.evidence.addAll(toReportedEvidence(draftAdjudication.evidence.filter { e -> e.reporter == reporter }.toMutableList()))
+      it.witnesses.addAll(toReportedWitnesses(draftAdjudication.witnesses.filter { w -> w.reporter == reporter }.toMutableList()))
 
       return reportedAdjudicationRepository.save(it)
     } ?: ReportedAdjudicationService.throwEntityNotFoundException(reportedAdjudicationNumber)
