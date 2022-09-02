@@ -23,7 +23,7 @@ data class DraftAdjudication(
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "incident_role_id")
   var incidentRole: IncidentRole? = null,
-  @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
+  @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "draft_adjudication_fk_id")
   var offenceDetails: MutableList<Offence> = mutableListOf(),
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)

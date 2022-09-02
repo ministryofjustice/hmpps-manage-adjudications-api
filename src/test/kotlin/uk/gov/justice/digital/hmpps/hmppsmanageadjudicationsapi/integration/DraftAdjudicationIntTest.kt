@@ -239,10 +239,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .setApplicableRules()
       .setOffenceData()
 
-    // Check we have offences
     val draftId = intTestScenario.getDraftId()
-    val initialDraft = draftAdjudicationRepository.findById(draftId)
-    assertThat(initialDraft.get().offenceDetails).hasSize(2)
 
     webTestClient.put()
       .uri("/draft-adjudications/$draftId/incident-role")
@@ -257,10 +254,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
-
-    // Check it has been removed from the DB
-    val draft = draftAdjudicationRepository.findById(draftId)
-    assertThat(draft.get().offenceDetails).hasSize(0)
+      .jsonPath("$.draftAdjudication.offenceDetails.size()").isEqualTo(0)
   }
 
   @Test
@@ -506,11 +500,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
-
-    val draft = draftAdjudicationRepository.findById(draftId)
-    assertThat(draft.get().isYouthOffender).isEqualTo(true)
-    // Check it has been removed from the DB
-    assertThat(draft.get().offenceDetails).hasSize(0)
+      .jsonPath("$.draftAdjudication.isYouthOffender").isEqualTo(true)
+      .jsonPath("$.draftAdjudication.offenceDetails.length()").isEqualTo(0)
   }
 
   @Test
