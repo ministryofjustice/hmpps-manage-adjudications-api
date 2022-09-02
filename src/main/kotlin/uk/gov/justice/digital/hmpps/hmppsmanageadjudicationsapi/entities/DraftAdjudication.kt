@@ -25,17 +25,17 @@ data class DraftAdjudication(
   var incidentRole: IncidentRole? = null,
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "draft_adjudication_fk_id")
-  var offenceDetails: MutableList<Offence>? = null,
+  var offenceDetails: MutableList<Offence> = mutableListOf(),
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "incident_statement_id")
   var incidentStatement: IncidentStatement? = null,
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "draft_adjudication_fk_id")
-  var damages: MutableList<Damage>? = null,
+  var damages: MutableList<Damage> = mutableListOf(),
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "draft_adjudication_fk_id")
-  var evidence: MutableList<Evidence>? = null,
+  var evidence: MutableList<Evidence> = mutableListOf(),
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "draft_adjudication_fk_id")
-  var witnesses: MutableList<Witness>? = null,
+  var witnesses: MutableList<Witness> = mutableListOf(),
 ) : BaseEntity()

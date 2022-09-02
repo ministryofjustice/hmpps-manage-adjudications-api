@@ -38,7 +38,7 @@ data class ReportedAdjudication(
   var statement: String,
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "reported_adjudication_fk_id")
-  var offenceDetails: MutableList<ReportedOffence>? = null,
+  var offenceDetails: MutableList<ReportedOffence>,
   var reviewUserId: String? = null,
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")

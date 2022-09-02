@@ -1565,7 +1565,7 @@ class DraftAdjudicationServiceTest {
         .extracting("offenceDetails")
         .contains(
           listOf(FULL_OFFENCE_DETAILS_RESPONSE_DTO),
-          null as List<OffenceDetailsDto>?
+          emptyList<OffenceDetailsDto>()
         )
 
       assertThat(adjudications)
@@ -1619,7 +1619,7 @@ class DraftAdjudicationServiceTest {
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.offenceDetails!!.isEmpty()).isEqualTo(deleteOffences)
+      assertThat(argumentCaptor.value.offenceDetails.isEmpty()).isEqualTo(deleteOffences)
       assertThat(argumentCaptor.value.isYouthOffender).isEqualTo(true)
       assertThat(response).isNotNull
     }
@@ -1673,10 +1673,10 @@ class DraftAdjudicationServiceTest {
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.damages!!.size).isEqualTo(1)
-      assertThat(argumentCaptor.value.damages!!.first().code).isEqualTo(DamageCode.CLEANING)
-      assertThat(argumentCaptor.value.damages!!.first().details).isEqualTo("details")
-      assertThat(argumentCaptor.value.damages!!.first().reporter).isEqualTo("Fred")
+      assertThat(argumentCaptor.value.damages.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.damages.first().code).isEqualTo(DamageCode.CLEANING)
+      assertThat(argumentCaptor.value.damages.first().details).isEqualTo("details")
+      assertThat(argumentCaptor.value.damages.first().reporter).isEqualTo("Fred")
 
       assertThat(response).isNotNull
     }
@@ -1689,15 +1689,6 @@ class DraftAdjudicationServiceTest {
         draftAdjudicationService.setDamages(1, listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
-    }
-
-    @Test
-    fun `saves when when no damages are provided`() {
-      draftAdjudicationService.setDamages(1, listOf())
-      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
-      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.damages!!.isEmpty()).isTrue()
     }
   }
 
@@ -1744,10 +1735,10 @@ class DraftAdjudicationServiceTest {
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.evidence!!.size).isEqualTo(1)
-      assertThat(argumentCaptor.value.evidence!!.first().code).isEqualTo(EvidenceCode.PHOTO)
-      assertThat(argumentCaptor.value.evidence!!.first().details).isEqualTo("details")
-      assertThat(argumentCaptor.value.evidence!!.first().reporter).isEqualTo("Fred")
+      assertThat(argumentCaptor.value.evidence.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.evidence.first().code).isEqualTo(EvidenceCode.PHOTO)
+      assertThat(argumentCaptor.value.evidence.first().details).isEqualTo("details")
+      assertThat(argumentCaptor.value.evidence.first().reporter).isEqualTo("Fred")
 
       assertThat(response).isNotNull
     }
@@ -1760,15 +1751,6 @@ class DraftAdjudicationServiceTest {
         draftAdjudicationService.setEvidence(1, listOf(EvidenceRequestItem(code = EvidenceCode.PHOTO, details = "details")))
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
-    }
-
-    @Test
-    fun `saves when no evidence are provided`() {
-      draftAdjudicationService.setEvidence(1, listOf())
-      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
-      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.evidence!!.isEmpty()).isTrue()
     }
   }
 
@@ -1815,11 +1797,11 @@ class DraftAdjudicationServiceTest {
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.witnesses!!.size).isEqualTo(1)
-      assertThat(argumentCaptor.value.witnesses!!.first().code).isEqualTo(WitnessCode.OFFICER)
-      assertThat(argumentCaptor.value.witnesses!!.first().firstName).isEqualTo("prison")
-      assertThat(argumentCaptor.value.witnesses!!.first().lastName).isEqualTo("officer")
-      assertThat(argumentCaptor.value.witnesses!!.first().reporter).isEqualTo("Fred")
+      assertThat(argumentCaptor.value.witnesses.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.witnesses.first().code).isEqualTo(WitnessCode.OFFICER)
+      assertThat(argumentCaptor.value.witnesses.first().firstName).isEqualTo("prison")
+      assertThat(argumentCaptor.value.witnesses.first().lastName).isEqualTo("officer")
+      assertThat(argumentCaptor.value.witnesses.first().reporter).isEqualTo("Fred")
 
       assertThat(response).isNotNull
     }
@@ -1832,15 +1814,6 @@ class DraftAdjudicationServiceTest {
         draftAdjudicationService.setWitnesses(1, listOf(WitnessRequestItem(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer")))
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
-    }
-
-    @Test
-    fun `saves when no evidence are provided`() {
-      draftAdjudicationService.setWitnesses(1, listOf())
-      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
-      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.witnesses!!.isEmpty()).isTrue()
     }
   }
 
