@@ -65,7 +65,7 @@ enum class ValidationChecks(val errorMessage: String) {
   },
   OFFENCE_DETAILS("Please supply at least one set of offence details") {
     override fun validate(draftAdjudication: DraftAdjudication) {
-      if (draftAdjudication.offenceDetails == null || draftAdjudication.offenceDetails!!.isEmpty())
+      if (draftAdjudication.offenceDetails.isEmpty())
         throw IllegalStateException(errorMessage)
     }
   },
@@ -149,12 +149,9 @@ class DraftAdjudicationService(
         victimOtherPersonsName = it.victimOtherPersonsName?.ifBlank { null },
       )
     }.toMutableList()
-    if (draftAdjudication.offenceDetails != null) {
-      draftAdjudication.offenceDetails!!.clear()
-      draftAdjudication.offenceDetails!!.addAll(newValuesToStore)
-    } else {
-      draftAdjudication.offenceDetails = newValuesToStore
-    }
+
+    draftAdjudication.offenceDetails.clear()
+    draftAdjudication.offenceDetails.addAll(newValuesToStore)
 
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
@@ -277,9 +274,8 @@ class DraftAdjudicationService(
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
     val reporter = authenticationFacade.currentUsername!!
 
-    draftAdjudication.damages = draftAdjudication.damages ?: mutableListOf()
-    draftAdjudication.damages!!.clear()
-    draftAdjudication.damages!!.addAll(
+    draftAdjudication.damages.clear()
+    draftAdjudication.damages.addAll(
       damages.map {
         Damage(
           code = it.code,
@@ -296,9 +292,8 @@ class DraftAdjudicationService(
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
     val reporter = authenticationFacade.currentUsername!!
 
-    draftAdjudication.evidence = draftAdjudication.evidence ?: mutableListOf()
-    draftAdjudication.evidence!!.clear()
-    draftAdjudication.evidence!!.addAll(
+    draftAdjudication.evidence.clear()
+    draftAdjudication.evidence.addAll(
       evidence.map {
         Evidence(
           code = it.code,
@@ -315,9 +310,8 @@ class DraftAdjudicationService(
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
     val reporter = authenticationFacade.currentUsername!!
 
-    draftAdjudication.witnesses = draftAdjudication.witnesses ?: mutableListOf()
-    draftAdjudication.witnesses!!.clear()
-    draftAdjudication.witnesses!!.addAll(
+    draftAdjudication.witnesses.clear()
+    draftAdjudication.witnesses.addAll(
       witnesses.map {
         Witness(
           code = it.code,
@@ -414,9 +408,9 @@ class DraftAdjudicationService(
         offenceDetails = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication),
         statement = draftAdjudication.incidentStatement!!.statement!!,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        damages = toReportedDamages(draftAdjudication.damages ?: mutableListOf()),
-        evidence = toReportedEvidence(draftAdjudication.evidence ?: mutableListOf()),
-        witnesses = toReportedWitnesses(draftAdjudication.witnesses ?: mutableListOf()),
+        damages = toReportedDamages(draftAdjudication.damages),
+        evidence = toReportedEvidence(draftAdjudication.evidence),
+        witnesses = toReportedWitnesses(draftAdjudication.witnesses),
       )
     )
   }
@@ -441,8 +435,8 @@ class DraftAdjudicationService(
       it.incidentRoleCode = draftAdjudication.incidentRole!!.roleCode
       it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber
       it.incidentRoleAssociatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName
-      it.offenceDetails!!.clear()
-      it.offenceDetails!!.addAll(toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication))
+      it.offenceDetails.clear()
+      it.offenceDetails.addAll(toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication))
       it.statement = draftAdjudication.incidentStatement!!.statement!!
       it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
 
@@ -458,17 +452,9 @@ class DraftAdjudicationService(
       it.evidence.addAll(evidencePreserve)
       it.witnesses.addAll(witnessesPreserve)
 
-      draftAdjudication.damages?.let { damages ->
-        it.damages.addAll(toReportedDamages(damages.filter { d -> d.reporter == reporter }.toMutableList()))
-      }
-
-      draftAdjudication.evidence?.let { evidence ->
-        it.evidence.addAll(toReportedEvidence(evidence.filter { e -> e.reporter == reporter }.toMutableList()))
-      }
-
-      draftAdjudication.witnesses?.let { witness ->
-        it.witnesses.addAll(toReportedWitnesses(witness.filter { w -> w.reporter == reporter }.toMutableList()))
-      }
+      it.damages.addAll(toReportedDamages(draftAdjudication.damages.filter { d -> d.reporter == reporter }.toMutableList()))
+      it.evidence.addAll(toReportedEvidence(draftAdjudication.evidence.filter { e -> e.reporter == reporter }.toMutableList()))
+      it.witnesses.addAll(toReportedWitnesses(draftAdjudication.witnesses.filter { w -> w.reporter == reporter }.toMutableList()))
 
       return reportedAdjudicationRepository.save(it)
     } ?: ReportedAdjudicationService.throwEntityNotFoundException(reportedAdjudicationNumber)
@@ -542,9 +528,9 @@ fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService):
     adjudicationNumber = this.reportNumber,
     startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
     isYouthOffender = this.isYouthOffender,
-    damages = this.damages?.map { it.toDto() },
-    evidence = this.evidence?.map { it.toDto() },
-    witnesses = this.witnesses?.map { it.toDto() }
+    damages = this.damages.map { it.toDto() },
+    evidence = this.evidence.map { it.toDto() },
+    witnesses = this.witnesses.map { it.toDto() }
 
   )
 
