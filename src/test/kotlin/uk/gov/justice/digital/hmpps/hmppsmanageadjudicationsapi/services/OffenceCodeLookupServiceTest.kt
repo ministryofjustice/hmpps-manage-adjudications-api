@@ -53,9 +53,7 @@ class OffenceCodeLookupServiceTest {
     assertThat(offenceCodeLookupService.getParagraphDescription(code, isYouthOffender)).isNotBlank
     assertThat(offenceCodeLookupService.getParagraphCode(code, isYouthOffender)).isNotBlank
     assertThat(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(code, isYouthOffender)).hasSizeGreaterThan(0)
-    offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(code, isYouthOffender).forEach { it ->
-      assertThat(it).startsWith(nomisCodePrefix)
-    }
+    offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(code, isYouthOffender).startsWith(nomisCodePrefix)
     assertThat(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(code, isYouthOffender)).startsWith(nomisCodePrefix)
     if (!isYouthOffender) {
       // Check that the naming convention of starting the offence code with the paragraph number is being honoured.

@@ -4,11 +4,12 @@ import org.springframework.stereotype.Service
 
 @Service
 class OffenceCodeLookupService {
+  val offenceCodeParagraphs = OffenceCodeParagraphs()
   var adultOffenceDetailsByCode: Map<Int, OffenceCodeDetails> = AdultOffenceCodes.buildLookup()
   var youthOffenceDetailsByCode: Map<Int, OffenceCodeDetails> = YouthOffenceCodes.buildLookup()
 
-  fun getCommittedOnOwnNomisOffenceCodes(offenceCode: Int, isYouthOffender: Boolean): List<String> {
-    return offenceDetails(offenceCode, isYouthOffender)?.nomisCodes ?: OffenceCodeDefaults.DEFAULT_NOMIS_IDS
+  fun getCommittedOnOwnNomisOffenceCodes(offenceCode: Int, isYouthOffender: Boolean): String {
+    return offenceDetails(offenceCode, isYouthOffender)?.nomisCode ?: OffenceCodeDefaults.DEFAULT_NOMIS_ID
   }
 
   fun getNotCommittedOnOwnNomisOffenceCode(offenceCode: Int, isYouthOffender: Boolean): String {
@@ -24,7 +25,8 @@ class OffenceCodeLookupService {
   }
 
   fun getParagraphDescription(offenceCode: Int, isYouthOffender: Boolean): String {
-    return offenceDetails(offenceCode, isYouthOffender)?.paragraph?.paragraphDescription ?: OffenceCodeDefaults.DEFAULT_PARAGRAPH_DATA
+    val offenceCodeDetails = offenceDetails(offenceCode, isYouthOffender) ?: return ""
+    return offenceCodeParagraphs.getParagraphDescription(offenceCodeDetails.nomisCode)
   }
 
   private fun offenceDetails(offenceCode: Int, isYouthOffender: Boolean): OffenceCodeDetails? =
@@ -62,12 +64,12 @@ class OffenceCodesBuilder(
   private val offenceCode: Int,
   private val nomisPrefix: String,
 ) {
-  private var nomisCodes: List<String>? = null
+  private var nomisCode: String? = null
   private var notCommittedOnOwnNomisCode: String? = null
   private var paragraph: OffenceCodeParagraph? = null
 
-  fun nomisCodes(vararg codes: String): OffenceCodesBuilder {
-    nomisCodes = codes.toList().map { nomisPrefix + it }
+  fun nomisCode(code: String): OffenceCodesBuilder {
+    nomisCode = nomisPrefix + code
     return this
   }
 
@@ -82,20 +84,19 @@ class OffenceCodesBuilder(
   }
 
   fun build(): OffenceCodeDetails {
-    return OffenceCodeDetails(offenceCode, nomisCodes!!, notCommittedOnOwnNomisCode!!, paragraph!!)
+    return OffenceCodeDetails(offenceCode, nomisCode!!, notCommittedOnOwnNomisCode!!, paragraph!!)
   }
 }
 
 data class OffenceCodeDetails(
   val offenceCode: Int,
-  val nomisCodes: List<String>,
+  val nomisCode: String,
   val notCommittedOnOwnNomisCode: String,
   val paragraph: OffenceCodeParagraph,
 )
 
 data class OffenceCodeParagraph(
   val paragraphNumber: String,
-  val paragraphDescription: String,
   val paragraphCode: String = paragraphNumber,
 )
 
