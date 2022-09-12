@@ -1,10 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
-class OffenceCodeParagraphsTest {
+class OffenceCodeParagraphDescriptionsTest {
 
   private val offenceCodeParagraphs = OffenceCodeParagraphs()
 
@@ -95,10 +94,5 @@ class OffenceCodeParagraphsTest {
   )
   fun `get paragraph by offence code`(code: String, answer: String) {
     assert(offenceCodeParagraphs.getParagraphDescription(code) == Descriptions.valueOf(answer).description)
-  }
-
-  @Test
-  fun sanity() {
-    // assert(YouthOffenceCodes.buildLookup().values.map { it.nomisCodes.size }.max() == 1)
   }
 }

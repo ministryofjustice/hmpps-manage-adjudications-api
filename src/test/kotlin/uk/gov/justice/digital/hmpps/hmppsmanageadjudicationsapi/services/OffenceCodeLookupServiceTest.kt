@@ -51,7 +51,6 @@ class OffenceCodeLookupServiceTest {
   private fun assertValuesSetForItem(code: Int, isYouthOffender: Boolean, nomisCodePrefix: String) {
     assertThat(offenceCodeLookupService.getParagraphNumber(code, isYouthOffender)).isNotBlank
     assertThat(offenceCodeLookupService.getParagraphDescription(code, isYouthOffender)).isNotBlank
-    assertThat(offenceCodeLookupService.getParagraphCode(code, isYouthOffender)).isNotBlank
     assertThat(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(code, isYouthOffender)).hasSizeGreaterThan(0)
     offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(code, isYouthOffender).startsWith(nomisCodePrefix)
     assertThat(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(code, isYouthOffender)).startsWith(nomisCodePrefix)

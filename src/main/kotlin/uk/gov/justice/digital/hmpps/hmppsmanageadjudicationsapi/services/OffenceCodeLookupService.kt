@@ -5,103 +5,45 @@ import org.springframework.stereotype.Service
 @Service
 class OffenceCodeLookupService {
   val offenceCodeParagraphs = OffenceCodeParagraphs()
-  var adultOffenceDetailsByCode: Map<Int, OffenceCodeDetails> = AdultOffenceCodes.buildLookup()
-  var youthOffenceDetailsByCode: Map<Int, OffenceCodeDetails> = YouthOffenceCodes.buildLookup()
+  var adultOffenceDetailsByCode: Map<Int, Triple<String, String, String>> = AdultOffenceCodes.buildLookup()
+  var youthOffenceDetailsByCode: Map<Int, Triple<String, String, String>> = YouthOffenceCodes.buildLookup()
 
-  fun getCommittedOnOwnNomisOffenceCodes(offenceCode: Int, isYouthOffender: Boolean): String {
-    return offenceDetails(offenceCode, isYouthOffender)?.nomisCode ?: OffenceCodeDefaults.DEFAULT_NOMIS_ID
-  }
+  fun getCommittedOnOwnNomisOffenceCodes(offenceCode: Int, isYouthOffender: Boolean): String = offenceDetails(offenceCode, isYouthOffender)?.nomisCode ?: OffenceCodeDefaults.DEFAULT_NOMIS_ID
 
-  fun getNotCommittedOnOwnNomisOffenceCode(offenceCode: Int, isYouthOffender: Boolean): String {
-    return offenceDetails(offenceCode, isYouthOffender)?.notCommittedOnOwnNomisCode ?: OffenceCodeDefaults.DEFAULT_NOMIS_ID
-  }
+  fun getNotCommittedOnOwnNomisOffenceCode(offenceCode: Int, isYouthOffender: Boolean): String = offenceDetails(offenceCode, isYouthOffender)?.notCommittedOnOwnNomisCode ?: OffenceCodeDefaults.DEFAULT_NOMIS_ID
 
-  fun getParagraphCode(offenceCode: Int, isYouthOffender: Boolean): String {
-    return offenceDetails(offenceCode, isYouthOffender)?.paragraph?.paragraphCode ?: OffenceCodeDefaults.DEFAULT_PARAGRAPH_DATA
-  }
+  fun getParagraphCode(offenceCode: Int, isYouthOffender: Boolean): String = offenceDetails(offenceCode, isYouthOffender)?.paragraphCode ?: OffenceCodeDefaults.DEFAULT_PARAGRAPH_DATA
 
-  fun getParagraphNumber(offenceCode: Int, isYouthOffender: Boolean): String {
-    return offenceDetails(offenceCode, isYouthOffender)?.paragraph?.paragraphNumber ?: OffenceCodeDefaults.DEFAULT_PARAGRAPH_DATA
-  }
+  fun getParagraphNumber(offenceCode: Int, isYouthOffender: Boolean): String =
+    offenceDetails(offenceCode, isYouthOffender)?.paragraphNumber ?: OffenceCodeDefaults.DEFAULT_PARAGRAPH_DATA
 
   fun getParagraphDescription(offenceCode: Int, isYouthOffender: Boolean): String {
-    val offenceCodeDetails = offenceDetails(offenceCode, isYouthOffender) ?: return ""
+    val offenceCodeDetails = offenceDetails(offenceCode, isYouthOffender) ?: return Descriptions.DEFAULT.description
     return offenceCodeParagraphs.getParagraphDescription(offenceCodeDetails.nomisCode)
   }
 
   private fun offenceDetails(offenceCode: Int, isYouthOffender: Boolean): OffenceCodeDetails? =
     when (isYouthOffender) {
-      true -> { youthOffenceDetailsByCode[offenceCode] }
-      false -> { adultOffenceDetailsByCode[offenceCode] }
-    }
-}
-
-class OffenceCodeLookupBuilder {
-  private var allCodeBuilders: MutableList<OffenceCodesBuilder> = mutableListOf()
-  private var nomisPrefix: String? = null
-
-  fun nomisPrefix(prefix: String): OffenceCodeLookupBuilder {
-    nomisPrefix = prefix
-    return this
-  }
-
-  fun code(code: Int): OffenceCodesBuilder {
-    val codeLookupBuilder = OffenceCodesBuilder(this, code, nomisPrefix!!)
-    allCodeBuilders.add(codeLookupBuilder)
-    return codeLookupBuilder
-  }
-
-  fun build(): Map<Int, OffenceCodeDetails> {
-    return allCodeBuilders.map { it.build() }.groupBy { it.offenceCode }
-      .mapValues {
-        if (it.value.size == 1) it.value[0] else throw RuntimeException("No single value provided for key ${it.key}")
+      true -> {
+        val res = youthOffenceDetailsByCode[offenceCode]
+        if (res == null) null else OffenceCodeDetails(offenceCode = offenceCode, paragraphNumber = res.first, nomisCode = res.second, notCommittedOnOwnNomisCode = res.third)
       }
-  }
-}
-
-class OffenceCodesBuilder(
-  private val lookupBuilder: OffenceCodeLookupBuilder,
-  private val offenceCode: Int,
-  private val nomisPrefix: String,
-) {
-  private var nomisCode: String? = null
-  private var notCommittedOnOwnNomisCode: String? = null
-  private var paragraph: OffenceCodeParagraph? = null
-
-  fun nomisCode(code: String): OffenceCodesBuilder {
-    nomisCode = nomisPrefix + code
-    return this
-  }
-
-  fun notCommittedOnOwnNomisCodes(code: String): OffenceCodesBuilder {
-    notCommittedOnOwnNomisCode = nomisPrefix + code
-    return this
-  }
-
-  fun paragraph(paragraphIn: OffenceCodeParagraph): OffenceCodeLookupBuilder {
-    paragraph = paragraphIn
-    return lookupBuilder
-  }
-
-  fun build(): OffenceCodeDetails {
-    return OffenceCodeDetails(offenceCode, nomisCode!!, notCommittedOnOwnNomisCode!!, paragraph!!)
-  }
+      false -> {
+        val res = adultOffenceDetailsByCode[offenceCode]
+        if (res == null) null else OffenceCodeDetails(offenceCode = offenceCode, paragraphNumber = res.first, nomisCode = res.second, notCommittedOnOwnNomisCode = res.third)
+      }
+    }
 }
 
 data class OffenceCodeDetails(
   val offenceCode: Int,
+  val paragraphNumber: String,
   val nomisCode: String,
   val notCommittedOnOwnNomisCode: String,
-  val paragraph: OffenceCodeParagraph,
-)
-
-data class OffenceCodeParagraph(
-  val paragraphNumber: String,
-  val paragraphCode: String = paragraphNumber,
+  val paragraphCode: String = paragraphNumber.replace("(", "").replace(")", ""),
 )
 
 object OffenceCodeDefaults {
-  val DEFAULT_NOMIS_IDS = listOf<String>()
-  val DEFAULT_NOMIS_ID = ""
+  const val DEFAULT_NOMIS_ID = ""
   const val DEFAULT_PARAGRAPH_DATA = ""
 }
