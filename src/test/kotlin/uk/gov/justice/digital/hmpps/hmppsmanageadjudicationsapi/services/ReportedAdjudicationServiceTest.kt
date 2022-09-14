@@ -148,11 +148,9 @@ class ReportedAdjudicationServiceTest {
       var offenceDetails = mutableListOf(
         ReportedOffence(
           offenceCode = 2,
-          paragraphCode = OFFENCE_CODE_2_PARAGRAPH_CODE,
         ),
         ReportedOffence(
           offenceCode = 3,
-          paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
           victimPrisonersNumber = "BB2345B",
           victimStaffUsername = "DEF34G",
           victimOtherPersonsName = "Another Name",
@@ -162,7 +160,6 @@ class ReportedAdjudicationServiceTest {
         offenceDetails = mutableListOf(
           ReportedOffence(
             offenceCode = 2,
-            paragraphCode = YOUTH_OFFENCE_CODE_2_PARAGRAPH_CODE,
           ),
         )
       }
@@ -615,14 +612,12 @@ class ReportedAdjudicationServiceTest {
       val offenceDetails = mutableListOf(
         ReportedOffence(
           offenceCode = 2,
-          paragraphCode = "5b",
         ),
       )
       if (hasSecondOffenceWithAllAssociatedPersonsSet) {
         offenceDetails.add(
           ReportedOffence(
             offenceCode = 3,
-            paragraphCode = "6a",
             victimPrisonersNumber = "A1234AA",
             victimStaffUsername = "ABC12D",
             victimOtherPersonsName = "A name"

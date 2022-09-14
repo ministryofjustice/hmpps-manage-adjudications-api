@@ -12,8 +12,6 @@ class OffenceCodeLookupService {
 
   fun getNotCommittedOnOwnNomisOffenceCode(offenceCode: Int, isYouthOffender: Boolean): String = offenceDetails(offenceCode, isYouthOffender)?.notCommittedOnOwnNomisCode ?: OffenceCodeDefaults.DEFAULT_NOMIS_ID
 
-  fun getParagraphCode(offenceCode: Int, isYouthOffender: Boolean): String = offenceDetails(offenceCode, isYouthOffender)?.paragraphCode ?: OffenceCodeDefaults.DEFAULT_PARAGRAPH_DATA
-
   fun getParagraphNumber(offenceCode: Int, isYouthOffender: Boolean): String =
     offenceDetails(offenceCode, isYouthOffender)?.paragraphNumber ?: OffenceCodeDefaults.DEFAULT_PARAGRAPH_DATA
 
@@ -39,9 +37,7 @@ data class OffenceCodeDetails(
   val offenceCode: Int,
   val paragraphNumber: String,
   val nomisCode: String,
-  val notCommittedOnOwnNomisCode: String,
-  //function -> nomis....
-  val paragraphCode: String = paragraphNumber.replace("(", "").replace(")", ""),
+  val notCommittedOnOwnNomisCode: String
 )
 
 object OffenceCodeDefaults {

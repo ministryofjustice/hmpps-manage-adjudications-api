@@ -1,0 +1,1 @@
+ALTER TABLE reported_offence DROP COLUMN paragraph_code;

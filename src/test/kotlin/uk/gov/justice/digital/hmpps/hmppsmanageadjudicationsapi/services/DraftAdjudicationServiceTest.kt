@@ -84,7 +84,6 @@ class DraftAdjudicationServiceTest {
       )
 
     // Set up offence code mocks
-    whenever(offenceCodeLookupService.getParagraphCode(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_CODE)
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2, false)).thenReturn(
       OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
     )
@@ -94,7 +93,6 @@ class DraftAdjudicationServiceTest {
     whenever(offenceCodeLookupService.getParagraphNumber(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
 
-    whenever(offenceCodeLookupService.getParagraphCode(3, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_CODE)
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3, false)).thenReturn(
       OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
     )
@@ -104,7 +102,6 @@ class DraftAdjudicationServiceTest {
     whenever(offenceCodeLookupService.getParagraphNumber(3, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(3, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
 
-    whenever(offenceCodeLookupService.getParagraphCode(2, true)).thenReturn(YOUTH_OFFENCE_CODE_2_PARAGRAPH_CODE)
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2, true)).thenReturn(
       YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
     )
@@ -114,7 +111,6 @@ class DraftAdjudicationServiceTest {
     whenever(offenceCodeLookupService.getParagraphNumber(2, true)).thenReturn(YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(2, true)).thenReturn(YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
 
-    whenever(offenceCodeLookupService.getParagraphCode(3, true)).thenReturn(YOUTH_OFFENCE_CODE_3_PARAGRAPH_CODE)
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3, true)).thenReturn(
       YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
     )
@@ -1126,7 +1122,6 @@ class DraftAdjudicationServiceTest {
         assertThat(reportedAdjudicationArgumentCaptor.value.offenceDetails)
           .extracting(
             "offenceCode",
-            "paragraphCode",
             "victimPrisonersNumber",
             "victimStaffUsername",
             "victimOtherPersonsName"
@@ -1134,13 +1129,12 @@ class DraftAdjudicationServiceTest {
           .contains(
             Tuple(
               BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
-              BASIC_OFFENCE_DETAILS_PARAGRAPH_CODE,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
             Tuple(
-              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_PARAGRAPH_CODE,
+              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
@@ -1364,7 +1358,6 @@ class DraftAdjudicationServiceTest {
         assertThat(reportedAdjudicationArgumentCaptor.value.offenceDetails)
           .extracting(
             "offenceCode",
-            "paragraphCode",
             "victimPrisonersNumber",
             "victimStaffUsername",
             "victimOtherPersonsName"
@@ -1372,13 +1365,12 @@ class DraftAdjudicationServiceTest {
           .contains(
             Tuple(
               BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
-              BASIC_OFFENCE_DETAILS_PARAGRAPH_CODE,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
               BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
             Tuple(
-              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode, FULL_OFFENCE_DETAILS_PARAGRAPH_CODE,
+              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
               FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
             ),
@@ -1826,7 +1818,6 @@ class DraftAdjudicationServiceTest {
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
 
-    private const val OFFENCE_CODE_2_PARAGRAPH_CODE = "5b"
     private const val OFFENCE_CODE_2_NOMIS_CODE_ON_OWN = "5b"
     private const val OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "25z"
     private const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"
@@ -1837,12 +1828,10 @@ class DraftAdjudicationServiceTest {
     private const val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6(a)"
     private const val OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another paragraph description"
 
-    private const val YOUTH_OFFENCE_CODE_2_PARAGRAPH_CODE = "7b"
     private const val YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER = "7(b)"
     private const val YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A youth paragraph description"
     private const val YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN = "7b"
     private const val YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "29z"
-    private const val YOUTH_OFFENCE_CODE_3_PARAGRAPH_CODE = "17b"
     private const val YOUTH_OFFENCE_CODE_3_PARAGRAPH_NUMBER = "17(b)"
     private const val YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another youth paragraph description"
     private const val YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN = "17b"
@@ -1859,7 +1848,6 @@ class DraftAdjudicationServiceTest {
     private val BASIC_OFFENCE_DETAILS_DB_ENTITY = Offence(
       offenceCode = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
     )
-    private val BASIC_OFFENCE_DETAILS_PARAGRAPH_CODE = OFFENCE_CODE_2_PARAGRAPH_CODE
 
     private val FULL_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(
       offenceCode = 3,
@@ -1883,7 +1871,6 @@ class DraftAdjudicationServiceTest {
       victimStaffUsername = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
       victimOtherPersonsName = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName,
     )
-    private val FULL_OFFENCE_DETAILS_PARAGRAPH_CODE = OFFENCE_CODE_3_PARAGRAPH_CODE
 
     private val YOUTH_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(offenceCode = 2)
     private val YOUTH_OFFENCE_DETAILS_RESPONSE_DTO = OffenceDetailsDto(
