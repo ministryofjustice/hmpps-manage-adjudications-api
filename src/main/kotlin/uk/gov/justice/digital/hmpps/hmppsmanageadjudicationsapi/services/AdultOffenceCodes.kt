@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 class AdultOffenceCodes {
   companion object {
-    // This information is taken from the spreadsheet of offences related to Triple(the ticket this work was done under.
+    // This information is taken from the spreadsheet of offences related to the ticket this work was done under.
     // Specifically these adult offences are in the "Dev Copy" worksheet
     fun buildLookup(): Map<Int, Triple<String, String, String>> =
       mapOf(

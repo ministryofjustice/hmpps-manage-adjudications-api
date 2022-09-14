@@ -40,6 +40,7 @@ data class OffenceCodeDetails(
   val paragraphNumber: String,
   val nomisCode: String,
   val notCommittedOnOwnNomisCode: String,
+  //function -> nomis....
   val paragraphCode: String = paragraphNumber.replace("(", "").replace(")", ""),
 )
 
