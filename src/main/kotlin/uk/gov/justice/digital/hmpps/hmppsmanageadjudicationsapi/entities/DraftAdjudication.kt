@@ -40,5 +40,5 @@ data class DraftAdjudication(
   var witnesses: MutableList<Witness> = mutableListOf(),
   var damagesSaved: Boolean? = null,
   var evidenceSaved: Boolean? = null,
-  var witnessesSaved: Boolean? = null
+  var witnessesSaved: Boolean? = null,
 ) : BaseEntity()
