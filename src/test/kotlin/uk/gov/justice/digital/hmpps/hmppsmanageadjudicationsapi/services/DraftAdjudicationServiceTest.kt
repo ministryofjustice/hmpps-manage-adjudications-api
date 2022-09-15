@@ -1050,6 +1050,7 @@ class DraftAdjudicationServiceTest {
     @Nested
     inner class WithAValidDraftAdjudication {
       private val INCIDENT_TIME = LocalDateTime.now(clock)
+      private val now = LocalDateTime.now()
 
       @BeforeEach
       fun beforeEach() {
@@ -1067,7 +1068,7 @@ class DraftAdjudicationServiceTest {
           incidentStatement = IncidentStatement(statement = "test"),
           isYouthOffender = false
         )
-        draft.createDateTime = LocalDateTime.now()
+        draft.createDateTime = now
 
         whenever(draftAdjudicationRepository.findById(any())).thenReturn(
           Optional.of(draft)
@@ -1107,7 +1108,8 @@ class DraftAdjudicationServiceTest {
             "incidentRoleCode",
             "incidentRoleAssociatedPrisonersNumber",
             "incidentRoleAssociatedPrisonersName",
-            "statement"
+            "statement",
+            "draftCreatedOn"
           )
           .contains(
             1L,
@@ -1116,7 +1118,8 @@ class DraftAdjudicationServiceTest {
             INCIDENT_ROLE_CODE,
             INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
             INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
-            "test"
+            "test",
+            now
           )
 
         assertThat(reportedAdjudicationArgumentCaptor.value.offenceDetails)
@@ -1665,6 +1668,7 @@ class DraftAdjudicationServiceTest {
       assertThat(argumentCaptor.value.damages.first().code).isEqualTo(DamageCode.CLEANING)
       assertThat(argumentCaptor.value.damages.first().details).isEqualTo("details")
       assertThat(argumentCaptor.value.damages.first().reporter).isEqualTo("Fred")
+      assertThat(argumentCaptor.value.damagesSaved).isEqualTo(true)
 
       assertThat(response).isNotNull
     }
@@ -1727,6 +1731,7 @@ class DraftAdjudicationServiceTest {
       assertThat(argumentCaptor.value.evidence.first().code).isEqualTo(EvidenceCode.PHOTO)
       assertThat(argumentCaptor.value.evidence.first().details).isEqualTo("details")
       assertThat(argumentCaptor.value.evidence.first().reporter).isEqualTo("Fred")
+      assertThat(argumentCaptor.value.evidenceSaved).isEqualTo(true)
 
       assertThat(response).isNotNull
     }
@@ -1790,6 +1795,7 @@ class DraftAdjudicationServiceTest {
       assertThat(argumentCaptor.value.witnesses.first().firstName).isEqualTo("prison")
       assertThat(argumentCaptor.value.witnesses.first().lastName).isEqualTo("officer")
       assertThat(argumentCaptor.value.witnesses.first().reporter).isEqualTo("Fred")
+      assertThat(argumentCaptor.value.witnessesSaved).isEqualTo(true)
 
       assertThat(response).isNotNull
     }

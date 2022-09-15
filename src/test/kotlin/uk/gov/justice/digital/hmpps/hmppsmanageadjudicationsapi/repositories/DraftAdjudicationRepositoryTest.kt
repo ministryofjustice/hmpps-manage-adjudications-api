@@ -109,6 +109,8 @@ class DraftAdjudicationRepositoryTest {
         ),
       )
 
+    assertThat(savedEntity.damagesSaved).isEqualTo(true)
+
     assertThat(savedEntity.damages).hasSize(1)
       .extracting(
         "code",
@@ -121,6 +123,8 @@ class DraftAdjudicationRepositoryTest {
         )
       )
 
+    assertThat(savedEntity.evidenceSaved).isEqualTo(true)
+
     assertThat(savedEntity.evidence).hasSize(1)
       .extracting(
         "code",
@@ -132,6 +136,8 @@ class DraftAdjudicationRepositoryTest {
           draft.evidence!!.first().details,
         )
       )
+
+    assertThat(savedEntity.witnessesSaved).isEqualTo(true)
 
     assertThat(savedEntity.witnesses).hasSize(1)
       .extracting(
@@ -353,6 +359,9 @@ class DraftAdjudicationRepositoryTest {
           reporter = "Fred"
         ),
       ),
+      witnessesSaved = true,
+      damagesSaved = true,
+      evidenceSaved = true
     )
   }
 

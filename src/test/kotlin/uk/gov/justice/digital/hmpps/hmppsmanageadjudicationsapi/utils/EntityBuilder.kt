@@ -66,7 +66,8 @@ class EntityBuilder {
           lastName = "officer",
           reporter = "Fred"
         ),
-      )
+      ),
+      draftCreatedOn = dateTime
     )
   }
 }

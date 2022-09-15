@@ -534,6 +534,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.damagesSaved").isEqualTo(true)
       .jsonPath("$.draftAdjudication.damages[0].code")
       .isEqualTo(DamageCode.CLEANING.name)
       .jsonPath("$.draftAdjudication.damages[0].details")
@@ -572,6 +573,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.evidenceSaved").isEqualTo(true)
       .jsonPath("$.draftAdjudication.evidence[0].code")
       .isEqualTo(EvidenceCode.PHOTO.name)
       .jsonPath("$.draftAdjudication.evidence[0].details")
@@ -610,6 +612,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.witnessesSaved").isEqualTo(true)
       .jsonPath("$.draftAdjudication.witnesses[0].code")
       .isEqualTo(WitnessCode.OFFICER.name)
       .jsonPath("$.draftAdjudication.witnesses[0].firstName")

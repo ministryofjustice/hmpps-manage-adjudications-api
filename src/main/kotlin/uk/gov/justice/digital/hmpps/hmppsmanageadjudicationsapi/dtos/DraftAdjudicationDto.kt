@@ -32,6 +32,13 @@ data class DraftAdjudicationDto(
   val evidence: List<EvidenceDto>? = null,
   @Schema(description = "Witnesses related to incident")
   val witnesses: List<WitnessDto>? = null,
+  @Schema(description = "has the damages end point been called")
+  val damagesSaved: Boolean? = null,
+  @Schema(description = "has the evidence end point been called")
+  val evidenceSaved: Boolean? = null,
+  @Schema(description = "has the witnesses end point been called")
+  val witnessesSaved: Boolean? = null,
+
 )
 
 @Schema(description = "Incident details")

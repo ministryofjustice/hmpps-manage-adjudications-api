@@ -48,7 +48,8 @@ data class ReportedAdjudication(
   var evidence: MutableList<ReportedEvidence>,
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")
-  var witnesses: MutableList<ReportedWitness>
+  var witnesses: MutableList<ReportedWitness>,
+  var draftCreatedOn: LocalDateTime,
 ) :
   BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reason: String? = null, details: String? = null, reviewUserId: String? = null) {

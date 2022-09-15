@@ -685,7 +685,10 @@ class ReportedAdjudicationServiceTest {
       ),
       witnesses = mutableListOf(
         Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
-      )
+      ),
+      damagesSaved = true,
+      evidenceSaved = true,
+      witnessesSaved = true,
     )
 
     private val savedDraftAdjudication = expectedSavedDraftAdjudication.copy(
