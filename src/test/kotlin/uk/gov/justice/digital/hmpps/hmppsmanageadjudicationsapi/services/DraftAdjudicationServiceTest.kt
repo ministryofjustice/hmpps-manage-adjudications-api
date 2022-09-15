@@ -1058,6 +1058,7 @@ class DraftAdjudicationServiceTest {
     @Nested
     inner class WithAValidDraftAdjudication {
       private val INCIDENT_TIME = LocalDateTime.now(clock)
+      private val now = LocalDateTime.now()
 
       @BeforeEach
       fun beforeEach() {
@@ -1075,7 +1076,7 @@ class DraftAdjudicationServiceTest {
           incidentStatement = IncidentStatement(statement = "test"),
           isYouthOffender = false
         )
-        draft.createDateTime = LocalDateTime.now()
+        draft.createDateTime = now
 
         whenever(draftAdjudicationRepository.findById(any())).thenReturn(
           Optional.of(draft)
@@ -1115,7 +1116,8 @@ class DraftAdjudicationServiceTest {
             "incidentRoleCode",
             "incidentRoleAssociatedPrisonersNumber",
             "incidentRoleAssociatedPrisonersName",
-            "statement"
+            "statement",
+            "draftCreatedOn"
           )
           .contains(
             1L,
@@ -1124,7 +1126,8 @@ class DraftAdjudicationServiceTest {
             INCIDENT_ROLE_CODE,
             INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
             INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
-            "test"
+            "test",
+            now
           )
 
         assertThat(reportedAdjudicationArgumentCaptor.value.offenceDetails)

@@ -416,6 +416,7 @@ class DraftAdjudicationService(
         damages = toReportedDamages(draftAdjudication.damages),
         evidence = toReportedEvidence(draftAdjudication.evidence),
         witnesses = toReportedWitnesses(draftAdjudication.witnesses),
+        draftCreatedOn = draftAdjudication.createDateTime!!
       )
     )
   }
