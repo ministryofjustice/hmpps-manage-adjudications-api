@@ -38,4 +38,7 @@ data class DraftAdjudication(
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "draft_adjudication_fk_id")
   var witnesses: MutableList<Witness> = mutableListOf(),
+  var damagesSaved: Boolean? = null,
+  var evidenceSaved: Boolean? = null,
+  var witnessesSaved: Boolean? = null,
 ) : BaseEntity()

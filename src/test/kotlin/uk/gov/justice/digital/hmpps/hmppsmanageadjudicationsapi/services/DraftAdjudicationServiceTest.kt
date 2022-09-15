@@ -1680,6 +1680,7 @@ class DraftAdjudicationServiceTest {
       assertThat(argumentCaptor.value.damages.first().code).isEqualTo(DamageCode.CLEANING)
       assertThat(argumentCaptor.value.damages.first().details).isEqualTo("details")
       assertThat(argumentCaptor.value.damages.first().reporter).isEqualTo("Fred")
+      assertThat(argumentCaptor.value.damagesSaved).isEqualTo(true)
 
       assertThat(response).isNotNull
     }
@@ -1742,6 +1743,7 @@ class DraftAdjudicationServiceTest {
       assertThat(argumentCaptor.value.evidence.first().code).isEqualTo(EvidenceCode.PHOTO)
       assertThat(argumentCaptor.value.evidence.first().details).isEqualTo("details")
       assertThat(argumentCaptor.value.evidence.first().reporter).isEqualTo("Fred")
+      assertThat(argumentCaptor.value.evidenceSaved).isEqualTo(true)
 
       assertThat(response).isNotNull
     }
@@ -1805,6 +1807,7 @@ class DraftAdjudicationServiceTest {
       assertThat(argumentCaptor.value.witnesses.first().firstName).isEqualTo("prison")
       assertThat(argumentCaptor.value.witnesses.first().lastName).isEqualTo("officer")
       assertThat(argumentCaptor.value.witnesses.first().reporter).isEqualTo("Fred")
+      assertThat(argumentCaptor.value.witnessesSaved).isEqualTo(true)
 
       assertThat(response).isNotNull
     }

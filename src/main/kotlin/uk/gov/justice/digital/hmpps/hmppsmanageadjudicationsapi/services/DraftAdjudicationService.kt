@@ -284,6 +284,7 @@ class DraftAdjudicationService(
         )
       }
     )
+    draftAdjudication.damagesSaved = true
 
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
@@ -303,6 +304,8 @@ class DraftAdjudicationService(
         )
       }
     )
+    draftAdjudication.evidenceSaved = true
+
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
 
@@ -321,6 +324,8 @@ class DraftAdjudicationService(
         )
       }
     )
+    draftAdjudication.witnessesSaved = true
+
     return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
   }
 
@@ -531,8 +536,10 @@ fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService):
     isYouthOffender = this.isYouthOffender,
     damages = this.damages.map { it.toDto() },
     evidence = this.evidence.map { it.toDto() },
-    witnesses = this.witnesses.map { it.toDto() }
-
+    witnesses = this.witnesses.map { it.toDto() },
+    damagesSaved = this.damagesSaved,
+    evidenceSaved = this.evidenceSaved,
+    witnessesSaved = this.witnessesSaved
   )
 
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(

@@ -116,7 +116,10 @@ class ReportedAdjudicationService(
       isYouthOffender = reportedAdjudication.isYouthOffender,
       damages = toDraftDamages(reportedAdjudication.damages),
       evidence = toDraftEvidence(reportedAdjudication.evidence),
-      witnesses = toDraftWitnesses(reportedAdjudication.witnesses)
+      witnesses = toDraftWitnesses(reportedAdjudication.witnesses),
+      damagesSaved = true,
+      evidenceSaved = true,
+      witnessesSaved = true,
     )
 
     return draftAdjudicationRepository
