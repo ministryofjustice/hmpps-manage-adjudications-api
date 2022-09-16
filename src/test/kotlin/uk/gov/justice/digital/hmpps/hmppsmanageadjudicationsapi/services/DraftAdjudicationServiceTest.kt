@@ -1021,6 +1021,9 @@ class DraftAdjudicationServiceTest {
               dateTimeOfIncident = LocalDateTime.now(),
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
+            damagesSaved = true,
+            evidenceSaved = true,
+            witnessesSaved = true,
           ).also {
             when (validationCheck) {
               ValidationChecks.INCIDENT_ROLE -> {
@@ -1042,6 +1045,27 @@ class DraftAdjudicationServiceTest {
                 it.isYouthOffender = false
                 it.incidentRole = incidentRoleWithAllValuesSet()
                 it.offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
+              }
+              ValidationChecks.DAMAGES -> {
+                it.isYouthOffender = false
+                it.incidentRole = incidentRoleWithAllValuesSet()
+                it.offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
+                it.incidentStatement = IncidentStatement(statement = "1", completed = true)
+                it.damagesSaved = false
+              }
+              ValidationChecks.EVIDENCE -> {
+                it.isYouthOffender = false
+                it.incidentRole = incidentRoleWithAllValuesSet()
+                it.offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
+                it.incidentStatement = IncidentStatement(statement = "1", completed = true)
+                it.evidenceSaved = false
+              }
+              ValidationChecks.WITNESSES -> {
+                it.isYouthOffender = false
+                it.incidentRole = incidentRoleWithAllValuesSet()
+                it.offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
+                it.incidentStatement = IncidentStatement(statement = "1", completed = true)
+                it.witnessesSaved = false
               }
               else -> {}
             }
@@ -1074,7 +1098,10 @@ class DraftAdjudicationServiceTest {
           incidentRole = incidentRoleWithAllValuesSet(),
           offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
           incidentStatement = IncidentStatement(statement = "test"),
-          isYouthOffender = false
+          isYouthOffender = false,
+          damagesSaved = true,
+          evidenceSaved = true,
+          witnessesSaved = true,
         )
         draft.createDateTime = now
 
@@ -1208,7 +1235,7 @@ class DraftAdjudicationServiceTest {
               incidentRole = incidentRoleWithNoValuesSet(),
               offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
               incidentStatement = IncidentStatement(statement = "test"),
-              isYouthOffender = true
+              isYouthOffender = true,
             )
           )
         )
@@ -1292,7 +1319,10 @@ class DraftAdjudicationServiceTest {
               ),
               witnesses = mutableListOf(
                 Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
-              )
+              ),
+              damagesSaved = true,
+              evidenceSaved = true,
+              witnessesSaved = true,
             )
           )
         )

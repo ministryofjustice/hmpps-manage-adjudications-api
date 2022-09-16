@@ -74,6 +74,24 @@ enum class ValidationChecks(val errorMessage: String) {
       if (draftAdjudication.incidentStatement == null || draftAdjudication.incidentStatement!!.statement == null)
         throw IllegalStateException(errorMessage)
     }
+  },
+  DAMAGES("Please visit the damages page before completing this draft adjudication") {
+    override fun validate(draftAdjudication: DraftAdjudication) {
+      if (draftAdjudication.damagesSaved == false)
+        throw IllegalStateException(errorMessage)
+    }
+  },
+  EVIDENCE("Please visit the evidence page before completing this draft adjudication") {
+    override fun validate(draftAdjudication: DraftAdjudication) {
+      if (draftAdjudication.evidenceSaved == false)
+        throw IllegalStateException(errorMessage)
+    }
+  },
+  WITNESSES("Please visit the witnesses page before completing this draft adjudication") {
+    override fun validate(draftAdjudication: DraftAdjudication) {
+      if (draftAdjudication.witnessesSaved == false)
+        throw IllegalStateException(errorMessage)
+    }
   };
 
   abstract fun validate(draftAdjudication: DraftAdjudication)
