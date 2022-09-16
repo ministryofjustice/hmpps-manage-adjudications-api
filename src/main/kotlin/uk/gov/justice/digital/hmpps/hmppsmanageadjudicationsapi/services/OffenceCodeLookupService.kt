@@ -22,14 +22,8 @@ class OffenceCodeLookupService {
 
   private fun offenceDetails(offenceCode: Int, isYouthOffender: Boolean): OffenceCodeDetails? =
     when (isYouthOffender) {
-      true -> {
-        val res = youthOffenceDetailsByCode[offenceCode]
-        if (res == null) null else OffenceCodeDetails(offenceCode = offenceCode, paragraphNumber = res.first, nomisCode = res.second, notCommittedOnOwnNomisCode = res.third)
-      }
-      false -> {
-        val res = adultOffenceDetailsByCode[offenceCode]
-        if (res == null) null else OffenceCodeDetails(offenceCode = offenceCode, paragraphNumber = res.first, nomisCode = res.second, notCommittedOnOwnNomisCode = res.third)
-      }
+      true -> youthOffenceDetailsByCode[offenceCode]?.let { OffenceCodeDetails(offenceCode = offenceCode, paragraphNumber = it.first, nomisCode = it.second, notCommittedOnOwnNomisCode = it.third) }
+      false -> adultOffenceDetailsByCode[offenceCode]?.let { OffenceCodeDetails(offenceCode = offenceCode, paragraphNumber = it.first, nomisCode = it.second, notCommittedOnOwnNomisCode = it.third) }
     }
 }
 
