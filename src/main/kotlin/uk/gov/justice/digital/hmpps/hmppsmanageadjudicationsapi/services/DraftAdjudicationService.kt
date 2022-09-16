@@ -488,7 +488,6 @@ class DraftAdjudicationService(
     return (draftOffences ?: listOf()).map {
       ReportedOffence(
         offenceCode = it.offenceCode,
-        paragraphCode = offenceCodeLookupService.getParagraphCode(it.offenceCode, draftAdjudication.isYouthOffender!!),
         victimPrisonersNumber = it.victimPrisonersNumber,
         victimStaffUsername = it.victimStaffUsername,
         victimOtherPersonsName = it.victimOtherPersonsName,

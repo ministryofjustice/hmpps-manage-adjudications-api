@@ -81,9 +81,7 @@ class ReportedAdjudicationServiceTest {
       )
     ).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2, false)).thenReturn(
-      listOf(
-        OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
-      )
+      OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
     )
     whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(2, false)).thenReturn(
       OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
@@ -97,9 +95,7 @@ class ReportedAdjudicationServiceTest {
       )
     ).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3, false)).thenReturn(
-      listOf(
-        OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
-      )
+      OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
     )
     whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3, false)).thenReturn(
       OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
@@ -110,9 +106,7 @@ class ReportedAdjudicationServiceTest {
       YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION
     )
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2, true)).thenReturn(
-      listOf(
-        YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
-      )
+      YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
     )
     whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(2, true)).thenReturn(
       YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
@@ -124,9 +118,7 @@ class ReportedAdjudicationServiceTest {
       YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION
     )
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3, true)).thenReturn(
-      listOf(
-        YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
-      )
+      YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
     )
     whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3, true)).thenReturn(
       YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
@@ -156,11 +148,9 @@ class ReportedAdjudicationServiceTest {
       var offenceDetails = mutableListOf(
         ReportedOffence(
           offenceCode = 2,
-          paragraphCode = OFFENCE_CODE_2_PARAGRAPH_CODE,
         ),
         ReportedOffence(
           offenceCode = 3,
-          paragraphCode = OFFENCE_CODE_3_PARAGRAPH_CODE,
           victimPrisonersNumber = "BB2345B",
           victimStaffUsername = "DEF34G",
           victimOtherPersonsName = "Another Name",
@@ -170,7 +160,6 @@ class ReportedAdjudicationServiceTest {
         offenceDetails = mutableListOf(
           ReportedOffence(
             offenceCode = 2,
-            paragraphCode = YOUTH_OFFENCE_CODE_2_PARAGRAPH_CODE,
           ),
         )
       }
@@ -623,14 +612,12 @@ class ReportedAdjudicationServiceTest {
       val offenceDetails = mutableListOf(
         ReportedOffence(
           offenceCode = 2,
-          paragraphCode = "5b",
         ),
       )
       if (hasSecondOffenceWithAllAssociatedPersonsSet) {
         offenceDetails.add(
           ReportedOffence(
             offenceCode = 3,
-            paragraphCode = "6a",
             victimPrisonersNumber = "A1234AA",
             victimStaffUsername = "ABC12D",
             victimOtherPersonsName = "A name"
