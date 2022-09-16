@@ -83,14 +83,13 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(savedEntity.offenceDetails).hasSize(2)
       .extracting(
         "offenceCode",
-        "paragraphCode",
         "victimPrisonersNumber",
         "victimStaffUsername",
         "victimOtherPersonsName"
       )
       .contains(
         Tuple(
-          adjudication.offenceDetails!![0].offenceCode, adjudication.offenceDetails!![0].paragraphCode,
+          adjudication.offenceDetails!![0].offenceCode,
           adjudication.offenceDetails!![0].victimPrisonersNumber, adjudication.offenceDetails!![0].victimStaffUsername,
           adjudication.offenceDetails!![0].victimOtherPersonsName
         ),
@@ -143,7 +142,6 @@ class ReportedAdjudicationRepositoryTest {
       mutableListOf(
         ReportedOffence(
           offenceCode = 5,
-          paragraphCode = "6",
           victimPrisonersNumber = "C2345CC",
           victimStaffUsername = "DEF34G",
           victimOtherPersonsName = "Yet Another Person",
@@ -164,14 +162,13 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(savedEntity.offenceDetails).hasSize(1)
       .extracting(
         "offenceCode",
-        "paragraphCode",
         "victimPrisonersNumber",
         "victimStaffUsername",
         "victimOtherPersonsName"
       )
       .contains(
         Tuple(
-          adjudication.offenceDetails!![0].offenceCode, adjudication.offenceDetails!![0].paragraphCode,
+          adjudication.offenceDetails!![0].offenceCode,
           adjudication.offenceDetails!![0].victimPrisonersNumber, adjudication.offenceDetails!![0].victimStaffUsername,
           adjudication.offenceDetails!![0].victimOtherPersonsName
         ),
