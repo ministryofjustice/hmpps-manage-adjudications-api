@@ -56,7 +56,8 @@ class EntityBuilder {
         ReportedEvidence(
           code = EvidenceCode.PHOTO,
           details = "details",
-          reporter = "Fred"
+          reporter = "Fred",
+          identifier = "identifier"
         )
       ),
       witnesses = mutableListOf(

@@ -681,7 +681,7 @@ class ReportedAdjudicationServiceTest {
         Damage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
       ),
       evidence = mutableListOf(
-        Evidence(code = EvidenceCode.PHOTO, identifier = null, details = "details", reporter = "Fred")
+        Evidence(code = EvidenceCode.PHOTO, identifier = "identifier", details = "details", reporter = "Fred")
       ),
       witnesses = mutableListOf(
         Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
@@ -768,10 +768,10 @@ class ReportedAdjudicationServiceTest {
           )
         )
       assertThat(createdDraft.evidence)
-        .extracting("code", "details", "reporter")
+        .extracting("code", "details", "reporter", "identifier")
         .contains(
           Tuple(
-            EvidenceCode.PHOTO, "details", "Fred"
+            EvidenceCode.PHOTO, "details", "Fred", "identifier"
           )
         )
       assertThat(createdDraft.witnesses)

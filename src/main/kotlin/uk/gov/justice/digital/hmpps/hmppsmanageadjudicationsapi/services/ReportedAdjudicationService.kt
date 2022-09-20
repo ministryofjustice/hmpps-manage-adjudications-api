@@ -153,7 +153,8 @@ class ReportedAdjudicationService(
       Evidence(
         code = it.code,
         details = it.details,
-        reporter = it.reporter
+        reporter = it.reporter,
+        identifier = it.identifier
       )
     }.toMutableList()
   }
