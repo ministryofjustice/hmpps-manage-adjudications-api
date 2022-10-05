@@ -4,6 +4,10 @@ class AdultOffenceCodes {
   companion object {
     // This information is taken from the spreadsheet of offences related to the ticket this work was done under.
     // Specifically these adult offences are in the "Dev Copy" worksheet
+    /* first: paragraph front end code
+       second: nomis code
+       third: nomis committed with others code */
+
     fun buildLookup(): Map<Int, Triple<String, String, String>> =
       mapOf(
         1001 to Triple("1(a)", "51:1A", "51:1A"),
