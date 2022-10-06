@@ -72,10 +72,11 @@ class DraftAdjudicationRepositoryTest {
       .contains(savedEntity.id, draft.prisonerNumber, draft.agencyId, "ITAG_USER")
 
     assertThat(savedEntity.incidentDetails)
-      .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
+      .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
       .contains(
         draft.incidentDetails.locationId,
         draft.incidentDetails.dateTimeOfIncident,
+        draft.incidentDetails.dateTimeOfIncident.plusDays(1),
         draft.incidentDetails.handoverDeadline
       )
 
@@ -313,6 +314,7 @@ class DraftAdjudicationRepositoryTest {
       incidentDetails = IncidentDetails(
         locationId = 2,
         dateTimeOfIncident = DEFAULT_DATE_TIME,
+        dateTimeOfDiscovery = DEFAULT_DATE_TIME.plusDays(1),
         handoverDeadline = DEFAULT_DATE_TIME.plusDays(2)
       ),
       incidentRole = IncidentRole(

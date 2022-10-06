@@ -96,6 +96,11 @@ class DraftAdjudicationService(
     const val TELEMETRY_EVENT = "DraftAdjudicationEvent"
 
     fun daysToActionFromIncident(incidentDate: LocalDateTime): LocalDateTime = incidentDate.plusDays(DAYS_TO_ACTION)
+    fun dateOfDiscoveryValidation(dateTimeOfDiscovery: LocalDateTime?, dateTimeOfIncident: LocalDateTime) {
+      dateTimeOfDiscovery?.let {
+        if (it.isBefore(dateTimeOfIncident)) throw IllegalStateException("Date of discovery is before incident date")
+      }
+    }
   }
 
   fun deleteOrphanedDraftAdjudications() {
@@ -108,15 +113,19 @@ class DraftAdjudicationService(
     prisonerNumber: String,
     agencyId: String,
     locationId: Long,
-    dateTimeOfIncident: LocalDateTime
+    dateTimeOfIncident: LocalDateTime,
+    dateTimeOfDiscovery: LocalDateTime? = null,
   ): DraftAdjudicationDto {
+    dateOfDiscoveryValidation(dateTimeOfDiscovery, dateTimeOfIncident)
+
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
       agencyId = agencyId,
       incidentDetails = IncidentDetails(
         locationId = locationId,
         dateTimeOfIncident = dateTimeOfIncident,
-        handoverDeadline = daysToActionFromIncident(dateTimeOfIncident)
+        dateTimeOfDiscovery = dateTimeOfDiscovery,
+        handoverDeadline = daysToActionFromIncident(dateTimeOfDiscovery ?: dateTimeOfIncident)
       ),
       reportNumber = null,
       reportByUserId = null,
@@ -172,14 +181,22 @@ class DraftAdjudicationService(
   fun editIncidentDetails(
     id: Long,
     locationId: Long?,
-    dateTimeOfIncident: LocalDateTime?
+    dateTimeOfIncident: LocalDateTime?,
+    dateTimeOfDiscovery: LocalDateTime?
   ): DraftAdjudicationDto {
+    dateTimeOfIncident?.let {
+      dateOfDiscoveryValidation(dateTimeOfDiscovery, it)
+    }
+
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
     locationId?.let { draftAdjudication.incidentDetails.locationId = it }
     dateTimeOfIncident?.let {
       draftAdjudication.incidentDetails.dateTimeOfIncident = it
-      draftAdjudication.incidentDetails.handoverDeadline = daysToActionFromIncident(it)
+      draftAdjudication.incidentDetails.handoverDeadline = daysToActionFromIncident(dateTimeOfDiscovery ?: it)
+    }
+    dateTimeOfDiscovery?.let {
+      draftAdjudication.incidentDetails.dateTimeOfDiscovery = it
     }
 
     return draftAdjudicationRepository
@@ -405,6 +422,7 @@ class DraftAdjudicationService(
         agencyId = draftAdjudication.agencyId,
         locationId = draftAdjudication.incidentDetails.locationId,
         dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
+        dateTimeOfDiscovery = draftAdjudication.incidentDetails.dateTimeOfDiscovery,
         handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
         isYouthOffender = draftAdjudication.isYouthOffender!!,
         incidentRoleCode = draftAdjudication.incidentRole!!.roleCode,
@@ -436,6 +454,7 @@ class DraftAdjudicationService(
       it.agencyId = draftAdjudication.agencyId
       it.locationId = draftAdjudication.incidentDetails.locationId
       it.dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident
+      it.dateTimeOfDiscovery = draftAdjudication.incidentDetails.dateTimeOfDiscovery
       it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline
       it.isYouthOffender = draftAdjudication.isYouthOffender!!
       it.incidentRoleCode = draftAdjudication.incidentRole!!.roleCode
@@ -544,6 +563,7 @@ fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService):
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
   locationId = this.locationId,
   dateTimeOfIncident = this.dateTimeOfIncident,
+  dateTimeOfDiscovery = this.dateTimeOfDiscovery,
   handoverDeadline = this.handoverDeadline,
 )
 

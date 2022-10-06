@@ -63,10 +63,11 @@ class ReportedAdjudicationRepositoryTest {
       )
 
     assertThat(savedEntity)
-      .extracting("locationId", "dateTimeOfIncident", "handoverDeadline", "statement")
+      .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline", "statement")
       .contains(
         adjudication.locationId,
         adjudication.dateTimeOfIncident,
+        adjudication.dateTimeOfIncident.plusDays(1),
         adjudication.handoverDeadline,
         adjudication.statement
       )

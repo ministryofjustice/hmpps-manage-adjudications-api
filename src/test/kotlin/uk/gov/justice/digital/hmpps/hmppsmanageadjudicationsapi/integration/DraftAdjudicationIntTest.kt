@@ -39,6 +39,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
           "agencyId" to "MDI",
           "locationId" to 1,
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT,
+          "dateTimeOfDiscovery" to DATE_TIME_OF_INCIDENT.plusDays(1)
         )
       )
       .exchange()
@@ -48,7 +49,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
       .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo("ITAG_USER")
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
-      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-14T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfDiscovery").isEqualTo("2010-10-13T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-15T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(1)
   }
 
@@ -216,6 +218,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "locationId" to 3,
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT.plusMonths(1),
+          "dateTimeOfDiscovery" to DATE_TIME_OF_INCIDENT.plusMonths(1).plusDays(1),
         )
       )
       .exchange()
@@ -224,7 +227,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo(testAdjudication.prisonerNumber)
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-11-12T10:00:00")
-      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-11-14T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfDiscovery").isEqualTo("2010-11-13T10:00:00")
+      .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-11-15T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(3)
   }
 

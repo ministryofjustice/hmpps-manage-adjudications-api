@@ -23,6 +23,7 @@ data class ReportedAdjudication(
   var agencyId: String,
   var locationId: Long,
   var dateTimeOfIncident: LocalDateTime,
+  var dateTimeOfDiscovery: LocalDateTime? = null,
   var handoverDeadline: LocalDateTime,
   var isYouthOffender: Boolean,
   var incidentRoleCode: String?,

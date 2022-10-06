@@ -46,7 +46,8 @@ class IntegrationTestData(
     const val DEFAULT_CREATED_USER_ID = "B_MILLS"
     val DEFAULT_DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 11, 12, 10, 0)
     const val DEFAULT_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-12T10:00:00" // this is a friday
-    const val DEFAULT_HANDOVER_DEADLINE_ISO_STRING = "2010-11-14T10:00:00"
+    const val DEFAULT_DATE_TIME_OF_DISCOVERY_TEXT = "2010-11-13T10:00:00"
+    const val DEFAULT_HANDOVER_DEADLINE_ISO_STRING = "2010-11-15T10:00:00"
     const val DEFAULT_INCIDENT_ROLE_CODE = "25a"
     const val DEFAULT_INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(a)"
     const val DEFAULT_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION = "Attempts to commit any of the foregoing offences:"
@@ -88,6 +89,8 @@ class IntegrationTestData(
       locationId = UPDATED_LOCATION_ID,
       dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
       dateTimeOfIncident = DEFAULT_DATE_TIME_OF_INCIDENT,
+      dateTimeOfDiscovery = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1),
+      dateTimeOfDiscoveryISOString = DEFAULT_DATE_TIME_OF_DISCOVERY_TEXT,
       handoverDeadlineISOString = DEFAULT_HANDOVER_DEADLINE_ISO_STRING,
       isYouthOffender = false,
       incidentRoleCode = DEFAULT_INCIDENT_ROLE_CODE,
@@ -132,7 +135,9 @@ class IntegrationTestData(
       locationId = 11L,
       dateTimeOfIncidentISOString = "2020-12-13T08:00:00",
       dateTimeOfIncident = LocalDateTime.parse("2020-12-13T08:00:00"),
-      handoverDeadlineISOString = "2020-12-15T08:00:00",
+      dateTimeOfDiscovery = LocalDateTime.parse("2020-12-14T08:00:00"),
+      dateTimeOfDiscoveryISOString = "2020-12-13T08:00:00",
+      handoverDeadlineISOString = "2020-12-16T08:00:00",
       isYouthOffender = false,
       incidentRoleCode = "25c",
       incidentRoleParagraphNumber = "25(c)",
@@ -257,6 +262,7 @@ class IntegrationTestData(
           "agencyId" to testDataSet.agencyId,
           "locationId" to testDataSet.locationId,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,
+          "dateTimeOfDiscovery" to testDataSet.dateTimeOfDiscovery
         )
       )
       .exchange()

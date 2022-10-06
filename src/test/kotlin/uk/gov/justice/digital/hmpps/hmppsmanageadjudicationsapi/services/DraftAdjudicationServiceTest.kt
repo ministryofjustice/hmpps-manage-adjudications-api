@@ -130,9 +130,24 @@ class DraftAdjudicationServiceTest {
       incidentDetails = IncidentDetails(
         locationId = 2,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+        dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
         handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
       ),
     )
+
+    @Test
+    fun `throws exception if date of discovery before incident date`() {
+      assertThatThrownBy {
+        draftAdjudicationService.startNewAdjudication(
+          "A12345",
+          "MDI",
+          2L,
+          DATE_TIME_OF_INCIDENT,
+          DATE_TIME_OF_INCIDENT.minusDays(1),
+        )
+      }.isInstanceOf(IllegalStateException::class.java)
+        .hasMessageContaining("Date of discovery is before incident date")
+    }
 
     @Test
     fun `makes a call to the repository to save the draft adjudication`() {
@@ -144,6 +159,7 @@ class DraftAdjudicationServiceTest {
           "MDI",
           2L,
           DATE_TIME_OF_INCIDENT,
+          DATE_TIME_OF_INCIDENT.plusDays(1),
         )
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
@@ -164,8 +180,8 @@ class DraftAdjudicationServiceTest {
         .contains(1L, "A12345")
 
       assertThat(draftAdjudication.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
-        .contains(2L, DATE_TIME_OF_INCIDENT, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+        .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
+        .contains(2L, DATE_TIME_OF_INCIDENT, DATE_TIME_OF_INCIDENT.plusDays(1), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
 
       assertThat(draftAdjudication.incidentRole).isNull()
       assertThat(draftAdjudication.isYouthOffender).isNull()
@@ -841,9 +857,23 @@ class DraftAdjudicationServiceTest {
           1,
           2,
           DATE_TIME_OF_INCIDENT,
+          DATE_TIME_OF_INCIDENT.plusDays(1),
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+
+    @Test
+    fun `throws exception if date of discovery before incident date`() {
+      assertThatThrownBy {
+        draftAdjudicationService.editIncidentDetails(
+          1,
+          2,
+          DATE_TIME_OF_INCIDENT,
+          DATE_TIME_OF_INCIDENT.minusDays(1),
+        )
+      }.isInstanceOf(IllegalStateException::class.java)
+        .hasMessageContaining("Date of discovery is before incident date")
     }
 
     @Test
@@ -858,6 +888,7 @@ class DraftAdjudicationServiceTest {
           id = 1,
           locationId = 2,
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+          dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
         isYouthOffender = true
@@ -872,6 +903,7 @@ class DraftAdjudicationServiceTest {
             id = 1,
             locationId = 3L,
             dateTimeOfIncident = editedDateTimeOfIncident,
+            dateTimeOfDiscovery = editedDateTimeOfIncident.plusDays(1),
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = editedIncidentRole
@@ -882,6 +914,7 @@ class DraftAdjudicationServiceTest {
         1,
         3,
         editedDateTimeOfIncident,
+        editedDateTimeOfIncident.plusDays(1),
       )
 
       assertThat(draftAdjudication)
@@ -889,8 +922,8 @@ class DraftAdjudicationServiceTest {
         .contains(1L, "A12345")
 
       assertThat(draftAdjudication.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
-        .contains(3L, editedDateTimeOfIncident, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+        .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
+        .contains(3L, editedDateTimeOfIncident, editedDateTimeOfIncident.plusDays(1), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
@@ -1478,6 +1511,7 @@ class DraftAdjudicationServiceTest {
               id = 2,
               locationId = 2,
               dateTimeOfIncident = LocalDateTime.now(clock).plusMonths(2),
+              dateTimeOfDiscovery = LocalDateTime.now(clock).plusMonths(2).plusDays(1),
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
             incidentRole = incidentRoleWithAllValuesSet(),
@@ -1496,6 +1530,7 @@ class DraftAdjudicationServiceTest {
               id = 3,
               locationId = 3,
               dateTimeOfIncident = LocalDateTime.now(clock),
+              dateTimeOfDiscovery = LocalDateTime.now(clock).plusDays(1),
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
             incidentRole = incidentRoleWithNoValuesSet(),
@@ -1541,8 +1576,8 @@ class DraftAdjudicationServiceTest {
       assertThat(adjudications)
         .extracting("incidentDetails")
         .contains(
-          IncidentDetailsDto(3, LocalDateTime.now(clock), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
-          IncidentDetailsDto(2, LocalDateTime.now(clock).plusMonths(2), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+          IncidentDetailsDto(3, LocalDateTime.now(clock), LocalDateTime.now(clock).plusDays(1,), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
+          IncidentDetailsDto(2, LocalDateTime.now(clock).plusMonths(2), LocalDateTime.now(clock).plusMonths(2).plusDays(1), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
         )
 
       assertThat(adjudications)

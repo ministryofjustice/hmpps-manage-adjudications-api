@@ -101,6 +101,7 @@ class ReportedAdjudicationService(
       incidentDetails = IncidentDetails(
         locationId = reportedAdjudication.locationId,
         dateTimeOfIncident = reportedAdjudication.dateTimeOfIncident,
+        dateTimeOfDiscovery = reportedAdjudication.dateTimeOfDiscovery,
         handoverDeadline = reportedAdjudication.handoverDeadline
       ),
       incidentRole = IncidentRole(
@@ -276,7 +277,7 @@ class ReportedAdjudicationService(
             "ReportedAdjudication creation time not set for reported adjudication number ${reportedAdjudication.reportNumber}"
           ),
         agencyId = reportedAdjudication.agencyId,
-        incidentTime = reportedAdjudication.dateTimeOfIncident,
+        incidentTime = reportedAdjudication.dateTimeOfDiscovery ?: reportedAdjudication.dateTimeOfIncident,
         incidentLocationId = reportedAdjudication.locationId,
         statement = reportedAdjudication.statement,
         offenceCodes = getNomisCodes(reportedAdjudication.incidentRoleCode, reportedAdjudication.offenceDetails, reportedAdjudication.isYouthOffender),
@@ -319,6 +320,7 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   incidentDetails = IncidentDetailsDto(
     locationId = locationId,
     dateTimeOfIncident = dateTimeOfIncident,
+    dateTimeOfDiscovery = dateTimeOfDiscovery,
     handoverDeadline = handoverDeadline
   ),
   isYouthOffender = isYouthOffender,
