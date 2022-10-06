@@ -18,5 +18,5 @@ spec:
               args:
                 - /bin/sh
                 - -c
-                - curl -XDELETE http://hmpps-manage-adjudications-api/draft-adjudications/orphaned
+                - curl --retry 2 -XDELETE http://hmpps-manage-adjudications-api/draft-adjudications/orphaned
           restartPolicy: Never
