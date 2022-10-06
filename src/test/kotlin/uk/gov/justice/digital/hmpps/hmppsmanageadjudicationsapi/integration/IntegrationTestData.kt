@@ -22,8 +22,8 @@ class IntegrationTestData(
   companion object {
     val BASIC_OFFENCE = OffenceTestDataSet(
       offenceCode = 1003,
-      paragraphNumber = "1",
-      paragraphDescription = "Commits any assault"
+      paragraphNumber = "1(a)",
+      paragraphDescription = "Commits any racially aggravated assault"
     )
     val FULL_OFFENCE = OffenceTestDataSet(
       offenceCode = 4001,
