@@ -201,6 +201,7 @@ class DraftAdjudicationRepositoryTest {
         incidentDetails = IncidentDetails(
           locationId = 2,
           dateTimeOfIncident = dateTimeOfIncident,
+          dateTimeOfDiscovery = dateTimeOfIncident.plusDays(1),
           handoverDeadline = dateTimeOfIncident.plusDays(2)
         ),
         incidentRole = IncidentRole(
@@ -218,6 +219,7 @@ class DraftAdjudicationRepositoryTest {
         incidentDetails = IncidentDetails(
           locationId = 2,
           dateTimeOfIncident = dateTimeOfIncident,
+          dateTimeOfDiscovery = dateTimeOfIncident,
           handoverDeadline = dateTimeOfIncident.plusDays(2)
         ),
         incidentRole = IncidentRole(
@@ -237,6 +239,7 @@ class DraftAdjudicationRepositoryTest {
         incidentDetails = IncidentDetails(
           locationId = 3,
           dateTimeOfIncident = dateTimeOfIncident,
+          dateTimeOfDiscovery = dateTimeOfIncident.plusDays(1),
           handoverDeadline = dateTimeOfIncident.plusDays(3)
         ),
         incidentRole = IncidentRole(
@@ -295,6 +298,7 @@ class DraftAdjudicationRepositoryTest {
       incidentDetails = IncidentDetails(
         locationId = 2,
         dateTimeOfIncident = DEFAULT_DATE_TIME,
+        dateTimeOfDiscovery = DEFAULT_DATE_TIME,
         handoverDeadline = DEFAULT_DATE_TIME.plusDays(2)
       ),
       incidentRole = IncidentRole(

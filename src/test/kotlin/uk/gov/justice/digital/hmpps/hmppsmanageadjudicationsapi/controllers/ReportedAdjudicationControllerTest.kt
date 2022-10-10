@@ -449,6 +449,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         incidentDetails = IncidentDetailsDto(
           locationId = 2,
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+          dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
         isYouthOffender = false,

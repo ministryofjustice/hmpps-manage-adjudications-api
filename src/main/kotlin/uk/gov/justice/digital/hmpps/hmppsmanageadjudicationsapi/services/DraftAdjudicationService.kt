@@ -124,7 +124,7 @@ class DraftAdjudicationService(
       incidentDetails = IncidentDetails(
         locationId = locationId,
         dateTimeOfIncident = dateTimeOfIncident,
-        dateTimeOfDiscovery = dateTimeOfDiscovery,
+        dateTimeOfDiscovery = dateTimeOfDiscovery ?: dateTimeOfIncident,
         handoverDeadline = daysToActionFromIncident(dateTimeOfDiscovery ?: dateTimeOfIncident)
       ),
       reportNumber = null,
@@ -197,6 +197,7 @@ class DraftAdjudicationService(
     }
     dateTimeOfDiscovery?.let {
       draftAdjudication.incidentDetails.dateTimeOfDiscovery = it
+      draftAdjudication.incidentDetails.handoverDeadline = daysToActionFromIncident(dateTimeOfDiscovery)
     }
 
     return draftAdjudicationRepository

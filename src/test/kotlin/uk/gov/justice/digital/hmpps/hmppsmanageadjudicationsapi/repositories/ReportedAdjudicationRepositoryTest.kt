@@ -210,10 +210,10 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `find reported adjudications by agency id`() {
-    val foundAdjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+    val foundAdjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
       "LEI",
-      LocalDate.now().atStartOfDay(),
-      LocalDate.now().atTime(
+      LocalDate.now().plusDays(1).atStartOfDay(),
+      LocalDate.now().plusDays(1).atTime(
         LocalTime.MAX
       ),
       ReportedAdjudicationStatus.values().toList(),
@@ -230,10 +230,10 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `find reported adjudications by created user and agency id`() {
     val foundAdjudications =
-      reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+      reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
         "ITAG_USER", "MDI",
-        LocalDate.now().atStartOfDay(),
-        LocalDate.now().atTime(
+        LocalDate.now().plusDays(1).atStartOfDay(),
+        LocalDate.now().plusDays(1).atTime(
           LocalTime.MAX
         ),
         ReportedAdjudicationStatus.values().toList(),

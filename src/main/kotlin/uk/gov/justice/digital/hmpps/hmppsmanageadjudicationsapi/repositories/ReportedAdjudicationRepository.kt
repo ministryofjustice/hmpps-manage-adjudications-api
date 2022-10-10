@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import java.time.LocalDateTime
 
 interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, Long> {
-  fun findByCreatedByUserIdAndAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+  fun findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
     userId: String,
     agencyId: String,
     startDate: LocalDateTime,
@@ -16,7 +16,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     statuses: List<ReportedAdjudicationStatus>,
     pageable: Pageable
   ): Page<ReportedAdjudication>
-  fun findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+  fun findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
     agencyId: String,
     startDate: LocalDateTime,
     endDate: LocalDateTime,

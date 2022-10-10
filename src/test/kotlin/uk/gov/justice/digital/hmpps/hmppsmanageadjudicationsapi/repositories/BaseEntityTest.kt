@@ -46,6 +46,7 @@ class BaseEntityTest {
       incidentDetails = IncidentDetails(
         locationId = 2,
         dateTimeOfIncident = DEFAULT_DATE_TIME,
+        dateTimeOfDiscovery = DEFAULT_DATE_TIME,
         handoverDeadline = DEFAULT_DATE_TIME.plusDays(2)
       ),
       incidentRole = IncidentRole(
