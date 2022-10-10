@@ -10,5 +10,6 @@ data class IncidentDetails(
   override val id: Long? = null,
   var locationId: Long,
   var dateTimeOfIncident: LocalDateTime,
+  var dateTimeOfDiscovery: LocalDateTime? = null,
   var handoverDeadline: LocalDateTime,
 ) : BaseEntity()

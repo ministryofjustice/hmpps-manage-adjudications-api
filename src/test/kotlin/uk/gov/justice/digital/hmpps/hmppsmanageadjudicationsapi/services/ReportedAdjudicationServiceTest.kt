@@ -535,7 +535,7 @@ class ReportedAdjudicationServiceTest {
         reportedDateTime = REPORTED_DATE_TIME,
         agencyId = "MDI",
         incidentLocationId = 2L,
-        incidentTime = DATE_TIME_OF_INCIDENT,
+        incidentTime = DATE_TIME_OF_INCIDENT.plusDays(1),
         statement = INCIDENT_STATEMENT,
         offenceCodes = expectedOffenceCodes,
         victimOffenderIds = expectedVictimOffenderIds,
@@ -585,7 +585,7 @@ class ReportedAdjudicationServiceTest {
         reportedDateTime = REPORTED_DATE_TIME,
         agencyId = "MDI",
         incidentLocationId = 2L,
-        incidentTime = DATE_TIME_OF_INCIDENT,
+        incidentTime = DATE_TIME_OF_INCIDENT.plusDays(1),
         statement = INCIDENT_STATEMENT,
         offenceCodes = expectedOffenceCodes,
         victimOffenderIds = expectedVictimOffenderIds,
@@ -652,6 +652,7 @@ class ReportedAdjudicationServiceTest {
       incidentDetails = IncidentDetails(
         locationId = 2L,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+        dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
         handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
       ),
       incidentRole = IncidentRole(

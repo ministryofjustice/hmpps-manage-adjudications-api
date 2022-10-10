@@ -211,6 +211,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
           incidentDetails = IncidentDetailsDto(
             locationId = 2,
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+            dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = IncidentRoleDto(

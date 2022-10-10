@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos
 
 import io.swagger.v3.oas.annotations.media.Schema
+import org.springframework.format.annotation.DateTimeFormat
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
@@ -47,6 +48,9 @@ data class IncidentDetailsDto(
   val locationId: Long,
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   val dateTimeOfIncident: LocalDateTime,
+  @Schema(description = "Optional Date time if discovery date different to incident date", example = "2010-10-12T10:00:00")
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+  val dateTimeOfDiscovery: LocalDateTime? = null,
   @Schema(description = "When this report must be handed to the prisoner", example = "2010-10-14T10:00:00")
   val handoverDeadline: LocalDateTime,
 )

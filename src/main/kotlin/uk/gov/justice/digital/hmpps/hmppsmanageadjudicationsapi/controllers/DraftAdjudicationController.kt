@@ -39,6 +39,9 @@ data class NewAdjudicationRequest(
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime,
+  @Schema(description = "Optional Date time if discovery date different to incident date", example = "2010-10-12T10:00:00")
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+  val dateTimeOfDiscovery: LocalDateTime? = null,
 )
 
 @Schema(description = "Request to update the incident role")
@@ -91,6 +94,9 @@ data class EditIncidentDetailsRequest(
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime? = null,
+  @Schema(description = "Optional Date time if discovery date different to incident date", example = "2010-10-12T10:00:00")
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+  val dateTimeOfDiscovery: LocalDateTime? = null,
 )
 
 @Schema(description = "Request to edit incident role")
@@ -206,6 +212,7 @@ class DraftAdjudicationController {
         newAdjudicationRequest.agencyId,
         newAdjudicationRequest.locationId,
         newAdjudicationRequest.dateTimeOfIncident,
+        newAdjudicationRequest.dateTimeOfDiscovery,
       )
 
     return DraftAdjudicationResponse(
@@ -271,6 +278,7 @@ class DraftAdjudicationController {
       id,
       editIncidentDetailsRequest.locationId,
       editIncidentDetailsRequest.dateTimeOfIncident,
+      editIncidentDetailsRequest.dateTimeOfDiscovery,
     )
 
     return DraftAdjudicationResponse(

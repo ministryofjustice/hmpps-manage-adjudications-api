@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -46,6 +47,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           any(),
           any(),
           any(),
+          anyOrNull(),
         )
       ).thenReturn(
         draftAdjudicationDto()
@@ -60,7 +62,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `calls the service to start a new adjudication for a prisoner`() {
-      startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+      startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT, null, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isCreated)
 
       verify(draftAdjudicationService).startNewAdjudication(
@@ -68,13 +70,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         "MDI",
         1,
         DATE_TIME_OF_INCIDENT,
+        null
       )
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `returns the newly created draft adjudication`() {
-      startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+      startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT, null, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isCreated)
         .andExpect(jsonPath("draftAdjudication.id").isNumber)
         .andExpect(jsonPath("draftAdjudication.adjudicationNumber").doesNotExist())
@@ -101,6 +104,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       agencyId: String = "MDI",
       locationId: Long? = null,
       dateTimeOfIncident: LocalDateTime? = null,
+      dateTimeOfDiscovery: LocalDateTime? = null,
       incidentRole: IncidentRoleRequest? = null,
     ): ResultActions {
       val jsonBody =
@@ -110,7 +114,8 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             "agencyId" to agencyId,
             "locationId" to locationId,
             "dateTimeOfIncident" to dateTimeOfIncident,
-            "incidentRole" to incidentRole
+            "incidentRole" to incidentRole,
+            "dateTimeOfDiscovery" to dateTimeOfDiscovery,
           )
         )
 
@@ -325,38 +330,41 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           anyLong(),
           any(),
+          anyOrNull(),
         )
       ).thenReturn(draftAdjudicationDto())
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
-      editIncidentDetailsRequest(1, 1, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+      editIncidentDetailsRequest(1, 1, DATE_TIME_OF_INCIDENT, DATE_TIME_OF_INCIDENT.plusDays(1), INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `makes a call to edit the incident details`() {
-      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, DATE_TIME_OF_INCIDENT.plusDays(1), INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isOk)
 
       verify(draftAdjudicationService).editIncidentDetails(
         1,
         2,
         DATE_TIME_OF_INCIDENT,
+        DATE_TIME_OF_INCIDENT.plusDays(1)
       )
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `returns the incident details`() {
-      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, DATE_TIME_OF_INCIDENT.plusDays(1), INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isOk)
         .andExpect(jsonPath("$.draftAdjudication.id").isNumber)
         .andExpect(jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.locationId").value(3))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
+        .andExpect(jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfDiscovery").value("2010-10-13T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
         .andExpect(
           jsonPath("$.draftAdjudication.incidentRole.roleCode").value(
@@ -378,11 +386,12 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           anyLong(),
           any(),
+          anyOrNull(),
         )
       ).thenThrow(
         IllegalStateException::class.java
       )
-      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, null, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isBadRequest)
     }
 
@@ -390,6 +399,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       id: Long,
       locationId: Long,
       dateTimeOfIncident: LocalDateTime?,
+      dateTimeOfDiscovery: LocalDateTime?,
       incidentRole: IncidentRoleRequest?
     ): ResultActions {
       val body =
@@ -397,7 +407,8 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           mapOf(
             "locationId" to locationId,
             "dateTimeOfIncident" to dateTimeOfIncident,
-            "incidentRole" to incidentRole
+            "incidentRole" to incidentRole,
+            "dateTimeOfDiscovery" to dateTimeOfDiscovery,
           )
         )
       return mockMvc
@@ -837,8 +848,9 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       prisonerNumber = "A12345",
       incidentDetails = IncidentDetailsDto(
         locationId = 3,
-        DATE_TIME_OF_INCIDENT,
-        DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+        dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
+        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
       ),
       incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
       isYouthOffender = true,

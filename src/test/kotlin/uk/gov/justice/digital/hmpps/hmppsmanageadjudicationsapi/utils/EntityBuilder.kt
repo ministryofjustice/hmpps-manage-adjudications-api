@@ -26,6 +26,7 @@ class EntityBuilder {
       agencyId = agencyId,
       locationId = 2,
       dateTimeOfIncident = dateTime,
+      dateTimeOfDiscovery = dateTime.plusDays(1),
       handoverDeadline = dateTime.plusDays(2),
       isYouthOffender = false,
       incidentRoleCode = "25a",
