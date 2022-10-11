@@ -265,7 +265,7 @@ class ReportedAdjudicationServiceTest {
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
       whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
           any(),
           any(),
           any(),
@@ -289,7 +289,7 @@ class ReportedAdjudicationServiceTest {
         Pageable.ofSize(20).withPage(0)
       )
 
-      verify(reportedAdjudicationRepository).findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+      verify(reportedAdjudicationRepository).findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
         "MDI",
         LocalDate.now().atStartOfDay(),
         LocalDate.now().atTime(LocalTime.MAX),
@@ -330,7 +330,7 @@ class ReportedAdjudicationServiceTest {
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
       whenever(
-        reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+        reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
           any(),
           any(),
           any(),

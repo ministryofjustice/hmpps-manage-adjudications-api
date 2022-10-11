@@ -147,6 +147,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           incidentDetails = IncidentDetailsDto(
             locationId = 1L,
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+            dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
@@ -183,6 +184,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           incidentDetails = IncidentDetailsDto(
             locationId = 1L,
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+            dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
           ),
           incidentRole = INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO,
@@ -502,6 +504,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             incidentDetails = IncidentDetailsDto(
               locationId = 1,
               dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+              dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
             ),
             incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
@@ -514,6 +517,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             incidentDetails = IncidentDetailsDto(
               locationId = 2,
               dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1),
+              dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusMonths(1),
               handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE.plusMonths(1)
             ),
             incidentRole = INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO,

@@ -127,12 +127,7 @@ class DraftAdjudicationServiceTest {
       id = 1,
       prisonerNumber = "A12345",
       agencyId = "MDI",
-      incidentDetails = IncidentDetails(
-        locationId = 2,
-        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-        dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
-        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-      ),
+      incidentDetails = incidentDetails(2L, DATE_TIME_OF_INCIDENT),
     )
 
     @Test
@@ -213,7 +208,6 @@ class DraftAdjudicationServiceTest {
     fun `returns the draft adjudication`(
       isYouthOffender: Boolean,
     ) {
-      val now = LocalDateTime.now()
       var offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
       if (isYouthOffender) {
         offenceDetails = mutableListOf(YOUTH_OFFENCE_DETAILS_DB_ENTITY)
@@ -224,11 +218,7 @@ class DraftAdjudicationServiceTest {
           id = 1,
           prisonerNumber = "A12345",
           agencyId = "MDI",
-          incidentDetails = IncidentDetails(
-            locationId = 2,
-            dateTimeOfIncident = now,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
+          incidentDetails = incidentDetails(2L, now),
           incidentRole = incidentRoleWithAllValuesSet(),
           offenceDetails = offenceDetails,
           incidentStatement = IncidentStatement(
@@ -328,11 +318,7 @@ class DraftAdjudicationServiceTest {
         id = 1,
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(
-          locationId = 2,
-          dateTimeOfIncident = LocalDateTime.now(),
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-        ),
+        incidentDetails = incidentDetails(2L, now),
         offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
@@ -346,11 +332,7 @@ class DraftAdjudicationServiceTest {
         id = 1,
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(
-          locationId = 2,
-          dateTimeOfIncident = LocalDateTime.now(),
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-        ),
+        incidentDetails = incidentDetails(2L, now),
         offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
@@ -454,11 +436,7 @@ class DraftAdjudicationServiceTest {
             id = 1,
             prisonerNumber = "A12345",
             agencyId = "MDI",
-            incidentDetails = IncidentDetails(
-              locationId = 2,
-              dateTimeOfIncident = LocalDateTime.now(),
-              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-            ),
+            incidentDetails = incidentDetails(2L, now),
             incidentRole = IncidentRole(null, "25a", null, null),
             offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
             incidentStatement = IncidentStatement(
@@ -486,11 +464,7 @@ class DraftAdjudicationServiceTest {
         id = 1,
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(
-          locationId = 2,
-          dateTimeOfIncident = LocalDateTime.now(),
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-        ),
+        incidentDetails = incidentDetails(2L, now),
         incidentRole = incidentRoleWithNoValuesSet(),
         offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
         incidentStatement = IncidentStatement(
@@ -577,11 +551,7 @@ class DraftAdjudicationServiceTest {
       id = 1,
       prisonerNumber = "A12345",
       agencyId = "MDI",
-      incidentDetails = IncidentDetails(
-        locationId = 1,
-        dateTimeOfIncident = LocalDateTime.now(clock),
-        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-      ),
+      incidentDetails = incidentDetails(2L, clock),
       incidentRole = incidentRoleWithNoValuesSet(),
     )
 
@@ -663,6 +633,7 @@ class DraftAdjudicationServiceTest {
         incidentDetails = IncidentDetails(
           locationId = 1,
           dateTimeOfIncident = LocalDateTime.now(clock),
+          dateTimeOfDiscovery = LocalDateTime.now(clock).plusDays(1),
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
         ),
         incidentRole = incidentRoleWithNoValuesSet(),
@@ -721,11 +692,7 @@ class DraftAdjudicationServiceTest {
         id = 1,
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(
-          locationId = 1,
-          dateTimeOfIncident = LocalDateTime.now(clock),
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-        ),
+        incidentDetails = incidentDetails(2L, clock),
         incidentRole = incidentRoleWithNoValuesSet(),
         isYouthOffender = false
       )
@@ -779,11 +746,7 @@ class DraftAdjudicationServiceTest {
         id = 1,
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(
-          locationId = 1,
-          dateTimeOfIncident = LocalDateTime.now(clock),
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-        ),
+        incidentDetails = incidentDetails(2L, clock),
         incidentRole = incidentRoleWithNoValuesSet(),
         isYouthOffender = true
       )
@@ -819,11 +782,7 @@ class DraftAdjudicationServiceTest {
               id = 1,
               prisonerNumber = "A12345",
               agencyId = "MDI",
-              incidentDetails = IncidentDetails(
-                locationId = 1,
-                dateTimeOfIncident = LocalDateTime.now(clock),
-                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-              ),
+              incidentDetails = incidentDetails(2L, clock),
               incidentRole = incidentRoleWithNoValuesSet(),
               incidentStatement = IncidentStatement(id = 1, statement = "test"),
               isYouthOffender = true
@@ -962,11 +921,7 @@ class DraftAdjudicationServiceTest {
             id = 1,
             prisonerNumber = "A12345",
             agencyId = "MDI",
-            incidentDetails = IncidentDetails(
-              locationId = 1,
-              dateTimeOfIncident = LocalDateTime.now(clock),
-              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-            ),
+            incidentDetails = incidentDetails(2L, clock),
             incidentRole = incidentRoleWithNoValuesSet(),
             isYouthOffender = true
           )
@@ -987,11 +942,7 @@ class DraftAdjudicationServiceTest {
           id = 1,
           prisonerNumber = "A12345",
           agencyId = "MDI",
-          incidentDetails = IncidentDetails(
-            locationId = 1,
-            dateTimeOfIncident = LocalDateTime.now(clock),
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
+          incidentDetails = incidentDetails(2L, clock),
           incidentRole = incidentRoleWithNoValuesSet(),
           incidentStatement = IncidentStatement(statement = "old statement"),
           isYouthOffender = true
@@ -1041,11 +992,7 @@ class DraftAdjudicationServiceTest {
           DraftAdjudication(
             prisonerNumber = "A12345",
             agencyId = "MDI",
-            incidentDetails = IncidentDetails(
-              locationId = 1,
-              dateTimeOfIncident = LocalDateTime.now(),
-              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-            ),
+            incidentDetails = incidentDetails(2L, now),
           ).also {
             when (validationCheck) {
               ValidationChecks.INCIDENT_ROLE -> {
@@ -1083,7 +1030,6 @@ class DraftAdjudicationServiceTest {
     @Nested
     inner class WithAValidDraftAdjudication {
       private val INCIDENT_TIME = LocalDateTime.now(clock)
-      private val now = LocalDateTime.now()
 
       @BeforeEach
       fun beforeEach() {
@@ -1091,11 +1037,7 @@ class DraftAdjudicationServiceTest {
           id = 1,
           prisonerNumber = "A12345",
           agencyId = "MDI",
-          incidentDetails = IncidentDetails(
-            locationId = 1,
-            dateTimeOfIncident = INCIDENT_TIME,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
+          incidentDetails = incidentDetails(1L, INCIDENT_TIME),
           incidentRole = incidentRoleWithAllValuesSet(),
           offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
           incidentStatement = IncidentStatement(statement = "test"),
@@ -1223,11 +1165,7 @@ class DraftAdjudicationServiceTest {
               prisonerNumber = "A12345",
               reportNumber = 123,
               agencyId = "MDI",
-              incidentDetails = IncidentDetails(
-                locationId = 2,
-                dateTimeOfIncident = INCIDENT_TIME,
-                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-              ),
+              incidentDetails = incidentDetails(2L, INCIDENT_TIME),
               incidentRole = incidentRoleWithNoValuesSet(),
               offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
               incidentStatement = IncidentStatement(statement = "test"),
@@ -1298,11 +1236,7 @@ class DraftAdjudicationServiceTest {
               reportNumber = 123L,
               reportByUserId = "A_SMITH",
               agencyId = "MDI",
-              incidentDetails = IncidentDetails(
-                locationId = 1,
-                dateTimeOfIncident = LocalDateTime.now(clock),
-                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-              ),
+              incidentDetails = incidentDetails(1L, clock),
               incidentRole = incidentRoleWithAllValuesSet(),
               offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
               incidentStatement = IncidentStatement(statement = "test"),
@@ -1526,13 +1460,7 @@ class DraftAdjudicationServiceTest {
             id = 2,
             prisonerNumber = "A12346",
             agencyId = "MDI",
-            incidentDetails = IncidentDetails(
-              id = 3,
-              locationId = 3,
-              dateTimeOfIncident = LocalDateTime.now(clock),
-              dateTimeOfDiscovery = LocalDateTime.now(clock).plusDays(1),
-              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-            ),
+            incidentDetails = incidentDetails(3L, clock),
             incidentRole = incidentRoleWithNoValuesSet(),
             isYouthOffender = false
           )
@@ -1610,11 +1538,7 @@ class DraftAdjudicationServiceTest {
         id = 1,
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(
-          locationId = 2,
-          dateTimeOfIncident = LocalDateTime.now(),
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-        ),
+        incidentDetails = incidentDetails(2L, now),
         incidentRole = incidentRoleWithAllValuesSet(),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
@@ -1663,11 +1587,7 @@ class DraftAdjudicationServiceTest {
         id = 1,
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(
-          locationId = 2,
-          dateTimeOfIncident = LocalDateTime.now(),
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-        ),
+        incidentDetails = incidentDetails(2L, now),
         incidentRole = incidentRoleWithAllValuesSet(),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
@@ -1726,11 +1646,7 @@ class DraftAdjudicationServiceTest {
         id = 1,
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(
-          locationId = 2,
-          dateTimeOfIncident = LocalDateTime.now(),
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-        ),
+        incidentDetails = incidentDetails(2L, now),
         incidentRole = incidentRoleWithAllValuesSet(),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
@@ -1789,11 +1705,7 @@ class DraftAdjudicationServiceTest {
         id = 1,
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(
-          locationId = 2,
-          dateTimeOfIncident = LocalDateTime.now(),
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-        ),
+        incidentDetails = incidentDetails(2L, now),
         incidentRole = incidentRoleWithAllValuesSet(),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
@@ -1847,6 +1759,8 @@ class DraftAdjudicationServiceTest {
   }
 
   companion object {
+    val now = LocalDateTime.now()
+
     private val entityBuilder: EntityBuilder = EntityBuilder()
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
@@ -1888,6 +1802,20 @@ class DraftAdjudicationServiceTest {
     )
     private val BASIC_OFFENCE_DETAILS_DB_ENTITY = Offence(
       offenceCode = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+    )
+
+    fun incidentDetails(locationId: Long, clock: Clock) = IncidentDetails(
+      locationId = locationId,
+      dateTimeOfIncident = LocalDateTime.now(clock),
+      dateTimeOfDiscovery = LocalDateTime.now(clock).plusDays(1),
+      handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+    )
+
+    fun incidentDetails(locationId: Long, now: LocalDateTime) = IncidentDetails(
+      locationId = locationId,
+      dateTimeOfIncident = now,
+      dateTimeOfDiscovery = now.plusDays(1),
+      handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
     )
 
     private val FULL_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(
@@ -1950,17 +1878,12 @@ class DraftAdjudicationServiceTest {
   }
 
   fun testDto(toFind: Optional<DraftAdjudication> = Optional.empty(), toTest: Supplier<DraftAdjudicationDto>) {
-    val now = LocalDateTime.now()
     val draftAdjudication =
       DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
         agencyId = "MDI",
-        incidentDetails = IncidentDetails(
-          locationId = 2,
-          dateTimeOfIncident = now,
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-        ),
+        incidentDetails = incidentDetails(2L, now),
         incidentRole = incidentRoleWithAllValuesSet(),
         offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
         incidentStatement = IncidentStatement(

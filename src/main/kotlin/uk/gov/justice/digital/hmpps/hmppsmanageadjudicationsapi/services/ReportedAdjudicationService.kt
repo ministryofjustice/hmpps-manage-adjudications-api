@@ -71,7 +71,7 @@ class ReportedAdjudicationService(
 
   fun getAllReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val reportedAdjudicationsPage =
-      reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+      reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
         agencyId, reportsFrom(startDate), reportsTo(endDate), statuses(status), pageable
       )
     return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
@@ -81,7 +81,7 @@ class ReportedAdjudicationService(
     val username = authenticationFacade.currentUsername
 
     val reportedAdjudicationsPage =
-      reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfIncidentBetweenAndStatusIn(
+      reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
         username!!, agencyId, reportsFrom(startDate), reportsTo(endDate), statuses(status), pageable
       )
     return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
@@ -277,7 +277,7 @@ class ReportedAdjudicationService(
             "ReportedAdjudication creation time not set for reported adjudication number ${reportedAdjudication.reportNumber}"
           ),
         agencyId = reportedAdjudication.agencyId,
-        incidentTime = reportedAdjudication.dateTimeOfDiscovery ?: reportedAdjudication.dateTimeOfIncident,
+        incidentTime = reportedAdjudication.dateTimeOfDiscovery,
         incidentLocationId = reportedAdjudication.locationId,
         statement = reportedAdjudication.statement,
         offenceCodes = getNomisCodes(reportedAdjudication.incidentRoleCode, reportedAdjudication.offenceDetails, reportedAdjudication.isYouthOffender),
