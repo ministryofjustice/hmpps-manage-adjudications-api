@@ -118,14 +118,16 @@ class DraftAdjudicationService(
   ): DraftAdjudicationDto {
     dateOfDiscoveryValidation(dateTimeOfDiscovery, dateTimeOfIncident)
 
+    val actualDateTimeOfDiscovery = dateTimeOfDiscovery ?: dateTimeOfIncident
+
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
       agencyId = agencyId,
       incidentDetails = IncidentDetails(
         locationId = locationId,
         dateTimeOfIncident = dateTimeOfIncident,
-        dateTimeOfDiscovery = dateTimeOfDiscovery ?: dateTimeOfIncident,
-        handoverDeadline = daysToActionFromIncident(dateTimeOfDiscovery ?: dateTimeOfIncident)
+        dateTimeOfDiscovery = actualDateTimeOfDiscovery,
+        handoverDeadline = daysToActionFromIncident(actualDateTimeOfDiscovery)
       ),
       reportNumber = null,
       reportByUserId = null,
