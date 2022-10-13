@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidenc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class ReportedAdjudicationIntTest : IntegrationTestBase() {
@@ -643,6 +644,45 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo("first")
       .jsonPath("$.reportedAdjudication.witnesses[1].reporter")
       .isEqualTo("ITAG_ALO")
+  }
+
+  @Test
+  fun `create a hearing `() {
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addIncidentStatement()
+      .addDamages()
+      .addEvidence()
+      .addWitnesses()
+      .completeDraft()
+
+    val dateTimeOfHearing = LocalDateTime.of(2010, 10, 12, 10, 0)
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "locationId" to 1,
+          "dateTimeOfHearing" to dateTimeOfHearing
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.hearings[0].locationId")
+      .isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing")
+      .isEqualTo("2010-10-12T10:00:00")
+      .jsonPath("$.reportedAdjudication.hearings[0].id").isNotEmpty
   }
 
   private fun initMyReportData() {
