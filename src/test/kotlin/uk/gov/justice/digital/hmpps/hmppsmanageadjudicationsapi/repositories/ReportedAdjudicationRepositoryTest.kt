@@ -41,14 +41,14 @@ class ReportedAdjudicationRepositoryTest {
   fun setUp() {
     val dateTimeOfIncident = LocalDateTime.now()
 
-    entityManager.persistAndFlush(entityBuilder.reportedAdjudication(1234L, dateTimeOfIncident))
-    entityManager.persistAndFlush(entityBuilder.reportedAdjudication(1235L, dateTimeOfIncident.plusHours(1)))
-    entityManager.persistAndFlush(entityBuilder.reportedAdjudication(1236L, dateTimeOfIncident.plusHours(1), "LEI"))
+    entityManager.persistAndFlush(entityBuilder.reportedAdjudication(reportNumber = 1234L, dateTime = dateTimeOfIncident, hearingId = null))
+    entityManager.persistAndFlush(entityBuilder.reportedAdjudication(reportNumber = 1235L, dateTime = dateTimeOfIncident.plusHours(1), hearingId = null))
+    entityManager.persistAndFlush(entityBuilder.reportedAdjudication(reportNumber = 1236L, dateTime = dateTimeOfIncident.plusHours(1), agencyId = "LEI", hearingId = null))
   }
 
   @Test
   fun `save a new reported adjudication`() {
-    val adjudication = entityBuilder.reportedAdjudication(1238L)
+    val adjudication = entityBuilder.reportedAdjudication(reportNumber = 1238L, hearingId = null)
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity)
@@ -131,6 +131,22 @@ class ReportedAdjudicationRepositoryTest {
           adjudication.witnesses[0].code,
           adjudication.witnesses[0].firstName,
           adjudication.witnesses[0].lastName,
+        ),
+      )
+
+    assertThat(savedEntity.hearings).hasSize(1)
+      .extracting(
+        "locationId",
+        "dateTimeOfHearing",
+        "agencyId",
+        "prisonerNumber",
+      )
+      .contains(
+        Tuple(
+          adjudication.hearings[0].locationId,
+          adjudication.hearings[0].dateTimeOfHearing,
+          adjudication.hearings[0].agencyId,
+          adjudication.hearings[0].prisonerNumber,
         ),
       )
   }

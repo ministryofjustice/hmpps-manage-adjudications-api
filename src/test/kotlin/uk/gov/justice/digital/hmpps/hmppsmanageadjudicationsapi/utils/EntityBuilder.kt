@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils
 
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
@@ -17,7 +18,8 @@ class EntityBuilder {
   fun reportedAdjudication(
     reportNumber: Long = 1235L,
     dateTime: LocalDateTime = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
-    agencyId: String = "MDI"
+    agencyId: String = "MDI",
+    hearingId: Long? = 1L,
   ): ReportedAdjudication {
     return ReportedAdjudication(
       reportNumber = reportNumber,
@@ -69,7 +71,16 @@ class EntityBuilder {
           reporter = "Fred"
         ),
       ),
-      draftCreatedOn = dateTime
+      draftCreatedOn = dateTime,
+      hearings = mutableListOf(
+        Hearing(
+          id = hearingId,
+          locationId = 1L,
+          dateTimeOfHearing = dateTime.plusWeeks(1),
+          agencyId = agencyId,
+          prisonerNumber = "A12345",
+        )
+      )
     )
   }
 }

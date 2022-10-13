@@ -42,7 +42,9 @@ data class ReportedAdjudicationDto(
   @Schema(description = "Evidence related to incident")
   val evidence: List<ReportedEvidenceDto>,
   @Schema(description = "Witnesses related to incident")
-  val witnesses: List<ReportedWitnessDto>
+  val witnesses: List<ReportedWitnessDto>,
+  @Schema(description = "Hearings related to adjudication")
+  val hearings: List<HearingDto>,
 )
 
 @Schema(description = "Details of an offence")
@@ -99,4 +101,14 @@ data class ReportedWitnessDto(
   val lastName: String,
   @Schema(description = "The username of the person who added this record", example = "ABC12D")
   val reporter: String,
+)
+
+@Schema(description = "Hearing")
+data class HearingDto(
+  @Schema(description = "The id of the hearing")
+  val id: Long,
+  @Schema(description = "The id of the location of the hearing")
+  val locationId: Long,
+  @Schema(description = "Date and time the hearing will take place", example = "2010-10-12T10:00:00")
+  val dateTimeOfHearing: LocalDateTime,
 )
