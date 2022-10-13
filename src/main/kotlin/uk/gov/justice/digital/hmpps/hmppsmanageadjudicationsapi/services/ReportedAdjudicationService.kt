@@ -130,8 +130,24 @@ class ReportedAdjudicationService(
       .toDto(offenceCodeLookupService)
   }
 
-  private fun toDraftOffence(offences: MutableList<ReportedOffence>?): MutableList<Offence> {
-    return (offences ?: mutableListOf()).map { offence ->
+  fun createHearing(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime): ReportedAdjudicationDto {
+    val reportedAdjudication =
+      reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(adjudicationNumber)
+
+    reportedAdjudication.hearings.add(
+      Hearing(
+        agencyId = reportedAdjudication.agencyId,
+        prisonerNumber = reportedAdjudication.prisonerNumber,
+        locationId = locationId,
+        dateTimeOfHearing = dateTimeOfHearing
+      )
+    )
+
+    return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
+  }
+
+  private fun toDraftOffence(offences: MutableList<ReportedOffence>): MutableList<Offence> =
+    offences.map { offence ->
       Offence(
         offenceCode = offence.offenceCode,
         victimPrisonersNumber = offence.victimPrisonersNumber,
@@ -139,20 +155,18 @@ class ReportedAdjudicationService(
         victimOtherPersonsName = offence.victimOtherPersonsName,
       )
     }.toMutableList()
-  }
 
-  private fun toDraftDamages(damages: MutableList<ReportedDamage>?): MutableList<Damage> {
-    return (damages ?: mutableListOf()).map {
+  private fun toDraftDamages(damages: MutableList<ReportedDamage>): MutableList<Damage> =
+    damages.map {
       Damage(
         code = it.code,
         details = it.details,
         reporter = it.reporter
       )
     }.toMutableList()
-  }
 
-  private fun toDraftEvidence(evidence: MutableList<ReportedEvidence>?): MutableList<Evidence> {
-    return (evidence ?: mutableListOf()).map {
+  private fun toDraftEvidence(evidence: MutableList<ReportedEvidence>): MutableList<Evidence> =
+    evidence.map {
       Evidence(
         code = it.code,
         details = it.details,
@@ -160,10 +174,9 @@ class ReportedAdjudicationService(
         identifier = it.identifier
       )
     }.toMutableList()
-  }
 
-  private fun toDraftWitnesses(witnesses: MutableList<ReportedWitness>?): MutableList<Witness> {
-    return (witnesses ?: mutableListOf()).map {
+  private fun toDraftWitnesses(witnesses: MutableList<ReportedWitness>): MutableList<Witness> =
+    witnesses.map {
       Witness(
         code = it.code,
         firstName = it.firstName,
@@ -171,7 +184,6 @@ class ReportedAdjudicationService(
         reporter = it.reporter
       )
     }.toMutableList()
-  }
 
   fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
     val username = if (status == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername
@@ -349,8 +361,8 @@ fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupServic
   hearings = toHearings(hearings),
 )
 
-private fun toReportedOffence(offences: MutableList<ReportedOffence>?, isYouthOffender: Boolean, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> {
-  return (offences ?: mutableListOf()).map { offence ->
+private fun toReportedOffence(offences: MutableList<ReportedOffence>, isYouthOffender: Boolean, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> =
+  offences.map { offence ->
     OffenceDto(
       offenceCode = offence.offenceCode,
       offenceRule = OffenceRuleDto(
@@ -362,20 +374,18 @@ private fun toReportedOffence(offences: MutableList<ReportedOffence>?, isYouthOf
       victimOtherPersonsName = offence.victimOtherPersonsName,
     )
   }.toList()
-}
 
-private fun toReportedDamages(damages: MutableList<ReportedDamage>?): List<ReportedDamageDto> {
-  return (damages ?: mutableListOf()).map {
+private fun toReportedDamages(damages: MutableList<ReportedDamage>): List<ReportedDamageDto> =
+  damages.map {
     ReportedDamageDto(
       code = it.code,
       details = it.details,
       reporter = it.reporter
     )
   }.toList()
-}
 
-private fun toReportedEvidence(evidence: MutableList<ReportedEvidence>?): List<ReportedEvidenceDto> {
-  return (evidence ?: mutableListOf()).map {
+private fun toReportedEvidence(evidence: MutableList<ReportedEvidence>): List<ReportedEvidenceDto> =
+  evidence.map {
     ReportedEvidenceDto(
       code = it.code,
       identifier = it.identifier,
@@ -383,10 +393,9 @@ private fun toReportedEvidence(evidence: MutableList<ReportedEvidence>?): List<R
       reporter = it.reporter
     )
   }.toList()
-}
 
-private fun toReportedWitnesses(witnesses: MutableList<ReportedWitness>?): List<ReportedWitnessDto> {
-  return (witnesses ?: mutableListOf()).map {
+private fun toReportedWitnesses(witnesses: MutableList<ReportedWitness>): List<ReportedWitnessDto> =
+  witnesses.map {
     ReportedWitnessDto(
       code = it.code,
       firstName = it.firstName,
@@ -394,14 +403,12 @@ private fun toReportedWitnesses(witnesses: MutableList<ReportedWitness>?): List<
       reporter = it.reporter
     )
   }.toList()
-}
 
-private fun toHearings(hearings: MutableList<Hearing>?): List<HearingDto> {
-  return (hearings ?: mutableListOf()).map {
+private fun toHearings(hearings: MutableList<Hearing>): List<HearingDto> =
+  hearings.map {
     HearingDto(
-      id = it.id!!,
+      id = it.id,
       locationId = it.locationId,
       dateTimeOfHearing = it.dateTimeOfHearing
     )
   }.toList()
-}

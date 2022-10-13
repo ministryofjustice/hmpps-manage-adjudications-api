@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.Optional
 import javax.validation.Valid
 import javax.validation.constraints.Size
@@ -33,6 +34,16 @@ import javax.validation.constraints.Size
 data class ReportedAdjudicationResponse(
   @Schema(description = "The reported adjudication")
   val reportedAdjudication: ReportedAdjudicationDto
+)
+
+@Schema(description = "Request to add a hearing")
+data class HearingRequest(
+  @Schema(description = "The id of the location of the hearing")
+  val locationId: Long,
+  @Schema(description = "Date and time of the hearing", example = "2010-10-12T10:00:00")
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+  val dateTimeOfHearing: LocalDateTime,
+
 )
 
 @Schema(description = "Request to set the state for an a reported adjudication")
@@ -239,6 +250,21 @@ class ReportedAdjudicationController {
     val reportedAdjudication = reportedAdjudicationService.updateWitnesses(
       adjudicationNumber,
       witnessesRequest.witnesses
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
+  @PostMapping(value = ["/{adjudicationNumber}/hearing"])
+  @Operation(summary = "Create a new hearing")
+  @ResponseStatus(HttpStatus.CREATED)
+  fun createHearing(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody hearingRequest: HearingRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = reportedAdjudicationService.createHearing(
+      adjudicationNumber, hearingRequest.locationId, hearingRequest.dateTimeOfHearing
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)

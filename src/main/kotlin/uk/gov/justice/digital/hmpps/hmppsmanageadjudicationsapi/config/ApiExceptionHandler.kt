@@ -45,6 +45,20 @@ class ApiExceptionHandler {
       )
   }
 
+ /* @ExceptionHandler(AccessDeniedException::class)
+  fun handleAccessDenied(e: AccessDeniedException): ResponseEntity<ErrorResponse?>? {
+    log.error("AccessDeniedException", e)
+    return ResponseEntity
+      .status(FORBIDDEN)
+      .body(
+        ErrorResponse(
+          status = FORBIDDEN,
+          userMessage = "Invalid role",
+        )
+      )
+  } */
+
+  // this is turning 403 into 500.
   @ExceptionHandler(java.lang.Exception::class)
   fun handleException(e: java.lang.Exception): ResponseEntity<ErrorResponse?>? {
     log.error("Unexpected exception", e)

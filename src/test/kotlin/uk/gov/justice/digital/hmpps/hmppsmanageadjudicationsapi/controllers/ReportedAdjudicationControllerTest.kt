@@ -423,6 +423,52 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class CreateHearing {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        reportedAdjudicationService.createHearing(
+          anyLong(),
+          anyLong(),
+          any()
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      createHearingRequest(1, HEARING_REQUEST).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      createHearingRequest(1, HEARING_REQUEST).andExpect(status().is5xxServerError) // seems we want to convert 403 to 500?
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `makes a call to create a hearing`() {
+      createHearingRequest(1, HEARING_REQUEST)
+        .andExpect(status().isCreated)
+      verify(reportedAdjudicationService).createHearing(1, HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing)
+    }
+
+    private fun createHearingRequest(
+      id: Long,
+      hearing: HearingRequest?
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(hearing)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.post("/reported-adjudications/$id/hearing")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
@@ -431,6 +477,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     private val DAMAGES_REQUEST = DamagesRequest(listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
     private val WITNESSES_REQUEST = WitnessesRequest(listOf(WitnessRequestItem(WitnessCode.STAFF, "first", "last")))
     private val EVIDENCE_REQUEST = EvidenceRequest(listOf(EvidenceRequestItem(EvidenceCode.PHOTO, "identifier", "details")))
+    private val HEARING_REQUEST = HearingRequest(locationId = 1L, dateTimeOfHearing = LocalDateTime.now())
     private val INCIDENT_ROLE_WITH_ALL_VALUES = IncidentRoleDto(
       "25a",
       OffenceRuleDetailsDto(
