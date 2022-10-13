@@ -472,7 +472,8 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         statusDetails = null,
         damages = listOf(),
         evidence = listOf(),
-        witnesses = listOf()
+        witnesses = listOf(),
+        hearings = listOf(),
       )
   }
 }

@@ -50,6 +50,9 @@ data class ReportedAdjudication(
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")
   var witnesses: MutableList<ReportedWitness>,
+  @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "reported_adjudication_fk_id")
+  var hearings: MutableList<Hearing>,
   var draftCreatedOn: LocalDateTime,
 ) :
   BaseEntity() {
