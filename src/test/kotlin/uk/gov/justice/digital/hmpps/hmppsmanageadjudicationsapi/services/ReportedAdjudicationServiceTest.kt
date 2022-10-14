@@ -956,11 +956,59 @@ class ReportedAdjudicationServiceTest {
     }
 
     @Test
-    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
 
       assertThatThrownBy {
         reportedAdjudicationService.updateWitnesses(1, listOf(WitnessRequestItem(WitnessCode.STAFF, "first", "last")))
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("ReportedAdjudication not found for 1")
+    }
+  }
+
+  @Nested
+  inner class CreateHearing {
+
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+      .also {
+        it.createdByUserId = ""
+        it.createDateTime = LocalDateTime.now()
+        it.hearings.clear()
+      }
+
+    @BeforeEach
+    fun init() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+    }
+
+    @Test
+    fun `create a hearing`() {
+      val now = LocalDateTime.now()
+      val response = reportedAdjudicationService.createHearing(
+        1235L,
+        1,
+        now
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(1)
+      assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now)
+      assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
+      assertThat(argumentCaptor.value.hearings.first().prisonerNumber).isEqualTo(reportedAdjudication.prisonerNumber)
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
+
+      assertThatThrownBy {
+        reportedAdjudicationService.createHearing(1, 1, LocalDateTime.now())
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("ReportedAdjudication not found for 1")
     }
@@ -973,19 +1021,16 @@ class ReportedAdjudicationServiceTest {
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private const val INCIDENT_STATEMENT = "Example statement"
 
-    private const val OFFENCE_CODE_2_PARAGRAPH_CODE = "5b"
     private const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"
     private const val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
     private const val OFFENCE_CODE_2_NOMIS_CODE_ON_OWN = "5b"
     private const val OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "25z"
 
-    private const val OFFENCE_CODE_3_PARAGRAPH_CODE = "6a"
     private const val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6(a)"
     private const val OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another paragraph description"
     private const val OFFENCE_CODE_3_NOMIS_CODE_ON_OWN = "5f"
     private const val OFFENCE_CODE_3_NOMIS_CODE_ASSISTED = "25f"
 
-    private const val YOUTH_OFFENCE_CODE_2_PARAGRAPH_CODE = "7b"
     private const val YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER = "7(b)"
     private const val YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A youth paragraph description"
     private const val YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN = "7b"

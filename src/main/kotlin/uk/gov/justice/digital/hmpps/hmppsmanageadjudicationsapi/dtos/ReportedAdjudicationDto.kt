@@ -106,7 +106,7 @@ data class ReportedWitnessDto(
 @Schema(description = "Hearing")
 data class HearingDto(
   @Schema(description = "The id of the hearing")
-  val id: Long,
+  val id: Long? = null,
   @Schema(description = "The id of the location of the hearing")
   val locationId: Long,
   @Schema(description = "Date and time the hearing will take place", example = "2010-10-12T10:00:00")
