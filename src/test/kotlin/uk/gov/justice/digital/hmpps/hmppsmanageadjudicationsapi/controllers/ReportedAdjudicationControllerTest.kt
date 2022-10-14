@@ -444,11 +444,17 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
-      createHearingRequest(1, HEARING_REQUEST).andExpect(status().is5xxServerError) // seems we want to convert 403 to 500?
+      createHearingRequest(1, HEARING_REQUEST).andExpect(status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      createHearingRequest(1, HEARING_REQUEST).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create a hearing`() {
       createHearingRequest(1, HEARING_REQUEST)
         .andExpect(status().isCreated)

@@ -255,7 +255,7 @@ class ReportedAdjudicationController {
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @PostMapping(value = ["/{adjudicationNumber}/hearing"])
   @Operation(summary = "Create a new hearing")
   @ResponseStatus(HttpStatus.CREATED)

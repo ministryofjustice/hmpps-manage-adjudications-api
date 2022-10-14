@@ -253,9 +253,9 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .uri("/reported-adjudications/agency/MDI?page=0&size=20")
       .headers(setHeaders(username = "NEW_USER"))
       .exchange()
-      .expectStatus().is5xxServerError
+      .expectStatus().isForbidden
       .expectBody()
-      .jsonPath("$.userMessage").isEqualTo("Unexpected error: Access is denied")
+      .jsonPath("$.userMessage").isEqualTo("Access is denied")
   }
 
   @Test
