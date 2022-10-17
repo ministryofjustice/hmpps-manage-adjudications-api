@@ -32,7 +32,7 @@ import java.util.Optional
 import javax.validation.Valid
 import javax.validation.constraints.Size
 
-@Schema(description = "Reported adjudication response")
+@Schema(description = "All hearings response")
 data class HearingSummaryResponse(
   @Schema(description = "The hearing summaries response")
   val hearings: List<HearingSummaryDto>
