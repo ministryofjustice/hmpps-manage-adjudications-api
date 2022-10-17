@@ -1072,6 +1072,7 @@ class ReportedAdjudicationServiceTest {
 
   @Nested
   inner class AllHearings {
+    val now = LocalDate.now()
 
     private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
       .also {
@@ -1081,11 +1082,15 @@ class ReportedAdjudicationServiceTest {
 
     @BeforeEach
     fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
-      whenever(hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(any(), any(), any())).thenReturn(
+      whenever(
+        hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
+          "MDI", now.atStartOfDay(),
+          now.plusDays(1).atStartOfDay()
+        )
+      ).thenReturn(
         reportedAdjudication.hearings
       )
-      whenever(reportedAdjudicationRepository.findByReportNumberIn(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumberIn(listOf(reportedAdjudication.reportNumber))).thenReturn(
         listOf(reportedAdjudication)
       )
     }
@@ -1103,6 +1108,22 @@ class ReportedAdjudicationServiceTest {
       assertThat(response.first().prisonerNumber).isEqualTo(reportedAdjudication.prisonerNumber)
       assertThat(response.first().dateTimeOfHearing).isEqualTo(reportedAdjudication.hearings.first().dateTimeOfHearing)
       assertThat(response.first().dateTimeOfDiscovery).isEqualTo(reportedAdjudication.dateTimeOfDiscovery)
+    }
+
+    @Test
+    fun `empty response test `() {
+      whenever(
+        hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
+          "LEI", now.atStartOfDay(), now.plusDays(1).atStartOfDay()
+        )
+      ).thenReturn(emptyList())
+
+      val response = reportedAdjudicationService.getAllHearingsByAgencyIdAndDate(
+        "LEI", now
+      )
+
+      assertThat(response).isNotNull
+      assertThat(response.isEmpty()).isTrue
     }
   }
 
