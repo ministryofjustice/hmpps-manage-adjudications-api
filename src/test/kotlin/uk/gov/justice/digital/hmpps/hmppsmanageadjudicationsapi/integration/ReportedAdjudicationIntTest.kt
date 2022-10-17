@@ -685,6 +685,41 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].id").isNotEmpty
   }
 
+  @Test
+  fun `delete a hearing `() {
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addIncidentStatement()
+      .addDamages()
+      .addEvidence()
+      .addWitnesses()
+      .completeDraft()
+
+    val reportedAdjudication = intTestData.createHearing(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      IntegrationTestData.DEFAULT_ADJUDICATION,
+      setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"))
+    )
+
+    assert(reportedAdjudication.reportedAdjudication.hearings.size == 1)
+
+    webTestClient.delete()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/${reportedAdjudication.reportedAdjudication.hearings.first().id!!}")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
+  }
+
   private fun initMyReportData() {
     val intTestData = integrationTestData()
 

@@ -59,6 +59,8 @@ class ReportedAdjudicationService(
     const val TELEMETRY_EVENT = "ReportedAdjudicationStatusEvent"
     fun throwEntityNotFoundException(id: Long): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")
+    fun throwHearingNotFoundException(id: Long): Nothing =
+      throw EntityNotFoundException("Hearing not found for $id")
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
     fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
     fun statuses(status: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
@@ -142,6 +144,16 @@ class ReportedAdjudicationService(
         dateTimeOfHearing = dateTimeOfHearing
       )
     )
+
+    return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
+  }
+
+  fun deleteHearing(adjudicationNumber: Long, hearingId: Long): ReportedAdjudicationDto {
+    val reportedAdjudication =
+      reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(adjudicationNumber)
+
+    val hearingToRemove = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException(hearingId)
+    reportedAdjudication.hearings.remove(hearingToRemove)
 
     return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
   }

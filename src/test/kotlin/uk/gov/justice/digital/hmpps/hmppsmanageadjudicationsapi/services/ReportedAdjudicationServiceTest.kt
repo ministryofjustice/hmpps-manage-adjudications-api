@@ -1014,6 +1014,59 @@ class ReportedAdjudicationServiceTest {
     }
   }
 
+  @Nested
+  inner class DeleteHearing {
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+      .also {
+        it.createdByUserId = ""
+        it.createDateTime = LocalDateTime.now()
+      }
+
+    @BeforeEach
+    fun init() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+    }
+
+    @Test
+    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
+
+      assertThatThrownBy {
+        reportedAdjudicationService.deleteHearing(1, 1)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("ReportedAdjudication not found for 1")
+    }
+
+    @Test
+    fun `throws an entity not found if the hearing for the supplied id does not exists`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication
+          .also { it.hearings.clear() }
+      )
+
+      assertThatThrownBy {
+        reportedAdjudicationService.deleteHearing(1, 1)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Hearing not found for 1")
+    }
+
+    @Test
+    fun `delete a hearing`() {
+      val response = reportedAdjudicationService.deleteHearing(
+        1235L,
+        1,
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(0)
+
+      assertThat(response).isNotNull
+    }
+  }
+
   companion object {
     private val entityBuilder: EntityBuilder = EntityBuilder()
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
