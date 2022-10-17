@@ -475,6 +475,56 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class DeleteHearing {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        reportedAdjudicationService.deleteHearing(
+          anyLong(),
+          anyLong(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      deleteHearingRequest(1, 1).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      deleteHearingRequest(1, 1).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      deleteHearingRequest(1, 1).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to delete a hearing`() {
+      deleteHearingRequest(1, 1)
+        .andExpect(status().isOk)
+      verify(reportedAdjudicationService).deleteHearing(1, 1)
+    }
+
+    private fun deleteHearingRequest(
+      id: Long,
+      hearingId: Long
+    ): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing/$hearingId")
+            .header("Content-Type", "application/json")
+        )
+    }
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)

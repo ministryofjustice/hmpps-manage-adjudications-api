@@ -5,6 +5,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.IncidentRoleRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.ReportedAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -102,7 +103,8 @@ class IntegrationTestData(
       createdByUserId = DEFAULT_CREATED_USER_ID,
       damages = DEFAULT_DAMAGES,
       evidence = DEFAULT_EVIDENCE,
-      witnesses = DEFAULT_WITNESSES
+      witnesses = DEFAULT_WITNESSES,
+      dateTimeOfHearing = DEFAULT_DATE_TIME_OF_INCIDENT.plusWeeks(1)
     )
 
     val UPDATED_ADJUDICATION = AdjudicationIntTestDataSet(
@@ -488,6 +490,26 @@ class IntegrationTestData(
       .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/complete-draft-adjudication")
       .headers(headers)
       .exchange()
+  }
+
+  fun createHearing(
+    adjudicationNumber: Long,
+    testDataSet: AdjudicationIntTestDataSet,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ): ReportedAdjudicationResponse {
+    return webTestClient.post()
+      .uri("/reported-adjudications/$adjudicationNumber/hearing")
+      .headers(headers)
+      .bodyValue(
+        mapOf(
+          "locationId" to testDataSet.locationId,
+          "dateTimeOfHearing" to testDataSet.dateTimeOfHearing!!
+        )
+      )
+      .exchange()
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
   }
 
   fun reportedAdjudicationStatus(
