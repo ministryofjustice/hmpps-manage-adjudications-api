@@ -525,6 +525,60 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class AmendHearing {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        reportedAdjudicationService.amendHearing(
+          anyLong(),
+          anyLong(),
+          anyLong(),
+          any()
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      amendHearingRequest(1, 1, HEARING_REQUEST).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      amendHearingRequest(1, 1, HEARING_REQUEST).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      amendHearingRequest(1, 1, HEARING_REQUEST).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to amend a hearing`() {
+      amendHearingRequest(1, 1, HEARING_REQUEST)
+        .andExpect(status().isOk)
+      verify(reportedAdjudicationService).amendHearing(1, 1, HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing)
+    }
+
+    private fun amendHearingRequest(
+      id: Long,
+      hearingId: Long,
+      hearing: HearingRequest?
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(hearing)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing/$hearingId")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)

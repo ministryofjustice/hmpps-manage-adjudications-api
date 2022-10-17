@@ -1015,6 +1015,67 @@ class ReportedAdjudicationServiceTest {
   }
 
   @Nested
+  inner class AmendHearing {
+
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+      .also {
+        it.createdByUserId = ""
+        it.createDateTime = LocalDateTime.now()
+      }
+
+    @BeforeEach
+    fun init() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+    }
+
+    @Test
+    fun `amend a hearing`() {
+      val now = LocalDateTime.now()
+      val response = reportedAdjudicationService.amendHearing(
+        1235L,
+        1,
+        2,
+        now.plusDays(1)
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(2)
+      assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now.plusDays(1))
+      assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
+      assertThat(argumentCaptor.value.hearings.first().prisonerNumber).isEqualTo(reportedAdjudication.prisonerNumber)
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
+
+      assertThatThrownBy {
+        reportedAdjudicationService.amendHearing(1, 1, 1, LocalDateTime.now())
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("ReportedAdjudication not found for 1")
+    }
+
+    @Test
+    fun `throws an entity not found if the hearing for the supplied id does not exists`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication
+          .also { it.hearings.clear() }
+      )
+
+      assertThatThrownBy {
+        reportedAdjudicationService.amendHearing(1, 1, 1, LocalDateTime.now())
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Hearing not found for 1")
+    }
+  }
+
+  @Nested
   inner class DeleteHearing {
     private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
       .also {

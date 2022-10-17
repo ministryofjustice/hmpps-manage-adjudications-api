@@ -148,6 +148,20 @@ class ReportedAdjudicationService(
     return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
   }
 
+  fun amendHearing(adjudicationNumber: Long, hearingId: Long, locationId: Long, dateTimeOfHearing: LocalDateTime): ReportedAdjudicationDto {
+    val reportedAdjudication =
+      reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(adjudicationNumber)
+
+    val hearingToEdit = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException(hearingId)
+
+    hearingToEdit.let {
+      it.dateTimeOfHearing = dateTimeOfHearing
+      it.locationId = locationId
+    }
+
+    return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
+  }
+
   fun deleteHearing(adjudicationNumber: Long, hearingId: Long): ReportedAdjudicationDto {
     val reportedAdjudication =
       reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(adjudicationNumber)

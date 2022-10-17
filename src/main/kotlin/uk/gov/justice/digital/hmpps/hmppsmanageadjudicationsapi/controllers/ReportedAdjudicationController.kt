@@ -272,6 +272,22 @@ class ReportedAdjudicationController {
   }
 
   @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
+  @PutMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}"])
+  @Operation(summary = "Amend an existing hearing")
+  @ResponseStatus(HttpStatus.OK)
+  fun amendHearing(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "hearingId") hearingId: Long,
+    @RequestBody hearingRequest: HearingRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = reportedAdjudicationService.amendHearing(
+      adjudicationNumber, hearingId, hearingRequest.locationId, hearingRequest.dateTimeOfHearing
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @DeleteMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}"])
   @Operation(summary = "deletes a hearing")
   @ResponseStatus(HttpStatus.OK)
