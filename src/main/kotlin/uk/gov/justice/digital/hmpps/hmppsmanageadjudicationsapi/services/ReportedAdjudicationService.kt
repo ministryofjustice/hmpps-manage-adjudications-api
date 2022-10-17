@@ -170,7 +170,7 @@ class ReportedAdjudicationService(
       hearings.map { it.reportNumber }
     ).associateBy { it.reportNumber }
 
-    return toHearingSummary(hearings, adjudicationsMap)
+    return toHearingSummaries(hearings, adjudicationsMap)
   }
 
   private fun toDraftOffence(offences: MutableList<ReportedOffence>): MutableList<Offence> =
@@ -440,7 +440,7 @@ private fun toHearings(hearings: MutableList<Hearing>): List<HearingDto> =
     )
   }.toList()
 
-private fun toHearingSummary(hearings: List<Hearing>, adjudications: Map<Long, ReportedAdjudication>): List<HearingSummaryDto> =
+private fun toHearingSummaries(hearings: List<Hearing>, adjudications: Map<Long, ReportedAdjudication>): List<HearingSummaryDto> =
   hearings.map {
     val adjudication = adjudications[it.reportNumber]!!
     HearingSummaryDto(
