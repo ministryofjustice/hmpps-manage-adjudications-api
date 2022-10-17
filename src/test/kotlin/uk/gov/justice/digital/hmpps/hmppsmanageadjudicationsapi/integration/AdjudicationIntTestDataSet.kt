@@ -26,7 +26,9 @@ data class AdjudicationIntTestDataSet(
   val createdByUserId: String,
   val damages: List<DamagesTestDataSet>,
   val evidence: List<EvidenceTestDataSet>,
-  val witnesses: List<WitnessTestDataSet>
+  val witnesses: List<WitnessTestDataSet>,
+  val dateTimeOfHearing: LocalDateTime? = null,
+  val dateTimeOfHearingISOString: String? = null,
 )
 
 data class OffenceTestDataSet(

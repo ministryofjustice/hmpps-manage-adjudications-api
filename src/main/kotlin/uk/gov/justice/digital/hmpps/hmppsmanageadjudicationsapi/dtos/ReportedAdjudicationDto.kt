@@ -125,4 +125,4 @@ data class HearingSummaryDto(
   val adjudicationNumber: Long,
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
-  )
+)

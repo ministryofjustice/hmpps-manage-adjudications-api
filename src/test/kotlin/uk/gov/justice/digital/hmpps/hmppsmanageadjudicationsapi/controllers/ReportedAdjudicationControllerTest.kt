@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyLong
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
@@ -476,23 +478,87 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
   }
 
   @Nested
-  inner class AllHearings {
+  inner class DeleteHearing {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        reportedAdjudicationService.deleteHearing(
+          anyLong(),
+          anyLong(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
 
     @Test
     fun `responds with a unauthorised status code`() {
-      allHearingsRequest("MDI").andExpect(status().isUnauthorized)
+      deleteHearingRequest(1, 1).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      deleteHearingRequest(1, 1).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      deleteHearingRequest(1, 1).andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to delete a hearing`() {
+      deleteHearingRequest(1, 1)
+        .andExpect(status().isOk)
+      verify(reportedAdjudicationService).deleteHearing(1, 1)
+    }
+
+    private fun deleteHearingRequest(
+      id: Long,
+      hearingId: Long
+    ): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing/$hearingId")
+            .header("Content-Type", "application/json")
+        )
+    }
+  }
+
+  @Nested
+  inner class AllHearings {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        reportedAdjudicationService.getAllHearingsByAgencyIdAndDate(
+          anyString(),
+          any(),
+        )
+      ).thenReturn(ALL_HEARINGS_DTO)
     }
     @Test
+    fun `responds with a unauthorised status code`() {
+      allHearingsRequest("MDI", LocalDate.now()).andExpect(status().isUnauthorized)
+    }
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `get all hearings for agency `() {
-      TODO("implement me")
+      val now = LocalDate.now()
+      allHearingsRequest("MDI", now)
+        .andExpect(status().isOk)
+      verify(reportedAdjudicationService).getAllHearingsByAgencyIdAndDate("MDI", now)
     }
 
     private fun allHearingsRequest(
       agency: String,
+      date: LocalDate,
     ): ResultActions {
       return mockMvc
         .perform(
-          get("/reported-adjudications/hearings")
+          get("/reported-adjudications/hearings/$agency?hearingDate=$date")
             .header("Content-Type", "application/json")
         )
     }
@@ -516,6 +582,17 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       "B23456",
       "Associated Prisoner",
     )
+
+    private val ALL_HEARINGS_DTO =
+      listOf(
+        HearingSummaryDto(
+          id = 1,
+          dateTimeOfHearing = LocalDateTime.now(),
+          dateTimeOfDiscovery = LocalDateTime.now(),
+          adjudicationNumber = 123,
+          prisonerNumber = "123"
+        )
+      )
 
     private val REPORTED_ADJUDICATION_DTO =
       ReportedAdjudicationDto(

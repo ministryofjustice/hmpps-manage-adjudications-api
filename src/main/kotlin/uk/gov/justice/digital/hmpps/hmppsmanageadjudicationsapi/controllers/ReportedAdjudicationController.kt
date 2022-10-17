@@ -12,6 +12,7 @@ import org.springframework.data.web.PageableDefault
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -277,6 +278,21 @@ class ReportedAdjudicationController {
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
+  @DeleteMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}"])
+  @Operation(summary = "deletes a hearing")
+  @ResponseStatus(HttpStatus.OK)
+  fun deleteHearing(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "hearingId") hearingId: Long,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = reportedAdjudicationService.deleteHearing(
+      adjudicationNumber, hearingId
+    )
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(summary = "Get a list of hearings for a given date and agency")
   @Parameters(
     Parameter(
       name = "hearingDate",
