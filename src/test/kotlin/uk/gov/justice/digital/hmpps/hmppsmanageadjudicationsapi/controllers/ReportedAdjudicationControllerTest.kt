@@ -475,6 +475,29 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class AllHearings {
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      allHearingsRequest("MDI").andExpect(status().isUnauthorized)
+    }
+    @Test
+    fun `get all hearings for agency `() {
+      TODO("implement me")
+    }
+
+    private fun allHearingsRequest(
+      agency: String,
+    ): ResultActions {
+      return mockMvc
+        .perform(
+          get("/reported-adjudications/hearings")
+            .header("Content-Type", "application/json")
+        )
+    }
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)

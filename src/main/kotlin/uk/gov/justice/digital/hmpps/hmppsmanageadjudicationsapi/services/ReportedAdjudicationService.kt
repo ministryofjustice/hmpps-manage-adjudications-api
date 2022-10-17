@@ -137,7 +137,7 @@ class ReportedAdjudicationService(
     reportedAdjudication.hearings.add(
       Hearing(
         agencyId = reportedAdjudication.agencyId,
-        prisonerNumber = reportedAdjudication.prisonerNumber,
+        reportNumber = reportedAdjudication.reportNumber,
         locationId = locationId,
         dateTimeOfHearing = dateTimeOfHearing
       )
