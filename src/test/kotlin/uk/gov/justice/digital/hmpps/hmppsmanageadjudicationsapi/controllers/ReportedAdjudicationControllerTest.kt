@@ -600,6 +600,12 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
+    @WithMockUser(username = "ITAG_USER")
+    fun `responds with a forbidden status code for non ALO`() {
+      allHearingsRequest("MDI", LocalDate.now()).andExpect(status().isUnauthorized)
+    }
+
+    @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `get all hearings for agency `() {
       val now = LocalDate.now()

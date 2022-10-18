@@ -308,6 +308,7 @@ class ReportedAdjudicationController {
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
   @Operation(summary = "Get a list of hearings for a given date and agency")
   @Parameters(
     Parameter(
