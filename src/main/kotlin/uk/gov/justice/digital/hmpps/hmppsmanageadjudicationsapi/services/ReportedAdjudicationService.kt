@@ -163,7 +163,7 @@ class ReportedAdjudicationService(
 
   fun getAllHearingsByAgencyIdAndDate(agencyId: String, dateOfHearing: LocalDate): List<HearingSummaryDto> {
     val hearings = hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
-      agencyId, dateOfHearing.atStartOfDay()!!, dateOfHearing.plusDays(1).atStartOfDay()
+      agencyId, dateOfHearing.atStartOfDay(), dateOfHearing.plusDays(1).atStartOfDay()
     )
 
     val adjudicationsMap = reportedAdjudicationRepository.findByReportNumberIn(

@@ -539,10 +539,12 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         )
       ).thenReturn(ALL_HEARINGS_DTO)
     }
+
     @Test
     fun `responds with a unauthorised status code`() {
       allHearingsRequest("MDI", LocalDate.now()).andExpect(status().isUnauthorized)
     }
+
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `get all hearings for agency `() {
