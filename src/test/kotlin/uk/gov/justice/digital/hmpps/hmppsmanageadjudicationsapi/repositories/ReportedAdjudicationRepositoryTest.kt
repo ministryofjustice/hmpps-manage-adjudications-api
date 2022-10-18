@@ -34,12 +34,15 @@ class ReportedAdjudicationRepositoryTest {
 
   @Autowired
   lateinit var reportedAdjudicationRepository: ReportedAdjudicationRepository
+  @Autowired
+  lateinit var hearingRepository: HearingRepository
 
   private val entityBuilder: EntityBuilder = EntityBuilder()
 
+  private val dateTimeOfIncident = LocalDateTime.now()
+
   @BeforeEach
   fun setUp() {
-    val dateTimeOfIncident = LocalDateTime.now()
 
     entityManager.persistAndFlush(entityBuilder.reportedAdjudication(reportNumber = 1234L, dateTime = dateTimeOfIncident, hearingId = null))
     entityManager.persistAndFlush(entityBuilder.reportedAdjudication(reportNumber = 1235L, dateTime = dateTimeOfIncident.plusHours(1), hearingId = null))
@@ -139,14 +142,14 @@ class ReportedAdjudicationRepositoryTest {
         "locationId",
         "dateTimeOfHearing",
         "agencyId",
-        "prisonerNumber",
+        "reportNumber",
       )
       .contains(
         Tuple(
           adjudication.hearings[0].locationId,
           adjudication.hearings[0].dateTimeOfHearing,
           adjudication.hearings[0].agencyId,
-          adjudication.hearings[0].prisonerNumber,
+          adjudication.hearings[0].reportNumber,
         ),
       )
   }
@@ -272,5 +275,25 @@ class ReportedAdjudicationRepositoryTest {
         }
       )
     }.isInstanceOf(ConstraintViolationException::class.java)
+  }
+
+  @Test
+  fun `get adjudications by report number in `() {
+    val adjudications = reportedAdjudicationRepository.findByReportNumberIn(
+      listOf(1234L, 1235L, 1236L)
+    )
+
+    assertThat(adjudications.size).isEqualTo(3)
+  }
+
+  @Test
+  fun `get hearings from hearing repository `() {
+    val dod = dateTimeOfIncident.plusWeeks(1)
+    val hearings = hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
+      "MDI", dod.toLocalDate().atStartOfDay(),
+      dod.toLocalDate().plusDays(1).atStartOfDay()
+    )
+
+    assertThat(hearings.size).isEqualTo(2)
   }
 }

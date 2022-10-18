@@ -48,6 +48,7 @@ class IntegrationTestData(
     val DEFAULT_DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 11, 12, 10, 0)
     const val DEFAULT_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-12T10:00:00" // this is a friday
     const val DEFAULT_DATE_TIME_OF_DISCOVERY_TEXT = "2010-11-13T10:00:00"
+    const val DEFAULT_DATE_TIME_OF_HEARING_TEXT = "2010-11-19T10:00:00"
     const val DEFAULT_HANDOVER_DEADLINE_ISO_STRING = "2010-11-15T10:00:00"
     const val DEFAULT_INCIDENT_ROLE_CODE = "25a"
     const val DEFAULT_INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(a)"
@@ -104,7 +105,8 @@ class IntegrationTestData(
       damages = DEFAULT_DAMAGES,
       evidence = DEFAULT_EVIDENCE,
       witnesses = DEFAULT_WITNESSES,
-      dateTimeOfHearing = DEFAULT_DATE_TIME_OF_INCIDENT.plusWeeks(1)
+      dateTimeOfHearing = DEFAULT_DATE_TIME_OF_INCIDENT.plusWeeks(1),
+      dateTimeOfHearingISOString = DEFAULT_DATE_TIME_OF_HEARING_TEXT,
     )
 
     val UPDATED_ADJUDICATION = AdjudicationIntTestDataSet(

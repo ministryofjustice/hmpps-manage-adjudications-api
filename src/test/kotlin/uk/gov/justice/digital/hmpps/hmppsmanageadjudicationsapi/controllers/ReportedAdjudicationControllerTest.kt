@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyLong
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
@@ -579,6 +581,45 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class AllHearings {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        reportedAdjudicationService.getAllHearingsByAgencyIdAndDate(
+          anyString(),
+          any(),
+        )
+      ).thenReturn(ALL_HEARINGS_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      allHearingsRequest("MDI", LocalDate.now()).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `get all hearings for agency `() {
+      val now = LocalDate.now()
+      allHearingsRequest("MDI", now)
+        .andExpect(status().isOk)
+      verify(reportedAdjudicationService).getAllHearingsByAgencyIdAndDate("MDI", now)
+    }
+
+    private fun allHearingsRequest(
+      agency: String,
+      date: LocalDate,
+    ): ResultActions {
+      return mockMvc
+        .perform(
+          get("/reported-adjudications/hearings/agency/$agency?hearingDate=$date")
+            .header("Content-Type", "application/json")
+        )
+    }
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
@@ -597,6 +638,17 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       "B23456",
       "Associated Prisoner",
     )
+
+    private val ALL_HEARINGS_DTO =
+      listOf(
+        HearingSummaryDto(
+          id = 1,
+          dateTimeOfHearing = LocalDateTime.now(),
+          dateTimeOfDiscovery = LocalDateTime.now(),
+          adjudicationNumber = 123,
+          prisonerNumber = "123"
+        )
+      )
 
     private val REPORTED_ADJUDICATION_DTO =
       ReportedAdjudicationDto(

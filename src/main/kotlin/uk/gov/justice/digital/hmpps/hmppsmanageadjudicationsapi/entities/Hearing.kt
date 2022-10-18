@@ -13,6 +13,5 @@ data class Hearing(
   var dateTimeOfHearing: LocalDateTime,
   @field:Length(max = 6)
   var agencyId: String,
-  @field:Length(max = 7)
-  var prisonerNumber: String,
+  var reportNumber: Long,
 ) : BaseEntity()

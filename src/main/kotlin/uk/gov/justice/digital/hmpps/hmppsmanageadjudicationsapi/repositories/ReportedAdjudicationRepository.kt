@@ -24,4 +24,5 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     pageable: Pageable
   ): Page<ReportedAdjudication>
   fun findByReportNumber(adjudicationNumber: Long): ReportedAdjudication?
+  fun findByReportNumberIn(adjudicationNumbers: List<Long>): List<ReportedAdjudication>
 }
