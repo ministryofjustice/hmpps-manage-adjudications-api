@@ -686,6 +686,51 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `amend a hearing `() {
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addIncidentStatement()
+      .addDamages()
+      .addEvidence()
+      .addWitnesses()
+      .completeDraft()
+
+    val reportedAdjudication = intTestData.createHearing(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      IntegrationTestData.DEFAULT_ADJUDICATION,
+      setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"))
+    )
+
+    val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/${reportedAdjudication.reportedAdjudication.hearings.first().id}")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "locationId" to 2,
+          "dateTimeOfHearing" to dateTimeOfHearing
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.hearings[0].locationId")
+      .isEqualTo(2)
+      .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing")
+      .isEqualTo("2010-10-25T10:00:00")
+      .jsonPath("$.reportedAdjudication.hearings[0].id").isNotEmpty
+  }
+
+  @Test
   fun `delete a hearing `() {
     val intTestData = integrationTestData()
 
