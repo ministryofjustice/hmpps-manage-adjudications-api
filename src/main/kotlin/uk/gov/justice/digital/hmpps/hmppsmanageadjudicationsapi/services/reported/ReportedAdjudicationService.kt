@@ -1,12 +1,9 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.EvidenceRequestItem
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.WitnessRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
@@ -40,6 +37,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Dra
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.toDto
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -62,8 +62,6 @@ class ReportedAdjudicationService(
     const val TELEMETRY_EVENT = "ReportedAdjudicationStatusEvent"
     fun throwEntityNotFoundException(id: Long): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")
-    fun throwHearingNotFoundException(id: Long): Nothing =
-      throw EntityNotFoundException("Hearing not found for $id")
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
     fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
     fun statuses(status: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
@@ -133,46 +131,6 @@ class ReportedAdjudicationService(
     return draftAdjudicationRepository
       .save(draftAdjudication)
       .toDto(offenceCodeLookupService)
-  }
-
-  fun createHearing(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime): ReportedAdjudicationDto {
-    val reportedAdjudication =
-      reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(adjudicationNumber)
-
-    reportedAdjudication.hearings.add(
-      Hearing(
-        agencyId = reportedAdjudication.agencyId,
-        reportNumber = reportedAdjudication.reportNumber,
-        locationId = locationId,
-        dateTimeOfHearing = dateTimeOfHearing
-      )
-    )
-
-    return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
-  }
-
-  fun amendHearing(adjudicationNumber: Long, hearingId: Long, locationId: Long, dateTimeOfHearing: LocalDateTime): ReportedAdjudicationDto {
-    val reportedAdjudication =
-      reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(adjudicationNumber)
-
-    val hearingToEdit = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException(hearingId)
-
-    hearingToEdit.let {
-      it.dateTimeOfHearing = dateTimeOfHearing
-      it.locationId = locationId
-    }
-
-    return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
-  }
-
-  fun deleteHearing(adjudicationNumber: Long, hearingId: Long): ReportedAdjudicationDto {
-    val reportedAdjudication =
-      reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(adjudicationNumber)
-
-    val hearingToRemove = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException(hearingId)
-    reportedAdjudication.hearings.remove(hearingToRemove)
-
-    return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
   }
 
   fun getAllHearingsByAgencyIdAndDate(agencyId: String, dateOfHearing: LocalDate): List<HearingSummaryDto> {
@@ -250,71 +208,6 @@ class ReportedAdjudicationService(
     )
 
     return reportedAdjudicationToReturn
-  }
-
-  fun updateDamages(adjudicationNumber: Long, damages: List<DamageRequestItem>): ReportedAdjudicationDto {
-    val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
-      ?: throwEntityNotFoundException(adjudicationNumber)
-    val reporter = authenticationFacade.currentUsername!!
-    val toPreserve = reportedAdjudication.damages.filter { it.reporter != reporter }
-
-    reportedAdjudication.damages.clear()
-    reportedAdjudication.damages.addAll(toPreserve)
-    reportedAdjudication.damages.addAll(
-      damages.filter { it.reporter == reporter }.map {
-        ReportedDamage(
-          code = it.code,
-          details = it.details,
-          reporter = reporter
-        )
-      }
-    )
-
-    return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
-  }
-
-  fun updateEvidence(adjudicationNumber: Long, evidence: List<EvidenceRequestItem>): ReportedAdjudicationDto {
-    val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
-      ?: throwEntityNotFoundException(adjudicationNumber)
-    val reporter = authenticationFacade.currentUsername!!
-    val toPreserve = reportedAdjudication.evidence.filter { it.reporter != reporter }
-
-    reportedAdjudication.evidence.clear()
-    reportedAdjudication.evidence.addAll(toPreserve)
-    reportedAdjudication.evidence.addAll(
-      evidence.filter { it.reporter == reporter }.map {
-        ReportedEvidence(
-          code = it.code,
-          identifier = it.identifier,
-          details = it.details,
-          reporter = reporter
-        )
-      }
-    )
-
-    return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
-  }
-
-  fun updateWitnesses(adjudicationNumber: Long, witnesses: List<WitnessRequestItem>): ReportedAdjudicationDto {
-    val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
-      ?: throwEntityNotFoundException(adjudicationNumber)
-    val reporter = authenticationFacade.currentUsername!!
-    val toPreserve = reportedAdjudication.witnesses.filter { it.reporter != reporter }
-
-    reportedAdjudication.witnesses.clear()
-    reportedAdjudication.witnesses.addAll(toPreserve)
-    reportedAdjudication.witnesses.addAll(
-      witnesses.filter { it.reporter == reporter }.map {
-        ReportedWitness(
-          code = it.code,
-          firstName = it.firstName,
-          lastName = it.lastName,
-          reporter = reporter
-        )
-      }
-    )
-
-    return reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
   }
 
   private fun saveToPrisonApi(reportedAdjudication: ReportedAdjudication) {

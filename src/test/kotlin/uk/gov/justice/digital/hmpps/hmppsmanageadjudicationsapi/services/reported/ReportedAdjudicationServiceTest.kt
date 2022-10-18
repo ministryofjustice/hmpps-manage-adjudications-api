@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -18,9 +17,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.EvidenceRequestItem
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.WitnessRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
@@ -32,10 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
@@ -44,6 +37,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Dra
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -785,349 +780,6 @@ class ReportedAdjudicationServiceTest {
             WitnessCode.OFFICER, "prison", "officer", "Fred"
           )
         )
-    }
-  }
-
-  @Nested
-  inner class UpdateDamages {
-
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
-      .also {
-        it.damages = mutableListOf(
-          ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod"),
-          ReportedDamage(code = DamageCode.REDECORATION, details = "details 3", reporter = "Fred")
-        )
-      }
-
-    @BeforeEach
-    fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-      whenever(authenticationFacade.currentUsername).thenReturn("Fred")
-      reportedAdjudication.createdByUserId = "Jane"
-      reportedAdjudication.createDateTime = LocalDateTime.now()
-    }
-
-    @Test
-    fun `update damages for adjudication`() {
-      val response = reportedAdjudicationService.updateDamages(
-        1,
-        listOf(
-          DamageRequestItem(
-            reportedAdjudication.damages.first().code,
-            reportedAdjudication.damages.first().details,
-            reportedAdjudication.damages.first().reporter
-          ),
-          DamageRequestItem(DamageCode.ELECTRICAL_REPAIR, "details 2", "Fred")
-        )
-      )
-
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.damages.size).isEqualTo(2)
-      assertThat(argumentCaptor.value.damages.first().code).isEqualTo(DamageCode.CLEANING)
-      assertThat(argumentCaptor.value.damages.first().details).isEqualTo("details")
-      assertThat(argumentCaptor.value.damages.first().reporter).isEqualTo("Rod")
-      assertThat(argumentCaptor.value.damages.last().code).isEqualTo(DamageCode.ELECTRICAL_REPAIR)
-      assertThat(argumentCaptor.value.damages.last().details).isEqualTo("details 2")
-      assertThat(argumentCaptor.value.damages.last().reporter).isEqualTo("Fred")
-
-      assertThat(response).isNotNull
-    }
-
-    @Test
-    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
-
-      assertThatThrownBy {
-        reportedAdjudicationService.updateDamages(1, listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
-    }
-  }
-
-  @Nested
-  inner class UpdateEvidence {
-
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
-      .also {
-        it.evidence = mutableListOf(
-          ReportedEvidence(code = EvidenceCode.PHOTO, identifier = "identifier", details = "details", reporter = "Rod"),
-          ReportedEvidence(code = EvidenceCode.BAGGED_AND_TAGGED, identifier = "identifier", details = "details 3", reporter = "Fred")
-        )
-      }
-
-    @BeforeEach
-    fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-      whenever(authenticationFacade.currentUsername).thenReturn("Fred")
-      reportedAdjudication.createdByUserId = "Jane"
-      reportedAdjudication.createDateTime = LocalDateTime.now()
-    }
-
-    @Test
-    fun `update evidence for adjudication`() {
-      val response = reportedAdjudicationService.updateEvidence(
-        1,
-        listOf(
-          EvidenceRequestItem(
-            reportedAdjudication.evidence.first().code,
-            reportedAdjudication.evidence.first().identifier,
-            reportedAdjudication.evidence.first().details,
-            reportedAdjudication.evidence.first().reporter
-          ),
-          EvidenceRequestItem(EvidenceCode.BODY_WORN_CAMERA, "identifier 2", "details 2", "Fred")
-        )
-      )
-
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.evidence.size).isEqualTo(2)
-      assertThat(argumentCaptor.value.evidence.first().code).isEqualTo(EvidenceCode.PHOTO)
-      assertThat(argumentCaptor.value.evidence.first().details).isEqualTo("details")
-      assertThat(argumentCaptor.value.evidence.first().identifier).isEqualTo("identifier")
-      assertThat(argumentCaptor.value.evidence.first().reporter).isEqualTo("Rod")
-      assertThat(argumentCaptor.value.evidence.last().code).isEqualTo(EvidenceCode.BODY_WORN_CAMERA)
-      assertThat(argumentCaptor.value.evidence.last().details).isEqualTo("details 2")
-      assertThat(argumentCaptor.value.evidence.last().identifier).isEqualTo("identifier 2")
-      assertThat(argumentCaptor.value.evidence.last().reporter).isEqualTo("Fred")
-
-      assertThat(response).isNotNull
-    }
-
-    @Test
-    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
-
-      assertThatThrownBy {
-        reportedAdjudicationService.updateEvidence(1, listOf(EvidenceRequestItem(EvidenceCode.PHOTO, "", "details")))
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
-    }
-  }
-
-  @Nested
-  inner class UpdateWitnesses {
-
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
-      .also {
-        it.witnesses = mutableListOf(
-          ReportedWitness(code = WitnessCode.STAFF, firstName = "first", lastName = "last", reporter = "Rod"),
-          ReportedWitness(code = WitnessCode.OFFICER, firstName = "first", lastName = "last", reporter = "Fred")
-        )
-      }
-
-    @BeforeEach
-    fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-      whenever(authenticationFacade.currentUsername).thenReturn("Fred")
-      reportedAdjudication.createdByUserId = "Jane"
-      reportedAdjudication.createDateTime = LocalDateTime.now()
-    }
-
-    @Test
-    fun `update witnesses for adjudication`() {
-      val response = reportedAdjudicationService.updateWitnesses(
-        1,
-        listOf(
-          WitnessRequestItem(
-            reportedAdjudication.witnesses.first().code,
-            reportedAdjudication.witnesses.first().firstName,
-            reportedAdjudication.witnesses.first().lastName,
-            reportedAdjudication.witnesses.first().reporter
-          ),
-          WitnessRequestItem(WitnessCode.OTHER_PERSON, "first", "last", "Fred")
-        )
-      )
-
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.witnesses.size).isEqualTo(2)
-      assertThat(argumentCaptor.value.witnesses.first().code).isEqualTo(WitnessCode.STAFF)
-      assertThat(argumentCaptor.value.witnesses.first().firstName).isEqualTo("first")
-      assertThat(argumentCaptor.value.witnesses.first().reporter).isEqualTo("Rod")
-      assertThat(argumentCaptor.value.witnesses.last().code).isEqualTo(WitnessCode.OTHER_PERSON)
-      assertThat(argumentCaptor.value.witnesses.last().firstName).isEqualTo("first")
-      assertThat(argumentCaptor.value.witnesses.last().reporter).isEqualTo("Fred")
-
-      assertThat(response).isNotNull
-    }
-
-    @Test
-    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
-
-      assertThatThrownBy {
-        reportedAdjudicationService.updateWitnesses(1, listOf(WitnessRequestItem(WitnessCode.STAFF, "first", "last")))
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
-    }
-  }
-
-  @Nested
-  inner class CreateHearing {
-
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
-      .also {
-        it.createdByUserId = ""
-        it.createDateTime = LocalDateTime.now()
-        it.hearings.clear()
-      }
-
-    @BeforeEach
-    fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-    }
-
-    @Test
-    fun `create a hearing`() {
-      val now = LocalDateTime.now()
-      val response = reportedAdjudicationService.createHearing(
-        1235L,
-        1,
-        now
-      )
-
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
-      assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(1)
-      assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now)
-      assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
-      assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
-
-      assertThat(response).isNotNull
-    }
-
-    @Test
-    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
-
-      assertThatThrownBy {
-        reportedAdjudicationService.createHearing(1, 1, LocalDateTime.now())
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
-    }
-  }
-
-  @Nested
-  inner class AmendHearing {
-
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
-      .also {
-        it.createdByUserId = ""
-        it.createDateTime = LocalDateTime.now()
-      }
-
-    @BeforeEach
-    fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-    }
-
-    @Test
-    fun `amend a hearing`() {
-      val now = LocalDateTime.now()
-      val response = reportedAdjudicationService.amendHearing(
-        1235L,
-        1,
-        2,
-        now.plusDays(1)
-      )
-
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
-      assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(2)
-      assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now.plusDays(1))
-      assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
-      assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
-
-      assertThat(response).isNotNull
-    }
-
-    @Test
-    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
-
-      assertThatThrownBy {
-        reportedAdjudicationService.amendHearing(1, 1, 1, LocalDateTime.now())
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
-    }
-
-    @Test
-    fun `throws an entity not found if the hearing for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        reportedAdjudication
-          .also { it.hearings.clear() }
-      )
-
-      assertThatThrownBy {
-        reportedAdjudicationService.amendHearing(1, 1, 1, LocalDateTime.now())
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("Hearing not found for 1")
-    }
-  }
-
-  @Nested
-  inner class DeleteHearing {
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
-      .also {
-        it.createdByUserId = ""
-        it.createDateTime = LocalDateTime.now()
-      }
-
-    @BeforeEach
-    fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-    }
-
-    @Test
-    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
-
-      assertThatThrownBy {
-        reportedAdjudicationService.deleteHearing(1, 1)
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
-    }
-
-    @Test
-    fun `throws an entity not found if the hearing for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        reportedAdjudication
-          .also { it.hearings.clear() }
-      )
-
-      assertThatThrownBy {
-        reportedAdjudicationService.deleteHearing(1, 1)
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("Hearing not found for 1")
-    }
-
-    @Test
-    fun `delete a hearing`() {
-      val response = reportedAdjudicationService.deleteHearing(
-        1235L,
-        1,
-      )
-
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.hearings.size).isEqualTo(0)
-
-      assertThat(response).isNotNull
     }
   }
 

@@ -37,6 +37,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Dra
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup.Companion.associatedPrisonerInformationRequired
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.toDto
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
