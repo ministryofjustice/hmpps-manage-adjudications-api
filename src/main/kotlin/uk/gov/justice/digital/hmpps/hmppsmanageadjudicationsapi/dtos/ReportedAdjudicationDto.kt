@@ -112,3 +112,17 @@ data class HearingDto(
   @Schema(description = "Date and time the hearing will take place", example = "2010-10-12T10:00:00")
   val dateTimeOfHearing: LocalDateTime,
 )
+
+@Schema(description = "Hearing Summary")
+data class HearingSummaryDto(
+  @Schema(description = "The id of the hearing")
+  val id: Long? = null,
+  @Schema(description = "Date and time the hearing will take place", example = "2010-10-12T10:00:00")
+  val dateTimeOfHearing: LocalDateTime,
+  @Schema(description = "Date and time the incident was discovered", example = "2010-10-12T10:00:00")
+  val dateTimeOfDiscovery: LocalDateTime,
+  @Schema(description = "The number for the reported adjudication")
+  val adjudicationNumber: Long,
+  @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
+  val prisonerNumber: String,
+)

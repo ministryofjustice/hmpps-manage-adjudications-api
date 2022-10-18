@@ -41,6 +41,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
@@ -57,6 +58,7 @@ class ReportedAdjudicationServiceTest {
   private val offenceCodeLookupService: OffenceCodeLookupService = mock()
   private val authenticationFacade: AuthenticationFacade = mock()
   private val telemetryClient: TelemetryClient = mock()
+  private val hearingRepository: HearingRepository = mock()
   private lateinit var reportedAdjudicationService: ReportedAdjudicationService
 
   @BeforeEach
@@ -70,7 +72,8 @@ class ReportedAdjudicationServiceTest {
         prisonApiGateway,
         offenceCodeLookupService,
         authenticationFacade,
-        telemetryClient
+        telemetryClient,
+        hearingRepository,
       )
 
     whenever(offenceCodeLookupService.getParagraphNumber(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
@@ -998,7 +1001,7 @@ class ReportedAdjudicationServiceTest {
       assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now)
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
-      assertThat(argumentCaptor.value.hearings.first().prisonerNumber).isEqualTo(reportedAdjudication.prisonerNumber)
+      assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
 
       assertThat(response).isNotNull
     }
@@ -1064,6 +1067,63 @@ class ReportedAdjudicationServiceTest {
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(0)
 
       assertThat(response).isNotNull
+    }
+  }
+
+  @Nested
+  inner class AllHearings {
+    val now = LocalDate.now()
+
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+      .also {
+        it.createdByUserId = ""
+        it.createDateTime = LocalDateTime.now()
+      }
+
+    @BeforeEach
+    fun init() {
+      whenever(
+        hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
+          "MDI", now.atStartOfDay(),
+          now.plusDays(1).atStartOfDay()
+        )
+      ).thenReturn(
+        reportedAdjudication.hearings
+      )
+      whenever(reportedAdjudicationRepository.findByReportNumberIn(listOf(reportedAdjudication.reportNumber))).thenReturn(
+        listOf(reportedAdjudication)
+      )
+    }
+
+    @Test
+    fun `get all hearings `() {
+
+      val response = reportedAdjudicationService.getAllHearingsByAgencyIdAndDate(
+        "MDI", LocalDate.now()
+      )
+
+      assertThat(response).isNotNull
+      assertThat(response.size).isEqualTo(1)
+      assertThat(response.first().adjudicationNumber).isEqualTo(reportedAdjudication.reportNumber)
+      assertThat(response.first().prisonerNumber).isEqualTo(reportedAdjudication.prisonerNumber)
+      assertThat(response.first().dateTimeOfHearing).isEqualTo(reportedAdjudication.hearings.first().dateTimeOfHearing)
+      assertThat(response.first().dateTimeOfDiscovery).isEqualTo(reportedAdjudication.dateTimeOfDiscovery)
+    }
+
+    @Test
+    fun `empty response test `() {
+      whenever(
+        hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
+          "LEI", now.atStartOfDay(), now.plusDays(1).atStartOfDay()
+        )
+      ).thenReturn(emptyList())
+
+      val response = reportedAdjudicationService.getAllHearingsByAgencyIdAndDate(
+        "LEI", now
+      )
+
+      assertThat(response).isNotNull
+      assertThat(response.isEmpty()).isTrue
     }
   }
 

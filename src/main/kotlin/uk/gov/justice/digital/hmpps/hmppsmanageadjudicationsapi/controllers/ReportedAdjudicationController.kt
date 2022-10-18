@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ReportedAdjudicationService
@@ -30,6 +31,12 @@ import java.time.LocalDateTime
 import java.util.Optional
 import javax.validation.Valid
 import javax.validation.constraints.Size
+
+@Schema(description = "All hearings response")
+data class HearingSummaryResponse(
+  @Schema(description = "The hearing summaries response")
+  val hearings: List<HearingSummaryDto>
+)
 
 @Schema(description = "Reported adjudication response")
 data class ReportedAdjudicationResponse(
@@ -282,7 +289,25 @@ class ReportedAdjudicationController {
     val reportedAdjudication = reportedAdjudicationService.deleteHearing(
       adjudicationNumber, hearingId
     )
-
     return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(summary = "Get a list of hearings for a given date and agency")
+  @Parameters(
+    Parameter(
+      name = "hearingDate",
+      description = "date of hearings"
+    ),
+  )
+  @GetMapping(value = ["/hearings/agency/{agencyId}"])
+  fun getAllHearingsByAgencyAndDate(
+    @PathVariable(name = "agencyId") agencyId: String,
+    @RequestParam(name = "hearingDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) hearingDate: LocalDate,
+  ): HearingSummaryResponse {
+    val hearings = reportedAdjudicationService.getAllHearingsByAgencyIdAndDate(agencyId, hearingDate)
+
+    return HearingSummaryResponse(
+      hearings
+    )
   }
 }

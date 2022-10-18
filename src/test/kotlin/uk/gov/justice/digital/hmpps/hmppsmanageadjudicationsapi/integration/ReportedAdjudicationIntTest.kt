@@ -720,6 +720,49 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
   }
 
+  @Test
+  fun `get all hearings`() {
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addIncidentStatement()
+      .addDamages()
+      .addEvidence()
+      .addWitnesses()
+      .completeDraft()
+
+    val reportedAdjudication = intTestData.createHearing(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      IntegrationTestData.DEFAULT_ADJUDICATION,
+      setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"))
+    )
+
+    webTestClient.get()
+      .uri("/reported-adjudications/hearings/agency/${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}?hearingDate=${reportedAdjudication.reportedAdjudication.hearings.first().dateTimeOfHearing.toLocalDate()}")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.hearings.size()").isEqualTo(1)
+      .jsonPath("$.hearings[0].id")
+      .isEqualTo(reportedAdjudication.reportedAdjudication.hearings.first().id!!)
+      .jsonPath("$.hearings[0].prisonerNumber")
+      .isEqualTo(reportedAdjudication.reportedAdjudication.prisonerNumber)
+      .jsonPath("$.hearings[0].adjudicationNumber")
+      .isEqualTo(reportedAdjudication.reportedAdjudication.adjudicationNumber)
+      .jsonPath("$.hearings[0].dateTimeOfDiscovery")
+      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfDiscoveryISOString)
+      .jsonPath("$.hearings[0].dateTimeOfHearing")
+      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearingISOString)
+  }
+
   private fun initMyReportData() {
     val intTestData = integrationTestData()
 

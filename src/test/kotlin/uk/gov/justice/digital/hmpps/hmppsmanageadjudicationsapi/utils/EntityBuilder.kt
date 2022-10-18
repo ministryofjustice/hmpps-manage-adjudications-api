@@ -78,7 +78,7 @@ class EntityBuilder {
           locationId = 1L,
           dateTimeOfHearing = dateTime.plusWeeks(1),
           agencyId = agencyId,
-          prisonerNumber = "A12345",
+          reportNumber = reportNumber,
         )
       )
     )
