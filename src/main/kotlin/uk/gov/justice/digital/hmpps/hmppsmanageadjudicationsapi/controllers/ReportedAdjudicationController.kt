@@ -299,8 +299,8 @@ class ReportedAdjudicationController {
       description = "date of hearings"
     ),
   )
-  @GetMapping(value = ["/hearings/{agencyId}"])
-  fun getAllHearingsByDate(
+  @GetMapping(value = ["/hearings/agency/{agencyId}"])
+  fun getAllHearingsByAgencyAndDate(
     @PathVariable(name = "agencyId") agencyId: String,
     @RequestParam(name = "hearingDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) hearingDate: LocalDate,
   ): HearingSummaryResponse {

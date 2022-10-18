@@ -558,7 +558,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     ): ResultActions {
       return mockMvc
         .perform(
-          get("/reported-adjudications/hearings/$agency?hearingDate=$date")
+          get("/reported-adjudications/hearings/agency/$agency?hearingDate=$date")
             .header("Content-Type", "application/json")
         )
     }
