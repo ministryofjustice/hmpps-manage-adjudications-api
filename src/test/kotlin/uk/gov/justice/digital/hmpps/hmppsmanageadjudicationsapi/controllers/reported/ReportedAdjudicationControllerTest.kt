@@ -8,6 +8,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -19,12 +20,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Optional
@@ -32,6 +29,9 @@ import javax.persistence.EntityNotFoundException
 
 @WebMvcTest(value = [ReportedAdjudicationController::class])
 class ReportedAdjudicationControllerTest : TestControllerBase() {
+
+  @MockBean
+  lateinit var reportedAdjudicationService: ReportedAdjudicationService
 
   @Nested
   inner class ReportedAdjudicationDetails {
@@ -186,52 +186,6 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           get("/reported-adjudications/my/agency/MDI?startDate=$date&endDate=$date&status=$reportedAdjudicationStatus&page=0&size=20&sort=incidentDate,DESC")
-            .header("Content-Type", "application/json")
-        )
-    }
-  }
-
-  @Nested
-  inner class CreateDraftFromReportedAdjudication {
-    @BeforeEach
-    fun beforeEach() {
-      whenever(adjudicationWorkflowService.createDraftFromReportedAdjudication(any())).thenReturn(
-        DraftAdjudicationDto(
-          id = 1,
-          adjudicationNumber = 123L,
-          prisonerNumber = "A12345",
-          incidentDetails = IncidentDetailsDto(
-            locationId = 2,
-            dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-            dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-          ),
-          incidentRole = IncidentRoleDto(
-            roleCode = "25a",
-            offenceRule = OffenceRuleDetailsDto(
-              paragraphNumber = "25(a)",
-              paragraphDescription = "Commits an assault"
-            ),
-            associatedPrisonersNumber = "B2345BB",
-            associatedPrisonersName = "Associated Prisoner",
-          ),
-          incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
-          isYouthOffender = true
-        )
-      )
-    }
-
-    @Test
-    fun `responds with a unauthorised status code`() {
-      makeCreateDraftFromReportedAdjudicationRequest(123).andExpect(status().isUnauthorized)
-    }
-
-    private fun makeCreateDraftFromReportedAdjudicationRequest(
-      adjudicationNumber: Long
-    ): ResultActions {
-      return mockMvc
-        .perform(
-          get("/reported-adjudications/$adjudicationNumber/create-draft-adjudication")
             .header("Content-Type", "application/json")
         )
     }

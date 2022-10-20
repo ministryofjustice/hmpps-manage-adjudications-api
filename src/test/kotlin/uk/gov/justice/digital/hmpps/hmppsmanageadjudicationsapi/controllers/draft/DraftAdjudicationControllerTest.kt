@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -18,60 +18,23 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamageRequestItem
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamagesRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationController
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationWorkflowController
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftDamagesController
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftEvidenceController
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftOffenceController
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftWitnessesController
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequestItem
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleAssociatedPrisonerRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessRequestItem
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessesRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftDamagesService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftEvidenceService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftOffenceService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftWitnessesService
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
 @WebMvcTest(
   value = [
-    DraftAdjudicationController::class, DraftDamagesController::class, DraftEvidenceController::class,
-    DraftWitnessesController::class, DraftOffenceController::class, DraftAdjudicationWorkflowController::class
+    DraftAdjudicationController::class
   ]
 )
 class DraftAdjudicationControllerTest : TestControllerBase() {
 
   @MockBean
   lateinit var draftAdjudicationService: DraftAdjudicationService
-
-  @MockBean
-  lateinit var incidentOffenceService: DraftOffenceService
-
-  @MockBean
-  lateinit var evidenceService: DraftEvidenceService
-
-  @MockBean
-  lateinit var damagesService: DraftDamagesService
-
-  @MockBean
-  lateinit var witnessesService: DraftWitnessesService
 
   @Nested
   inner class StartDraftAdjudications {
@@ -247,59 +210,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .perform(
           get("/draft-adjudications/$id")
             .header("Content-Type", "application/json")
-        )
-    }
-  }
-
-  @Nested
-  inner class SetOffenceDetails {
-    @BeforeEach
-    fun beforeEach() {
-      whenever(incidentOffenceService.setOffenceDetails(anyLong(), any())).thenReturn(
-        draftAdjudicationDto()
-      )
-    }
-
-    @Test
-    fun `responds with a unauthorised status code`() {
-      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
-        .andExpect(status().isUnauthorized)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `makes a call to set the offence details to the draft adjudication`() {
-      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
-        .andExpect(status().isCreated)
-
-      verify(incidentOffenceService).setOffenceDetails(
-        1,
-        listOf(
-          OffenceDetailsRequestItem(
-            offenceCode = BASIC_OFFENCE_REQUEST.offenceCode,
-          )
-        )
-      )
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `returns the draft adjudication including the new offence details`() {
-      makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
-        .andExpect(status().isCreated)
-        .andExpect(jsonPath("$.draftAdjudication.id").isNumber)
-        .andExpect(jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
-        .andExpect(jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").value(BASIC_OFFENCE_RESPONSE_DTO.offenceCode))
-    }
-
-    private fun makeSetOffenceDetailsRequest(id: Long, offenceDetails: OffenceDetailsRequestItem): ResultActions {
-      val body = objectMapper.writeValueAsString(mapOf("offenceDetails" to listOf(offenceDetails)))
-
-      return mockMvc
-        .perform(
-          put("/draft-adjudications/$id/offence-details")
-            .header("Content-Type", "application/json")
-            .content(body)
         )
     }
   }
@@ -501,30 +411,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             .content(body)
         )
     }
-  }
-
-  @Nested
-  inner class CompleteDraftAdjudication {
-    @Test
-    fun `responds with a unauthorised status code`() {
-      completeDraftAdjudication(1)
-        .andExpect(status().isUnauthorized)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `make a call to complete a draft adjudication`() {
-      completeDraftAdjudication(1)
-        .andExpect(status().isCreated)
-
-      verify(adjudicationWorkflowService).completeDraftAdjudication(1)
-    }
-
-    fun completeDraftAdjudication(id: Long): ResultActions = mockMvc
-      .perform(
-        post("/draft-adjudications/$id/complete-draft-adjudication")
-          .header("Content-Type", "application/json")
-      )
   }
 
   @Nested
@@ -740,162 +626,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
   }
 
-  @Nested
-  inner class Damages {
-    @BeforeEach
-    fun beforeEach() {
-      whenever(
-        damagesService.setDamages(
-          anyLong(),
-          any(),
-        )
-      ).thenReturn(draftAdjudicationDto())
-    }
-
-    @Test
-    fun `responds with a unauthorised status code`() {
-      setDamagesRequest(1, DAMAGES_REQUEST).andExpect(status().isUnauthorized)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `makes a call to set the damages`() {
-      setDamagesRequest(1, DAMAGES_REQUEST)
-        .andExpect(status().isCreated)
-
-      verify(damagesService).setDamages(1, DAMAGES_REQUEST.damages)
-    }
-
-    private fun setDamagesRequest(
-      id: Long,
-      damages: DamagesRequest?
-    ): ResultActions {
-      val body = objectMapper.writeValueAsString(damages)
-      return mockMvc
-        .perform(
-          put("/draft-adjudications/$id/damages")
-            .header("Content-Type", "application/json")
-            .content(body)
-        )
-    }
-  }
-
-  @Nested
-  inner class Evidence {
-    @BeforeEach
-    fun beforeEach() {
-      whenever(
-        evidenceService.setEvidence(
-          anyLong(),
-          any(),
-        )
-      ).thenReturn(draftAdjudicationDto())
-    }
-
-    @Test
-    fun `responds with a unauthorised status code`() {
-      setEvidenceRequest(1, EVIDENCE_REQUEST).andExpect(status().isUnauthorized)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `makes a call to update the evidence`() {
-      setEvidenceRequest(1, EVIDENCE_REQUEST)
-        .andExpect(status().isCreated)
-
-      verify(evidenceService).setEvidence(1, EVIDENCE_REQUEST.evidence)
-    }
-
-    private fun setEvidenceRequest(
-      id: Long,
-      evidence: EvidenceRequest?
-    ): ResultActions {
-      val body = objectMapper.writeValueAsString(evidence)
-      return mockMvc
-        .perform(
-          put("/draft-adjudications/$id/evidence")
-            .header("Content-Type", "application/json")
-            .content(body)
-        )
-    }
-  }
-
-  @Nested
-  inner class Witnesses {
-    @BeforeEach
-    fun beforeEach() {
-      whenever(
-        witnessesService.setWitnesses(
-          anyLong(),
-          any(),
-        )
-      ).thenReturn(draftAdjudicationDto())
-    }
-
-    @Test
-    fun `responds with a unauthorised status code`() {
-      setWitnessesRequest(1, WITNESSES_REQUEST).andExpect(status().isUnauthorized)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `makes a call to update the witnesses`() {
-      setWitnessesRequest(1, WITNESSES_REQUEST)
-        .andExpect(status().isCreated)
-
-      verify(witnessesService).setWitnesses(1, WITNESSES_REQUEST.witnesses)
-    }
-
-    private fun setWitnessesRequest(
-      id: Long,
-      witnesses: WitnessesRequest?
-    ): ResultActions {
-      val body = objectMapper.writeValueAsString(witnesses)
-      return mockMvc
-        .perform(
-          put("/draft-adjudications/$id/witnesses")
-            .header("Content-Type", "application/json")
-            .content(body)
-        )
-    }
-  }
-
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
 
     private val INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST = IncidentRoleRequest("25a")
-    private val INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO =
-      IncidentRoleDto("25a", OffenceRuleDetailsDto("", ""), "B23456", "Associated Prisoner")
 
     private val INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO = IncidentRoleDto(null, null, null, null)
 
     private val ASSOCIATED_PRISONER_WITH_ALL_VALUES_REQUEST = IncidentRoleAssociatedPrisonerRequest("B23456", "Associated Prisoner")
-    private val DAMAGES_REQUEST = DamagesRequest(listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
-    private val EVIDENCE_REQUEST = EvidenceRequest(listOf(EvidenceRequestItem(code = EvidenceCode.PHOTO, details = "details")))
-    private val WITNESSES_REQUEST = WitnessesRequest(listOf(WitnessRequestItem(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer")))
-    private val BASIC_OFFENCE_REQUEST = OffenceDetailsRequestItem(offenceCode = 3)
-    private val BASIC_OFFENCE_RESPONSE_DTO = OffenceDetailsDto(
-      offenceCode = 3,
-      offenceRule = OffenceRuleDetailsDto(
-        paragraphNumber = "3",
-        paragraphDescription = "A description"
-      )
-    )
-    private fun draftAdjudicationDto(statement: String = "test") = DraftAdjudicationDto(
-      id = 1L,
-      adjudicationNumber = null,
-      prisonerNumber = "A12345",
-      incidentDetails = IncidentDetailsDto(
-        locationId = 3,
-        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-        dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
-        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-      ),
-      incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
-      isYouthOffender = true,
-      incidentStatement = IncidentStatementDto(statement = statement),
-      offenceDetails = listOf(BASIC_OFFENCE_RESPONSE_DTO),
-    )
   }
 }

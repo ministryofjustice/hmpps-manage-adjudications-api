@@ -2,20 +2,19 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationWorkflowService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import java.time.LocalDateTime
 
@@ -27,12 +26,6 @@ open class TestControllerBase {
 
   @Autowired
   internal lateinit var objectMapper: ObjectMapper
-
-  @MockBean
-  lateinit var reportedAdjudicationService: ReportedAdjudicationService
-
-  @MockBean
-  lateinit var adjudicationWorkflowService: AdjudicationWorkflowService
 
   companion object {
 
@@ -84,5 +77,31 @@ open class TestControllerBase {
         witnesses = listOf(),
         hearings = listOf(),
       )
+
+    val INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO =
+      IncidentRoleDto("25a", OffenceRuleDetailsDto("", ""), "B23456", "Associated Prisoner")
+
+    val BASIC_OFFENCE_RESPONSE_DTO = OffenceDetailsDto(
+      offenceCode = 3,
+      offenceRule = OffenceRuleDetailsDto(
+        paragraphNumber = "3",
+        paragraphDescription = "A description"
+      )
+    )
+    fun draftAdjudicationDto(statement: String = "test") = DraftAdjudicationDto(
+      id = 1L,
+      adjudicationNumber = null,
+      prisonerNumber = "A12345",
+      incidentDetails = IncidentDetailsDto(
+        locationId = 3,
+        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+        dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
+        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+      ),
+      incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
+      isYouthOffender = true,
+      incidentStatement = IncidentStatementDto(statement = statement),
+      offenceDetails = listOf(BASIC_OFFENCE_RESPONSE_DTO),
+    )
   }
 }

@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -25,6 +26,8 @@ class HearingControllerTest : TestControllerBase() {
   @MockBean
   lateinit var hearingService: HearingService
 
+  @MockBean
+  lateinit var reportedAdjudicationService: ReportedAdjudicationService
   @Nested
   inner class CreateHearing {
     @BeforeEach

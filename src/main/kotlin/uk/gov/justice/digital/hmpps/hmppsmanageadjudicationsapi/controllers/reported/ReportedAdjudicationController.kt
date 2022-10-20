@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
 import java.time.LocalDate
 import java.util.Optional
 import javax.validation.Valid
@@ -44,7 +45,9 @@ data class ReportedAdjudicationStatusRequest(
 )
 
 @RestController
-class ReportedAdjudicationController : ReportedAdjudicationBaseController() {
+class ReportedAdjudicationController(
+  val reportedAdjudicationService: ReportedAdjudicationService
+) : ReportedAdjudicationBaseController() {
 
   @GetMapping(value = ["/{adjudicationNumber}"])
   fun getReportedAdjudicationDetails(@PathVariable(name = "adjudicationNumber") adjudicationNumber: Long): ReportedAdjudicationResponse {
