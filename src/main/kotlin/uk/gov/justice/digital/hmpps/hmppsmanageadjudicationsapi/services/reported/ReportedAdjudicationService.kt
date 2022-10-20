@@ -1,18 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import com.microsoft.applicationinsights.TelemetryClient
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -31,7 +26,6 @@ class ReportedAdjudicationService(
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   val telemetryClient: TelemetryClient,
-  val hearingRepository: HearingRepository
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
 ) {
@@ -48,40 +42,9 @@ class ReportedAdjudicationService(
     return reportedAdjudication.toDto()
   }
 
-  fun getAllReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
-    val reportedAdjudicationsPage =
-      reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
-        agencyId, reportsFrom(startDate), reportsTo(endDate), statuses(status), pageable
-      )
-    return reportedAdjudicationsPage.map { it.toDto() }
-  }
-
-  fun getMyReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
-    val username = authenticationFacade.currentUsername
-
-    val reportedAdjudicationsPage =
-      reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
-        username!!, agencyId, reportsFrom(startDate), reportsTo(endDate), statuses(status), pageable
-      )
-    return reportedAdjudicationsPage.map { it.toDto() }
-  }
-
-  fun getAllHearingsByAgencyIdAndDate(agencyId: String, dateOfHearing: LocalDate): List<HearingSummaryDto> {
-    val hearings = hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
-      agencyId, dateOfHearing.atStartOfDay(), dateOfHearing.plusDays(1).atStartOfDay()
-    )
-
-    val adjudicationsMap = reportedAdjudicationRepository.findByReportNumberIn(
-      hearings.map { it.reportNumber }
-    ).associateBy { it.reportNumber }
-
-    return toHearingSummaries(hearings, adjudicationsMap)
-  }
-
   fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
     val username = if (status == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername
-    val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(adjudicationNumber)
-      ?: throw EntityNotFoundException("ReportedAdjudication not found for reported adjudication number $adjudicationNumber")
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val reportedAdjudicationToReturn = reportedAdjudication.let {
       it.transition(to = status, reason = statusReason, details = statusDetails, reviewUserId = username)
       saveToDto(it)
@@ -154,15 +117,3 @@ class ReportedAdjudicationService(
     return offenceDetails?.mapNotNull { it.victimStaffUsername } ?: emptyList()
   }
 }
-
-private fun toHearingSummaries(hearings: List<Hearing>, adjudications: Map<Long, ReportedAdjudication>): List<HearingSummaryDto> =
-  hearings.map {
-    val adjudication = adjudications[it.reportNumber]!!
-    HearingSummaryDto(
-      id = it.id!!,
-      dateTimeOfHearing = it.dateTimeOfHearing,
-      dateTimeOfDiscovery = adjudication.dateTimeOfDiscovery,
-      prisonerNumber = adjudication.prisonerNumber,
-      adjudicationNumber = it.reportNumber
-    )
-  }

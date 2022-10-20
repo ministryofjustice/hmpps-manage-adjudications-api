@@ -20,7 +20,7 @@ class DraftEvidenceService(
 ) {
 
   fun setEvidence(id: Long, evidence: List<EvidenceRequestItem>): DraftAdjudicationDto {
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val draftAdjudication = find(id)
     val reporter = authenticationFacade.currentUsername!!
 
     draftAdjudication.evidence.clear()

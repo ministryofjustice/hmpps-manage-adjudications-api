@@ -7,15 +7,19 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
+import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
 class HearingServiceTest : ReportedAdjudicationTestBase() {
+  private val hearingRepository: HearingRepository = mock()
   private var hearingService = HearingService(
-    reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
+    reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade, hearingRepository
   )
 
   @Test
@@ -167,6 +171,63 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(0)
 
       assertThat(response).isNotNull
+    }
+  }
+
+  @Nested
+  inner class AllHearings {
+    val now = LocalDate.now()
+
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+      .also {
+        it.createdByUserId = ""
+        it.createDateTime = LocalDateTime.now()
+      }
+
+    @BeforeEach
+    fun init() {
+      whenever(
+        hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
+          "MDI", now.atStartOfDay(),
+          now.plusDays(1).atStartOfDay()
+        )
+      ).thenReturn(
+        reportedAdjudication.hearings
+      )
+      whenever(reportedAdjudicationRepository.findByReportNumberIn(listOf(reportedAdjudication.reportNumber))).thenReturn(
+        listOf(reportedAdjudication)
+      )
+    }
+
+    @Test
+    fun `get all hearings `() {
+
+      val response = hearingService.getAllHearingsByAgencyIdAndDate(
+        "MDI", LocalDate.now()
+      )
+
+      assertThat(response).isNotNull
+      assertThat(response.size).isEqualTo(1)
+      assertThat(response.first().adjudicationNumber).isEqualTo(reportedAdjudication.reportNumber)
+      assertThat(response.first().prisonerNumber).isEqualTo(reportedAdjudication.prisonerNumber)
+      assertThat(response.first().dateTimeOfHearing).isEqualTo(reportedAdjudication.hearings.first().dateTimeOfHearing)
+      assertThat(response.first().dateTimeOfDiscovery).isEqualTo(reportedAdjudication.dateTimeOfDiscovery)
+    }
+
+    @Test
+    fun `empty response test `() {
+      whenever(
+        hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
+          "LEI", now.atStartOfDay(), now.plusDays(1).atStartOfDay()
+        )
+      ).thenReturn(emptyList())
+
+      val response = hearingService.getAllHearingsByAgencyIdAndDate(
+        "LEI", now
+      )
+
+      assertThat(response).isNotNull
+      assertThat(response.isEmpty()).isTrue
     }
   }
 }

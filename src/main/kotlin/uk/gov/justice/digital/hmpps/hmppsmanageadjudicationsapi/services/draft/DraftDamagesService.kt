@@ -20,7 +20,7 @@ class DraftDamagesService(
 ) {
 
   fun setDamages(id: Long, damages: List<DamageRequestItem>): DraftAdjudicationDto {
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val draftAdjudication = find(id)
     val reporter = authenticationFacade.currentUsername!!
 
     draftAdjudication.damages.clear()

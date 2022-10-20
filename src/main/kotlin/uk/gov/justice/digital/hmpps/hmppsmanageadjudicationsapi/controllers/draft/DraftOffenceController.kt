@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -13,6 +14,24 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftOffenceService
 import javax.validation.Valid
+
+@Schema(description = "Request to update the list of offence details for a draft adjudication")
+data class OffenceDetailsRequest(
+  @Schema(description = "The details of all offences the prisoner is accused of")
+  val offenceDetails: List<OffenceDetailsRequestItem>,
+)
+
+@Schema(description = "Details of an offence")
+data class OffenceDetailsRequestItem(
+  @Schema(description = "The offence code", title = "This is the unique number relating to the type of offence they have been alleged to have committed", example = "3")
+  val offenceCode: Int,
+  @Schema(description = "The prison number of the victim involved in the incident, if relevant", example = "G2996UX")
+  val victimPrisonersNumber: String? = null,
+  @Schema(description = "The username of the member of staff who is a victim of the incident, if relevant", example = "ABC12D")
+  val victimStaffUsername: String? = null,
+  @Schema(description = "The name of the victim (who is not a member of staff or a prisoner) involved in the incident, if relevant", example = "Bob Hope")
+  val victimOtherPersonsName: String? = null,
+)
 
 @RestController
 class DraftOffenceController(

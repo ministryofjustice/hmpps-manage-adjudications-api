@@ -30,7 +30,7 @@ class DraftOffenceService(
   fun setOffenceDetails(id: Long, offenceDetails: List<OffenceDetailsRequestItem>): DraftAdjudicationDto {
     throwIfEmpty(offenceDetails)
 
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val draftAdjudication = find(id)
     // NOTE: new flow sets isYouthOffender first, therefore if we do not have this set we must throw as .Dto requires it
     ValidationChecks.APPLICABLE_RULES.validate(draftAdjudication)
 

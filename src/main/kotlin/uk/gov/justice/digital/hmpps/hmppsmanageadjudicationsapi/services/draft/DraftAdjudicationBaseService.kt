@@ -20,11 +20,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
 open class DraftAdjudicationBaseService(
-  val draftAdjudicationRepository: DraftAdjudicationRepository,
-  val offenceCodeLookupService: OffenceCodeLookupService,
+  private val draftAdjudicationRepository: DraftAdjudicationRepository,
+  internal val offenceCodeLookupService: OffenceCodeLookupService,
 ) {
 
   fun find(id: Long): DraftAdjudication =
@@ -38,6 +39,19 @@ open class DraftAdjudicationBaseService(
     draftAdjudicationRepository.save(draftAdjudication).toDto()
 
   fun delete(draftAdjudication: DraftAdjudication) = draftAdjudicationRepository.delete(draftAdjudication)
+
+  internal fun delete() {
+    draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(
+      LocalDateTime.now().minusDays(DraftAdjudicationService.DAYS_TO_DELETE)
+    )
+  }
+  internal fun getInProgress(agencyId: String, username: String): List<DraftAdjudicationDto> =
+    draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(
+      agencyId,
+      username
+    )
+      .sortedBy { it.incidentDetails.dateTimeOfIncident }
+      .map { it.toDto() }
 
   fun DraftAdjudication.toDto(): DraftAdjudicationDto =
     DraftAdjudicationDto(

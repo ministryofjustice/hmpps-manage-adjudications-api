@@ -20,7 +20,7 @@ class DraftWitnessesService(
 ) {
 
   fun setWitnesses(id: Long, witnesses: List<WitnessRequestItem>): DraftAdjudicationDto {
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val draftAdjudication = find(id)
     val reporter = authenticationFacade.currentUsername!!
 
     draftAdjudication.witnesses.clear()

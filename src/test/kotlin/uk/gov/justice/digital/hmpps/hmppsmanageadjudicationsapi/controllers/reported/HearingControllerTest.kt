@@ -16,7 +16,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -26,8 +25,6 @@ class HearingControllerTest : TestControllerBase() {
   @MockBean
   lateinit var hearingService: HearingService
 
-  @MockBean
-  lateinit var reportedAdjudicationService: ReportedAdjudicationService
   @Nested
   inner class CreateHearing {
     @BeforeEach
@@ -208,7 +205,7 @@ class HearingControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        reportedAdjudicationService.getAllHearingsByAgencyIdAndDate(
+        hearingService.getAllHearingsByAgencyIdAndDate(
           ArgumentMatchers.anyString(),
           any(),
         )
@@ -232,7 +229,7 @@ class HearingControllerTest : TestControllerBase() {
       val now = LocalDate.now()
       allHearingsRequest("MDI", now)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(reportedAdjudicationService).getAllHearingsByAgencyIdAndDate("MDI", now)
+      verify(hearingService).getAllHearingsByAgencyIdAndDate("MDI", now)
     }
 
     private fun allHearingsRequest(

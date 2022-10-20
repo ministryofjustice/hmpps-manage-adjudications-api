@@ -22,22 +22,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import javax.persistence.EntityNotFoundException
 
-open class ReportedAdjudicationBaseService(
-  val reportedAdjudicationRepository: ReportedAdjudicationRepository,
-  val offenceCodeLookupService: OffenceCodeLookupService,
-  internal val authenticationFacade: AuthenticationFacade,
-
+open class ReportedDtoService(
+  internal val offenceCodeLookupService: OffenceCodeLookupService,
 ) {
-
-  fun findByAdjudicationNumber(adjudicationNumber: Long) =
-    reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(
-      adjudicationNumber
-    )
-  fun save(reportedAdjudication: ReportedAdjudication): ReportedAdjudication =
-    reportedAdjudicationRepository.save(reportedAdjudication)
-  fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
-    reportedAdjudicationRepository.save(reportedAdjudication).toDto()
-
   fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudicationDto(
     adjudicationNumber = reportNumber,
     prisonerNumber = prisonerNumber,
@@ -123,6 +110,24 @@ open class ReportedAdjudicationBaseService(
         dateTimeOfHearing = it.dateTimeOfHearing
       )
     }.toList()
+}
+
+open class ReportedAdjudicationBaseService(
+  private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  offenceCodeLookupService: OffenceCodeLookupService,
+  internal val authenticationFacade: AuthenticationFacade,
+) : ReportedDtoService(offenceCodeLookupService) {
+
+  fun findByAdjudicationNumber(adjudicationNumber: Long) =
+    reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(
+      adjudicationNumber
+    )
+  fun save(reportedAdjudication: ReportedAdjudication): ReportedAdjudication =
+    reportedAdjudicationRepository.save(reportedAdjudication)
+  fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
+    reportedAdjudicationRepository.save(reportedAdjudication).toDto()
+
+  fun findByReportNumberIn(adjudicationNumbers: List<Long>) = reportedAdjudicationRepository.findByReportNumberIn(adjudicationNumbers)
 
   companion object {
     fun throwEntityNotFoundException(id: Long): Nothing =
