@@ -195,7 +195,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
   inner class CreateDraftFromReportedAdjudication {
     @BeforeEach
     fun beforeEach() {
-      whenever(reportedAdjudicationService.createDraftFromReportedAdjudication(any())).thenReturn(
+      whenever(adjudicationWorkflowService.createDraftFromReportedAdjudication(any())).thenReturn(
         DraftAdjudicationDto(
           id = 1,
           adjudicationNumber = 123L,

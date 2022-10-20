@@ -19,7 +19,7 @@ class HearingService(
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
-  authenticationFacade
+  authenticationFacade,
 ) {
 
   fun createHearing(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime): ReportedAdjudicationDto {
@@ -34,7 +34,7 @@ class HearingService(
       )
     )
 
-    return save(reportedAdjudication)
+    return saveToDto(reportedAdjudication)
   }
 
   fun amendHearing(adjudicationNumber: Long, hearingId: Long, locationId: Long, dateTimeOfHearing: LocalDateTime): ReportedAdjudicationDto {
@@ -49,7 +49,7 @@ class HearingService(
       it.locationId = locationId
     }
 
-    return save(reportedAdjudication)
+    return saveToDto(reportedAdjudication)
   }
 
   fun deleteHearing(adjudicationNumber: Long, hearingId: Long): ReportedAdjudicationDto {
@@ -60,7 +60,7 @@ class HearingService(
     )
     reportedAdjudication.hearings.remove(hearingToRemove)
 
-    return save(reportedAdjudication)
+    return saveToDto(reportedAdjudication)
   }
 
   companion object {

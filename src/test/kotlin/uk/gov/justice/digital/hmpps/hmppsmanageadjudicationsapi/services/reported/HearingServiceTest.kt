@@ -18,6 +18,26 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
   )
 
+  @Test
+  override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
+    whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
+
+    Assertions.assertThatThrownBy {
+      hearingService.createHearing(1, 1, LocalDateTime.now())
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      hearingService.amendHearing(1, 1, 1, LocalDateTime.now())
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      hearingService.deleteHearing(1, 1)
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+  }
+
   @Nested
   inner class CreateHearing {
 
@@ -53,16 +73,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
 
       assertThat(response).isNotNull
-    }
-
-    @Test
-    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
-
-      Assertions.assertThatThrownBy {
-        hearingService.createHearing(1, 1, LocalDateTime.now())
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
     }
   }
 
@@ -104,16 +114,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
-
-      Assertions.assertThatThrownBy {
-        hearingService.amendHearing(1, 1, 1, LocalDateTime.now())
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
-    }
-
-    @Test
     fun `throws an entity not found if the hearing for the supplied id does not exists`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication
@@ -139,16 +139,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     fun init() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-    }
-
-    @Test
-    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
-
-      Assertions.assertThatThrownBy {
-        hearingService.deleteHearing(1, 1)
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
     }
 
     @Test

@@ -37,6 +37,6 @@ class EvidenceService(
       }
     )
 
-    return save(reportedAdjudication)
+    return saveToDto(reportedAdjudication)
   }
 }

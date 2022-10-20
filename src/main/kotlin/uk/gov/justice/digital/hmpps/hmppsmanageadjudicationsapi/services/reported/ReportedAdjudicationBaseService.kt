@@ -23,8 +23,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Offence
 import javax.persistence.EntityNotFoundException
 
 open class ReportedAdjudicationBaseService(
-  private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
-  private val offenceCodeLookupService: OffenceCodeLookupService,
+  val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  val offenceCodeLookupService: OffenceCodeLookupService,
   internal val authenticationFacade: AuthenticationFacade,
 
 ) {
@@ -33,11 +33,12 @@ open class ReportedAdjudicationBaseService(
     reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(
       adjudicationNumber
     )
+  fun save(reportedAdjudication: ReportedAdjudication): ReportedAdjudication =
+    reportedAdjudicationRepository.save(reportedAdjudication)
+  fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
+    reportedAdjudicationRepository.save(reportedAdjudication).toDto()
 
-  fun save(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
-    reportedAdjudicationRepository.save(reportedAdjudication).toDto(offenceCodeLookupService)
-
-  private fun ReportedAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService): ReportedAdjudicationDto = ReportedAdjudicationDto(
+  fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudicationDto(
     adjudicationNumber = reportNumber,
     prisonerNumber = prisonerNumber,
     bookingId = bookingId,

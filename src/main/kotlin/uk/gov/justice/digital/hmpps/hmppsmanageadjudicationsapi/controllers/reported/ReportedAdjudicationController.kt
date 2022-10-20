@@ -13,13 +13,11 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDate
@@ -150,17 +148,6 @@ class ReportedAdjudicationController : ReportedAdjudicationBaseController() {
       endDate.orElse(startDate.orElse(LocalDate.now())),
       status,
       pageable
-    )
-  }
-
-  @PostMapping(value = ["/{adjudicationNumber}/create-draft-adjudication"])
-  @Operation(summary = "Creates a draft adjudication from the reported adjudication with the given number.")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
-  @ResponseStatus(HttpStatus.CREATED)
-  fun createDraftAdjudication(@PathVariable(name = "adjudicationNumber") adjudicationNumber: Long): DraftAdjudicationResponse {
-    val draftAdjudication = reportedAdjudicationService.createDraftFromReportedAdjudication(adjudicationNumber)
-    return DraftAdjudicationResponse(
-      draftAdjudication
     )
   }
 

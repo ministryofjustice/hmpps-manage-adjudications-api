@@ -37,6 +37,6 @@ class WitnessesService(
       }
     )
 
-    return save(reportedAdjudication)
+    return saveToDto(reportedAdjudication)
   }
 }

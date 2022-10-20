@@ -481,7 +481,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       completeDraftAdjudication(1)
         .andExpect(status().isCreated)
 
-      verify(draftAdjudicationService).completeDraftAdjudication(1)
+      verify(adjudicationWorkflowService).completeDraftAdjudication(1)
     }
 
     fun completeDraftAdjudication(id: Long): ResultActions = mockMvc

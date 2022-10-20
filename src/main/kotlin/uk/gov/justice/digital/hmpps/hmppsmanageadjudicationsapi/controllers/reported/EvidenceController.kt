@@ -15,10 +15,9 @@ import javax.validation.Valid
 
 @PreAuthorize("hasAuthority('SCOPE_write')")
 @RestController
-class EvidenceController : ReportedAdjudicationBaseController() {
-
-  @Autowired
-  lateinit var evidenceService: EvidenceService
+class EvidenceController(
+  val evidenceService: EvidenceService
+) : ReportedAdjudicationBaseController() {
 
   @PutMapping(value = ["/{adjudicationNumber}/evidence/edit"])
   @Operation(summary = "Updates the evidence for the reported adjudication.", description = "0 or more evidence to be supplied, only updates records owned by current user")

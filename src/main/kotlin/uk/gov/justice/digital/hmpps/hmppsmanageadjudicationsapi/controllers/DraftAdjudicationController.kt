@@ -13,13 +13,11 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
@@ -180,12 +178,10 @@ data class WitnessRequestItem(
 )
 
 @RestController
-@RequestMapping("/draft-adjudications")
 @Validated
-class DraftAdjudicationController {
-  @Autowired
-  lateinit var draftAdjudicationService: DraftAdjudicationService
-
+class DraftAdjudicationController(
+  val draftAdjudicationService: DraftAdjudicationService
+) : DraftAdjudicationBaseController() {
   @GetMapping("/my/agency/{agencyId}")
   @Operation(summary = "Returns all the in progress draft adjudications created by the current user. Default sort is by earliest incident date and time.")
   fun getCurrentUsersInProgressDraftAdjudications(
@@ -403,13 +399,6 @@ class DraftAdjudicationController {
 
     return DraftAdjudicationResponse(draftAdjudication)
   }
-
-  @PostMapping(value = ["/{id}/complete-draft-adjudication"])
-  @Operation(summary = "Submits the draft adjudication to Prison-API, creates a submitted adjudication record and removes the draft adjudication.")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
-  @ResponseStatus(HttpStatus.CREATED)
-  fun completeDraftAdjudication(@PathVariable(name = "id") id: Long): ReportedAdjudicationDto =
-    draftAdjudicationService.completeDraftAdjudication(id)
 
   @DeleteMapping(value = ["/orphaned"])
   fun deleteOrphanedDraftAdjudications(): Unit =

@@ -4,17 +4,14 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
 import org.assertj.core.groups.Tuple
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -39,19 +36,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudicationCreationRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.Clock
 import java.time.Instant.ofEpochMilli
 import java.time.LocalDateTime
@@ -76,11 +66,8 @@ class DraftAdjudicationServiceTest {
     draftAdjudicationService =
       DraftAdjudicationService(
         draftAdjudicationRepository,
-        reportedAdjudicationRepository,
-        prisonApiGateway,
         offenceCodeLookupService,
         authenticationFacade,
-        telemetryClient
       )
 
     // Set up offence code mocks
@@ -974,459 +961,6 @@ class DraftAdjudicationServiceTest {
   }
 
   @Nested
-  inner class CompleteDraftAdjudication {
-    @Test
-    fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
-
-      assertThatThrownBy {
-        draftAdjudicationService.completeDraftAdjudication(1)
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("DraftAdjudication not found for 1")
-    }
-
-    @ParameterizedTest
-    @EnumSource(ValidationChecks::class) fun `illegal state exception test`(validationCheck: ValidationChecks) {
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-        Optional.of(
-          DraftAdjudication(
-            prisonerNumber = "A12345",
-            agencyId = "MDI",
-            incidentDetails = incidentDetails(2L, now),
-          ).also {
-            when (validationCheck) {
-              ValidationChecks.INCIDENT_ROLE -> {
-                it.isYouthOffender = false
-              }
-              ValidationChecks.INCIDENT_ROLE_ASSOCIATED_PRISONER -> {
-                it.isYouthOffender = false
-                it.incidentRole = IncidentRole(
-                  null,
-                  "25b",
-                  null, null
-                )
-              }
-              ValidationChecks.OFFENCE_DETAILS -> {
-                it.incidentRole = incidentRoleWithAllValuesSet()
-                it.isYouthOffender = false
-              }
-              ValidationChecks.INCIDENT_STATEMENT -> {
-                it.isYouthOffender = false
-                it.incidentRole = incidentRoleWithAllValuesSet()
-                it.offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
-              }
-              else -> {}
-            }
-          }
-        )
-      )
-
-      assertThatThrownBy {
-        draftAdjudicationService.completeDraftAdjudication(1)
-      }.isInstanceOf(IllegalStateException::class.java)
-        .hasMessageContaining(validationCheck.errorMessage)
-    }
-
-    @Nested
-    inner class WithAValidDraftAdjudication {
-      private val INCIDENT_TIME = LocalDateTime.now(clock)
-
-      @BeforeEach
-      fun beforeEach() {
-        val draft = DraftAdjudication(
-          id = 1,
-          prisonerNumber = "A12345",
-          agencyId = "MDI",
-          incidentDetails = incidentDetails(1L, INCIDENT_TIME),
-          incidentRole = incidentRoleWithAllValuesSet(),
-          offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
-          incidentStatement = IncidentStatement(statement = "test"),
-          isYouthOffender = false
-        )
-        draft.createDateTime = now
-
-        whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-          Optional.of(draft)
-        )
-
-        whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
-          NomisAdjudicationCreationRequest(
-            adjudicationNumber = 123456L,
-            bookingId = 1L,
-          )
-        )
-        whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
-          val passedInAdjudication = it.arguments[0] as ReportedAdjudication
-          passedInAdjudication.createdByUserId = "A_SMITH"
-          passedInAdjudication.createDateTime = REPORTED_DATE_TIME
-          passedInAdjudication.status = ReportedAdjudicationStatus.AWAITING_REVIEW
-          passedInAdjudication
-        }
-      }
-
-      @Test
-      fun `stores a new completed adjudication record`() {
-        draftAdjudicationService.completeDraftAdjudication(1)
-
-        val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-        verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
-
-        assertThat(reportedAdjudicationArgumentCaptor.value)
-          .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId")
-          .contains("A12345", 123456L, 1L, "MDI")
-
-        assertThat(reportedAdjudicationArgumentCaptor.value)
-          .extracting(
-            "locationId",
-            "dateTimeOfIncident",
-            "handoverDeadline",
-            "incidentRoleCode",
-            "incidentRoleAssociatedPrisonersNumber",
-            "incidentRoleAssociatedPrisonersName",
-            "statement",
-            "draftCreatedOn"
-          )
-          .contains(
-            1L,
-            INCIDENT_TIME,
-            DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-            INCIDENT_ROLE_CODE,
-            INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
-            INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
-            "test",
-            now
-          )
-
-        assertThat(reportedAdjudicationArgumentCaptor.value.offenceDetails)
-          .extracting(
-            "offenceCode",
-            "victimPrisonersNumber",
-            "victimStaffUsername",
-            "victimOtherPersonsName"
-          )
-          .contains(
-            Tuple(
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
-            ),
-            Tuple(
-              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
-              FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
-            ),
-          )
-
-        verify(telemetryClient).trackEvent(
-          DraftAdjudicationService.TELEMETRY_EVENT,
-          mapOf(
-            "adjudicationNumber" to "1",
-            "agencyId" to "MDI",
-            "reportNumber" to "123456"
-          ),
-          null
-        )
-      }
-
-      @Test
-      fun `makes a call to prison api to get creation data`() {
-        draftAdjudicationService.completeDraftAdjudication(1)
-
-        verify(prisonApiGateway).requestAdjudicationCreationData("A12345")
-      }
-
-      @Test
-      fun `deletes the draft adjudication once complete`() {
-        draftAdjudicationService.completeDraftAdjudication(1)
-
-        val argumentCaptor: ArgumentCaptor<DraftAdjudication> = ArgumentCaptor.forClass(DraftAdjudication::class.java)
-        verify(draftAdjudicationRepository).delete(argumentCaptor.capture())
-
-        assertThat(argumentCaptor.value)
-          .extracting("id", "prisonerNumber")
-          .contains(1L, "A12345")
-      }
-    }
-
-    @Nested
-    inner class CompleteAPreviouslyCompletedAdjudicationCheckStateChange {
-      private val INCIDENT_TIME = LocalDateTime.now(clock)
-      private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = INCIDENT_TIME)
-
-      @BeforeEach
-      fun beforeEach() {
-        whenever(authenticationFacade.currentUsername).thenReturn("Fred")
-
-        whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-          Optional.of(
-            DraftAdjudication(
-              id = 1,
-              prisonerNumber = "A12345",
-              reportNumber = 123,
-              agencyId = "MDI",
-              incidentDetails = incidentDetails(2L, INCIDENT_TIME),
-              incidentRole = incidentRoleWithNoValuesSet(),
-              offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
-              incidentStatement = IncidentStatement(statement = "test"),
-              isYouthOffender = true
-            )
-          )
-        )
-        whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
-          NomisAdjudicationCreationRequest(
-            adjudicationNumber = 123,
-            bookingId = 33,
-          )
-        )
-        whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
-          val passedInAdjudication = it.arguments[0] as ReportedAdjudication
-          passedInAdjudication.createdByUserId = "A_SMITH"
-          passedInAdjudication.createDateTime = REPORTED_DATE_TIME
-          passedInAdjudication.status = ReportedAdjudicationStatus.AWAITING_REVIEW
-          passedInAdjudication
-        }
-      }
-
-      @ParameterizedTest
-      @CsvSource(
-        "ACCEPTED",
-        "REJECTED"
-      )
-      fun `cannot complete when the reported adjudication is in the wrong state`(from: ReportedAdjudicationStatus) {
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-          reportedAdjudication.also { it.status = from }
-        )
-        Assertions.assertThrows(IllegalStateException::class.java) {
-          draftAdjudicationService.completeDraftAdjudication(1)
-        }
-      }
-
-      @ParameterizedTest
-      @CsvSource(
-        "AWAITING_REVIEW",
-        "RETURNED"
-      )
-      fun `completes when the reported adjudication is in a correct state`(from: ReportedAdjudicationStatus) {
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-          reportedAdjudication.also {
-            it.status = from
-          }
-        )
-        draftAdjudicationService.completeDraftAdjudication(1)
-        val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-        verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
-        assertThat(reportedAdjudicationArgumentCaptor.value).extracting("status")
-          .isEqualTo(ReportedAdjudicationStatus.AWAITING_REVIEW)
-      }
-    }
-
-    @Nested
-    inner class CompleteAPreviouslyCompletedAdjudication {
-
-      private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = LocalDateTime.now(clock).minusDays(2))
-
-      @BeforeEach
-      fun beforeEach() {
-        whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-          Optional.of(
-            DraftAdjudication(
-              id = 1,
-              prisonerNumber = "A12345",
-              reportNumber = 123L,
-              reportByUserId = "A_SMITH",
-              agencyId = "MDI",
-              incidentDetails = incidentDetails(1L, clock),
-              incidentRole = incidentRoleWithAllValuesSet(),
-              offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
-              incidentStatement = IncidentStatement(statement = "test"),
-              isYouthOffender = false,
-              damages = mutableListOf(
-                Damage(code = DamageCode.REDECORATION, details = "details", reporter = "Fred")
-              ),
-              evidence = mutableListOf(
-                Evidence(code = EvidenceCode.BAGGED_AND_TAGGED, details = "details", reporter = "Fred")
-              ),
-              witnesses = mutableListOf(
-                Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
-              )
-            )
-          )
-        )
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-          reportedAdjudication.also {
-            it.damages = mutableListOf(
-              ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod")
-            )
-            it.evidence = mutableListOf(
-              ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Rod")
-            )
-            it.witnesses = mutableListOf(
-              ReportedWitness(code = WitnessCode.STAFF, firstName = "staff", lastName = "member", reporter = "Rod")
-            )
-          }
-        )
-        whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
-          NomisAdjudicationCreationRequest(
-            adjudicationNumber = 123,
-            bookingId = 33,
-          )
-        )
-        whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
-          val passedInAdjudication = it.arguments[0] as ReportedAdjudication
-          passedInAdjudication.createdByUserId = "A_SMITH"
-          passedInAdjudication.createDateTime = REPORTED_DATE_TIME
-          passedInAdjudication
-        }
-
-        whenever(authenticationFacade.currentUsername).thenReturn("Fred")
-      }
-
-      @Test
-      fun `throws an entity not found exception if the reported adjudication for the supplied id does not exists`() {
-        whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
-
-        assertThatThrownBy {
-          draftAdjudicationService.completeDraftAdjudication(1)
-        }.isInstanceOf(EntityNotFoundException::class.java)
-          .hasMessageContaining("ReportedAdjudication not found for 1")
-      }
-
-      @Test
-      fun `updates the completed adjudication record`() {
-        draftAdjudicationService.completeDraftAdjudication(1)
-
-        verify(reportedAdjudicationRepository, times(2)).findByReportNumber(123L)
-
-        val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-        verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
-
-        assertThat(reportedAdjudicationArgumentCaptor.value)
-          .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId")
-          .contains("A12345", 1235L, 234L, "MDI")
-
-        assertThat(reportedAdjudicationArgumentCaptor.value)
-          .extracting(
-            "locationId",
-            "dateTimeOfIncident",
-            "handoverDeadline",
-            "incidentRoleCode",
-            "incidentRoleAssociatedPrisonersNumber",
-            "incidentRoleAssociatedPrisonersName",
-            "statement"
-          )
-          .contains(
-            1L,
-            LocalDateTime.now(clock),
-            DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
-            INCIDENT_ROLE_CODE,
-            INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
-            INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
-            "test"
-          )
-
-        assertThat(reportedAdjudicationArgumentCaptor.value.offenceDetails)
-          .extracting(
-            "offenceCode",
-            "victimPrisonersNumber",
-            "victimStaffUsername",
-            "victimOtherPersonsName"
-          )
-          .contains(
-            Tuple(
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
-              BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
-            ),
-            Tuple(
-              FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
-              FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-              FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
-            ),
-          )
-        assertThat(reportedAdjudicationArgumentCaptor.value.damages.size).isEqualTo(2)
-        assertThat(reportedAdjudicationArgumentCaptor.value.damages)
-          .extracting(
-            "code",
-            "details",
-            "reporter",
-          )
-          .contains(
-            Tuple(
-              DamageCode.CLEANING,
-              "details",
-              "Rod"
-            ),
-            Tuple(
-              DamageCode.REDECORATION,
-              "details",
-              "Fred"
-            ),
-          )
-        assertThat(reportedAdjudicationArgumentCaptor.value.evidence)
-          .extracting(
-            "code",
-            "details",
-            "reporter",
-          )
-          .contains(
-            Tuple(
-              EvidenceCode.BAGGED_AND_TAGGED,
-              "details",
-              "Fred"
-            ),
-            Tuple(
-              EvidenceCode.PHOTO,
-              "details",
-              "Rod"
-            ),
-          )
-        assertThat(reportedAdjudicationArgumentCaptor.value.witnesses)
-          .extracting(
-            "code",
-            "firstName",
-            "lastName",
-            "reporter",
-          )
-          .contains(
-            Tuple(
-              WitnessCode.OFFICER,
-              "prison",
-              "officer",
-              "Fred"
-            ),
-            Tuple(
-              WitnessCode.STAFF,
-              "staff",
-              "member",
-              "Rod"
-            ),
-          )
-      }
-
-      @Test
-      fun `does not call prison api to get creation data`() {
-        draftAdjudicationService.completeDraftAdjudication(1)
-
-        verify(prisonApiGateway, never()).requestAdjudicationCreationData(any())
-      }
-
-      @Test
-      fun `deletes the draft adjudication once complete`() {
-        draftAdjudicationService.completeDraftAdjudication(1)
-
-        val argumentCaptor: ArgumentCaptor<DraftAdjudication> = ArgumentCaptor.forClass(DraftAdjudication::class.java)
-        verify(draftAdjudicationRepository).delete(argumentCaptor.capture())
-
-        assertThat(argumentCaptor.value)
-          .extracting("id", "prisonerNumber")
-          .contains(1L, "A12345")
-      }
-    }
-  }
-
-  @Nested
   inner class InProgressDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
@@ -1761,10 +1295,8 @@ class DraftAdjudicationServiceTest {
   companion object {
     val now = LocalDateTime.now()
 
-    private val entityBuilder: EntityBuilder = EntityBuilder()
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
-    private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
 
     private val INCIDENT_ROLE_CODE = "25a"
@@ -1777,7 +1309,6 @@ class DraftAdjudicationServiceTest {
     private const val OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "25z"
     private const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"
     private const val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
-    private const val OFFENCE_CODE_3_PARAGRAPH_CODE = "6a"
     private const val OFFENCE_CODE_3_NOMIS_CODE_ON_OWN = "5f"
     private const val OFFENCE_CODE_3_NOMIS_CODE_ASSISTED = "25f"
     private const val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6(a)"

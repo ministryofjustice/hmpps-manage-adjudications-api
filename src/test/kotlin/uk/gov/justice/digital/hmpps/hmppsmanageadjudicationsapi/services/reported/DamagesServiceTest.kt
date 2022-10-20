@@ -67,7 +67,7 @@ class DamagesServiceTest : ReportedAdjudicationTestBase() {
   }
 
   @Test
-  fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
+  override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
 
     Assertions.assertThatThrownBy {

@@ -17,28 +17,13 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -46,94 +31,22 @@ import java.time.LocalTime
 import java.util.Optional
 import javax.persistence.EntityNotFoundException
 
-class ReportedAdjudicationServiceTest {
-  private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
-  private val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
+class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   private val prisonApiGateway: PrisonApiGateway = mock()
-  private val offenceCodeLookupService: OffenceCodeLookupService = mock()
-  private val authenticationFacade: AuthenticationFacade = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val hearingRepository: HearingRepository = mock()
-  private lateinit var reportedAdjudicationService: ReportedAdjudicationService
-
-  @BeforeEach
-  fun beforeEach() {
-    whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
-
-    reportedAdjudicationService =
-      ReportedAdjudicationService(
-        draftAdjudicationRepository,
-        reportedAdjudicationRepository,
-        prisonApiGateway,
-        offenceCodeLookupService,
-        authenticationFacade,
-        telemetryClient,
-        hearingRepository,
-      )
-
-    whenever(offenceCodeLookupService.getParagraphNumber(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
-    whenever(
-      offenceCodeLookupService.getParagraphDescription(
-        2,
-        false
-      )
-    ).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
-    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2, false)).thenReturn(
-      OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
+  private var reportedAdjudicationService =
+    ReportedAdjudicationService(
+      reportedAdjudicationRepository,
+      prisonApiGateway,
+      offenceCodeLookupService,
+      authenticationFacade,
+      telemetryClient,
+      hearingRepository,
     )
-    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(2, false)).thenReturn(
-      OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
-    )
-
-    whenever(offenceCodeLookupService.getParagraphNumber(3, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
-    whenever(
-      offenceCodeLookupService.getParagraphDescription(
-        3,
-        false
-      )
-    ).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
-    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3, false)).thenReturn(
-      OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
-    )
-    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3, false)).thenReturn(
-      OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
-    )
-
-    whenever(offenceCodeLookupService.getParagraphNumber(2, true)).thenReturn(YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER)
-    whenever(offenceCodeLookupService.getParagraphDescription(2, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION
-    )
-    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
-    )
-    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(2, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
-    )
-
-    // TODO - Review whether this is required
-    whenever(offenceCodeLookupService.getParagraphNumber(3, true)).thenReturn(YOUTH_OFFENCE_CODE_3_PARAGRAPH_NUMBER)
-    whenever(offenceCodeLookupService.getParagraphDescription(3, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION
-    )
-    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
-    )
-    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
-    )
-  }
 
   @Nested
   inner class ReportedAdjudicationDetails {
-    @Test
-    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
-
-      assertThatThrownBy {
-        reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
-    }
 
     @ParameterizedTest
     @CsvSource(
@@ -639,151 +552,6 @@ class ReportedAdjudicationServiceTest {
   }
 
   @Nested
-  inner class CreateDraftFromReported {
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
-
-    private val expectedSavedDraftAdjudication = DraftAdjudication(
-      prisonerNumber = "A12345",
-      reportNumber = 1235L,
-      reportByUserId = "A_SMITH",
-      agencyId = "MDI",
-      incidentDetails = IncidentDetails(
-        locationId = 2L,
-        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-        dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
-        handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
-      ),
-      incidentRole = IncidentRole(
-        roleCode = "25a",
-        associatedPrisonersNumber = "B23456",
-        associatedPrisonersName = "Associated Prisoner",
-      ),
-      offenceDetails = mutableListOf(
-        Offence(
-          // offence with minimal data set
-          offenceCode = 2,
-        ),
-        Offence(
-          // offence with all data set
-          offenceCode = 3,
-          victimPrisonersNumber = "A1234AA",
-          victimStaffUsername = "ABC12D",
-          victimOtherPersonsName = "A Person",
-        ),
-      ),
-      incidentStatement = IncidentStatement(
-        completed = true,
-        statement = INCIDENT_STATEMENT
-      ),
-      isYouthOffender = false,
-      damages = mutableListOf(
-        Damage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
-      ),
-      evidence = mutableListOf(
-        Evidence(code = EvidenceCode.PHOTO, identifier = "identifier", details = "details", reporter = "Fred")
-      ),
-      witnesses = mutableListOf(
-        Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
-      ),
-      damagesSaved = true,
-      evidenceSaved = true,
-      witnessesSaved = true,
-    )
-
-    private val savedDraftAdjudication = expectedSavedDraftAdjudication.copy(
-      id = 1,
-    )
-
-    @BeforeEach
-    fun beforeEach() {
-      reportedAdjudication.createdByUserId = "A_SMITH"
-      reportedAdjudication.createDateTime = REPORTED_DATE_TIME
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(savedDraftAdjudication)
-    }
-
-    @Test
-    fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
-
-      assertThatThrownBy {
-        reportedAdjudicationService.createDraftFromReportedAdjudication(1)
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
-    }
-
-    @Test
-    fun `adds the relevant draft data to the repository`() {
-      reportedAdjudicationService.createDraftFromReportedAdjudication(123)
-
-      verify(draftAdjudicationRepository).save(expectedSavedDraftAdjudication)
-    }
-
-    @Test
-    fun `returns the correct data`() {
-      val createdDraft = reportedAdjudicationService.createDraftFromReportedAdjudication(123)
-
-      assertThat(createdDraft)
-        .extracting("prisonerNumber", "id", "adjudicationNumber", "startedByUserId")
-        .contains("A12345", 1L, 1235L, "A_SMITH")
-      assertThat(createdDraft.incidentDetails)
-        .extracting("dateTimeOfIncident", "handoverDeadline", "locationId")
-        .contains(DATE_TIME_OF_INCIDENT, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, 2L)
-      assertThat(createdDraft.incidentRole)
-        .extracting(
-          "roleCode",
-          "offenceRule.paragraphNumber",
-          "offenceRule.paragraphDescription",
-          "associatedPrisonersNumber"
-        )
-        .contains("25a", "25(a)", "Attempts to commit any of the foregoing offences:", "B23456")
-      assertThat(createdDraft.offenceDetails)
-        .extracting(
-          "offenceCode",
-          "offenceRule.paragraphNumber",
-          "offenceRule.paragraphDescription",
-          "victimPrisonersNumber",
-          "victimStaffUsername",
-          "victimOtherPersonsName"
-        )
-        .contains(
-          Tuple(
-            3,
-            OFFENCE_CODE_3_PARAGRAPH_NUMBER,
-            OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
-            "A1234AA",
-            "ABC12D",
-            "A Person"
-          )
-        )
-      assertThat(createdDraft.incidentStatement)
-        .extracting("completed", "statement")
-        .contains(true, INCIDENT_STATEMENT)
-      assertThat(createdDraft.damages)
-        .extracting("code", "details", "reporter")
-        .contains(
-          Tuple(
-            DamageCode.CLEANING, "details", "Fred"
-          )
-        )
-      assertThat(createdDraft.evidence)
-        .extracting("code", "details", "reporter", "identifier")
-        .contains(
-          Tuple(
-            EvidenceCode.PHOTO, "details", "Fred", "identifier"
-          )
-        )
-      assertThat(createdDraft.witnesses)
-        .extracting("code", "firstName", "lastName", "reporter")
-        .contains(
-          Tuple(
-            WitnessCode.OFFICER, "prison", "officer", "Fred"
-          )
-        )
-    }
-  }
-
-  @Nested
   inner class AllHearings {
     val now = LocalDate.now()
 
@@ -859,16 +627,19 @@ class ReportedAdjudicationServiceTest {
 
     private const val YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER = "7(b)"
     private const val YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A youth paragraph description"
-    private const val YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN = "7b"
     private const val YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "29z"
-
-    private const val YOUTH_OFFENCE_CODE_3_PARAGRAPH_NUMBER = "17(b)"
-    private const val YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another youth paragraph description"
-    private const val YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN = "17b"
-    private const val YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ASSISTED = "29f"
 
     private val INCIDENT_ROLE_CODE = "25a"
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
+  }
+
+  override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
+    whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
+
+    assertThatThrownBy {
+      reportedAdjudicationService.getReportedAdjudicationDetails(1)
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
   }
 }

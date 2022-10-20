@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
-import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.EvidenceRequestItem
@@ -16,7 +15,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRol
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.WitnessDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
@@ -25,20 +23,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup.Companion.associatedPrisonerInformationRequired
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.toDto
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
@@ -84,12 +72,11 @@ enum class ValidationChecks(val errorMessage: String) {
 @Transactional
 @Service
 class DraftAdjudicationService(
-  val draftAdjudicationRepository: DraftAdjudicationRepository,
-  val reportedAdjudicationRepository: ReportedAdjudicationRepository,
-  val prisonApiGateway: PrisonApiGateway,
-  val offenceCodeLookupService: OffenceCodeLookupService,
+  draftAdjudicationRepository: DraftAdjudicationRepository,
+  offenceCodeLookupService: OffenceCodeLookupService,
   val authenticationFacade: AuthenticationFacade,
-  val telemetryClient: TelemetryClient
+) : DraftAdjudicationBaseService(
+  draftAdjudicationRepository, offenceCodeLookupService
 ) {
 
   companion object {
@@ -135,17 +122,10 @@ class DraftAdjudicationService(
       reportByUserId = null,
     )
 
-    val saved = draftAdjudicationRepository.save(draftAdjudication)
-    telemetryCapture(draftAdjudication = saved, reportNumber = null)
-
-    return saved.toDto(offenceCodeLookupService)
+    return saveToDto(draftAdjudication)
   }
 
-  fun getDraftAdjudicationDetails(id: Long): DraftAdjudicationDto {
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
-
-    return draftAdjudication.toDto(offenceCodeLookupService)
-  }
+  fun getDraftAdjudicationDetails(id: Long): DraftAdjudicationDto = findToDto(id)
 
   fun setOffenceDetails(id: Long, offenceDetails: List<OffenceDetailsRequestItem>): DraftAdjudicationDto {
     throwIfEmpty(offenceDetails)
@@ -166,7 +146,7 @@ class DraftAdjudicationService(
     draftAdjudication.offenceDetails.clear()
     draftAdjudication.offenceDetails.addAll(newValuesToStore)
 
-    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
+    return saveToDto(draftAdjudication)
   }
 
   fun addIncidentStatement(id: Long, statement: String?, completed: Boolean?): DraftAdjudicationDto {
@@ -179,7 +159,7 @@ class DraftAdjudicationService(
 
     draftAdjudication.incidentStatement = IncidentStatement(statement = statement, completed = completed)
 
-    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
+    return saveToDto(draftAdjudication)
   }
 
   fun editIncidentDetails(
@@ -204,9 +184,7 @@ class DraftAdjudicationService(
       draftAdjudication.incidentDetails.handoverDeadline = daysToActionFromIncident(dateTimeOfDiscovery)
     }
 
-    return draftAdjudicationRepository
-      .save(draftAdjudication)
-      .toDto(offenceCodeLookupService)
+    return saveToDto(draftAdjudication)
   }
 
   fun editIncidentRole(
@@ -237,9 +215,7 @@ class DraftAdjudicationService(
       }
     }
 
-    return draftAdjudicationRepository
-      .save(draftAdjudication)
-      .toDto(offenceCodeLookupService)
+    return saveToDto(draftAdjudication)
   }
 
   fun setIncidentRoleAssociatedPrisoner(
@@ -255,9 +231,7 @@ class DraftAdjudicationService(
       draftAdjudication.incidentRole!!.associatedPrisonersName = it.associatedPrisonersName
     }
 
-    return draftAdjudicationRepository
-      .save(draftAdjudication)
-      .toDto(offenceCodeLookupService)
+    return saveToDto(draftAdjudication)
   }
 
   fun editIncidentStatement(id: Long, statement: String?, completed: Boolean?): DraftAdjudicationDto {
@@ -271,7 +245,7 @@ class DraftAdjudicationService(
     statement?.let { draftAdjudication.incidentStatement?.statement = statement }
     completed?.let { draftAdjudication.incidentStatement?.completed = completed }
 
-    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
+    return saveToDto(draftAdjudication)
   }
 
   fun setIncidentApplicableRule(
@@ -287,9 +261,7 @@ class DraftAdjudicationService(
 
     draftAdjudication.isYouthOffender = isYouthOffender
 
-    return draftAdjudicationRepository
-      .save(draftAdjudication)
-      .toDto(offenceCodeLookupService)
+    return saveToDto(draftAdjudication)
   }
 
   fun setDamages(id: Long, damages: List<DamageRequestItem>): DraftAdjudicationDto {
@@ -308,7 +280,7 @@ class DraftAdjudicationService(
     )
     draftAdjudication.damagesSaved = true
 
-    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
+    return saveToDto(draftAdjudication)
   }
 
   fun setEvidence(id: Long, evidence: List<EvidenceRequestItem>): DraftAdjudicationDto {
@@ -328,7 +300,7 @@ class DraftAdjudicationService(
     )
     draftAdjudication.evidenceSaved = true
 
-    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
+    return saveToDto(draftAdjudication)
   }
 
   fun setWitnesses(id: Long, witnesses: List<WitnessRequestItem>): DraftAdjudicationDto {
@@ -348,23 +320,7 @@ class DraftAdjudicationService(
     )
     draftAdjudication.witnessesSaved = true
 
-    return draftAdjudicationRepository.save(draftAdjudication).toDto(offenceCodeLookupService)
-  }
-
-  fun completeDraftAdjudication(id: Long): ReportedAdjudicationDto {
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
-
-    ValidationChecks.values().toList().stream()
-      .forEach { it.validate(draftAdjudication) }
-
-    val isNew = draftAdjudication.reportNumber == null
-    val generatedReportedAdjudication = saveAdjudication(draftAdjudication, isNew)
-    telemetryCapture(draftAdjudication, generatedReportedAdjudication.reportNumber)
-
-    draftAdjudicationRepository.delete(draftAdjudication)
-
-    return generatedReportedAdjudication
-      .toDto(offenceCodeLookupService)
+    return saveToDto(draftAdjudication)
   }
 
   fun getCurrentUsersInProgressDraftAdjudications(agencyId: String): List<DraftAdjudicationDto> {
@@ -375,7 +331,7 @@ class DraftAdjudicationService(
       username
     )
       .sortedBy { it.incidentDetails.dateTimeOfIncident }
-      .map { it.toDto(offenceCodeLookupService) }
+      .map { it.toDto() }
   }
 
   fun lookupRuleDetails(offenceCode: Int, isYouthOffender: Boolean): OffenceRuleDetailsDto {
@@ -385,154 +341,6 @@ class DraftAdjudicationService(
     )
   }
 
-  private fun telemetryCapture(draftAdjudication: DraftAdjudication, reportNumber: Long?) {
-    telemetryClient.trackEvent(
-      TELEMETRY_EVENT,
-      mapOf(
-        "adjudicationNumber" to draftAdjudication.id.toString(),
-        "agencyId" to draftAdjudication.agencyId,
-        "reportNumber" to reportNumber.toString()
-      ),
-      null
-    )
-  }
-
-  private fun saveAdjudication(draftAdjudication: DraftAdjudication, isNew: Boolean): ReportedAdjudication {
-    if (isNew) {
-      return createReportedAdjudication(draftAdjudication)
-    }
-    // We need to check that the already reported adjudication is in the correct status here even though it happens
-    // later when we save from the draft. This is because we do not want to call nomis only later to fail validation.
-    checkStateTransition(draftAdjudication)
-    return updateReportedAdjudication(draftAdjudication)
-  }
-
-  private fun checkStateTransition(draftAdjudication: DraftAdjudication) {
-    val reportNumber = draftAdjudication.reportNumber!!
-    val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(reportNumber)
-      ?: ReportedAdjudicationService.throwEntityNotFoundException(reportNumber)
-    val fromStatus = reportedAdjudication.status
-    if (!ReportedAdjudicationStatus.AWAITING_REVIEW.canTransitionFrom(fromStatus)) {
-      throw IllegalStateException("Unable to complete draft adjudication ${draftAdjudication.reportNumber} as it is in the state $fromStatus")
-    }
-  }
-
-  private fun createReportedAdjudication(draftAdjudication: DraftAdjudication): ReportedAdjudication {
-    val nomisAdjudicationCreationRequestData = prisonApiGateway.requestAdjudicationCreationData(draftAdjudication.prisonerNumber)
-    return reportedAdjudicationRepository.save(
-      ReportedAdjudication(
-        bookingId = nomisAdjudicationCreationRequestData.bookingId,
-        reportNumber = nomisAdjudicationCreationRequestData.adjudicationNumber,
-        prisonerNumber = draftAdjudication.prisonerNumber,
-        agencyId = draftAdjudication.agencyId,
-        locationId = draftAdjudication.incidentDetails.locationId,
-        dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
-        dateTimeOfDiscovery = draftAdjudication.incidentDetails.dateTimeOfDiscovery,
-        handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
-        isYouthOffender = draftAdjudication.isYouthOffender!!,
-        incidentRoleCode = draftAdjudication.incidentRole!!.roleCode,
-        incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber,
-        incidentRoleAssociatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName,
-        offenceDetails = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication),
-        statement = draftAdjudication.incidentStatement!!.statement!!,
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        damages = toReportedDamages(draftAdjudication.damages),
-        evidence = toReportedEvidence(draftAdjudication.evidence),
-        witnesses = toReportedWitnesses(draftAdjudication.witnesses),
-        draftCreatedOn = draftAdjudication.createDateTime!!,
-        hearings = mutableListOf()
-      )
-    )
-  }
-
-  private fun updateReportedAdjudication(
-    draftAdjudication: DraftAdjudication,
-  ): ReportedAdjudication {
-    val reportedAdjudicationNumber = draftAdjudication.reportNumber
-      ?: throw EntityNotFoundException("No reported adjudication number set on the draft adjudication")
-    val previousReportedAdjudication =
-      reportedAdjudicationRepository.findByReportNumber(reportedAdjudicationNumber)
-    val reporter = authenticationFacade.currentUsername!!
-    previousReportedAdjudication?.let {
-      it.bookingId = previousReportedAdjudication.bookingId
-      it.reportNumber = previousReportedAdjudication.reportNumber
-      it.prisonerNumber = draftAdjudication.prisonerNumber
-      it.agencyId = draftAdjudication.agencyId
-      it.locationId = draftAdjudication.incidentDetails.locationId
-      it.dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident
-      it.dateTimeOfDiscovery = draftAdjudication.incidentDetails.dateTimeOfDiscovery
-      it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline
-      it.isYouthOffender = draftAdjudication.isYouthOffender!!
-      it.incidentRoleCode = draftAdjudication.incidentRole!!.roleCode
-      it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber
-      it.incidentRoleAssociatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName
-      it.offenceDetails.clear()
-      it.offenceDetails.addAll(toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication))
-      it.statement = draftAdjudication.incidentStatement!!.statement!!
-      it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
-
-      val damagesPreserve = it.damages.filter { damage -> damage.reporter != reporter }
-      val evidencePreserve = it.evidence.filter { evidence -> evidence.reporter != reporter }
-      val witnessesPreserve = it.witnesses.filter { witness -> witness.reporter != reporter }
-
-      it.damages.clear()
-      it.evidence.clear()
-      it.witnesses.clear()
-
-      it.damages.addAll(damagesPreserve)
-      it.evidence.addAll(evidencePreserve)
-      it.witnesses.addAll(witnessesPreserve)
-
-      it.damages.addAll(toReportedDamages(draftAdjudication.damages.filter { d -> d.reporter == reporter }.toMutableList()))
-      it.evidence.addAll(toReportedEvidence(draftAdjudication.evidence.filter { e -> e.reporter == reporter }.toMutableList()))
-      it.witnesses.addAll(toReportedWitnesses(draftAdjudication.witnesses.filter { w -> w.reporter == reporter }.toMutableList()))
-
-      return reportedAdjudicationRepository.save(it)
-    } ?: ReportedAdjudicationService.throwEntityNotFoundException(reportedAdjudicationNumber)
-  }
-
-  private fun toReportedOffence(draftOffences: MutableList<Offence>?, draftAdjudication: DraftAdjudication): MutableList<ReportedOffence> {
-    return (draftOffences ?: listOf()).map {
-      ReportedOffence(
-        offenceCode = it.offenceCode,
-        victimPrisonersNumber = it.victimPrisonersNumber,
-        victimStaffUsername = it.victimStaffUsername,
-        victimOtherPersonsName = it.victimOtherPersonsName,
-      )
-    }.toMutableList()
-  }
-
-  private fun toReportedDamages(damages: MutableList<Damage>): MutableList<ReportedDamage> {
-    return damages.map {
-      ReportedDamage(
-        code = it.code,
-        details = it.details,
-        reporter = it.reporter
-      )
-    }.toMutableList()
-  }
-
-  private fun toReportedEvidence(evidence: MutableList<Evidence>): MutableList<ReportedEvidence> {
-    return evidence.map {
-      ReportedEvidence(
-        code = it.code,
-        identifier = it.identifier,
-        details = it.details,
-        reporter = it.reporter
-      )
-    }.toMutableList()
-  }
-
-  private fun toReportedWitnesses(witnesses: MutableList<Witness>): MutableList<ReportedWitness> {
-    return witnesses.map {
-      ReportedWitness(
-        code = it.code,
-        firstName = it.firstName,
-        lastName = it.lastName,
-        reporter = it.reporter
-      )
-    }.toMutableList()
-  }
   private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {
     if (statement == null && completed == null)
       throw IllegalArgumentException("Please supply either a statement or the completed value")
@@ -542,29 +350,7 @@ class DraftAdjudicationService(
     if (toTest.isEmpty())
       throw IllegalArgumentException("Please supply at least one set of items")
   }
-
-  fun throwEntityNotFoundException(id: Long): Nothing =
-    throw EntityNotFoundException("DraftAdjudication not found for $id")
 }
-
-fun DraftAdjudication.toDto(offenceCodeLookupService: OffenceCodeLookupService): DraftAdjudicationDto =
-  DraftAdjudicationDto(
-    id = this.id!!,
-    prisonerNumber = this.prisonerNumber,
-    incidentStatement = this.incidentStatement?.toDto(),
-    incidentDetails = this.incidentDetails.toDto(),
-    incidentRole = this.incidentRole?.toDto(this.isYouthOffender!!),
-    offenceDetails = this.offenceDetails?.map { it.toDto(offenceCodeLookupService, this.isYouthOffender!!) },
-    adjudicationNumber = this.reportNumber,
-    startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
-    isYouthOffender = this.isYouthOffender,
-    damages = this.damages.map { it.toDto() },
-    evidence = this.evidence.map { it.toDto() },
-    witnesses = this.witnesses.map { it.toDto() },
-    damagesSaved = this.damagesSaved,
-    evidenceSaved = this.evidenceSaved,
-    witnessesSaved = this.witnessesSaved
-  )
 
 fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
   locationId = this.locationId,

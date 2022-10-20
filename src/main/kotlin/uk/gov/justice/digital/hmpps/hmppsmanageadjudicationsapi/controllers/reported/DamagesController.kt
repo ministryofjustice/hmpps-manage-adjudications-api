@@ -15,10 +15,9 @@ import javax.validation.Valid
 
 @PreAuthorize("hasAuthority('SCOPE_write')")
 @RestController
-class DamagesController : ReportedAdjudicationBaseController() {
-
-  @Autowired
-  lateinit var damagesService: DamagesService
+class DamagesController(
+  val damagesService: DamagesService
+) : ReportedAdjudicationBaseController() {
 
   @PutMapping(value = ["/{adjudicationNumber}/damages/edit"])
   @Operation(summary = "Updates the damages for the reported adjudication.", description = "0 or more damages to be supplied, only updates records owned by current user")

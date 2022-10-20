@@ -39,10 +39,9 @@ data class HearingRequest(
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
-class HearingController : ReportedAdjudicationBaseController() {
-
-  @Autowired
-  lateinit var hearingService: HearingService
+class HearingController(
+  val hearingService: HearingService
+) : ReportedAdjudicationBaseController() {
 
   @PostMapping(value = ["/{adjudicationNumber}/hearing"])
   @Operation(summary = "Create a new hearing")

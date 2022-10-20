@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -9,7 +10,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.LocalDateTime
 
-open class ReportedAdjudicationTestBase() {
+interface TestsToImplement {
+  @Test
+  fun `throws an entity not found if the reported adjudication for the supplied id does not exists`()
+}
+abstract class ReportedAdjudicationTestBase : TestsToImplement {
   internal val offenceCodeLookupService: OffenceCodeLookupService = mock()
   internal val authenticationFacade: AuthenticationFacade = mock()
   internal val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
@@ -73,9 +78,6 @@ open class ReportedAdjudicationTestBase() {
   companion object {
     val entityBuilder: EntityBuilder = EntityBuilder()
     val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
-    val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
-    val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
-    const val INCIDENT_STATEMENT = "Example statement"
 
     const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"
     const val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
@@ -96,9 +98,5 @@ open class ReportedAdjudicationTestBase() {
     const val YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another youth paragraph description"
     const val YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN = "17b"
     const val YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ASSISTED = "29f"
-
-    val INCIDENT_ROLE_CODE = "25a"
-    val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
-    val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
   }
 }
