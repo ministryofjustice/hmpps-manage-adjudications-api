@@ -22,6 +22,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonA
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationBaseService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.ValidationChecks
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationBaseService
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
@@ -37,8 +40,8 @@ class AdjudicationWorkflowService(
   val telemetryClient: TelemetryClient,
 ) {
 
-  val draftAdjudicationService = DraftAdjudicationBaseService(draftAdjudicationRepository, offenceCodeLookupService)
-  val reportedAdjudicationService = ReportedAdjudicationBaseService(reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
+  private val draftAdjudicationService = DraftAdjudicationBaseService(draftAdjudicationRepository, offenceCodeLookupService)
+  private val reportedAdjudicationService = ReportedAdjudicationBaseService(reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
 
   fun completeDraftAdjudication(id: Long): ReportedAdjudicationDto {
     val draftAdjudication = draftAdjudicationService.find(id)

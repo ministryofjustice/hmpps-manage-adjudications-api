@@ -8,14 +8,14 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.WitnessRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
-class WitnessesServiceTest : ReportedAdjudicationTestBase() {
+class DraftWitnessesServiceTest : ReportedAdjudicationTestBase() {
   private var witnessesService = WitnessesService(
     reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
   )

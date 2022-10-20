@@ -8,14 +8,14 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.DamageRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
-class DamagesServiceTest : ReportedAdjudicationTestBase() {
+class DraftDamagesServiceTest : ReportedAdjudicationTestBase() {
 
   private val damagesService = DamagesService(
     reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade

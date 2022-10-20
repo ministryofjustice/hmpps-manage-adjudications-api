@@ -18,6 +18,21 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamageRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamagesRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationWorkflowController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftDamagesController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftEvidenceController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftOffenceController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftWitnessesController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleAssociatedPrisonerRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessesRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
@@ -27,15 +42,36 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftDamagesService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftEvidenceService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftOffenceService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftWitnessesService
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
-@WebMvcTest(value = [DraftAdjudicationController::class])
+@WebMvcTest(
+  value = [
+    DraftAdjudicationController::class, DraftDamagesController::class, DraftEvidenceController::class,
+    DraftWitnessesController::class, DraftOffenceController::class, DraftAdjudicationWorkflowController::class
+  ]
+)
 class DraftAdjudicationControllerTest : TestControllerBase() {
 
   @MockBean
   lateinit var draftAdjudicationService: DraftAdjudicationService
+
+  @MockBean
+  lateinit var incidentOffenceService: DraftOffenceService
+
+  @MockBean
+  lateinit var evidenceService: DraftEvidenceService
+
+  @MockBean
+  lateinit var damagesService: DraftDamagesService
+
+  @MockBean
+  lateinit var witnessesService: DraftWitnessesService
 
   @Nested
   inner class StartDraftAdjudications {
@@ -219,7 +255,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class SetOffenceDetails {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.setOffenceDetails(anyLong(), any())).thenReturn(
+      whenever(incidentOffenceService.setOffenceDetails(anyLong(), any())).thenReturn(
         draftAdjudicationDto()
       )
     }
@@ -236,7 +272,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
         .andExpect(status().isCreated)
 
-      verify(draftAdjudicationService).setOffenceDetails(
+      verify(incidentOffenceService).setOffenceDetails(
         1,
         listOf(
           OffenceDetailsRequestItem(
@@ -709,7 +745,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        draftAdjudicationService.setDamages(
+        damagesService.setDamages(
           anyLong(),
           any(),
         )
@@ -727,7 +763,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       setDamagesRequest(1, DAMAGES_REQUEST)
         .andExpect(status().isCreated)
 
-      verify(draftAdjudicationService).setDamages(1, DAMAGES_REQUEST.damages)
+      verify(damagesService).setDamages(1, DAMAGES_REQUEST.damages)
     }
 
     private fun setDamagesRequest(
@@ -749,7 +785,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        draftAdjudicationService.setEvidence(
+        evidenceService.setEvidence(
           anyLong(),
           any(),
         )
@@ -767,7 +803,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       setEvidenceRequest(1, EVIDENCE_REQUEST)
         .andExpect(status().isCreated)
 
-      verify(draftAdjudicationService).setEvidence(1, EVIDENCE_REQUEST.evidence)
+      verify(evidenceService).setEvidence(1, EVIDENCE_REQUEST.evidence)
     }
 
     private fun setEvidenceRequest(
@@ -789,7 +825,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        draftAdjudicationService.setWitnesses(
+        witnessesService.setWitnesses(
           anyLong(),
           any(),
         )
@@ -807,7 +843,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       setWitnessesRequest(1, WITNESSES_REQUEST)
         .andExpect(status().isCreated)
 
-      verify(draftAdjudicationService).setWitnesses(1, WITNESSES_REQUEST.witnesses)
+      verify(witnessesService).setWitnesses(1, WITNESSES_REQUEST.witnesses)
     }
 
     private fun setWitnessesRequest(

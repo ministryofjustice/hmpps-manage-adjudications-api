@@ -1,8 +1,7 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -13,15 +12,10 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.DraftAdjudicationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import java.time.LocalDateTime
 import javax.validation.Valid
 import javax.validation.constraints.Size
@@ -113,68 +107,10 @@ data class ApplicableRulesRequest(
   val removeExistingOffences: Boolean = false,
 )
 
-@Schema(description = "Draft adjudication response")
-data class DraftAdjudicationResponse(
-  @Schema(description = "The draft adjudication")
-  val draftAdjudication: DraftAdjudicationDto
-)
-
 @Schema(description = "In progress draft adjudication response")
 data class InProgressAdjudicationResponse(
   @Schema(description = "All in progress adjudications")
   val draftAdjudications: List<DraftAdjudicationDto>
-)
-
-@Schema(description = "Request to update the list of damages for a draft adjudication")
-data class DamagesRequest(
-  @Schema(description = "The details of all damages the prisoner is accused of")
-  val damages: List<DamageRequestItem>,
-)
-
-@Schema(description = "Details of Damage")
-data class DamageRequestItem(
-  @Schema(description = "The damage code", example = "CLEANING")
-  val code: DamageCode,
-  @Schema(description = "details of the damage", example = "the kettle was broken")
-  val details: String,
-  @Schema(description = "optional reporter as per token, used when editing", example = "A_USER")
-  val reporter: String? = null,
-)
-
-@Schema(description = "Request to update the list of evidence for a draft adjudication")
-data class EvidenceRequest(
-  @Schema(description = "The details of all evidence")
-  val evidence: List<EvidenceRequestItem>,
-)
-
-@Schema(description = "Details of Evidence")
-data class EvidenceRequestItem(
-  @Schema(description = "The evidence code", example = "PHOTO")
-  val code: EvidenceCode,
-  @Schema(description = "Evidence identifier", example = "Tag number or Camera number")
-  val identifier: String? = null,
-  @Schema(description = "details of the evidence", example = "ie description of photo")
-  val details: String,
-  @Schema(description = "optional reporter as per token, used when editing", example = "A_USER")
-  val reporter: String? = null,
-)
-
-@Schema(description = "Request to update the list of witnesses for a draft adjudication")
-data class WitnessesRequest(
-  @Schema(description = "The details of all evidence")
-  val witnesses: List<WitnessRequestItem>,
-)
-
-@Schema(description = "Details of Witness")
-data class WitnessRequestItem(
-  @Schema(description = "The witness code", example = "PRISON_OFFICER")
-  val code: WitnessCode,
-  @Schema(description = "Witness first name", example = "Fred")
-  val firstName: String,
-  @Schema(description = "Witness last name", example = "Kruger")
-  val lastName: String,
-  @Schema(description = "optional reporter as per token, used when editing", example = "A_USER")
-  val reporter: String? = null,
 )
 
 @RestController
@@ -189,13 +125,6 @@ class DraftAdjudicationController(
   ): InProgressAdjudicationResponse = InProgressAdjudicationResponse(
     draftAdjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(agencyId)
   )
-
-  @GetMapping("/offence-rule/{offenceCode}")
-  @Operation(summary = "Returns details of the offence rule relating to this offence code.")
-  fun getOffenceRule(
-    @PathVariable(name = "offenceCode") offenceCode: Int,
-    @RequestParam(value = "youthOffender") isYouthOffender: Boolean,
-  ): OffenceRuleDetailsDto = draftAdjudicationService.lookupRuleDetails(offenceCode, isYouthOffender)
 
   @PostMapping
   @PreAuthorize("hasAuthority('SCOPE_write')")
@@ -220,24 +149,6 @@ class DraftAdjudicationController(
   @Operation(summary = "Returns the draft adjudication details.")
   fun getDraftAdjudicationDetails(@PathVariable(name = "id") id: Long): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.getDraftAdjudicationDetails(id)
-
-    return DraftAdjudicationResponse(
-      draftAdjudication
-    )
-  }
-
-  @PutMapping(value = ["/{id}/offence-details"])
-  @Operation(summary = "Set the offence details for the draft adjudication.", description = "At least one set of offence details must be supplied")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
-  @ResponseStatus(HttpStatus.CREATED)
-  fun setOffenceDetails(
-    @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid offenceDetailsRequest: OffenceDetailsRequest
-  ): DraftAdjudicationResponse {
-    val draftAdjudication = draftAdjudicationService.setOffenceDetails(
-      id,
-      offenceDetailsRequest.offenceDetails
-    )
 
     return DraftAdjudicationResponse(
       draftAdjudication
@@ -350,54 +261,6 @@ class DraftAdjudicationController(
     return DraftAdjudicationResponse(
       draftAdjudication
     )
-  }
-
-  @PutMapping(value = ["/{id}/damages"])
-  @Operation(summary = "Set the damages for the draft adjudication.", description = "0 or more damages to be supplied")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
-  @ResponseStatus(HttpStatus.CREATED)
-  fun setDamages(
-    @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid damagesRequest: DamagesRequest
-  ): DraftAdjudicationResponse {
-    val draftAdjudication = draftAdjudicationService.setDamages(
-      id,
-      damagesRequest.damages
-    )
-
-    return DraftAdjudicationResponse(draftAdjudication)
-  }
-
-  @PutMapping(value = ["/{id}/evidence"])
-  @Operation(summary = "Set the evidence for the draft adjudication.", description = "0 or more evidence to be supplied")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
-  @ResponseStatus(HttpStatus.CREATED)
-  fun setEvidence(
-    @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid evidenceRequest: EvidenceRequest
-  ): DraftAdjudicationResponse {
-    val draftAdjudication = draftAdjudicationService.setEvidence(
-      id,
-      evidenceRequest.evidence
-    )
-
-    return DraftAdjudicationResponse(draftAdjudication)
-  }
-
-  @PutMapping(value = ["/{id}/witnesses"])
-  @Operation(summary = "Set the witnesses for the draft adjudication.", description = "0 or more witnesses to be supplied")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
-  @ResponseStatus(HttpStatus.CREATED)
-  fun setWitnesses(
-    @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid witnessesRequest: WitnessesRequest
-  ): DraftAdjudicationResponse {
-    val draftAdjudication = draftAdjudicationService.setWitnesses(
-      id,
-      witnessesRequest.witnesses
-    )
-
-    return DraftAdjudicationResponse(draftAdjudication)
   }
 
   @DeleteMapping(value = ["/orphaned"])

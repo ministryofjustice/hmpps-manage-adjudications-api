@@ -4,7 +4,6 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Java6Assertions.assertThat
 import org.assertj.core.api.Java6Assertions.assertThatThrownBy
 import org.assertj.core.groups.Tuple
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -19,7 +18,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.OffenceDetailsRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
@@ -42,10 +41,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudicationCreationRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationServiceTest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.ValidationChecks
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.TestsToImplement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.Clock
 import java.time.Instant
@@ -63,7 +62,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
   private val adjudicationWorkflowService = AdjudicationWorkflowService(
     draftAdjudicationRepository, reportedAdjudicationRepository, offenceCodeLookupService, prisonApiGateway, authenticationFacade, telemetryClient
   )
-
 
   @Nested
   inner class CreateDraftFromReported {
@@ -307,6 +305,25 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         null
       )
     }
+
+    @Test
+    fun `makes a call to prison api to get creation data`() {
+      adjudicationWorkflowService.completeDraftAdjudication(1)
+
+      verify(prisonApiGateway).requestAdjudicationCreationData("A12345")
+    }
+
+    @Test
+    fun `deletes the draft adjudication once complete`() {
+      adjudicationWorkflowService.completeDraftAdjudication(1)
+
+      val argumentCaptor: ArgumentCaptor<DraftAdjudication> = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).delete(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value)
+        .extracting("id", "prisonerNumber")
+        .contains(1L, "A12345")
+    }
   }
 
   @Nested
@@ -407,8 +424,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         passedInAdjudication
       }
 
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication
-        .also { it.prisonerNumber = "A12345" })
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
     }
 
     @ParameterizedTest
@@ -441,25 +457,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
       assertThat(reportedAdjudicationArgumentCaptor.value).extracting("status")
         .isEqualTo(ReportedAdjudicationStatus.AWAITING_REVIEW)
-    }
-
-    @Test
-    fun `makes a call to prison api to get creation data`() {
-      adjudicationWorkflowService.completeDraftAdjudication(1)
-
-      verify(prisonApiGateway).requestAdjudicationCreationData("A12345")
-    }
-
-    @Test
-    fun `deletes the draft adjudication once complete`() {
-      adjudicationWorkflowService.completeDraftAdjudication(1)
-
-      val argumentCaptor: ArgumentCaptor<DraftAdjudication> = ArgumentCaptor.forClass(DraftAdjudication::class.java)
-      verify(draftAdjudicationRepository).delete(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value)
-        .extracting("id", "prisonerNumber")
-        .contains(1L, "A12345")
     }
   }
 
