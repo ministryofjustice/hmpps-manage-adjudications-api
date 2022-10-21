@@ -35,7 +35,7 @@ data class ReportedAdjudicationStatusRequest(
 
 @RestController
 class ReportedAdjudicationController(
-  val reportedAdjudicationService: ReportedAdjudicationService
+  private val reportedAdjudicationService: ReportedAdjudicationService
 ) : ReportedAdjudicationBaseController() {
 
   @GetMapping(value = ["/{adjudicationNumber}"])

@@ -39,7 +39,7 @@ data class HearingRequest(
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
 class HearingController(
-  val hearingService: HearingService,
+  private val hearingService: HearingService,
 ) : ReportedAdjudicationBaseController() {
 
   @PostMapping(value = ["/{adjudicationNumber}/hearing"])

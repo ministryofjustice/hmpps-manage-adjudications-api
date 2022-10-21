@@ -35,9 +35,9 @@ class AdjudicationWorkflowService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
-  val prisonApiGateway: PrisonApiGateway,
-  val authenticationFacade: AuthenticationFacade,
-  val telemetryClient: TelemetryClient,
+  private val prisonApiGateway: PrisonApiGateway,
+  private val authenticationFacade: AuthenticationFacade,
+  private val telemetryClient: TelemetryClient,
 ) {
 
   private val draftAdjudicationService = DraftAdjudicationBaseService(draftAdjudicationRepository, offenceCodeLookupService)

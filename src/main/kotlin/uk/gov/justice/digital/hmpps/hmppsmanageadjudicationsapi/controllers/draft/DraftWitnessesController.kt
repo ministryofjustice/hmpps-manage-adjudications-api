@@ -33,7 +33,7 @@ data class WitnessRequestItem(
 
 @RestController
 class DraftWitnessesController(
-  val witnessesService: DraftWitnessesService
+  private val witnessesService: DraftWitnessesService
 ) : DraftAdjudicationBaseController() {
 
   @PutMapping(value = ["/{id}/witnesses"])

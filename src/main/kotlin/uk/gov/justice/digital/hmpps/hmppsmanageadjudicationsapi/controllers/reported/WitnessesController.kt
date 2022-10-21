@@ -15,7 +15,7 @@ import javax.validation.Valid
 @PreAuthorize("hasAuthority('SCOPE_write')")
 @RestController
 class WitnessesController(
-  val witnessesService: WitnessesService
+  private val witnessesService: WitnessesService
 ) : ReportedAdjudicationBaseController() {
 
   @PutMapping(value = ["/{adjudicationNumber}/witnesses/edit"])

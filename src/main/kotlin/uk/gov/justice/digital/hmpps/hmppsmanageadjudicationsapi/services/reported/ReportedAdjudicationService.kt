@@ -22,10 +22,10 @@ import javax.transaction.Transactional
 @Service
 class ReportedAdjudicationService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
-  val prisonApiGateway: PrisonApiGateway,
+  private val prisonApiGateway: PrisonApiGateway,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
-  val telemetryClient: TelemetryClient,
+  private val telemetryClient: TelemetryClient,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
 ) {

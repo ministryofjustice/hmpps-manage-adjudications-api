@@ -35,7 +35,7 @@ data class OffenceDetailsRequestItem(
 
 @RestController
 class DraftOffenceController(
-  val incidentOffenceService: DraftOffenceService
+  private val incidentOffenceService: DraftOffenceService
 ) : DraftAdjudicationBaseController() {
 
   @PutMapping(value = ["/{id}/offence-details"])

@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudi
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import javax.transaction.Transactional
 
@@ -15,7 +14,6 @@ import javax.transaction.Transactional
 class DraftOffenceService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
-  val authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
   draftAdjudicationRepository, offenceCodeLookupService
 ) {

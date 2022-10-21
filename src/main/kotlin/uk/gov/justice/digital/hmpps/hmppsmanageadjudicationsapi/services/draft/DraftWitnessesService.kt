@@ -14,7 +14,7 @@ import javax.transaction.Transactional
 class DraftWitnessesService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
-  val authenticationFacade: AuthenticationFacade,
+  private val authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
   draftAdjudicationRepository, offenceCodeLookupService
 ) {

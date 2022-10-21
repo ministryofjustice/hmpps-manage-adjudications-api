@@ -15,8 +15,8 @@ import java.util.Optional
 @Transactional(readOnly = true)
 @Service
 class ReportsService(
-  val reportedAdjudicationRepository: ReportedAdjudicationRepository,
-  val authenticationFacade: AuthenticationFacade,
+  private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  private val authenticationFacade: AuthenticationFacade,
   offenceCodeLookupService: OffenceCodeLookupService
 ) : ReportedDtoService(offenceCodeLookupService) {
   fun getAllReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {

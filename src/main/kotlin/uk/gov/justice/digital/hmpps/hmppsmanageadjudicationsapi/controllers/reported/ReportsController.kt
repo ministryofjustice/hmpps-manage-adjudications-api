@@ -21,7 +21,7 @@ import java.util.Optional
 
 @RestController
 class ReportsController(
-  val reportsService: ReportsService
+  private val reportsService: ReportsService
 ) : ReportedAdjudicationBaseController() {
 
   @Operation(summary = "Get all reported adjudications for caseload")

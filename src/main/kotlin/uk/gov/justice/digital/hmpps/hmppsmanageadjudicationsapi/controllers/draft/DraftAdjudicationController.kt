@@ -98,7 +98,7 @@ data class InProgressAdjudicationResponse(
 @RestController
 @Validated
 class DraftAdjudicationController(
-  val draftAdjudicationService: DraftAdjudicationService
+  private val draftAdjudicationService: DraftAdjudicationService
 ) : DraftAdjudicationBaseController() {
   @GetMapping("/my/agency/{agencyId}")
   @Operation(summary = "Returns all the in progress draft adjudications created by the current user. Default sort is by earliest incident date and time.")
