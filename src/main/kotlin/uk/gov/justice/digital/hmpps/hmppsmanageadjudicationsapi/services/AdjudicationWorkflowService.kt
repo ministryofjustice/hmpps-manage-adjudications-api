@@ -29,6 +29,32 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 
+private class DraftAdjudicationServiceWrapper(
+  draftAdjudicationRepository: DraftAdjudicationRepository,
+  offenceCodeLookupService: OffenceCodeLookupService,
+) : DraftAdjudicationBaseService(
+  draftAdjudicationRepository, offenceCodeLookupService
+) {
+  fun get(id: Long) =
+    find(id)
+  fun remove(draftAdjudication: DraftAdjudication) = delete(draftAdjudication)
+
+  fun save(draftAdjudication: DraftAdjudication) = saveToDto(draftAdjudication)
+}
+
+private class ReportedAdjudicationServiceWrapper(
+  reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  offenceCodeLookupService: OffenceCodeLookupService,
+  authenticationFacade: AuthenticationFacade,
+) : ReportedAdjudicationBaseService(
+  reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
+) {
+  fun get(adjudicationNumber: Long) =
+    findByAdjudicationNumber(adjudicationNumber)
+
+  fun save(reportedAdjudication: ReportedAdjudication) = saveToDto(reportedAdjudication)
+}
+
 @Transactional
 @Service
 class AdjudicationWorkflowService(
@@ -40,11 +66,11 @@ class AdjudicationWorkflowService(
   private val telemetryClient: TelemetryClient,
 ) {
 
-  private val draftAdjudicationService = DraftAdjudicationBaseService(draftAdjudicationRepository, offenceCodeLookupService)
-  private val reportedAdjudicationService = ReportedAdjudicationBaseService(reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
+  private val draftAdjudicationService = DraftAdjudicationServiceWrapper(draftAdjudicationRepository, offenceCodeLookupService)
+  private val reportedAdjudicationService = ReportedAdjudicationServiceWrapper(reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
 
   fun completeDraftAdjudication(id: Long): ReportedAdjudicationDto {
-    val draftAdjudication = draftAdjudicationService.find(id)
+    val draftAdjudication = draftAdjudicationService.get(id)
 
     ValidationChecks.values().toList().stream()
       .forEach { it.validate(draftAdjudication) }
@@ -53,14 +79,14 @@ class AdjudicationWorkflowService(
     val generatedReportedAdjudication = saveAdjudication(draftAdjudication, isNew)
     telemetryCapture(draftAdjudication, generatedReportedAdjudication.adjudicationNumber)
 
-    draftAdjudicationService.delete(draftAdjudication)
+    draftAdjudicationService.remove(draftAdjudication)
 
     return generatedReportedAdjudication
   }
 
   fun createDraftFromReportedAdjudication(adjudicationNumber: Long): DraftAdjudicationDto {
     val reportedAdjudication =
-      reportedAdjudicationService.findByAdjudicationNumber(adjudicationNumber)
+      reportedAdjudicationService.get(adjudicationNumber)
 
     val draftAdjudication = DraftAdjudication(
       reportNumber = reportedAdjudication.reportNumber,
@@ -93,7 +119,7 @@ class AdjudicationWorkflowService(
     )
 
     return draftAdjudicationService
-      .saveToDto(draftAdjudication)
+      .save(draftAdjudication)
   }
 
   private fun saveAdjudication(draftAdjudication: DraftAdjudication, isNew: Boolean): ReportedAdjudicationDto {
@@ -108,7 +134,7 @@ class AdjudicationWorkflowService(
 
   private fun checkStateTransition(draftAdjudication: DraftAdjudication) {
     val reportNumber = draftAdjudication.reportNumber!!
-    val reportedAdjudication = reportedAdjudicationService.findByAdjudicationNumber(reportNumber)
+    val reportedAdjudication = reportedAdjudicationService.get(reportNumber)
     val fromStatus = reportedAdjudication.status
     if (!ReportedAdjudicationStatus.AWAITING_REVIEW.canTransitionFrom(fromStatus)) {
       throw IllegalStateException("Unable to complete draft adjudication ${draftAdjudication.reportNumber} as it is in the state $fromStatus")
@@ -117,7 +143,7 @@ class AdjudicationWorkflowService(
 
   private fun createReportedAdjudication(draftAdjudication: DraftAdjudication): ReportedAdjudicationDto {
     val nomisAdjudicationCreationRequestData = prisonApiGateway.requestAdjudicationCreationData(draftAdjudication.prisonerNumber)
-    return reportedAdjudicationService.saveToDto(
+    return reportedAdjudicationService.save(
       ReportedAdjudication(
         bookingId = nomisAdjudicationCreationRequestData.bookingId,
         reportNumber = nomisAdjudicationCreationRequestData.adjudicationNumber,
@@ -131,7 +157,7 @@ class AdjudicationWorkflowService(
         incidentRoleCode = draftAdjudication.incidentRole!!.roleCode,
         incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber,
         incidentRoleAssociatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName,
-        offenceDetails = toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication),
+        offenceDetails = toReportedOffence(draftAdjudication.offenceDetails),
         statement = draftAdjudication.incidentStatement!!.statement!!,
         status = ReportedAdjudicationStatus.AWAITING_REVIEW,
         damages = toReportedDamages(draftAdjudication.damages),
@@ -149,7 +175,7 @@ class AdjudicationWorkflowService(
     val reportedAdjudicationNumber = draftAdjudication.reportNumber
       ?: throw EntityNotFoundException("No reported adjudication number set on the draft adjudication")
     val previousReportedAdjudication =
-      reportedAdjudicationService.findByAdjudicationNumber(reportedAdjudicationNumber)
+      reportedAdjudicationService.get(reportedAdjudicationNumber)
     val reporter = authenticationFacade.currentUsername!!
     previousReportedAdjudication.let {
       it.bookingId = previousReportedAdjudication.bookingId
@@ -165,7 +191,7 @@ class AdjudicationWorkflowService(
       it.incidentRoleAssociatedPrisonersNumber = draftAdjudication.incidentRole!!.associatedPrisonersNumber
       it.incidentRoleAssociatedPrisonersName = draftAdjudication.incidentRole!!.associatedPrisonersName
       it.offenceDetails.clear()
-      it.offenceDetails.addAll(toReportedOffence(draftAdjudication.offenceDetails, draftAdjudication))
+      it.offenceDetails.addAll(toReportedOffence(draftAdjudication.offenceDetails))
       it.statement = draftAdjudication.incidentStatement!!.statement!!
       it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
 
@@ -185,7 +211,7 @@ class AdjudicationWorkflowService(
       it.evidence.addAll(toReportedEvidence(draftAdjudication.evidence.filter { e -> e.reporter == reporter }.toMutableList()))
       it.witnesses.addAll(toReportedWitnesses(draftAdjudication.witnesses.filter { w -> w.reporter == reporter }.toMutableList()))
 
-      return reportedAdjudicationService.saveToDto(it)
+      return reportedAdjudicationService.save(it)
     }
   }
 
@@ -228,7 +254,7 @@ class AdjudicationWorkflowService(
       )
     }.toMutableList()
 
-  private fun toReportedOffence(draftOffences: MutableList<Offence>?, draftAdjudication: DraftAdjudication): MutableList<ReportedOffence> {
+  private fun toReportedOffence(draftOffences: MutableList<Offence>?): MutableList<ReportedOffence> {
     return (draftOffences ?: listOf()).map {
       ReportedOffence(
         offenceCode = it.offenceCode,

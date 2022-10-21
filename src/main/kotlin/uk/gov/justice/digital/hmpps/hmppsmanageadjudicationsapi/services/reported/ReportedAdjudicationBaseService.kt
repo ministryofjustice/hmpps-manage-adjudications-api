@@ -23,9 +23,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Offence
 import javax.persistence.EntityNotFoundException
 
 open class ReportedDtoService(
-  internal val offenceCodeLookupService: OffenceCodeLookupService,
+  protected val offenceCodeLookupService: OffenceCodeLookupService,
 ) {
-  fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudicationDto(
+  protected fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudicationDto(
     adjudicationNumber = reportNumber,
     prisonerNumber = prisonerNumber,
     bookingId = bookingId,
@@ -115,19 +115,17 @@ open class ReportedDtoService(
 open class ReportedAdjudicationBaseService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
-  internal val authenticationFacade: AuthenticationFacade,
+  protected val authenticationFacade: AuthenticationFacade,
 ) : ReportedDtoService(offenceCodeLookupService) {
 
-  fun findByAdjudicationNumber(adjudicationNumber: Long) =
+  protected fun findByAdjudicationNumber(adjudicationNumber: Long) =
     reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(
       adjudicationNumber
     )
-  fun save(reportedAdjudication: ReportedAdjudication): ReportedAdjudication =
-    reportedAdjudicationRepository.save(reportedAdjudication)
-  fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
+  protected fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
     reportedAdjudicationRepository.save(reportedAdjudication).toDto()
 
-  fun findByReportNumberIn(adjudicationNumbers: List<Long>) = reportedAdjudicationRepository.findByReportNumberIn(adjudicationNumbers)
+  protected fun findByReportNumberIn(adjudicationNumbers: List<Long>) = reportedAdjudicationRepository.findByReportNumberIn(adjudicationNumbers)
 
   companion object {
     fun throwEntityNotFoundException(id: Long): Nothing =

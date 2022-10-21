@@ -25,27 +25,27 @@ import javax.persistence.EntityNotFoundException
 
 open class DraftAdjudicationBaseService(
   private val draftAdjudicationRepository: DraftAdjudicationRepository,
-  internal val offenceCodeLookupService: OffenceCodeLookupService,
+  protected val offenceCodeLookupService: OffenceCodeLookupService,
 ) {
 
-  fun find(id: Long): DraftAdjudication =
+  protected fun find(id: Long): DraftAdjudication =
     draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
 
-  fun findToDto(id: Long): DraftAdjudicationDto =
+  protected fun findToDto(id: Long): DraftAdjudicationDto =
     draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
       .toDto()
 
-  fun saveToDto(draftAdjudication: DraftAdjudication): DraftAdjudicationDto =
+  protected fun saveToDto(draftAdjudication: DraftAdjudication): DraftAdjudicationDto =
     draftAdjudicationRepository.save(draftAdjudication).toDto()
 
-  fun delete(draftAdjudication: DraftAdjudication) = draftAdjudicationRepository.delete(draftAdjudication)
+  protected fun delete(draftAdjudication: DraftAdjudication) = draftAdjudicationRepository.delete(draftAdjudication)
 
-  internal fun delete() {
+  protected fun delete() {
     draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(
       LocalDateTime.now().minusDays(DraftAdjudicationService.DAYS_TO_DELETE)
     )
   }
-  internal fun getInProgress(agencyId: String, username: String): List<DraftAdjudicationDto> =
+  protected fun getInProgress(agencyId: String, username: String): List<DraftAdjudicationDto> =
     draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(
       agencyId,
       username
@@ -53,7 +53,7 @@ open class DraftAdjudicationBaseService(
       .sortedBy { it.incidentDetails.dateTimeOfIncident }
       .map { it.toDto() }
 
-  fun DraftAdjudication.toDto(): DraftAdjudicationDto =
+  private fun DraftAdjudication.toDto(): DraftAdjudicationDto =
     DraftAdjudicationDto(
       id = this.id!!,
       prisonerNumber = this.prisonerNumber,
