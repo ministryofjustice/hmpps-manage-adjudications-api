@@ -31,7 +31,7 @@ data class DamageRequestItem(
 
 @RestController
 class DraftDamagesController(
-  val damagesService: DraftDamagesService
+  private val damagesService: DraftDamagesService
 ) : DraftAdjudicationBaseController() {
 
   @PutMapping(value = ["/{id}/damages"])

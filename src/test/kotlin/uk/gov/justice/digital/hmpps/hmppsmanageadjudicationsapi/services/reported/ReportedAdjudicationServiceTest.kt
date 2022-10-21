@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -15,8 +14,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -24,11 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Adjudic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.util.Optional
 import javax.persistence.EntityNotFoundException
 
 class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
@@ -42,7 +35,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       offenceCodeLookupService,
       authenticationFacade,
       telemetryClient,
-      hearingRepository,
     )
 
   @Nested
@@ -160,118 +152,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(reportedAdjudicationDto.incidentStatement)
         .extracting("statement", "completed")
         .contains(INCIDENT_STATEMENT, true)
-    }
-  }
-
-  @Nested
-  inner class AllReportedAdjudications {
-    @BeforeEach
-    fun beforeEach() {
-      val reportedAdjudication1 =
-        entityBuilder.reportedAdjudication(reportNumber = 1L, dateTime = DATE_TIME_OF_INCIDENT)
-      reportedAdjudication1.createdByUserId = "A_SMITH"
-      reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
-      val reportedAdjudication2 =
-        entityBuilder.reportedAdjudication(reportNumber = 2L, dateTime = DATE_TIME_OF_INCIDENT)
-      reportedAdjudication2.createdByUserId = "P_SMITH"
-      reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
-      whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
-          any(),
-          any(),
-          any(),
-          any(),
-          any()
-        )
-      ).thenReturn(
-        PageImpl(
-          listOf(reportedAdjudication1, reportedAdjudication2)
-        )
-      )
-    }
-
-    @Test
-    fun `makes a call to the reported adjudication repository to get the page of adjudications`() {
-      reportedAdjudicationService.getAllReportedAdjudications(
-        "MDI",
-        LocalDate.now(),
-        LocalDate.now(),
-        Optional.empty(),
-        Pageable.ofSize(20).withPage(0)
-      )
-
-      verify(reportedAdjudicationRepository).findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
-        "MDI",
-        LocalDate.now().atStartOfDay(),
-        LocalDate.now().atTime(LocalTime.MAX),
-        ReportedAdjudicationStatus.values().toList(),
-        Pageable.ofSize(20).withPage(0)
-      )
-    }
-
-    @Test
-    fun `returns all reported adjudications`() {
-      val myReportedAdjudications = reportedAdjudicationService.getAllReportedAdjudications(
-        "MDI",
-        LocalDate.now(),
-        LocalDate.now(),
-        Optional.empty(),
-        Pageable.ofSize(20).withPage(0)
-      )
-
-      assertThat(myReportedAdjudications.content)
-        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
-        .contains(
-          Tuple.tuple(1L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME),
-          Tuple.tuple(2L, "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2))
-        )
-    }
-  }
-
-  @Nested
-  inner class MyReportedAdjudications {
-    @BeforeEach
-    fun beforeEach() {
-      val reportedAdjudication1 =
-        entityBuilder.reportedAdjudication(reportNumber = 1L, dateTime = DATE_TIME_OF_INCIDENT)
-      reportedAdjudication1.createdByUserId = "A_SMITH"
-      reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
-      val reportedAdjudication2 =
-        entityBuilder.reportedAdjudication(reportNumber = 2L, dateTime = DATE_TIME_OF_INCIDENT)
-      reportedAdjudication2.createdByUserId = "P_SMITH"
-      reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
-      whenever(
-        reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
-          any(),
-          any(),
-          any(),
-          any(),
-          any(),
-          any()
-        )
-      ).thenReturn(
-        PageImpl(
-          listOf(reportedAdjudication1, reportedAdjudication2)
-        )
-      )
-    }
-
-    @Test
-    fun `returns my reported adjudications`() {
-      val myReportedAdjudications = reportedAdjudicationService.getMyReportedAdjudications(
-        "MDI",
-        LocalDate.now(),
-        LocalDate.now(),
-        Optional.empty(),
-        Pageable.ofSize(20).withPage(0)
-      )
-
-      assertThat(myReportedAdjudications.content)
-        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
-        .contains(
-          Tuple.tuple(1L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME),
-          Tuple.tuple(2L, "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2))
-        )
     }
   }
 
@@ -551,66 +431,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
-  @Nested
-  inner class AllHearings {
-    val now = LocalDate.now()
-
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
-      .also {
-        it.createdByUserId = ""
-        it.createDateTime = LocalDateTime.now()
-      }
-
-    @BeforeEach
-    fun init() {
-      whenever(
-        hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
-          "MDI", now.atStartOfDay(),
-          now.plusDays(1).atStartOfDay()
-        )
-      ).thenReturn(
-        reportedAdjudication.hearings
-      )
-      whenever(reportedAdjudicationRepository.findByReportNumberIn(listOf(reportedAdjudication.reportNumber))).thenReturn(
-        listOf(reportedAdjudication)
-      )
-    }
-
-    @Test
-    fun `get all hearings `() {
-
-      val response = reportedAdjudicationService.getAllHearingsByAgencyIdAndDate(
-        "MDI", LocalDate.now()
-      )
-
-      assertThat(response).isNotNull
-      assertThat(response.size).isEqualTo(1)
-      assertThat(response.first().adjudicationNumber).isEqualTo(reportedAdjudication.reportNumber)
-      assertThat(response.first().prisonerNumber).isEqualTo(reportedAdjudication.prisonerNumber)
-      assertThat(response.first().dateTimeOfHearing).isEqualTo(reportedAdjudication.hearings.first().dateTimeOfHearing)
-      assertThat(response.first().dateTimeOfDiscovery).isEqualTo(reportedAdjudication.dateTimeOfDiscovery)
-    }
-
-    @Test
-    fun `empty response test `() {
-      whenever(
-        hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
-          "LEI", now.atStartOfDay(), now.plusDays(1).atStartOfDay()
-        )
-      ).thenReturn(emptyList())
-
-      val response = reportedAdjudicationService.getAllHearingsByAgencyIdAndDate(
-        "LEI", now
-      )
-
-      assertThat(response).isNotNull
-      assertThat(response.isEmpty()).isTrue
-    }
-  }
-
   companion object {
-    private val entityBuilder: EntityBuilder = EntityBuilder()
-    private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private const val INCIDENT_STATEMENT = "Example statement"

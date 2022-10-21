@@ -23,7 +23,7 @@ import javax.persistence.EntityNotFoundException
 class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
 
   private val incidentOffenceService = DraftOffenceService(
-    draftAdjudicationRepository, offenceCodeLookupService, authenticationFacade
+    draftAdjudicationRepository, offenceCodeLookupService,
   )
 
   private val draftAdjudicationEntity = DraftAdjudication(

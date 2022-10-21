@@ -14,13 +14,13 @@ import javax.transaction.Transactional
 class DraftWitnessesService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
-  val authenticationFacade: AuthenticationFacade,
+  private val authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
   draftAdjudicationRepository, offenceCodeLookupService
 ) {
 
   fun setWitnesses(id: Long, witnesses: List<WitnessRequestItem>): DraftAdjudicationDto {
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val draftAdjudication = find(id)
     val reporter = authenticationFacade.currentUsername!!
 
     draftAdjudication.witnesses.clear()

@@ -50,24 +50,6 @@ data class IncidentRoleAssociatedPrisonerRequest(
   val associatedPrisonersName: String?,
 )
 
-@Schema(description = "Request to update the list of offence details for a draft adjudication")
-data class OffenceDetailsRequest(
-  @Schema(description = "The details of all offences the prisoner is accused of")
-  val offenceDetails: List<OffenceDetailsRequestItem>,
-)
-
-@Schema(description = "Details of an offence")
-data class OffenceDetailsRequestItem(
-  @Schema(description = "The offence code", title = "This is the unique number relating to the type of offence they have been alleged to have committed", example = "3")
-  val offenceCode: Int,
-  @Schema(description = "The prison number of the victim involved in the incident, if relevant", example = "G2996UX")
-  val victimPrisonersNumber: String? = null,
-  @Schema(description = "The username of the member of staff who is a victim of the incident, if relevant", example = "ABC12D")
-  val victimStaffUsername: String? = null,
-  @Schema(description = "The name of the victim (who is not a member of staff or a prisoner) involved in the incident, if relevant", example = "Bob Hope")
-  val victimOtherPersonsName: String? = null,
-)
-
 @Schema(description = "Request to add or edit the incident statement for a draft adjudication")
 data class IncidentStatementRequest(
   @Schema(description = "The statement regarding the incident")
@@ -116,7 +98,7 @@ data class InProgressAdjudicationResponse(
 @RestController
 @Validated
 class DraftAdjudicationController(
-  val draftAdjudicationService: DraftAdjudicationService
+  private val draftAdjudicationService: DraftAdjudicationService
 ) : DraftAdjudicationBaseController() {
   @GetMapping("/my/agency/{agencyId}")
   @Operation(summary = "Returns all the in progress draft adjudications created by the current user. Default sort is by earliest incident date and time.")

@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup.Companion.associatedPrisonerInformationRequired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDateTime
@@ -33,7 +32,7 @@ enum class ValidationChecks(val errorMessage: String) {
   INCIDENT_ROLE_ASSOCIATED_PRISONER("Please supply the prisoner associated with the incident") {
     override fun validate(draftAdjudication: DraftAdjudication) {
       if (
-        IncidentRoleRuleLookup.associatedPrisonerInformationRequired(draftAdjudication.incidentRole?.roleCode) &&
+        associatedPrisonerInformationRequired(draftAdjudication.incidentRole?.roleCode) &&
         draftAdjudication.incidentRole?.associatedPrisonersNumber == null
       )
         throw IllegalStateException(errorMessage)
@@ -60,7 +59,7 @@ enum class ValidationChecks(val errorMessage: String) {
 class DraftAdjudicationService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
-  val authenticationFacade: AuthenticationFacade,
+  private val authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
   draftAdjudicationRepository, offenceCodeLookupService
 ) {
@@ -79,9 +78,7 @@ class DraftAdjudicationService(
   }
 
   fun deleteOrphanedDraftAdjudications() {
-    draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(
-      LocalDateTime.now().minusDays(DAYS_TO_DELETE)
-    )
+    delete()
   }
 
   fun startNewAdjudication(
@@ -116,7 +113,7 @@ class DraftAdjudicationService(
   fun addIncidentStatement(id: Long, statement: String?, completed: Boolean?): DraftAdjudicationDto {
     throwIfStatementAndCompletedIsNull(statement, completed)
 
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val draftAdjudication = find(id)
 
     if (draftAdjudication.incidentStatement != null)
       throw IllegalStateException("DraftAdjudication already includes the incident statement")
@@ -136,7 +133,7 @@ class DraftAdjudicationService(
       dateOfDiscoveryValidation(dateTimeOfDiscovery, it)
     }
 
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val draftAdjudication = find(id)
 
     locationId?.let { draftAdjudication.incidentDetails.locationId = it }
     dateTimeOfIncident?.let {
@@ -156,7 +153,7 @@ class DraftAdjudicationService(
     incidentRole: IncidentRoleRequest,
     removeExistingOffences: Boolean,
   ): DraftAdjudicationDto {
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val draftAdjudication = find(id)
 
     // NOTE: new flow sets isYouthOffender first, therefore if we do not have this set we must throw as .Dto requires it
     ValidationChecks.APPLICABLE_RULES.validate(draftAdjudication)
@@ -186,7 +183,7 @@ class DraftAdjudicationService(
     id: Long,
     incidentRoleAssociatedPrisoner: IncidentRoleAssociatedPrisonerRequest,
   ): DraftAdjudicationDto {
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val draftAdjudication = find(id)
 
     ValidationChecks.INCIDENT_ROLE.validate(draftAdjudication)
 
@@ -201,7 +198,7 @@ class DraftAdjudicationService(
   fun editIncidentStatement(id: Long, statement: String?, completed: Boolean?): DraftAdjudicationDto {
     throwIfStatementAndCompletedIsNull(statement, completed)
 
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val draftAdjudication = find(id)
 
     if (draftAdjudication.incidentStatement == null)
       throw EntityNotFoundException("DraftAdjudication does not have any incident statement to update")
@@ -217,7 +214,7 @@ class DraftAdjudicationService(
     isYouthOffender: Boolean,
     removeExistingOffences: Boolean,
   ): DraftAdjudicationDto {
-    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    val draftAdjudication = find(id)
 
     if (removeExistingOffences) {
       draftAdjudication.offenceDetails?.clear()
@@ -230,13 +227,7 @@ class DraftAdjudicationService(
 
   fun getCurrentUsersInProgressDraftAdjudications(agencyId: String): List<DraftAdjudicationDto> {
     val username = authenticationFacade.currentUsername ?: return emptyList()
-
-    return draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(
-      agencyId,
-      username
-    )
-      .sortedBy { it.incidentDetails.dateTimeOfIncident }
-      .map { it.toDto() }
+    return getInProgress(agencyId, username)
   }
 
   private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {

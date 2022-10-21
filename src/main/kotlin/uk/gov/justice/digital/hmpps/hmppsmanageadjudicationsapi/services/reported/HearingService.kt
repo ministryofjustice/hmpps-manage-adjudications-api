@@ -1,11 +1,15 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
@@ -16,6 +20,7 @@ class HearingService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
+  private val hearingRepository: HearingRepository,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -62,6 +67,30 @@ class HearingService(
 
     return saveToDto(reportedAdjudication)
   }
+
+  fun getAllHearingsByAgencyIdAndDate(agencyId: String, dateOfHearing: LocalDate): List<HearingSummaryDto> {
+    val hearings = hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
+      agencyId, dateOfHearing.atStartOfDay(), dateOfHearing.plusDays(1).atStartOfDay()
+    )
+
+    val adjudicationsMap = findByReportNumberIn(
+      hearings.map { it.reportNumber }
+    ).associateBy { it.reportNumber }
+
+    return toHearingSummaries(hearings, adjudicationsMap)
+  }
+
+  private fun toHearingSummaries(hearings: List<Hearing>, adjudications: Map<Long, ReportedAdjudication>): List<HearingSummaryDto> =
+    hearings.map {
+      val adjudication = adjudications[it.reportNumber]!!
+      HearingSummaryDto(
+        id = it.id!!,
+        dateTimeOfHearing = it.dateTimeOfHearing,
+        dateTimeOfDiscovery = adjudication.dateTimeOfDiscovery,
+        prisonerNumber = adjudication.prisonerNumber,
+        adjudicationNumber = it.reportNumber
+      )
+    }
 
   companion object {
     fun throwHearingNotFoundException(id: Long): Nothing =

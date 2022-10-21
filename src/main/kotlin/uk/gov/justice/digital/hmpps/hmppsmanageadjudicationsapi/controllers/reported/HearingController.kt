@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -40,8 +39,7 @@ data class HearingRequest(
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
 class HearingController(
-  val hearingService: HearingService,
-  val reportedAdjudicationService: ReportedAdjudicationService,
+  private val hearingService: HearingService,
 ) : ReportedAdjudicationBaseController() {
 
   @PostMapping(value = ["/{adjudicationNumber}/hearing"])
@@ -98,7 +96,7 @@ class HearingController(
     @PathVariable(name = "agencyId") agencyId: String,
     @RequestParam(name = "hearingDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) hearingDate: LocalDate,
   ): HearingSummaryResponse {
-    val hearings = reportedAdjudicationService.getAllHearingsByAgencyIdAndDate(agencyId, hearingDate)
+    val hearings = hearingService.getAllHearingsByAgencyIdAndDate(agencyId, hearingDate)
 
     return HearingSummaryResponse(
       hearings
