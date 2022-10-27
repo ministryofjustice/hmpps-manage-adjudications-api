@@ -143,6 +143,7 @@ class ReportedAdjudicationRepositoryTest {
         "dateTimeOfHearing",
         "agencyId",
         "reportNumber",
+        "oicHearingId"
       )
       .contains(
         Tuple(
@@ -150,6 +151,7 @@ class ReportedAdjudicationRepositoryTest {
           adjudication.hearings[0].dateTimeOfHearing,
           adjudication.hearings[0].agencyId,
           adjudication.hearings[0].reportNumber,
+          adjudication.hearings[0].oicHearingId,
         ),
       )
   }

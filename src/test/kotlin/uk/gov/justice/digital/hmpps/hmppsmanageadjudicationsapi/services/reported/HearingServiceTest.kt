@@ -7,10 +7,14 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -18,8 +22,9 @@ import javax.persistence.EntityNotFoundException
 
 class HearingServiceTest : ReportedAdjudicationTestBase() {
   private val hearingRepository: HearingRepository = mock()
+  private val prisonApiGateway: PrisonApiGateway = mock()
   private var hearingService = HearingService(
-    reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade, hearingRepository
+    reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade, hearingRepository, prisonApiGateway
   )
 
   @Test
@@ -56,6 +61,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     fun init() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+      whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(5L)
     }
 
     @Test
@@ -69,12 +75,19 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(prisonApiGateway, atLeastOnce()).createHearing(
+        1235L,
+        OicHearingRequest(
+          dateTimeOfHearing = now, hearingLocationId = 1, oicHearingType = OicHearingType.GOV_ADULT
+        )
+      )
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now)
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
       assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
+      assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(5)
 
       assertThat(response).isNotNull
     }
@@ -93,6 +106,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     fun init() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+      whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(5L)
     }
 
     @Test
@@ -107,12 +121,19 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
+      verify(prisonApiGateway, atLeastOnce()).deleteHearing(1235L, 3)
+      verify(prisonApiGateway, atLeastOnce()).createHearing(
+        1235L,
+        OicHearingRequest(
+          dateTimeOfHearing = now.plusDays(1), hearingLocationId = 2, oicHearingType = OicHearingType.GOV_ADULT
+        )
+      )
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(2)
       assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now.plusDays(1))
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
       assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
+      assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(5)
 
       assertThat(response).isNotNull
     }
@@ -167,6 +188,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(prisonApiGateway, atLeastOnce()).deleteHearing(1235L, 3)
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(0)
 

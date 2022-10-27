@@ -79,6 +79,7 @@ class EntityBuilder {
           dateTimeOfHearing = dateTime.plusWeeks(1),
           agencyId = agencyId,
           reportNumber = reportNumber,
+          oicHearingId = 3L,
         )
       )
     )

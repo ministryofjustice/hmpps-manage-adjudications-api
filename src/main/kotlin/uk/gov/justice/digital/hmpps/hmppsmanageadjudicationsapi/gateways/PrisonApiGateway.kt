@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.bodyToMono
 
 @Service
 class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
@@ -23,6 +24,23 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
       .retrieve()
       .bodyToMono(object : ParameterizedTypeReference<NomisAdjudication>() {})
       .block()!!
+
+  fun createHearing(adjudicationNumber: Long, oicHearingRequest: OicHearingRequest): Long =
+    prisonApiClientCreds
+      .post()
+      .uri("/adjudications/adjudication/$adjudicationNumber/hearing")
+      .bodyValue(oicHearingRequest)
+      .retrieve()
+      .bodyToMono(object : ParameterizedTypeReference<OicHearingResponse>() {})
+      .block()!!.hearingId
+
+  fun deleteHearing(adjudicationNumber: Long, oicHearingId: Long): Void? =
+    prisonApiClientCreds
+      .delete()
+      .uri("/adjudications/adjudication/$adjudicationNumber/hearing/$oicHearingId")
+      .retrieve()
+      .bodyToMono<Void>()
+      .block()
 
   fun updateAdjudication(adjudicationNumber: Long, adjudicationDetailsToUpdate: AdjudicationDetailsToUpdate): NomisAdjudication =
     prisonApiClientCreds

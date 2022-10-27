@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wir
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.delete
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.matching
@@ -12,6 +13,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.http.Request
 import com.github.tomakehurst.wiremock.http.Response
+import org.json.JSONObject
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.AdjudicationIntTestDataSet
 
 class PrisonApiMockServer : WireMockServer {
@@ -135,6 +137,57 @@ class PrisonApiMockServer : WireMockServer {
     verify(
       postRequestedFor(urlEqualTo("/api/adjudications/adjudication"))
         .withRequestBody(equalTo(bodyAsJson))
+    )
+  }
+
+  fun stubCreateHearing(adjudicationNumber: Long) {
+    stubFor(
+      post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(201)
+            .withBody(
+              JSONObject()
+                .put("hearingId", "100")
+                .put("dateTimeOfHearing", "2022-10-24T10:10:10")
+                .put("hearingLocationId", "100")
+                .toString()
+            )
+        )
+    )
+  }
+
+  fun stubCreateHearingFailure(adjudicationNumber: Long) {
+    stubFor(
+      post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(500)
+        )
+    )
+  }
+
+  fun stubDeleteHearing(adjudicationNumber: Long, hearingId: Long) {
+    stubFor(
+      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/$hearingId"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+        )
+    )
+  }
+
+  fun stubDeleteHearingFailure(adjudicationNumber: Long, hearingId: Long) {
+    stubFor(
+      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/$hearingId"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(500)
+        )
     )
   }
 }
