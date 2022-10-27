@@ -16,13 +16,14 @@ generic-service:
     host: app-hostname.local    # override per environment
     tlsSecretName: hmpps-manage-adjudications-api-cert
     contextColour: green
-    # Secure the delete orphaned draft adjudications endpoint from outside the Kubernetes ingress
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      server_tokens off;
-      location /draft-adjudications/orphaned {
-        deny all;
-        return 401;
-      }
+    annotations:
+      # Secure the delete orphaned draft adjudications endpoint from outside the Kubernetes ingress
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        server_tokens off;
+        location /draft-adjudications/orphaned {
+          deny all;
+          return 401;
+        }
 
   # Environment variables to load into the deployment
   env:
