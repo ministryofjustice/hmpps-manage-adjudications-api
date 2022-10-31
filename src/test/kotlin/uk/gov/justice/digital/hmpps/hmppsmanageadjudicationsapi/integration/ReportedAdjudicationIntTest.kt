@@ -648,23 +648,10 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `create a hearing `() {
-    val intTestData = integrationTestData()
-
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
+    initDataForHearings()
 
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 12, 10, 0)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     webTestClient.post()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing")
@@ -686,22 +673,39 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `create hearing fails on prisonApi and does not create a hearing`() {
+    initDataForHearings()
+
+    val dateTimeOfHearing = LocalDateTime.of(2010, 10, 12, 10, 0)
+
+    prisonApiMockServer.stubCreateHearingFailure(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "locationId" to 1,
+          "dateTimeOfHearing" to dateTimeOfHearing
+        )
+      )
+      .exchange()
+      .expectStatus().is5xxServerError
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
+  }
+
+  @Test
   fun `amend a hearing `() {
-    val intTestData = integrationTestData()
+    val intTestData = initDataForHearings()
 
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     val reportedAdjudication = intTestData.createHearing(
       IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
@@ -709,6 +713,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"))
     )
 
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
 
     webTestClient.put()
@@ -716,43 +721,73 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
-          "locationId" to 2,
-          "dateTimeOfHearing" to dateTimeOfHearing
+          "locationId" to 3,
+          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1)
         )
       )
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.hearings[0].locationId")
-      .isEqualTo(2)
+      .isEqualTo(3)
       .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing")
-      .isEqualTo("2010-10-25T10:00:00")
+      .isEqualTo("2010-10-26T10:00:00")
       .jsonPath("$.reportedAdjudication.hearings[0].id").isNotEmpty
   }
 
   @Test
-  fun `delete a hearing `() {
-    val intTestData = integrationTestData()
+  fun `amend a hearing fails on prison api and does not update the hearing `() {
+    val intTestData = initDataForHearings()
 
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     val reportedAdjudication = intTestData.createHearing(
       IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
       IntegrationTestData.DEFAULT_ADJUDICATION,
       setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"))
     )
+
+    prisonApiMockServer.stubAmendHearingFailure(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
+    val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/${reportedAdjudication.reportedAdjudication.hearings.first().id}")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "locationId" to 3,
+          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1)
+        )
+      )
+      .exchange()
+      .expectStatus().is5xxServerError
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.hearings[0].locationId")
+      .isEqualTo(IntegrationTestData.UPDATED_LOCATION_ID)
+      .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing")
+      .isEqualTo("2010-11-19T10:00:00")
+      .jsonPath("$.reportedAdjudication.hearings[0].id").isNotEmpty
+  }
+
+  @Test
+  fun `delete a hearing `() {
+    val intTestData = initDataForHearings()
+
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    val reportedAdjudication = intTestData.createHearing(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      IntegrationTestData.DEFAULT_ADJUDICATION,
+      setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"))
+    )
+
+    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
 
     assert(reportedAdjudication.reportedAdjudication.hearings.size == 1)
 
@@ -766,22 +801,41 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `delete a hearing fails on prison api and does not delete record`() {
+    val intTestData = initDataForHearings()
+
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    val reportedAdjudication = intTestData.createHearing(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      IntegrationTestData.DEFAULT_ADJUDICATION,
+      setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"))
+    )
+
+    prisonApiMockServer.stubDeleteHearingFailure(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
+
+    assert(reportedAdjudication.reportedAdjudication.hearings.size == 1)
+
+    webTestClient.delete()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/${reportedAdjudication.reportedAdjudication.hearings.first().id!!}")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().is5xxServerError
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(1)
+  }
+
+  @Test
   fun `get all hearings`() {
-    val intTestData = integrationTestData()
+    val intTestData = initDataForHearings()
 
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     val reportedAdjudication = intTestData.createHearing(
       IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
@@ -854,5 +908,24 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
+  }
+
+  private fun initDataForHearings(): IntegrationTestData {
+    val intTestData = integrationTestData()
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addIncidentStatement()
+      .addDamages()
+      .addEvidence()
+      .addWitnesses()
+      .completeDraft()
+
+    return intTestData
   }
 }

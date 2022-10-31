@@ -5,6 +5,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSumm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -21,6 +24,7 @@ class HearingService(
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   private val hearingRepository: HearingRepository,
+  private val prisonApiGateway: PrisonApiGateway,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -29,13 +33,22 @@ class HearingService(
 
   fun createHearing(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val oicHearingId = prisonApiGateway.createHearing(
+      adjudicationNumber = adjudicationNumber,
+      oicHearingRequest = OicHearingRequest(
+        dateTimeOfHearing = dateTimeOfHearing,
+        hearingLocationId = locationId,
+        oicHearingType = OicHearingType.getOicHearingType(reportedAdjudication),
+      )
+    )
 
     reportedAdjudication.hearings.add(
       Hearing(
         agencyId = reportedAdjudication.agencyId,
         reportNumber = reportedAdjudication.reportNumber,
         locationId = locationId,
-        dateTimeOfHearing = dateTimeOfHearing
+        dateTimeOfHearing = dateTimeOfHearing,
+        oicHearingId = oicHearingId,
       )
     )
 
@@ -49,6 +62,16 @@ class HearingService(
       hearingId
     )
 
+    prisonApiGateway.amendHearing(
+      adjudicationNumber = adjudicationNumber,
+      oicHearingId = hearingToEdit.oicHearingId,
+      oicHearingRequest = OicHearingRequest(
+        dateTimeOfHearing = dateTimeOfHearing,
+        hearingLocationId = locationId,
+        oicHearingType = OicHearingType.getOicHearingType(reportedAdjudication)
+      )
+    )
+
     hearingToEdit.let {
       it.dateTimeOfHearing = dateTimeOfHearing
       it.locationId = locationId
@@ -59,10 +82,15 @@ class HearingService(
 
   fun deleteHearing(adjudicationNumber: Long, hearingId: Long): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-
     val hearingToRemove = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException(
       hearingId
     )
+
+    prisonApiGateway.deleteHearing(
+      adjudicationNumber = adjudicationNumber,
+      oicHearingId = hearingToRemove.oicHearingId
+    )
+
     reportedAdjudication.hearings.remove(hearingToRemove)
 
     return saveToDto(reportedAdjudication)
@@ -88,7 +116,7 @@ class HearingService(
         dateTimeOfHearing = it.dateTimeOfHearing,
         dateTimeOfDiscovery = adjudication.dateTimeOfDiscovery,
         prisonerNumber = adjudication.prisonerNumber,
-        adjudicationNumber = it.reportNumber
+        adjudicationNumber = it.reportNumber,
       )
     }
 
