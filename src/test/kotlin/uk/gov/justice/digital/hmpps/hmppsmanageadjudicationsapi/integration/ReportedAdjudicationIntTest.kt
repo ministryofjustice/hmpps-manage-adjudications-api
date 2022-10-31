@@ -693,7 +693,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().is5xxServerError
 
     webTestClient.get()
-      .uri("/reported-adjudications/1524242")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -706,7 +706,6 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = initDataForHearings()
 
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
 
     val reportedAdjudication = intTestData.createHearing(
       IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
@@ -714,6 +713,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"))
     )
 
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
 
     webTestClient.put()
@@ -721,17 +721,57 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
-          "locationId" to 2,
-          "dateTimeOfHearing" to dateTimeOfHearing
+          "locationId" to 3,
+          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1)
         )
       )
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.hearings[0].locationId")
-      .isEqualTo(2)
+      .isEqualTo(3)
       .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing")
-      .isEqualTo("2010-10-25T10:00:00")
+      .isEqualTo("2010-10-26T10:00:00")
+      .jsonPath("$.reportedAdjudication.hearings[0].id").isNotEmpty
+  }
+
+  @Test
+  fun `amend a hearing fails on prison api and does not update the hearing `() {
+    val intTestData = initDataForHearings()
+
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    val reportedAdjudication = intTestData.createHearing(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      IntegrationTestData.DEFAULT_ADJUDICATION,
+      setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"))
+    )
+
+    prisonApiMockServer.stubAmendHearingFailure(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
+    val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/${reportedAdjudication.reportedAdjudication.hearings.first().id}")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "locationId" to 3,
+          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1)
+        )
+      )
+      .exchange()
+      .expectStatus().is5xxServerError
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.hearings[0].locationId")
+      .isEqualTo(IntegrationTestData.UPDATED_LOCATION_ID)
+      .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing")
+      .isEqualTo("2010-11-19T10:00:00")
       .jsonPath("$.reportedAdjudication.hearings[0].id").isNotEmpty
   }
 
@@ -783,7 +823,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().is5xxServerError
 
     webTestClient.get()
-      .uri("/reported-adjudications/1524242")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful

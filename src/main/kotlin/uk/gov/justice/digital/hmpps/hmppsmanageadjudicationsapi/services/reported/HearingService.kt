@@ -62,13 +62,9 @@ class HearingService(
       hearingId
     )
 
-    prisonApiGateway.deleteHearing(
+    prisonApiGateway.amendHearing(
       adjudicationNumber = adjudicationNumber,
-      oicHearingId = hearingToEdit.oicHearingId
-    )
-
-    val oicHearingId = prisonApiGateway.createHearing(
-      adjudicationNumber = adjudicationNumber,
+      oicHearingId = hearingToEdit.oicHearingId,
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = dateTimeOfHearing,
         hearingLocationId = locationId,
@@ -79,7 +75,6 @@ class HearingService(
     hearingToEdit.let {
       it.dateTimeOfHearing = dateTimeOfHearing
       it.locationId = locationId
-      it.oicHearingId = oicHearingId
     }
 
     return saveToDto(reportedAdjudication)

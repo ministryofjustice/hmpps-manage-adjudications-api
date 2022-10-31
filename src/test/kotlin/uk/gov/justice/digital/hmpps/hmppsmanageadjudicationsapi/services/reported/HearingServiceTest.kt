@@ -121,19 +121,18 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(prisonApiGateway, atLeastOnce()).deleteHearing(1235L, 3)
-      verify(prisonApiGateway, atLeastOnce()).createHearing(
-        1235L,
+      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+        1235L, 3,
         OicHearingRequest(
           dateTimeOfHearing = now.plusDays(1), hearingLocationId = 2, oicHearingType = OicHearingType.GOV_ADULT
         )
       )
+
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(2)
       assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now.plusDays(1))
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
       assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
-      assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(5)
 
       assertThat(response).isNotNull
     }

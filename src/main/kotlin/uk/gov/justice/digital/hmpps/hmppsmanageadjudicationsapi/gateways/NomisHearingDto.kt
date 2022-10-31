@@ -15,4 +15,4 @@ enum class OicHearingType {
 
 data class OicHearingRequest(val dateTimeOfHearing: LocalDateTime, val oicHearingType: OicHearingType, val hearingLocationId: Long)
 
-data class OicHearingResponse(val hearingId: Long, val dateTimeOfHearing: LocalDateTime, val hearingLocationId: Long)
+data class OicHearingResponse(val oicHearingId: Long, val dateTimeOfHearing: LocalDateTime, val hearingLocationId: Long)

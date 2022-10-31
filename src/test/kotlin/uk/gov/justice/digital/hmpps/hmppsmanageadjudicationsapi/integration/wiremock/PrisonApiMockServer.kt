@@ -9,6 +9,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
+import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.http.Request
@@ -149,7 +150,7 @@ class PrisonApiMockServer : WireMockServer {
             .withStatus(201)
             .withBody(
               JSONObject()
-                .put("hearingId", "100")
+                .put("oicHearingId", "100")
                 .put("dateTimeOfHearing", "2022-10-24T10:10:10")
                 .put("hearingLocationId", "100")
                 .toString()
@@ -161,6 +162,28 @@ class PrisonApiMockServer : WireMockServer {
   fun stubCreateHearingFailure(adjudicationNumber: Long) {
     stubFor(
       post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(500)
+        )
+    )
+  }
+
+  fun stubAmendHearing(adjudicationNumber: Long, hearingId: Long) {
+    stubFor(
+      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/$hearingId"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+        )
+    )
+  }
+
+  fun stubAmendHearingFailure(adjudicationNumber: Long, hearingId: Long) {
+    stubFor(
+      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/$hearingId"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
