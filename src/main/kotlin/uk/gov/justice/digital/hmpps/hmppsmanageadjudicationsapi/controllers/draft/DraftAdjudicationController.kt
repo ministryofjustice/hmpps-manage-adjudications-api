@@ -64,10 +64,10 @@ data class IncidentStatementRequest(
 @Schema(description = "Request to edit the incident details")
 data class EditIncidentDetailsRequest(
   @Schema(description = "The id of the location the incident took place")
-  val locationId: Long? = null,
+  val locationId: Long,
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-  val dateTimeOfIncident: LocalDateTime? = null,
+  val dateTimeOfIncident: LocalDateTime,
   @Schema(description = "Optional Date time if discovery date different to incident date", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfDiscovery: LocalDateTime? = null,
