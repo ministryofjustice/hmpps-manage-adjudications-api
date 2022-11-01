@@ -132,12 +132,12 @@ class DraftAdjudicationService(
     dateOfDiscoveryValidation(dateTimeOfDiscovery, dateTimeOfIncident)
 
     val draftAdjudication = find(id)
-    val derivedDiscoveryDate = dateTimeOfDiscovery ?: dateTimeOfIncident
+    val actualDateTimeOfDiscovery = dateTimeOfDiscovery ?: dateTimeOfIncident
 
     draftAdjudication.incidentDetails.locationId = locationId
     draftAdjudication.incidentDetails.dateTimeOfIncident = dateTimeOfIncident
-    draftAdjudication.incidentDetails.dateTimeOfDiscovery = derivedDiscoveryDate
-    draftAdjudication.incidentDetails.handoverDeadline = daysToActionFromIncident(derivedDiscoveryDate)
+    draftAdjudication.incidentDetails.dateTimeOfDiscovery = actualDateTimeOfDiscovery
+    draftAdjudication.incidentDetails.handoverDeadline = daysToActionFromIncident(actualDateTimeOfDiscovery)
 
     return saveToDto(draftAdjudication)
   }
