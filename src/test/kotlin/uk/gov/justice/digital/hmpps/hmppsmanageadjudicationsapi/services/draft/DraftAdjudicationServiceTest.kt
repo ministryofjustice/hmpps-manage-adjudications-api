@@ -507,6 +507,63 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     }
 
     @Test
+    fun `ensure discovery date is updated when only incident date is provided `() {
+      val editedDateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1)
+      val editedIncidentRole = incidentRoleWithNoValuesSet()
+      val draftAdjudicationEntity = DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        incidentDetails = IncidentDetails(
+          id = 1,
+          locationId = 2,
+          dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+          dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        ),
+        isYouthOffender = true
+      )
+
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(draftAdjudicationEntity)
+      )
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(
+        draftAdjudicationEntity.copy(
+          incidentDetails = IncidentDetails(
+            id = 1,
+            locationId = 3L,
+            dateTimeOfIncident = editedDateTimeOfIncident,
+            dateTimeOfDiscovery = editedDateTimeOfIncident,
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          ),
+          incidentRole = editedIncidentRole
+        )
+      )
+
+      val draftAdjudication = draftAdjudicationService.editIncidentDetails(
+        1,
+        3,
+        editedDateTimeOfIncident,
+        null,
+      )
+
+      assertThat(draftAdjudication)
+        .extracting("id", "prisonerNumber")
+        .contains(1L, "A12345")
+
+      assertThat(draftAdjudication.incidentDetails)
+        .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
+        .contains(3L, editedDateTimeOfIncident, editedDateTimeOfIncident, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.incidentDetails)
+        .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery")
+        .contains(3L, editedDateTimeOfIncident, editedDateTimeOfIncident)
+    }
+
+    @Test
     fun `makes changes to the incident details`() {
       val editedDateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1)
       val editedIncidentRole = incidentRoleWithNoValuesSet()
@@ -559,8 +616,8 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident")
-        .contains(3L, editedDateTimeOfIncident)
+        .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery")
+        .contains(3L, editedDateTimeOfIncident, editedDateTimeOfIncident.plusDays(1))
     }
 
     @Test
