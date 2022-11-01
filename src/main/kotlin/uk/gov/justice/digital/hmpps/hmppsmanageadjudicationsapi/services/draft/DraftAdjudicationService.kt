@@ -126,19 +126,21 @@ class DraftAdjudicationService(
   fun editIncidentDetails(
     id: Long,
     locationId: Long?,
-    dateTimeOfIncident: LocalDateTime?,
+    dateTimeOfIncident: LocalDateTime,
     dateTimeOfDiscovery: LocalDateTime?
   ): DraftAdjudicationDto {
-    dateTimeOfIncident?.let {
-      dateOfDiscoveryValidation(dateTimeOfDiscovery, it)
-    }
+    dateOfDiscoveryValidation(dateTimeOfDiscovery, dateTimeOfIncident)
 
     val draftAdjudication = find(id)
 
     locationId?.let { draftAdjudication.incidentDetails.locationId = it }
-    dateTimeOfIncident?.let {
+
+    dateTimeOfIncident.let {
       draftAdjudication.incidentDetails.dateTimeOfIncident = it
-      draftAdjudication.incidentDetails.handoverDeadline = daysToActionFromIncident(dateTimeOfDiscovery ?: it)
+      if (dateTimeOfDiscovery == null) {
+        draftAdjudication.incidentDetails.dateTimeOfDiscovery = it
+        draftAdjudication.incidentDetails.handoverDeadline = daysToActionFromIncident(it)
+      }
     }
     dateTimeOfDiscovery?.let {
       draftAdjudication.incidentDetails.dateTimeOfDiscovery = it
