@@ -407,13 +407,13 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders())
       .bodyValue(
         mapOf(
-          "status" to ReportedAdjudicationStatus.ACCEPTED,
+          "status" to ReportedAdjudicationStatus.UNSCHEDULED,
         )
       )
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.ACCEPTED.toString())
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED.toString())
 
     val expectedBody = mapOf(
       "offenderNo" to IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
@@ -457,7 +457,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders())
       .bodyValue(
         mapOf(
-          "status" to ReportedAdjudicationStatus.ACCEPTED,
+          "status" to ReportedAdjudicationStatus.UNSCHEDULED,
         )
       )
       .exchange()
@@ -487,13 +487,13 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders())
       .bodyValue(
         mapOf(
-          "status" to ReportedAdjudicationStatus.ACCEPTED,
+          "status" to ReportedAdjudicationStatus.UNSCHEDULED,
         )
       )
       .exchange()
       .expectStatus().isBadRequest
       .expectBody()
-      .jsonPath("$.userMessage").isEqualTo("ReportedAdjudication 1524242 cannot transition from REJECTED to ACCEPTED")
+      .jsonPath("$.userMessage").isEqualTo("ReportedAdjudication 1524242 cannot transition from ${ReportedAdjudicationStatus.REJECTED.name} to ${ReportedAdjudicationStatus.UNSCHEDULED.name}")
   }
 
   @Test
@@ -665,6 +665,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isCreated
       .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
       .jsonPath("$.reportedAdjudication.hearings[0].locationId")
       .isEqualTo(1)
       .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing")
@@ -728,6 +730,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
       .jsonPath("$.reportedAdjudication.hearings[0].locationId")
       .isEqualTo(3)
       .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing")
@@ -797,6 +801,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED.name)
       .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
   }
 

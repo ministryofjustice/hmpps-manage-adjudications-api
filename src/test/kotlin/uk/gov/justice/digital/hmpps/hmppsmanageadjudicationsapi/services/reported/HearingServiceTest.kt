@@ -11,7 +11,9 @@ import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -88,6 +90,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
       assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
       assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(5)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
 
       assertThat(response).isNotNull
     }
@@ -192,6 +195,38 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(0)
 
       assertThat(response).isNotNull
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
+    }
+
+    @Test
+    fun `delete a hearing when there is more than one and ensure status is still SCHEDULED`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.add(
+            Hearing(
+              oicHearingId = 2L,
+              dateTimeOfHearing = LocalDateTime.now(),
+              locationId = 1L,
+              agencyId = reportedAdjudication.agencyId,
+              reportNumber = 1235L
+
+            )
+          )
+          it.status = ReportedAdjudicationStatus.SCHEDULED
+        }
+      )
+
+      hearingService.deleteHearing(
+        1235L,
+        1,
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(prisonApiGateway, atLeastOnce()).deleteHearing(1235L, 3)
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
     }
   }
 

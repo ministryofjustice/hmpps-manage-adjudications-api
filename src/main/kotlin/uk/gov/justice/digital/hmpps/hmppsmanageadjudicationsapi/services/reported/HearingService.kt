@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSumm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -42,15 +43,19 @@ class HearingService(
       )
     )
 
-    reportedAdjudication.hearings.add(
-      Hearing(
-        agencyId = reportedAdjudication.agencyId,
-        reportNumber = reportedAdjudication.reportNumber,
-        locationId = locationId,
-        dateTimeOfHearing = dateTimeOfHearing,
-        oicHearingId = oicHearingId,
+    reportedAdjudication.let {
+      it.hearings.add(
+        Hearing(
+          agencyId = reportedAdjudication.agencyId,
+          reportNumber = reportedAdjudication.reportNumber,
+          locationId = locationId,
+          dateTimeOfHearing = dateTimeOfHearing,
+          oicHearingId = oicHearingId,
+        )
       )
-    )
+      if (it.status != ReportedAdjudicationStatus.SCHEDULED)
+        it.status = ReportedAdjudicationStatus.SCHEDULED
+    }
 
     return saveToDto(reportedAdjudication)
   }
@@ -91,7 +96,11 @@ class HearingService(
       oicHearingId = hearingToRemove.oicHearingId
     )
 
-    reportedAdjudication.hearings.remove(hearingToRemove)
+    reportedAdjudication.let {
+      it.hearings.remove(hearingToRemove)
+      if (it.hearings.isEmpty())
+        it.status = ReportedAdjudicationStatus.UNSCHEDULED
+    }
 
     return saveToDto(reportedAdjudication)
   }
