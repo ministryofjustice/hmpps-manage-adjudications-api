@@ -3,19 +3,6 @@ version: 2.1
 orbs:
   hmpps: ministryofjustice/hmpps@6.0.0
 
-executors:
-  integration-tests:
-    docker:
-      - image: cimg/openjdk:18.0
-      - image: circleci/postgres:13.2
-        environment:
-          - POSTGRES_PASSWORD=test
-          - POSTGRES_USER=test
-          - POSTGRES_DB=hmpps-manage-adjudications-api-db
-    environment:
-      _JAVA_OPTIONS: -Xmx256m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -XX:ParallelGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-XX:+UseContainerSupport -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=2
-    working_directory: ~/app
-
 parameters:
   alerts-slack-channel:
     type: string
@@ -26,12 +13,16 @@ parameters:
 
 jobs:
   validate:
-    executor: integration-tests
+    executor:
+      name: hmpps/java_postgres
+      jdk_tag: "18.0"
+      postgres_tag: "13.2"
+      postgres_username: "test"
+      postgres_password: "test"
+      postgres_db: "hmpps-manage-adjudications-api-db"
     steps:
       - checkout
-      - run:
-          name: Wait for Postgres to be ready
-          command: ./postgres-check.sh
+      - hmpps/wait_till_ready
       - restore_cache:
           keys:
             - gradle-{{ checksum "build.gradle.kts" }}
