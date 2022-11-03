@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageC
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDateTime
 
 @Schema(description = "Reported adjudication details")
@@ -111,6 +112,8 @@ data class HearingDto(
   val locationId: Long,
   @Schema(description = "Date and time the hearing will take place", example = "2010-10-12T10:00:00")
   val dateTimeOfHearing: LocalDateTime,
+  @Schema(description = "oic hearing type")
+  val oicHearingType: OicHearingType,
 )
 
 @Schema(description = "Hearing Summary")

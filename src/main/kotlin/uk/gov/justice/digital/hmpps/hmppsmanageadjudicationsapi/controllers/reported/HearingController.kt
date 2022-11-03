@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -34,6 +35,8 @@ data class HearingRequest(
   @Schema(description = "Date and time of the hearing", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfHearing: LocalDateTime,
+  @Schema(description = "oic hearing type")
+  val oicHearingType: OicHearingType,
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
@@ -50,7 +53,7 @@ class HearingController(
     @RequestBody hearingRequest: HearingRequest
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = hearingService.createHearing(
-      adjudicationNumber, hearingRequest.locationId, hearingRequest.dateTimeOfHearing
+      adjudicationNumber, hearingRequest.locationId, hearingRequest.dateTimeOfHearing, hearingRequest.oicHearingType,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
@@ -65,7 +68,7 @@ class HearingController(
     @RequestBody hearingRequest: HearingRequest
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = hearingService.amendHearing(
-      adjudicationNumber, hearingId, hearingRequest.locationId, hearingRequest.dateTimeOfHearing
+      adjudicationNumber, hearingId, hearingRequest.locationId, hearingRequest.dateTimeOfHearing, hearingRequest.oicHearingType,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)

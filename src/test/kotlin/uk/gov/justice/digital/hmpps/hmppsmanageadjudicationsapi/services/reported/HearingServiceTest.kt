@@ -32,12 +32,12 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
 
     Assertions.assertThatThrownBy {
-      hearingService.createHearing(1, 1, LocalDateTime.now())
+      hearingService.createHearing(1, 1, LocalDateTime.now(), OicHearingType.GOV)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      hearingService.amendHearing(1, 1, 1, LocalDateTime.now())
+      hearingService.amendHearing(1, 1, 1, LocalDateTime.now(), OicHearingType.GOV)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
@@ -70,7 +70,8 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       val response = hearingService.createHearing(
         1235L,
         1,
-        now
+        now,
+        OicHearingType.GOV,
       )
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -78,7 +79,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       verify(prisonApiGateway, atLeastOnce()).createHearing(
         1235L,
         OicHearingRequest(
-          dateTimeOfHearing = now, hearingLocationId = 1, oicHearingType = OicHearingType.GOV_ADULT
+          dateTimeOfHearing = now, hearingLocationId = 1, oicHearingType = OicHearingType.GOV
         )
       )
 
@@ -88,6 +89,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
       assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
       assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(5)
+      assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(OicHearingType.GOV)
 
       assertThat(response).isNotNull
     }
@@ -116,7 +118,8 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         1235L,
         1,
         2,
-        now.plusDays(1)
+        now.plusDays(1),
+        OicHearingType.INAD_YOI,
       )
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -124,7 +127,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       verify(prisonApiGateway, atLeastOnce()).amendHearing(
         1235L, 3,
         OicHearingRequest(
-          dateTimeOfHearing = now.plusDays(1), hearingLocationId = 2, oicHearingType = OicHearingType.GOV_ADULT
+          dateTimeOfHearing = now.plusDays(1), hearingLocationId = 2, oicHearingType = OicHearingType.INAD_YOI
         )
       )
 
@@ -133,6 +136,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now.plusDays(1))
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
       assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
+      assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(OicHearingType.INAD_YOI)
 
       assertThat(response).isNotNull
     }
@@ -145,7 +149,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingService.amendHearing(1, 1, 1, LocalDateTime.now())
+        hearingService.amendHearing(1, 1, 1, LocalDateTime.now(), OicHearingType.GOV)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Hearing not found for 1")
     }
