@@ -31,14 +31,14 @@ class HearingService(
   authenticationFacade,
 ) {
 
-  fun createHearing(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime): ReportedAdjudicationDto {
+  fun createHearing(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val oicHearingId = prisonApiGateway.createHearing(
       adjudicationNumber = adjudicationNumber,
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = dateTimeOfHearing,
         hearingLocationId = locationId,
-        oicHearingType = OicHearingType.getOicHearingType(reportedAdjudication),
+        oicHearingType = oicHearingType,
       )
     )
 
@@ -49,13 +49,14 @@ class HearingService(
         locationId = locationId,
         dateTimeOfHearing = dateTimeOfHearing,
         oicHearingId = oicHearingId,
+        oicHearingType = oicHearingType,
       )
     )
 
     return saveToDto(reportedAdjudication)
   }
 
-  fun amendHearing(adjudicationNumber: Long, hearingId: Long, locationId: Long, dateTimeOfHearing: LocalDateTime): ReportedAdjudicationDto {
+  fun amendHearing(adjudicationNumber: Long, hearingId: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
     val hearingToEdit = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException(
@@ -68,13 +69,14 @@ class HearingService(
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = dateTimeOfHearing,
         hearingLocationId = locationId,
-        oicHearingType = OicHearingType.getOicHearingType(reportedAdjudication)
+        oicHearingType = oicHearingType
       )
     )
 
     hearingToEdit.let {
       it.dateTimeOfHearing = dateTimeOfHearing
       it.locationId = locationId
+      it.oicHearingType = oicHearingType
     }
 
     return saveToDto(reportedAdjudication)

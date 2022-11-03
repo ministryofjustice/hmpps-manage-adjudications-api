@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageC
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -659,7 +660,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "locationId" to 1,
-          "dateTimeOfHearing" to dateTimeOfHearing
+          "dateTimeOfHearing" to dateTimeOfHearing,
+          "oicHearingType" to OicHearingType.GOV.name,
         )
       )
       .exchange()
@@ -670,6 +672,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing")
       .isEqualTo("2010-10-12T10:00:00")
       .jsonPath("$.reportedAdjudication.hearings[0].id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.hearings[0].oicHearingType").isEqualTo(OicHearingType.GOV.name)
   }
 
   @Test
@@ -686,7 +689,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "locationId" to 1,
-          "dateTimeOfHearing" to dateTimeOfHearing
+          "dateTimeOfHearing" to dateTimeOfHearing,
+          "oicHearingType" to OicHearingType.GOV.name,
         )
       )
       .exchange()
@@ -722,7 +726,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "locationId" to 3,
-          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1)
+          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1),
+          "oicHearingType" to OicHearingType.GOV_ADULT.name,
         )
       )
       .exchange()
@@ -733,6 +738,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing")
       .isEqualTo("2010-10-26T10:00:00")
       .jsonPath("$.reportedAdjudication.hearings[0].id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.hearings[0].oicHearingType").isEqualTo(OicHearingType.GOV_ADULT.name)
   }
 
   @Test
@@ -756,7 +762,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "locationId" to 3,
-          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1)
+          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1),
+          "oicHearingType" to OicHearingType.GOV_ADULT.name,
         )
       )
       .exchange()
