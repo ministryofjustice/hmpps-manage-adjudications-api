@@ -5,6 +5,8 @@ import org.assertj.core.api.Java6Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
@@ -64,6 +66,28 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(5L)
     }
 
+    @ParameterizedTest
+    @CsvSource("GOV_ADULT, true", "INAD_ADULT, true", "GOV_YOI, false", "INAD_YOI, false")
+    fun `create a hearing uses wrong hearingType exception `(oicHearingType: OicHearingType, isYouthOffender: Boolean) {
+      val now = LocalDateTime.now()
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.isYouthOffender = isYouthOffender
+        }
+      )
+
+      Assertions.assertThatThrownBy {
+        hearingService.createHearing(
+          1235L,
+          1,
+          now,
+          oicHearingType,
+        )
+      }.isInstanceOf(IllegalStateException::class.java)
+        .hasMessageContaining("oic hearing type is not applicable for rule set")
+    }
+
     @Test
     fun `create a hearing`() {
       val now = LocalDateTime.now()
@@ -71,7 +95,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         1235L,
         1,
         now,
-        OicHearingType.GOV,
+        OicHearingType.GOV_ADULT,
       )
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -79,7 +103,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       verify(prisonApiGateway, atLeastOnce()).createHearing(
         1235L,
         OicHearingRequest(
-          dateTimeOfHearing = now, hearingLocationId = 1, oicHearingType = OicHearingType.GOV
+          dateTimeOfHearing = now, hearingLocationId = 1, oicHearingType = OicHearingType.GOV_ADULT
         )
       )
 
@@ -89,7 +113,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
       assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
       assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(5)
-      assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(OicHearingType.GOV)
+      assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(OicHearingType.GOV_ADULT)
 
       assertThat(response).isNotNull
     }
@@ -111,6 +135,29 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(5L)
     }
 
+    @ParameterizedTest
+    @CsvSource("GOV_ADULT, true", "INAD_ADULT, true", "GOV_YOI, false", "INAD_YOI, false")
+    fun `amend a hearing uses wrong hearingType exception `(oicHearingType: OicHearingType, isYouthOffender: Boolean) {
+      val now = LocalDateTime.now()
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.isYouthOffender = isYouthOffender
+        }
+      )
+
+      Assertions.assertThatThrownBy {
+        hearingService.amendHearing(
+          1,
+          1235L,
+          1,
+          now,
+          oicHearingType,
+        )
+      }.isInstanceOf(IllegalStateException::class.java)
+        .hasMessageContaining("oic hearing type is not applicable for rule set")
+    }
+
     @Test
     fun `amend a hearing`() {
       val now = LocalDateTime.now()
@@ -119,7 +166,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         1,
         2,
         now.plusDays(1),
-        OicHearingType.INAD_YOI,
+        OicHearingType.INAD_ADULT,
       )
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -127,7 +174,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       verify(prisonApiGateway, atLeastOnce()).amendHearing(
         1235L, 3,
         OicHearingRequest(
-          dateTimeOfHearing = now.plusDays(1), hearingLocationId = 2, oicHearingType = OicHearingType.INAD_YOI
+          dateTimeOfHearing = now.plusDays(1), hearingLocationId = 2, oicHearingType = OicHearingType.INAD_ADULT
         )
       )
 
@@ -136,7 +183,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now.plusDays(1))
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
       assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
-      assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(OicHearingType.INAD_YOI)
+      assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(OicHearingType.INAD_ADULT)
 
       assertThat(response).isNotNull
     }
