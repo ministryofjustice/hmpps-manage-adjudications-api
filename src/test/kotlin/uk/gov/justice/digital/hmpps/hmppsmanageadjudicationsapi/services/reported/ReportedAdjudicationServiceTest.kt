@@ -179,14 +179,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         .extracting("statement", "completed")
         .contains(INCIDENT_STATEMENT, true)
 
-      //test order is correct
+      // test order is correct
       assertThat(reportedAdjudicationDto.hearings.size).isEqualTo(3)
       assertThat(reportedAdjudicationDto.hearings[0].oicHearingType).isEqualTo(OicHearingType.GOV_ADULT)
       assertThat(reportedAdjudicationDto.hearings[1].oicHearingType).isEqualTo(OicHearingType.GOV)
       assertThat(reportedAdjudicationDto.hearings[2].oicHearingType).isEqualTo(OicHearingType.INAD_YOI)
-
     }
-
   }
 
   @Nested
