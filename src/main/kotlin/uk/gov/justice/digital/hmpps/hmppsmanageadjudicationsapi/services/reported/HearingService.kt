@@ -33,8 +33,9 @@ class HearingService(
 ) {
 
   fun createHearing(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    oicHearingType.isValidState(reportedAdjudication.isYouthOffender)
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+      oicHearingType.isValidState(it.isYouthOffender)
+    }
 
     val oicHearingId = prisonApiGateway.createHearing(
       adjudicationNumber = adjudicationNumber,
@@ -64,8 +65,9 @@ class HearingService(
   }
 
   fun amendHearing(adjudicationNumber: Long, hearingId: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    oicHearingType.isValidState(reportedAdjudication.isYouthOffender)
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+      oicHearingType.isValidState(it.isYouthOffender)
+    }
 
     val hearingToEdit = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException(
       hearingId
@@ -131,8 +133,9 @@ class HearingService(
         dateTimeOfDiscovery = adjudication.dateTimeOfDiscovery,
         prisonerNumber = adjudication.prisonerNumber,
         adjudicationNumber = it.reportNumber,
+        oicHearingType = it.oicHearingType,
       )
-    }
+    }.sortedBy { it.dateTimeOfHearing }
 
   companion object {
     fun throwHearingNotFoundException(id: Long): Nothing =

@@ -923,6 +923,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfDiscoveryISOString)
       .jsonPath("$.hearings[0].dateTimeOfHearing")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearingISOString)
+      .jsonPath("$.hearings[0].oicHearingType")
+      .isEqualTo(reportedAdjudication.reportedAdjudication.hearings.first().oicHearingType.name)
   }
 
   private fun initMyReportData() {

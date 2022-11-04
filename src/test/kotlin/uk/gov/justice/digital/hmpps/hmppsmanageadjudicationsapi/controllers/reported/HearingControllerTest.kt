@@ -257,7 +257,8 @@ class HearingControllerTest : TestControllerBase() {
           dateTimeOfHearing = LocalDateTime.now(),
           dateTimeOfDiscovery = LocalDateTime.now(),
           adjudicationNumber = 123,
-          prisonerNumber = "123"
+          prisonerNumber = "123",
+          oicHearingType = OicHearingType.GOV,
         )
       )
   }
