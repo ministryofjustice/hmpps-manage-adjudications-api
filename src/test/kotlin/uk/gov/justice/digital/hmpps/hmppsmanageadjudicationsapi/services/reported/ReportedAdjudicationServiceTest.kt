@@ -14,10 +14,12 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
@@ -66,7 +68,31 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           ),
         )
       }
-      val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+      val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+
+        it.hearings[0].dateTimeOfHearing = LocalDateTime.now().plusWeeks(1)
+
+        val newFirstHearing = Hearing(
+          dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+          oicHearingType = OicHearingType.GOV_ADULT,
+          locationId = 1,
+          agencyId = "MDI",
+          oicHearingId = 1,
+          reportNumber = 1235L,
+        )
+
+        val thirdHearing = Hearing(
+          dateTimeOfHearing = LocalDateTime.now().plusWeeks(3),
+          oicHearingType = OicHearingType.INAD_YOI,
+          locationId = 1,
+          agencyId = "MDI",
+          oicHearingId = 1,
+          reportNumber = 1235L,
+        )
+
+        it.hearings.add(newFirstHearing)
+        it.hearings.add(thirdHearing)
+      }
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
 
@@ -152,6 +178,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(reportedAdjudicationDto.incidentStatement)
         .extracting("statement", "completed")
         .contains(INCIDENT_STATEMENT, true)
+
+      // test order is correct
+      assertThat(reportedAdjudicationDto.hearings.size).isEqualTo(3)
+      assertThat(reportedAdjudicationDto.hearings[0].oicHearingType).isEqualTo(OicHearingType.GOV_ADULT)
+      assertThat(reportedAdjudicationDto.hearings[1].oicHearingType).isEqualTo(OicHearingType.GOV)
+      assertThat(reportedAdjudicationDto.hearings[2].oicHearingType).isEqualTo(OicHearingType.INAD_YOI)
     }
   }
 
