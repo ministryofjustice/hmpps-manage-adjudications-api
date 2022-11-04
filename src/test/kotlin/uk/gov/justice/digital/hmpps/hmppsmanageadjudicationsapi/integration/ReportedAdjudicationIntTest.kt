@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageC
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -659,7 +660,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "locationId" to 1,
-          "dateTimeOfHearing" to dateTimeOfHearing
+          "dateTimeOfHearing" to dateTimeOfHearing,
+          "oicHearingType" to OicHearingType.GOV.name,
         )
       )
       .exchange()
@@ -672,6 +674,28 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing")
       .isEqualTo("2010-10-12T10:00:00")
       .jsonPath("$.reportedAdjudication.hearings[0].id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.hearings[0].oicHearingType").isEqualTo(OicHearingType.GOV.name)
+  }
+
+  @Test
+  fun `create a hearing illegal state on hearing type `() {
+    initDataForHearings()
+
+    val dateTimeOfHearing = LocalDateTime.of(2010, 10, 12, 10, 0)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "locationId" to 1,
+          "dateTimeOfHearing" to dateTimeOfHearing,
+          "oicHearingType" to OicHearingType.GOV_YOI.name,
+        )
+      )
+      .exchange()
+      .expectStatus().isBadRequest
   }
 
   @Test
@@ -688,7 +712,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "locationId" to 1,
-          "dateTimeOfHearing" to dateTimeOfHearing
+          "dateTimeOfHearing" to dateTimeOfHearing,
+          "oicHearingType" to OicHearingType.GOV.name,
         )
       )
       .exchange()
@@ -724,7 +749,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "locationId" to 3,
-          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1)
+          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1),
+          "oicHearingType" to OicHearingType.GOV_ADULT.name,
         )
       )
       .exchange()
@@ -737,6 +763,36 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing")
       .isEqualTo("2010-10-26T10:00:00")
       .jsonPath("$.reportedAdjudication.hearings[0].id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.hearings[0].oicHearingType").isEqualTo(OicHearingType.GOV_ADULT.name)
+  }
+
+  @Test
+  fun `amend a hearing illegal state on hearing type `() {
+    val intTestData = initDataForHearings()
+
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    val reportedAdjudication = intTestData.createHearing(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      IntegrationTestData.DEFAULT_ADJUDICATION,
+      setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"))
+    )
+
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
+    val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/${reportedAdjudication.reportedAdjudication.hearings.first().id}")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "locationId" to 3,
+          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1),
+          "oicHearingType" to OicHearingType.GOV_YOI.name,
+        )
+      )
+      .exchange()
+      .expectStatus().isBadRequest
   }
 
   @Test
@@ -760,7 +816,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "locationId" to 3,
-          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1)
+          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1),
+          "oicHearingType" to OicHearingType.GOV_ADULT.name,
         )
       )
       .exchange()

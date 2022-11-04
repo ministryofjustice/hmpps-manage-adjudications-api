@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -33,7 +34,8 @@ class HearingControllerTest : TestControllerBase() {
         hearingService.createHearing(
           ArgumentMatchers.anyLong(),
           ArgumentMatchers.anyLong(),
-          any()
+          any(),
+          any(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -69,7 +71,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to create a hearing`() {
       createHearingRequest(1, HEARING_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(hearingService).createHearing(1, HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing)
+      verify(hearingService).createHearing(1, HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
     }
 
     private fun createHearingRequest(
@@ -145,7 +147,8 @@ class HearingControllerTest : TestControllerBase() {
           ArgumentMatchers.anyLong(),
           ArgumentMatchers.anyLong(),
           ArgumentMatchers.anyLong(),
-          any()
+          any(),
+          any(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -181,7 +184,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to amend a hearing`() {
       amendHearingRequest(1, 1, HEARING_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingService).amendHearing(1, 1, HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing)
+      verify(hearingService).amendHearing(1, 1, HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
     }
 
     private fun amendHearingRequest(
@@ -245,7 +248,7 @@ class HearingControllerTest : TestControllerBase() {
   }
 
   companion object {
-    private val HEARING_REQUEST = HearingRequest(locationId = 1L, dateTimeOfHearing = LocalDateTime.now())
+    private val HEARING_REQUEST = HearingRequest(locationId = 1L, dateTimeOfHearing = LocalDateTime.now(), oicHearingType = OicHearingType.GOV)
 
     private val ALL_HEARINGS_DTO =
       listOf(

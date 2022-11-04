@@ -107,9 +107,10 @@ open class ReportedDtoService(
       HearingDto(
         id = it.id,
         locationId = it.locationId,
-        dateTimeOfHearing = it.dateTimeOfHearing
+        dateTimeOfHearing = it.dateTimeOfHearing,
+        oicHearingType = it.oicHearingType,
       )
-    }.toList()
+    }.sortedBy { it.dateTimeOfHearing }.toList()
 }
 
 open class ReportedAdjudicationBaseService(

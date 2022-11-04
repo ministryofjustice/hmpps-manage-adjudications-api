@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepositoryTest
 import java.time.LocalDateTime
 
@@ -80,6 +81,7 @@ class EntityBuilder {
           agencyId = agencyId,
           reportNumber = reportNumber,
           oicHearingId = 3L,
+          oicHearingType = OicHearingType.GOV,
         )
       )
     )

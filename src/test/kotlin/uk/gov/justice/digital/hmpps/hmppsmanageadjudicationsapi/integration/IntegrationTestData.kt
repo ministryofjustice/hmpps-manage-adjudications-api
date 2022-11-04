@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageC
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import java.time.LocalDateTime
@@ -505,7 +506,8 @@ class IntegrationTestData(
       .bodyValue(
         mapOf(
           "locationId" to testDataSet.locationId,
-          "dateTimeOfHearing" to testDataSet.dateTimeOfHearing!!
+          "dateTimeOfHearing" to testDataSet.dateTimeOfHearing!!,
+          "oicHearingType" to OicHearingType.GOV.name,
         )
       )
       .exchange()
