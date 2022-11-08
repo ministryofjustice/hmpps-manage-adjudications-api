@@ -13,7 +13,9 @@ import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -113,6 +115,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
       assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
       assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(5)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
       assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(OicHearingType.GOV_ADULT)
 
       assertThat(response).isNotNull
@@ -243,6 +246,38 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(0)
 
       assertThat(response).isNotNull
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
+    }
+
+    @Test
+    fun `delete a hearing when there is more than one and ensure status is still SCHEDULED`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.add(
+            Hearing(
+              oicHearingId = 2L,
+              dateTimeOfHearing = LocalDateTime.now(),
+              locationId = 1L,
+              agencyId = reportedAdjudication.agencyId,
+              reportNumber = 1235L,
+              oicHearingType = OicHearingType.GOV,
+            )
+          )
+          it.status = ReportedAdjudicationStatus.SCHEDULED
+        }
+      )
+
+      hearingService.deleteHearing(
+        1235L,
+        1,
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(prisonApiGateway, atLeastOnce()).deleteHearing(1235L, 3)
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
     }
   }
 
@@ -254,6 +289,28 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       .also {
         it.createdByUserId = ""
         it.createDateTime = LocalDateTime.now()
+        it.hearings.addAll(
+          listOf(
+            Hearing(
+              id = 2,
+              oicHearingId = 2L,
+              dateTimeOfHearing = now.atStartOfDay().plusHours(5),
+              locationId = 1L,
+              agencyId = it.agencyId,
+              reportNumber = it.reportNumber,
+              oicHearingType = OicHearingType.GOV,
+            ),
+            Hearing(
+              id = 3,
+              oicHearingId = 2L,
+              dateTimeOfHearing = now.atStartOfDay().plusHours(6),
+              locationId = 1L,
+              agencyId = it.agencyId,
+              reportNumber = it.reportNumber,
+              oicHearingType = OicHearingType.GOV,
+            )
+          )
+        )
       }
 
     @BeforeEach
@@ -266,7 +323,11 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       ).thenReturn(
         reportedAdjudication.hearings
       )
-      whenever(reportedAdjudicationRepository.findByReportNumberIn(listOf(reportedAdjudication.reportNumber))).thenReturn(
+      whenever(
+        reportedAdjudicationRepository.findByReportNumberIn(
+          reportedAdjudication.hearings.map { it.reportNumber }
+        )
+      ).thenReturn(
         listOf(reportedAdjudication)
       )
     }
@@ -279,11 +340,14 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(response).isNotNull
-      assertThat(response.size).isEqualTo(1)
+      assertThat(response.size).isEqualTo(3)
       assertThat(response.first().adjudicationNumber).isEqualTo(reportedAdjudication.reportNumber)
       assertThat(response.first().prisonerNumber).isEqualTo(reportedAdjudication.prisonerNumber)
       assertThat(response.first().dateTimeOfHearing).isEqualTo(reportedAdjudication.hearings.first().dateTimeOfHearing)
       assertThat(response.first().dateTimeOfDiscovery).isEqualTo(reportedAdjudication.dateTimeOfDiscovery)
+      assertThat(response.first().oicHearingType).isEqualTo(reportedAdjudication.hearings[0].oicHearingType)
+      assertThat(response[1].id).isEqualTo(2)
+      assertThat(response[2].id).isEqualTo(3)
     }
 
     @Test

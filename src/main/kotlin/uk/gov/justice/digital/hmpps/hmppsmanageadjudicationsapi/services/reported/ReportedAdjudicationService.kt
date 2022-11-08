@@ -11,12 +11,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonA
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.util.Optional
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
+import javax.validation.ValidationException
 
 @Transactional
 @Service
@@ -31,9 +28,6 @@ class ReportedAdjudicationService(
 ) {
   companion object {
     const val TELEMETRY_EVENT = "ReportedAdjudicationStatusEvent"
-    fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
-    fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
-    fun statuses(status: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
   }
 
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
@@ -43,6 +37,8 @@ class ReportedAdjudicationService(
   }
 
   fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
+    if (status == ReportedAdjudicationStatus.ACCEPTED) throw ValidationException("ACCEPTED is deprecated use UNSCHEDULED")
+
     val username = if (status == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val reportedAdjudicationToReturn = reportedAdjudication.let {

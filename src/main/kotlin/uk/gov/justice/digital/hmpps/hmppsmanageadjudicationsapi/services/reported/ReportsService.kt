@@ -10,6 +10,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.Optional
 
 @Transactional(readOnly = true)
@@ -23,9 +25,9 @@ class ReportsService(
     val reportedAdjudicationsPage =
       reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
         agencyId,
-        ReportedAdjudicationService.reportsFrom(startDate),
-        ReportedAdjudicationService.reportsTo(endDate),
-        ReportedAdjudicationService.statuses(status), pageable
+        reportsFrom(startDate),
+        reportsTo(endDate),
+        statuses(status), pageable
       )
     return reportedAdjudicationsPage.map { it.toDto() }
   }
@@ -36,10 +38,16 @@ class ReportsService(
     val reportedAdjudicationsPage =
       reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
         username!!, agencyId,
-        ReportedAdjudicationService.reportsFrom(startDate),
-        ReportedAdjudicationService.reportsTo(endDate),
-        ReportedAdjudicationService.statuses(status), pageable
+        reportsFrom(startDate),
+        reportsTo(endDate),
+        statuses(status), pageable
       )
     return reportedAdjudicationsPage.map { it.toDto() }
+  }
+
+  companion object {
+    fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
+    fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
+    fun statuses(status: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
   }
 }

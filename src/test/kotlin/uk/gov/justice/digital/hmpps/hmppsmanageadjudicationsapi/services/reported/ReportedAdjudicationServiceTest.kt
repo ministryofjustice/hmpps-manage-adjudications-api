@@ -21,15 +21,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
+import javax.validation.ValidationException
 
 class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   private val prisonApiGateway: PrisonApiGateway = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val hearingRepository: HearingRepository = mock()
   private var reportedAdjudicationService =
     ReportedAdjudicationService(
       reportedAdjudicationRepository,
@@ -190,19 +189,27 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class ReportedAdjudicationSetReportedAdjudicationStatus {
 
+    @Test
+    fun `use of accepted throws validation error `() {
+      Assertions.assertThrows(ValidationException::class.java) {
+        reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
+      }
+    }
+
     @ParameterizedTest
     @CsvSource(
-      "ACCEPTED, ACCEPTED",
-      "ACCEPTED, REJECTED",
-      "ACCEPTED, AWAITING_REVIEW",
-      "ACCEPTED, RETURNED",
-      "REJECTED, ACCEPTED",
+      "UNSCHEDULED, UNSCHEDULED",
+      "UNSCHEDULED, REJECTED",
+      "UNSCHEDULED, AWAITING_REVIEW",
+      "UNSCHEDULED, RETURNED",
+      "REJECTED, UNSCHEDULED",
       "REJECTED, REJECTED",
       "REJECTED, AWAITING_REVIEW",
       "REJECTED, RETURNED",
-      "RETURNED, ACCEPTED",
+      "RETURNED, UNSCHEDULED",
       "RETURNED, REJECTED",
-      "RETURNED, RETURNED"
+      "RETURNED, RETURNED",
+      "SCHEDULED, SCHEDULED",
     )
     fun `setting status for a reported adjudication throws an illegal state exception for invalid transitions`(
       from: ReportedAdjudicationStatus,
@@ -220,11 +227,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @ParameterizedTest
     @CsvSource(
-      "AWAITING_REVIEW, ACCEPTED, true",
+      "AWAITING_REVIEW, UNSCHEDULED, true",
       "AWAITING_REVIEW, REJECTED, false",
       "AWAITING_REVIEW, RETURNED, false",
       "AWAITING_REVIEW, AWAITING_REVIEW, false",
-      "RETURNED, AWAITING_REVIEW, false"
+      "RETURNED, AWAITING_REVIEW, false",
     )
     fun `setting status for a reported adjudication for valid transitions`(
       from: ReportedAdjudicationStatus,
@@ -328,7 +335,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
-        it.status = ReportedAdjudicationStatus.ACCEPTED
+        it.status = ReportedAdjudicationStatus.UNSCHEDULED
       }
       returnedReportedAdjudication.createdByUserId = "A_USER"
       returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -338,7 +345,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         }
       )
 
-      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
+      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.UNSCHEDULED)
 
       var expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN, OFFENCE_CODE_3_NOMIS_CODE_ON_OWN)
       var expectedConnectedOffenderIds: List<String> = emptyList()
@@ -380,7 +387,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(existingReportedAdjudication)
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
-        it.status = ReportedAdjudicationStatus.ACCEPTED
+        it.status = ReportedAdjudicationStatus.UNSCHEDULED
       }
       returnedReportedAdjudication.createdByUserId = "A_USER"
       returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -388,7 +395,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         returnedReportedAdjudication
       )
 
-      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
+      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.UNSCHEDULED)
 
       var expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ASSISTED)
       if (isYouthOffender) {

@@ -70,16 +70,27 @@ data class ReportedAdjudication(
 }
 
 enum class ReportedAdjudicationStatus {
+  @Deprecated("this is no longer used and remains for historic purposes")
   ACCEPTED,
   REJECTED,
   AWAITING_REVIEW {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(ACCEPTED, REJECTED, RETURNED, AWAITING_REVIEW)
+      return listOf(UNSCHEDULED, REJECTED, RETURNED, AWAITING_REVIEW)
     }
   },
   RETURNED {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
       return listOf(AWAITING_REVIEW)
+    }
+  },
+  UNSCHEDULED {
+    override fun nextStates(): List<ReportedAdjudicationStatus> {
+      return listOf(SCHEDULED)
+    }
+  },
+  SCHEDULED {
+    override fun nextStates(): List<ReportedAdjudicationStatus> {
+      return listOf(UNSCHEDULED)
     }
   };
   open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
@@ -92,6 +103,6 @@ enum class ReportedAdjudicationStatus {
     return from.nextStates().contains(to)
   }
   fun isAccepted(): Boolean {
-    return this == ACCEPTED
+    return this == UNSCHEDULED
   }
 }
