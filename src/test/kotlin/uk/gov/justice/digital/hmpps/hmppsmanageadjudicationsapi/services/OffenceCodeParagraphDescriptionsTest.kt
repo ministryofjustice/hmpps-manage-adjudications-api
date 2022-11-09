@@ -4,7 +4,8 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
 class OffenceCodeParagraphDescriptionsTest {
-
+  // this test class was primarily used to refactor the existing code and has less value now its completed.
+  // it still ensures the mappings are correct so should be retained
   private val offenceCodeParagraphs = OffenceCodeParagraphs()
 
   @ParameterizedTest
@@ -30,14 +31,14 @@ class OffenceCodeParagraphDescriptionsTest {
     "55:10,YOI_10",
     "55:13C,YOI_13_ADULT_12",
     "55:13B,YOI_13_ADULT_12",
-    "55:11,YOI_11_ADULT_10",
+    "55:11,YOI_11",
     "55:12,YOI_12",
     "55:17,YOI_17",
     "55:18,YOI_18",
     "55:19,YOI_19",
-    "55:21B,YOI_21_ADULT_19",
-    "55:21C,YOI_21_ADULT_19",
-    "55:21A,YOI_21_ADULT_19",
+    "55:21B,YOI_21",
+    "55:21C,YOI_21",
+    "55:21A,YOI_21",
     "55:23,YOI_23_ADULT_20A",
     "55:20,YOI_22_ADULT_20",
     "55:25,YOI_25_ADULT_22",
@@ -48,8 +49,8 @@ class OffenceCodeParagraphDescriptionsTest {
     "55:3B,YOI_3_ADULT_2",
     "55:4,YOI_4",
     "55:7,YOI_7",
-    "55:20A,YOI_20_ADULT_18",
-    "55:20B,YOI_20_ADULT_18",
+    "55:20A,YOI_20",
+    "55:20B,YOI_20",
     "55:24,YOI_24_ADULT_21",
     "51:1A,YOI_2_ADULT_1A",
     "51:1B,YOI_1_ADULT_1",
@@ -71,13 +72,13 @@ class OffenceCodeParagraphDescriptionsTest {
     "51:25Z,YOI_26_ADULT_23",
     "51:9,ADULT_9",
     "51:12AQ,YOI_13_ADULT_12",
-    "51:10,YOI_11_ADULT_10",
+    "51:10,ADULT_10",
     "51:11,ADULT_11",
     "51:16,ADULT_16",
     "51:17,ADULT_17",
-    "51:19B,YOI_21_ADULT_19",
-    "51:19C,YOI_21_ADULT_19",
-    "51:19A,YOI_21_ADULT_19",
+    "51:19B,ADULT_19",
+    "51:19C,ADULT_19",
+    "51:19A,ADULT_19",
     "51:20A,YOI_23_ADULT_20A",
     "51:20,YOI_22_ADULT_20",
     "51:22,YOI_25_ADULT_22",
@@ -88,8 +89,8 @@ class OffenceCodeParagraphDescriptionsTest {
     "51:2B,YOI_3_ADULT_2",
     "51:3,ADULT_3",
     "51:6,ADULT_6",
-    "51:18A,YOI_20_ADULT_18",
-    "51:18B,YOI_20_ADULT_18",
+    "51:18A,ADULT_18",
+    "51:18B,ADULT_18",
     "51:21,YOI_24_ADULT_21",
     "51:17A,ADULT_17A",
   )
