@@ -35,10 +35,10 @@ enum class Descriptions(val description: String) {
   YOI_5_ADULT_4("Fights with any person"),
   YOI_6_ADULT_5("Intentionally endangers the health or personal safety of others or, by his conduct, is reckless whether such health or personal safety is endangered"),
   YOI_13_ADULT_12(
-    "Has in his possession:\n" +
-      "\n" +
-      "(a) any unauthorised article, or\n" +
-      "\n" +
+    "Has in his possession:<br>" +
+      "<br>" +
+      "(a) any unauthorised article, or<br>" +
+      "<br>" +
       "(b) a greater quantity of any article than he is authorised to have"
   ),
   YOI_14_ADULT_13("Sells or delivers to any person any unauthorised article"),
