@@ -55,14 +55,15 @@ class ReportedAdjudicationRepositoryTest {
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity)
-      .extracting("id", "prisonerNumber", "reportNumber", "bookingId", "agencyId", "createdByUserId")
+      .extracting("id", "prisonerNumber", "reportNumber", "bookingId", "agencyId", "createdByUserId", "gender")
       .contains(
         adjudication.id,
         adjudication.prisonerNumber,
         adjudication.reportNumber,
         adjudication.bookingId,
         adjudication.agencyId,
-        adjudication.createdByUserId
+        adjudication.createdByUserId,
+        adjudication.gender,
       )
 
     assertThat(savedEntity)

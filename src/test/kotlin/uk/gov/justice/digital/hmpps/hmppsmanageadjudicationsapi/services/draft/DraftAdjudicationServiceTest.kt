@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentSta
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
@@ -45,6 +46,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     val draftAdjudication = DraftAdjudication(
       id = 1,
       prisonerNumber = "A12345",
+      gender = Gender.MALE,
       agencyId = "MDI",
       incidentDetails = incidentDetails(2L, DATE_TIME_OF_INCIDENT),
     )
@@ -54,6 +56,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       assertThatThrownBy {
         draftAdjudicationService.startNewAdjudication(
           "A12345",
+          Gender.MALE,
           "MDI",
           2L,
           DATE_TIME_OF_INCIDENT,
@@ -70,6 +73,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       val draftAdjudication =
         draftAdjudicationService.startNewAdjudication(
           "A12345",
+          Gender.MALE,
           "MDI",
           2L,
           DATE_TIME_OF_INCIDENT,
@@ -81,8 +85,8 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(draftAdjudication)
-        .extracting("id", "prisonerNumber")
-        .contains(1L, "A12345")
+        .extracting("id", "prisonerNumber", "gender")
+        .contains(1L, "A12345", Gender.MALE)
 
       assertThat(draftAdjudication.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
@@ -118,6 +122,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         DraftAdjudication(
           id = 1,
           prisonerNumber = "A12345",
+          gender = Gender.MALE,
           agencyId = "MDI",
           incidentDetails = incidentDetails(2L, now),
           incidentRole = incidentRoleWithAllValuesSet(),
@@ -218,6 +223,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, now),
         offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
@@ -232,6 +238,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, now),
         offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
@@ -326,6 +333,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           DraftAdjudication(
             id = 1,
             prisonerNumber = "A12345",
+            gender = Gender.MALE,
             agencyId = "MDI",
             incidentDetails = incidentDetails(2L, now),
             incidentRole = IncidentRole(null, "25a", null, null),
@@ -354,6 +362,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, now),
         incidentRole = incidentRoleWithNoValuesSet(),
@@ -431,6 +440,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, clock),
         incidentRole = incidentRoleWithNoValuesSet(),
@@ -467,6 +477,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
             DraftAdjudication(
               id = 1,
               prisonerNumber = "A12345",
+              gender = Gender.MALE,
               agencyId = "MDI",
               incidentDetails = incidentDetails(2L, clock),
               incidentRole = incidentRoleWithNoValuesSet(),
@@ -513,6 +524,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           id = 1,
@@ -570,6 +582,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       val draftAdjudicationEntity = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           id = 1,
@@ -638,6 +651,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           DraftAdjudication(
             id = 1,
             prisonerNumber = "A12345",
+            gender = Gender.MALE,
             agencyId = "MDI",
             incidentDetails = incidentDetails(2L, clock),
             incidentRole = incidentRoleWithNoValuesSet(),
@@ -659,6 +673,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         val draftAdjudicationEntity = DraftAdjudication(
           id = 1,
           prisonerNumber = "A12345",
+          gender = Gender.MALE,
           agencyId = "MDI",
           incidentDetails = incidentDetails(2L, clock),
           incidentRole = incidentRoleWithNoValuesSet(),
@@ -705,6 +720,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           DraftAdjudication(
             id = 1,
             prisonerNumber = "A12345",
+            gender = Gender.MALE,
             agencyId = "MDI",
             incidentDetails = IncidentDetails(
               id = 2,
@@ -724,6 +740,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           DraftAdjudication(
             id = 2,
             prisonerNumber = "A12346",
+            gender = Gender.MALE,
             agencyId = "MDI",
             incidentDetails = incidentDetails(3L, clock),
             incidentRole = incidentRoleWithNoValuesSet(),
@@ -802,6 +819,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, now),
         incidentRole = incidentRoleWithAllValuesSet(),
@@ -880,6 +898,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, now),
         incidentRole = incidentRoleWithAllValuesSet(),

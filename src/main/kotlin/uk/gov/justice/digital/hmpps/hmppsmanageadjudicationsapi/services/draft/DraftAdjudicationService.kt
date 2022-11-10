@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
@@ -83,6 +84,7 @@ class DraftAdjudicationService(
 
   fun startNewAdjudication(
     prisonerNumber: String,
+    gender: Gender,
     agencyId: String,
     locationId: Long,
     dateTimeOfIncident: LocalDateTime,
@@ -94,6 +96,7 @@ class DraftAdjudicationService(
 
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
+      gender = gender,
       agencyId = agencyId,
       incidentDetails = IncidentDetails(
         locationId = locationId,

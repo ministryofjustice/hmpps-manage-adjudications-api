@@ -2,12 +2,14 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDateTime
 
 data class AdjudicationIntTestDataSet(
   val adjudicationNumber: Long,
   val prisonerNumber: String,
+  val gender: Gender = Gender.MALE,
   val bookingId: Long,
   val agencyId: String,
   val locationId: Long,

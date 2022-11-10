@@ -264,6 +264,7 @@ class IntegrationTestData(
       .bodyValue(
         mapOf(
           "prisonerNumber" to testDataSet.prisonerNumber,
+          "gender" to testDataSet.gender.name,
           "agencyId" to testDataSet.agencyId,
           "locationId" to testDataSet.locationId,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,

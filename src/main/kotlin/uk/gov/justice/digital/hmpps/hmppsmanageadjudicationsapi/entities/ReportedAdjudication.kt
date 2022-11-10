@@ -18,6 +18,9 @@ import javax.persistence.Table
 data class ReportedAdjudication(
   override val id: Long? = null,
   var prisonerNumber: String,
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  var gender: Gender,
   var bookingId: Long,
   var reportNumber: Long,
   var agencyId: String,

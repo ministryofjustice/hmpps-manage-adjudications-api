@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDet
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationWorkflowService
 
 @WebMvcTest(value = [ReportedAdjudicationWorkflowController::class])
@@ -29,6 +30,7 @@ class ReportedAdjudicationWorkflowControllerTest : TestControllerBase() {
         id = 1,
         adjudicationNumber = 123L,
         prisonerNumber = "A12345",
+        gender = Gender.MALE,
         incidentDetails = IncidentDetailsDto(
           locationId = 2,
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
