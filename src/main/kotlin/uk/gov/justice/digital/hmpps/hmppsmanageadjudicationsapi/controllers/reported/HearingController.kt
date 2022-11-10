@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported
 
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.Parameters
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
@@ -88,12 +86,6 @@ class HearingController(
   }
 
   @Operation(summary = "Get a list of hearings for a given date and agency")
-  @Parameters(
-    Parameter(
-      name = "hearingDate",
-      description = "date of hearings"
-    ),
-  )
   @GetMapping(value = ["/hearings/agency/{agencyId}"])
   fun getAllHearingsByAgencyAndDate(
     @PathVariable(name = "agencyId") agencyId: String,

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.format.annotation.DateTimeFormat
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDateTime
 
@@ -15,6 +16,8 @@ data class DraftAdjudicationDto(
   val adjudicationNumber: Long?,
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
+  @Schema(description = "Gender applied for adjuducation rules", example = "MALE")
+  val gender: Gender,
   @Schema(description = "Incident details")
   val incidentDetails: IncidentDetailsDto,
   @Schema(description = "Information about the role of this prisoner in the incident")

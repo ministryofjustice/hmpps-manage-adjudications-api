@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -46,6 +47,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           any(),
           any(),
           any(),
+          any(),
           anyOrNull(),
         )
       ).thenReturn(
@@ -66,6 +68,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
       verify(draftAdjudicationService).startNewAdjudication(
         "A12345",
+        Gender.MALE,
         "MDI",
         1,
         DATE_TIME_OF_INCIDENT,
@@ -110,6 +113,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         if (locationId == null && dateTimeOfIncident == null && prisonerNumber == null) "" else objectMapper.writeValueAsString(
           mapOf(
             "prisonerNumber" to prisonerNumber,
+            "gender" to Gender.MALE.name,
             "agencyId" to agencyId,
             "locationId" to locationId,
             "dateTimeOfIncident" to dateTimeOfIncident,
@@ -143,6 +147,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           id = 1,
           adjudicationNumber = null,
           prisonerNumber = "A12345",
+          gender = Gender.MALE,
           incidentDetails = IncidentDetailsDto(
             locationId = 1L,
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
@@ -180,6 +185,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           id = 1,
           adjudicationNumber = null,
           prisonerNumber = "A12345",
+          gender = Gender.MALE,
           incidentDetails = IncidentDetailsDto(
             locationId = 1L,
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
@@ -423,6 +429,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             id = 1,
             adjudicationNumber = null,
             prisonerNumber = "A12345",
+            gender = Gender.MALE,
             incidentDetails = IncidentDetailsDto(
               locationId = 1,
               dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
@@ -436,6 +443,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             id = 2,
             adjudicationNumber = null,
             prisonerNumber = "A12346",
+            gender = Gender.MALE,
             incidentDetails = IncidentDetailsDto(
               locationId = 2,
               dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1),

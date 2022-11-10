@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import java.time.LocalDateTime
@@ -29,6 +30,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
   private val draftAdjudicationEntity = DraftAdjudication(
     id = 1,
     prisonerNumber = "A12345",
+    gender = Gender.MALE,
     agencyId = "MDI",
     incidentDetails = DraftAdjudicationServiceTest.incidentDetails(2L, clock),
     incidentRole = DraftAdjudicationServiceTest.incidentRoleWithNoValuesSet(),
@@ -132,6 +134,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     val existingDraftAdjudicationEntity = DraftAdjudication(
       id = 1,
       prisonerNumber = "A12345",
+      gender = Gender.MALE,
       agencyId = "MDI",
       incidentDetails = IncidentDetails(
         locationId = 1,
@@ -194,6 +197,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     val draftAdjudicationEntity = DraftAdjudication(
       id = 1,
       prisonerNumber = "A12345",
+      gender = Gender.MALE,
       agencyId = "MDI",
       incidentDetails = DraftAdjudicationServiceTest.incidentDetails(2L, clock),
       incidentRole = DraftAdjudicationServiceTest.incidentRoleWithNoValuesSet(),

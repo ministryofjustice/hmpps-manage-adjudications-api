@@ -11,6 +11,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
@@ -27,6 +28,7 @@ class DraftWitnessesServiceTest : DraftAdjudicationTestBase() {
     DraftAdjudication(
       id = 1,
       prisonerNumber = "A12345",
+      gender = Gender.MALE,
       agencyId = "MDI",
       incidentDetails = DraftAdjudicationServiceTest.incidentDetails(2L, now),
       incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),

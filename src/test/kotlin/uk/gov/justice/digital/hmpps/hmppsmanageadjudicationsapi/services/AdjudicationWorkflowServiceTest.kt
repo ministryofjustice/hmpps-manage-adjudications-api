@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageC
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
@@ -69,6 +70,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
     private val expectedSavedDraftAdjudication = DraftAdjudication(
       prisonerNumber = "A12345",
+      gender = Gender.MALE,
       reportNumber = 1235L,
       reportByUserId = "A_SMITH",
       agencyId = "MDI",
@@ -139,8 +141,8 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       val createdDraft = adjudicationWorkflowService.createDraftFromReportedAdjudication(123)
 
       assertThat(createdDraft)
-        .extracting("prisonerNumber", "id", "adjudicationNumber", "startedByUserId")
-        .contains("A12345", 1L, 1235L, "A_SMITH")
+        .extracting("prisonerNumber", "id", "adjudicationNumber", "startedByUserId", "gender")
+        .contains("A12345", 1L, 1235L, "A_SMITH", Gender.MALE)
       assertThat(createdDraft.incidentDetails)
         .extracting("dateTimeOfIncident", "handoverDeadline", "locationId")
         .contains(
@@ -210,6 +212,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       val draft = DraftAdjudication(
         id = 1,
         prisonerNumber = "A12345",
+        gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = incidentDetails(1L, INCIDENT_TIME),
         incidentRole = incidentRoleWithAllValuesSet(),
@@ -249,8 +252,8 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
-        .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId")
-        .contains("A12345", 123456L, 1L, "MDI")
+        .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId", "gender")
+        .contains("A12345", 123456L, 1L, "MDI", Gender.MALE)
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting(
@@ -345,6 +348,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         Optional.of(
           DraftAdjudication(
             prisonerNumber = "A12345",
+            gender = Gender.MALE,
             agencyId = "MDI",
             incidentDetails = incidentDetails(2L, now),
           ).also {
@@ -400,6 +404,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           DraftAdjudication(
             id = 1,
             prisonerNumber = "A12345",
+            gender = Gender.MALE,
             reportNumber = 123,
             agencyId = "MDI",
             incidentDetails = incidentDetails(2L, INCIDENT_TIME),
@@ -472,6 +477,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           DraftAdjudication(
             id = 1,
             prisonerNumber = "A12345",
+            gender = Gender.MALE,
             reportNumber = 123L,
             reportByUserId = "A_SMITH",
             agencyId = "MDI",

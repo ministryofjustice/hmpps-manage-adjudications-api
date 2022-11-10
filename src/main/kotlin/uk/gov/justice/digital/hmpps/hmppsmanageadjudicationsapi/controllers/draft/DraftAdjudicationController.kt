@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import java.time.LocalDateTime
 import javax.validation.Valid
@@ -24,6 +25,8 @@ import javax.validation.constraints.Size
 data class NewAdjudicationRequest(
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
+  @Schema(description = "Gender applied for adjuducation rules", example = "MALE")
+  val gender: Gender = Gender.MALE, // default when nothing set
   @Schema(description = "The agency id (or caseload) associated with this adjudication", example = "MDI")
   val agencyId: String,
   @Schema(description = "The id of the location the incident took place")
@@ -116,6 +119,7 @@ class DraftAdjudicationController(
     val draftAdjudication = draftAdjudicationService
       .startNewAdjudication(
         newAdjudicationRequest.prisonerNumber,
+        newAdjudicationRequest.gender,
         newAdjudicationRequest.agencyId,
         newAdjudicationRequest.locationId,
         newAdjudicationRequest.dateTimeOfIncident,

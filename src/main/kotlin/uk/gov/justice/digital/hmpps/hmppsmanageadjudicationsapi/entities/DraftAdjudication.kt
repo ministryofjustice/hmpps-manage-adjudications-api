@@ -1,7 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
 import javax.persistence.CascadeType
+import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.JoinColumn
 import javax.persistence.OneToMany
@@ -13,6 +16,9 @@ import javax.persistence.Table
 data class DraftAdjudication(
   override val id: Long? = null,
   val prisonerNumber: String,
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  val gender: Gender,
   val reportNumber: Long? = null,
   val reportByUserId: String? = null,
   var isYouthOffender: Boolean? = null,
@@ -42,3 +48,7 @@ data class DraftAdjudication(
   var evidenceSaved: Boolean? = null,
   var witnessesSaved: Boolean? = null,
 ) : BaseEntity()
+
+enum class Gender {
+  MALE, FEMALE;
+}

@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import java.util.Optional
 import javax.persistence.EntityNotFoundException
@@ -28,6 +29,7 @@ class DraftDamagesServiceTest : DraftAdjudicationTestBase() {
     DraftAdjudication(
       id = 1,
       prisonerNumber = "A12345",
+      gender = Gender.MALE,
       agencyId = "MDI",
       incidentDetails = DraftAdjudicationServiceTest.incidentDetails(2L, now),
       incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),

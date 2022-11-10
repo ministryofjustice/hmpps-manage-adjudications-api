@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageC
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
@@ -42,8 +43,8 @@ class DraftAdjudicationRepositoryTest {
     val savedEntity = entityManager.persistAndFlush(draft)
 
     assertThat(savedEntity)
-      .extracting("id", "prisonerNumber", "agencyId", "createdByUserId")
-      .contains(savedEntity.id, draft.prisonerNumber, draft.agencyId, "ITAG_USER")
+      .extracting("id", "prisonerNumber", "agencyId", "createdByUserId", "gender")
+      .contains(savedEntity.id, draft.prisonerNumber, draft.agencyId, "ITAG_USER", Gender.MALE)
 
     assertThat(savedEntity.incidentDetails)
       .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
@@ -197,6 +198,7 @@ class DraftAdjudicationRepositoryTest {
     entityManager.persistAndFlush(
       DraftAdjudication(
         prisonerNumber = "A12345",
+        gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           locationId = 2,
@@ -215,6 +217,7 @@ class DraftAdjudicationRepositoryTest {
     entityManager.persistAndFlush(
       DraftAdjudication(
         prisonerNumber = "A12346",
+        gender = Gender.MALE,
         agencyId = "LEI",
         incidentDetails = IncidentDetails(
           locationId = 2,
@@ -233,6 +236,7 @@ class DraftAdjudicationRepositoryTest {
     entityManager.persistAndFlush(
       DraftAdjudication(
         prisonerNumber = "A12347",
+        gender = Gender.MALE,
         reportNumber = 123,
         reportByUserId = "A_SMITH",
         agencyId = "MDI",
@@ -294,6 +298,7 @@ class DraftAdjudicationRepositoryTest {
   private fun newDraft(): DraftAdjudication {
     return DraftAdjudication(
       prisonerNumber = "A12345",
+      gender = Gender.MALE,
       agencyId = "MDI",
       incidentDetails = IncidentDetails(
         locationId = 2,
@@ -314,6 +319,7 @@ class DraftAdjudicationRepositoryTest {
     return DraftAdjudication(
       reportNumber = reportNumber,
       prisonerNumber = "A12345",
+      gender = Gender.MALE,
       agencyId = "MDI",
       incidentDetails = IncidentDetails(
         locationId = 2,

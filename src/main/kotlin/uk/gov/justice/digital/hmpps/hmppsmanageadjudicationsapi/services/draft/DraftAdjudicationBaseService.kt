@@ -57,6 +57,7 @@ open class DraftAdjudicationBaseService(
     DraftAdjudicationDto(
       id = this.id!!,
       prisonerNumber = this.prisonerNumber,
+      gender = this.gender,
       incidentStatement = this.incidentStatement?.toDto(),
       incidentDetails = this.incidentDetails.toDto(),
       incidentRole = this.incidentRole?.toDto(this.isYouthOffender!!),

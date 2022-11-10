@@ -10,6 +10,7 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConfiguration
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
@@ -42,6 +43,7 @@ class BaseEntityTest {
   private fun newDraft(): DraftAdjudication {
     return DraftAdjudication(
       prisonerNumber = "A12345",
+      gender = Gender.MALE,
       agencyId = "MDI",
       incidentDetails = IncidentDetails(
         locationId = 2,

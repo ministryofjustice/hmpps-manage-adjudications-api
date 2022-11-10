@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -47,6 +48,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
+      .jsonPath("$.draftAdjudication.gender").isEqualTo(Gender.MALE.name)
       .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo("ITAG_USER")
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfDiscovery").isEqualTo("2010-10-13T10:00:00")
