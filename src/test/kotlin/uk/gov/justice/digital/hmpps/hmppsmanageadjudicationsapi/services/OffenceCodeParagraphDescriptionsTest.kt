@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.EnumSource
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 
 class OffenceCodeParagraphDescriptionsTest {
   // this test class was primarily used to refactor the existing code and has less value now its completed.
@@ -95,6 +97,31 @@ class OffenceCodeParagraphDescriptionsTest {
     "51:17A,ADULT_17A",
   )
   fun `get paragraph by offence code`(code: String, answer: String) {
-    assert(offenceCodeParagraphs.getParagraphDescription(code) == Descriptions.valueOf(answer).description)
+    assert(offenceCodeParagraphs.getParagraphDescription(code, Gender.MALE).trim().isNotEmpty())
+  }
+
+  @ParameterizedTest
+  @EnumSource(Gender::class)
+  fun `pronouns test`(gender: Gender) {
+    assert(
+      offenceCodeParagraphs.getParagraphDescription(nomisPrefixOffenceCode = "51:8D", gender = gender).contains(
+        gender.pronouns.first { it.type == PronounTypes.OBJECT_PERSONAL }.value
+      )
+    )
+    assert(
+      offenceCodeParagraphs.getParagraphDescription(nomisPrefixOffenceCode = "55:6", gender = gender).contains(
+        gender.pronouns.first { it.type == PronounTypes.POSSESSIVE }.value
+      )
+    )
+    assert(
+      offenceCodeParagraphs.getParagraphDescription(nomisPrefixOffenceCode = "55:26B", gender = gender).contains(
+        gender.pronouns.first { it.type == PronounTypes.SUBJECT_PERSONAL }.value
+      )
+    )
+    assert(
+      offenceCodeParagraphs.getParagraphDescription(nomisPrefixOffenceCode = "51:18A", gender = gender).contains(
+        gender.pronouns.first { it.type == PronounTypes.REFLEXIVE }.value
+      )
+    )
   }
 }

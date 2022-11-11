@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 
 @Service
 class OffenceCodeLookupService {
@@ -15,9 +16,9 @@ class OffenceCodeLookupService {
   fun getParagraphNumber(offenceCode: Int, isYouthOffender: Boolean): String =
     offenceDetails(offenceCode, isYouthOffender)?.paragraphNumber ?: OffenceCodeDefaults.DEFAULT_PARAGRAPH_DATA
 
-  fun getParagraphDescription(offenceCode: Int, isYouthOffender: Boolean): String {
+  fun getParagraphDescription(offenceCode: Int, isYouthOffender: Boolean, gender: Gender = Gender.MALE): String {
     val offenceCodeDetails = offenceDetails(offenceCode, isYouthOffender) ?: return Descriptions.DEFAULT.description
-    return offenceCodeParagraphs.getParagraphDescription(offenceCodeDetails.nomisCode)
+    return offenceCodeParagraphs.getParagraphDescription(offenceCodeDetails.nomisCode, gender)
   }
 
   private fun offenceDetails(offenceCode: Int, isYouthOffender: Boolean): OffenceCodeDetails? =

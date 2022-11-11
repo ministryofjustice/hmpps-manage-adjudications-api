@@ -444,13 +444,13 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   @Test
   fun `gets adult offence rule details`() {
     webTestClient.get()
-      .uri("/draft-adjudications/offence-rule/3001?youthOffender=false")
+      .uri("/draft-adjudications/offence-rule/9001?youthOffender=false")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.paragraphNumber").isEqualTo(3)
-      .jsonPath("$.paragraphDescription").isEqualTo("Denies access to any part of the prison to any officer or any person (other than a prisoner) who is at the prison for the purpose of working there")
+      .jsonPath("$.paragraphNumber").isEqualTo(9)
+      .jsonPath("$.paragraphDescription").isEqualTo("Is found with any substance in his urine which demonstrates that a controlled drug, pharmacy medication, prescription only medicine, psychoactive substance or specified substance has, whether in prison or while on temporary release under rule 9, been administered to him by himself or by another person (but subject to Rule 52)")
   }
 
   @Test

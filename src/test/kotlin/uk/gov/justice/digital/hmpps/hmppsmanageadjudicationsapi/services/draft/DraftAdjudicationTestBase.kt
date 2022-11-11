@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft
 
-import com.microsoft.applicationinsights.TelemetryClient
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -26,7 +25,6 @@ abstract class DraftAdjudicationTestBase : TestsToImplement {
   internal val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   internal val offenceCodeLookupService: OffenceCodeLookupService = mock()
   internal val authenticationFacade: AuthenticationFacade = mock()
-  internal val telemetryClient: TelemetryClient = mock()
 
   @BeforeEach
   fun beforeEach() {

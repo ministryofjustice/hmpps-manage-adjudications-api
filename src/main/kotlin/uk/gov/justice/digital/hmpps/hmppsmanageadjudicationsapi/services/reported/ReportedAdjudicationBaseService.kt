@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedDamageDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedEvidenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedWitnessDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
@@ -42,7 +43,7 @@ open class ReportedDtoService(
       associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
       associatedPrisonersName = incidentRoleAssociatedPrisonersName,
     ),
-    offenceDetails = toReportedOffence(offenceDetails, isYouthOffender, offenceCodeLookupService),
+    offenceDetails = toReportedOffence(offenceDetails, isYouthOffender, gender, offenceCodeLookupService),
     incidentStatement = IncidentStatementDto(
       statement = statement,
       completed = true,
@@ -59,13 +60,18 @@ open class ReportedDtoService(
     hearings = toHearings(hearings),
   )
 
-  private fun toReportedOffence(offences: MutableList<ReportedOffence>, isYouthOffender: Boolean, offenceCodeLookupService: OffenceCodeLookupService): List<OffenceDto> =
+  private fun toReportedOffence(
+    offences: MutableList<ReportedOffence>,
+    isYouthOffender: Boolean,
+    gender: Gender,
+    offenceCodeLookupService: OffenceCodeLookupService
+  ): List<OffenceDto> =
     offences.map { offence ->
       OffenceDto(
         offenceCode = offence.offenceCode,
         offenceRule = OffenceRuleDto(
           paragraphNumber = offenceCodeLookupService.getParagraphNumber(offence.offenceCode, isYouthOffender),
-          paragraphDescription = offenceCodeLookupService.getParagraphDescription(offence.offenceCode, isYouthOffender),
+          paragraphDescription = offenceCodeLookupService.getParagraphDescription(offence.offenceCode, isYouthOffender, gender),
         ),
         victimPrisonersNumber = offence.victimPrisonersNumber,
         victimStaffUsername = offence.victimStaffUsername,
