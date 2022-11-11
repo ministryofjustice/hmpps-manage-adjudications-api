@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftOffenceService
 import javax.validation.Valid
 
@@ -61,5 +62,6 @@ class DraftOffenceController(
   fun getOffenceRule(
     @PathVariable(name = "offenceCode") offenceCode: Int,
     @RequestParam(value = "youthOffender") isYouthOffender: Boolean,
-  ): OffenceRuleDetailsDto = incidentOffenceService.lookupRuleDetails(offenceCode, isYouthOffender)
+    @RequestParam(value = "gender", required = false) gender: Gender?
+  ): OffenceRuleDetailsDto = incidentOffenceService.lookupRuleDetails(offenceCode, isYouthOffender, gender ?: Gender.MALE)
 }

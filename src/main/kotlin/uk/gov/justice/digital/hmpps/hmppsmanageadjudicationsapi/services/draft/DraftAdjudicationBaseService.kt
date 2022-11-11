@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.WitnessDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
@@ -61,7 +62,7 @@ open class DraftAdjudicationBaseService(
       incidentStatement = this.incidentStatement?.toDto(),
       incidentDetails = this.incidentDetails.toDto(),
       incidentRole = this.incidentRole?.toDto(this.isYouthOffender!!),
-      offenceDetails = this.offenceDetails?.map { it.toDto(offenceCodeLookupService, this.isYouthOffender!!) },
+      offenceDetails = this.offenceDetails.map { it.toDto(offenceCodeLookupService, this.isYouthOffender!!, this.gender) },
       adjudicationNumber = this.reportNumber,
       startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
       isYouthOffender = this.isYouthOffender,
@@ -87,11 +88,11 @@ open class DraftAdjudicationBaseService(
     associatedPrisonersName = this.associatedPrisonersName,
   )
 
-  private fun Offence.toDto(offenceCodeLookupService: OffenceCodeLookupService, isYouthOffender: Boolean): OffenceDetailsDto = OffenceDetailsDto(
+  private fun Offence.toDto(offenceCodeLookupService: OffenceCodeLookupService, isYouthOffender: Boolean, gender: Gender): OffenceDetailsDto = OffenceDetailsDto(
     offenceCode = this.offenceCode,
     offenceRule = OffenceRuleDetailsDto(
       paragraphNumber = offenceCodeLookupService.getParagraphNumber(offenceCode, isYouthOffender),
-      paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode, isYouthOffender),
+      paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode, isYouthOffender, gender),
     ),
     victimPrisonersNumber = this.victimPrisonersNumber,
     victimStaffUsername = this.victimStaffUsername,

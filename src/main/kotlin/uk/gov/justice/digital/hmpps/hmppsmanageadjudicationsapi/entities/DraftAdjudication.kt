@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Pronouns
 import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -49,6 +50,9 @@ data class DraftAdjudication(
   var witnessesSaved: Boolean? = null,
 ) : BaseEntity()
 
-enum class Gender {
-  MALE, FEMALE;
+enum class Gender(
+  val pronouns: List<Pronouns>
+) {
+  MALE(Pronouns.male()),
+  FEMALE(Pronouns.female());
 }
