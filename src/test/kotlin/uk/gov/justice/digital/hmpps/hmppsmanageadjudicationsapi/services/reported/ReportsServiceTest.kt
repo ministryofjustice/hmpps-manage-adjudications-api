@@ -13,7 +13,6 @@ import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.Optional
 
 class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
@@ -54,7 +53,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         "MDI",
         LocalDate.now(),
         LocalDate.now(),
-        Optional.empty(),
+        ReportedAdjudicationStatus.values().toList(),
         Pageable.ofSize(20).withPage(0)
       )
 
@@ -73,7 +72,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         "MDI",
         LocalDate.now(),
         LocalDate.now(),
-        Optional.empty(),
+        ReportedAdjudicationStatus.values().toList(),
         Pageable.ofSize(20).withPage(0)
       )
 
@@ -120,7 +119,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         "MDI",
         LocalDate.now(),
         LocalDate.now(),
-        Optional.empty(),
+        ReportedAdjudicationStatus.values().toList(),
         Pageable.ofSize(20).withPage(0)
       )
 

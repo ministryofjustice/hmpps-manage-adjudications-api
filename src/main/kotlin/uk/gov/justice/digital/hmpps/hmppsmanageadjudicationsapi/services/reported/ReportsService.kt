@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Offence
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.Optional
 
 @Transactional(readOnly = true)
 @Service
@@ -21,18 +20,18 @@ class ReportsService(
   private val authenticationFacade: AuthenticationFacade,
   offenceCodeLookupService: OffenceCodeLookupService
 ) : ReportedDtoService(offenceCodeLookupService) {
-  fun getAllReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
+  fun getAllReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, statuses: List<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val reportedAdjudicationsPage =
       reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
         agencyId,
         reportsFrom(startDate),
         reportsTo(endDate),
-        statuses(status), pageable
+        statuses, pageable
       )
     return reportedAdjudicationsPage.map { it.toDto() }
   }
 
-  fun getMyReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, status: Optional<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
+  fun getMyReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, statuses: List<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val username = authenticationFacade.currentUsername
 
     val reportedAdjudicationsPage =
@@ -40,7 +39,7 @@ class ReportsService(
         username!!, agencyId,
         reportsFrom(startDate),
         reportsTo(endDate),
-        statuses(status), pageable
+        statuses, pageable
       )
     return reportedAdjudicationsPage.map { it.toDto() }
   }
@@ -48,6 +47,5 @@ class ReportsService(
   companion object {
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
     fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
-    fun statuses(status: Optional<ReportedAdjudicationStatus>): List<ReportedAdjudicationStatus> = status.map { listOf(it) }.orElse(ReportedAdjudicationStatus.values().toList())
   }
 }
