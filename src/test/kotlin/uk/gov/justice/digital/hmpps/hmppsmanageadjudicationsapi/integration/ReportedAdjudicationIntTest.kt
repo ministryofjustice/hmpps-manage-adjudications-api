@@ -190,7 +190,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val endDate = IntegrationTestData.ADJUDICATION_5.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
 
     webTestClient.get()
-      .uri("/reported-adjudications/my/agency/MDI?startDate=$startDate&endDate=$endDate&page=0&size=20")
+      .uri("/reported-adjudications/my/agency/MDI?status=AWAITING_REVIEW&startDate=$startDate&endDate=$endDate&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -239,7 +239,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val endDate = IntegrationTestData.ADJUDICATION_3.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/MDI?startDate=$startDate&endDate=$endDate&page=0&size=20")
+      .uri("/reported-adjudications/agency/MDI?status=AWAITING_REVIEW&startDate=$startDate&endDate=$endDate&page=0&size=20")
       .headers(setHeaders(username = "NEW_USER", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -251,7 +251,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
   @Test
   fun `get 403 without the relevant role when attempting to return reported adjudications for a caseload`() {
     webTestClient.get()
-      .uri("/reported-adjudications/agency/MDI?page=0&size=20")
+      .uri("/reported-adjudications/agency/MDI?status=SCHEDULED&page=0&size=20")
       .headers(setHeaders(username = "NEW_USER"))
       .exchange()
       .expectStatus().isForbidden

@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService
 import java.time.LocalDate
-import java.util.Optional
 
 @RestController
 class ReportsController(
@@ -50,24 +49,24 @@ class ReportsController(
     ),
     Parameter(
       name = "status",
-      required = false,
-      description = "optional status filter for reports"
+      required = true,
+      description = "list of status filter for reports"
     )
   )
   @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
   @GetMapping("/agency/{agencyId}")
   fun getReportedAdjudications(
     @PathVariable(name = "agencyId") agencyId: String,
-    @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: Optional<LocalDate>,
-    @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: Optional<LocalDate>,
-    @RequestParam(name = "status") status: Optional<ReportedAdjudicationStatus>,
+    @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
+    @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
+    @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
     @PageableDefault(sort = ["dateTimeOfIncident"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
   ): Page<ReportedAdjudicationDto> {
     return reportsService.getAllReportedAdjudications(
       agencyId,
-      startDate.orElse(LocalDate.now().minusDays(3)),
-      endDate.orElse(startDate.orElse(LocalDate.now())),
-      status,
+      startDate ?: LocalDate.now().minusDays(3),
+      endDate ?: startDate ?: LocalDate.now(),
+      statuses,
       pageable
     )
   }
@@ -99,23 +98,23 @@ class ReportsController(
     ),
     Parameter(
       name = "status",
-      required = false,
-      description = "optional status filter for reports"
+      required = true,
+      description = "list of status filter for reports"
     )
   )
   @GetMapping("/my/agency/{agencyId}")
   fun getMyReportedAdjudications(
     @PathVariable(name = "agencyId") agencyId: String,
-    @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: Optional<LocalDate>,
-    @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: Optional<LocalDate>,
-    @RequestParam(name = "status") status: Optional<ReportedAdjudicationStatus>,
+    @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
+    @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
+    @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
     @PageableDefault(sort = ["dateTimeOfIncident"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
   ): Page<ReportedAdjudicationDto> {
     return reportsService.getMyReportedAdjudications(
       agencyId,
-      startDate.orElse(LocalDate.now().minusDays(3)),
-      endDate.orElse(startDate.orElse(LocalDate.now())),
-      status,
+      startDate ?: LocalDate.now().minusDays(3),
+      endDate ?: startDate ?: LocalDate.now(),
+      statuses,
       pageable
     )
   }

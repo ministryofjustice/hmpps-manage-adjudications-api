@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService
 import java.time.LocalDate
-import java.util.Optional
 
 @WebMvcTest(value = [ReportsController::class])
 class ReportsControllerTest : TestControllerBase() {
@@ -55,7 +54,7 @@ class ReportsControllerTest : TestControllerBase() {
       getMyAdjudications().andExpect(MockMvcResultMatchers.status().isOk)
       verify(reportsService).getMyReportedAdjudications(
         "MDI",
-        LocalDate.now().minusDays(3), LocalDate.now(), Optional.empty(),
+        LocalDate.now().minusDays(3), LocalDate.now(), listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
         PageRequest.ofSize(20).withPage(0).withSort(
           Sort.by(
             Sort.Direction.DESC,
@@ -71,7 +70,7 @@ class ReportsControllerTest : TestControllerBase() {
       getAllAdjudications().andExpect(MockMvcResultMatchers.status().isOk)
       verify(reportsService).getAllReportedAdjudications(
         "MDI",
-        LocalDate.now().minusDays(3), LocalDate.now(), Optional.empty(),
+        LocalDate.now().minusDays(3), LocalDate.now(), listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
         PageRequest.ofSize(20).withPage(0).withSort(
           Sort.by(
             Sort.Direction.DESC,
@@ -95,7 +94,7 @@ class ReportsControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER")
     fun `returns my reported adjudications with date and status filter`() {
-      getMyAdjudicationsWithFilter(LocalDate.now().plusDays(5), ReportedAdjudicationStatus.AWAITING_REVIEW)
+      getMyAdjudicationsWithFilter(LocalDate.now().plusDays(5))
         .andExpect(MockMvcResultMatchers.status().isOk)
         .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").value(1))
         .andExpect(MockMvcResultMatchers.jsonPath("$.size").value(20))
@@ -106,7 +105,7 @@ class ReportsControllerTest : TestControllerBase() {
         "MDI",
         LocalDate.now().plusDays(5),
         LocalDate.now().plusDays(5),
-        Optional.of(ReportedAdjudicationStatus.AWAITING_REVIEW),
+        listOf(ReportedAdjudicationStatus.AWAITING_REVIEW),
         PageRequest.ofSize(20).withPage(0).withSort(
           Sort.by(
             Sort.Direction.DESC,
@@ -124,7 +123,7 @@ class ReportsControllerTest : TestControllerBase() {
     private fun getMyAdjudications(): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/my/agency/MDI?page=0&size=20&sort=incidentDate,DESC")
+          MockMvcRequestBuilders.get("/reported-adjudications/my/agency/MDI?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=incidentDate,DESC")
             .header("Content-Type", "application/json")
         )
     }
@@ -132,15 +131,15 @@ class ReportsControllerTest : TestControllerBase() {
     private fun getAllAdjudications(): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI?page=0&size=20&sort=incidentDate,DESC")
+          MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=incidentDate,DESC")
             .header("Content-Type", "application/json")
         )
     }
 
-    private fun getMyAdjudicationsWithFilter(date: LocalDate, reportedAdjudicationStatus: ReportedAdjudicationStatus): ResultActions {
+    private fun getMyAdjudicationsWithFilter(date: LocalDate): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/my/agency/MDI?startDate=$date&endDate=$date&status=$reportedAdjudicationStatus&page=0&size=20&sort=incidentDate,DESC")
+          MockMvcRequestBuilders.get("/reported-adjudications/my/agency/MDI?status=AWAITING_REVIEW&startDate=$date&endDate=$date&page=0&size=20&sort=incidentDate,DESC")
             .header("Content-Type", "application/json")
         )
     }
