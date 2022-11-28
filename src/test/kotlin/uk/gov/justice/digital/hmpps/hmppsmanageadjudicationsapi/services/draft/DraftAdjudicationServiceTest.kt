@@ -853,6 +853,41 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class SetGender {
+
+    private val draftAdjudication =
+      DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        gender = Gender.MALE,
+        agencyId = "MDI",
+        incidentDetails = incidentDetails(2L, now),
+        incidentRole = incidentRoleWithAllValuesSet(),
+        incidentStatement = IncidentStatement(
+          statement = "Example statement",
+          completed = false
+        ),
+        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY),
+        isYouthOffender = true
+      )
+
+    @Test
+    fun `sets gender`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+      whenever(offenceCodeLookupService.getParagraphDescription(2, true, Gender.FEMALE)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
+
+      val response = draftAdjudicationService.setGender(1, Gender.FEMALE)
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.gender).isEqualTo(Gender.FEMALE)
+      assertThat(response).isNotNull
+    }
+  }
+
   companion object {
 
     fun incidentDetails(locationId: Long, clock: Clock) = IncidentDetails(
@@ -1011,6 +1046,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
 
     assertThatThrownBy {
       draftAdjudicationService.setIncidentApplicableRule(1, false, true)
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("DraftAdjudication not found for 1")
+
+    assertThatThrownBy {
+      draftAdjudicationService.setGender(1, Gender.MALE)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("DraftAdjudication not found for 1")
   }

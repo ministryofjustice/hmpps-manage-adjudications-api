@@ -98,6 +98,12 @@ data class InProgressAdjudicationResponse(
   val draftAdjudications: List<DraftAdjudicationDto>
 )
 
+@Schema(description = "Request to update the gender")
+data class GenderRequest(
+  @Schema(description = "The gender", title = "Gender of prisoner", example = "MALE")
+  val gender: Gender,
+)
+
 @RestController
 @Validated
 class DraftAdjudicationController(
@@ -242,6 +248,23 @@ class DraftAdjudicationController(
       id,
       applicableRulesRequest.isYouthOffenderRule,
       applicableRulesRequest.removeExistingOffences,
+    )
+
+    return DraftAdjudicationResponse(
+      draftAdjudication
+    )
+  }
+
+  @PutMapping(value = ["/{id}/gender"])
+  @Operation(summary = "Set gender")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  fun setGender(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid genderRequest: GenderRequest
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.setGender(
+      id,
+      genderRequest.gender
     )
 
     return DraftAdjudicationResponse(

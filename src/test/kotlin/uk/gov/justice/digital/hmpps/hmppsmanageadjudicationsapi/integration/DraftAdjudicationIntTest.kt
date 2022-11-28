@@ -627,6 +627,28 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo("ITAG_USER")
   }
 
+  @Test
+  fun `set gender test`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
+
+    webTestClient.put()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/gender")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "gender" to Gender.FEMALE.name,
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.gender").isEqualTo(Gender.FEMALE.name)
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
   }
