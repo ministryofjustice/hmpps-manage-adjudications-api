@@ -873,7 +873,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       )
 
     @Test
-    fun `sets gender`() {
+    fun `sets gender to female`() {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
       whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
       whenever(offenceCodeLookupService.getParagraphDescription(2, true, Gender.FEMALE)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
