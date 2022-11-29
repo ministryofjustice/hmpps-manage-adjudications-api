@@ -57,6 +57,8 @@ data class ReportedAdjudication(
   @JoinColumn(name = "reported_adjudication_fk_id")
   var hearings: MutableList<Hearing>,
   var draftCreatedOn: LocalDateTime,
+  var issuingOfficer: String? = null,
+  var dateTimeOfIssue: LocalDateTime? = null,
 ) :
   BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reason: String? = null, details: String? = null, reviewUserId: String? = null) {

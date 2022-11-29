@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyLong
+import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -16,6 +17,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
+import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
 @WebMvcTest(value = [ReportedAdjudicationController::class])
@@ -118,6 +120,42 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       makeReportedAdjudicationSetStatusRequest(123, mapOf("status" to ReportedAdjudicationStatus.RETURNED)).andExpect(
         status().isUnauthorized
       )
+    }
+  }
+
+  @Nested
+  inner class Issued {
+
+    private val now = LocalDateTime.now()
+
+    private fun makeIssuedRequest(
+      adjudicationNumber: Long,
+      issuedRequest: IssueRequest
+    ): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.put("/reported-adjudications/$adjudicationNumber/issue")
+            .header("Content-Type", "application/json")
+            .content(objectMapper.writeValueAsString(issuedRequest))
+        )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      makeIssuedRequest(1, IssueRequest(now))
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds successfully from issued details request `() {
+      whenever(
+        reportedAdjudicationService.setIssued(anyLong(), any())
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+
+      makeIssuedRequest(1, IssueRequest(now))
+        .andExpect(status().isOk)
+      verify(reportedAdjudicationService).setIssued(1, now)
     }
   }
 }

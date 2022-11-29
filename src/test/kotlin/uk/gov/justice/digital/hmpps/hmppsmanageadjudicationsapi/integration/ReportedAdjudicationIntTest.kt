@@ -927,6 +927,41 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo(reportedAdjudication.reportedAdjudication.hearings.first().oicHearingType.name)
   }
 
+  @Test
+  fun `set issued details for DIS form `() {
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addIncidentStatement()
+      .addDamages()
+      .addEvidence()
+      .addWitnesses()
+      .completeDraft()
+
+    val dateTimeOfIssue = LocalDateTime.of(2022, 11, 29, 10, 0)
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/issue")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "dateTimeOfIssue" to dateTimeOfIssue
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.issuingOfficer").isEqualTo("ITAG_USER")
+      .jsonPath("$.reportedAdjudication.dateTimeOfIssue").isEqualTo("2022-11-29T10:00:00")
+  }
+
   private fun initMyReportData() {
     val intTestData = integrationTestData()
 

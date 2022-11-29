@@ -58,6 +58,8 @@ open class ReportedDtoService(
     statusReason = statusReason,
     statusDetails = statusDetails,
     hearings = toHearings(hearings),
+    issuingOfficer = issuingOfficer,
+    dateTimeOfIssue = dateTimeOfIssue,
   )
 
   private fun toReportedOffence(
