@@ -291,14 +291,26 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @Test
     fun `responds with a unauthorised status code`() {
-      editIncidentDetailsRequest(1, 1, DATE_TIME_OF_INCIDENT, DATE_TIME_OF_INCIDENT.plusDays(1), INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+      editIncidentDetailsRequest(
+        1,
+        1,
+        DATE_TIME_OF_INCIDENT,
+        DATE_TIME_OF_INCIDENT.plusDays(1),
+        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST
+      )
         .andExpect(status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `makes a call to edit the incident details`() {
-      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, DATE_TIME_OF_INCIDENT.plusDays(1), INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+      editIncidentDetailsRequest(
+        1,
+        2,
+        DATE_TIME_OF_INCIDENT,
+        DATE_TIME_OF_INCIDENT.plusDays(1),
+        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST
+      )
         .andExpect(status().isOk)
 
       verify(draftAdjudicationService).editIncidentDetails(
@@ -312,7 +324,13 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `returns the incident details`() {
-      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, DATE_TIME_OF_INCIDENT.plusDays(1), INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+      editIncidentDetailsRequest(
+        1,
+        2,
+        DATE_TIME_OF_INCIDENT,
+        DATE_TIME_OF_INCIDENT.plusDays(1),
+        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST
+      )
         .andExpect(status().isOk)
         .andExpect(jsonPath("$.draftAdjudication.id").isNumber)
         .andExpect(jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
@@ -634,6 +652,51 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class AmendGender {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        draftAdjudicationService.setGender(
+          anyLong(),
+          any(),
+        )
+      ).thenReturn(draftAdjudicationDto())
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      setGenderRequest(1, GENDER_REQUEST)
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the gender`() {
+      setGenderRequest(1, GENDER_REQUEST)
+        .andExpect(status().isOk)
+
+      verify(draftAdjudicationService).setGender(
+        1,
+        GENDER_REQUEST.gender,
+      )
+    }
+
+    private fun setGenderRequest(
+      id: Long,
+      genderRequest: GenderRequest
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(genderRequest)
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/gender")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
@@ -642,6 +705,8 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     private val INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO = IncidentRoleDto(null, null, null, null)
 
-    private val ASSOCIATED_PRISONER_WITH_ALL_VALUES_REQUEST = IncidentRoleAssociatedPrisonerRequest("B23456", "Associated Prisoner")
+    private val ASSOCIATED_PRISONER_WITH_ALL_VALUES_REQUEST =
+      IncidentRoleAssociatedPrisonerRequest("B23456", "Associated Prisoner")
+    private val GENDER_REQUEST = GenderRequest(Gender.MALE)
   }
 }

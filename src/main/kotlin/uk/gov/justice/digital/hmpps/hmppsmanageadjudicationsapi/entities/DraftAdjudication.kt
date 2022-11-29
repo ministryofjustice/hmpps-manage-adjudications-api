@@ -19,7 +19,7 @@ data class DraftAdjudication(
   val prisonerNumber: String,
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  val gender: Gender,
+  var gender: Gender,
   val reportNumber: Long? = null,
   val reportByUserId: String? = null,
   var isYouthOffender: Boolean? = null,

@@ -222,6 +222,14 @@ class DraftAdjudicationService(
     return saveToDto(draftAdjudication)
   }
 
+  fun setGender(id: Long, gender: Gender): DraftAdjudicationDto {
+    val draftAdjudication = find(id)
+
+    draftAdjudication.gender = gender
+
+    return saveToDto(draftAdjudication)
+  }
+
   fun getCurrentUsersInProgressDraftAdjudications(agencyId: String): List<DraftAdjudicationDto> {
     val username = authenticationFacade.currentUsername ?: return emptyList()
     return getInProgress(agencyId, username)
