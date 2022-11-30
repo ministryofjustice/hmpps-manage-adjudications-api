@@ -48,8 +48,8 @@ class ReportsService(
     reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetween(
       agencyId = agencyId, startDate = reportsFrom(startDate), endDate = reportsTo(endDate)
     ).filter { it.status.canBeIssued() && locationOrAll(it.locationId, locationId) }
+      .sortedBy { it.dateTimeOfDiscovery }
       .map { it.toDto() }
-      .sortedBy { it.incidentDetails.dateTimeOfDiscovery }
 
   companion object {
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
