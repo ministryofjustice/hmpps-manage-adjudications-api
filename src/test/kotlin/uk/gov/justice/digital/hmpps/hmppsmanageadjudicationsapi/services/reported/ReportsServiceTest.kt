@@ -141,37 +141,36 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     private val third = entityBuilder.reportedAdjudication(
       reportNumber = 1L,
       dateTime = now.minusDays(1)
-    )
+    ).also {
+      it.status = ReportedAdjudicationStatus.AWAITING_REVIEW
+      it.locationId = 4
+      it.createDateTime = now
+      it.createdByUserId = "testing"
+    }
 
     private val second = entityBuilder.reportedAdjudication(
       reportNumber = 2L,
       dateTime = now.minusDays(2)
-    )
+    ).also {
+      it.status = ReportedAdjudicationStatus.UNSCHEDULED
+      it.locationId = 3
+      it.createDateTime = now
+      it.createdByUserId = "testing"
+    }
 
     private val first = entityBuilder.reportedAdjudication(
       reportNumber = 3L,
       dateTime = now.minusDays(3),
-    )
+    ).also {
+      it.status = ReportedAdjudicationStatus.SCHEDULED
+      it.issuingOfficer = "testing"
+      it.dateTimeOfIssue = now
+      it.createDateTime = now
+      it.createdByUserId = "testing"
+    }
 
     @BeforeEach
     fun beforeEach() {
-
-      first.issuingOfficer = "testing"
-      first.dateTimeOfIssue = now
-      first.status = ReportedAdjudicationStatus.SCHEDULED
-      first.createDateTime = now
-      first.createdByUserId = "testing"
-
-      second.status = ReportedAdjudicationStatus.UNSCHEDULED
-      second.locationId = 3
-      second.createDateTime = now
-      second.createdByUserId = "testing"
-
-      third.createdByUserId = "testing"
-      third.createDateTime = now
-      third.locationId = 4
-      third.status = ReportedAdjudicationStatus.AWAITING_REVIEW
-
       whenever(
         reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetween(
           "MDI",

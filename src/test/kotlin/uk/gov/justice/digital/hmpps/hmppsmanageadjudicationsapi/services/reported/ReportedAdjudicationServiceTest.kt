@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -478,12 +477,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     private val now = LocalDateTime.now()
     private val reportedAdjudication = EntityBuilder().reportedAdjudication(1)
-
-    @BeforeEach
-    fun beforeEach() {
-      reportedAdjudication.createdByUserId = "A_SMITH"
-      reportedAdjudication.createDateTime = LocalDateTime.now()
-    }
+      .also {
+        it.createdByUserId = "A_SMITH"
+        it.createDateTime = LocalDateTime.now()
+      }
 
     @ParameterizedTest
     @CsvSource("SCHEDULED", "SCHEDULED")
