@@ -46,6 +46,10 @@ data class ReportedAdjudicationDto(
   val witnesses: List<ReportedWitnessDto>,
   @Schema(description = "Hearings related to adjudication")
   val hearings: List<HearingDto>,
+  @Schema(description = "issuing officer")
+  val issuingOfficer: String? = null,
+  @Schema(description = "date time of form issued")
+  val dateTimeOfIssue: LocalDateTime? = null,
 )
 
 @Schema(description = "Details of an offence")

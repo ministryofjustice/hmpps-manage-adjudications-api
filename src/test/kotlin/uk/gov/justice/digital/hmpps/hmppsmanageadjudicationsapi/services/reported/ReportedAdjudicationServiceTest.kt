@@ -5,10 +5,12 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -22,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Adjudic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
@@ -470,6 +473,34 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class Issued {
+
+    @BeforeEach
+    fun beforeEach() {
+      val reportedAdjudication = EntityBuilder().reportedAdjudication(1)
+      reportedAdjudication.createdByUserId = "A_SMITH"
+      reportedAdjudication.createDateTime = LocalDateTime.now()
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+    }
+
+    @Test
+    fun `issue a reported adjudication DIS form`() {
+
+      val now = LocalDateTime.now()
+
+      val response = reportedAdjudicationService.setIssued(1, now)
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.issuingOfficer).isEqualTo("ITAG_USER")
+      assertThat(argumentCaptor.value.dateTimeOfIssue).isEqualTo(now)
+      assertThat(response).isNotNull
+    }
+  }
+
   companion object {
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
@@ -499,6 +530,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     assertThatThrownBy {
       reportedAdjudicationService.getReportedAdjudicationDetails(1)
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    assertThatThrownBy {
+      reportedAdjudicationService.setIssued(1, LocalDateTime.now())
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }

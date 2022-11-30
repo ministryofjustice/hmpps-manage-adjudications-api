@@ -299,4 +299,18 @@ class ReportedAdjudicationRepositoryTest {
 
     assertThat(hearings.size).isEqualTo(2)
   }
+
+  @Test
+  fun `set issue details `() {
+    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val now = LocalDateTime.now()
+    adjudication!!.issuingOfficer = "testing"
+    adjudication!!.dateTimeOfIssue = now
+
+    val savedEntity = reportedAdjudicationRepository.save(adjudication)
+
+    assertThat(savedEntity)
+      .extracting("issuingOfficer", "dateTimeOfIssue")
+      .contains("testing", now)
+  }
 }

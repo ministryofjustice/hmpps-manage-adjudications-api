@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
+import java.time.LocalDateTime
 import javax.validation.Valid
 import javax.validation.constraints.Size
 
@@ -33,6 +35,13 @@ data class ReportedAdjudicationStatusRequest(
   val statusDetails: String? = null,
 )
 
+@Schema(description = "Request to issue a DIS")
+data class IssueRequest(
+  @Schema(description = "The date time of issue", example = "2010-10-12T10:00:00")
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+  val dateTimeOfIssue: LocalDateTime,
+)
+
 @RestController
 class ReportedAdjudicationController(
   private val reportedAdjudicationService: ReportedAdjudicationService
@@ -52,14 +61,31 @@ class ReportedAdjudicationController(
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.OK)
   fun setStatus(
-    @PathVariable(name = "adjudicationNumber") id: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody @Valid reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = reportedAdjudicationService.setStatus(
-      id,
+      adjudicationNumber,
       reportedAdjudicationStatusRequest.status,
       reportedAdjudicationStatusRequest.statusReason,
       reportedAdjudicationStatusRequest.statusDetails
+    )
+
+    return ReportedAdjudicationResponse(
+      reportedAdjudication
+    )
+  }
+
+  @PutMapping(value = ["/{adjudicationNumber}/issue"])
+  @Operation(summary = "Issue DIS Form")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
+  fun setIssued(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody @Valid issueRequest: IssueRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = reportedAdjudicationService.setIssued(
+      adjudicationNumber,
+      issueRequest.dateTimeOfIssue
     )
 
     return ReportedAdjudicationResponse(

@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonA
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 import javax.validation.ValidationException
@@ -61,6 +62,15 @@ class ReportedAdjudicationService(
     )
 
     return reportedAdjudicationToReturn
+  }
+
+  fun setIssued(adjudicationNumber: Long, dateTimeOfIssue: LocalDateTime): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+
+    reportedAdjudication.issuingOfficer = authenticationFacade.currentUsername
+    reportedAdjudication.dateTimeOfIssue = dateTimeOfIssue
+
+    return saveToDto(reportedAdjudication)
   }
 
   private fun saveToPrisonApi(reportedAdjudication: ReportedAdjudication) {
