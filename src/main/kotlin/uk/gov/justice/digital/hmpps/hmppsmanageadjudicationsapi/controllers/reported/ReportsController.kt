@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.Parameters
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -17,6 +18,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService
 import java.time.LocalDate
+
+@Schema(description = "All reported adjudications to issue response")
+data class AdjudicationsToIssueResponse(
+  @Schema(description = "The reported adjudication to issue response")
+  val reportedAdjudications: List<ReportedAdjudicationDto>
+)
 
 @RestController
 class ReportsController(
@@ -45,7 +52,7 @@ class ReportsController(
     Parameter(
       name = "endDate",
       required = false,
-      description = "optional inclusive end date for results, default is start date"
+      description = "optional inclusive end date for results, default is today"
     ),
     Parameter(
       name = "status",
@@ -65,7 +72,7 @@ class ReportsController(
     return reportsService.getAllReportedAdjudications(
       agencyId,
       startDate ?: LocalDate.now().minusDays(3),
-      endDate ?: startDate ?: LocalDate.now(),
+      endDate ?: LocalDate.now(),
       statuses,
       pageable
     )
@@ -94,7 +101,7 @@ class ReportsController(
     Parameter(
       name = "endDate",
       required = false,
-      description = "optional inclusive end date for results, default is start date"
+      description = "optional inclusive end date for results, default is today"
     ),
     Parameter(
       name = "status",
@@ -113,9 +120,45 @@ class ReportsController(
     return reportsService.getMyReportedAdjudications(
       agencyId,
       startDate ?: LocalDate.now().minusDays(3),
-      endDate ?: startDate ?: LocalDate.now(),
+      endDate ?: LocalDate.now(),
       statuses,
       pageable
     )
+  }
+
+  @Operation(summary = "Get all reported adjudications for caseload for issue")
+  @Parameters(
+    Parameter(
+      name = "locationId",
+      required = false,
+      description = "Location id, optional if all",
+    ),
+    Parameter(
+      name = "startDate",
+      required = false,
+      description = "optional inclusive start date for results, default is today - 2 days"
+    ),
+    Parameter(
+      name = "endDate",
+      required = false,
+      description = "optional inclusive end date for results, default is today"
+    ),
+  )
+  @GetMapping("/agency/{agencyId}/issue")
+  fun getReportedAdjudicationsForIssue(
+    @PathVariable(name = "agencyId") agencyId: String,
+    @RequestParam(name = "locationId") locationId: Long?,
+    @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
+    @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
+  ): AdjudicationsToIssueResponse {
+
+    val response = reportsService.getAdjudicationsForIssue(
+      agencyId = agencyId,
+      locationId = locationId,
+      startDate = startDate ?: LocalDate.now().minusDays(2),
+      endDate = endDate ?: LocalDate.now()
+    )
+
+    return AdjudicationsToIssueResponse(response)
   }
 }

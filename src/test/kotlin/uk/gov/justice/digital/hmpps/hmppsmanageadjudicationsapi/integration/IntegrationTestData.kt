@@ -496,6 +496,38 @@ class IntegrationTestData(
       .exchange()
   }
 
+  fun acceptReport(
+    reportNumber: String,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.put()
+      .uri("/reported-adjudications/$reportNumber/status")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "status" to ReportedAdjudicationStatus.UNSCHEDULED.name,
+          "statusReason" to "status reason",
+          "statusDetails" to "status details"
+        )
+      )
+      .exchange()
+  }
+
+  fun issueReport(
+    draftCreationData: DraftAdjudicationResponse,
+    reportNumber: String,
+    headers: (HttpHeaders) -> Unit = setHeaders()
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.put()
+      .uri("/reported-adjudications/$reportNumber/issue")
+      .headers(headers)
+      .bodyValue(
+        mapOf(
+          "dateTimeOfIssue" to draftCreationData.draftAdjudication.incidentDetails.dateTimeOfDiscovery.plusDays(1)
+        )
+      )
+      .exchange()
+  }
+
   fun createHearing(
     adjudicationNumber: Long,
     testDataSet: AdjudicationIntTestDataSet,

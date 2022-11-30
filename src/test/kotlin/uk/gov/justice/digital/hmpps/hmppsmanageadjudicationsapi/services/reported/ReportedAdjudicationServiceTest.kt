@@ -476,19 +476,22 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class Issued {
 
+    private val now = LocalDateTime.now()
+    private val reportedAdjudication = EntityBuilder().reportedAdjudication(1)
+
     @BeforeEach
     fun beforeEach() {
-      val reportedAdjudication = EntityBuilder().reportedAdjudication(1)
       reportedAdjudication.createdByUserId = "A_SMITH"
       reportedAdjudication.createDateTime = LocalDateTime.now()
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
     }
 
-    @Test
-    fun `issue a reported adjudication DIS form`() {
+    @ParameterizedTest
+    @CsvSource("SCHEDULED", "SCHEDULED")
+    fun `issue a reported adjudication DIS form with valid status`(status: ReportedAdjudicationStatus) {
+      reportedAdjudication.status = status
 
-      val now = LocalDateTime.now()
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
 
       val response = reportedAdjudicationService.setIssued(1, now)
 
@@ -498,6 +501,19 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.issuingOfficer).isEqualTo("ITAG_USER")
       assertThat(argumentCaptor.value.dateTimeOfIssue).isEqualTo(now)
       assertThat(response).isNotNull
+    }
+
+    @ParameterizedTest
+    @CsvSource("AWAITING_REVIEW", "REJECTED", "RETURNED")
+    fun `throws exception when issuing DIS is wrong status`(status: ReportedAdjudicationStatus) {
+      reportedAdjudication.status = status
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+
+      assertThatThrownBy {
+        reportedAdjudicationService.setIssued(1, now)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("$status not valid status for DIS issue")
     }
   }
 

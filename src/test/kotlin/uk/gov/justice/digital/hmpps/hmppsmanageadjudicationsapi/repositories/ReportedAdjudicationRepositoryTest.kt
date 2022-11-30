@@ -305,12 +305,29 @@ class ReportedAdjudicationRepositoryTest {
     val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
     val now = LocalDateTime.now()
     adjudication!!.issuingOfficer = "testing"
-    adjudication!!.dateTimeOfIssue = now
+    adjudication.dateTimeOfIssue = now
 
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity)
       .extracting("issuingOfficer", "dateTimeOfIssue")
       .contains("testing", now)
+  }
+
+  @Test
+  fun `get all adjudications to issue by agency, date - non pageable `() {
+    val adjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetween(
+      "LEI",
+      LocalDate.now().plusDays(1).atStartOfDay(),
+      LocalDate.now().plusDays(1).atTime(
+        LocalTime.MAX
+      ),
+    )
+
+    assertThat(adjudications).hasSize(1)
+      .extracting("reportNumber")
+      .contains(
+        1236L
+      )
   }
 }

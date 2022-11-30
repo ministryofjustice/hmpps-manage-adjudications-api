@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 class ReportsServiceTest : ReportedAdjudicationTestBase() {
@@ -129,6 +130,96 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           Tuple.tuple(1L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME),
           Tuple.tuple(2L, "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2))
         )
+    }
+  }
+
+  @Nested
+  inner class ReportAdjudicationsForIssue {
+
+    private val now = LocalDateTime.now()
+
+    private val third = entityBuilder.reportedAdjudication(
+      reportNumber = 1L,
+      dateTime = now.minusDays(1)
+    )
+
+    private val second = entityBuilder.reportedAdjudication(
+      reportNumber = 2L,
+      dateTime = now.minusDays(2)
+    )
+
+    private val first = entityBuilder.reportedAdjudication(
+      reportNumber = 3L,
+      dateTime = now.minusDays(3),
+    )
+
+    @BeforeEach
+    fun beforeEach() {
+
+      first.issuingOfficer = "testing"
+      first.dateTimeOfIssue = now
+      first.status = ReportedAdjudicationStatus.SCHEDULED
+      first.createDateTime = now
+      first.createdByUserId = "testing"
+
+      second.status = ReportedAdjudicationStatus.UNSCHEDULED
+      second.locationId = 3
+      second.createDateTime = now
+      second.createdByUserId = "testing"
+
+      third.createdByUserId = "testing"
+      third.createDateTime = now
+      third.locationId = 4
+      third.status = ReportedAdjudicationStatus.AWAITING_REVIEW
+
+      whenever(
+        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetween(
+          "MDI",
+          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX)
+        )
+      ).thenReturn(
+        listOf(first, second, third)
+      )
+    }
+
+    @Test
+    fun `returns adjudications for issue (All locations) with correct issue details and order for status SCHEDULED and UNSCHEDULED only `() {
+      val response = reportsService.getAdjudicationsForIssue(
+        agencyId = "MDI",
+        startDate = LocalDate.now().minusDays(2),
+        endDate = LocalDate.now()
+      )
+
+      assertThat(response)
+        .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
+        .contains(
+          Tuple.tuple(3L, "A12345", "testing", now),
+          Tuple.tuple(2L, "A12345", null, null),
+        )
+
+      assertThat(response.first().incidentDetails)
+        .extracting("dateTimeOfDiscovery", "locationId")
+        .contains(first.dateTimeOfDiscovery, 2L)
+    }
+
+    @Test
+    fun `returns adjudications for location id 2 with correct issue details and order for status SCHEDULED and UNSCHEDULED only `() {
+      val response = reportsService.getAdjudicationsForIssue(
+        agencyId = "MDI",
+        locationId = 2,
+        startDate = LocalDate.now().minusDays(2),
+        endDate = LocalDate.now()
+      )
+
+      assertThat(response)
+        .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
+        .contains(
+          Tuple.tuple(3L, "A12345", "testing", now),
+        )
+
+      assertThat(response.first().incidentDetails)
+        .extracting("dateTimeOfDiscovery", "locationId")
+        .contains(first.dateTimeOfDiscovery, 2L)
     }
   }
 

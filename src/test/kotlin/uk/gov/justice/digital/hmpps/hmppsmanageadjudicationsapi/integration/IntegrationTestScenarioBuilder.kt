@@ -71,6 +71,22 @@ class IntegrationTestScenario(
     return this
   }
 
+  fun acceptReport(reportNumber: String): IntegrationTestScenario {
+    intTestData.acceptReport(
+      reportNumber,
+    )
+    return this
+  }
+
+  fun issueReport(reportNumber: String): IntegrationTestScenario {
+    intTestData.issueReport(
+      draftCreationResponse,
+      reportNumber,
+      headers
+    )
+    return this
+  }
+
   fun reportedAdjudicationSetStatus(reportedAdjudicationStatus: ReportedAdjudicationStatus) {
     intTestData.reportedAdjudicationStatus(reportedAdjudicationStatus, testAdjudicationDataSet, headers)
   }
