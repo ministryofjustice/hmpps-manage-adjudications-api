@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
@@ -114,6 +115,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo("prison")
       .jsonPath("$.reportedAdjudication.witnesses[0].reporter")
       .isEqualTo("B_MILLS")
+      .jsonPath("$.reportedAdjudication.gender").isEqualTo(Gender.MALE.name)
   }
 
   @Test

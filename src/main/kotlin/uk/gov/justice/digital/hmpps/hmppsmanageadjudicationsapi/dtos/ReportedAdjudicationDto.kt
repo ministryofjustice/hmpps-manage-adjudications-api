@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
@@ -14,6 +15,8 @@ data class ReportedAdjudicationDto(
   val adjudicationNumber: Long,
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
+  @Schema(description = "Gender applied for adjuducation rules", example = "MALE")
+  val gender: Gender,
   @Schema(description = "The current booking id for a prisoner", example = "1234")
   val bookingId: Long,
   @Schema(description = "Incident details")

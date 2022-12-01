@@ -60,6 +60,7 @@ open class ReportedDtoService(
     hearings = toHearings(hearings),
     issuingOfficer = issuingOfficer,
     dateTimeOfIssue = dateTimeOfIssue,
+    gender = gender,
   )
 
   private fun toReportedOffence(
