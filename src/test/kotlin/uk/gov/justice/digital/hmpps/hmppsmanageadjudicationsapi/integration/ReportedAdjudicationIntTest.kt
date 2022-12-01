@@ -929,6 +929,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
 
   @Test
   fun `set issued details for DIS form `() {
+    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+
     val intTestData = integrationTestData()
 
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
@@ -944,6 +946,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .addEvidence()
       .addWitnesses()
       .completeDraft()
+      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
 
     val dateTimeOfIssue = LocalDateTime.of(2022, 11, 29, 10, 0)
 
@@ -960,6 +963,36 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.issuingOfficer").isEqualTo("ITAG_USER")
       .jsonPath("$.reportedAdjudication.dateTimeOfIssue").isEqualTo("2022-11-29T10:00:00")
+  }
+
+  @Test
+  fun `get adjudications for issue for all locations in agency MDI for date range`() {
+    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+
+    initMyReportData() // ensure more data to filter out
+
+    val intTestData = integrationTestData()
+    val underTestHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val underTestDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, underTestHeaders)
+    underTestDraftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setAssociatedPrisoner()
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
+      .issueReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
+
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/MDI/issue?startDate=2010-11-12&endDate=2020-12-16")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudications.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudications[0].issuingOfficer").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
   }
 
   private fun initMyReportData() {

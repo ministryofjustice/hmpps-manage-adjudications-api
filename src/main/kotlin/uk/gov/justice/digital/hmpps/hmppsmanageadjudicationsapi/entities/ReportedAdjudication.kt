@@ -12,6 +12,7 @@ import javax.persistence.FetchType
 import javax.persistence.JoinColumn
 import javax.persistence.OneToMany
 import javax.persistence.Table
+import javax.validation.ValidationException
 
 @Entity
 @Table(name = "reported_adjudications")
@@ -109,5 +110,11 @@ enum class ReportedAdjudicationStatus {
   }
   fun isAccepted(): Boolean {
     return this == UNSCHEDULED
+  }
+
+  fun canBeIssued(): Boolean = listOf(SCHEDULED, UNSCHEDULED).contains(this)
+
+  fun canBeIssuedValidation() {
+    if (!canBeIssued()) throw ValidationException("$this not valid status for DIS issue")
   }
 }

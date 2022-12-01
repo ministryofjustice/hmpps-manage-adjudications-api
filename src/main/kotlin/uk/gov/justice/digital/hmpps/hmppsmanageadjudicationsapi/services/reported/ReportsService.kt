@@ -44,8 +44,16 @@ class ReportsService(
     return reportedAdjudicationsPage.map { it.toDto() }
   }
 
+  fun getAdjudicationsForIssue(agencyId: String, locationId: Long? = null, startDate: LocalDate, endDate: LocalDate): List<ReportedAdjudicationDto> =
+    reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetween(
+      agencyId = agencyId, startDate = reportsFrom(startDate), endDate = reportsTo(endDate)
+    ).filter { it.status.canBeIssued() && locationOrAll(it.locationId, locationId) }
+      .sortedBy { it.dateTimeOfDiscovery }
+      .map { it.toDto() }
+
   companion object {
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
     fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
+    fun locationOrAll(locationId: Long, filter: Long?) = locationId == (filter ?: locationId)
   }
 }

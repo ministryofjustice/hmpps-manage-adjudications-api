@@ -65,10 +65,11 @@ class ReportedAdjudicationService(
   }
 
   fun setIssued(adjudicationNumber: Long, dateTimeOfIssue: LocalDateTime): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-
-    reportedAdjudication.issuingOfficer = authenticationFacade.currentUsername
-    reportedAdjudication.dateTimeOfIssue = dateTimeOfIssue
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+      it.status.canBeIssuedValidation()
+      it.issuingOfficer = authenticationFacade.currentUsername
+      it.dateTimeOfIssue = dateTimeOfIssue
+    }
 
     return saveToDto(reportedAdjudication)
   }

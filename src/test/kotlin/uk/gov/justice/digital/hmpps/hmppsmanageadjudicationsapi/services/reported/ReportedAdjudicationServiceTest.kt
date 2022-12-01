@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -476,19 +475,20 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class Issued {
 
-    @BeforeEach
-    fun beforeEach() {
-      val reportedAdjudication = EntityBuilder().reportedAdjudication(1)
-      reportedAdjudication.createdByUserId = "A_SMITH"
-      reportedAdjudication.createDateTime = LocalDateTime.now()
+    private val now = LocalDateTime.now()
+    private val reportedAdjudication = EntityBuilder().reportedAdjudication(1)
+      .also {
+        it.createdByUserId = "A_SMITH"
+        it.createDateTime = LocalDateTime.now()
+      }
+
+    @ParameterizedTest
+    @CsvSource("SCHEDULED", "UNSCHEDULED")
+    fun `issue a reported adjudication DIS form with valid status`(status: ReportedAdjudicationStatus) {
+      reportedAdjudication.status = status
+
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-    }
-
-    @Test
-    fun `issue a reported adjudication DIS form`() {
-
-      val now = LocalDateTime.now()
 
       val response = reportedAdjudicationService.setIssued(1, now)
 
@@ -498,6 +498,19 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.issuingOfficer).isEqualTo("ITAG_USER")
       assertThat(argumentCaptor.value.dateTimeOfIssue).isEqualTo(now)
       assertThat(response).isNotNull
+    }
+
+    @ParameterizedTest
+    @CsvSource("AWAITING_REVIEW", "REJECTED", "RETURNED")
+    fun `throws exception when issuing DIS is wrong status`(status: ReportedAdjudicationStatus) {
+      reportedAdjudication.status = status
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+
+      assertThatThrownBy {
+        reportedAdjudicationService.setIssued(1, now)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("$status not valid status for DIS issue")
     }
   }
 
