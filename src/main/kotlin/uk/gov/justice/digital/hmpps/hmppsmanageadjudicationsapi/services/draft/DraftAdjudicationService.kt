@@ -214,7 +214,7 @@ class DraftAdjudicationService(
     val draftAdjudication = find(id)
 
     if (removeExistingOffences) {
-      draftAdjudication.offenceDetails?.clear()
+      draftAdjudication.offenceDetails.clear()
     }
 
     draftAdjudication.isYouthOffender = isYouthOffender
@@ -223,9 +223,9 @@ class DraftAdjudicationService(
   }
 
   fun setGender(id: Long, gender: Gender): DraftAdjudicationDto {
-    val draftAdjudication = find(id)
-
-    draftAdjudication.gender = gender
+    val draftAdjudication = find(id).also {
+      it.gender = gender
+    }
 
     return saveToDto(draftAdjudication)
   }
