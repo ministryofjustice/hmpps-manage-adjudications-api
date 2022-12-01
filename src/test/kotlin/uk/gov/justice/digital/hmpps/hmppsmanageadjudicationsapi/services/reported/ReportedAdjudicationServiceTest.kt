@@ -483,7 +483,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
 
     @ParameterizedTest
-    @CsvSource("SCHEDULED", "SCHEDULED")
+    @CsvSource("SCHEDULED", "UNSCHEDULED")
     fun `issue a reported adjudication DIS form with valid status`(status: ReportedAdjudicationStatus) {
       reportedAdjudication.status = status
 
