@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IssuedStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService
 import java.time.LocalDate
@@ -150,6 +151,11 @@ class ReportsController(
       required = false,
       description = "optional inclusive end date for results, default is today"
     ),
+    Parameter(
+      name = "issueStatus",
+      required = false,
+      description = "optional list of issue status, as comma separated String"
+    ),
   )
   @GetMapping("/agency/{agencyId}/issue")
   fun getReportedAdjudicationsForIssue(
@@ -157,6 +163,7 @@ class ReportsController(
     @RequestParam(name = "locationId") locationId: Long?,
     @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
     @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
+    @RequestParam(name = "issueStatus") issueStatuses: List<IssuedStatus>?,
     @PageableDefault(sort = ["dateTimeOfDiscovery"], direction = Sort.Direction.ASC, size = 20) pageable: Pageable
   ): Page<ReportedAdjudicationDto> {
 
@@ -165,6 +172,7 @@ class ReportsController(
       locationId = locationId,
       startDate = startDate ?: LocalDate.now().minusDays(2),
       endDate = endDate ?: LocalDate.now(),
+      issueStatuses = issueStatuses,
       pageable = pageable,
     )
   }

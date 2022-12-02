@@ -997,6 +997,36 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.content[0].issuingOfficer").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
   }
 
+  @Test
+  fun `get issued adjudications for all locations in agency MDI for date range`() {
+    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+
+    initMyReportData() // ensure more data to filter out
+
+    val intTestData = integrationTestData()
+    val underTestHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val underTestDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, underTestHeaders)
+    underTestDraftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setAssociatedPrisoner()
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
+      .issueReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
+
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/MDI/issue?issueStatus=ISSUED&startDate=2010-11-12&endDate=2020-12-16&page=0&size=20")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(1)
+      .jsonPath("$.content[0].issuingOfficer").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+  }
+
   private fun initMyReportData() {
     val intTestData = integrationTestData()
 

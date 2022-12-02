@@ -48,6 +48,18 @@ class ReportedAdjudicationRepositoryTest {
     entityManager.persistAndFlush(entityBuilder.reportedAdjudication(reportNumber = 1235L, dateTime = dateTimeOfIncident.plusHours(1), hearingId = null))
     entityManager.persistAndFlush(entityBuilder.reportedAdjudication(reportNumber = 1236L, dateTime = dateTimeOfIncident.plusHours(1), agencyId = "LEI", hearingId = null))
     entityManager.persistAndFlush(entityBuilder.reportedAdjudication(reportNumber = 9999L, dateTime = dateTimeOfIncident.plusHours(1), agencyId = "TJW", hearingId = null).also { it.status = ReportedAdjudicationStatus.UNSCHEDULED })
+    entityManager.persistAndFlush(
+      entityBuilder.reportedAdjudication(reportNumber = 9998L, dateTime = dateTimeOfIncident.plusHours(1), agencyId = "XXX", hearingId = null).also {
+        it.status = ReportedAdjudicationStatus.UNSCHEDULED
+        it.dateTimeOfIssue = LocalDateTime.now()
+      }
+    )
+    entityManager.persistAndFlush(
+      entityBuilder.reportedAdjudication(reportNumber = 9997L, dateTime = dateTimeOfIncident.plusHours(1), agencyId = "LEI", hearingId = null).also {
+        it.status = ReportedAdjudicationStatus.UNSCHEDULED
+        it.dateTimeOfIssue = LocalDateTime.now()
+      }
+    )
   }
 
   @Test
@@ -239,6 +251,44 @@ class ReportedAdjudicationRepositoryTest {
       LocalDate.now().plusDays(1).atTime(
         LocalTime.MAX
       ),
+      ReportedAdjudicationStatus.values().toList().filter { it != ReportedAdjudicationStatus.UNSCHEDULED },
+      Pageable.ofSize(10)
+    )
+
+    assertThat(foundAdjudications.content).hasSize(1)
+      .extracting("reportNumber")
+      .contains(
+        1236L
+      )
+  }
+
+  @Test
+  fun `find reported adjudications by agency id and issue is not null`() {
+    val foundAdjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
+      "LEI",
+      LocalDate.now().plusDays(1).atStartOfDay(),
+      LocalDate.now().plusDays(1).atTime(
+        LocalTime.MAX
+      ),
+      ReportedAdjudicationStatus.values().toList(),
+      Pageable.ofSize(10)
+    )
+
+    assertThat(foundAdjudications.content).hasSize(1)
+      .extracting("reportNumber")
+      .contains(
+        9997L
+      )
+  }
+
+  @Test
+  fun `find reported adjudications by agency id and issue is null`() {
+    val foundAdjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndDateTimeOfIssueIsNull(
+      "LEI",
+      LocalDate.now().plusDays(1).atStartOfDay(),
+      LocalDate.now().plusDays(1).atTime(
+        LocalTime.MAX
+      ),
       ReportedAdjudicationStatus.values().toList(),
       Pageable.ofSize(10)
     )
@@ -318,6 +368,46 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `get all adjudications to issue by agency, date, location id `() {
     val adjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationId(
+      "TJW",
+      LocalDate.now().plusDays(1).atStartOfDay(),
+      LocalDate.now().plusDays(1).atTime(
+        LocalTime.MAX
+      ),
+      listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
+      2,
+      Pageable.ofSize(10)
+    )
+
+    assertThat(adjudications.content).hasSize(1)
+      .extracting("reportNumber")
+      .contains(
+        9999L
+      )
+  }
+
+  @Test
+  fun `get all adjudications to issue by agency, date, location id and issue is not null `() {
+    val adjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationIdAndDateTimeOfIssueIsNotNull(
+      "XXX",
+      LocalDate.now().plusDays(1).atStartOfDay(),
+      LocalDate.now().plusDays(1).atTime(
+        LocalTime.MAX
+      ),
+      listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
+      2,
+      Pageable.ofSize(10)
+    )
+
+    assertThat(adjudications.content).hasSize(1)
+      .extracting("reportNumber")
+      .contains(
+        9998L
+      )
+  }
+
+  @Test
+  fun `get all adjudications to issue by agency, date, location id and issue is null `() {
+    val adjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationIdAndDateTimeOfIssueIsNull(
       "TJW",
       LocalDate.now().plusDays(1).atStartOfDay(),
       LocalDate.now().plusDays(1).atTime(

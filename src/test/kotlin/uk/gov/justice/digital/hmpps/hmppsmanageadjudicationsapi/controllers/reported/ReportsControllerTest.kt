@@ -128,11 +128,11 @@ class ReportsControllerTest : TestControllerBase() {
   @Test
   @WithMockUser(username = "ITAG_USER")
   fun `get adjudications for issue with defaulted dates`() {
-    whenever(reportsService.getAdjudicationsForIssue("MDI", 1L, LocalDate.now().minusDays(2), LocalDate.now(), pageRequest))
+    whenever(reportsService.getAdjudicationsForIssue("MDI", 1L, LocalDate.now().minusDays(2), LocalDate.now(), null, pageRequest))
       .thenReturn(Page.empty())
 
     getAdjudicationsForIssue().andExpect(MockMvcResultMatchers.status().isOk)
-    verify(reportsService).getAdjudicationsForIssue("MDI", 1L, LocalDate.now().minusDays(2), LocalDate.now(), pageRequest)
+    verify(reportsService).getAdjudicationsForIssue("MDI", 1L, LocalDate.now().minusDays(2), LocalDate.now(), null, pageRequest)
   }
 
   private fun getMyAdjudications(): ResultActions {
