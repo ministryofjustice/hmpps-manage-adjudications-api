@@ -47,6 +47,7 @@ class ReportedAdjudicationRepositoryTest {
     entityManager.persistAndFlush(entityBuilder.reportedAdjudication(reportNumber = 1234L, dateTime = dateTimeOfIncident, hearingId = null))
     entityManager.persistAndFlush(entityBuilder.reportedAdjudication(reportNumber = 1235L, dateTime = dateTimeOfIncident.plusHours(1), hearingId = null))
     entityManager.persistAndFlush(entityBuilder.reportedAdjudication(reportNumber = 1236L, dateTime = dateTimeOfIncident.plusHours(1), agencyId = "LEI", hearingId = null))
+    entityManager.persistAndFlush(entityBuilder.reportedAdjudication(reportNumber = 9999L, dateTime = dateTimeOfIncident.plusHours(1), agencyId = "TJW", hearingId = null).also { it.status = ReportedAdjudicationStatus.UNSCHEDULED })
   }
 
   @Test
@@ -315,19 +316,22 @@ class ReportedAdjudicationRepositoryTest {
   }
 
   @Test
-  fun `get all adjudications to issue by agency, date - non pageable `() {
-    val adjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetween(
-      "LEI",
+  fun `get all adjudications to issue by agency, date, location id `() {
+    val adjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationId(
+      "TJW",
       LocalDate.now().plusDays(1).atStartOfDay(),
       LocalDate.now().plusDays(1).atTime(
         LocalTime.MAX
       ),
+      listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
+      2,
+      Pageable.ofSize(10)
     )
 
-    assertThat(adjudications).hasSize(1)
+    assertThat(adjudications.content).hasSize(1)
       .extracting("reportNumber")
       .contains(
-        1236L
+        9999L
       )
   }
 }

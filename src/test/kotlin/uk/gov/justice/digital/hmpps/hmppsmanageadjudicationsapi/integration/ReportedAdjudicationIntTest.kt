@@ -988,13 +988,13 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .issueReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/MDI/issue?startDate=2010-11-12&endDate=2020-12-16")
+      .uri("/reported-adjudications/agency/MDI/issue?startDate=2010-11-12&endDate=2020-12-16&page=0&size=20")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.reportedAdjudications.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudications[0].issuingOfficer").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+      .jsonPath("$.content.size()").isEqualTo(1)
+      .jsonPath("$.content[0].issuingOfficer").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
   }
 
   private fun initMyReportData() {

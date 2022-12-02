@@ -138,16 +138,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
     private val now = LocalDateTime.now()
 
-    private val third = entityBuilder.reportedAdjudication(
-      reportNumber = 1L,
-      dateTime = now.minusDays(1)
-    ).also {
-      it.status = ReportedAdjudicationStatus.AWAITING_REVIEW
-      it.locationId = 4
-      it.createDateTime = now
-      it.createdByUserId = "testing"
-    }
-
     private val second = entityBuilder.reportedAdjudication(
       reportNumber = 2L,
       dateTime = now.minusDays(2)
@@ -172,12 +162,26 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetween(
+        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
           "MDI",
-          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX)
+          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
+          listOf(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED),
+          Pageable.ofSize(20).withPage(0)
         )
       ).thenReturn(
-        listOf(first, second, third)
+        PageImpl(listOf(first, second))
+      )
+
+      whenever(
+        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationId(
+          "MDI",
+          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
+          listOf(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED),
+          2,
+          Pageable.ofSize(20).withPage(0)
+        )
+      ).thenReturn(
+        PageImpl(listOf(first))
       )
     }
 
@@ -186,7 +190,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       val response = reportsService.getAdjudicationsForIssue(
         agencyId = "MDI",
         startDate = LocalDate.now().minusDays(2),
-        endDate = LocalDate.now()
+        endDate = LocalDate.now(),
+        pageable = Pageable.ofSize(20).withPage(0)
       )
 
       assertThat(response)
@@ -207,7 +212,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         agencyId = "MDI",
         locationId = 2,
         startDate = LocalDate.now().minusDays(2),
-        endDate = LocalDate.now()
+        endDate = LocalDate.now(),
+        pageable = Pageable.ofSize(20).withPage(0)
       )
 
       assertThat(response)
