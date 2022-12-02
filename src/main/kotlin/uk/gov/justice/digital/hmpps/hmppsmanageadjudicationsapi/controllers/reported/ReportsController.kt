@@ -42,7 +42,7 @@ class ReportsController(
     ),
     Parameter(
       name = "sort",
-      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to incidentDate,incidentTime ASC"
+      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery ASC"
     ),
     Parameter(
       name = "startDate",
@@ -67,7 +67,7 @@ class ReportsController(
     @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
     @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
-    @PageableDefault(sort = ["dateTimeOfIncident"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
+    @PageableDefault(sort = ["dateTimeOfDiscovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
   ): Page<ReportedAdjudicationDto> {
     return reportsService.getAllReportedAdjudications(
       agencyId,
@@ -91,7 +91,7 @@ class ReportsController(
     ),
     Parameter(
       name = "sort",
-      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to incidentDate,incidentTime ASC"
+      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery ASC"
     ),
     Parameter(
       name = "startDate",
@@ -115,7 +115,7 @@ class ReportsController(
     @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
     @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
-    @PageableDefault(sort = ["dateTimeOfIncident"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
+    @PageableDefault(sort = ["dateTimeOfDiscovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
   ): Page<ReportedAdjudicationDto> {
     return reportsService.getMyReportedAdjudications(
       agencyId,
@@ -128,6 +128,20 @@ class ReportsController(
 
   @Operation(summary = "Get all reported adjudications for caseload for issue")
   @Parameters(
+    Parameter(
+      name = "page",
+      description = "Results page you want to retrieve (0..N). Default 0, e.g. the first page",
+      example = "0"
+    ),
+    Parameter(
+      name = "size",
+      description = "Number of records per page. Default 20"
+    ),
+    Parameter(
+      name = "sort",
+      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery ASC"
+    ),
+
     Parameter(
       name = "locationId",
       required = false,
@@ -150,15 +164,15 @@ class ReportsController(
     @RequestParam(name = "locationId") locationId: Long?,
     @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
     @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
-  ): AdjudicationsToIssueResponse {
+    @PageableDefault(sort = ["dateTimeOfDiscovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
+  ): Page<ReportedAdjudicationDto> {
 
-    val response = reportsService.getAdjudicationsForIssue(
+    return reportsService.getAdjudicationsForIssue(
       agencyId = agencyId,
       locationId = locationId,
       startDate = startDate ?: LocalDate.now().minusDays(2),
-      endDate = endDate ?: LocalDate.now()
+      endDate = endDate ?: LocalDate.now(),
+      pageable = pageable,
     )
-
-    return AdjudicationsToIssueResponse(response)
   }
 }

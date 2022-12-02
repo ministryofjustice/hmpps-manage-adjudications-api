@@ -7,6 +7,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -24,6 +25,13 @@ import java.time.LocalDate
 class ReportsControllerTest : TestControllerBase() {
   @MockBean
   lateinit var reportsService: ReportsService
+
+  private val pageRequest = PageRequest.ofSize(20).withPage(0).withSort(
+    Sort.by(
+      Sort.Direction.DESC,
+      "dateTimeOfDiscovery"
+    )
+  )
 
   @BeforeEach
   fun beforeEach() {
@@ -51,13 +59,7 @@ class ReportsControllerTest : TestControllerBase() {
     getMyAdjudications().andExpect(MockMvcResultMatchers.status().isOk)
     verify(reportsService).getMyReportedAdjudications(
       "MDI",
-      LocalDate.now().minusDays(3), LocalDate.now(), listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
-      PageRequest.ofSize(20).withPage(0).withSort(
-        Sort.by(
-          Sort.Direction.DESC,
-          "incidentDate"
-        )
-      )
+      LocalDate.now().minusDays(3), LocalDate.now(), listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED), pageRequest
     )
   }
 
@@ -68,12 +70,7 @@ class ReportsControllerTest : TestControllerBase() {
     verify(reportsService).getAllReportedAdjudications(
       "MDI",
       LocalDate.now().minusDays(3), LocalDate.now(), listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
-      PageRequest.ofSize(20).withPage(0).withSort(
-        Sort.by(
-          Sort.Direction.DESC,
-          "incidentDate"
-        )
-      )
+      pageRequest
     )
   }
 
@@ -103,12 +100,7 @@ class ReportsControllerTest : TestControllerBase() {
       LocalDate.now().plusDays(5),
       LocalDate.now().plusDays(5),
       listOf(ReportedAdjudicationStatus.AWAITING_REVIEW),
-      PageRequest.ofSize(20).withPage(0).withSort(
-        Sort.by(
-          Sort.Direction.DESC,
-          "incidentDate"
-        )
-      )
+      pageRequest
     )
   }
 
@@ -136,17 +128,17 @@ class ReportsControllerTest : TestControllerBase() {
   @Test
   @WithMockUser(username = "ITAG_USER")
   fun `get adjudications for issue with defaulted dates`() {
-    whenever(reportsService.getAdjudicationsForIssue("MDI", 1L, LocalDate.now().minusDays(2), LocalDate.now()))
-      .thenReturn(emptyList())
+    whenever(reportsService.getAdjudicationsForIssue("MDI", 1L, LocalDate.now().minusDays(2), LocalDate.now(), pageRequest))
+      .thenReturn(Page.empty())
 
     getAdjudicationsForIssue().andExpect(MockMvcResultMatchers.status().isOk)
-    verify(reportsService).getAdjudicationsForIssue("MDI", 1L, LocalDate.now().minusDays(2), LocalDate.now())
+    verify(reportsService).getAdjudicationsForIssue("MDI", 1L, LocalDate.now().minusDays(2), LocalDate.now(), pageRequest)
   }
 
   private fun getMyAdjudications(): ResultActions {
     return mockMvc
       .perform(
-        MockMvcRequestBuilders.get("/reported-adjudications/my/agency/MDI?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=incidentDate,DESC")
+        MockMvcRequestBuilders.get("/reported-adjudications/my/agency/MDI?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=dateTimeOfDiscovery,DESC")
           .header("Content-Type", "application/json")
       )
   }
@@ -154,7 +146,7 @@ class ReportsControllerTest : TestControllerBase() {
   private fun getAllAdjudications(): ResultActions {
     return mockMvc
       .perform(
-        MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=incidentDate,DESC")
+        MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=dateTimeOfDiscovery,DESC")
           .header("Content-Type", "application/json")
       )
   }
@@ -162,7 +154,7 @@ class ReportsControllerTest : TestControllerBase() {
   private fun getMyAdjudicationsWithFilter(date: LocalDate): ResultActions {
     return mockMvc
       .perform(
-        MockMvcRequestBuilders.get("/reported-adjudications/my/agency/MDI?status=AWAITING_REVIEW&startDate=$date&endDate=$date&page=0&size=20&sort=incidentDate,DESC")
+        MockMvcRequestBuilders.get("/reported-adjudications/my/agency/MDI?status=AWAITING_REVIEW&startDate=$date&endDate=$date&page=0&size=20&sort=dateTimeOfDiscovery,DESC")
           .header("Content-Type", "application/json")
       )
   }
@@ -170,7 +162,7 @@ class ReportsControllerTest : TestControllerBase() {
   private fun getAdjudicationsForIssue(): ResultActions {
     return mockMvc
       .perform(
-        MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI/issue?locationId=1")
+        MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI/issue?locationId=1&page=0&size=20&sort=dateTimeOfDiscovery,DESC")
           .header("Content-Type", "application/json")
       )
   }
