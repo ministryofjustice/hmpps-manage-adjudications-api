@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.Parameters
-import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -18,12 +17,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService
 import java.time.LocalDate
-
-@Schema(description = "All reported adjudications to issue response")
-data class AdjudicationsToIssueResponse(
-  @Schema(description = "The reported adjudication to issue response")
-  val reportedAdjudications: List<ReportedAdjudicationDto>
-)
 
 @RestController
 class ReportsController(
