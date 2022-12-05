@@ -173,14 +173,12 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetween(
           "MDI",
           LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
-          listOf(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED),
-          Pageable.ofSize(20).withPage(0)
         )
       ).thenReturn(
-        PageImpl(listOf(first, second))
+        listOf(first, second)
       )
 
       whenever(
@@ -188,10 +186,9 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           "MDI",
           LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
           listOf(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED),
-          Pageable.ofSize(20).withPage(0)
         )
       ).thenReturn(
-        PageImpl(listOf(second))
+        listOf(second)
       )
 
       whenever(
@@ -199,46 +196,9 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           "MDI",
           LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
           listOf(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED),
-          Pageable.ofSize(20).withPage(0)
         )
       ).thenReturn(
-        PageImpl(listOf(third))
-      )
-
-      whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationId(
-          "MDI",
-          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
-          listOf(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED),
-          2,
-          Pageable.ofSize(20).withPage(0)
-        )
-      ).thenReturn(
-        PageImpl(listOf(first))
-      )
-
-      whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationIdAndDateTimeOfIssueIsNull(
-          "MDI",
-          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
-          listOf(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED),
-          3,
-          Pageable.ofSize(20).withPage(0)
-        )
-      ).thenReturn(
-        PageImpl(listOf(second))
-      )
-
-      whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationIdAndDateTimeOfIssueIsNotNull(
-          "MDI",
-          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
-          listOf(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED),
-          2,
-          Pageable.ofSize(20).withPage(0)
-        )
-      ).thenReturn(
-        PageImpl(listOf(third))
+        listOf(third)
       )
     }
 
@@ -248,7 +208,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         agencyId = "MDI",
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
-        pageable = Pageable.ofSize(20).withPage(0)
       )
 
       assertThat(response)
@@ -270,7 +229,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         issueStatuses = IssuedStatus.values().toList(),
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
-        pageable = Pageable.ofSize(20).withPage(0)
       )
 
       assertThat(response)
@@ -286,56 +244,12 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `returns adjudications for location id 2 with correct issue details and order for status SCHEDULED and UNSCHEDULED only `() {
-      val response = reportsService.getAdjudicationsForIssue(
-        agencyId = "MDI",
-        locationId = 2,
-        startDate = LocalDate.now().minusDays(2),
-        endDate = LocalDate.now(),
-        pageable = Pageable.ofSize(20).withPage(0)
-      )
-
-      assertThat(response)
-        .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
-        .contains(
-          Tuple.tuple(3L, "A12345", "testing", now),
-        )
-
-      assertThat(response.first().incidentDetails)
-        .extracting("dateTimeOfDiscovery", "locationId")
-        .contains(first.dateTimeOfDiscovery, 2L)
-    }
-
-    @Test
-    fun `returns adjudications for location id 2 with correct issue details and order for status SCHEDULED and UNSCHEDULED only for all issue statuses `() {
-      val response = reportsService.getAdjudicationsForIssue(
-        agencyId = "MDI",
-        locationId = 2,
-        issueStatuses = IssuedStatus.values().toList(),
-        startDate = LocalDate.now().minusDays(2),
-        endDate = LocalDate.now(),
-        pageable = Pageable.ofSize(20).withPage(0)
-      )
-
-      assertThat(response)
-        .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
-        .contains(
-          Tuple.tuple(3L, "A12345", "testing", now),
-        )
-
-      assertThat(response.first().incidentDetails)
-        .extracting("dateTimeOfDiscovery", "locationId")
-        .contains(first.dateTimeOfDiscovery, 2L)
-    }
-
-    @Test
     fun `returns issued adjudications for all locations `() {
       val response = reportsService.getAdjudicationsForIssue(
         agencyId = "MDI",
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
         issueStatuses = listOf(IssuedStatus.ISSUED),
-        pageable = Pageable.ofSize(20).withPage(0)
       )
 
       assertThat(response)
@@ -356,51 +270,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
         issueStatuses = listOf(IssuedStatus.NOT_ISSUED),
-        pageable = Pageable.ofSize(20).withPage(0)
-      )
-
-      assertThat(response)
-        .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
-        .contains(
-          Tuple.tuple(2L, "A12345", null, null),
-        )
-
-      assertThat(response.first().incidentDetails)
-        .extracting("dateTimeOfDiscovery", "locationId")
-        .contains(second.dateTimeOfDiscovery, 3L)
-    }
-
-    @Test
-    fun `returns issued adjudications for one location `() {
-      val response = reportsService.getAdjudicationsForIssue(
-        agencyId = "MDI",
-        locationId = 2,
-        startDate = LocalDate.now().minusDays(2),
-        endDate = LocalDate.now(),
-        issueStatuses = listOf(IssuedStatus.ISSUED),
-        pageable = Pageable.ofSize(20).withPage(0)
-      )
-
-      assertThat(response)
-        .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
-        .contains(
-          Tuple.tuple(4L, "A12345", "testing", now),
-        )
-
-      assertThat(response.first().incidentDetails)
-        .extracting("dateTimeOfDiscovery", "locationId")
-        .contains(third.dateTimeOfDiscovery, 2L)
-    }
-
-    @Test
-    fun `returns not issued adjudications for one location `() {
-      val response = reportsService.getAdjudicationsForIssue(
-        agencyId = "MDI",
-        locationId = 3,
-        startDate = LocalDate.now().minusDays(2),
-        endDate = LocalDate.now(),
-        issueStatuses = listOf(IssuedStatus.NOT_ISSUED),
-        pageable = Pageable.ofSize(20).withPage(0)
       )
 
       assertThat(response)

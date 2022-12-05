@@ -7,7 +7,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -128,11 +127,11 @@ class ReportsControllerTest : TestControllerBase() {
   @Test
   @WithMockUser(username = "ITAG_USER")
   fun `get adjudications for issue with defaulted dates`() {
-    whenever(reportsService.getAdjudicationsForIssue("MDI", 1L, LocalDate.now().minusDays(2), LocalDate.now(), null, pageRequest))
-      .thenReturn(Page.empty())
+    whenever(reportsService.getAdjudicationsForIssue("MDI", LocalDate.now().minusDays(2), LocalDate.now(), null))
+      .thenReturn(emptyList())
 
     getAdjudicationsForIssue().andExpect(MockMvcResultMatchers.status().isOk)
-    verify(reportsService).getAdjudicationsForIssue("MDI", 1L, LocalDate.now().minusDays(2), LocalDate.now(), null, pageRequest)
+    verify(reportsService).getAdjudicationsForIssue("MDI", LocalDate.now().minusDays(2), LocalDate.now(), null)
   }
 
   private fun getMyAdjudications(): ResultActions {
@@ -162,7 +161,7 @@ class ReportsControllerTest : TestControllerBase() {
   private fun getAdjudicationsForIssue(): ResultActions {
     return mockMvc
       .perform(
-        MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI/issue?locationId=1&page=0&size=20&sort=dateTimeOfDiscovery,DESC")
+        MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI/issue")
           .header("Content-Type", "application/json")
       )
   }
