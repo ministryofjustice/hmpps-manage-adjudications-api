@@ -113,6 +113,10 @@ enum class ReportedAdjudicationStatus {
   }
 
   fun canBeIssuedValidation() {
-    if (listOf(SCHEDULED, UNSCHEDULED).none { it == this }) throw ValidationException("$this not valid status for DIS issue")
+    if (issuableStatuses().none { it == this }) throw ValidationException("$this not valid status for DIS issue")
+  }
+
+  companion object {
+    fun issuableStatuses() = listOf(SCHEDULED, UNSCHEDULED)
   }
 }
