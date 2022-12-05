@@ -23,44 +23,23 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     statuses: List<ReportedAdjudicationStatus>,
     pageable: Pageable
   ): Page<ReportedAdjudication>
+  fun findByAgencyIdAndDateTimeOfDiscoveryBetween(
+    agencyId: String,
+    startDate: LocalDateTime,
+    endDate: LocalDateTime,
+  ): List<ReportedAdjudication>
   fun findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
     agencyId: String,
     startDate: LocalDateTime,
     endDate: LocalDateTime,
     statuses: List<ReportedAdjudicationStatus>,
-    pageable: Pageable
-  ): Page<ReportedAdjudication>
+  ): List<ReportedAdjudication>
   fun findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndDateTimeOfIssueIsNull(
     agencyId: String,
     startDate: LocalDateTime,
     endDate: LocalDateTime,
     statuses: List<ReportedAdjudicationStatus>,
-    pageable: Pageable
-  ): Page<ReportedAdjudication>
+  ): List<ReportedAdjudication>
   fun findByReportNumber(adjudicationNumber: Long): ReportedAdjudication?
   fun findByReportNumberIn(adjudicationNumbers: List<Long>): List<ReportedAdjudication>
-  fun findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationId(
-    agencyId: String,
-    startDate: LocalDateTime,
-    endDate: LocalDateTime,
-    statuses: List<ReportedAdjudicationStatus>,
-    locationId: Long,
-    pageable: Pageable
-  ): Page<ReportedAdjudication>
-  fun findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationIdAndDateTimeOfIssueIsNotNull(
-    agencyId: String,
-    startDate: LocalDateTime,
-    endDate: LocalDateTime,
-    statuses: List<ReportedAdjudicationStatus>,
-    locationId: Long,
-    pageable: Pageable
-  ): Page<ReportedAdjudication>
-  fun findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationIdAndDateTimeOfIssueIsNull(
-    agencyId: String,
-    startDate: LocalDateTime,
-    endDate: LocalDateTime,
-    statuses: List<ReportedAdjudicationStatus>,
-    locationId: Long,
-    pageable: Pageable
-  ): Page<ReportedAdjudication>
 }
