@@ -10,7 +10,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IssuedStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDate
 import java.time.LocalDateTime

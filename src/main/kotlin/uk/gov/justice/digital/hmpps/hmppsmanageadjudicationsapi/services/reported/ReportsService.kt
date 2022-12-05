@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IssuedStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -13,6 +12,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Offence
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+
+enum class IssuedStatus {
+  ISSUED, NOT_ISSUED
+}
 
 @Transactional(readOnly = true)
 @Service
@@ -61,14 +64,30 @@ class ReportsService(
 
   private fun getAdjudicationsForIssueAllLocations(agencyId: String, startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     if (issueStatuses.containsAll(IssuedStatus.values().toList()))
-      return getAllReportedAdjudications(agencyId = agencyId, startDate = startDate, endDate = endDate, statuses = ReportedAdjudicationStatus.issuableStatuses(), pageable = pageable)
+      return getAllReportedAdjudications(
+        agencyId = agencyId,
+        startDate = startDate,
+        endDate = endDate,
+        statuses = ReportedAdjudicationStatus.issuableStatuses(),
+        pageable = pageable
+      )
+
     if (issueStatuses.contains(IssuedStatus.ISSUED))
       return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
-        agencyId = agencyId, startDate = reportsFrom(startDate), endDate = reportsTo(endDate), statuses = ReportedAdjudicationStatus.issuableStatuses(), pageable = pageable
+        agencyId = agencyId,
+        startDate = reportsFrom(startDate),
+        endDate = reportsTo(endDate),
+        statuses = ReportedAdjudicationStatus.issuableStatuses(),
+        pageable = pageable
       ).map { it.toDto() }
+
     if (issueStatuses.contains(IssuedStatus.NOT_ISSUED))
       return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndDateTimeOfIssueIsNull(
-        agencyId = agencyId, startDate = reportsFrom(startDate), endDate = reportsTo(endDate), statuses = ReportedAdjudicationStatus.issuableStatuses(), pageable = pageable
+        agencyId = agencyId,
+        startDate = reportsFrom(startDate),
+        endDate = reportsTo(endDate),
+        statuses = ReportedAdjudicationStatus.issuableStatuses(),
+        pageable = pageable
       ).map { it.toDto() }
 
     return Page.empty()
@@ -77,15 +96,32 @@ class ReportsService(
   private fun getAdjudicationsForIssueOneLocation(agencyId: String, locationId: Long, startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     if (issueStatuses.containsAll(IssuedStatus.values().toList()))
       return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationId(
-        agencyId = agencyId, startDate = reportsFrom(startDate), endDate = reportsTo(endDate), statuses = ReportedAdjudicationStatus.issuableStatuses(), locationId = locationId, pageable = pageable
+        agencyId = agencyId,
+        startDate = reportsFrom(startDate),
+        endDate = reportsTo(endDate),
+        statuses = ReportedAdjudicationStatus.issuableStatuses(),
+        locationId = locationId,
+        pageable = pageable
       ).map { it.toDto() }
+
     if (issueStatuses.contains(IssuedStatus.ISSUED))
       return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationIdAndDateTimeOfIssueIsNotNull(
-        agencyId = agencyId, startDate = reportsFrom(startDate), endDate = reportsTo(endDate), statuses = ReportedAdjudicationStatus.issuableStatuses(), locationId = locationId, pageable = pageable
+        agencyId = agencyId,
+        startDate = reportsFrom(startDate),
+        endDate = reportsTo(endDate),
+        statuses = ReportedAdjudicationStatus.issuableStatuses(),
+        locationId = locationId,
+        pageable = pageable
       ).map { it.toDto() }
+
     if (issueStatuses.contains(IssuedStatus.NOT_ISSUED))
       return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndLocationIdAndDateTimeOfIssueIsNull(
-        agencyId = agencyId, startDate = reportsFrom(startDate), endDate = reportsTo(endDate), statuses = ReportedAdjudicationStatus.issuableStatuses(), locationId = locationId, pageable = pageable
+        agencyId = agencyId,
+        startDate = reportsFrom(startDate),
+        endDate = reportsTo(endDate),
+        statuses = ReportedAdjudicationStatus.issuableStatuses(),
+        locationId = locationId,
+        pageable = pageable
       ).map { it.toDto() }
 
     return Page.empty()

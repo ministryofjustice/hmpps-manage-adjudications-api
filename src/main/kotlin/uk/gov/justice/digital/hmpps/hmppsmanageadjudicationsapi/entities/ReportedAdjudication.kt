@@ -120,7 +120,3 @@ enum class ReportedAdjudicationStatus {
     fun issuableStatuses() = listOf(SCHEDULED, UNSCHEDULED)
   }
 }
-
-enum class IssuedStatus {
-  ISSUED, NOT_ISSUED
-}
