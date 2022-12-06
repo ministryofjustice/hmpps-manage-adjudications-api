@@ -25,7 +25,6 @@ class YouthOffenceCodes {
         4003 to Triple("5", "55:5", "55:5"),
         4004 to Triple("5", "55:5", "55:5"),
         4005 to Triple("5", "55:5", "55:5"),
-        4001 to Triple("5", "55:5", "55:5"),
         5001 to Triple("6", "55:6", "55:29Q"),
         5002 to Triple("6", "55:6", "55:29Q"),
         5003 to Triple("6", "55:6", "55:29Q"),
