@@ -16,7 +16,7 @@ jobs:
     executor:
       name: hmpps/java_postgres
       jdk_tag: "18.0"
-      postgres_tag: "13.2"
+      postgres_tag: "14"
       postgres_username: "test"
       postgres_password: "test"
       postgres_db: "hmpps-manage-adjudications-api-db"
