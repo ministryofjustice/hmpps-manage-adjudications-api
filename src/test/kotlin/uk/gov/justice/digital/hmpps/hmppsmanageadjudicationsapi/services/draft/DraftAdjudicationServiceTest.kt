@@ -771,7 +771,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     }
 
     @Test
-    fun `sorts draft adjudications by incident date time`() {
+    fun `sorts draft adjudications by discovery date time`() {
       whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
 
       val adjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications("MDI")
