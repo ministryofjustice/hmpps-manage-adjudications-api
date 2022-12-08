@@ -26,7 +26,7 @@ enum class PronounTypes(val tag: String) {
 
 enum class Descriptions(val description: String) {
   ADULT_3("Denies access to any part of the prison to any officer or any person (other than a prisoner) who is at the prison for the purpose of working there"),
-  ADULT_6("Intentionally obstructs an officer in the execution of ${PronounTypes.POSSESSIVE.tag} duty, or any person (other than a prisoner) who is at the prison for the purpose of working there, in the performance of his work"),
+  ADULT_6("Intentionally obstructs an officer in the execution of his duty, or any person (other than a prisoner) who is at the prison for the purpose of working there, in the performance of his work"),
   ADULT_7("Escapes or absconds from prison or from legal custody"),
   ADULT_8("Fails to comply with any condition upon which ${PronounTypes.OBJECT_PERSONAL.tag} is temporarily released under rule 9"),
   ADULT_9("Is found with any substance in ${PronounTypes.POSSESSIVE.tag} urine which demonstrates that a controlled drug, pharmacy medication, prescription only medicine, psychoactive substance or specified substance has, whether in prison or while on temporary release under rule 9, been administered to ${PronounTypes.SUBJECT_PERSONAL.tag} by ${PronounTypes.REFLEXIVE.tag} or by another person (but subject to Rule 52)"),
@@ -40,7 +40,7 @@ enum class Descriptions(val description: String) {
   ADULT_19("Is disrespectful to any officer, or any person (other than a prisoner) who is at the prison for the purpose of working there, or any person visiting a prison"),
   ADULT_24("Receives any controlled drug, pharmacy medicine, prescription only medicine, psychoactive substance or specified substance or, without the consent of an officer, any other article, during the course of a visit (not being an interview such as is mentioned in rule 38)"),
   YOI_4("Denies access to any part of the young offender institution to any officer or any person (other than an inmate) who is at the young offender institution for the purpose of working there"),
-  YOI_7("Intentionally obstructs an officer in the execution of ${PronounTypes.POSSESSIVE.tag} duty, or any person (other than an inmate) who is at the young offender institution for the purpose of working there, in the performance of his work"),
+  YOI_7("Intentionally obstructs an officer in the execution of his duty, or any person (other than an inmate) who is at the young offender institution for the purpose of working there, in the performance of his work"),
   YOI_8("Escapes or absconds from a young offender institution or from legal custody"),
   YOI_9("Fails to comply with any condition upon which ${PronounTypes.OBJECT_PERSONAL.tag} was temporarily released under rule 5 of these rules"),
   YOI_10("Is found with any substance in ${PronounTypes.POSSESSIVE.tag} urine which demonstrates that a controlled drug, pharmacy medication, prescription only medicine, psychoactive substance or specified substance has, whether in prison or while on temporary release under rule 5, been administered to ${PronounTypes.SUBJECT_PERSONAL.tag} by ${PronounTypes.REFLEXIVE.tag} or by another person (but subject to Rule 56)"),
@@ -50,12 +50,12 @@ enum class Descriptions(val description: String) {
   YOI_17("Intentionally or recklessly sets fire to any part of a young offender institution or any other property, whether or not ${PronounTypes.POSSESSIVE.tag} own"),
   YOI_18("Destroys or damages any part of a young offender institution or any other property other than ${PronounTypes.POSSESSIVE.tag} own"),
   YOI_19("Causes racially aggravated damage to, or destruction of, any part of a young offender institution or any other property, other than ${PronounTypes.POSSESSIVE.tag} own"),
-  YOI_20("Absents ${PronounTypes.REFLEXIVE.tag} from any place where he is required to be or is present at any place where he is not authorised to be"),
+  YOI_20("Absents ${PronounTypes.REFLEXIVE.tag} from any place where ${PronounTypes.OBJECT_PERSONAL.tag} is required to be or is present at any place where ${PronounTypes.OBJECT_PERSONAL.tag} is not authorised to be"),
   YOI_21(" Is disrespectful to any officer, or any person (other than an inmate) who is at the young offender institution for the purpose of working there, or any person visiting a young offender institution"),
   YOI_27("Receives any controlled drug, pharmacy medicine, prescription only medicine, psychoactive substance or specified substance or, without the consent of an officer, any other article, during the course of a visit (not being an interview such as is mentioned in rule 16)"),
   YOI_1_ADULT_1("Commits any assault"),
   YOI_2_ADULT_1A("Commits any racially aggravated assault"),
-  YOI_3_ADULT_2("Detains any person against ${PronounTypes.POSSESSIVE.tag} will"),
+  YOI_3_ADULT_2("Detains any person against his will"),
   YOI_5_ADULT_4("Fights with any person"),
   YOI_6_ADULT_5("Intentionally endangers the health or personal safety of others or, by ${PronounTypes.POSSESSIVE.tag} conduct, is reckless whether such health or personal safety is endangered"),
   YOI_13_ADULT_12(
