@@ -51,7 +51,7 @@ open class DraftAdjudicationBaseService(
       agencyId,
       username
     )
-      .sortedBy { it.incidentDetails.dateTimeOfIncident }
+      .sortedBy { it.incidentDetails.dateTimeOfDiscovery }
       .map { it.toDto() }
 
   private fun DraftAdjudication.toDto(): DraftAdjudicationDto =
