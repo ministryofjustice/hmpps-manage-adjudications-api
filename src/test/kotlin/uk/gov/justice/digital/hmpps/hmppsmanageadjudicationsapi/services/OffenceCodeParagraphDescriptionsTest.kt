@@ -103,6 +103,13 @@ class OffenceCodeParagraphDescriptionsTest {
   }
 
   @ParameterizedTest
+  @EnumSource(Descriptions::class)
+  fun `ensure all descriptions have a mapping `(description: Descriptions) {
+    if (description != Descriptions.DEFAULT)
+      assert(offenceCodeParagraphs.getLookup().containsValue(description))
+  }
+
+  @ParameterizedTest
   @EnumSource(Gender::class)
   fun `pronouns test`(gender: Gender) {
     assert(

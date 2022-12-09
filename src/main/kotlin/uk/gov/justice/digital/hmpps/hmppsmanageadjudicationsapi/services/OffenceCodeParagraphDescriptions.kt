@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
+import org.jetbrains.annotations.TestOnly
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 
 enum class Pronouns(val value: String, val type: PronounTypes) {
@@ -167,6 +168,9 @@ class OffenceCodeParagraphs {
     "51:18B" to Descriptions.ADULT_18,
     "51:21" to Descriptions.YOI_24_ADULT_21
   )
+
+  @TestOnly
+  fun getLookup() = lookup
 
   fun getParagraphDescription(nomisPrefixOffenceCode: String, gender: Gender): String {
     val description = lookup[nomisPrefixOffenceCode] ?: Descriptions.DEFAULT
