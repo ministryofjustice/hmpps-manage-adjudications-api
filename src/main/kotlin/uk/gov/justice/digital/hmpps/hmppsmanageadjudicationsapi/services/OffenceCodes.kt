@@ -88,13 +88,13 @@ enum class OffenceCodes(val paragraph: String, val withOthers: String? = null, v
   YOI_55_24(paragraph = "24", withOthers = "55:29AL", uniqueOffenceCodes = listOf(21001), paragraphDescription = Descriptions.YOI_24_ADULT_21),
   DEFAULT(paragraph = "", uniqueOffenceCodes = emptyList(), paragraphDescription = Descriptions.DEFAULT);
 
-  fun getNomisCode(isYouthOffender: Boolean) =
-    if (isYouthOffender) this.name.substringAfter("YOI_").replace("_", ":")
-    else this.name.substringAfter("ADULT_").replace("_", ":")
+  fun getNomisCode(isYouthOffender: Boolean) = if (isYouthOffender) convertToCode(this.name, "YOI_") else convertToCode(this.name, "ADULT_")
+
   fun getNomisCodeWithOthers(isYouthOffender: Boolean) = this.withOthers ?: getNomisCode(isYouthOffender)
 
   companion object {
-    fun getAdultOffenceCodes() = OffenceCodes.values().toList().filter { it.getNomisCode(false).startsWith("51:") }
-    fun getYouthOffenceCodes() = OffenceCodes.values().toList().filter { it.getNomisCode(true).startsWith("55:") }
+    fun convertToCode(name: String, filter: String) = name.substringAfter(filter).replace("_", ":")
+    fun getAdultOffenceCodes() = OffenceCodes.values().filter { it.getNomisCode(false).startsWith("51:") }
+    fun getYouthOffenceCodes() = OffenceCodes.values().filter { it.getNomisCode(true).startsWith("55:") }
   }
 }

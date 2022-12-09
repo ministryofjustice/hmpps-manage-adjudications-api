@@ -103,7 +103,7 @@ class OffenceCodeParagraphDescriptionsTest {
   @EnumSource(Descriptions::class)
   fun `ensure all descriptions have a mapping `(description: Descriptions) {
     if (description != Descriptions.DEFAULT)
-      assert(OffenceCodes.values().toList().map { it.paragraphDescription }.contains(description))
+      assert(OffenceCodes.values().map { it.paragraphDescription }.contains(description))
   }
 
   @ParameterizedTest
