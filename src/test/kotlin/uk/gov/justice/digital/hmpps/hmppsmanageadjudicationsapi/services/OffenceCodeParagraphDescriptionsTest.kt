@@ -6,9 +6,6 @@ import org.junit.jupiter.params.provider.EnumSource
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 
 class OffenceCodeParagraphDescriptionsTest {
-  // this test class was primarily used to refactor the existing code and has less value now its completed.
-  // it still ensures the mappings are correct so should be retained
-  private val offenceCodeParagraphs = OffenceCodeParagraphs()
 
   @ParameterizedTest
   @CsvSource(
@@ -98,37 +95,37 @@ class OffenceCodeParagraphDescriptionsTest {
     "51:21,YOI_24_ADULT_21",
     "51:17A,ADULT_17A",
   )
-  fun `get paragraph by offence code`(code: String, answer: String) {
-    assert(offenceCodeParagraphs.getParagraphDescription(code, Gender.MALE).trim().isNotEmpty())
+  fun `get paragraph by offence code`(code: String, answer: Descriptions) {
+    assert(OffenceCodes.values().first { it.getNomisCode(code.startsWith("55:")) == code }.paragraphDescription == answer)
   }
 
   @ParameterizedTest
   @EnumSource(Descriptions::class)
   fun `ensure all descriptions have a mapping `(description: Descriptions) {
     if (description != Descriptions.DEFAULT)
-      assert(offenceCodeParagraphs.getLookup().containsValue(description))
+      assert(OffenceCodes.values().toList().map { it.paragraphDescription }.contains(description))
   }
 
   @ParameterizedTest
   @EnumSource(Gender::class)
   fun `pronouns test`(gender: Gender) {
     assert(
-      offenceCodeParagraphs.getParagraphDescription(nomisPrefixOffenceCode = "51:8D", gender = gender).contains(
+      OffenceCodes.ADULT_51_8D.paragraphDescription.getParagraphDescription(gender = gender).contains(
         gender.pronouns.first { it.type == PronounTypes.OBJECT_PERSONAL }.value
       )
     )
     assert(
-      offenceCodeParagraphs.getParagraphDescription(nomisPrefixOffenceCode = "55:6", gender = gender).contains(
+      OffenceCodes.YOI_55_6.paragraphDescription.getParagraphDescription(gender = gender).contains(
         gender.pronouns.first { it.type == PronounTypes.POSSESSIVE }.value
       )
     )
     assert(
-      offenceCodeParagraphs.getParagraphDescription(nomisPrefixOffenceCode = "55:26B", gender = gender).contains(
+      OffenceCodes.YOI_55_26B.paragraphDescription.getParagraphDescription(gender = gender).contains(
         gender.pronouns.first { it.type == PronounTypes.SUBJECT_PERSONAL }.value
       )
     )
     assert(
-      offenceCodeParagraphs.getParagraphDescription(nomisPrefixOffenceCode = "51:18A", gender = gender).contains(
+      OffenceCodes.ADULT_51_18A.paragraphDescription.getParagraphDescription(gender = gender).contains(
         gender.pronouns.first { it.type == PronounTypes.REFLEXIVE }.value
       )
     )

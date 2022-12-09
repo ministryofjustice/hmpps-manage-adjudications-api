@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
-import org.jetbrains.annotations.TestOnly
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 
 enum class Pronouns(val value: String, val type: PronounTypes) {
@@ -75,116 +74,23 @@ enum class Descriptions(val description: String) {
   YOI_24_ADULT_21("Intentionally fails to work properly or, being required to work, refuses to do so"),
   YOI_25_ADULT_22("Disobeys any lawful order"),
   YOI_26_ADULT_23("Disobeys or fails to comply with any rule or regulation applying to ${PronounTypes.SUBJECT_PERSONAL.tag}"),
-  DEFAULT("")
-}
+  DEFAULT("");
 
-class OffenceCodeParagraphs {
-
-  private val lookup = mapOf(
-    "55:2" to Descriptions.YOI_2_ADULT_1A,
-    "55:1A" to Descriptions.YOI_1_ADULT_1,
-    "55:1L" to Descriptions.YOI_1_ADULT_1,
-    "55:1M" to Descriptions.YOI_1_ADULT_1,
-    "55:1E" to Descriptions.YOI_1_ADULT_1,
-    "55:5" to Descriptions.YOI_5_ADULT_4,
-    "55:6" to Descriptions.YOI_6_ADULT_5,
-    "55:8" to Descriptions.YOI_8,
-    "55:9D" to Descriptions.YOI_9,
-    "55:9E" to Descriptions.YOI_9,
-    "55:13" to Descriptions.YOI_13_ADULT_12,
-    "55:13A" to Descriptions.YOI_13_ADULT_12,
-    "55:15" to Descriptions.YOI_15_ADULT_14,
-    "55:15" to Descriptions.YOI_15_ADULT_14,
-    "55:14B" to Descriptions.YOI_14_ADULT_13,
-    "55:16" to Descriptions.YOI_16,
-    "55:17" to Descriptions.YOI_17,
-    "55:27" to Descriptions.YOI_27,
-    "55:26B" to Descriptions.YOI_26_ADULT_23,
-    "55:26C" to Descriptions.YOI_26_ADULT_23,
-    "55:10" to Descriptions.YOI_10,
-    "55:13C" to Descriptions.YOI_13_ADULT_12,
-    "55:13B" to Descriptions.YOI_13_ADULT_12,
-    "55:11" to Descriptions.YOI_11,
-    "55:12" to Descriptions.YOI_12,
-    "55:18" to Descriptions.YOI_18,
-    "55:19" to Descriptions.YOI_19,
-    "55:21B" to Descriptions.YOI_21,
-    "55:21C" to Descriptions.YOI_21,
-    "55:21A" to Descriptions.YOI_21,
-    "55:23" to Descriptions.YOI_23_ADULT_20A,
-    "55:28" to Descriptions.YOI_28,
-    "55:20" to Descriptions.YOI_22_ADULT_20,
-    "55:25" to Descriptions.YOI_25_ADULT_22,
-    "55:26" to Descriptions.YOI_26_ADULT_23,
-    "55:3A" to Descriptions.YOI_3_ADULT_2,
-    "55:3C" to Descriptions.YOI_3_ADULT_2,
-    "55:3D" to Descriptions.YOI_3_ADULT_2,
-    "55:3B" to Descriptions.YOI_3_ADULT_2,
-    "55:4" to Descriptions.YOI_4,
-    "55:7" to Descriptions.YOI_7,
-    "55:20A" to Descriptions.YOI_20,
-    "55:20B" to Descriptions.YOI_20,
-    "55:24" to Descriptions.YOI_24_ADULT_21,
-    "51:1A" to Descriptions.YOI_2_ADULT_1A,
-    "51:1B" to Descriptions.YOI_1_ADULT_1,
-    "51:1J" to Descriptions.YOI_1_ADULT_1,
-    "51:1N" to Descriptions.YOI_1_ADULT_1,
-    "51:1F" to Descriptions.YOI_1_ADULT_1,
-    "51:4" to Descriptions.YOI_5_ADULT_4,
-    "51:5" to Descriptions.YOI_6_ADULT_5,
-    "51:7" to Descriptions.ADULT_7,
-    "51:8D" to Descriptions.ADULT_8,
-    "51:8E" to Descriptions.ADULT_8,
-    "51:12" to Descriptions.YOI_13_ADULT_12,
-    "51:12A" to Descriptions.YOI_13_ADULT_12,
-    "51:14" to Descriptions.YOI_15_ADULT_14,
-    "51:13B" to Descriptions.YOI_14_ADULT_13,
-    "51:15" to Descriptions.ADULT_15,
-    "51:24" to Descriptions.ADULT_24,
-    "51:24A" to Descriptions.ADULT_24A,
-    "51:23AP" to Descriptions.YOI_26_ADULT_23,
-    "51:25Z" to Descriptions.YOI_26_ADULT_23,
-    "51:9" to Descriptions.ADULT_9,
-    "51:12AQ" to Descriptions.YOI_13_ADULT_12,
-    "51:10" to Descriptions.ADULT_10,
-    "51:11" to Descriptions.ADULT_11,
-    "51:16" to Descriptions.ADULT_16,
-    "51:17A" to Descriptions.ADULT_17A,
-    "51:17" to Descriptions.ADULT_17,
-    "51:19B" to Descriptions.ADULT_19,
-    "51:19C" to Descriptions.ADULT_19,
-    "51:19A" to Descriptions.ADULT_19,
-    "51:20" to Descriptions.YOI_22_ADULT_20,
-    "51:20A" to Descriptions.YOI_23_ADULT_20A,
-    "51:22" to Descriptions.YOI_25_ADULT_22,
-    "51:23" to Descriptions.YOI_26_ADULT_23,
-    "51:2A" to Descriptions.YOI_3_ADULT_2,
-    "51:2B" to Descriptions.YOI_3_ADULT_2,
-    "51:2C" to Descriptions.YOI_3_ADULT_2,
-    "51:2D" to Descriptions.YOI_3_ADULT_2,
-    "51:3" to Descriptions.ADULT_3,
-    "51:6" to Descriptions.ADULT_6,
-    "51:18A" to Descriptions.ADULT_18,
-    "51:18B" to Descriptions.ADULT_18,
-    "51:21" to Descriptions.YOI_24_ADULT_21
-  )
-
-  @TestOnly
-  fun getLookup() = lookup
-
-  fun getParagraphDescription(nomisPrefixOffenceCode: String, gender: Gender): String {
-    val description = lookup[nomisPrefixOffenceCode] ?: Descriptions.DEFAULT
+  fun getParagraphDescription(gender: Gender): String {
     return formatGenderPronouns(
-      description = description.description,
+      description = this.description,
       gender = gender
     )
   }
 
-  private fun formatGenderPronouns(description: String, gender: Gender): String {
-    var result: String = description
-    gender.pronouns.forEach {
-      result = result.replace(it.type.tag, it.value)
+  companion object {
+
+    private fun formatGenderPronouns(description: String, gender: Gender): String {
+      var result: String = description
+      gender.pronouns.forEach {
+        result = result.replace(it.type.tag, it.value)
+      }
+      return result
     }
-    return result
   }
 }
