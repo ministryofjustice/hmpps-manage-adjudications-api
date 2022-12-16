@@ -60,6 +60,7 @@ data class ReportedAdjudication(
   var draftCreatedOn: LocalDateTime,
   var issuingOfficer: String? = null,
   var dateTimeOfIssue: LocalDateTime? = null,
+  var dateTimeOfFirstHearing: LocalDateTime? = null,
 ) :
   BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reason: String? = null, details: String? = null, reviewUserId: String? = null) {
@@ -118,5 +119,6 @@ enum class ReportedAdjudicationStatus {
 
   companion object {
     fun issuableStatuses() = listOf(SCHEDULED, UNSCHEDULED)
+    fun issuableStatusesForPrint() = listOf(SCHEDULED)
   }
 }

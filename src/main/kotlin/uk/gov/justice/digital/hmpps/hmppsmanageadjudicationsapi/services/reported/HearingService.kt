@@ -59,6 +59,8 @@ class HearingService(
       )
       if (it.status != ReportedAdjudicationStatus.SCHEDULED)
         it.status = ReportedAdjudicationStatus.SCHEDULED
+
+      it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
     }
 
     return saveToDto(reportedAdjudication)
@@ -89,6 +91,8 @@ class HearingService(
       it.oicHearingType = oicHearingType
     }
 
+    reportedAdjudication.dateTimeOfFirstHearing = reportedAdjudication.calcFirstHearingDate()
+
     return saveToDto(reportedAdjudication)
   }
 
@@ -107,6 +111,8 @@ class HearingService(
       it.hearings.remove(hearingToRemove)
       if (it.hearings.isEmpty())
         it.status = ReportedAdjudicationStatus.UNSCHEDULED
+
+      it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
     }
 
     return saveToDto(reportedAdjudication)
@@ -140,5 +146,8 @@ class HearingService(
   companion object {
     fun throwHearingNotFoundException(id: Long): Nothing =
       throw EntityNotFoundException("Hearing not found for $id")
+
+    fun ReportedAdjudication.calcFirstHearingDate(): LocalDateTime? =
+      this.hearings.minOfOrNull { it.dateTimeOfHearing }
   }
 }

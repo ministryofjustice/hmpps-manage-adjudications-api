@@ -48,39 +48,39 @@ class ReportsService(
     return reportedAdjudicationsPage.map { it.toDto() }
   }
 
-  fun getAdjudicationsForIssue(agencyId: String, startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>? = null): List<ReportedAdjudicationDto> =
-    getAdjudicationsForIssueAllLocations(
+  fun getAdjudicationsForIssue(agencyId: String, startDate: LocalDate, endDate: LocalDate): List<ReportedAdjudicationDto> =
+    reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetween(
       agencyId = agencyId,
-      startDate = startDate,
-      endDate = endDate,
-      issueStatuses = issueStatuses ?: IssuedStatus.values().toList()
-    )
+      startDate = reportsFrom(startDate),
+      endDate = reportsTo(endDate),
+    ).filter { ReportedAdjudicationStatus.issuableStatuses().contains(it.status) }
+      .sortedBy { it.dateTimeOfDiscovery }
+      .map { it.toDto() }
 
-  private fun getAdjudicationsForIssueAllLocations(agencyId: String, startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>): List<ReportedAdjudicationDto> {
+  fun getAdjudicationsForPrint(agencyId: String, startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>): List<ReportedAdjudicationDto> {
     if (issueStatuses.containsAll(IssuedStatus.values().toList()))
-      return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetween(
+      return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusIn(
         agencyId = agencyId,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
-      ).filter { ReportedAdjudicationStatus.issuableStatuses().contains(it.status) }
-        .sortedBy { it.dateTimeOfDiscovery }
-        .map { it.toDto() }
+        statuses = ReportedAdjudicationStatus.issuableStatusesForPrint(),
+      ).sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto() }
 
     if (issueStatuses.contains(IssuedStatus.ISSUED))
-      return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
+      return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
         agencyId = agencyId,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
-        statuses = ReportedAdjudicationStatus.issuableStatuses(),
-      ).sortedBy { it.dateTimeOfDiscovery }.map { it.toDto() }
+        statuses = ReportedAdjudicationStatus.issuableStatusesForPrint(),
+      ).sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto() }
 
     if (issueStatuses.contains(IssuedStatus.NOT_ISSUED))
-      return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndDateTimeOfIssueIsNull(
+      return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNull(
         agencyId = agencyId,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
-        statuses = ReportedAdjudicationStatus.issuableStatuses(),
-      ).sortedBy { it.dateTimeOfDiscovery }.map { it.toDto() }
+        statuses = ReportedAdjudicationStatus.issuableStatusesForPrint(),
+      ).sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto() }
 
     return emptyList()
   }

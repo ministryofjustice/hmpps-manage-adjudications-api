@@ -53,6 +53,8 @@ data class ReportedAdjudicationDto(
   val issuingOfficer: String? = null,
   @Schema(description = "date time of form issued")
   val dateTimeOfIssue: LocalDateTime? = null,
+  @Schema(description = "date time of first hearing")
+  val dateTimeOfFirstHearing: LocalDateTime? = null,
 )
 
 @Schema(description = "Details of an offence")
