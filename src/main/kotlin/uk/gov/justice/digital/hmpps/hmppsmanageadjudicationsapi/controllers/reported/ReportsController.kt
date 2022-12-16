@@ -127,7 +127,7 @@ class ReportsController(
     )
   }
 
-  @Operation(summary = "Get all reported adjudications for caseload for issue")
+  @Operation(summary = "Get all reported adjudications for issue")
   @Parameters(
     Parameter(
       name = "startDate",
@@ -156,7 +156,7 @@ class ReportsController(
     )
   }
 
-  @Operation(summary = "Get all reported adjudications for caseload for print")
+  @Operation(summary = "Get all reported adjudications for print")
   @Parameters(
     Parameter(
       name = "startDate",
@@ -171,7 +171,7 @@ class ReportsController(
     Parameter(
       name = "issueStatus",
       required = true,
-      description = "optional list of issue status, as comma separated String"
+      description = "list of issue status, as comma separated String"
     ),
   )
   @GetMapping("/agency/{agencyId}/print")
