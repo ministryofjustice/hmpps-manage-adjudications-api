@@ -136,40 +136,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class ReportAdjudicationsForIssue {
 
-    private val now = LocalDateTime.now()
-
-    private val third = entityBuilder.reportedAdjudication(
-      reportNumber = 4L,
-      dateTime = now.minusDays(3),
-    ).also {
-      it.status = ReportedAdjudicationStatus.SCHEDULED
-      it.issuingOfficer = "testing"
-      it.dateTimeOfIssue = now
-      it.createDateTime = now
-      it.createdByUserId = "testing"
-    }
-
-    private val second = entityBuilder.reportedAdjudication(
-      reportNumber = 2L,
-      dateTime = now.minusDays(2)
-    ).also {
-      it.status = ReportedAdjudicationStatus.UNSCHEDULED
-      it.locationId = 3
-      it.createDateTime = now
-      it.createdByUserId = "testing"
-    }
-
-    private val first = entityBuilder.reportedAdjudication(
-      reportNumber = 3L,
-      dateTime = now.minusDays(3),
-    ).also {
-      it.status = ReportedAdjudicationStatus.SCHEDULED
-      it.issuingOfficer = "testing"
-      it.dateTimeOfIssue = now
-      it.createDateTime = now
-      it.createdByUserId = "testing"
-    }
-
     @BeforeEach
     fun beforeEach() {
       whenever(
@@ -179,26 +145,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         )
       ).thenReturn(
         listOf(first, second)
-      )
-
-      whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndDateTimeOfIssueIsNull(
-          "MDI",
-          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
-          listOf(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED),
-        )
-      ).thenReturn(
-        listOf(second)
-      )
-
-      whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
-          "MDI",
-          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
-          listOf(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED),
-        )
-      ).thenReturn(
-        listOf(third)
       )
     }
 
@@ -221,21 +167,57 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         .extracting("dateTimeOfDiscovery", "locationId")
         .contains(first.dateTimeOfDiscovery, 2L)
     }
+  }
+
+  @Nested
+  inner class ReportedAdjudicationsForPrint {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusIn(
+          "MDI",
+          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
+          listOf(ReportedAdjudicationStatus.SCHEDULED),
+        )
+      ).thenReturn(
+        listOf(first)
+      )
+
+      whenever(
+        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNull(
+          "MDI",
+          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
+          listOf(ReportedAdjudicationStatus.SCHEDULED),
+        )
+      ).thenReturn(
+        listOf(second)
+      )
+
+      whenever(
+        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
+          "MDI",
+          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
+          listOf(ReportedAdjudicationStatus.SCHEDULED),
+        )
+      ).thenReturn(
+        listOf(third)
+      )
+    }
 
     @Test
-    fun `returns adjudications for issue (All locations) with correct issue details and order for status SCHEDULED and UNSCHEDULED only for all issue statuses `() {
-      val response = reportsService.getAdjudicationsForIssue(
+    fun `returns adjudications for issue (All locations) with correct issue details and order for status SCHEDULED only for all issue statuses `() {
+      val response = reportsService.getAdjudicationsForPrint(
         agencyId = "MDI",
-        issueStatuses = IssuedStatus.values().toList(),
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
+        issueStatuses = IssuedStatus.values().toList(),
       )
 
       assertThat(response)
         .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
         .contains(
           Tuple.tuple(3L, "A12345", "testing", now),
-          Tuple.tuple(2L, "A12345", null, null),
         )
 
       assertThat(response.first().incidentDetails)
@@ -245,7 +227,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `returns issued adjudications for all locations `() {
-      val response = reportsService.getAdjudicationsForIssue(
+      val response = reportsService.getAdjudicationsForPrint(
         agencyId = "MDI",
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
@@ -265,7 +247,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `returns not issued adjudications for all locations `() {
-      val response = reportsService.getAdjudicationsForIssue(
+      val response = reportsService.getAdjudicationsForPrint(
         agencyId = "MDI",
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
@@ -290,5 +272,41 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
   companion object {
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
+
+    private val now = LocalDateTime.now()
+
+    private val third = entityBuilder.reportedAdjudication(
+      reportNumber = 4L,
+      dateTime = now.minusDays(3),
+    ).also {
+      it.status = ReportedAdjudicationStatus.SCHEDULED
+      it.issuingOfficer = "testing"
+      it.dateTimeOfIssue = now
+      it.dateTimeOfFirstHearing = now
+      it.createDateTime = now
+      it.createdByUserId = "testing"
+    }
+
+    private val second = entityBuilder.reportedAdjudication(
+      reportNumber = 2L,
+      dateTime = now.minusDays(2)
+    ).also {
+      it.status = ReportedAdjudicationStatus.UNSCHEDULED
+      it.locationId = 3
+      it.createDateTime = now
+      it.createdByUserId = "testing"
+    }
+
+    private val first = entityBuilder.reportedAdjudication(
+      reportNumber = 3L,
+      dateTime = now.minusDays(3),
+    ).also {
+      it.status = ReportedAdjudicationStatus.SCHEDULED
+      it.issuingOfficer = "testing"
+      it.dateTimeOfIssue = now
+      it.dateTimeOfFirstHearing = now
+      it.createDateTime = now
+      it.createdByUserId = "testing"
+    }
   }
 }

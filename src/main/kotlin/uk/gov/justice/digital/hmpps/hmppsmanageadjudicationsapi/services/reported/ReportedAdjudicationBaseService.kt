@@ -61,6 +61,7 @@ open class ReportedDtoService(
     issuingOfficer = issuingOfficer,
     dateTimeOfIssue = dateTimeOfIssue,
     gender = gender,
+    dateTimeOfFirstHearing = dateTimeOfFirstHearing,
   )
 
   private fun toReportedOffence(

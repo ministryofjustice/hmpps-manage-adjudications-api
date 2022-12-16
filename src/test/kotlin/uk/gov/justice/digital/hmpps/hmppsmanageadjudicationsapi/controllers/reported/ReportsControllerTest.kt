@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.IssuedStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService
 import java.time.LocalDate
 
@@ -125,13 +126,28 @@ class ReportsControllerTest : TestControllerBase() {
   }
 
   @Test
+  fun `responds with a unauthorised status code for adjudications to print`() {
+    getAdjudicationsForPrint().andExpect(MockMvcResultMatchers.status().isUnauthorized)
+  }
+
+  @Test
   @WithMockUser(username = "ITAG_USER")
   fun `get adjudications for issue with defaulted dates`() {
-    whenever(reportsService.getAdjudicationsForIssue("MDI", LocalDate.now().minusDays(2), LocalDate.now(), null))
+    whenever(reportsService.getAdjudicationsForIssue("MDI", LocalDate.now().minusDays(2), LocalDate.now()))
       .thenReturn(emptyList())
 
     getAdjudicationsForIssue().andExpect(MockMvcResultMatchers.status().isOk)
-    verify(reportsService).getAdjudicationsForIssue("MDI", LocalDate.now().minusDays(2), LocalDate.now(), null)
+    verify(reportsService).getAdjudicationsForIssue("MDI", LocalDate.now().minusDays(2), LocalDate.now())
+  }
+
+  @Test
+  @WithMockUser(username = "ITAG_USER")
+  fun `get adjudications for print with defaulted dates`() {
+    whenever(reportsService.getAdjudicationsForPrint("MDI", LocalDate.now(), LocalDate.now().plusDays(2), IssuedStatus.values().toList()))
+      .thenReturn(emptyList())
+
+    getAdjudicationsForPrint().andExpect(MockMvcResultMatchers.status().isOk)
+    verify(reportsService).getAdjudicationsForPrint("MDI", LocalDate.now(), LocalDate.now().plusDays(2), IssuedStatus.values().toList())
   }
 
   private fun getMyAdjudications(): ResultActions {
@@ -162,6 +178,14 @@ class ReportsControllerTest : TestControllerBase() {
     return mockMvc
       .perform(
         MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI/issue")
+          .header("Content-Type", "application/json")
+      )
+  }
+
+  private fun getAdjudicationsForPrint(): ResultActions {
+    return mockMvc
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI/print?issueStatus=ISSUED,NOT_ISSUED")
           .header("Content-Type", "application/json")
       )
   }

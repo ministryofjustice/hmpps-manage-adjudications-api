@@ -127,7 +127,7 @@ class ReportsController(
     )
   }
 
-  @Operation(summary = "Get all reported adjudications for caseload for issue")
+  @Operation(summary = "Get all reported adjudications for issue")
   @Parameters(
     Parameter(
       name = "startDate",
@@ -139,18 +139,12 @@ class ReportsController(
       required = false,
       description = "optional inclusive end date for results, default is today"
     ),
-    Parameter(
-      name = "issueStatus",
-      required = false,
-      description = "optional list of issue status, as comma separated String"
-    ),
   )
   @GetMapping("/agency/{agencyId}/issue")
   fun getReportedAdjudicationsForIssue(
     @PathVariable(name = "agencyId") agencyId: String,
     @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
     @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
-    @RequestParam(name = "issueStatus") issueStatuses: List<IssuedStatus>?,
   ): IssuableAdjudicationsResponse {
 
     return IssuableAdjudicationsResponse(
@@ -158,6 +152,41 @@ class ReportsController(
         agencyId = agencyId,
         startDate = startDate ?: LocalDate.now().minusDays(2),
         endDate = endDate ?: LocalDate.now(),
+      )
+    )
+  }
+
+  @Operation(summary = "Get all reported adjudications for print")
+  @Parameters(
+    Parameter(
+      name = "startDate",
+      required = false,
+      description = "optional inclusive hearing start date for results, default is today"
+    ),
+    Parameter(
+      name = "endDate",
+      required = false,
+      description = "optional inclusive hearing end date for results, default is today + 2"
+    ),
+    Parameter(
+      name = "issueStatus",
+      required = true,
+      description = "list of issue status, as comma separated String"
+    ),
+  )
+  @GetMapping("/agency/{agencyId}/print")
+  fun getReportedAdjudicationsForPrint(
+    @PathVariable(name = "agencyId") agencyId: String,
+    @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
+    @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
+    @RequestParam(name = "issueStatus") issueStatuses: List<IssuedStatus>,
+  ): IssuableAdjudicationsResponse {
+
+    return IssuableAdjudicationsResponse(
+      reportsService.getAdjudicationsForPrint(
+        agencyId = agencyId,
+        startDate = startDate ?: LocalDate.now(),
+        endDate = endDate ?: LocalDate.now().plusDays(2),
         issueStatuses = issueStatuses,
       )
     )

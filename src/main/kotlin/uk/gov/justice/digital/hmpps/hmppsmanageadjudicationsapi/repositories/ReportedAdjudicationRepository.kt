@@ -28,13 +28,19 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     startDate: LocalDateTime,
     endDate: LocalDateTime,
   ): List<ReportedAdjudication>
-  fun findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
+  fun findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusIn(
     agencyId: String,
     startDate: LocalDateTime,
     endDate: LocalDateTime,
     statuses: List<ReportedAdjudicationStatus>,
   ): List<ReportedAdjudication>
-  fun findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusInAndDateTimeOfIssueIsNull(
+  fun findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
+    agencyId: String,
+    startDate: LocalDateTime,
+    endDate: LocalDateTime,
+    statuses: List<ReportedAdjudicationStatus>,
+  ): List<ReportedAdjudication>
+  fun findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNull(
     agencyId: String,
     startDate: LocalDateTime,
     endDate: LocalDateTime,

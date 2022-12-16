@@ -117,6 +117,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(5)
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
       assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(OicHearingType.GOV_ADULT)
+      assertThat(argumentCaptor.value.dateTimeOfFirstHearing).isEqualTo(now)
 
       assertThat(response).isNotNull
     }
@@ -187,6 +188,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
       assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
       assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(OicHearingType.INAD_ADULT)
+      assertThat(argumentCaptor.value.dateTimeOfFirstHearing).isEqualTo(now.plusDays(1))
 
       assertThat(response).isNotNull
     }
@@ -247,16 +249,18 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response).isNotNull
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
+      assertThat(argumentCaptor.value.dateTimeOfFirstHearing).isNull()
     }
 
     @Test
     fun `delete a hearing when there is more than one and ensure status is still SCHEDULED`() {
+      val dateTimeOfHearing = LocalDateTime.now().plusDays(5)
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.hearings.add(
             Hearing(
               oicHearingId = 2L,
-              dateTimeOfHearing = LocalDateTime.now(),
+              dateTimeOfHearing = dateTimeOfHearing,
               locationId = 1L,
               agencyId = reportedAdjudication.agencyId,
               reportNumber = 1235L,
@@ -278,6 +282,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
+      assertThat(argumentCaptor.value.dateTimeOfFirstHearing).isEqualTo(dateTimeOfHearing)
     }
   }
 
