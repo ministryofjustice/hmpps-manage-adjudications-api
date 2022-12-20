@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: hmppps-manage-adjudications-api-delete-orphaned
 spec:
-  schedule: "*/10 * * * *"
+  schedule: "0 5 * * 1-5"
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 5
   startingDeadlineSeconds: 600
