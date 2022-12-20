@@ -123,31 +123,23 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders())
       .bodyValue(
         mapOf(
-          "offenceDetails" to testAdjudication.offences,
+          "offenceDetails" to testAdjudication.offence,
         )
       )
       .exchange()
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.offenceDetails[0].offenceRule.paragraphNumber")
-      .isEqualTo(testAdjudication.offences[0].paragraphNumber)
-      .jsonPath("$.draftAdjudication.offenceDetails[0].offenceRule.paragraphDescription")
-      .isEqualTo(testAdjudication.offences[0].paragraphDescription)
-      .jsonPath("$.draftAdjudication.offenceDetails[0].victimPrisonersNumber")
-      .isEqualTo(testAdjudication.offences[0].victimPrisonersNumber!!)
-      .jsonPath("$.draftAdjudication.offenceDetails[0].victimStaffUsername")
-      .isEqualTo(testAdjudication.offences[0].victimStaffUsername!!)
-      .jsonPath("$.draftAdjudication.offenceDetails[0].victimOtherPersonsName")
-      .isEqualTo(testAdjudication.offences[0].victimOtherPersonsName!!)
-      .jsonPath("$.draftAdjudication.offenceDetails[1].offenceCode").isEqualTo(testAdjudication.offences[1].offenceCode)
-      .jsonPath("$.draftAdjudication.offenceDetails[1].offenceRule.paragraphNumber")
-      .isEqualTo(testAdjudication.offences[1].paragraphNumber)
-      .jsonPath("$.draftAdjudication.offenceDetails[1].offenceRule.paragraphDescription")
-      .isEqualTo(testAdjudication.offences[1].paragraphDescription)
-      .jsonPath("$.draftAdjudication.offenceDetails[1].victimPrisonersNumber").doesNotExist()
-      .jsonPath("$.draftAdjudication.offenceDetails[1].victimStaffUsername").doesNotExist()
-      .jsonPath("$.draftAdjudication.offenceDetails[1].victimOtherPersonsName").doesNotExist()
+      .jsonPath("$.draftAdjudication.offenceDetails.offenceRule.paragraphNumber")
+      .isEqualTo(testAdjudication.offence.paragraphNumber)
+      .jsonPath("$.draftAdjudication.offenceDetails.offenceRule.paragraphDescription")
+      .isEqualTo(testAdjudication.offence.paragraphDescription)
+      .jsonPath("$.draftAdjudication.offenceDetails.victimPrisonersNumber")
+      .isEqualTo(testAdjudication.offence.victimPrisonersNumber!!)
+      .jsonPath("$.draftAdjudication.offenceDetails.victimStaffUsername")
+      .isEqualTo(testAdjudication.offence.victimStaffUsername!!)
+      .jsonPath("$.draftAdjudication.offenceDetails.victimOtherPersonsName")
+      .isEqualTo(testAdjudication.offence.victimOtherPersonsName!!)
   }
 
   @Test
@@ -260,7 +252,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.offenceDetails.size()").isEqualTo(0)
+      .jsonPath("$.draftAdjudication.offenceDetails").doesNotExist()
   }
 
   @Test
@@ -507,7 +499,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.isYouthOffender").isEqualTo(true)
-      .jsonPath("$.draftAdjudication.offenceDetails.length()").isEqualTo(0)
+      .jsonPath("$.draftAdjudication.offenceDetails").doesNotExist()
   }
 
   @Test

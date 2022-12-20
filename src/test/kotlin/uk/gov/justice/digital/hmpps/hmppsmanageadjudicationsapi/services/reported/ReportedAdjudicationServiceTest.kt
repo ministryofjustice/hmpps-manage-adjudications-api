@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
-import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -144,14 +143,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             "victimOtherPersonsName"
           )
           .contains(
-            Tuple(
-              2,
-              YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER,
-              YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
-              null,
-              null,
-              null
-            ),
+            2,
+            YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER,
+            YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
+            null,
+            null,
+            null
           )
       } else {
         assertThat(reportedAdjudicationDto.offenceDetails)
@@ -164,15 +161,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             "victimOtherPersonsName"
           )
           .contains(
-            Tuple(2, OFFENCE_CODE_2_PARAGRAPH_NUMBER, OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION, null, null, null),
-            Tuple(
-              3,
-              OFFENCE_CODE_3_PARAGRAPH_NUMBER,
-              OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
-              "BB2345B",
-              "DEF34G",
-              "Another Name"
-            ),
+            2, OFFENCE_CODE_2_PARAGRAPH_NUMBER, OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION, null, null, null
           )
       }
 

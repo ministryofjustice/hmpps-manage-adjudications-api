@@ -22,8 +22,8 @@ data class DraftAdjudicationDto(
   val incidentDetails: IncidentDetailsDto,
   @Schema(description = "Information about the role of this prisoner in the incident")
   val incidentRole: IncidentRoleDto? = null,
-  @Schema(description = "Details about all the offences the prisoner is accused of")
-  val offenceDetails: List<OffenceDetailsDto>? = null,
+  @Schema(description = "Details about the offence the prisoner is accused of")
+  val offenceDetails: OffenceDetailsDto? = null,
   @Schema(description = "Incident statement")
   val incidentStatement: IncidentStatementDto? = null,
   @Schema(description = "The id of the user who started the adjudication")

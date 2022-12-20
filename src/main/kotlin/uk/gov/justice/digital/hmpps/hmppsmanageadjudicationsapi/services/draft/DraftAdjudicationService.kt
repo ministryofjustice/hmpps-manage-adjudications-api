@@ -156,7 +156,7 @@ class DraftAdjudicationService(
     ValidationChecks.APPLICABLE_RULES.validate(draftAdjudication)
 
     if (removeExistingOffences) {
-      draftAdjudication.offenceDetails?.clear()
+      draftAdjudication.offenceDetails.clear()
     }
 
     incidentRole.let {

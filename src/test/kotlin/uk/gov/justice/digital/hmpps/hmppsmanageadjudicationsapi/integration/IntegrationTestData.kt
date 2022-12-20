@@ -55,13 +55,13 @@ class IntegrationTestData(
     const val DEFAULT_INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(a)"
     const val DEFAULT_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION = "Attempts to commit any of the foregoing offences:"
     const val DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER = "B2345BB"
-    val DEFAULT_OFFENCES = listOf(FULL_OFFENCE, BASIC_OFFENCE)
-    val DEFAULT_YOUTH_OFFENCES = listOf(YOUTH_OFFENCE)
+    val DEFAULT_OFFENCE = FULL_OFFENCE
+    val DEFAULT_YOUTH_OFFENCE = YOUTH_OFFENCE
     const val DEFAULT_STATEMENT = "A statement"
     val DEFAULT_REPORTED_DATE_TIME = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
     const val DEFAULT_REPORTED_DATE_TIME_TEXT = "2010-11-13T10:00:00"
     val DEFAULT_EXPECTED_NOMIS_DATA = NomisOffenceTestDataSet(
-      nomisCodes = listOf("51:4", "51:1A"), // 2 offences
+      nomisCodes = listOf("51:4"),
       victimStaffUsernames = listOf("ABC12D"),
       victimPrisonersNumbers = listOf("A1234AA"),
     )
@@ -80,7 +80,7 @@ class IntegrationTestData(
     const val UPDATED_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION =
       "Incites another prisoner to commit any of the foregoing offences:"
     const val UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER = "C3456CC"
-    val UPDATED_OFFENCES = listOf(BASIC_OFFENCE)
+    val UPDATED_OFFENCE = BASIC_OFFENCE
     const val UPDATED_STATEMENT = "updated test statement"
     val UPDATED_DATE_TIME_OF_INCIDENT = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
 
@@ -100,7 +100,7 @@ class IntegrationTestData(
       incidentRoleParagraphNumber = DEFAULT_INCIDENT_ROLE_PARAGRAPH_NUMBER,
       incidentRoleParagraphDescription = DEFAULT_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION,
       incidentRoleAssociatedPrisonersNumber = DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER,
-      offences = DEFAULT_OFFENCES,
+      offence = DEFAULT_OFFENCE,
       statement = DEFAULT_STATEMENT,
       createdByUserId = DEFAULT_CREATED_USER_ID,
       damages = DEFAULT_DAMAGES,
@@ -124,7 +124,7 @@ class IntegrationTestData(
       incidentRoleParagraphNumber = UPDATED_INCIDENT_ROLE_PARAGRAPH_NUMBER,
       incidentRoleParagraphDescription = UPDATED_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION,
       incidentRoleAssociatedPrisonersNumber = UPDATED_INCIDENT_ROLE_ASSOCIATED_PRISONER,
-      offences = UPDATED_OFFENCES,
+      offence = UPDATED_OFFENCE,
       statement = UPDATED_STATEMENT,
       createdByUserId = DEFAULT_CREATED_USER_ID,
       damages = UPDATED_DAMAGES,
@@ -148,7 +148,7 @@ class IntegrationTestData(
       incidentRoleParagraphNumber = "25(c)",
       incidentRoleParagraphDescription = "Assists another prisoner to commit, or to attempt to commit, any of the foregoing offences:",
       incidentRoleAssociatedPrisonersNumber = "D4567DD",
-      offences = DEFAULT_OFFENCES,
+      offence = DEFAULT_OFFENCE,
       statement = "Test statement",
       createdByUserId = "A_NESS",
       damages = DEFAULT_DAMAGES,
@@ -170,7 +170,7 @@ class IntegrationTestData(
       incidentRoleParagraphNumber = "29(a)",
       incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
       incidentRoleAssociatedPrisonersNumber = "A5678AA",
-      offences = DEFAULT_YOUTH_OFFENCES,
+      offence = DEFAULT_YOUTH_OFFENCE,
       statement = "Different test statement",
       createdByUserId = "P_NESS",
       damages = DEFAULT_DAMAGES,
@@ -192,7 +192,7 @@ class IntegrationTestData(
       incidentRoleParagraphNumber = "25(c)",
       incidentRoleParagraphDescription = "Assists another prisoner to commit, or to attempt to commit, any of the foregoing offences:",
       incidentRoleAssociatedPrisonersNumber = "D4567DD",
-      offences = DEFAULT_OFFENCES,
+      offence = DEFAULT_OFFENCE,
       statement = "Another test statement",
       createdByUserId = "L_NESS",
       damages = DEFAULT_DAMAGES,
@@ -214,7 +214,7 @@ class IntegrationTestData(
       incidentRoleParagraphNumber = "29(a)",
       incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
       incidentRoleAssociatedPrisonersNumber = "A5678AA",
-      offences = DEFAULT_YOUTH_OFFENCES,
+      offence = DEFAULT_YOUTH_OFFENCE,
       statement = "Yet another test statement",
       createdByUserId = "P_NESS",
       damages = DEFAULT_DAMAGES,
@@ -236,7 +236,7 @@ class IntegrationTestData(
       incidentRoleParagraphNumber = "25(a)",
       incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
       incidentRoleAssociatedPrisonersNumber = "A5678AA",
-      offences = DEFAULT_OFFENCES,
+      offence = DEFAULT_OFFENCE,
       statement = "Keep on with the test statements",
       createdByUserId = "P_NESS",
       damages = DEFAULT_DAMAGES,
@@ -351,7 +351,7 @@ class IntegrationTestData(
       .headers(headers)
       .bodyValue(
         mapOf(
-          "offenceDetails" to testDataSet.offences,
+          "offenceDetails" to testDataSet.offence,
         )
       )
       .exchange()

@@ -26,32 +26,22 @@ class DraftOffenceService(
     )
   }
 
-  fun setOffenceDetails(id: Long, offenceDetails: List<OffenceDetailsRequestItem>): DraftAdjudicationDto {
-    throwIfEmpty(offenceDetails)
-
+  fun setOffenceDetails(id: Long, offenceDetails: OffenceDetailsRequestItem): DraftAdjudicationDto {
     val draftAdjudication = find(id)
     // NOTE: new flow sets isYouthOffender first, therefore if we do not have this set we must throw as .Dto requires it
     ValidationChecks.APPLICABLE_RULES.validate(draftAdjudication)
 
-    val newValuesToStore = offenceDetails.map {
+    val newValuesToStore =
       Offence(
-        offenceCode = it.offenceCode,
-        victimPrisonersNumber = it.victimPrisonersNumber?.ifBlank { null },
-        victimStaffUsername = it.victimStaffUsername?.ifBlank { null },
-        victimOtherPersonsName = it.victimOtherPersonsName?.ifBlank { null },
+        offenceCode = offenceDetails.offenceCode,
+        victimPrisonersNumber = offenceDetails.victimPrisonersNumber?.ifBlank { null },
+        victimStaffUsername = offenceDetails.victimStaffUsername?.ifBlank { null },
+        victimOtherPersonsName = offenceDetails.victimOtherPersonsName?.ifBlank { null },
       )
-    }.toMutableList()
 
     draftAdjudication.offenceDetails.clear()
-    draftAdjudication.offenceDetails.addAll(newValuesToStore)
+    draftAdjudication.offenceDetails.add(newValuesToStore)
 
     return saveToDto(draftAdjudication)
-  }
-
-  companion object {
-    private fun throwIfEmpty(toTest: List<Any>) {
-      if (toTest.isEmpty())
-        throw IllegalArgumentException("Please supply at least one set of items")
-    }
   }
 }
