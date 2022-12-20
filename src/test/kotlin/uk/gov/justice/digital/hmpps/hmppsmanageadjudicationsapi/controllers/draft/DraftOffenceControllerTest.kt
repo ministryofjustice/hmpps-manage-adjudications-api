@@ -41,10 +41,8 @@ class DraftOffenceControllerTest : TestControllerBase() {
 
     verify(incidentOffenceService).setOffenceDetails(
       1,
-      listOf(
-        OffenceDetailsRequestItem(
-          offenceCode = BASIC_OFFENCE_REQUEST.offenceCode,
-        )
+      OffenceDetailsRequestItem(
+        offenceCode = BASIC_OFFENCE_REQUEST.offenceCode,
       )
     )
   }
@@ -56,11 +54,11 @@ class DraftOffenceControllerTest : TestControllerBase() {
       .andExpect(MockMvcResultMatchers.status().isCreated)
       .andExpect(MockMvcResultMatchers.jsonPath("$.draftAdjudication.id").isNumber)
       .andExpect(MockMvcResultMatchers.jsonPath("$.draftAdjudication.prisonerNumber").value("A12345"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.draftAdjudication.offenceDetails[0].offenceCode").value(BASIC_OFFENCE_RESPONSE_DTO.offenceCode))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.draftAdjudication.offenceDetails.offenceCode").value(BASIC_OFFENCE_RESPONSE_DTO.offenceCode))
   }
 
   private fun makeSetOffenceDetailsRequest(id: Long, offenceDetails: OffenceDetailsRequestItem): ResultActions {
-    val body = objectMapper.writeValueAsString(mapOf("offenceDetails" to listOf(offenceDetails)))
+    val body = objectMapper.writeValueAsString(mapOf("offenceDetails" to offenceDetails))
 
     return mockMvc
       .perform(

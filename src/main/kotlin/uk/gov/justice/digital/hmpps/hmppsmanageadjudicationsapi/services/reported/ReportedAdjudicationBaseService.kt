@@ -43,7 +43,7 @@ open class ReportedDtoService(
       associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
       associatedPrisonersName = incidentRoleAssociatedPrisonersName,
     ),
-    offenceDetails = toReportedOffence(offenceDetails, isYouthOffender, gender, offenceCodeLookupService),
+    offenceDetails = toReportedOffence(offenceDetails.first(), isYouthOffender, gender, offenceCodeLookupService),
     incidentStatement = IncidentStatementDto(
       statement = statement,
       completed = true,
@@ -65,23 +65,21 @@ open class ReportedDtoService(
   )
 
   private fun toReportedOffence(
-    offences: MutableList<ReportedOffence>,
+    offence: ReportedOffence,
     isYouthOffender: Boolean,
     gender: Gender,
     offenceCodeLookupService: OffenceCodeLookupService
-  ): List<OffenceDto> =
-    offences.map { offence ->
-      OffenceDto(
-        offenceCode = offence.offenceCode,
-        offenceRule = OffenceRuleDto(
-          paragraphNumber = offenceCodeLookupService.getParagraphNumber(offence.offenceCode, isYouthOffender),
-          paragraphDescription = offenceCodeLookupService.getParagraphDescription(offence.offenceCode, isYouthOffender, gender),
-        ),
-        victimPrisonersNumber = offence.victimPrisonersNumber,
-        victimStaffUsername = offence.victimStaffUsername,
-        victimOtherPersonsName = offence.victimOtherPersonsName,
-      )
-    }.toList()
+  ): OffenceDto =
+    OffenceDto(
+      offenceCode = offence.offenceCode,
+      offenceRule = OffenceRuleDto(
+        paragraphNumber = offenceCodeLookupService.getParagraphNumber(offence.offenceCode, isYouthOffender),
+        paragraphDescription = offenceCodeLookupService.getParagraphDescription(offence.offenceCode, isYouthOffender, gender),
+      ),
+      victimPrisonersNumber = offence.victimPrisonersNumber,
+      victimStaffUsername = offence.victimStaffUsername,
+      victimOtherPersonsName = offence.victimOtherPersonsName,
+    )
 
   private fun toReportedDamages(damages: MutableList<ReportedDamage>): List<ReportedDamageDto> =
     damages.map {

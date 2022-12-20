@@ -43,7 +43,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     Assertions.assertThatThrownBy {
       incidentOffenceService.setOffenceDetails(
         1,
-        listOf(BASIC_OFFENCE_DETAILS_REQUEST)
+        BASIC_OFFENCE_DETAILS_REQUEST
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("DraftAdjudication not found for 1")
@@ -56,7 +56,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     Assertions.assertThatThrownBy {
       incidentOffenceService.setOffenceDetails(
         1,
-        listOf(BASIC_OFFENCE_DETAILS_REQUEST)
+        BASIC_OFFENCE_DETAILS_REQUEST
       )
     }.isInstanceOf(IllegalStateException::class.java)
       .hasMessageContaining(ValidationChecks.APPLICABLE_RULES.errorMessage)
@@ -70,22 +70,15 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
   fun `adds the offence details to a draft adjudication`(
     isYouthOffender: Boolean,
   ) {
-    var offenceDetailsToAdd = listOf(
-      BASIC_OFFENCE_DETAILS_REQUEST,
-      FULL_OFFENCE_DETAILS_REQUEST
-    )
-    var offenceDetailsToSave = mutableListOf(
-      BASIC_OFFENCE_DETAILS_DB_ENTITY,
-      FULL_OFFENCE_DETAILS_DB_ENTITY
-    )
-    var expectedOffenceDetailsResponse = listOf(
-      BASIC_OFFENCE_DETAILS_RESPONSE_DTO,
-      FULL_OFFENCE_DETAILS_RESPONSE_DTO
-    )
+    var offenceDetailsToAdd = BASIC_OFFENCE_DETAILS_REQUEST
+
+    var offenceDetailsToSave = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY)
+    var expectedOffenceDetailsResponse = BASIC_OFFENCE_DETAILS_RESPONSE_DTO
+
     if (isYouthOffender) {
-      offenceDetailsToAdd = listOf(YOUTH_OFFENCE_DETAILS_REQUEST)
+      offenceDetailsToAdd = YOUTH_OFFENCE_DETAILS_REQUEST
       offenceDetailsToSave = mutableListOf(YOUTH_OFFENCE_DETAILS_DB_ENTITY)
-      expectedOffenceDetailsResponse = listOf(YOUTH_OFFENCE_DETAILS_RESPONSE_DTO)
+      expectedOffenceDetailsResponse = YOUTH_OFFENCE_DETAILS_RESPONSE_DTO
     }
 
     whenever(draftAdjudicationRepository.findById(any())).thenReturn(
@@ -119,18 +112,13 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
   @Test
   fun `edits the offence details of an existing draft adjudication`() {
     val existingOffenceDetails = mutableListOf(Offence(offenceCode = 1))
-    val offenceDetailsToUse = listOf(
-      BASIC_OFFENCE_DETAILS_REQUEST,
-      FULL_OFFENCE_DETAILS_REQUEST
-    )
+    val offenceDetailsToUse = BASIC_OFFENCE_DETAILS_REQUEST
+
     val offenceDetailsToSave = mutableListOf(
       BASIC_OFFENCE_DETAILS_DB_ENTITY,
-      FULL_OFFENCE_DETAILS_DB_ENTITY
     )
-    val expectedOffenceDetailsResponse = listOf(
-      BASIC_OFFENCE_DETAILS_RESPONSE_DTO,
-      FULL_OFFENCE_DETAILS_RESPONSE_DTO
-    )
+    val expectedOffenceDetailsResponse = BASIC_OFFENCE_DETAILS_RESPONSE_DTO
+
     val existingDraftAdjudicationEntity = DraftAdjudication(
       id = 1,
       prisonerNumber = "A12345",
@@ -171,20 +159,20 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
 
   @Test
   fun `treats empty strings as null values`() {
-    val offenceDetailsToAdd = listOf(
+    val offenceDetailsToAdd =
       OffenceDetailsRequestItem(
         offenceCode = 2,
         victimPrisonersNumber = "",
         victimStaffUsername = "",
         victimOtherPersonsName = "",
       )
-    )
+
     val offenceDetailsToSave = mutableListOf(
       Offence(
         offenceCode = 2,
       )
     )
-    val expectedOffenceDetailsResponse = listOf(
+    val expectedOffenceDetailsResponse =
       OffenceDetailsDto(
         offenceCode = 2,
         offenceRule = OffenceRuleDetailsDto(
@@ -192,7 +180,6 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
           paragraphDescription = OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
         ),
       )
-    )
 
     val draftAdjudicationEntity = DraftAdjudication(
       id = 1,
@@ -224,13 +211,5 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
     Java6Assertions.assertThat(argumentCaptor.value.offenceDetails).isEqualTo(offenceDetailsToSave)
-  }
-
-  @Test
-  fun `throws an IllegalArgumentException when no offence details are provided`() {
-    Assertions.assertThatThrownBy {
-      incidentOffenceService.setOffenceDetails(1, listOf())
-    }.isInstanceOf(IllegalArgumentException::class.java)
-      .hasMessageContaining("Please supply at least one set of items")
   }
 }

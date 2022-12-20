@@ -87,10 +87,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       ),
       offenceDetails = mutableListOf(
         Offence(
-          // offence with minimal data set
-          offenceCode = 2,
-        ),
-        Offence(
           // offence with all data set
           offenceCode = 3,
           victimPrisonersNumber = "A1234AA",
@@ -167,14 +163,12 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           "victimOtherPersonsName"
         )
         .contains(
-          Tuple(
-            3,
-            OFFENCE_CODE_3_PARAGRAPH_NUMBER,
-            OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
-            "A1234AA",
-            "ABC12D",
-            "A Person"
-          )
+          3,
+          OFFENCE_CODE_3_PARAGRAPH_NUMBER,
+          OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
+          "A1234AA",
+          "ABC12D",
+          "A Person"
         )
       assertThat(createdDraft.incidentStatement)
         .extracting("completed", "statement")

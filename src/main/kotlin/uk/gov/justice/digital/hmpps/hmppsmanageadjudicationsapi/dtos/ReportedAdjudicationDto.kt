@@ -25,8 +25,8 @@ data class ReportedAdjudicationDto(
   val isYouthOffender: Boolean,
   @Schema(description = "Information about the role of this prisoner in the incident")
   val incidentRole: IncidentRoleDto,
-  @Schema(description = "Details about all the offences the prisoner is accused of")
-  val offenceDetails: List<OffenceDto>,
+  @Schema(description = "Details about the offence the prisoner is accused of")
+  val offenceDetails: OffenceDto,
   @Schema(description = "Incident statement")
   val incidentStatement: IncidentStatementDto,
   @Schema(description = "Created by user id")

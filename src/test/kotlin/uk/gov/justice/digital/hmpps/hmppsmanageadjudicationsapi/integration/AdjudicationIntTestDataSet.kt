@@ -23,7 +23,7 @@ data class AdjudicationIntTestDataSet(
   val incidentRoleParagraphNumber: String,
   val incidentRoleParagraphDescription: String,
   val incidentRoleAssociatedPrisonersNumber: String,
-  val offences: List<OffenceTestDataSet>,
+  val offence: OffenceTestDataSet,
   val statement: String,
   val createdByUserId: String,
   val damages: List<DamagesTestDataSet>,

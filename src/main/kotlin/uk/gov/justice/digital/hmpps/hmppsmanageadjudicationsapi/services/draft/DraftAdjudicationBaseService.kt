@@ -62,7 +62,7 @@ open class DraftAdjudicationBaseService(
       incidentStatement = this.incidentStatement?.toDto(),
       incidentDetails = this.incidentDetails.toDto(),
       incidentRole = this.incidentRole?.toDto(this.isYouthOffender!!),
-      offenceDetails = this.offenceDetails.map { it.toDto(offenceCodeLookupService, this.isYouthOffender!!, this.gender) },
+      offenceDetails = this.offenceDetails.firstOrNull()?.toDto(offenceCodeLookupService, this.isYouthOffender!!, this.gender),
       adjudicationNumber = this.reportNumber,
       startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
       isYouthOffender = this.isYouthOffender,

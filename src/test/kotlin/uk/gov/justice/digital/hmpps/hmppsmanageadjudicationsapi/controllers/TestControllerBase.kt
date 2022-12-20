@@ -57,13 +57,12 @@ open class TestControllerBase {
         ),
         isYouthOffender = false,
         incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
-        offenceDetails = listOf(
-          OffenceDto(
-            offenceCode = 2,
-            OffenceRuleDto(
-              paragraphNumber = "3",
-              paragraphDescription = "A paragraph description",
-            )
+        offenceDetails =
+        OffenceDto(
+          offenceCode = 2,
+          OffenceRuleDto(
+            paragraphNumber = "3",
+            paragraphDescription = "A paragraph description",
           )
         ),
         incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
@@ -104,7 +103,7 @@ open class TestControllerBase {
       incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
       isYouthOffender = true,
       incidentStatement = IncidentStatementDto(statement = statement),
-      offenceDetails = listOf(BASIC_OFFENCE_RESPONSE_DTO),
+      offenceDetails = BASIC_OFFENCE_RESPONSE_DTO,
     )
   }
 }

@@ -18,8 +18,8 @@ import javax.validation.Valid
 
 @Schema(description = "Request to update the list of offence details for a draft adjudication")
 data class OffenceDetailsRequest(
-  @Schema(description = "The details of all offences the prisoner is accused of")
-  val offenceDetails: List<OffenceDetailsRequestItem>,
+  @Schema(description = "The details of the offence the prisoner is accused of")
+  val offenceDetails: OffenceDetailsRequestItem,
 )
 
 @Schema(description = "Details of an offence")

@@ -145,7 +145,7 @@ class ReportedAdjudicationRepositoryTest {
         adjudication.incidentRoleAssociatedPrisonersName,
       )
 
-    assertThat(savedEntity.offenceDetails).hasSize(2)
+    assertThat(savedEntity.offenceDetails).hasSize(1)
       .extracting(
         "offenceCode",
         "victimPrisonersNumber",
@@ -154,9 +154,9 @@ class ReportedAdjudicationRepositoryTest {
       )
       .contains(
         Tuple(
-          adjudication.offenceDetails!![0].offenceCode,
-          adjudication.offenceDetails!![0].victimPrisonersNumber, adjudication.offenceDetails!![0].victimStaffUsername,
-          adjudication.offenceDetails!![0].victimOtherPersonsName
+          adjudication.offenceDetails[0].offenceCode,
+          adjudication.offenceDetails[0].victimPrisonersNumber, adjudication.offenceDetails[0].victimStaffUsername,
+          adjudication.offenceDetails[0].victimOtherPersonsName
         ),
       )
 

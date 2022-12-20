@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudi
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
@@ -162,7 +161,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         )
 
       if (isYouthOffender) {
-        assertThat(draftAdjudicationDto.offenceDetails).hasSize(1)
+        assertThat(draftAdjudicationDto.offenceDetails)
           .extracting(
             "offenceCode",
             "offenceRule.paragraphNumber",
@@ -172,17 +171,15 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
             "victimOtherPersonsName"
           )
           .contains(
-            Tuple(
-              YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-              YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-              YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
-              YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-              YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
-              YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
-            ),
+            YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+            YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
+            YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
+            YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+            YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
+            YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
           )
       } else {
-        assertThat(draftAdjudicationDto.offenceDetails).hasSize(2)
+        assertThat(draftAdjudicationDto.offenceDetails)
           .extracting(
             "offenceCode",
             "offenceRule.paragraphNumber",
@@ -192,22 +189,12 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
             "victimOtherPersonsName"
           )
           .contains(
-            Tuple(
-              BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-              BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-              BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
-              BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-              BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
-              BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
-            ),
-            Tuple(
-              FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-              FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-              FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
-              FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-              FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
-              FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
-            ),
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
+            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
           )
       }
 
@@ -800,8 +787,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       assertThat(adjudications)
         .extracting("offenceDetails")
         .contains(
-          listOf(FULL_OFFENCE_DETAILS_RESPONSE_DTO),
-          emptyList<OffenceDetailsDto>()
+          FULL_OFFENCE_DETAILS_RESPONSE_DTO
         )
 
       assertThat(adjudications)
@@ -973,7 +959,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         incidentRoleDtoWithAllValuesSet().associatedPrisonersName,
       )
 
-    assertThat(draftAdjudicationDto.offenceDetails).hasSize(2)
+    assertThat(draftAdjudicationDto.offenceDetails)
       .extracting(
         "offenceCode",
         "offenceRule.paragraphNumber",
@@ -983,22 +969,12 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         "victimOtherPersonsName"
       )
       .contains(
-        Tuple(
-          BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-          BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-          BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
-          BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-          BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
-          BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
-        ),
-        Tuple(
-          FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-          FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-          FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
-          FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-          FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
-          FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
-        ),
+        BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
+        BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
+        BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
+        BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
+        BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
+        BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName
       )
 
     assertThat(draftAdjudicationDto.incidentStatement)
