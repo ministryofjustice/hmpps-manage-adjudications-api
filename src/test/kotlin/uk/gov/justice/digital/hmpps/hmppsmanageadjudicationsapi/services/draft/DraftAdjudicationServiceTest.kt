@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft
 
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Java6Assertions.assertThat
-import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -12,12 +11,12 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleAssociatedPrisonerRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
@@ -26,7 +25,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import java.time.Clock
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.Optional
 import java.util.function.Supplier
 import javax.persistence.EntityNotFoundException
@@ -698,40 +699,45 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(
+        draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndReportNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
           any(),
-          any()
+          any(),
+          any(),
+          any(),
+          any(),
         )
       ).thenReturn(
-        listOf(
-          DraftAdjudication(
-            id = 1,
-            prisonerNumber = "A12345",
-            gender = Gender.MALE,
-            agencyId = "MDI",
-            incidentDetails = IncidentDetails(
+        PageImpl(
+          listOf(
+            DraftAdjudication(
+              id = 1,
+              prisonerNumber = "A12345",
+              gender = Gender.MALE,
+              agencyId = "MDI",
+              incidentDetails = IncidentDetails(
+                id = 2,
+                locationId = 2,
+                dateTimeOfIncident = LocalDateTime.now(clock).plusMonths(2),
+                dateTimeOfDiscovery = LocalDateTime.now(clock).plusMonths(2).plusDays(1),
+                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+              ),
+              incidentRole = incidentRoleWithAllValuesSet(),
+              offenceDetails = mutableListOf(FULL_OFFENCE_DETAILS_DB_ENTITY),
+              incidentStatement = IncidentStatement(
+                statement = "Example statement",
+                completed = false
+              ),
+              isYouthOffender = false
+            ),
+            DraftAdjudication(
               id = 2,
-              locationId = 2,
-              dateTimeOfIncident = LocalDateTime.now(clock).plusMonths(2),
-              dateTimeOfDiscovery = LocalDateTime.now(clock).plusMonths(2).plusDays(1),
-              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
-            ),
-            incidentRole = incidentRoleWithAllValuesSet(),
-            offenceDetails = mutableListOf(FULL_OFFENCE_DETAILS_DB_ENTITY),
-            incidentStatement = IncidentStatement(
-              statement = "Example statement",
-              completed = false
-            ),
-            isYouthOffender = false
-          ),
-          DraftAdjudication(
-            id = 2,
-            prisonerNumber = "A12346",
-            gender = Gender.MALE,
-            agencyId = "MDI",
-            incidentDetails = incidentDetails(3L, clock),
-            incidentRole = incidentRoleWithNoValuesSet(),
-            isYouthOffender = false
+              prisonerNumber = "A12346",
+              gender = Gender.MALE,
+              agencyId = "MDI",
+              incidentDetails = incidentDetails(3L, clock),
+              incidentRole = incidentRoleWithNoValuesSet(),
+              isYouthOffender = false
+            )
           )
         )
       )
@@ -741,61 +747,33 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     fun `calls the repository method for all draft adjudications created by ITAG_USER`() {
       whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
 
-      draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications("MDI")
-
-      verify(draftAdjudicationRepository).findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(
+      draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(
         "MDI",
-        "ITAG_USER"
+        LocalDate.now().minusWeeks(1),
+        LocalDate.now(),
+        pageable
+      )
+
+      verify(draftAdjudicationRepository).findByAgencyIdAndCreatedByUserIdAndReportNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
+        "MDI",
+        "ITAG_USER",
+        LocalDate.now().minusWeeks(1).atStartOfDay(),
+        LocalDate.now().atTime(LocalTime.MAX),
+        pageable
       )
     }
 
     @Test
     fun `given no user return an empty set`() {
       whenever(authenticationFacade.currentUsername).thenReturn(null)
-      val draftAdjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications("MDI")
+      val draftAdjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(
+        "MDI",
+        LocalDate.now(),
+        LocalDate.now(),
+        pageable
+      )
 
       assertThat(draftAdjudications).isEmpty()
-    }
-
-    @Test
-    fun `sorts draft adjudications by discovery date time`() {
-      whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
-
-      val adjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications("MDI")
-
-      assertThat(adjudications)
-        .extracting("id", "prisonerNumber")
-        .contains(
-          Tuple(2L, "A12346"),
-          Tuple(1L, "A12345")
-        )
-
-      assertThat(adjudications)
-        .extracting("incidentDetails")
-        .contains(
-          IncidentDetailsDto(3, LocalDateTime.now(clock), LocalDateTime.now(clock).plusDays(1,), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE),
-          IncidentDetailsDto(2, LocalDateTime.now(clock).plusMonths(2), LocalDateTime.now(clock).plusMonths(2).plusDays(1), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
-        )
-
-      assertThat(adjudications)
-        .extracting("incidentRole")
-        .contains(
-          incidentRoleDtoWithAllValuesSet(),
-          incidentRoleDtoWithNoValuesSet(),
-        )
-
-      assertThat(adjudications)
-        .extracting("offenceDetails")
-        .contains(
-          FULL_OFFENCE_DETAILS_RESPONSE_DTO
-        )
-
-      assertThat(adjudications)
-        .extracting("incidentStatement")
-        .contains(
-          IncidentStatementDto("Example statement", false),
-          null as IncidentStatementDto?
-        )
     }
   }
 
@@ -875,6 +853,8 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
   }
 
   companion object {
+
+    val pageable = Pageable.ofSize(20).withPage(0)
 
     fun incidentDetails(locationId: Long, clock: Clock) = IncidentDetails(
       locationId = locationId,

@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DamageDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.EvidenceDto
@@ -21,7 +23,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import javax.persistence.EntityNotFoundException
 
 open class DraftAdjudicationBaseService(
@@ -46,13 +50,14 @@ open class DraftAdjudicationBaseService(
       LocalDateTime.now().minusDays(DraftAdjudicationService.DAYS_TO_DELETE)
     )
   }
-  protected fun getInProgress(agencyId: String, username: String): List<DraftAdjudicationDto> =
-    draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(
+  protected fun getInProgress(agencyId: String, username: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DraftAdjudicationDto> =
+    draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndReportNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
       agencyId,
-      username
-    )
-      .sortedBy { it.incidentDetails.dateTimeOfDiscovery }
-      .map { it.toDto() }
+      username,
+      startDate.atStartOfDay(),
+      endDate.atTime(LocalTime.MAX),
+      pageable
+    ).map { it.toDto() }
 
   private fun DraftAdjudication.toDto(): DraftAdjudicationDto =
     DraftAdjudicationDto(

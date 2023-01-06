@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleAssociatedPrisonerRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleRequest
@@ -13,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Dra
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup.Companion.associatedPrisonerInformationRequired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
@@ -230,9 +233,9 @@ class DraftAdjudicationService(
     return saveToDto(draftAdjudication)
   }
 
-  fun getCurrentUsersInProgressDraftAdjudications(agencyId: String): List<DraftAdjudicationDto> {
-    val username = authenticationFacade.currentUsername ?: return emptyList()
-    return getInProgress(agencyId, username)
+  fun getCurrentUsersInProgressDraftAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DraftAdjudicationDto> {
+    val username = authenticationFacade.currentUsername ?: return Page.empty()
+    return getInProgress(agencyId, username, startDate, endDate, pageable)
   }
 
   private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {

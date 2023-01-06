@@ -425,12 +425,13 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
 
     webTestClient.get()
-      .uri("/draft-adjudications/my/agency/${IntegrationTestData.ADJUDICATION_1.agencyId}")
+      .uri("/draft-adjudications/my/agency/${IntegrationTestData.ADJUDICATION_1.agencyId}/?startDate=2020-12-01")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.draftAdjudications[0].id").isEqualTo(draftAdjudicationResponse.draftAdjudication.id)
+      .jsonPath("$.content.size()").isEqualTo(1)
+      .jsonPath("$.content[0].id").isEqualTo(draftAdjudicationResponse.draftAdjudication.id)
   }
 
   @Test
