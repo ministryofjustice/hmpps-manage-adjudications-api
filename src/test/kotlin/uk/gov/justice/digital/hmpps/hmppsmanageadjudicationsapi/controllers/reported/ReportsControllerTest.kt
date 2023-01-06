@@ -9,7 +9,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.ResultActions
@@ -35,6 +34,9 @@ class ReportsControllerTest : TestControllerBase() {
 
   @BeforeEach
   fun beforeEach() {
+
+    val pageable = PageRequest.of(0, 20, Sort.by("dateTimeOfDiscovery").ascending())
+
     whenever(
       reportsService.getMyReportedAdjudications(
         any(), any(), any(), any(), any()
@@ -42,7 +44,7 @@ class ReportsControllerTest : TestControllerBase() {
     ).thenReturn(
       PageImpl(
         listOf(REPORTED_ADJUDICATION_DTO),
-        Pageable.ofSize(20).withPage(0),
+        pageable,
         1
       ),
     )

@@ -1,7 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.Parameters
 import io.swagger.v3.oas.annotations.media.Schema
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -12,11 +18,13 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
+import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.validation.Valid
 import javax.validation.constraints.Size
@@ -92,12 +100,6 @@ data class ApplicableRulesRequest(
   val removeExistingOffences: Boolean = false,
 )
 
-@Schema(description = "In progress draft adjudication response")
-data class InProgressAdjudicationResponse(
-  @Schema(description = "All in progress adjudications")
-  val draftAdjudications: List<DraftAdjudicationDto>
-)
-
 @Schema(description = "Request to update the gender")
 data class GenderRequest(
   @Schema(description = "The gender", title = "Gender of prisoner", example = "MALE")
@@ -109,13 +111,46 @@ data class GenderRequest(
 class DraftAdjudicationController(
   private val draftAdjudicationService: DraftAdjudicationService
 ) : DraftAdjudicationBaseController() {
+
+  @Parameters(
+    Parameter(
+      name = "page",
+      description = "Results page you want to retrieve (0..N). Default 0, e.g. the first page",
+      example = "0"
+    ),
+    Parameter(
+      name = "size",
+      description = "Number of records per page. Default 20"
+    ),
+    Parameter(
+      name = "sort",
+      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery,ASC"
+    ),
+    Parameter(
+      name = "startDate",
+      required = false,
+      description = "optional inclusive start date for results, default is today - 3 days"
+    ),
+    Parameter(
+      name = "endDate",
+      required = false,
+      description = "optional inclusive end date for results, default is today"
+    ),
+  )
   @GetMapping("/my/agency/{agencyId}")
-  @Operation(summary = "Returns all the in progress draft adjudications created by the current user. Default sort is by earliest incident date and time.")
+  @Operation(summary = "Returns all the in progress draft adjudications created by the current user")
   fun getCurrentUsersInProgressDraftAdjudications(
     @PathVariable(name = "agencyId") agencyId: String,
-  ): InProgressAdjudicationResponse = InProgressAdjudicationResponse(
-    draftAdjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(agencyId)
-  )
+    @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
+    @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
+    @PageableDefault(sort = ["IncidentDetailsDateTimeOfDiscovery"], direction = Sort.Direction.ASC, size = 20) pageable: Pageable
+  ): Page<DraftAdjudicationDto> =
+    draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(
+      agencyId = agencyId,
+      startDate = startDate ?: LocalDate.now().minusWeeks(1),
+      endDate = endDate ?: LocalDate.now(),
+      pageable = pageable
+    )
 
   @PostMapping
   @PreAuthorize("hasAuthority('SCOPE_write')")

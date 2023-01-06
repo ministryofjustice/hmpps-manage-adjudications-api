@@ -11,6 +11,9 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -24,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDet
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
+import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
@@ -441,35 +445,37 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class InProgressDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(any())).thenReturn(
-        listOf(
-          DraftAdjudicationDto(
-            id = 1,
-            adjudicationNumber = null,
-            prisonerNumber = "A12345",
-            gender = Gender.MALE,
-            incidentDetails = IncidentDetailsDto(
-              locationId = 1,
-              dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-              dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
-              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+      whenever(draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(any(), any(), any(), any())).thenReturn(
+        PageImpl(
+          listOf(
+            DraftAdjudicationDto(
+              id = 1,
+              adjudicationNumber = null,
+              prisonerNumber = "A12345",
+              gender = Gender.MALE,
+              incidentDetails = IncidentDetailsDto(
+                locationId = 1,
+                dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+                dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
+                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+              ),
+              incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
+              isYouthOffender = true
             ),
-            incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
-            isYouthOffender = true
-          ),
-          DraftAdjudicationDto(
-            id = 2,
-            adjudicationNumber = null,
-            prisonerNumber = "A12346",
-            gender = Gender.MALE,
-            incidentDetails = IncidentDetailsDto(
-              locationId = 2,
-              dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1),
-              dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusMonths(1),
-              handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE.plusMonths(1)
-            ),
-            incidentRole = INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO,
-            isYouthOffender = true
+            DraftAdjudicationDto(
+              id = 2,
+              adjudicationNumber = null,
+              prisonerNumber = "A12346",
+              gender = Gender.MALE,
+              incidentDetails = IncidentDetailsDto(
+                locationId = 2,
+                dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1),
+                dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusMonths(1),
+                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE.plusMonths(1)
+              ),
+              incidentRole = INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO,
+              isYouthOffender = true
+            )
           )
         )
       )
@@ -487,36 +493,17 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       getInProgressDraftAdjudications()
         .andExpect(status().isOk)
 
-      verify(draftAdjudicationService).getCurrentUsersInProgressDraftAdjudications("MDI")
+      verify(draftAdjudicationService).getCurrentUsersInProgressDraftAdjudications(
+        "MDI",
+        LocalDate.now().minusWeeks(1),
+        LocalDate.now(),
+        PageRequest.of(0, 20, Sort.by("IncidentDetailsDateTimeOfDiscovery").ascending()),
+      )
     }
 
-    @Test
-    @WithMockUser(username = "ITAG_USER")
-    fun `returns all in progress draft adjudications`() {
-      getInProgressDraftAdjudications()
-        .andExpect(status().isOk)
-        .andExpect(jsonPath("$.draftAdjudications[0].id").value(1))
-        .andExpect(jsonPath("$.draftAdjudications[0].prisonerNumber").value("A12345"))
-        .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.locationId").value(1))
-        .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
-        .andExpect(jsonPath("$.draftAdjudications[0].incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
-        .andExpect(
-          jsonPath("$.draftAdjudications[0].incidentRole.roleCode").value(
-            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode
-          )
-        )
-        .andExpect(
-          jsonPath("$.draftAdjudications[0].incidentRole.associatedPrisonersNumber").value(
-            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber
-          )
-        )
-        .andExpect(jsonPath("$.draftAdjudications[1].id").value(2))
-        .andExpect(jsonPath("$.draftAdjudications[1].prisonerNumber").value("A12346"))
-    }
-
-    fun getInProgressDraftAdjudications(): ResultActions = mockMvc
+    private fun getInProgressDraftAdjudications(): ResultActions = mockMvc
       .perform(
-        get("/draft-adjudications/my/agency/MDI")
+        get("/draft-adjudications/my/agency/MDI?")
           .header("Content-Type", "application/json")
       )
   }

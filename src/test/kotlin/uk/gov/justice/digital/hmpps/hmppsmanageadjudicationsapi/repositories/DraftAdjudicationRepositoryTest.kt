@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
 import org.springframework.context.annotation.Import
+import org.springframework.data.domain.Pageable
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConfiguration
@@ -255,9 +256,12 @@ class DraftAdjudicationRepositoryTest {
       )
     )
     val foundAdjudications =
-      draftAdjudicationRepository.findDraftAdjudicationByAgencyIdAndCreatedByUserIdAndReportNumberIsNull(
+      draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndReportNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
         "MDI",
-        "ITAG_USER"
+        "ITAG_USER",
+        dateTimeOfIncident.minusDays(1),
+        dateTimeOfIncident.plusDays(2),
+        Pageable.unpaged()
       )
 
     assertThat(foundAdjudications).hasSize(1)
