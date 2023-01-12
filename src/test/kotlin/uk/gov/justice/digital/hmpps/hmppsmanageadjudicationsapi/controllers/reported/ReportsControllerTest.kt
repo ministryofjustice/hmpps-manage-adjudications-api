@@ -35,7 +35,7 @@ class ReportsControllerTest : TestControllerBase() {
   @BeforeEach
   fun beforeEach() {
 
-    val pageable = PageRequest.of(0, 20, Sort.by("dateTimeOfDiscovery").ascending())
+    val pageable = PageRequest.of(0, 20, Sort.by("dateTimeOfDiscovery").descending())
 
     whenever(
       reportsService.getMyReportedAdjudications(

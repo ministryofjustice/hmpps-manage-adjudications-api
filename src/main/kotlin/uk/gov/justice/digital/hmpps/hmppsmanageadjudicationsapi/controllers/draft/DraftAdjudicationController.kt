@@ -124,7 +124,7 @@ class DraftAdjudicationController(
     ),
     Parameter(
       name = "sort",
-      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery,ASC"
+      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery,DESC"
     ),
     Parameter(
       name = "startDate",
@@ -143,7 +143,7 @@ class DraftAdjudicationController(
     @PathVariable(name = "agencyId") agencyId: String,
     @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
     @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
-    @PageableDefault(sort = ["IncidentDetailsDateTimeOfDiscovery"], direction = Sort.Direction.ASC, size = 20) pageable: Pageable
+    @PageableDefault(sort = ["IncidentDetailsDateTimeOfDiscovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
   ): Page<DraftAdjudicationDto> =
     draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(
       agencyId = agencyId,

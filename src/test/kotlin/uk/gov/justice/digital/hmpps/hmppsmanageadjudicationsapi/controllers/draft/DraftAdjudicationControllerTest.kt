@@ -497,7 +497,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         "MDI",
         LocalDate.now().minusWeeks(1),
         LocalDate.now(),
-        PageRequest.of(0, 20, Sort.by("IncidentDetailsDateTimeOfDiscovery").ascending()),
+        PageRequest.of(0, 20, Sort.by("IncidentDetailsDateTimeOfDiscovery").descending()),
       )
     }
 
