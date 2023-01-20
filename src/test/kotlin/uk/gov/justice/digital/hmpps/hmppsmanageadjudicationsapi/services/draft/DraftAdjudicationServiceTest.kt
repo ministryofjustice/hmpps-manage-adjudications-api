@@ -840,7 +840,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     fun `sets gender to female`() {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
       whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
-      whenever(offenceCodeLookupService.getParagraphDescription(2, true, Gender.FEMALE)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
+      whenever(offenceCodeLookupService.getParagraphDescription(1001, true, Gender.FEMALE)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
 
       val response = draftAdjudicationService.setGender(1, Gender.FEMALE)
 

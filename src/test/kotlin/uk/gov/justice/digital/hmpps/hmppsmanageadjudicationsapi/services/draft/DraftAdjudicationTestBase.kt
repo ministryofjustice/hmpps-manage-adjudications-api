@@ -29,43 +29,43 @@ abstract class DraftAdjudicationTestBase : TestsToImplement {
   @BeforeEach
   fun beforeEach() {
     // Set up offence code mocks
-    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2, false)).thenReturn(
+    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(
       OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
     )
-    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(2, false)).thenReturn(
+    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(
       OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
     )
-    whenever(offenceCodeLookupService.getParagraphNumber(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
-    whenever(offenceCodeLookupService.getParagraphDescription(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
+    whenever(offenceCodeLookupService.getParagraphNumber(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
+    whenever(offenceCodeLookupService.getParagraphDescription(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
 
-    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3, false)).thenReturn(
+    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(
       OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
     )
-    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3, false)).thenReturn(
+    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(
       OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
     )
-    whenever(offenceCodeLookupService.getParagraphNumber(3, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
-    whenever(offenceCodeLookupService.getParagraphDescription(3, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
+    whenever(offenceCodeLookupService.getParagraphNumber(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
+    whenever(offenceCodeLookupService.getParagraphDescription(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
 
-    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2, true)).thenReturn(
+    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(
       YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
     )
-    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(2, true)).thenReturn(
+    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(
       YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
     )
-    whenever(offenceCodeLookupService.getParagraphNumber(2, true)).thenReturn(YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER)
-    whenever(offenceCodeLookupService.getParagraphDescription(2, true)).thenReturn(
+    whenever(offenceCodeLookupService.getParagraphNumber(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER)
+    whenever(offenceCodeLookupService.getParagraphDescription(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(
       YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION
     )
 
-    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3, true)).thenReturn(
+    whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(
       YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
     )
-    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3, true)).thenReturn(
+    whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(
       YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
     )
-    whenever(offenceCodeLookupService.getParagraphNumber(3, true)).thenReturn(YOUTH_OFFENCE_CODE_3_PARAGRAPH_NUMBER)
-    whenever(offenceCodeLookupService.getParagraphDescription(3, true)).thenReturn(
+    whenever(offenceCodeLookupService.getParagraphNumber(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(YOUTH_OFFENCE_CODE_3_PARAGRAPH_NUMBER)
+    whenever(offenceCodeLookupService.getParagraphDescription(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(
       YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION
     )
   }
@@ -77,7 +77,6 @@ abstract class DraftAdjudicationTestBase : TestsToImplement {
 
     val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
     val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
-    val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
 
     val INCIDENT_ROLE_CODE = "25a"
     val INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(a)"
@@ -103,7 +102,7 @@ abstract class DraftAdjudicationTestBase : TestsToImplement {
     private const val YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN = "17b"
     private const val YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ASSISTED = "29f"
 
-    val YOUTH_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(offenceCode = 2)
+    val YOUTH_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(offenceCode = 1001)
     val YOUTH_OFFENCE_DETAILS_RESPONSE_DTO = OffenceDetailsDto(
       offenceCode = YOUTH_OFFENCE_DETAILS_REQUEST.offenceCode,
       offenceRule = OffenceRuleDetailsDto(
@@ -116,7 +115,8 @@ abstract class DraftAdjudicationTestBase : TestsToImplement {
       offenceCode = YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
     )
 
-    val BASIC_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(offenceCode = 2)
+    val BASIC_OFFENCE_DETAILS_INVALID_REQUEST = OffenceDetailsRequestItem(offenceCode = 2)
+    val BASIC_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(offenceCode = 1001)
     val BASIC_OFFENCE_DETAILS_RESPONSE_DTO = OffenceDetailsDto(
       offenceCode = BASIC_OFFENCE_DETAILS_REQUEST.offenceCode,
       offenceRule = OffenceRuleDetailsDto(
@@ -129,7 +129,7 @@ abstract class DraftAdjudicationTestBase : TestsToImplement {
     )
 
     val FULL_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(
-      offenceCode = 3,
+      offenceCode = 1002,
       victimPrisonersNumber = "A1234AA",
       victimStaffUsername = "ABC12D",
       victimOtherPersonsName = "A name",

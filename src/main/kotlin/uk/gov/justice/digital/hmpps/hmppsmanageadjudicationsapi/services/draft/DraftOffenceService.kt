@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import javax.transaction.Transactional
 
 @Transactional
@@ -30,6 +31,7 @@ class DraftOffenceService(
     val draftAdjudication = find(id)
     // NOTE: new flow sets isYouthOffender first, therefore if we do not have this set we must throw as .Dto requires it
     ValidationChecks.APPLICABLE_RULES.validate(draftAdjudication)
+    OffenceCodes.validateOffenceCode(offenceDetails.offenceCode)
 
     val newValuesToStore =
       Offence(
