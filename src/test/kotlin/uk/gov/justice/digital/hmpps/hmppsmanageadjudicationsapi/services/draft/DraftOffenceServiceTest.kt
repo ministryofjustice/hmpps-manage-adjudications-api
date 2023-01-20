@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import java.time.LocalDateTime
 import java.util.Optional
 import javax.persistence.EntityNotFoundException
+import javax.validation.ValidationException
 
 class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
 
@@ -60,6 +61,25 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
       )
     }.isInstanceOf(IllegalStateException::class.java)
       .hasMessageContaining(ValidationChecks.APPLICABLE_RULES.errorMessage)
+  }
+
+  @Test
+  fun `throws bad request exception if offence code not valid`() {
+    whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+      Optional.of(
+        draftAdjudicationEntity.also {
+          it.isYouthOffender = false
+        }
+      )
+    )
+
+    Assertions.assertThatThrownBy {
+      incidentOffenceService.setOffenceDetails(
+        1,
+        BASIC_OFFENCE_DETAILS_INVALID_REQUEST
+      )
+    }.isInstanceOf(ValidationException::class.java)
+      .hasMessageContaining("Invalid offence code 2")
   }
 
   @ParameterizedTest
@@ -161,7 +181,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
   fun `treats empty strings as null values`() {
     val offenceDetailsToAdd =
       OffenceDetailsRequestItem(
-        offenceCode = 2,
+        offenceCode = 1001,
         victimPrisonersNumber = "",
         victimStaffUsername = "",
         victimOtherPersonsName = "",
@@ -169,12 +189,12 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
 
     val offenceDetailsToSave = mutableListOf(
       Offence(
-        offenceCode = 2,
+        offenceCode = 1001,
       )
     )
     val expectedOffenceDetailsResponse =
       OffenceDetailsDto(
-        offenceCode = 2,
+        offenceCode = 1001,
         offenceRule = OffenceRuleDetailsDto(
           paragraphNumber = OFFENCE_CODE_2_PARAGRAPH_NUMBER,
           paragraphDescription = OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
