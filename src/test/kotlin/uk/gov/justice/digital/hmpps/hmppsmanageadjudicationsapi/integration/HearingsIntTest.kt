@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDateTime
@@ -223,6 +224,28 @@ class HearingsIntTest : IntegrationTestBase() {
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(1)
+  }
+
+  @Test
+  fun `create hearing outcome`() {
+    initDataForHearings()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/1/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "code" to HearingOutcomeCode.REFER_POLICE.name
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
+      .jsonPath("\$.reportedAdjudication.hearings[0].outcome.adjudicator")
+      .isEqualTo("test")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.REFER_POLICE.name)
   }
 
   @Test

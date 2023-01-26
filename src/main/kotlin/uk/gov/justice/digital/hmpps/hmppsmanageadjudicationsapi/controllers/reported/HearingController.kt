@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
 import java.time.LocalDate
@@ -35,6 +36,14 @@ data class HearingRequest(
   val dateTimeOfHearing: LocalDateTime,
   @Schema(description = "oic hearing type")
   val oicHearingType: OicHearingType,
+)
+
+@Schema(description = "Request to create a hearing outcome")
+data class HearingOutcomeRequest(
+  @Schema(description = "the name of the adjudicator")
+  val adjudicator: String,
+  @Schema(description = "the outcome code")
+  val code: HearingOutcomeCode,
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
