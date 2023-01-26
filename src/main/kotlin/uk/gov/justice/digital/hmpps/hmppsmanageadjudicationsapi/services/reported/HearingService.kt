@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -132,7 +133,7 @@ class HearingService(
     return toHearingSummaries(hearings, adjudicationsMap)
   }
 
-  fun createHearingOutcome(adjudicationNumber: Long, hearingId: Long, adjudicator: String, code: HearingOutcomeCode, reason: HearingOutcomeReason? = null, details: String? = null): ReportedAdjudicationDto {
+  fun createHearingOutcome(adjudicationNumber: Long, hearingId: Long, adjudicator: String, code: HearingOutcomeCode, reason: HearingOutcomeReason? = null, details: String? = null, finding: HearingOutcomeFinding? = null): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
     val hearingToAddOutcomeTo = reportedAdjudication.getHearing(hearingId)
@@ -142,6 +143,7 @@ class HearingService(
       reason = reason,
       details = details,
       adjudicator = adjudicator,
+      finding = finding,
     )
 
     return saveToDto(reportedAdjudication)

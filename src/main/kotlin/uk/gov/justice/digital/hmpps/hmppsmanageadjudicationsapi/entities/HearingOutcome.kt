@@ -18,6 +18,8 @@ data class HearingOutcome(
   var reason: HearingOutcomeReason? = null,
   @Enumerated(EnumType.STRING)
   var code: HearingOutcomeCode,
+  @Enumerated(EnumType.STRING)
+  var finding: HearingOutcomeFinding? = null,
 ) : BaseEntity()
 
 enum class HearingOutcomeCode {
@@ -29,4 +31,8 @@ enum class HearingOutcomeCode {
 
 enum class HearingOutcomeReason {
   TEST
+}
+
+enum class HearingOutcomeFinding {
+  PROVED, DISMISSED, NOT_PROCEED_WITH
 }

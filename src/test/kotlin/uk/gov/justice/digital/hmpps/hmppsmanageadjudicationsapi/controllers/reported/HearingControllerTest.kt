@@ -261,7 +261,8 @@ class HearingControllerTest : TestControllerBase() {
           any(),
           any(),
           anyOrNull(),
-          anyOrNull()
+          anyOrNull(),
+          anyOrNull(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
