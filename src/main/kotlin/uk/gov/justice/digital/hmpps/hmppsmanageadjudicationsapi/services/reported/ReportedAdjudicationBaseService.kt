@@ -130,6 +130,8 @@ open class ReportedDtoService(
       reason = this.reason,
       details = this.details,
       adjudicator = this.adjudicator,
+      finding = this.finding,
+      plea = this.plea,
     )
 }
 

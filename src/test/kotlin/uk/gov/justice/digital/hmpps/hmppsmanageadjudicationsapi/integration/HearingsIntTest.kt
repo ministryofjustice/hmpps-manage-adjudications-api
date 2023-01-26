@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
@@ -241,6 +243,8 @@ class HearingsIntTest : IntegrationTestBase() {
           "code" to HearingOutcomeCode.REFER_POLICE.name,
           "reason" to HearingOutcomeReason.TEST.name,
           "details" to "details",
+          "finding" to HearingOutcomeFinding.DISMISSED.name,
+          "plea" to HearingOutcomePlea.TEST.name,
         )
       )
       .exchange()
@@ -253,6 +257,10 @@ class HearingsIntTest : IntegrationTestBase() {
       .isEqualTo(HearingOutcomeReason.TEST.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.details")
       .isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.finding")
+      .isEqualTo(HearingOutcomeFinding.DISMISSED.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea")
+      .isEqualTo(HearingOutcomePlea.TEST.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.REFER_POLICE.name)
   }
 

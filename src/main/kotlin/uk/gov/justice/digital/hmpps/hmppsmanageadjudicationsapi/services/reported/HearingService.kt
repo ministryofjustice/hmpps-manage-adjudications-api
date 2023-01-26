@@ -6,6 +6,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -132,17 +134,28 @@ class HearingService(
     return toHearingSummaries(hearings, adjudicationsMap)
   }
 
-  fun createHearingOutcome(adjudicationNumber: Long, hearingId: Long, adjudicator: String, code: HearingOutcomeCode, reason: HearingOutcomeReason? = null, details: String? = null): ReportedAdjudicationDto {
+  fun createHearingOutcome(
+    adjudicationNumber: Long,
+    hearingId: Long,
+    adjudicator: String,
+    code: HearingOutcomeCode,
+    reason: HearingOutcomeReason? = null,
+    details: String? = null,
+    finding: HearingOutcomeFinding? = null,
+    plea: HearingOutcomePlea? = null
+  ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-
     val hearingToAddOutcomeTo = reportedAdjudication.getHearing(hearingId)
-
-    hearingToAddOutcomeTo.hearingOutcome = HearingOutcome(
+    val hearingOutcome = HearingOutcome(
       code = code,
       reason = reason,
       details = details,
       adjudicator = adjudicator,
-    )
+      finding = finding,
+      plea = plea,
+    ).validate()
+
+    hearingToAddOutcomeTo.hearingOutcome = hearingOutcome
 
     return saveToDto(reportedAdjudication)
   }
@@ -174,5 +187,19 @@ class HearingService(
 
     fun ReportedAdjudication.calcFirstHearingDate(): LocalDateTime? =
       this.hearings.minOfOrNull { it.dateTimeOfHearing }
+
+    fun HearingOutcome.validate(): HearingOutcome {
+      when (this.code) {
+        HearingOutcomeCode.COMPLETE -> {
+          validateField(this.plea)
+          validateField(this.finding)
+        }
+        HearingOutcomeCode.ADJOURN -> validateField(this.plea)
+        else -> {}
+      }
+      return this
+    }
+
+    private fun validateField(field: Any?) = field ?: throw ValidationException("missing mandatory field")
   }
 }

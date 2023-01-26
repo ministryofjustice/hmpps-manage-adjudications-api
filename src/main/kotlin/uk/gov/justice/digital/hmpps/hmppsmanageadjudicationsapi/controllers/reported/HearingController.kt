@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
@@ -48,7 +50,11 @@ data class HearingOutcomeRequest(
   @Schema(description = "reason")
   val reason: HearingOutcomeReason? = null,
   @Schema(description = "details")
-  val details: String? = null
+  val details: String? = null,
+  @Schema(description = "finding")
+  val finding: HearingOutcomeFinding? = null,
+  @Schema(description = "plea")
+  val plea: HearingOutcomePlea? = null,
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
@@ -121,8 +127,14 @@ class HearingController(
     @RequestBody hearingOutcomeRequest: HearingOutcomeRequest
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = hearingService.createHearingOutcome(
-      adjudicationNumber, hearingId, hearingOutcomeRequest.adjudicator, hearingOutcomeRequest.code,
-      hearingOutcomeRequest.reason, hearingOutcomeRequest.details
+      adjudicationNumber = adjudicationNumber,
+      hearingId = hearingId,
+      adjudicator = hearingOutcomeRequest.adjudicator,
+      code = hearingOutcomeRequest.code,
+      reason = hearingOutcomeRequest.reason,
+      details = hearingOutcomeRequest.details,
+      finding = hearingOutcomeRequest.finding,
+      plea = hearingOutcomeRequest.plea,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
