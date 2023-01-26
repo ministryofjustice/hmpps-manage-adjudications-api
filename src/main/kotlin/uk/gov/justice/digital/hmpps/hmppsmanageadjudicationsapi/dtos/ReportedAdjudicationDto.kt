@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidenc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
@@ -144,6 +145,8 @@ data class HearingOutcomeDto(
   val details: String? = null,
   @Schema(description = "hearing outcome finding")
   val finding: HearingOutcomeFinding? = null,
+  @Schema(description = "hearing outcome plea")
+  val plea: HearingOutcomePlea? = null,
 )
 
 @Schema(description = "Hearing Summary")

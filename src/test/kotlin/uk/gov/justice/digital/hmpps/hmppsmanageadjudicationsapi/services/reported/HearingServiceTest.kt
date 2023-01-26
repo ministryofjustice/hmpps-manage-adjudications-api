@@ -15,6 +15,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
@@ -466,6 +467,28 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         hearingService.createHearingOutcome(1, 1, "testing", HearingOutcomeCode.REFER_POLICE)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Hearing not found for 1")
+    }
+
+    @CsvSource("COMPLETE")
+    @ParameterizedTest
+    fun `throws invalid state exception if finding not present`(code: HearingOutcomeCode) {
+      Assertions.assertThatThrownBy {
+        hearingService.createHearingOutcome(
+          adjudicationNumber = 1L, hearingId = 1L, adjudicator = "test", code = code, plea = HearingOutcomePlea.TEST,
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("missing mandatory field")
+    }
+
+    @CsvSource("COMPLETE", "ADJOURN")
+    @ParameterizedTest
+    fun `throws invalid state exception if plea is not present`(code: HearingOutcomeCode) {
+      Assertions.assertThatThrownBy {
+        hearingService.createHearingOutcome(
+          adjudicationNumber = 1L, hearingId = 1L, adjudicator = "test", code = code,
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("missing mandatory field")
     }
   }
 }
