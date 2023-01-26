@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
 import java.time.LocalDate
@@ -44,6 +45,10 @@ data class HearingOutcomeRequest(
   val adjudicator: String,
   @Schema(description = "the outcome code")
   val code: HearingOutcomeCode,
+  @Schema(description = "reason")
+  val reason: HearingOutcomeReason? = null,
+  @Schema(description = "details")
+  val details: String? = null
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
@@ -105,5 +110,21 @@ class HearingController(
     return HearingSummaryResponse(
       hearings
     )
+  }
+
+  @Operation(summary = "create an hearing outcome")
+  @PostMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}/outcome"])
+  @ResponseStatus(HttpStatus.CREATED)
+  fun createHearingOutcome(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "hearingId") hearingId: Long,
+    @RequestBody hearingOutcomeRequest: HearingOutcomeRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = hearingService.createHearingOutcome(
+      adjudicationNumber, hearingId, hearingOutcomeRequest.adjudicator, hearingOutcomeRequest.code,
+      hearingOutcomeRequest.reason, hearingOutcomeRequest.details
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
   }
 }

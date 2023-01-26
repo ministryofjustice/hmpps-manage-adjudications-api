@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -259,6 +260,8 @@ class HearingControllerTest : TestControllerBase() {
           ArgumentMatchers.anyLong(),
           any(),
           any(),
+          anyOrNull(),
+          anyOrNull()
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -287,7 +290,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to create a hearing`() {
       createHearingOutcomeRequest(1, 1, HEARING_OUTCOME_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(hearingService).createHearingOutcome(1, 1, "test", HearingOutcomeCode.REFER_POLICE)
+      verify(hearingService).createHearingOutcome(1, 1, "test", HearingOutcomeCode.REFER_POLICE, null, null)
     }
 
     private fun createHearingOutcomeRequest(

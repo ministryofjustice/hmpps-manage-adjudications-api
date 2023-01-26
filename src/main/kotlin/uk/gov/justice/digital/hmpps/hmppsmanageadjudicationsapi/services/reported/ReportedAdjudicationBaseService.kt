@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
@@ -12,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedEvi
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedWitnessDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
@@ -117,8 +119,18 @@ open class ReportedDtoService(
         locationId = it.locationId,
         dateTimeOfHearing = it.dateTimeOfHearing,
         oicHearingType = it.oicHearingType,
+        outcome = it.hearingOutcome?.toHearingOutcome()
       )
     }.sortedBy { it.dateTimeOfHearing }.toList()
+
+  private fun HearingOutcome.toHearingOutcome(): HearingOutcomeDto =
+    HearingOutcomeDto(
+      id = this.id,
+      code = this.code,
+      reason = this.reason,
+      details = this.details,
+      adjudicator = this.adjudicator,
+    )
 }
 
 open class ReportedAdjudicationBaseService(

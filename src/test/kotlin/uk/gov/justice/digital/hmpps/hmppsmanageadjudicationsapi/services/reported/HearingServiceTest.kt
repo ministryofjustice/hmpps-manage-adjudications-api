@@ -53,7 +53,9 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      hearingService.createHearingOutcome(1, 1, "test", HearingOutcomeCode.REFER_POLICE)
+      hearingService.createHearingOutcome(
+        adjudicationNumber = 1, hearingId = 1, adjudicator = "test", code = HearingOutcomeCode.REFER_POLICE
+      )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }
@@ -430,7 +432,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     fun init() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.status = ReportedAdjudicationStatus.UNSCHEDULED
+          it.status = ReportedAdjudicationStatus.SCHEDULED
         }
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
@@ -438,13 +440,13 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `create hearing outcome`() {
-
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       val response = hearingService.createHearingOutcome(
         1, 1, "test", HearingOutcomeCode.REFER_POLICE
       )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("test")
