@@ -251,6 +251,8 @@ class HearingsIntTest : IntegrationTestBase() {
   }
 
   private fun initDataForHearings(): IntegrationTestData {
+    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+
     val intTestData = integrationTestData()
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
     val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
@@ -265,6 +267,7 @@ class HearingsIntTest : IntegrationTestBase() {
       .addEvidence()
       .addWitnesses()
       .completeDraft()
+      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
 
     return intTestData
   }

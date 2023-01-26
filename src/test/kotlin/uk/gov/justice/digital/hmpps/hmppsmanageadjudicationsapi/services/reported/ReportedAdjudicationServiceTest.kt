@@ -201,6 +201,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       "RETURNED, REJECTED",
       "RETURNED, RETURNED",
       "SCHEDULED, SCHEDULED",
+      "REFER_POLICE, SCHEDULED",
+      "NOT_PROCEED, SCHEDULED",
     )
     fun `setting status for a reported adjudication throws an illegal state exception for invalid transitions`(
       from: ReportedAdjudicationStatus,

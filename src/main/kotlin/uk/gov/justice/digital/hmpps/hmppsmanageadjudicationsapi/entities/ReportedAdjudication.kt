@@ -11,6 +11,7 @@ import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.JoinColumn
 import javax.persistence.OneToMany
+import javax.persistence.OneToOne
 import javax.persistence.Table
 import javax.validation.ValidationException
 
@@ -61,6 +62,10 @@ data class ReportedAdjudication(
   var issuingOfficer: String? = null,
   var dateTimeOfIssue: LocalDateTime? = null,
   var dateTimeOfFirstHearing: LocalDateTime? = null,
+  @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+  @JoinColumn(name = "outcome_id")
+  var outcome: Outcome? = null,
+
 ) :
   BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reason: String? = null, details: String? = null, reviewUserId: String? = null) {
@@ -92,14 +97,16 @@ enum class ReportedAdjudicationStatus {
   },
   UNSCHEDULED {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(SCHEDULED)
+      return listOf(SCHEDULED, REFER_POLICE, NOT_PROCEED)
     }
   },
   SCHEDULED {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(UNSCHEDULED)
+      return listOf(UNSCHEDULED, REFER_POLICE)
     }
-  };
+  },
+  REFER_POLICE, // question: can the police refer it back?
+  NOT_PROCEED;
   open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
   fun canTransitionFrom(from: ReportedAdjudicationStatus): Boolean {
     val to = this

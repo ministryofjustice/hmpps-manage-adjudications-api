@@ -14,6 +14,10 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConfiguration
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -434,5 +438,29 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(savedEntity)
       .extracting("issuingOfficer", "dateTimeOfIssue")
       .contains("testing", now)
+  }
+
+  @Test
+  fun `hearing outcome`() {
+    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    adjudication!!.hearings.first().hearingOutcome = HearingOutcome(
+      adjudicator = "test", code = HearingOutcomeCode.REFER_POLICE
+    )
+
+    val savedEntity = reportedAdjudicationRepository.save(adjudication)
+
+    assertThat(savedEntity.hearings.first().hearingOutcome)
+      .extracting("code", "adjudicator")
+      .contains(HearingOutcomeCode.REFER_POLICE, "test")
+  }
+
+  @Test
+  fun `adjudication outcome`() {
+    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    adjudication!!.outcome = Outcome(code = OutcomeCode.REFER_POLICE)
+
+    val savedEntity = reportedAdjudicationRepository.save(adjudication)
+
+    assertThat(savedEntity.outcome!!.code).isEqualTo(OutcomeCode.REFER_POLICE)
   }
 }

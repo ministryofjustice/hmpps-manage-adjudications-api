@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Hea
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
+import javax.validation.ValidationException
 
 class HearingServiceTest : ReportedAdjudicationTestBase() {
   private val hearingRepository: HearingRepository = mock()
@@ -63,7 +64,11 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
     @BeforeEach
     fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = ReportedAdjudicationStatus.UNSCHEDULED
+        }
+      )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
       whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(5L)
     }
@@ -88,6 +93,21 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(IllegalStateException::class.java)
         .hasMessageContaining("oic hearing type is not applicable for rule set")
+    }
+
+    @CsvSource("REJECTED", "NOT_PROCEED", "AWAITING_REVIEW", "REFER_POLICE")
+    @ParameterizedTest
+    fun `hearing is in invalid state`(status: ReportedAdjudicationStatus) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = status
+        }
+      )
+
+      Assertions.assertThatThrownBy {
+        hearingService.createHearing(1, 1, LocalDateTime.now(), OicHearingType.GOV)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Invalid status transition")
     }
 
     @Test
@@ -134,7 +154,11 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
     @BeforeEach
     fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = ReportedAdjudicationStatus.SCHEDULED
+        }
+      )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
       whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(5L)
     }
@@ -160,6 +184,21 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(IllegalStateException::class.java)
         .hasMessageContaining("oic hearing type is not applicable for rule set")
+    }
+
+    @CsvSource("REJECTED", "NOT_PROCEED", "AWAITING_REVIEW", "REFER_POLICE")
+    @ParameterizedTest
+    fun `hearing is in invalid state`(status: ReportedAdjudicationStatus) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = status
+        }
+      )
+
+      Assertions.assertThatThrownBy {
+        hearingService.amendHearing(1, 1, 1, LocalDateTime.now(), OicHearingType.GOV)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Invalid status transition")
     }
 
     @Test

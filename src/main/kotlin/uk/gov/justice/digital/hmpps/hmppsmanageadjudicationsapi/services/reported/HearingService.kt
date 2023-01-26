@@ -17,6 +17,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
+import javax.validation.ValidationException
 
 @Transactional
 @Service
@@ -35,6 +36,7 @@ class HearingService(
   fun createHearing(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
+      it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED)
     }
 
     val oicHearingId = prisonApiGateway.createHearing(
@@ -69,6 +71,7 @@ class HearingService(
   fun amendHearing(adjudicationNumber: Long, hearingId: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
+      it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED)
     }
 
     val hearingToEdit = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException(
@@ -146,6 +149,12 @@ class HearingService(
   companion object {
     fun throwHearingNotFoundException(id: Long): Nothing =
       throw EntityNotFoundException("Hearing not found for $id")
+
+    fun ReportedAdjudicationStatus.validateTransition(vararg next: ReportedAdjudicationStatus) {
+      next.toList().forEach {
+        if (this != it && !this.canTransitionTo(it)) throw ValidationException("Invalid status transition ${this.name} - ${it.name}")
+      }
+    }
 
     fun ReportedAdjudication.calcFirstHearingDate(): LocalDateTime? =
       this.hearings.minOfOrNull { it.dateTimeOfHearing }
