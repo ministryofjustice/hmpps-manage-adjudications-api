@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDateTime
@@ -223,6 +225,35 @@ class HearingsIntTest : IntegrationTestBase() {
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(1)
+  }
+
+  @Test
+  fun `create hearing outcome`() {
+    initDataForHearings()
+    val reportedAdjudication = createHearing()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/${reportedAdjudication.reportedAdjudication.hearings.first().id}/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "code" to HearingOutcomeCode.REFER_POLICE.name,
+          "reason" to HearingOutcomeReason.TEST.name,
+          "details" to "details",
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
+      .isEqualTo("test")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason")
+      .isEqualTo(HearingOutcomeReason.TEST.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.details")
+      .isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.REFER_POLICE.name)
   }
 
   @Test

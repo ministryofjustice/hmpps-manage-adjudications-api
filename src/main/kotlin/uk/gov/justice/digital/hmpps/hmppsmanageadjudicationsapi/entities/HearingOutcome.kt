@@ -14,10 +14,10 @@ data class HearingOutcome(
   var details: String? = null,
   @field:Length(max = 32)
   var adjudicator: String,
-  @field:Length(max = 32)
-  var reason: String? = null,
   @Enumerated(EnumType.STRING)
-  var code: HearingOutcomeCode? = null,
+  var reason: HearingOutcomeReason? = null,
+  @Enumerated(EnumType.STRING)
+  var code: HearingOutcomeCode,
 ) : BaseEntity()
 
 enum class HearingOutcomeCode {
@@ -25,4 +25,8 @@ enum class HearingOutcomeCode {
   REFER_POLICE,
   REFER_INAD,
   ADJOURN,
+}
+
+enum class HearingOutcomeReason {
+  TEST
 }

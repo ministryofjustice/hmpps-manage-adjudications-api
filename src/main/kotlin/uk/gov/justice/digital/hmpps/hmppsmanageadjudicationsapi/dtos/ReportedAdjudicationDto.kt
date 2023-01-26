@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
@@ -123,6 +125,22 @@ data class HearingDto(
   val dateTimeOfHearing: LocalDateTime,
   @Schema(description = "oic hearing type")
   val oicHearingType: OicHearingType,
+  @Schema(description = "hearing outcome")
+  val outcome: HearingOutcomeDto? = null,
+)
+
+@Schema(description = "hearing outcome")
+data class HearingOutcomeDto(
+  @Schema(description = "The id of the hearing outcome")
+  val id: Long? = null,
+  @Schema(description = "adjudicator of hearing")
+  val adjudicator: String,
+  @Schema(description = "the hearing outcome code")
+  val code: HearingOutcomeCode,
+  @Schema(description = "reason for outcome")
+  val reason: HearingOutcomeReason? = null,
+  @Schema(description = "details of outcome")
+  val details: String? = null,
 )
 
 @Schema(description = "Hearing Summary")

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -15,6 +16,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
 import java.time.LocalDate
@@ -247,8 +249,68 @@ class HearingControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class CreateHearingOutcome {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        hearingService.createHearingOutcome(
+          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyLong(),
+          any(),
+          any(),
+          anyOrNull(),
+          anyOrNull()
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      createHearingOutcomeRequest(
+        1,
+        1,
+        HEARING_OUTCOME_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      createHearingOutcomeRequest(
+        1,
+        1,
+        HEARING_OUTCOME_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to create a hearing`() {
+      createHearingOutcomeRequest(1, 1, HEARING_OUTCOME_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isCreated)
+      verify(hearingService).createHearingOutcome(1, 1, "test", HearingOutcomeCode.REFER_POLICE, null, null)
+    }
+
+    private fun createHearingOutcomeRequest(
+      id: Long,
+      hearingId: Long,
+      hearingOutcome: HearingOutcomeRequest?
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(hearingOutcome)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.post("/reported-adjudications/$id/hearing/$hearingId/outcome")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
   companion object {
     private val HEARING_REQUEST = HearingRequest(locationId = 1L, dateTimeOfHearing = LocalDateTime.now(), oicHearingType = OicHearingType.GOV)
+    private val HEARING_OUTCOME_REQUEST = HearingOutcomeRequest(adjudicator = "test", code = HearingOutcomeCode.REFER_POLICE)
 
     private val ALL_HEARINGS_DTO =
       listOf(

@@ -14,6 +14,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
@@ -48,6 +49,13 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
     Assertions.assertThatThrownBy {
       hearingService.deleteHearing(1, 1)
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      hearingService.createHearingOutcome(
+        adjudicationNumber = 1, hearingId = 1, adjudicator = "test", code = HearingOutcomeCode.REFER_POLICE
+      )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }
@@ -408,6 +416,56 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response).isNotNull
       assertThat(response.isEmpty()).isTrue
+    }
+  }
+
+  @Nested
+  inner class CreateHearingOutcome {
+
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+      .also {
+        it.createdByUserId = ""
+        it.createDateTime = LocalDateTime.now()
+      }
+
+    @BeforeEach
+    fun init() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = ReportedAdjudicationStatus.SCHEDULED
+        }
+      )
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+    }
+
+    @Test
+    fun `create hearing outcome`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = hearingService.createHearingOutcome(
+        1, 1, "test", HearingOutcomeCode.REFER_POLICE
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("test")
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `throws an entity not found if the hearing for the supplied id does not exists`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication
+          .also { it.hearings.clear() }
+      )
+
+      Assertions.assertThatThrownBy {
+        hearingService.createHearingOutcome(1, 1, "testing", HearingOutcomeCode.REFER_POLICE)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Hearing not found for 1")
     }
   }
 }

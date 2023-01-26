@@ -4,6 +4,9 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
@@ -74,9 +77,7 @@ class HearingService(
       it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED)
     }
 
-    val hearingToEdit = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException(
-      hearingId
-    )
+    val hearingToEdit = reportedAdjudication.getHearing(hearingId)
 
     prisonApiGateway.amendHearing(
       adjudicationNumber = adjudicationNumber,
@@ -101,9 +102,7 @@ class HearingService(
 
   fun deleteHearing(adjudicationNumber: Long, hearingId: Long): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val hearingToRemove = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException(
-      hearingId
-    )
+    val hearingToRemove = reportedAdjudication.getHearing(hearingId)
 
     prisonApiGateway.deleteHearing(
       adjudicationNumber = adjudicationNumber,
@@ -133,6 +132,20 @@ class HearingService(
     return toHearingSummaries(hearings, adjudicationsMap)
   }
 
+  fun createHearingOutcome(adjudicationNumber: Long, hearingId: Long, adjudicator: String, code: HearingOutcomeCode, reason: HearingOutcomeReason? = null, details: String? = null): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+
+    val hearingToAddOutcomeTo = reportedAdjudication.getHearing(hearingId)
+
+    hearingToAddOutcomeTo.hearingOutcome = HearingOutcome(
+      code = code,
+      reason = reason,
+      details = details,
+      adjudicator = adjudicator,
+    )
+
+    return saveToDto(reportedAdjudication)
+  }
   private fun toHearingSummaries(hearings: List<Hearing>, adjudications: Map<Long, ReportedAdjudication>): List<HearingSummaryDto> =
     hearings.map {
       val adjudication = adjudications[it.reportNumber]!!
@@ -147,7 +160,10 @@ class HearingService(
     }.sortedBy { it.dateTimeOfHearing }
 
   companion object {
-    fun throwHearingNotFoundException(id: Long): Nothing =
+
+    fun ReportedAdjudication.getHearing(hearingId: Long) =
+      this.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException(hearingId)
+    private fun throwHearingNotFoundException(id: Long): Nothing =
       throw EntityNotFoundException("Hearing not found for $id")
 
     fun ReportedAdjudicationStatus.validateTransition(vararg next: ReportedAdjudicationStatus) {
