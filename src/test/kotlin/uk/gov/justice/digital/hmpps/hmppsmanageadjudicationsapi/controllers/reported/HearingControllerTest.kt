@@ -289,7 +289,7 @@ class HearingControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to create a hearing`() {
+    fun `makes a call to create a hearing outcome`() {
       createHearingOutcomeRequest(1, 1, HEARING_OUTCOME_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
       verify(hearingService).createHearingOutcome(1, 1, "test", HearingOutcomeCode.REFER_POLICE, null, null)
@@ -310,6 +310,65 @@ class HearingControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class UpdateHearingOutcome {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        hearingService.updateHearingOutcome(
+          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyLong(),
+          any(),
+          any(),
+          anyOrNull(),
+          anyOrNull(),
+          anyOrNull(),
+          anyOrNull(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      updateHearingOutcomeRequest(
+        1,
+        1,
+        HEARING_OUTCOME_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      updateHearingOutcomeRequest(
+        1,
+        1,
+        HEARING_OUTCOME_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to update a hearing outcome`() {
+      updateHearingOutcomeRequest(1, 1, HEARING_OUTCOME_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+      verify(hearingService).updateHearingOutcome(1, 1, HearingOutcomeCode.REFER_POLICE, "test", null, null, null)
+    }
+
+    private fun updateHearingOutcomeRequest(
+      id: Long,
+      hearingId: Long,
+      hearingOutcome: HearingOutcomeRequest?
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(hearingOutcome)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing/$hearingId/outcome")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
   companion object {
     private val HEARING_REQUEST = HearingRequest(locationId = 1L, dateTimeOfHearing = LocalDateTime.now(), oicHearingType = OicHearingType.GOV)
     private val HEARING_OUTCOME_REQUEST = HearingOutcomeRequest(adjudicator = "test", code = HearingOutcomeCode.REFER_POLICE)

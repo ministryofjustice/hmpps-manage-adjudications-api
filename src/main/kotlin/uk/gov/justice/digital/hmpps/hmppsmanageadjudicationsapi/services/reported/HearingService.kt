@@ -159,6 +159,49 @@ class HearingService(
 
     return saveToDto(reportedAdjudication)
   }
+
+  fun updateHearingOutcome(
+    adjudicationNumber: Long,
+    hearingId: Long,
+    code: HearingOutcomeCode,
+    adjudicator: String,
+    reason: HearingOutcomeReason? = null,
+    details: String? = null,
+    finding: HearingOutcomeFinding? = null,
+    plea: HearingOutcomePlea? = null
+  ): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val outcomeToAmend = reportedAdjudication.getHearing(hearingId).hearingOutcome ?: throw EntityNotFoundException("outcome not found for hearing $hearingId")
+
+    outcomeToAmend.code = code
+    outcomeToAmend.adjudicator = adjudicator
+
+    when (outcomeToAmend.code) {
+      HearingOutcomeCode.COMPLETE -> {
+        outcomeToAmend.details = null
+        outcomeToAmend.reason = null
+        outcomeToAmend.plea = plea
+        outcomeToAmend.finding = finding
+      }
+      HearingOutcomeCode.ADJOURN -> {
+        outcomeToAmend.details = details
+        outcomeToAmend.reason = reason
+        outcomeToAmend.plea = plea
+        outcomeToAmend.finding = null
+      }
+      else -> {
+        outcomeToAmend.details = details
+        outcomeToAmend.reason = null
+        outcomeToAmend.plea = null
+        outcomeToAmend.finding = null
+      }
+    }
+
+    outcomeToAmend.validate()
+
+    return saveToDto(reportedAdjudication)
+  }
+
   private fun toHearingSummaries(hearings: List<Hearing>, adjudications: Map<Long, ReportedAdjudication>): List<HearingSummaryDto> =
     hearings.map {
       val adjudication = adjudications[it.reportNumber]!!
@@ -194,8 +237,14 @@ class HearingService(
           validateField(this.plea)
           validateField(this.finding)
         }
-        HearingOutcomeCode.ADJOURN -> validateField(this.plea)
-        else -> {}
+        HearingOutcomeCode.ADJOURN -> {
+          validateField(this.details)
+          validateField(this.reason)
+          validateField(this.plea)
+        }
+        else -> {
+          validateField(this.details)
+        }
       }
       return this
     }

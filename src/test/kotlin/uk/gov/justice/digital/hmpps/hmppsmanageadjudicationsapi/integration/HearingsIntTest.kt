@@ -100,8 +100,8 @@ class HearingsIntTest : IntegrationTestBase() {
 
   @Test
   fun `amend a hearing `() {
-    initDataForHearings()
-    val reportedAdjudication = createHearing()
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    val reportedAdjudication = initDataForHearings().createHearing()
 
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
@@ -131,8 +131,8 @@ class HearingsIntTest : IntegrationTestBase() {
 
   @Test
   fun `amend a hearing illegal state on hearing type `() {
-    initDataForHearings()
-    val reportedAdjudication = createHearing()
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    val reportedAdjudication = initDataForHearings().createHearing()
 
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
@@ -153,8 +153,8 @@ class HearingsIntTest : IntegrationTestBase() {
 
   @Test
   fun `amend a hearing fails on prison api and does not update the hearing `() {
-    initDataForHearings()
-    val reportedAdjudication = createHearing()
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    val reportedAdjudication = initDataForHearings().createHearing()
 
     prisonApiMockServer.stubAmendHearingFailure(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
@@ -187,8 +187,8 @@ class HearingsIntTest : IntegrationTestBase() {
 
   @Test
   fun `delete a hearing `() {
-    initDataForHearings()
-    val reportedAdjudication = createHearing()
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    val reportedAdjudication = initDataForHearings().createHearing()
 
     prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
 
@@ -207,8 +207,8 @@ class HearingsIntTest : IntegrationTestBase() {
 
   @Test
   fun `delete a hearing fails on prison api and does not delete record`() {
-    initDataForHearings()
-    val reportedAdjudication = createHearing()
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    val reportedAdjudication = initDataForHearings().createHearing()
 
     prisonApiMockServer.stubDeleteHearingFailure(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
 
@@ -231,8 +231,8 @@ class HearingsIntTest : IntegrationTestBase() {
 
   @Test
   fun `create hearing outcome`() {
-    initDataForHearings()
-    val reportedAdjudication = createHearing()
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    val reportedAdjudication = initDataForHearings().createHearing()
 
     webTestClient.post()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/${reportedAdjudication.reportedAdjudication.hearings.first().id}/outcome")
@@ -265,9 +265,44 @@ class HearingsIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `update hearing outcome`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    var reportedAdjudication = initDataForHearings().createHearing()
+    reportedAdjudication = integrationTestData().createHearingOutcome(
+      reportedAdjudication.reportedAdjudication.adjudicationNumber, reportedAdjudication.reportedAdjudication.hearings.first().id!!
+    )
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/${reportedAdjudication.reportedAdjudication.hearings.first().id}/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "updated",
+          "code" to HearingOutcomeCode.COMPLETE,
+          "finding" to HearingOutcomeFinding.NOT_PROCEED_WITH.name,
+          "plea" to HearingOutcomePlea.TEST2.name,
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
+      .isEqualTo("updated")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason").doesNotExist()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.details").doesNotExist()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.finding")
+      .isEqualTo(HearingOutcomeFinding.NOT_PROCEED_WITH.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea")
+      .isEqualTo(HearingOutcomePlea.TEST2.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.COMPLETE.name)
+  }
+
+  @Test
   fun `get all hearings`() {
-    initDataForHearings()
-    val reportedAdjudication = createHearing()
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    val reportedAdjudication = initDataForHearings().createHearing()
+
     webTestClient.get()
       .uri("/reported-adjudications/hearings/agency/${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}?hearingDate=${reportedAdjudication.reportedAdjudication.hearings.first().dateTimeOfHearing.toLocalDate()}")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
@@ -289,14 +324,14 @@ class HearingsIntTest : IntegrationTestBase() {
       .isEqualTo(reportedAdjudication.reportedAdjudication.hearings.first().oicHearingType.name)
   }
 
-  private fun initDataForHearings(): IntegrationTestData {
+  private fun initDataForHearings(): IntegrationTestScenario {
     prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
 
     val intTestData = integrationTestData()
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
     val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
 
-    draftIntTestScenarioBuilder
+    return draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
       .setApplicableRules()
       .setIncidentRole()
@@ -307,7 +342,5 @@ class HearingsIntTest : IntegrationTestBase() {
       .addWitnesses()
       .completeDraft()
       .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
-
-    return intTestData
   }
 }
