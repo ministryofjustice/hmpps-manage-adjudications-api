@@ -139,4 +139,26 @@ class HearingController(
 
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
+
+  @Operation(summary = "create an hearing outcome")
+  @PutMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}/outcome"])
+  @ResponseStatus(HttpStatus.OK)
+  fun updateHearingOutcome(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "hearingId") hearingId: Long,
+    @RequestBody hearingOutcomeRequest: HearingOutcomeRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = hearingService.updateHearingOutcome(
+      adjudicationNumber = adjudicationNumber,
+      hearingId = hearingId,
+      code = hearingOutcomeRequest.code,
+      adjudicator = hearingOutcomeRequest.adjudicator,
+      reason = hearingOutcomeRequest.reason,
+      details = hearingOutcomeRequest.details,
+      finding = hearingOutcomeRequest.finding,
+      plea = hearingOutcomeRequest.plea,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
 }

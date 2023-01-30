@@ -32,7 +32,7 @@ enum class HearingOutcomeCode {
 }
 
 enum class HearingOutcomeReason {
-  TEST
+  TEST, TEST2
 }
 
 enum class HearingOutcomeFinding {
@@ -40,5 +40,5 @@ enum class HearingOutcomeFinding {
 }
 
 enum class HearingOutcomePlea {
-  TEST
+  TEST, TEST2
 }

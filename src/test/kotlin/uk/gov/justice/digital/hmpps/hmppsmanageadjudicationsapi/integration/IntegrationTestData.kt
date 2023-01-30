@@ -8,6 +8,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
@@ -529,18 +532,38 @@ class IntegrationTestData(
   }
 
   fun createHearing(
-    adjudicationNumber: Long,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
-      .uri("/reported-adjudications/$adjudicationNumber/hearing")
-      .headers(headers)
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/hearing")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
           "locationId" to testDataSet.locationId,
           "dateTimeOfHearing" to testDataSet.dateTimeOfHearing!!,
           "oicHearingType" to OicHearingType.GOV.name,
+        )
+      )
+      .exchange()
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
+  fun createHearingOutcome(
+    adjudicationNumber: Long,
+    hearingId: Long,
+  ): ReportedAdjudicationResponse {
+    return webTestClient.post()
+      .uri("/reported-adjudications/$adjudicationNumber/hearing/$hearingId/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "code" to HearingOutcomeCode.ADJOURN.name,
+          "details" to "details",
+          "adjudicator" to "testing",
+          "reason" to HearingOutcomeReason.TEST.name,
+          "plea" to HearingOutcomePlea.TEST.name,
         )
       )
       .exchange()

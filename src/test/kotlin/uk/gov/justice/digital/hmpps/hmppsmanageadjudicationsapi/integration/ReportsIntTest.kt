@@ -164,6 +164,7 @@ class ReportsIntTest : IntegrationTestBase() {
   @Test
   fun `get issued adjudications for all locations in agency MDI for date range`() {
     prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initMyReportData() // ensure more data to filter out
 
@@ -180,8 +181,7 @@ class ReportsIntTest : IntegrationTestBase() {
       .completeDraft()
       .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
       .issueReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
-
-    createHearing()
+      .createHearing()
 
     webTestClient.get()
       .uri("/reported-adjudications/agency/MDI/print?issueStatus=ISSUED&startDate=2010-11-12&endDate=2020-12-20")
@@ -196,6 +196,7 @@ class ReportsIntTest : IntegrationTestBase() {
   @Test
   fun `get not issued adjudications for all locations in agency MDI for date range`() {
     prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initMyReportData() // ensure more data to filter out
 
@@ -211,8 +212,7 @@ class ReportsIntTest : IntegrationTestBase() {
       .addIncidentStatement()
       .completeDraft()
       .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
-
-    createHearing()
+      .createHearing()
 
     webTestClient.get()
       .uri("/reported-adjudications/agency/MDI/print?issueStatus=NOT_ISSUED&startDate=2010-11-12&endDate=2020-12-20")
