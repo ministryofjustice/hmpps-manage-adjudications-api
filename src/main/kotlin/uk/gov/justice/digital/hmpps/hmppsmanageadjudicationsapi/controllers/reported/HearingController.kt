@@ -118,7 +118,7 @@ class HearingController(
     )
   }
 
-  @Operation(summary = "create an hearing outcome")
+  @Operation(summary = "create a hearing outcome")
   @PostMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}/outcome"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createHearingOutcome(
@@ -140,7 +140,7 @@ class HearingController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "create an hearing outcome")
+  @Operation(summary = "update a hearing outcome")
   @PutMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}/outcome"])
   @ResponseStatus(HttpStatus.OK)
   fun updateHearingOutcome(
