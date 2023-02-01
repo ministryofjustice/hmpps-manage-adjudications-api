@@ -5,10 +5,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSumm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
@@ -139,7 +139,7 @@ class HearingService(
     hearingId: Long,
     adjudicator: String,
     code: HearingOutcomeCode,
-    reason: HearingOutcomeReason? = null,
+    reason: HearingOutcomeAdjournReason? = null,
     details: String? = null,
     finding: HearingOutcomeFinding? = null,
     plea: HearingOutcomePlea? = null
@@ -165,7 +165,7 @@ class HearingService(
     hearingId: Long,
     code: HearingOutcomeCode,
     adjudicator: String,
-    reason: HearingOutcomeReason? = null,
+    reason: HearingOutcomeAdjournReason? = null,
     details: String? = null,
     finding: HearingOutcomeFinding? = null,
     plea: HearingOutcomePlea? = null

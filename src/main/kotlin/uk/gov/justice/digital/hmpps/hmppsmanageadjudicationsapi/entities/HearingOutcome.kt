@@ -15,7 +15,7 @@ data class HearingOutcome(
   @field:Length(max = 32)
   var adjudicator: String,
   @Enumerated(EnumType.STRING)
-  var reason: HearingOutcomeReason? = null,
+  var reason: HearingOutcomeAdjournReason? = null,
   @Enumerated(EnumType.STRING)
   var code: HearingOutcomeCode,
   @Enumerated(EnumType.STRING)
@@ -25,14 +25,11 @@ data class HearingOutcome(
 ) : BaseEntity()
 
 enum class HearingOutcomeCode {
-  COMPLETE,
-  REFER_POLICE,
-  REFER_INAD,
-  ADJOURN,
+  COMPLETE, REFER_POLICE, REFER_INAD, ADJOURN,
 }
 
-enum class HearingOutcomeReason {
-  TEST, TEST2
+enum class HearingOutcomeAdjournReason {
+  LEGAL_ADVICE, LEGAL_REPRESENTATION, RO_ATTEND, HELP, UNFIT, WITNESS, WITNESS_SUPPORT, MCKENZIE, EVIDENCE, INVESTIGATION, OTHER
 }
 
 enum class HearingOutcomeFinding {
@@ -40,5 +37,5 @@ enum class HearingOutcomeFinding {
 }
 
 enum class HearingOutcomePlea {
-  TEST, TEST2
+  UNFIT, ABSTAIN, GUILTY, NOT_GUILTY
 }

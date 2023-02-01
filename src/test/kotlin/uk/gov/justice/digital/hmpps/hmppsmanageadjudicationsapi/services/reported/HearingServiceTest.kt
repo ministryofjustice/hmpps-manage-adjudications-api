@@ -16,10 +16,10 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.HearingOutcomeRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
@@ -455,8 +455,8 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = hearingService.createHearingOutcome(
-        1, 1, "test", HearingOutcomeCode.REFER_POLICE, HearingOutcomeReason.TEST, "details",
-        HearingOutcomeFinding.NOT_PROCEED_WITH, HearingOutcomePlea.TEST
+        1, 1, "test", HearingOutcomeCode.REFER_POLICE, HearingOutcomeAdjournReason.LEGAL_ADVICE, "details",
+        HearingOutcomeFinding.NOT_PROCEED_WITH, HearingOutcomePlea.UNFIT
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -465,9 +465,9 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("test")
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("details")
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isEqualTo(HearingOutcomeReason.TEST)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isEqualTo(HearingOutcomeAdjournReason.LEGAL_ADVICE)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.finding).isEqualTo(HearingOutcomeFinding.NOT_PROCEED_WITH)
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.TEST)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.UNFIT)
 
       assertThat(response).isNotNull
     }
@@ -490,7 +490,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     fun `throws invalid state exception if finding not present`(code: HearingOutcomeCode) {
       Assertions.assertThatThrownBy {
         hearingService.createHearingOutcome(
-          adjudicationNumber = 1L, hearingId = 1L, adjudicator = "test", code = code, plea = HearingOutcomePlea.TEST,
+          adjudicationNumber = 1L, hearingId = 1L, adjudicator = "test", code = code, plea = HearingOutcomePlea.UNFIT,
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing mandatory field")
@@ -522,7 +522,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     fun `validation of reason for adjourn`() {
       Assertions.assertThatThrownBy {
         hearingService.createHearingOutcome(
-          adjudicationNumber = 1L, hearingId = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test", details = "details", plea = HearingOutcomePlea.TEST2
+          adjudicationNumber = 1L, hearingId = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test", details = "details", plea = HearingOutcomePlea.ABSTAIN
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing mandatory field")
@@ -537,8 +537,8 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         it.createDateTime = LocalDateTime.now()
         it.hearings.first().hearingOutcome = HearingOutcome(
           code = HearingOutcomeCode.COMPLETE,
-          reason = HearingOutcomeReason.TEST,
-          plea = HearingOutcomePlea.TEST,
+          reason = HearingOutcomeAdjournReason.LEGAL_ADVICE,
+          plea = HearingOutcomePlea.UNFIT,
           details = "details",
           adjudicator = "adjudicator",
           finding = HearingOutcomeFinding.DISMISSED,
@@ -561,8 +561,8 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         request = HearingOutcomeRequest(
           adjudicator = "",
           code = HearingOutcomeCode.ADJOURN,
-          reason = HearingOutcomeReason.TEST2,
-          plea = HearingOutcomePlea.TEST2,
+          reason = HearingOutcomeAdjournReason.LEGAL_REPRESENTATION,
+          plea = HearingOutcomePlea.ABSTAIN,
           details = "updated details",
         )
       )
@@ -584,7 +584,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         request = HearingOutcomeRequest(
           adjudicator = "",
           code = HearingOutcomeCode.COMPLETE,
-          plea = HearingOutcomePlea.TEST2,
+          plea = HearingOutcomePlea.ABSTAIN,
           finding = HearingOutcomeFinding.PROVED
         )
       )
@@ -626,8 +626,8 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         code = HearingOutcomeCode.ADJOURN,
         adjudicator = "updated test",
         details = "updated details",
-        plea = HearingOutcomePlea.TEST2,
-        reason = HearingOutcomeReason.TEST2,
+        plea = HearingOutcomePlea.ABSTAIN,
+        reason = HearingOutcomeAdjournReason.LEGAL_REPRESENTATION,
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -636,9 +636,9 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("updated test")
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("updated details")
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isEqualTo(HearingOutcomeReason.TEST2)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isEqualTo(HearingOutcomeAdjournReason.LEGAL_REPRESENTATION)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.finding).isNull()
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.TEST2)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.ABSTAIN)
 
       assertThat(response).isNotNull
     }
@@ -652,7 +652,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         hearingId = 1,
         code = HearingOutcomeCode.COMPLETE,
         adjudicator = "updated test",
-        plea = HearingOutcomePlea.TEST2,
+        plea = HearingOutcomePlea.ABSTAIN,
         finding = HearingOutcomeFinding.PROVED,
       )
 
@@ -664,7 +664,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isNull()
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.finding).isEqualTo(HearingOutcomeFinding.PROVED)
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.TEST2)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.ABSTAIN)
 
       assertThat(response).isNotNull
     }
@@ -701,7 +701,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     fun `throws invalid state exception if finding not present`(code: HearingOutcomeCode) {
       Assertions.assertThatThrownBy {
         hearingService.updateHearingOutcome(
-          adjudicationNumber = 1L, hearingId = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test", plea = HearingOutcomePlea.TEST,
+          adjudicationNumber = 1L, hearingId = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test", plea = HearingOutcomePlea.UNFIT,
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing mandatory field")
