@@ -37,5 +37,5 @@ enum class HearingOutcomeFinding {
 }
 
 enum class HearingOutcomePlea {
-  UNFIT, ABSTAIN, GUILTY, NOT_GUILTY
+  UNFIT, ABSTAIN, GUILTY, NOT_GUILTY, NOT_ASKED
 }
