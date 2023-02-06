@@ -4,12 +4,14 @@ import org.assertj.core.api.Assertions
 import org.assertj.core.api.Java6Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -66,6 +68,27 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("Invalid status transition")
     }
 
+    @Test
+    fun `validation exception if missing reason for not proceed`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+
+      Assertions.assertThatThrownBy {
+        outcomeService.createOutcome(adjudicationNumber = 1, code = OutcomeCode.NOT_PROCEED, details = "details")
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("a reason is required")
+    }
+
+    @ParameterizedTest
+    @CsvSource("REFER_POLICE", "NOT_PROCEED")
+    fun `validation exception if missing details`(code: OutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+
+      Assertions.assertThatThrownBy {
+        outcomeService.createOutcome(1, code)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("details are required")
+    }
+
     @ParameterizedTest
     @CsvSource("REFER_POLICE", "NOT_PROCEED")
     fun `create outcome`(code: OutcomeCode) {
@@ -73,14 +96,18 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       val response = outcomeService.createOutcome(
         1235L,
-        code
+        code,
+        "details",
+        NotProceedReason.RELEASED
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.outcome).isNotNull
       assertThat(argumentCaptor.value.outcome!!.code).isEqualTo(code)
+      assertThat(argumentCaptor.value.outcome!!.details).isEqualTo("details")
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.valueOf(code.name))
+      assertThat(argumentCaptor.value.outcome!!.reason).isEqualTo(NotProceedReason.RELEASED)
       assertThat(response).isNotNull
     }
   }

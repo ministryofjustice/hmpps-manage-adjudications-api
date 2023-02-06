@@ -141,6 +141,8 @@ open class ReportedDtoService(
     OutcomeDto(
       id = this.id,
       code = this.code,
+      details = this.details,
+      reason = this.reason,
     )
 }
 

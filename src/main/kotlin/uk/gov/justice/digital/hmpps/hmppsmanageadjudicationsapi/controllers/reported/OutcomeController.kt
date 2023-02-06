@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 
@@ -16,6 +17,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 data class OutcomeRequest(
   @Schema(description = "outcome code")
   val code: OutcomeCode,
+  @Schema(description = "details")
+  val details: String? = null,
+  @Schema(description = "not proceeded with reason")
+  val reason: NotProceedReason? = null
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
@@ -33,7 +38,9 @@ class OutcomeController(
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.createOutcome(
       adjudicationNumber = adjudicationNumber,
-      code = outcomeRequest.code
+      code = outcomeRequest.code,
+      details = outcomeRequest.details,
+      reason = outcomeRequest.reason,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
