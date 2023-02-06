@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
@@ -59,6 +60,8 @@ data class ReportedAdjudicationDto(
   val dateTimeOfIssue: LocalDateTime? = null,
   @Schema(description = "date time of first hearing")
   val dateTimeOfFirstHearing: LocalDateTime? = null,
+  @Schema(description = "outcome")
+  val outcome: OutcomeDto? = null,
 )
 
 @Schema(description = "Details of an offence")
@@ -163,4 +166,12 @@ data class HearingSummaryDto(
   val prisonerNumber: String,
   @Schema(description = "type of hearing")
   val oicHearingType: OicHearingType,
+)
+
+@Schema(description = "Outcome")
+data class OutcomeDto(
+  @Schema(description = "The id of the outcome")
+  val id: Long? = null,
+  @Schema(description = "outcome come")
+  val code: OutcomeCode
 )

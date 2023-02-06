@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus.Companion.validateTransition
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
@@ -221,12 +222,6 @@ class HearingService(
       this.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException(hearingId)
     private fun throwHearingNotFoundException(id: Long): Nothing =
       throw EntityNotFoundException("Hearing not found for $id")
-
-    fun ReportedAdjudicationStatus.validateTransition(vararg next: ReportedAdjudicationStatus) {
-      next.toList().forEach {
-        if (this != it && !this.canTransitionTo(it)) throw ValidationException("Invalid status transition ${this.name} - ${it.name}")
-      }
-    }
 
     fun ReportedAdjudication.calcFirstHearingDate(): LocalDateTime? =
       this.hearings.minOfOrNull { it.dateTimeOfHearing }
