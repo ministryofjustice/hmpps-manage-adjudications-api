@@ -28,18 +28,16 @@ class OutcomeService(
   fun createOutcome(adjudicationNumber: Long, code: OutcomeCode, details: String? = null, reason: NotProceedReason? = null): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       it.status.validateTransition(ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.NOT_PROCEED)
+      it.status = code.status
     }
 
     when (code) {
-      OutcomeCode.REFER_POLICE -> {
-        validateDetails(details)
-        reportedAdjudication.status = ReportedAdjudicationStatus.REFER_POLICE
-      }
+      OutcomeCode.REFER_POLICE -> validateDetails(details)
       OutcomeCode.NOT_PROCEED -> {
         validateDetails(details)
         reason ?: throw ValidationException("a reason is required")
-        reportedAdjudication.status = ReportedAdjudicationStatus.NOT_PROCEED
       }
+      OutcomeCode.REFER_INAD -> validateDetails(details)
     }
 
     reportedAdjudication.outcome = Outcome(

@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -61,6 +62,7 @@ data class HearingOutcomeRequest(
 @RestController
 class HearingController(
   private val hearingService: HearingService,
+  private val hearingOutcomeService: HearingOutcomeService,
 ) : ReportedAdjudicationBaseController() {
 
   @PostMapping(value = ["/{adjudicationNumber}/hearing"])
@@ -126,7 +128,7 @@ class HearingController(
     @PathVariable(name = "hearingId") hearingId: Long,
     @RequestBody hearingOutcomeRequest: HearingOutcomeRequest
   ): ReportedAdjudicationResponse {
-    val reportedAdjudication = hearingService.createHearingOutcome(
+    val reportedAdjudication = hearingOutcomeService.createHearingOutcome(
       adjudicationNumber = adjudicationNumber,
       hearingId = hearingId,
       adjudicator = hearingOutcomeRequest.adjudicator,
@@ -148,7 +150,7 @@ class HearingController(
     @PathVariable(name = "hearingId") hearingId: Long,
     @RequestBody hearingOutcomeRequest: HearingOutcomeRequest
   ): ReportedAdjudicationResponse {
-    val reportedAdjudication = hearingService.updateHearingOutcome(
+    val reportedAdjudication = hearingOutcomeService.updateHearingOutcome(
       adjudicationNumber = adjudicationNumber,
       hearingId = hearingId,
       code = hearingOutcomeRequest.code,

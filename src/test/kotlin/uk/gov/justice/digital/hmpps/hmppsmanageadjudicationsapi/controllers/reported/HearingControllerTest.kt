@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -27,6 +28,9 @@ class HearingControllerTest : TestControllerBase() {
 
   @MockBean
   lateinit var hearingService: HearingService
+
+  @MockBean
+  lateinit var hearingOutcomeService: HearingOutcomeService
 
   @Nested
   inner class CreateHearing {
@@ -255,7 +259,7 @@ class HearingControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        hearingService.createHearingOutcome(
+        hearingOutcomeService.createHearingOutcome(
           ArgumentMatchers.anyLong(),
           ArgumentMatchers.anyLong(),
           any(),
@@ -292,7 +296,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to create a hearing outcome`() {
       createHearingOutcomeRequest(1, 1, HEARING_OUTCOME_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(hearingService).createHearingOutcome(1, 1, "test", HearingOutcomeCode.REFER_POLICE, null, null)
+      verify(hearingOutcomeService).createHearingOutcome(1, 1, "test", HearingOutcomeCode.REFER_POLICE, null, null)
     }
 
     private fun createHearingOutcomeRequest(
@@ -315,7 +319,7 @@ class HearingControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        hearingService.updateHearingOutcome(
+        hearingOutcomeService.updateHearingOutcome(
           ArgumentMatchers.anyLong(),
           ArgumentMatchers.anyLong(),
           any(),
@@ -352,7 +356,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to update a hearing outcome`() {
       updateHearingOutcomeRequest(1, 1, HEARING_OUTCOME_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingService).updateHearingOutcome(1, 1, HearingOutcomeCode.REFER_POLICE, "test", null, null, null)
+      verify(hearingOutcomeService).updateHearingOutcome(1, 1, HearingOutcomeCode.REFER_POLICE, "test", null, null, null)
     }
 
     private fun updateHearingOutcomeRequest(

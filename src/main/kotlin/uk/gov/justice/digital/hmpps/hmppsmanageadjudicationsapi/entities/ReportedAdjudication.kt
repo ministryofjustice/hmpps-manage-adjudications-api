@@ -106,6 +106,7 @@ enum class ReportedAdjudicationStatus {
     }
   },
   REFER_POLICE, // question: can the police refer it back?
+  REFER_INAD,
   NOT_PROCEED;
   open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
   fun canTransitionFrom(from: ReportedAdjudicationStatus): Boolean {
