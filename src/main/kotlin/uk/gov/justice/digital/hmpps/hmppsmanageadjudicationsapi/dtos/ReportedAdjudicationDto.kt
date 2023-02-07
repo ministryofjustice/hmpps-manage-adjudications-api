@@ -173,7 +173,7 @@ data class HearingSummaryDto(
 data class OutcomeDto(
   @Schema(description = "The id of the outcome")
   val id: Long? = null,
-  @Schema(description = "outcome come")
+  @Schema(description = "outcome code")
   val code: OutcomeCode,
   @Schema(description = "details")
   val details: String? = null,
