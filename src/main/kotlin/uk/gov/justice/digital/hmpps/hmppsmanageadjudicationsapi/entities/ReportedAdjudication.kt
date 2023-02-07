@@ -127,5 +127,11 @@ enum class ReportedAdjudicationStatus {
   companion object {
     fun issuableStatuses() = listOf(SCHEDULED, UNSCHEDULED)
     fun issuableStatusesForPrint() = listOf(SCHEDULED)
+
+    fun ReportedAdjudicationStatus.validateTransition(vararg next: ReportedAdjudicationStatus) {
+      next.toList().forEach {
+        if (this != it && !this.canTransitionTo(it)) throw ValidationException("Invalid status transition ${this.name} - ${it.name}")
+      }
+    }
   }
 }

@@ -12,8 +12,8 @@ data class Outcome(
   override val id: Long? = null,
   @field:Length(max = 4000)
   var details: String? = null,
-  @field:Length(max = 32)
-  var reason: String? = null,
+  @Enumerated(EnumType.STRING)
+  var reason: NotProceedReason? = null,
   @Enumerated(EnumType.STRING)
   var code: OutcomeCode,
 ) : BaseEntity()
@@ -21,4 +21,8 @@ data class Outcome(
 enum class OutcomeCode {
   REFER_POLICE,
   NOT_PROCEED,
+}
+
+enum class NotProceedReason {
+  RELEASED, WITNESS_RELEASED, WITNESS_NOT_ATTEND, UNFIT, FLAWED, EXPIRED_NOTICE, EXPIRED_HEARING, NOT_FAIR, PROSECUTED, OTHER
 }

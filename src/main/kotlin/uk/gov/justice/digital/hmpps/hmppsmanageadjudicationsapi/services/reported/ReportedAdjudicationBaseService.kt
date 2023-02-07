@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRol
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedDamageDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedEvidenceDto
@@ -14,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedWit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
@@ -64,6 +66,7 @@ open class ReportedDtoService(
     dateTimeOfIssue = dateTimeOfIssue,
     gender = gender,
     dateTimeOfFirstHearing = dateTimeOfFirstHearing,
+    outcome = outcome?.toOutcomeDto()
   )
 
   private fun toReportedOffence(
@@ -119,11 +122,11 @@ open class ReportedDtoService(
         locationId = it.locationId,
         dateTimeOfHearing = it.dateTimeOfHearing,
         oicHearingType = it.oicHearingType,
-        outcome = it.hearingOutcome?.toHearingOutcome()
+        outcome = it.hearingOutcome?.toHearingOutcomeDto()
       )
     }.sortedBy { it.dateTimeOfHearing }.toList()
 
-  private fun HearingOutcome.toHearingOutcome(): HearingOutcomeDto =
+  private fun HearingOutcome.toHearingOutcomeDto(): HearingOutcomeDto =
     HearingOutcomeDto(
       id = this.id,
       code = this.code,
@@ -132,6 +135,14 @@ open class ReportedDtoService(
       adjudicator = this.adjudicator,
       finding = this.finding,
       plea = this.plea,
+    )
+
+  private fun Outcome.toOutcomeDto(): OutcomeDto =
+    OutcomeDto(
+      id = this.id,
+      code = this.code,
+      details = this.details,
+      reason = this.reason,
     )
 }
 
