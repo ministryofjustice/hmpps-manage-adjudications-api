@@ -97,15 +97,16 @@ enum class ReportedAdjudicationStatus {
   },
   UNSCHEDULED {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(SCHEDULED, REFER_POLICE, NOT_PROCEED)
+      return listOf(SCHEDULED, REFER_POLICE, REFER_INAD, NOT_PROCEED)
     }
   },
   SCHEDULED {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(UNSCHEDULED, REFER_POLICE)
+      return listOf(UNSCHEDULED, REFER_POLICE, REFER_INAD)
     }
   },
   REFER_POLICE, // question: can the police refer it back?
+  REFER_INAD,
   NOT_PROCEED;
   open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
   fun canTransitionFrom(from: ReportedAdjudicationStatus): Boolean {

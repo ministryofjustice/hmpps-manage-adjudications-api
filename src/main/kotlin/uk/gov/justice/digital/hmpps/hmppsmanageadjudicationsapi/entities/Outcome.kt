@@ -18,9 +18,10 @@ data class Outcome(
   var code: OutcomeCode,
 ) : BaseEntity()
 
-enum class OutcomeCode {
-  REFER_POLICE,
-  NOT_PROCEED,
+enum class OutcomeCode(val status: ReportedAdjudicationStatus) {
+  REFER_POLICE(ReportedAdjudicationStatus.REFER_POLICE),
+  REFER_INAD(ReportedAdjudicationStatus.REFER_INAD),
+  NOT_PROCEED(ReportedAdjudicationStatus.NOT_PROCEED),
 }
 
 enum class NotProceedReason {

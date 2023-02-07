@@ -20,7 +20,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -61,6 +63,8 @@ data class HearingOutcomeRequest(
 @RestController
 class HearingController(
   private val hearingService: HearingService,
+  private val hearingOutcomeService: HearingOutcomeService,
+  private val referralService: ReferralService,
 ) : ReportedAdjudicationBaseController() {
 
   @PostMapping(value = ["/{adjudicationNumber}/hearing"])
@@ -126,16 +130,26 @@ class HearingController(
     @PathVariable(name = "hearingId") hearingId: Long,
     @RequestBody hearingOutcomeRequest: HearingOutcomeRequest
   ): ReportedAdjudicationResponse {
-    val reportedAdjudication = hearingService.createHearingOutcome(
-      adjudicationNumber = adjudicationNumber,
-      hearingId = hearingId,
-      adjudicator = hearingOutcomeRequest.adjudicator,
-      code = hearingOutcomeRequest.code,
-      reason = hearingOutcomeRequest.reason,
-      details = hearingOutcomeRequest.details,
-      finding = hearingOutcomeRequest.finding,
-      plea = hearingOutcomeRequest.plea,
-    )
+    val reportedAdjudication =
+      when (hearingOutcomeRequest.code.outcomeCode) {
+        null -> hearingOutcomeService.createHearingOutcome(
+          adjudicationNumber = adjudicationNumber,
+          hearingId = hearingId,
+          adjudicator = hearingOutcomeRequest.adjudicator,
+          code = hearingOutcomeRequest.code,
+          reason = hearingOutcomeRequest.reason,
+          details = hearingOutcomeRequest.details,
+          finding = hearingOutcomeRequest.finding,
+          plea = hearingOutcomeRequest.plea,
+        )
+        else -> referralService.createReferral(
+          adjudicationNumber = adjudicationNumber,
+          hearingId = hearingId,
+          code = hearingOutcomeRequest.code,
+          adjudicator = hearingOutcomeRequest.adjudicator,
+          details = hearingOutcomeRequest.details!!
+        )
+      }
 
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
@@ -148,16 +162,26 @@ class HearingController(
     @PathVariable(name = "hearingId") hearingId: Long,
     @RequestBody hearingOutcomeRequest: HearingOutcomeRequest
   ): ReportedAdjudicationResponse {
-    val reportedAdjudication = hearingService.updateHearingOutcome(
-      adjudicationNumber = adjudicationNumber,
-      hearingId = hearingId,
-      code = hearingOutcomeRequest.code,
-      adjudicator = hearingOutcomeRequest.adjudicator,
-      reason = hearingOutcomeRequest.reason,
-      details = hearingOutcomeRequest.details,
-      finding = hearingOutcomeRequest.finding,
-      plea = hearingOutcomeRequest.plea,
-    )
+    val reportedAdjudication =
+      when (hearingOutcomeRequest.code.outcomeCode) {
+        null -> hearingOutcomeService.updateHearingOutcome(
+          adjudicationNumber = adjudicationNumber,
+          hearingId = hearingId,
+          code = hearingOutcomeRequest.code,
+          adjudicator = hearingOutcomeRequest.adjudicator,
+          reason = hearingOutcomeRequest.reason,
+          details = hearingOutcomeRequest.details,
+          finding = hearingOutcomeRequest.finding,
+          plea = hearingOutcomeRequest.plea,
+        )
+        else -> referralService.updateReferral(
+          adjudicationNumber = adjudicationNumber,
+          hearingId = hearingId,
+          code = hearingOutcomeRequest.code,
+          adjudicator = hearingOutcomeRequest.adjudicator,
+          details = hearingOutcomeRequest.details!!
+        )
+      }
 
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
