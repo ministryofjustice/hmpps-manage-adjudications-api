@@ -313,7 +313,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to create a hearing outcome`(code: HearingOutcomeCode) {
       createHearingOutcomeRequest(1, 1, hearingOutcomeRequest(code))
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      if (code.referral) verify(referralService).createReferral(
+      if (code.outcomeCode != null) verify(referralService).createReferral(
         adjudicationNumber = 1,
         hearingId = 1,
         code = code,
@@ -363,7 +363,7 @@ class HearingControllerTest : TestControllerBase() {
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
 
       whenever(
-        referralService.createReferral(
+        referralService.updateReferral(
           ArgumentMatchers.anyLong(),
           ArgumentMatchers.anyLong(),
           any(),
@@ -398,7 +398,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to update a hearing outcome`(code: HearingOutcomeCode) {
       updateHearingOutcomeRequest(1, 1, hearingOutcomeRequest(code))
         .andExpect(MockMvcResultMatchers.status().isOk)
-      if (code.referral) verify(referralService).updateReferral(
+      if (code.outcomeCode != null) verify(referralService).updateReferral(
         adjudicationNumber = 1,
         hearingId = 1,
         code = code,

@@ -3,24 +3,14 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import javax.transaction.Transactional
 
 @Transactional
 @Service
 class ReferralService(
-  reportedAdjudicationRepository: ReportedAdjudicationRepository,
-  offenceCodeLookupService: OffenceCodeLookupService,
-  authenticationFacade: AuthenticationFacade,
-) : ReportedAdjudicationBaseService(
-  reportedAdjudicationRepository,
-  offenceCodeLookupService,
-  authenticationFacade,
+  private val hearingOutcomeService: HearingOutcomeService,
+  private val outcomeService: OutcomeService,
 ) {
-  private val outcomeService = OutcomeService(reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
-  private val hearingOutcomeService = HearingOutcomeService(reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
 
   fun createReferral(
     adjudicationNumber: Long,
@@ -29,7 +19,18 @@ class ReferralService(
     adjudicator: String,
     details: String,
   ): ReportedAdjudicationDto {
-    TODO("implement me")
+    hearingOutcomeService.createHearingOutcome(
+      adjudicationNumber = adjudicationNumber,
+      hearingId = hearingId,
+      code = code,
+      adjudicator = adjudicator,
+      details = details
+    )
+    return outcomeService.createOutcome(
+      adjudicationNumber = adjudicationNumber,
+      code = code.outcomeCode!!,
+      details = details
+    )
   }
 
   fun updateReferral(
@@ -39,6 +40,13 @@ class ReferralService(
     adjudicator: String,
     details: String,
   ): ReportedAdjudicationDto {
-    TODO("implement me")
+    return hearingOutcomeService.updateHearingOutcome(
+      adjudicationNumber = adjudicationNumber,
+      hearingId = hearingId,
+      code = code,
+      adjudicator = adjudicator,
+      details = details
+    )
+    // TODO not implemented update outcome yet.  later tickets, plus can remove a referral too.
   }
 }

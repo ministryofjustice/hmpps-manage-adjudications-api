@@ -54,7 +54,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REJECTED", "AWAITING_REVIEW", "REFER_POLICE", "NOT_PROCEED")
+    @CsvSource("REJECTED", "AWAITING_REVIEW", "NOT_PROCEED", "REFER_INAD", "REFER_POLICE")
     fun `create outcome throws exception if invalid state `(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
@@ -62,8 +62,10 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         }
       )
 
+      val code = if (status == ReportedAdjudicationStatus.REFER_POLICE) OutcomeCode.REFER_INAD else OutcomeCode.REFER_POLICE
+
       Assertions.assertThatThrownBy {
-        outcomeService.createOutcome(1, OutcomeCode.REFER_POLICE)
+        outcomeService.createOutcome(adjudicationNumber = 1, code = code, details = "details")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Invalid status transition")
     }
@@ -79,7 +81,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REFER_POLICE", "NOT_PROCEED")
+    @CsvSource("REFER_POLICE", "NOT_PROCEED", "REFER_INAD")
     fun `validation exception if missing details`(code: OutcomeCode) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
 
@@ -90,7 +92,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REFER_POLICE", "NOT_PROCEED")
+    @CsvSource("REFER_POLICE", "NOT_PROCEED", "REFER_INAD")
     fun `create outcome`(code: OutcomeCode) {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
