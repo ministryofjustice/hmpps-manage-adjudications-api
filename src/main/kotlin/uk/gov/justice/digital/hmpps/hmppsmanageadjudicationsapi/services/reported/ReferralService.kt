@@ -2,10 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -28,14 +25,20 @@ class ReferralService(
   fun createReferral(
     adjudicationNumber: Long,
     hearingId: Long,
-    adjudicator: String,
     code: HearingOutcomeCode,
-    reason: HearingOutcomeAdjournReason? = null,
-    details: String? = null,
-    finding: HearingOutcomeFinding? = null,
-    plea: HearingOutcomePlea? = null
+    adjudicator: String,
+    details: String,
   ): ReportedAdjudicationDto {
     TODO("implement me")
   }
 
+  fun updateReferral(
+    adjudicationNumber: Long,
+    hearingId: Long,
+    code: HearingOutcomeCode,
+    adjudicator: String,
+    details: String,
+  ): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
 }

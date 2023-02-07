@@ -24,8 +24,8 @@ data class HearingOutcome(
   var plea: HearingOutcomePlea? = null,
 ) : BaseEntity()
 
-enum class HearingOutcomeCode {
-  COMPLETE, REFER_POLICE, REFER_INAD, ADJOURN,
+enum class HearingOutcomeCode(val referral: Boolean) {
+  COMPLETE(false), REFER_POLICE(true), REFER_INAD(true), ADJOURN(false),
 }
 
 enum class HearingOutcomeAdjournReason {

@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
@@ -20,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -31,6 +34,9 @@ class HearingControllerTest : TestControllerBase() {
 
   @MockBean
   lateinit var hearingOutcomeService: HearingOutcomeService
+
+  @MockBean
+  lateinit var referralService: ReferralService
 
   @Nested
   inner class CreateHearing {
@@ -270,6 +276,16 @@ class HearingControllerTest : TestControllerBase() {
           anyOrNull(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
+
+      whenever(
+        referralService.createReferral(
+          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyLong(),
+          any(),
+          any(),
+          any(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
@@ -277,7 +293,7 @@ class HearingControllerTest : TestControllerBase() {
       createHearingOutcomeRequest(
         1,
         1,
-        HEARING_OUTCOME_REQUEST
+        hearingOutcomeRequest()
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -287,16 +303,31 @@ class HearingControllerTest : TestControllerBase() {
       createHearingOutcomeRequest(
         1,
         1,
-        HEARING_OUTCOME_REQUEST
+        hearingOutcomeRequest()
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @Test
+    @ParameterizedTest
+    @CsvSource("REFER_POLICE", "REFER_INAD", "COMPLETE", "ADJOURN")
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to create a hearing outcome`() {
-      createHearingOutcomeRequest(1, 1, HEARING_OUTCOME_REQUEST)
+    fun `makes a call to create a hearing outcome`(code: HearingOutcomeCode) {
+      createHearingOutcomeRequest(1, 1, hearingOutcomeRequest(code))
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(hearingOutcomeService).createHearingOutcome(1, 1, "test", HearingOutcomeCode.REFER_POLICE, null, null)
+      if (code.referral) verify(referralService).createReferral(
+        adjudicationNumber = 1,
+        hearingId = 1,
+        code = code,
+        adjudicator = "test",
+        details = "details"
+      )
+      else verify(hearingOutcomeService).createHearingOutcome(
+        adjudicationNumber = 1,
+        hearingId = 1,
+        code = code,
+        adjudicator = "test",
+        reason = null,
+        details = "details"
+      )
     }
 
     private fun createHearingOutcomeRequest(
@@ -330,6 +361,16 @@ class HearingControllerTest : TestControllerBase() {
           anyOrNull(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
+
+      whenever(
+        referralService.createReferral(
+          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyLong(),
+          any(),
+          any(),
+          any(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
@@ -337,7 +378,7 @@ class HearingControllerTest : TestControllerBase() {
       updateHearingOutcomeRequest(
         1,
         1,
-        HEARING_OUTCOME_REQUEST
+        hearingOutcomeRequest()
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -347,16 +388,30 @@ class HearingControllerTest : TestControllerBase() {
       updateHearingOutcomeRequest(
         1,
         1,
-        HEARING_OUTCOME_REQUEST
+        hearingOutcomeRequest()
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @Test
+    @ParameterizedTest
+    @CsvSource("REFER_POLICE", "REFER_INAD", "COMPLETE", "ADJOURN")
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to update a hearing outcome`() {
-      updateHearingOutcomeRequest(1, 1, HEARING_OUTCOME_REQUEST)
+    fun `makes a call to update a hearing outcome`(code: HearingOutcomeCode) {
+      updateHearingOutcomeRequest(1, 1, hearingOutcomeRequest(code))
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingOutcomeService).updateHearingOutcome(1, 1, HearingOutcomeCode.REFER_POLICE, "test", null, null, null)
+      if (code.referral) verify(referralService).updateReferral(
+        adjudicationNumber = 1,
+        hearingId = 1,
+        code = code,
+        adjudicator = "test",
+        details = "details"
+      )
+      else verify(hearingOutcomeService).updateHearingOutcome(
+        adjudicationNumber = 1,
+        hearingId = 1,
+        code = code,
+        adjudicator = "test",
+        details = "details"
+      )
     }
 
     private fun updateHearingOutcomeRequest(
@@ -375,7 +430,7 @@ class HearingControllerTest : TestControllerBase() {
   }
   companion object {
     private val HEARING_REQUEST = HearingRequest(locationId = 1L, dateTimeOfHearing = LocalDateTime.now(), oicHearingType = OicHearingType.GOV)
-    private val HEARING_OUTCOME_REQUEST = HearingOutcomeRequest(adjudicator = "test", code = HearingOutcomeCode.REFER_POLICE)
+    private fun hearingOutcomeRequest(code: HearingOutcomeCode? = HearingOutcomeCode.REFER_POLICE) = HearingOutcomeRequest(adjudicator = "test", code = code!!, details = "details")
 
     private val ALL_HEARINGS_DTO =
       listOf(

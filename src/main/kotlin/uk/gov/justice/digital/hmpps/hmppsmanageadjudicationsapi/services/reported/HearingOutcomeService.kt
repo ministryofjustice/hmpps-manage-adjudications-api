@@ -30,8 +30,8 @@ class HearingOutcomeService(
   fun createHearingOutcome(
     adjudicationNumber: Long,
     hearingId: Long,
-    adjudicator: String,
     code: HearingOutcomeCode,
+    adjudicator: String,
     reason: HearingOutcomeAdjournReason? = null,
     details: String? = null,
     finding: HearingOutcomeFinding? = null,

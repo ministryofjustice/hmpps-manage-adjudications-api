@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDateTime
@@ -240,10 +241,9 @@ class HearingsIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "adjudicator" to "test",
-          "code" to HearingOutcomeCode.REFER_POLICE.name,
+          "code" to HearingOutcomeCode.ADJOURN.name,
           "reason" to HearingOutcomeAdjournReason.LEGAL_ADVICE.name,
           "details" to "details",
-          "finding" to HearingOutcomeFinding.DISMISSED.name,
           "plea" to HearingOutcomePlea.UNFIT.name,
         )
       )
@@ -251,6 +251,42 @@ class HearingsIntTest : IntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
+      .isEqualTo("test")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason")
+      .isEqualTo(HearingOutcomeAdjournReason.LEGAL_ADVICE.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.details")
+      .isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.finding")
+      .isEqualTo(HearingOutcomeFinding.DISMISSED.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea")
+      .isEqualTo(HearingOutcomePlea.UNFIT.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.ADJOURN.name)
+  }
+
+  @Test
+  fun `create hearing outcome for referral`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    val reportedAdjudication = initDataForHearings().createHearing()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/${reportedAdjudication.reportedAdjudication.hearings.first().id}/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "code" to HearingOutcomeCode.REFER_POLICE.name,
+          "details" to "details",
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.outcome.status").isEqualTo(ReportedAdjudicationStatus.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.outcome").isNotEmpty
+      .jsonPath("$.reportedAdjudication.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.outcome.details").isEqualTo("details")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
       .isEqualTo("test")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason")
@@ -296,6 +332,82 @@ class HearingsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea")
       .isEqualTo(HearingOutcomePlea.ABSTAIN.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.COMPLETE.name)
+  }
+
+  @Test
+  fun `update hearing outcome to a referral`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    var reportedAdjudication = initDataForHearings().createHearing()
+    reportedAdjudication = integrationTestData().createHearingOutcome(
+      reportedAdjudication.reportedAdjudication.adjudicationNumber, reportedAdjudication.reportedAdjudication.hearings.first().id!!
+    )
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/${reportedAdjudication.reportedAdjudication.hearings.first().id}/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "updated",
+          "code" to HearingOutcomeCode.REFER_INAD,
+          "details" to "details updated"
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.outcome.status").isEqualTo(ReportedAdjudicationStatus.REFER_INAD.name)
+      .jsonPath("$.reportedAdjudication.outcome").isNotEmpty
+      .jsonPath("$.reportedAdjudication.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcome.details").isEqualTo("details updated")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
+      .isEqualTo("updated")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason").doesNotExist()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.details").isEqualTo("details updated")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.REFER_INAD.name)
+  }
+
+  @Test
+  fun `referral transaction is rolled back when hearing outcome succeeds and outcome creation fails`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    val reportedAdjudication = initDataForHearings().createHearing()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "status" to ReportedAdjudicationStatus.REFER_POLICE,
+          "statusReason" to "status reason",
+          "statusDetails" to "status details"
+        )
+      )
+      .exchange()
+      .expectStatus().is2xxSuccessful
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/${reportedAdjudication.reportedAdjudication.hearings.first().id}/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "code" to HearingOutcomeCode.REFER_POLICE.name,
+          "reason" to HearingOutcomeAdjournReason.LEGAL_ADVICE.name,
+          "details" to "details",
+        )
+      )
+      .exchange()
+      .expectStatus().isBadRequest
+
+    webTestClient.get()
+      .uri("/reported-adjudications/1524242")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome").doesNotExist()
   }
 
   @Test

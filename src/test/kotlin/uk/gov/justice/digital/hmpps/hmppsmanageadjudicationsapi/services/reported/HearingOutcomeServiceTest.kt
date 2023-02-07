@@ -70,7 +70,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = hearingOutcomeService.createHearingOutcome(
-        1, 1, "test", HearingOutcomeCode.REFER_POLICE, HearingOutcomeAdjournReason.LEGAL_ADVICE, "details",
+        1, 1, HearingOutcomeCode.REFER_POLICE, "test", HearingOutcomeAdjournReason.LEGAL_ADVICE, "details",
         HearingOutcomeFinding.NOT_PROCEED_WITH, HearingOutcomePlea.UNFIT
       )
 
@@ -98,7 +98,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.createHearingOutcome(1, 1, "testing", HearingOutcomeCode.REFER_POLICE)
+        hearingOutcomeService.createHearingOutcome(1, 1, HearingOutcomeCode.REFER_POLICE, "testing",)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Hearing not found for 1")
     }
