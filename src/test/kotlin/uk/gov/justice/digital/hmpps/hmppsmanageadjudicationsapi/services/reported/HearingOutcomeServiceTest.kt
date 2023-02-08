@@ -387,4 +387,13 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
   }
+
+  @Nested
+  inner class DeleteHearingOutcome {
+
+    @Test
+    fun `delete hearing outcome`() {
+      TODO("implement me")
+    }
+  }
 }

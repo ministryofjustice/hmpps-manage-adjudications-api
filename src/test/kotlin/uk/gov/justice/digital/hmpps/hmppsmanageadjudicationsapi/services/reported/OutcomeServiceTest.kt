@@ -113,4 +113,13 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
   }
+
+  @Nested
+  inner class DeleteOutcome {
+
+    @Test
+    fun `delete outcome `() {
+      TODO("implement me")
+    }
+  }
 }

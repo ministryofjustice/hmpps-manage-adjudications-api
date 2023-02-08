@@ -47,6 +47,10 @@ class OutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
+  fun deleteOutcome(adjudicationNumber: Long): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
+
   companion object {
     private fun validateDetails(details: String?) = details ?: throw ValidationException("details are required")
   }

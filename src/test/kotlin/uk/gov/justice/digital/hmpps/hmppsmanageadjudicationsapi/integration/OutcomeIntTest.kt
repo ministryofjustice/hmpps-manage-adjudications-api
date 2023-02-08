@@ -37,6 +37,16 @@ class OutcomeIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
   }
 
+  @Test
+  fun `remove referral with hearing`() {
+    TODO("implement me")
+  }
+
+  @Test
+  fun `remove referral without hearing`() {
+    TODO("implement me")
+  }
+
   private fun initDataForOutcome(): IntegrationTestScenario {
     prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
 

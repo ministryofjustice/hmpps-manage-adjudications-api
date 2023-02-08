@@ -17,12 +17,16 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 
 @WebMvcTest(value = [OutcomeController::class])
 class OutcomeControllerTest : TestControllerBase() {
 
   @MockBean
   lateinit var outcomeService: OutcomeService
+
+  @MockBean
+  lateinit var referralService: ReferralService
 
   @Nested
   inner class CreateOutcome {
@@ -90,6 +94,52 @@ class OutcomeControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class RemoveReferral {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        referralService.removeReferral(
+          ArgumentMatchers.anyLong(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      removeReferralRequest(1,).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      removeReferralRequest(1,).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      removeReferralRequest(1,).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to reemove a referral`() {
+      removeReferralRequest(1)
+        .andExpect(MockMvcResultMatchers.status().isCreated)
+      verify(referralService).removeReferral(1,)
+    }
+
+    private fun removeReferralRequest(
+      id: Long,
+    ): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.delete("/reported-adjudications/$id/remove-referral")
+            .header("Content-Type", "application/json")
+        )
+    }
+  }
   companion object {
     private val OUTCOME_REQUEST = OutcomeRequest(code = OutcomeCode.REFER_POLICE)
   }

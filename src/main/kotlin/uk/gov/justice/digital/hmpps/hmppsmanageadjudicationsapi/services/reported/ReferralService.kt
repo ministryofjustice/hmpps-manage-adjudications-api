@@ -47,4 +47,8 @@ class ReferralService(
     )
     // TODO not implemented update outcome yet.  later tickets, plus can remove a referral too.
   }
+
+  fun removeReferral(adjudicationNumber: Long): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
 }

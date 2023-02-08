@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -52,6 +53,26 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
       )
 
       // TODO not implemented yet verify(outcomeService, atLeastOnce()).createOutcome(adjudicationNumber = 1, code = OutcomeCode.REFER_POLICE, details = "details 2")
+    }
+  }
+
+  @Nested
+  inner class RemoveReferral {
+
+    @Test
+    fun `remove referral should only remove outcome`() {
+      referralService.removeReferral(1)
+
+      verify(outcomeService, atLeastOnce()).deleteOutcome(1)
+      verify(hearingOutcomeService, never()).deleteHearingOutcome(1)
+    }
+
+    @Test
+    fun `remove referral should remove outcome and hearing outcome`() {
+      referralService.removeReferral(1)
+
+      verify(outcomeService, atLeastOnce()).deleteOutcome(1)
+      verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(1)
     }
   }
 }

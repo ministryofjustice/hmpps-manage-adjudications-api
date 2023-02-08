@@ -95,6 +95,10 @@ class HearingOutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
+  fun deleteHearingOutcome(adjudicationNumber: Long): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
+
   companion object {
     fun HearingOutcome.validate(): HearingOutcome {
       when (this.code) {
