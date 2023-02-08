@@ -294,6 +294,8 @@ class HearingsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason").doesNotExist()
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea").doesNotExist()
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.finding").doesNotExist()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.details")
+      .isEqualTo("details")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.REFER_POLICE.name)
   }
 
