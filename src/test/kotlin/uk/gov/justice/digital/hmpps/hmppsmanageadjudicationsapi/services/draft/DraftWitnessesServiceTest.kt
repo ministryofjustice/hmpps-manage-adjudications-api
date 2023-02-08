@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft
 
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Java6Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
@@ -62,12 +61,12 @@ class DraftWitnessesServiceTest : DraftAdjudicationTestBase() {
     val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
     verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
-    Java6Assertions.assertThat(argumentCaptor.value.witnesses.size).isEqualTo(1)
-    Java6Assertions.assertThat(argumentCaptor.value.witnesses.first().code).isEqualTo(WitnessCode.OFFICER)
-    Java6Assertions.assertThat(argumentCaptor.value.witnesses.first().firstName).isEqualTo("prison")
-    Java6Assertions.assertThat(argumentCaptor.value.witnesses.first().lastName).isEqualTo("officer")
-    Java6Assertions.assertThat(argumentCaptor.value.witnesses.first().reporter).isEqualTo("Fred")
-    Java6Assertions.assertThat(argumentCaptor.value.witnessesSaved).isEqualTo(true)
+    assertThat(argumentCaptor.value.witnesses.size).isEqualTo(1)
+    assertThat(argumentCaptor.value.witnesses.first().code).isEqualTo(WitnessCode.OFFICER)
+    assertThat(argumentCaptor.value.witnesses.first().firstName).isEqualTo("prison")
+    assertThat(argumentCaptor.value.witnesses.first().lastName).isEqualTo("officer")
+    assertThat(argumentCaptor.value.witnesses.first().reporter).isEqualTo("Fred")
+    assertThat(argumentCaptor.value.witnessesSaved).isEqualTo(true)
 
     assertThat(response).isNotNull
   }

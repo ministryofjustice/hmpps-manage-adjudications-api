@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft
 
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Java6Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
@@ -62,11 +61,11 @@ class EvidenceServiceTest : DraftAdjudicationTestBase() {
     val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
     verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
-    Java6Assertions.assertThat(argumentCaptor.value.evidence.size).isEqualTo(1)
-    Java6Assertions.assertThat(argumentCaptor.value.evidence.first().code).isEqualTo(EvidenceCode.PHOTO)
-    Java6Assertions.assertThat(argumentCaptor.value.evidence.first().details).isEqualTo("details")
-    Java6Assertions.assertThat(argumentCaptor.value.evidence.first().reporter).isEqualTo("Fred")
-    Java6Assertions.assertThat(argumentCaptor.value.evidenceSaved).isEqualTo(true)
+    assertThat(argumentCaptor.value.evidence.size).isEqualTo(1)
+    assertThat(argumentCaptor.value.evidence.first().code).isEqualTo(EvidenceCode.PHOTO)
+    assertThat(argumentCaptor.value.evidence.first().details).isEqualTo("details")
+    assertThat(argumentCaptor.value.evidence.first().reporter).isEqualTo("Fred")
+    assertThat(argumentCaptor.value.evidenceSaved).isEqualTo(true)
 
     assertThat(response).isNotNull
   }
