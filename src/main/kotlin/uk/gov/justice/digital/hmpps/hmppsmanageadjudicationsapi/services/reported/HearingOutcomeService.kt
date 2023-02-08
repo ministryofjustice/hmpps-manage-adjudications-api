@@ -83,7 +83,7 @@ class HearingOutcomeService(
         outcomeToAmend.finding = null
       }
       else -> {
-        outcomeToAmend.details = details
+        outcomeToAmend.details = null
         outcomeToAmend.reason = null
         outcomeToAmend.plea = null
         outcomeToAmend.finding = null
@@ -107,9 +107,7 @@ class HearingOutcomeService(
           validateField(this.reason)
           validateField(this.plea)
         }
-        else -> {
-          validateField(this.details)
-        }
+        else -> {}
       }
       return this
     }
