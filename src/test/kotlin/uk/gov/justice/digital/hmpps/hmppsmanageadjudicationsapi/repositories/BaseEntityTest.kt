@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories
 
-import org.assertj.core.api.Java6Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
@@ -37,7 +37,7 @@ class BaseEntityTest {
 
     assertThat(updatedEntity.incidentRole?.createdByUserId).isEqualTo("ITAG_USER")
     assertThat(updatedEntity.incidentRole?.modifiedByUserId).isEqualTo("ITAG_USER")
-    assertThat(updatedEntity.incidentRole?.modifiedDateTime).isGreaterThan(updatedEntity.incidentRole?.createDateTime)
+    assertThat(updatedEntity.incidentRole?.modifiedDateTime).isAfter(updatedEntity.incidentRole?.createDateTime)
   }
 
   private fun newDraft(): DraftAdjudication {

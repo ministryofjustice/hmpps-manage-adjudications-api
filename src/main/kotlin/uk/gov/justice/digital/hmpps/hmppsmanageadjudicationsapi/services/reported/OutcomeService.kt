@@ -31,12 +31,11 @@ class OutcomeService(
     }
 
     when (code) {
-      OutcomeCode.REFER_POLICE -> validateDetails(details)
+      OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD -> validateDetails(details)
       OutcomeCode.NOT_PROCEED -> {
         validateDetails(details)
         reason ?: throw ValidationException("a reason is required")
       }
-      OutcomeCode.REFER_INAD -> validateDetails(details)
     }
 
     reportedAdjudication.outcome = Outcome(
