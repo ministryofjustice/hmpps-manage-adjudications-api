@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -12,7 +13,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -46,11 +46,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
           it.createDateTime = LocalDateTime.now()
         }
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-        reportedAdjudication.also {
-          it.outcome = Outcome(code = OutcomeCode.REFER_POLICE)
-        }
-      )
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
     }
 
     @ParameterizedTest
@@ -105,12 +101,25 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.outcome).isNotNull
-      assertThat(argumentCaptor.value.outcome!!.code).isEqualTo(code)
-      assertThat(argumentCaptor.value.outcome!!.details).isEqualTo("details")
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(code)
+      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("details")
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.valueOf(code.name))
-      assertThat(argumentCaptor.value.outcome!!.reason).isEqualTo(NotProceedReason.RELEASED)
+      assertThat(argumentCaptor.value.outcomes.first().reason).isEqualTo(NotProceedReason.RELEASED)
       assertThat(response).isNotNull
+    }
+  }
+
+  @Nested
+  @Disabled
+  inner class DeleteOutcome {
+
+    fun `is referral`() {
+      TODO("implement me")
+    }
+    @Test
+    fun `delete outcome `() {
+      TODO("implement me")
     }
   }
 }

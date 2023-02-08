@@ -436,6 +436,25 @@ class HearingsIntTest : IntegrationTestBase() {
       .isEqualTo(reportedAdjudication.reportedAdjudication.hearings.first().oicHearingType.name)
   }
 
+  @Test
+  @Disabled
+  fun `remove referral with hearing`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    val reportedAdjudication = initDataForHearings().createHearing()
+    integrationTestData().createHearingOutcome(
+      reportedAdjudication.reportedAdjudication.adjudicationNumber, reportedAdjudication.reportedAdjudication.hearings.first().id!!, HearingOutcomeCode.REFER_POLICE
+    )
+
+    webTestClient.delete()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/remove-referral")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome").doesNotExist()
+  }
+
   private fun initDataForHearings(): IntegrationTestScenario {
     prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
 

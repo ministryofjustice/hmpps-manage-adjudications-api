@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -126,7 +127,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REFER_POLICE", "REFER_INAD", "ADJOURN")
+    @CsvSource("ADJOURN")
     fun `validation details for bad refer request`(code: HearingOutcomeCode) {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.createHearingOutcome(
@@ -218,15 +219,14 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         hearingId = 1,
         code = code,
         adjudicator = "updated test",
-        details = "updated details",
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("updated test")
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("updated details")
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(code)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isNull()
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isNull()
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.finding).isNull()
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isNull()
@@ -341,7 +341,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REFER_POLICE", "REFER_INAD", "ADJOURN")
+    @CsvSource("ADJOURN")
     fun `validation of details for bad request`(code: HearingOutcomeCode) {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.updateHearingOutcome(
@@ -379,13 +379,23 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("updated test")
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo(request.details)
+      request.code.outcomeCode ?: assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo(request.details)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(request.code)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isEqualTo(request.reason)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.finding).isEqualTo(request.finding)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(request.plea)
 
       assertThat(response).isNotNull
+    }
+  }
+
+  @Disabled
+  @Nested
+  inner class DeleteHearingOutcome {
+
+    @Test
+    fun `delete hearing outcome`() {
+      TODO("implement me")
     }
   }
 }

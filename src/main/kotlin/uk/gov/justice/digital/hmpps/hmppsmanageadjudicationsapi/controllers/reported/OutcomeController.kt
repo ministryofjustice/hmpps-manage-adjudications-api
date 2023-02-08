@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 
 @Schema(description = "Request to add an outcome")
 data class OutcomeRequest(
@@ -26,7 +28,8 @@ data class OutcomeRequest(
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
 class OutcomeController(
-  private val outcomeService: OutcomeService
+  private val outcomeService: OutcomeService,
+  private val referralService: ReferralService,
 ) : ReportedAdjudicationBaseController() {
 
   @Operation(summary = "create an outcome")
@@ -41,6 +44,19 @@ class OutcomeController(
       code = outcomeRequest.code,
       details = outcomeRequest.details,
       reason = outcomeRequest.reason,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(summary = "remove a referral")
+  @DeleteMapping(value = ["/{adjudicationNumber}/remove-referral"])
+  @ResponseStatus(HttpStatus.CREATED)
+  fun removeReferral(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = referralService.removeReferral(
+      adjudicationNumber = adjudicationNumber
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)

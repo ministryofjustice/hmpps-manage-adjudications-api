@@ -82,7 +82,8 @@ class EntityBuilder {
           oicHearingId = 3L,
           oicHearingType = OicHearingType.GOV,
         )
-      )
+      ),
+      outcomes = mutableListOf(),
     )
   }
 }
