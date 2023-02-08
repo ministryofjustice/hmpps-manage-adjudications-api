@@ -1,13 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import org.assertj.core.api.Assertions
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import javax.validation.ValidationException
@@ -52,35 +50,37 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
   }
 
   @Test
-  @Disabled
   fun `remove referral should only remove outcome`() {
-    whenever(outcomeService.isReferral(1)).thenReturn(true)
+    referralService.removeReferral(1,)
 
-    referralService.removeReferral(1)
-
-    verify(outcomeService, atLeastOnce()).deleteOutcome(1)
+    verify(outcomeService, atLeastOnce()).deleteOutcome(1, 1)
     verify(hearingOutcomeService, never()).deleteHearingOutcome(1, 1)
   }
 
   @Test
-  @Disabled
   fun `remove referral should remove outcome and hearing outcome`() {
-    whenever(outcomeService.isReferral(1)).thenReturn(true)
+    referralService.removeReferral(1,)
 
-    referralService.removeReferral(1)
-
-    verify(outcomeService, atLeastOnce()).deleteOutcome(1)
+    verify(outcomeService, atLeastOnce()).deleteOutcome(1, 1)
     verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(1, 1)
   }
 
   @Test
-  @Disabled
   fun `responds with bad request if no referral on adjudication`() {
-    whenever(outcomeService.isReferral(1)).thenReturn(false)
 
     Assertions.assertThatThrownBy {
       referralService.removeReferral(1,)
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("No referral for adjudication")
+  }
+
+  @Test
+  fun `remove referral should remove outcome and hearing outcome and referral outcome`() {
+    TODO("implement me")
+  }
+
+  @Test
+  fun `remove referral should remove outcome and referral outcome`() {
+    TODO("implement me")
   }
 }

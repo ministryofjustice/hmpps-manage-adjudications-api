@@ -437,7 +437,6 @@ class HearingsIntTest : IntegrationTestBase() {
   }
 
   @Test
-  @Disabled
   fun `remove referral with hearing`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     val reportedAdjudication = initDataForHearings().createHearing()
@@ -453,6 +452,11 @@ class HearingsIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcome").doesNotExist()
       .jsonPath("$.reportedAdjudication.hearings[0].outcome").doesNotExist()
+  }
+
+  @Test
+  fun `remove referral with hearing and referral outcome`() {
+    TODO("implement me")
   }
 
   private fun initDataForHearings(): IntegrationTestScenario {

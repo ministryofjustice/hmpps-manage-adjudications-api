@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -111,14 +110,15 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
   }
 
   @Nested
-  @Disabled
   inner class DeleteOutcome {
 
-    fun `is referral`() {
-      TODO("implement me")
-    }
     @Test
     fun `delete outcome `() {
+      TODO("implement me")
+    }
+
+    @Test
+    fun `get outcomes`() {
       TODO("implement me")
     }
   }

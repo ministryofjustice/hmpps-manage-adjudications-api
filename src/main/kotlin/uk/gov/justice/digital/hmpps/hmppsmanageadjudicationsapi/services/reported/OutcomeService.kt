@@ -24,7 +24,12 @@ class OutcomeService(
   authenticationFacade,
 ) {
 
-  fun createOutcome(adjudicationNumber: Long, code: OutcomeCode, details: String? = null, reason: NotProceedReason? = null): ReportedAdjudicationDto {
+  fun createOutcome(
+    adjudicationNumber: Long,
+    code: OutcomeCode,
+    details: String? = null,
+    reason: NotProceedReason? = null
+  ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       it.status.validateTransition(code.status)
       it.status = code.status
@@ -49,12 +54,12 @@ class OutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun deleteOutcome(adjudicationNumber: Long): ReportedAdjudicationDto {
+  fun deleteOutcome(adjudicationNumber: Long, id: Long): ReportedAdjudicationDto {
     TODO("implement me")
   }
 
-  fun isReferral(adjudicationNumber: Long): Boolean {
-    TODO("implement me")
+  fun getOutcomes(adjudicationNumber: Long): Boolean {
+    TODO("implement me -  used by referral service")
   }
 
   companion object {

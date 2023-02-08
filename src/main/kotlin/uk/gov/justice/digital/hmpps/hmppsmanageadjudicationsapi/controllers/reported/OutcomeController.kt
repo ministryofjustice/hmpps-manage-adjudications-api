@@ -56,7 +56,7 @@ class OutcomeController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = referralService.removeReferral(
-      adjudicationNumber = adjudicationNumber
+      adjudicationNumber = adjudicationNumber,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)

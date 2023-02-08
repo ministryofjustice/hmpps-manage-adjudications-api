@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -32,14 +31,13 @@ class OutcomeIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.status")
       .isEqualTo(ReportedAdjudicationStatus.NOT_PROCEED.name)
-      .jsonPath("$.reportedAdjudication.outcome.id").isNotEmpty
-      .jsonPath("$.reportedAdjudication.outcome.details").isEqualTo("details")
-      .jsonPath("$.reportedAdjudication.outcome.reason").isEqualTo(NotProceedReason.NOT_FAIR.name)
-      .jsonPath("$.reportedAdjudication.outcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.outcomes[0].details").isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.outcomes[0].reason").isEqualTo(NotProceedReason.NOT_FAIR.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
   }
 
   @Test
-  @Disabled
   fun `remove referral without hearing`() {
     initDataForOutcome().createOutcome(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
 
@@ -49,7 +47,12 @@ class OutcomeIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.reportedAdjudication.outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(0)
+  }
+
+  @Test
+  fun `remove referral and referral outcome`() {
+    TODO("implement me")
   }
 
   private fun initDataForOutcome(): IntegrationTestScenario {

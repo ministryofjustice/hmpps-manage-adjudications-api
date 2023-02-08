@@ -61,12 +61,12 @@ open class ReportedDtoService(
     status = status,
     statusReason = statusReason,
     statusDetails = statusDetails,
-    hearings = toHearings(hearings, outcomes.firstOrNull()),
+    hearings = toHearings(hearings, outcomes.firstOrNull()), // TODO this needs to be fixed > must use correct index
     issuingOfficer = issuingOfficer,
     dateTimeOfIssue = dateTimeOfIssue,
     gender = gender,
     dateTimeOfFirstHearing = dateTimeOfFirstHearing,
-    outcome = outcomes.firstOrNull()?.toOutcomeDto()
+    outcomes = outcomes.map { it.toOutcomeDto() },
   )
 
   private fun toReportedOffence(
