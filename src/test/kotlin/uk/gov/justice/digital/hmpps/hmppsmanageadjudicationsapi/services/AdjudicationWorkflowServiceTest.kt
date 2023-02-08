@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import com.microsoft.applicationinsights.TelemetryClient
-import org.assertj.core.api.Java6Assertions.assertThat
-import org.assertj.core.api.Java6Assertions.assertThatThrownBy
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
