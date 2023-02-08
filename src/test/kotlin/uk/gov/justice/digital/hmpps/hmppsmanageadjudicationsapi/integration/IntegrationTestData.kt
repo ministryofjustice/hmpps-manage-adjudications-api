@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidenc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
@@ -531,6 +532,21 @@ class IntegrationTestData(
       .exchange()
   }
 
+  fun createOutcome(
+    reportNumber: String,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.post()
+      .uri("/reported-adjudications/$reportNumber/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "code" to OutcomeCode.REFER_POLICE,
+          "details" to "details",
+        )
+      )
+      .exchange()
+  }
+
   fun createHearing(
     testDataSet: AdjudicationIntTestDataSet,
   ): ReportedAdjudicationResponse {
@@ -553,17 +569,18 @@ class IntegrationTestData(
   fun createHearingOutcome(
     adjudicationNumber: Long,
     hearingId: Long,
+    code: HearingOutcomeCode? = HearingOutcomeCode.ADJOURN
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
       .uri("/reported-adjudications/$adjudicationNumber/hearing/$hearingId/outcome")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
-          "code" to HearingOutcomeCode.ADJOURN.name,
+          "code" to code,
           "details" to "details",
           "adjudicator" to "testing",
-          "reason" to HearingOutcomeAdjournReason.LEGAL_ADVICE.name,
-          "plea" to HearingOutcomePlea.UNFIT.name,
+          "reason" to HearingOutcomeAdjournReason.LEGAL_ADVICE,
+          "plea" to HearingOutcomePlea.UNFIT,
         )
       )
       .exchange()

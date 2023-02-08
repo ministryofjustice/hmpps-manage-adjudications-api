@@ -11,7 +11,6 @@ import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.JoinColumn
 import javax.persistence.OneToMany
-import javax.persistence.OneToOne
 import javax.persistence.Table
 import javax.validation.ValidationException
 
@@ -62,9 +61,9 @@ data class ReportedAdjudication(
   var issuingOfficer: String? = null,
   var dateTimeOfIssue: LocalDateTime? = null,
   var dateTimeOfFirstHearing: LocalDateTime? = null,
-  @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
-  @JoinColumn(name = "outcome_id")
-  var outcome: Outcome? = null,
+  @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+  @JoinColumn(name = "reported_adjudication_fk_id")
+  var outcomes: MutableList<Outcome>,
 
 ) :
   BaseEntity() {

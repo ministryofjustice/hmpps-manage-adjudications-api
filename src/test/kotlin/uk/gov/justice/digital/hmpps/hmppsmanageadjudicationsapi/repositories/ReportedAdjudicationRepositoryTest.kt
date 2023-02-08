@@ -458,10 +458,10 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `adjudication outcome`() {
     val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
-    adjudication!!.outcome = Outcome(code = OutcomeCode.REFER_POLICE)
+    adjudication!!.outcomes.add(Outcome(code = OutcomeCode.REFER_POLICE))
 
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
-    assertThat(savedEntity.outcome!!.code).isEqualTo(OutcomeCode.REFER_POLICE)
+    assertThat(savedEntity.outcomes.first().code).isEqualTo(OutcomeCode.REFER_POLICE)
   }
 }

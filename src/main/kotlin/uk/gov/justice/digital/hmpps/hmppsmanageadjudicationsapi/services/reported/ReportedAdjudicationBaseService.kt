@@ -61,12 +61,12 @@ open class ReportedDtoService(
     status = status,
     statusReason = statusReason,
     statusDetails = statusDetails,
-    hearings = toHearings(hearings, outcome),
+    hearings = toHearings(hearings, outcomes.firstOrNull()),
     issuingOfficer = issuingOfficer,
     dateTimeOfIssue = dateTimeOfIssue,
     gender = gender,
     dateTimeOfFirstHearing = dateTimeOfFirstHearing,
-    outcome = outcome?.toOutcomeDto()
+    outcome = outcomes.firstOrNull()?.toOutcomeDto()
   )
 
   private fun toReportedOffence(

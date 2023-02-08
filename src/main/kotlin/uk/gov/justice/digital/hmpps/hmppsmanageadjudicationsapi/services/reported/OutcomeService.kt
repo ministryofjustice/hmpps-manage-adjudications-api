@@ -38,16 +38,22 @@ class OutcomeService(
       }
     }
 
-    reportedAdjudication.outcome = Outcome(
-      code = code,
-      details = details,
-      reason = reason,
+    reportedAdjudication.outcomes.add(
+      Outcome(
+        code = code,
+        details = details,
+        reason = reason,
+      )
     )
 
     return saveToDto(reportedAdjudication)
   }
 
   fun deleteOutcome(adjudicationNumber: Long): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
+
+  fun isReferral(adjudicationNumber: Long): Boolean {
     TODO("implement me")
   }
 

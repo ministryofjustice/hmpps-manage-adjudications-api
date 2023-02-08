@@ -85,6 +85,12 @@ class IntegrationTestScenario(
     )
   }
 
+  fun createOutcome(reportNumber: String): IntegrationTestScenario {
+    intTestData.createOutcome(reportNumber)
+
+    return this
+  }
+
   fun issueReport(reportNumber: String): IntegrationTestScenario {
     intTestData.issueReport(
       draftCreationResponse,
