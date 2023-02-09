@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
@@ -16,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
@@ -66,8 +68,39 @@ open class ReportedDtoService(
     dateTimeOfIssue = dateTimeOfIssue,
     gender = gender,
     dateTimeOfFirstHearing = dateTimeOfFirstHearing,
-    outcomes = outcomes.map { it.toOutcomeDto() },
+    outcomes = outcomes.createCombinedOutcomes(),
   )
+
+  protected fun List<Outcome>.createCombinedOutcomes(): List<CombinedOutcomeDto> {
+    if(this.isEmpty()) return emptyList()
+
+    val combinedOutcomes = mutableListOf<CombinedOutcomeDto>()
+    val orderedOutcomes =  this.sortedBy { it.createDateTime }.toMutableList()
+
+    do {
+        val outcome = orderedOutcomes.removeFirst()
+        when (outcome.code) {
+          OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD  -> {
+
+            val referralOutcome = orderedOutcomes.removeFirstOrNull()
+
+            combinedOutcomes.add(
+              CombinedOutcomeDto(
+                outcome = outcome.toOutcomeDto(),
+                referralOutcome = referralOutcome?.toOutcomeDto(),
+              )
+            )
+          }
+          else -> combinedOutcomes.add(
+            CombinedOutcomeDto(
+              outcome = outcome.toOutcomeDto()
+            )
+          )
+        }
+    }while (orderedOutcomes.isNotEmpty())
+
+    return combinedOutcomes
+  }
 
   private fun toReportedOffence(
     offence: ReportedOffence,

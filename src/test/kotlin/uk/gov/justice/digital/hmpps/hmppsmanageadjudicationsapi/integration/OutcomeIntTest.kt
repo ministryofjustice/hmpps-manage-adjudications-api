@@ -31,10 +31,10 @@ class OutcomeIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.status")
       .isEqualTo(ReportedAdjudicationStatus.NOT_PROCEED.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].id").isNotEmpty
-      .jsonPath("$.reportedAdjudication.outcomes[0].details").isEqualTo("details")
-      .jsonPath("$.reportedAdjudication.outcomes[0].reason").isEqualTo(NotProceedReason.NOT_FAIR.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome..id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.details").isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.reason").isEqualTo(NotProceedReason.NOT_FAIR.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
   }
 
   @Test

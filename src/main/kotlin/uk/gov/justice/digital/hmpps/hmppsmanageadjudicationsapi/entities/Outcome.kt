@@ -22,6 +22,8 @@ enum class OutcomeCode(val status: ReportedAdjudicationStatus) {
   REFER_POLICE(ReportedAdjudicationStatus.REFER_POLICE),
   REFER_INAD(ReportedAdjudicationStatus.REFER_INAD),
   NOT_PROCEED(ReportedAdjudicationStatus.NOT_PROCEED),
+  SCHEDULE_HEARING(ReportedAdjudicationStatus.SCHEDULED),
+  PROSECUTION(ReportedAdjudicationStatus.PROSECUTION),
 }
 
 enum class NotProceedReason {

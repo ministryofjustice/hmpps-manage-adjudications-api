@@ -286,9 +286,9 @@ class HearingsIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_POLICE.name)
-      .jsonPath("$.reportedAdjudication.outcome").isNotEmpty
-      .jsonPath("$.reportedAdjudication.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
-      .jsonPath("$.reportedAdjudication.outcome.details").isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.details").isEqualTo("details")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
       .isEqualTo("test")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason").doesNotExist()
@@ -357,12 +357,12 @@ class HearingsIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_INAD.name)
-      .jsonPath("$.reportedAdjudication.outcome").isNotEmpty
-      .jsonPath("$.reportedAdjudication.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason").doesNotExist()
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea").doesNotExist()
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.finding").doesNotExist()
-      .jsonPath("$.reportedAdjudication.outcome.details").isEqualTo("details updated")
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.details").isEqualTo("details updated")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
       .isEqualTo("updated")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.details").isEqualTo("details updated")
@@ -406,7 +406,7 @@ class HearingsIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
-      .jsonPath("$.reportedAdjudication.outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(0)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome").doesNotExist()
   }
 
@@ -450,7 +450,7 @@ class HearingsIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.reportedAdjudication.outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(0)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome").doesNotExist()
   }
 

@@ -62,7 +62,7 @@ data class ReportedAdjudicationDto(
   @Schema(description = "date time of first hearing")
   val dateTimeOfFirstHearing: LocalDateTime? = null,
   @Schema(description = "outcome")
-  val outcomes: List<OutcomeDto>,
+  val outcomes: List<CombinedOutcomeDto>,
 )
 
 @Schema(description = "Details of an offence")
@@ -179,4 +179,12 @@ data class OutcomeDto(
   val details: String? = null,
   @Schema(description = "not proceeded with reason")
   val reason: NotProceedReason? = null,
+)
+
+@Schema(description = "Combined Outcome - currently to support referral but maybe expanded once awards are added")
+data class CombinedOutcomeDto(
+  @Schema(description = "the outcome")
+  val outcome: OutcomeDto,
+  @Schema(description = "the optional referral outcome")
+  val referralOutcome: OutcomeDto? = null,
 )

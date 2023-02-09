@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
@@ -41,6 +42,8 @@ class OutcomeService(
         validateDetails(details)
         reason ?: throw ValidationException("a reason is required")
       }
+
+      else -> TODO("need to implement this")
     }
 
     reportedAdjudication.outcomes.add(
@@ -58,8 +61,9 @@ class OutcomeService(
     TODO("implement me")
   }
 
-  fun getOutcomes(adjudicationNumber: Long): Boolean {
-    TODO("implement me -  used by referral service")
+  fun getOutcomes(adjudicationNumber: Long): List<CombinedOutcomeDto> {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    return reportedAdjudication.outcomes.createCombinedOutcomes()
   }
 
   companion object {

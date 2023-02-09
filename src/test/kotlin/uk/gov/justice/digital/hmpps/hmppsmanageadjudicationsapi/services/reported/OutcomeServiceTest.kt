@@ -12,6 +12,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -28,6 +29,16 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     Assertions.assertThatThrownBy {
       outcomeService.createOutcome(1, OutcomeCode.REFER_POLICE)
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      outcomeService.getOutcomes(1)
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      outcomeService.deleteOutcome(1, 1)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }
@@ -116,10 +127,100 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `delete outcome `() {
       TODO("implement me")
     }
+  }
+
+  @Nested
+  inner class GetCombinedOutcomes {
+
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+      it.outcomes.add(
+        Outcome(
+          code = OutcomeCode.REFER_POLICE,
+        ).also { o -> o.createDateTime = LocalDateTime.now() }
+      )
+    }
+    private val reportedAdjudication2 = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+      it.outcomes.add(
+        Outcome(
+          code = OutcomeCode.REFER_POLICE,
+        ).also { o -> o.createDateTime = LocalDateTime.now() }
+      )
+      it.outcomes.add(
+        Outcome(
+          code = OutcomeCode.NOT_PROCEED,
+        ).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) }
+      )
+    }
+    private val reportedAdjudication3 = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+      it.outcomes.add(
+        Outcome(
+          code = OutcomeCode.REFER_INAD,
+        ).also { o -> o.createDateTime = LocalDateTime.now() }
+      )
+      it.outcomes.add(
+        Outcome(
+          code = OutcomeCode.SCHEDULE_HEARING,
+        ).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) }
+      )
+      it.outcomes.add(
+        Outcome(
+          code = OutcomeCode.REFER_POLICE,
+        ).also { o -> o.createDateTime = LocalDateTime.now().plusDays(2) }
+      )
+      it.outcomes.add(
+        Outcome(
+          code = OutcomeCode.NOT_PROCEED,
+        ).also { o -> o.createDateTime = LocalDateTime.now().plusDays(3) }
+      )
+    }
+    private val reportedAdjudicationNoOutcomes = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+      it.outcomes.clear()
+    }
+
+    @BeforeEach
+    fun init(){
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(reportedAdjudication2)
+      whenever(reportedAdjudicationRepository.findByReportNumber(3)).thenReturn(reportedAdjudication3)
+      whenever(reportedAdjudicationRepository.findByReportNumber(4)).thenReturn(reportedAdjudicationNoOutcomes)
+    }
 
     @Test
-    fun `get outcomes`() {
-      TODO("implement me")
+    fun  `no outcomes` () {
+      val result = outcomeService.getOutcomes(4)
+
+      assertThat(result.isEmpty()).isEqualTo(true)
+    }
+    @Test
+    fun `get outcomes without any referral outcomes`() {
+      val result = outcomeService.getOutcomes(1)
+
+      assertThat(result.size).isEqualTo(1)
+      assertThat(result.first().outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(result.first().referralOutcome).isNull()
+    }
+
+    @Test
+    fun `get outcomes with referral outcomes`() {
+      val result = outcomeService.getOutcomes(2)
+
+      assertThat(result.size).isEqualTo(1)
+      assertThat(result.first().outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(result.first().referralOutcome).isNotNull
+      assertThat(result.first().referralOutcome!!.code).isEqualTo(OutcomeCode.NOT_PROCEED)
+    }
+
+    @Test
+    fun `get outcomes with multiple referral outcomes`() {
+      val result = outcomeService.getOutcomes(3)
+
+      assertThat(result.size).isEqualTo(2)
+      assertThat(result.first().outcome.code).isEqualTo(OutcomeCode.REFER_INAD)
+      assertThat(result.first().referralOutcome).isNotNull
+      assertThat(result.first().referralOutcome!!.code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
+      assertThat(result.last().outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(result.last().referralOutcome).isNotNull
+      assertThat(result.last().referralOutcome!!.code).isEqualTo(OutcomeCode.NOT_PROCEED)
     }
   }
 }
