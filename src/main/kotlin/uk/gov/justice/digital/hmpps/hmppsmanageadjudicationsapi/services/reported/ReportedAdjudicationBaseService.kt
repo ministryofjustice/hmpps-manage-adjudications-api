@@ -63,7 +63,7 @@ open class ReportedDtoService(
     status = status,
     statusReason = statusReason,
     statusDetails = statusDetails,
-    hearings = toHearings(hearings, outcomes.firstOrNull()), // TODO this needs to be fixed > must use correct index
+    hearings = toHearings(hearings),
     issuingOfficer = issuingOfficer,
     dateTimeOfIssue = dateTimeOfIssue,
     gender = gender,
@@ -148,23 +148,23 @@ open class ReportedDtoService(
       )
     }.toList()
 
-  private fun toHearings(hearings: MutableList<Hearing>, outcome: Outcome?): List<HearingDto> =
+  private fun toHearings(hearings: MutableList<Hearing>): List<HearingDto> =
     hearings.map {
       HearingDto(
         id = it.id,
         locationId = it.locationId,
         dateTimeOfHearing = it.dateTimeOfHearing,
         oicHearingType = it.oicHearingType,
-        outcome = it.hearingOutcome?.toHearingOutcomeDto(outcome)
+        outcome = it.hearingOutcome?.toHearingOutcomeDto()
       )
     }.sortedBy { it.dateTimeOfHearing }.toList()
 
-  private fun HearingOutcome.toHearingOutcomeDto(outcome: Outcome?): HearingOutcomeDto =
+  private fun HearingOutcome.toHearingOutcomeDto(): HearingOutcomeDto =
     HearingOutcomeDto(
       id = this.id,
       code = this.code,
       reason = this.reason,
-      details = if (this.code.outcomeCode != null) outcome?.details else this.details,
+      details = this.details,
       adjudicator = this.adjudicator,
       finding = this.finding,
       plea = this.plea,

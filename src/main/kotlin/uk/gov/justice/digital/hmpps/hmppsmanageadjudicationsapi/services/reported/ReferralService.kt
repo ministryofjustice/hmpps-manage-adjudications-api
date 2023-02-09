@@ -27,6 +27,7 @@ class ReferralService(
       hearingId = hearingId,
       code = code,
       adjudicator = adjudicator,
+      details = details,
     )
     return outcomeService.createOutcome(
       adjudicationNumber = adjudicationNumber,
@@ -47,6 +48,7 @@ class ReferralService(
       hearingId = hearingId,
       code = code,
       adjudicator = adjudicator,
+      details = details,
     )
     // TODO not implemented update outcome yet.  later tickets, plus can remove a referral too.
   }

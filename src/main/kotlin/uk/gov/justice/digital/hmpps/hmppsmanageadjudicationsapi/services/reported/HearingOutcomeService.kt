@@ -85,7 +85,7 @@ class HearingOutcomeService(
         outcomeToAmend.finding = null
       }
       else -> {
-        outcomeToAmend.details = null
+        outcomeToAmend.details = details
         outcomeToAmend.reason = null
         outcomeToAmend.plea = null
         outcomeToAmend.finding = null
