@@ -111,6 +111,7 @@ class HearingOutcomeService(
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     if (reportedAdjudication.hearings.none { it.hearingOutcome?.code?.outcomeCode == code }) return null
     val matched = reportedAdjudication.hearings.filter { it.hearingOutcome?.code?.outcomeCode == code }
+    // note: you can only REFER_POLICE once without a hearing
     val actualIndex = if (matched.size > outcomeIndex) outcomeIndex else outcomeIndex - 1
 
     return matched[actualIndex].hearingOutcome
