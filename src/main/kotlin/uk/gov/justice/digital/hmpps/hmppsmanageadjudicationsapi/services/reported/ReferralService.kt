@@ -54,7 +54,7 @@ class ReferralService(
   }
 
   fun removeReferral(adjudicationNumber: Long): ReportedAdjudicationDto {
-    val outcomes = outcomeService.getOutcomes(adjudicationNumber).validateHasReferral().toMutableList()
+    val outcomes = outcomeService.getOutcomes(adjudicationNumber).validateHasReferral()
     val outcomeToRemove = outcomes.last()
     val outcomeIndex = outcomes.filter { it.outcome.code == outcomeToRemove.outcome.code }.indexOf(outcomeToRemove)
 
