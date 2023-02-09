@@ -72,32 +72,32 @@ open class ReportedDtoService(
   )
 
   protected fun List<Outcome>.createCombinedOutcomes(): List<CombinedOutcomeDto> {
-    if(this.isEmpty()) return emptyList()
+    if (this.isEmpty()) return emptyList()
 
     val combinedOutcomes = mutableListOf<CombinedOutcomeDto>()
-    val orderedOutcomes =  this.sortedBy { it.createDateTime }.toMutableList()
+    val orderedOutcomes = this.sortedBy { it.createDateTime }.toMutableList()
 
     do {
-        val outcome = orderedOutcomes.removeFirst()
-        when (outcome.code) {
-          OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD  -> {
+      val outcome = orderedOutcomes.removeFirst()
+      when (outcome.code) {
+        OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD -> {
+          // a referral can only ever be followed by a referral outcome, or nothing (ie referral is current final state)
+          val referralOutcome = orderedOutcomes.removeFirstOrNull()
 
-            val referralOutcome = orderedOutcomes.removeFirstOrNull()
-
-            combinedOutcomes.add(
-              CombinedOutcomeDto(
-                outcome = outcome.toOutcomeDto(),
-                referralOutcome = referralOutcome?.toOutcomeDto(),
-              )
-            )
-          }
-          else -> combinedOutcomes.add(
+          combinedOutcomes.add(
             CombinedOutcomeDto(
-              outcome = outcome.toOutcomeDto()
+              outcome = outcome.toOutcomeDto(),
+              referralOutcome = referralOutcome?.toOutcomeDto(),
             )
           )
         }
-    }while (orderedOutcomes.isNotEmpty())
+        else -> combinedOutcomes.add(
+          CombinedOutcomeDto(
+            outcome = outcome.toOutcomeDto()
+          )
+        )
+      }
+    } while (orderedOutcomes.isNotEmpty())
 
     return combinedOutcomes
   }

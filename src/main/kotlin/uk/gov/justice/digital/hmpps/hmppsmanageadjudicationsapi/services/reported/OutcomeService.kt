@@ -6,10 +6,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus.Companion.validateTransition
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 import javax.validation.ValidationException
 
@@ -43,7 +45,7 @@ class OutcomeService(
         reason ?: throw ValidationException("a reason is required")
       }
 
-      else -> TODO("need to implement this")
+      else -> {} // TODO(" currently referral outcome PROSECUTION, SCHEDULE_HEARING, nothing to do at present")
     }
 
     reportedAdjudication.outcomes.add(
@@ -58,7 +60,12 @@ class OutcomeService(
   }
 
   fun deleteOutcome(adjudicationNumber: Long, id: Long): ReportedAdjudicationDto {
-    TODO("implement me")
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val outcomeToDelete = reportedAdjudication.getOutcome(id)
+
+    reportedAdjudication.outcomes.remove(outcomeToDelete)
+
+    return saveToDto(reportedAdjudication)
   }
 
   fun getOutcomes(adjudicationNumber: Long): List<CombinedOutcomeDto> {
@@ -68,5 +75,8 @@ class OutcomeService(
 
   companion object {
     private fun validateDetails(details: String?) = details ?: throw ValidationException("details are required")
+
+    fun ReportedAdjudication.getOutcome(id: Long) =
+      this.outcomes.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Outcome not found for $id")
   }
 }

@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
@@ -36,7 +35,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         outcomeService.createOutcome(
-          ArgumentMatchers.anyLong(),
+          anyLong(),
           any(),
           anyOrNull(),
           anyOrNull(),
@@ -127,7 +126,7 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to reemove a referral`() {
       removeReferralRequest(1,)
-        .andExpect(MockMvcResultMatchers.status().isCreated)
+        .andExpect(MockMvcResultMatchers.status().isOk)
       verify(referralService).removeReferral(1,)
     }
 

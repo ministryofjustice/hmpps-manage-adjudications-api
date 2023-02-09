@@ -122,10 +122,46 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
   @Nested
   inner class DeleteOutcome {
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+    private val reportedAdjudicationWithOutcome = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+      it.outcomes.add(
+        Outcome(id = 1, code = OutcomeCode.REFER_INAD)
+      )
+    }
+
+    @BeforeEach
+    fun init() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(reportedAdjudicationWithOutcome)
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        reportedAdjudication.also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = "test"
+        }
+      )
+    }
 
     @Test
     fun `delete outcome `() {
-      TODO("implement me")
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.deleteOutcome(
+        2, 1,
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes).isEmpty()
+      // TODO statuses...do on another ticket i think.
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `delete outcome throws no outcome found for adjudication `() {
+      Assertions.assertThatThrownBy {
+        outcomeService.deleteOutcome(1, 1)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Outcome not found for 1")
     }
   }
 
@@ -178,7 +214,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @BeforeEach
-    fun init(){
+    fun init() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(reportedAdjudication2)
       whenever(reportedAdjudicationRepository.findByReportNumber(3)).thenReturn(reportedAdjudication3)
@@ -186,7 +222,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun  `no outcomes` () {
+    fun `no outcomes`() {
       val result = outcomeService.getOutcomes(4)
 
       assertThat(result.isEmpty()).isEqualTo(true)

@@ -1,9 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import javax.transaction.Transactional
+import javax.validation.ValidationException
 
 @Transactional
 @Service
@@ -49,6 +52,33 @@ class ReferralService(
   }
 
   fun removeReferral(adjudicationNumber: Long): ReportedAdjudicationDto {
-    TODO("implement me")
+    val outcomes = outcomeService.getOutcomes(adjudicationNumber).validateHasReferral().toMutableList()
+    val outcomeToRemove = outcomes.last()
+    val outcomeIndex = outcomes.filter { it.outcome.code == outcomeToRemove.outcome.code }.indexOf(outcomeToRemove)
+
+    outcomeToRemove.referralOutcome?.let {
+      outcomeService.deleteOutcome(adjudicationNumber = adjudicationNumber, id = it.id!!)
+    }
+
+    hearingOutcomeService.getHearingOutcomeForReferral(
+      adjudicationNumber = adjudicationNumber, code = outcomeToRemove.outcome.code, outcomeIndex = outcomeIndex
+    )?.let {
+      hearingOutcomeService.deleteHearingOutcome(
+        adjudicationNumber = adjudicationNumber, hearingId = it.id!!
+      )
+    }
+
+    return outcomeService.deleteOutcome(
+      adjudicationNumber = adjudicationNumber, id = outcomeToRemove.outcome.id!!
+    )
+  }
+
+  companion object {
+    fun List<CombinedOutcomeDto>.validateHasReferral(): List<CombinedOutcomeDto> {
+      val referrals = listOf(OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD)
+      if (this.none { referrals.contains(it.outcome.code) }) throw ValidationException("No referral for adjudication")
+
+      return this
+    }
   }
 }

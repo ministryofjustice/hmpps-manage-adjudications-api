@@ -48,6 +48,7 @@ class OutcomeIntTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(0)
+      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
   }
 
   @Test
