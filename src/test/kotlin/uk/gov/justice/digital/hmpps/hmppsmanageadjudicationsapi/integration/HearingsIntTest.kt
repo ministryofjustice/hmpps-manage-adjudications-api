@@ -435,47 +435,4 @@ class HearingsIntTest : IntegrationTestBase() {
       .jsonPath("$.hearings[0].oicHearingType")
       .isEqualTo(reportedAdjudication.reportedAdjudication.hearings.first().oicHearingType.name)
   }
-
-  @Test
-  fun `remove referral with hearing`() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    val reportedAdjudication = initDataForHearings().createHearing()
-    integrationTestData().createHearingOutcome(
-      reportedAdjudication.reportedAdjudication.adjudicationNumber, reportedAdjudication.reportedAdjudication.hearings.first().id!!, HearingOutcomeCode.REFER_POLICE
-    )
-
-    webTestClient.delete()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/remove-referral")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(0)
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome").doesNotExist()
-  }
-
-  @Test
-  fun `remove referral with hearing and referral outcome`() {
-    TODO("implement me")
-  }
-
-  private fun initDataForHearings(): IntegrationTestScenario {
-    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
-
-    val intTestData = integrationTestData()
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
-
-    return draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
-      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
-  }
 }

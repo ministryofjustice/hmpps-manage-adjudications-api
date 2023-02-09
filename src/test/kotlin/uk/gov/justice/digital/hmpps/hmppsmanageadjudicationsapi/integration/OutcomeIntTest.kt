@@ -37,26 +37,7 @@ class OutcomeIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
   }
 
-  @Test
-  fun `remove referral without hearing`() {
-    initDataForOutcome().createOutcome(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
-
-    webTestClient.delete()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/remove-referral")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(0)
-      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
-  }
-
-  @Test
-  fun `remove referral and referral outcome`() {
-    TODO("implement me")
-  }
-
-  private fun initDataForOutcome(): IntegrationTestScenario {
+  protected fun initDataForOutcome(): IntegrationTestScenario {
     prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
 
     val intTestData = integrationTestData()
