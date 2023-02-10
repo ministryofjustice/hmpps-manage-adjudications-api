@@ -132,12 +132,10 @@ class HearingOutcomeService(
       return this
     }
 
+    fun ReportedAdjudication.getHearingOutcome() = this.getHearing().hearingOutcome.hearingOutcomeExists()
+
+    fun HearingOutcome?.hearingOutcomeExists() = this ?: throw EntityNotFoundException("outcome not found for hearing")
+
     private fun validateField(field: Any?) = field ?: throw ValidationException("missing mandatory field")
-
-    fun ReportedAdjudication.getHearingOutcome() =
-      this.getHearing().hearingOutcome.hearingOutcomeExists()
-
-    fun HearingOutcome?.hearingOutcomeExists() =
-      this ?: throw EntityNotFoundException("outcome not found for hearing")
   }
 }

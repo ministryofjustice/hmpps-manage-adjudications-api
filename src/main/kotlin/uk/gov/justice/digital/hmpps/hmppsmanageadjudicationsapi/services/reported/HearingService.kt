@@ -153,18 +153,18 @@ class HearingService(
       latestHearing.hearingOutcome ?: throw ValidationException("Adjudication already has a hearing without outcome")
       return this
     }
+
     fun List<Hearing>.validateHearingDate(date: LocalDateTime) {
       if (this.any { it.dateTimeOfHearing.isAfter(date) })
         throw ValidationException("A hearing can not be before the previous hearing")
     }
-    private fun ReportedAdjudication.getLatestHearing(): Hearing? =
-      this.hearings.maxByOrNull { it.dateTimeOfHearing }
-    fun ReportedAdjudication.getHearing(): Hearing =
-      this.getLatestHearing() ?: throwHearingNotFoundException()
-    private fun throwHearingNotFoundException(): Nothing =
-      throw EntityNotFoundException("Hearing not found")
 
-    fun ReportedAdjudication.calcFirstHearingDate(): LocalDateTime? =
-      this.hearings.minOfOrNull { it.dateTimeOfHearing }
+    fun ReportedAdjudication.getHearing(): Hearing = this.getLatestHearing() ?: throwHearingNotFoundException()
+
+    fun ReportedAdjudication.calcFirstHearingDate(): LocalDateTime? = this.hearings.minOfOrNull { it.dateTimeOfHearing }
+
+    private fun throwHearingNotFoundException(): Nothing = throw EntityNotFoundException("Hearing not found")
+
+    private fun ReportedAdjudication.getLatestHearing(): Hearing? = this.hearings.maxByOrNull { it.dateTimeOfHearing }
   }
 }
