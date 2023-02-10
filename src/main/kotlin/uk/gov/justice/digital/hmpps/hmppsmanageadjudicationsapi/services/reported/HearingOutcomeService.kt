@@ -8,6 +8,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -64,7 +66,7 @@ class HearingOutcomeService(
     plea: HearingOutcomePlea? = null
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val outcomeToAmend = reportedAdjudication.getHearing(hearingId).hearingOutcome ?: throw EntityNotFoundException("outcome not found for hearing $hearingId")
+    val outcomeToAmend = reportedAdjudication.getHearingOutcome(hearingId)
 
     outcomeToAmend.code = code
     outcomeToAmend.adjudicator = adjudicator
@@ -83,7 +85,7 @@ class HearingOutcomeService(
         outcomeToAmend.finding = null
       }
       else -> {
-        outcomeToAmend.details = null
+        outcomeToAmend.details = details
         outcomeToAmend.reason = null
         outcomeToAmend.plea = null
         outcomeToAmend.finding = null
@@ -96,7 +98,23 @@ class HearingOutcomeService(
   }
 
   fun deleteHearingOutcome(adjudicationNumber: Long, hearingId: Long): ReportedAdjudicationDto {
-    TODO("implement me")
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val outcomeToRemove = reportedAdjudication.getHearing(hearingId)
+
+    outcomeToRemove.hearingOutcome.hearingOutcomeExists(hearingId)
+    outcomeToRemove.hearingOutcome = null
+
+    return saveToDto(reportedAdjudication)
+  }
+
+  fun getHearingOutcomeForReferral(adjudicationNumber: Long, code: OutcomeCode, outcomeIndex: Int): HearingOutcome? {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    if (reportedAdjudication.hearings.none { it.hearingOutcome?.code?.outcomeCode == code }) return null
+    val matched = reportedAdjudication.hearings.filter { it.hearingOutcome?.code?.outcomeCode == code }.sortedBy { it.dateTimeOfHearing }
+    // note: you can only REFER_POLICE once without a hearing
+    val actualIndex = if (matched.size > outcomeIndex) outcomeIndex else outcomeIndex - 1
+
+    return matched[actualIndex].hearingOutcome
   }
 
   companion object {
@@ -117,5 +135,11 @@ class HearingOutcomeService(
     }
 
     private fun validateField(field: Any?) = field ?: throw ValidationException("missing mandatory field")
+
+    fun ReportedAdjudication.getHearingOutcome(hearingId: Long) =
+      this.getHearing(hearingId).hearingOutcome.hearingOutcomeExists(hearingId)
+
+    fun HearingOutcome?.hearingOutcomeExists(hearingId: Long) =
+      this ?: throw EntityNotFoundException("outcome not found for hearing $hearingId")
   }
 }

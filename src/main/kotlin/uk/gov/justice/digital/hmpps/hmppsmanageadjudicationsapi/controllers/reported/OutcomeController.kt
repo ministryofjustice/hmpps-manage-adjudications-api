@@ -51,12 +51,12 @@ class OutcomeController(
 
   @Operation(summary = "remove a referral")
   @DeleteMapping(value = ["/{adjudicationNumber}/remove-referral"])
-  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseStatus(HttpStatus.OK)
   fun removeReferral(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = referralService.removeReferral(
-      adjudicationNumber = adjudicationNumber
+      adjudicationNumber = adjudicationNumber,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)

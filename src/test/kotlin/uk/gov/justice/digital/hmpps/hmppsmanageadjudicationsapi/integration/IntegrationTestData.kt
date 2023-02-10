@@ -534,13 +534,14 @@ class IntegrationTestData(
 
   fun createOutcome(
     reportNumber: String,
+    code: OutcomeCode? = OutcomeCode.REFER_POLICE
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/$reportNumber/outcome")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
-          "code" to OutcomeCode.REFER_POLICE,
+          "code" to code,
           "details" to "details",
         )
       )

@@ -77,6 +77,7 @@ open class TestControllerBase {
         witnesses = listOf(),
         hearings = listOf(),
         gender = Gender.MALE,
+        outcomes = listOf(),
       )
 
     val INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO =

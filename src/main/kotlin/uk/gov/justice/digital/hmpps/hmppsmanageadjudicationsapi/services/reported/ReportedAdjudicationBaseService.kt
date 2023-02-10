@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
@@ -16,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
@@ -61,13 +63,44 @@ open class ReportedDtoService(
     status = status,
     statusReason = statusReason,
     statusDetails = statusDetails,
-    hearings = toHearings(hearings, outcomes.firstOrNull()),
+    hearings = toHearings(hearings),
     issuingOfficer = issuingOfficer,
     dateTimeOfIssue = dateTimeOfIssue,
     gender = gender,
     dateTimeOfFirstHearing = dateTimeOfFirstHearing,
-    outcome = outcomes.firstOrNull()?.toOutcomeDto()
+    outcomes = outcomes.createCombinedOutcomes(),
   )
+
+  protected fun List<Outcome>.createCombinedOutcomes(): List<CombinedOutcomeDto> {
+    if (this.isEmpty()) return emptyList()
+
+    val combinedOutcomes = mutableListOf<CombinedOutcomeDto>()
+    val orderedOutcomes = this.sortedBy { it.createDateTime }.toMutableList()
+
+    do {
+      val outcome = orderedOutcomes.removeFirst()
+      when (outcome.code) {
+        OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD -> {
+          // a referral can only ever be followed by a referral outcome, or nothing (ie referral is current final state)
+          val referralOutcome = orderedOutcomes.removeFirstOrNull()
+
+          combinedOutcomes.add(
+            CombinedOutcomeDto(
+              outcome = outcome.toOutcomeDto(),
+              referralOutcome = referralOutcome?.toOutcomeDto(),
+            )
+          )
+        }
+        else -> combinedOutcomes.add(
+          CombinedOutcomeDto(
+            outcome = outcome.toOutcomeDto()
+          )
+        )
+      }
+    } while (orderedOutcomes.isNotEmpty())
+
+    return combinedOutcomes
+  }
 
   private fun toReportedOffence(
     offence: ReportedOffence,
@@ -115,23 +148,23 @@ open class ReportedDtoService(
       )
     }.toList()
 
-  private fun toHearings(hearings: MutableList<Hearing>, outcome: Outcome?): List<HearingDto> =
+  private fun toHearings(hearings: MutableList<Hearing>): List<HearingDto> =
     hearings.map {
       HearingDto(
         id = it.id,
         locationId = it.locationId,
         dateTimeOfHearing = it.dateTimeOfHearing,
         oicHearingType = it.oicHearingType,
-        outcome = it.hearingOutcome?.toHearingOutcomeDto(outcome)
+        outcome = it.hearingOutcome?.toHearingOutcomeDto()
       )
     }.sortedBy { it.dateTimeOfHearing }.toList()
 
-  private fun HearingOutcome.toHearingOutcomeDto(outcome: Outcome?): HearingOutcomeDto =
+  private fun HearingOutcome.toHearingOutcomeDto(): HearingOutcomeDto =
     HearingOutcomeDto(
       id = this.id,
       code = this.code,
       reason = this.reason,
-      details = if (this.code.outcomeCode != null) outcome?.details else this.details,
+      details = this.details,
       adjudicator = this.adjudicator,
       finding = this.finding,
       plea = this.plea,
