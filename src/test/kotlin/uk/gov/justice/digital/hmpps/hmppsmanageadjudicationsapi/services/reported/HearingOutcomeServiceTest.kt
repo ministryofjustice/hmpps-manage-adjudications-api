@@ -485,13 +485,13 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `multiple hearing outcomes for multiple referrals`() {
+    fun `multiple hearing outcomes for multiple referrals with correct date order`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.hearings.clear()
           it.hearings.add(
             Hearing(
-              dateTimeOfHearing = LocalDateTime.now(),
+              dateTimeOfHearing = LocalDateTime.now().plusDays(1),
               oicHearingType = OicHearingType.GOV,
               agencyId = "1",
               reportNumber = 2,
@@ -501,7 +501,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
               h.hearingOutcome = HearingOutcome(
                 code = HearingOutcomeCode.REFER_POLICE,
                 adjudicator = "test",
-                id = 1
+                id = 2
               )
             }
           )
@@ -517,7 +517,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
               h.hearingOutcome = HearingOutcome(
                 code = HearingOutcomeCode.REFER_POLICE,
                 adjudicator = "test",
-                id = 2
+                id = 1
               )
             }
           )
