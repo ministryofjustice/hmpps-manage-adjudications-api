@@ -533,11 +533,11 @@ class IntegrationTestData(
   }
 
   fun createOutcome(
-    reportNumber: String,
+    testDataSet: AdjudicationIntTestDataSet,
     code: OutcomeCode? = OutcomeCode.REFER_POLICE
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
-      .uri("/reported-adjudications/$reportNumber/outcome")
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/outcome")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -550,30 +550,27 @@ class IntegrationTestData(
 
   fun createHearing(
     testDataSet: AdjudicationIntTestDataSet,
-  ): ReportedAdjudicationResponse {
+    dateTimeOfHearing: LocalDateTime? = null
+  ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/hearing")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
           "locationId" to testDataSet.locationId,
-          "dateTimeOfHearing" to testDataSet.dateTimeOfHearing!!,
+          "dateTimeOfHearing" to (dateTimeOfHearing ?: testDataSet.dateTimeOfHearing!!),
           "oicHearingType" to OicHearingType.GOV.name,
         )
       )
       .exchange()
-      .returnResult(ReportedAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
   }
 
   fun createHearingOutcome(
-    adjudicationNumber: Long,
-    hearingId: Long,
+    testDataSet: AdjudicationIntTestDataSet,
     code: HearingOutcomeCode? = HearingOutcomeCode.ADJOURN
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
-      .uri("/reported-adjudications/$adjudicationNumber/hearing/$hearingId/outcome")
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/hearing/outcome")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(

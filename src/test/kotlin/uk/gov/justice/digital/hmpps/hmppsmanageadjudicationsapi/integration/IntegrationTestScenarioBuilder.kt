@@ -3,7 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 
 class IntegrationTestScenarioBuilder(
@@ -79,16 +80,27 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun createHearing(): ReportedAdjudicationResponse {
-    return intTestData.createHearing(
+  fun createHearing(): IntegrationTestScenario {
+    intTestData.createHearing(
       testAdjudicationDataSet,
     )
+    return this
   }
 
-  fun createOutcome(reportNumber: String): IntegrationTestScenario {
-    intTestData.createOutcome(reportNumber)
-
+  fun createHearingOutcome(
+    code: HearingOutcomeCode? = HearingOutcomeCode.ADJOURN
+  ): IntegrationTestScenario {
+    intTestData.createHearingOutcome(
+      testAdjudicationDataSet,
+      code
+    )
     return this
+  }
+
+  fun createOutcome(
+    code: OutcomeCode? = OutcomeCode.REFER_POLICE
+  ): WebTestClient.ResponseSpec {
+    return intTestData.createOutcome(testAdjudicationDataSet, code)
   }
 
   fun issueReport(reportNumber: String): IntegrationTestScenario {

@@ -42,12 +42,12 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      hearingService.amendHearing(1, 1, 1, LocalDateTime.now(), OicHearingType.GOV)
+      hearingService.amendHearing(1, 1, LocalDateTime.now(), OicHearingType.GOV)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      hearingService.deleteHearing(1, 1)
+      hearingService.deleteHearing(1,)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }
@@ -111,6 +111,36 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `create hearing throws validation exception as there is already a hearing without an outcome`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.add(
+            Hearing(dateTimeOfHearing = LocalDateTime.now().minusDays(10), locationId = 1, oicHearingType = OicHearingType.GOV, oicHearingId = 1, agencyId = "", reportNumber = 1)
+          )
+        }
+      )
+      Assertions.assertThatThrownBy {
+        hearingService.createHearing(1, 1, LocalDateTime.now(), OicHearingType.GOV)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Adjudication already has a hearing without outcome")
+    }
+
+    @Test
+    fun `create hearing throws validation exception if the hearing date is before the previous hearing`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.add(
+            Hearing(dateTimeOfHearing = LocalDateTime.now().plusDays(10), locationId = 1, oicHearingType = OicHearingType.GOV, oicHearingId = 1, agencyId = "", reportNumber = 1)
+          )
+        }
+      )
+      Assertions.assertThatThrownBy {
+        hearingService.createHearing(1, 1, LocalDateTime.now().minusDays(10), OicHearingType.GOV)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("A hearing can not be before the previous hearing")
+    }
+
+    @Test
     fun `create a hearing`() {
       val now = LocalDateTime.now()
       val response = hearingService.createHearing(
@@ -146,7 +176,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class AmendHearing {
 
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = LocalDateTime.now())
       .also {
         it.createdByUserId = ""
         it.createDateTime = LocalDateTime.now()
@@ -178,7 +208,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         hearingService.amendHearing(
           1,
           1235L,
-          1,
           now,
           oicHearingType,
         )
@@ -196,9 +225,24 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingService.amendHearing(1, 1, 1, LocalDateTime.now(), OicHearingType.GOV)
+        hearingService.amendHearing(1, 1, LocalDateTime.now(), OicHearingType.GOV)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Invalid status transition")
+    }
+
+    @Test
+    fun `amend hearing throws validation exception if the hearing date is before the previous hearing`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.add(
+            Hearing(dateTimeOfHearing = LocalDateTime.now().plusDays(3), locationId = 1, oicHearingType = OicHearingType.GOV, oicHearingId = 1, agencyId = "", reportNumber = 1)
+          )
+        }
+      )
+      Assertions.assertThatThrownBy {
+        hearingService.amendHearing(1, 1, LocalDateTime.now().plusDays(1), OicHearingType.GOV)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("A hearing can not be before the previous hearing")
     }
 
     @Test
@@ -206,7 +250,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       val now = LocalDateTime.now()
       val response = hearingService.amendHearing(
         1235L,
-        1,
         2,
         now.plusDays(1),
         OicHearingType.INAD_ADULT,
@@ -240,9 +283,9 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingService.amendHearing(1, 1, 1, LocalDateTime.now(), OicHearingType.GOV)
+        hearingService.amendHearing(1, 1, LocalDateTime.now(), OicHearingType.GOV)
       }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("Hearing not found for 1")
+        .hasMessageContaining("Hearing not found")
     }
   }
 
@@ -268,16 +311,15 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingService.deleteHearing(1, 1)
+        hearingService.deleteHearing(1,)
       }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("Hearing not found for 1")
+        .hasMessageContaining("Hearing not found")
     }
 
     @Test
     fun `delete a hearing`() {
       val response = hearingService.deleteHearing(
         1235L,
-        1,
       )
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -312,16 +354,15 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       hearingService.deleteHearing(
         1235L,
-        1,
       )
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(prisonApiGateway, atLeastOnce()).deleteHearing(1235L, 3)
+      verify(prisonApiGateway, atLeastOnce()).deleteHearing(1235L, 2)
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
-      assertThat(argumentCaptor.value.dateTimeOfFirstHearing).isEqualTo(dateTimeOfHearing)
+      assertThat(argumentCaptor.value.dateTimeOfFirstHearing).isEqualTo(reportedAdjudication.hearings.first().dateTimeOfHearing)
     }
   }
 

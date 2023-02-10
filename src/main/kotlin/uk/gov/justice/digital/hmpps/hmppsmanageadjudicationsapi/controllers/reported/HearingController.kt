@@ -75,37 +75,39 @@ class HearingController(
     @RequestBody hearingRequest: HearingRequest
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = hearingService.createHearing(
-      adjudicationNumber, hearingRequest.locationId, hearingRequest.dateTimeOfHearing, hearingRequest.oicHearingType,
+      adjudicationNumber = adjudicationNumber,
+      locationId = hearingRequest.locationId,
+      dateTimeOfHearing = hearingRequest.dateTimeOfHearing,
+      oicHearingType = hearingRequest.oicHearingType,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @PutMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}"])
-  @Operation(summary = "Amend an existing hearing")
+  @PutMapping(value = ["/{adjudicationNumber}/hearing"])
+  @Operation(summary = "Amends leatest hearing")
   @ResponseStatus(HttpStatus.OK)
   fun amendHearing(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @PathVariable(name = "hearingId") hearingId: Long,
     @RequestBody hearingRequest: HearingRequest
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = hearingService.amendHearing(
-      adjudicationNumber, hearingId, hearingRequest.locationId, hearingRequest.dateTimeOfHearing, hearingRequest.oicHearingType,
+      adjudicationNumber = adjudicationNumber,
+      locationId = hearingRequest.locationId,
+      dateTimeOfHearing = hearingRequest.dateTimeOfHearing,
+      oicHearingType = hearingRequest.oicHearingType,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @DeleteMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}"])
-  @Operation(summary = "deletes a hearing")
+  @DeleteMapping(value = ["/{adjudicationNumber}/hearing"])
+  @Operation(summary = "deletes latest hearing")
   @ResponseStatus(HttpStatus.OK)
   fun deleteHearing(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @PathVariable(name = "hearingId") hearingId: Long,
   ): ReportedAdjudicationResponse {
-    val reportedAdjudication = hearingService.deleteHearing(
-      adjudicationNumber, hearingId
-    )
+    val reportedAdjudication = hearingService.deleteHearing(adjudicationNumber = adjudicationNumber)
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
@@ -115,26 +117,24 @@ class HearingController(
     @PathVariable(name = "agencyId") agencyId: String,
     @RequestParam(name = "hearingDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) hearingDate: LocalDate,
   ): HearingSummaryResponse {
-    val hearings = hearingService.getAllHearingsByAgencyIdAndDate(agencyId, hearingDate)
+    val hearings = hearingService.getAllHearingsByAgencyIdAndDate(agencyId = agencyId, dateOfHearing = hearingDate)
 
     return HearingSummaryResponse(
       hearings
     )
   }
 
-  @Operation(summary = "create a hearing outcome")
-  @PostMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}/outcome"])
+  @Operation(summary = "create a hearing outcome for latest hearing")
+  @PostMapping(value = ["/{adjudicationNumber}/hearing/outcome"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createHearingOutcome(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @PathVariable(name = "hearingId") hearingId: Long,
     @RequestBody hearingOutcomeRequest: HearingOutcomeRequest
   ): ReportedAdjudicationResponse {
     val reportedAdjudication =
       when (hearingOutcomeRequest.code.outcomeCode) {
         null -> hearingOutcomeService.createHearingOutcome(
           adjudicationNumber = adjudicationNumber,
-          hearingId = hearingId,
           adjudicator = hearingOutcomeRequest.adjudicator,
           code = hearingOutcomeRequest.code,
           reason = hearingOutcomeRequest.reason,
@@ -144,7 +144,6 @@ class HearingController(
         )
         else -> referralService.createReferral(
           adjudicationNumber = adjudicationNumber,
-          hearingId = hearingId,
           code = hearingOutcomeRequest.code,
           adjudicator = hearingOutcomeRequest.adjudicator,
           details = hearingOutcomeRequest.details!!
@@ -154,19 +153,17 @@ class HearingController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "update a hearing outcome")
-  @PutMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}/outcome"])
+  @Operation(summary = "update a hearing outcome for latest hearing")
+  @PutMapping(value = ["/{adjudicationNumber}/hearing/outcome"])
   @ResponseStatus(HttpStatus.OK)
   fun updateHearingOutcome(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @PathVariable(name = "hearingId") hearingId: Long,
     @RequestBody hearingOutcomeRequest: HearingOutcomeRequest
   ): ReportedAdjudicationResponse {
     val reportedAdjudication =
       when (hearingOutcomeRequest.code.outcomeCode) {
         null -> hearingOutcomeService.updateHearingOutcome(
           adjudicationNumber = adjudicationNumber,
-          hearingId = hearingId,
           code = hearingOutcomeRequest.code,
           adjudicator = hearingOutcomeRequest.adjudicator,
           reason = hearingOutcomeRequest.reason,
@@ -176,7 +173,6 @@ class HearingController(
         )
         else -> referralService.updateReferral(
           adjudicationNumber = adjudicationNumber,
-          hearingId = hearingId,
           code = hearingOutcomeRequest.code,
           adjudicator = hearingOutcomeRequest.adjudicator,
           details = hearingOutcomeRequest.details!!

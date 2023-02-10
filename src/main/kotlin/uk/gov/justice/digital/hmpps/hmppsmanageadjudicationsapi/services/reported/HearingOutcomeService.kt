@@ -31,7 +31,6 @@ class HearingOutcomeService(
 
   fun createHearingOutcome(
     adjudicationNumber: Long,
-    hearingId: Long,
     code: HearingOutcomeCode,
     adjudicator: String,
     reason: HearingOutcomeAdjournReason? = null,
@@ -40,7 +39,7 @@ class HearingOutcomeService(
     plea: HearingOutcomePlea? = null
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val hearingToAddOutcomeTo = reportedAdjudication.getHearing(hearingId)
+    val hearingToAddOutcomeTo = reportedAdjudication.getHearing()
     val hearingOutcome = HearingOutcome(
       code = code,
       reason = reason,
@@ -57,7 +56,6 @@ class HearingOutcomeService(
 
   fun updateHearingOutcome(
     adjudicationNumber: Long,
-    hearingId: Long,
     code: HearingOutcomeCode,
     adjudicator: String,
     reason: HearingOutcomeAdjournReason? = null,
@@ -66,7 +64,7 @@ class HearingOutcomeService(
     plea: HearingOutcomePlea? = null
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val outcomeToAmend = reportedAdjudication.getHearingOutcome(hearingId)
+    val outcomeToAmend = reportedAdjudication.getHearingOutcome()
 
     outcomeToAmend.code = code
     outcomeToAmend.adjudicator = adjudicator
@@ -99,9 +97,9 @@ class HearingOutcomeService(
 
   fun deleteHearingOutcome(adjudicationNumber: Long, hearingId: Long): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val outcomeToRemove = reportedAdjudication.getHearing(hearingId)
+    val outcomeToRemove = reportedAdjudication.getHearing()
 
-    outcomeToRemove.hearingOutcome.hearingOutcomeExists(hearingId)
+    outcomeToRemove.hearingOutcome.hearingOutcomeExists()
     outcomeToRemove.hearingOutcome = null
 
     return saveToDto(reportedAdjudication)
@@ -136,10 +134,10 @@ class HearingOutcomeService(
 
     private fun validateField(field: Any?) = field ?: throw ValidationException("missing mandatory field")
 
-    fun ReportedAdjudication.getHearingOutcome(hearingId: Long) =
-      this.getHearing(hearingId).hearingOutcome.hearingOutcomeExists(hearingId)
+    fun ReportedAdjudication.getHearingOutcome() =
+      this.getHearing().hearingOutcome.hearingOutcomeExists()
 
-    fun HearingOutcome?.hearingOutcomeExists(hearingId: Long) =
-      this ?: throw EntityNotFoundException("outcome not found for hearing $hearingId")
+    fun HearingOutcome?.hearingOutcomeExists() =
+      this ?: throw EntityNotFoundException("outcome not found for hearing")
   }
 }

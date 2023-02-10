@@ -17,14 +17,12 @@ class ReferralService(
 
   fun createReferral(
     adjudicationNumber: Long,
-    hearingId: Long,
     code: HearingOutcomeCode,
     adjudicator: String,
     details: String,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.createHearingOutcome(
       adjudicationNumber = adjudicationNumber,
-      hearingId = hearingId,
       code = code,
       adjudicator = adjudicator,
       details = details,
@@ -38,14 +36,12 @@ class ReferralService(
 
   fun updateReferral(
     adjudicationNumber: Long,
-    hearingId: Long,
     code: HearingOutcomeCode,
     adjudicator: String,
     details: String,
   ): ReportedAdjudicationDto {
     return hearingOutcomeService.updateHearingOutcome(
       adjudicationNumber = adjudicationNumber,
-      hearingId = hearingId,
       code = code,
       adjudicator = adjudicator,
       details = details,

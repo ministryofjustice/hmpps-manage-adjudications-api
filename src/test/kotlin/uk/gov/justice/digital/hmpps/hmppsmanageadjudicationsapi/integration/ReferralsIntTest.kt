@@ -9,10 +9,7 @@ class ReferralsIntTest : OutcomeIntTest() {
   @Test
   fun `remove referral with hearing`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    val reportedAdjudication = initDataForHearings().createHearing()
-    integrationTestData().createHearingOutcome(
-      reportedAdjudication.reportedAdjudication.adjudicationNumber, reportedAdjudication.reportedAdjudication.hearings.first().id!!, HearingOutcomeCode.REFER_POLICE
-    )
+    initDataForHearings().createHearing().createHearingOutcome(HearingOutcomeCode.REFER_POLICE)
 
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/remove-referral")
@@ -27,13 +24,8 @@ class ReferralsIntTest : OutcomeIntTest() {
   @Test
   fun `remove referral with hearing and referral outcome`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    val reportedAdjudication = initDataForHearings().createHearing()
-    integrationTestData().createHearingOutcome(
-      reportedAdjudication.reportedAdjudication.adjudicationNumber, reportedAdjudication.reportedAdjudication.hearings.first().id!!, HearingOutcomeCode.REFER_POLICE
-    )
-    integrationTestData().createOutcome(
-      reportedAdjudication.reportedAdjudication.adjudicationNumber.toString(), OutcomeCode.PROSECUTION
-    ).expectStatus().isCreated
+    initDataForHearings().createHearing().createHearingOutcome(HearingOutcomeCode.REFER_POLICE)
+      .createOutcome(OutcomeCode.PROSECUTION).expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
       .jsonPath("$.reportedAdjudication.outcomes[0].referralOutcome").exists()
@@ -51,7 +43,7 @@ class ReferralsIntTest : OutcomeIntTest() {
 
   @Test
   fun `remove referral without hearing`() {
-    initDataForOutcome().createOutcome(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
+    initDataForOutcome().createOutcome()
 
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/remove-referral")
@@ -65,10 +57,10 @@ class ReferralsIntTest : OutcomeIntTest() {
 
   @Test
   fun `remove referral and referral outcome`() {
-    initDataForOutcome().createOutcome(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
+    initDataForOutcome().createOutcome()
 
     integrationTestData().createOutcome(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString(), OutcomeCode.PROSECUTION
+      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.PROSECUTION
     ).expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
@@ -101,10 +93,10 @@ class ReferralsIntTest : OutcomeIntTest() {
  */
   @Test
   fun `remove referral, referral outcome and hearing outcome for a POLICE_REFER related to complex example`() {
-    initDataForOutcome().createOutcome(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
+    initDataForOutcome().createOutcome()
 
     integrationTestData().createOutcome(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString(), OutcomeCode.SCHEDULE_HEARING
+      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.SCHEDULE_HEARING
     ).expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
@@ -113,14 +105,14 @@ class ReferralsIntTest : OutcomeIntTest() {
 
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
-    var reportedAdjudication = integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION)
+    integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION)
 
     integrationTestData().createHearingOutcome(
-      reportedAdjudication.reportedAdjudication.adjudicationNumber, reportedAdjudication.reportedAdjudication.hearings.first().id!!, HearingOutcomeCode.REFER_INAD
+      IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_INAD
     )
 
     integrationTestData().createOutcome(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString(), OutcomeCode.SCHEDULE_HEARING
+      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.SCHEDULE_HEARING
     )
       .expectStatus().isCreated
       .expectBody()
@@ -129,14 +121,14 @@ class ReferralsIntTest : OutcomeIntTest() {
       .jsonPath("$.reportedAdjudication.outcomes[1].referralOutcome").exists()
       .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(1)
 
-    reportedAdjudication = integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION)
+    integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.plusDays(1))
 
     integrationTestData().createHearingOutcome(
-      reportedAdjudication.reportedAdjudication.adjudicationNumber, reportedAdjudication.reportedAdjudication.hearings.last().id!!, HearingOutcomeCode.REFER_POLICE
+      IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_POLICE
     )
 
     integrationTestData().createOutcome(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString(), OutcomeCode.PROSECUTION
+      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.PROSECUTION
     ).expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(3)
