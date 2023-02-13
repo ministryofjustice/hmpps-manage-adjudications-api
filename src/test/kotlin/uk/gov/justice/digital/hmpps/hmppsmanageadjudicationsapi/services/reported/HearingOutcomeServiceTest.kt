@@ -36,14 +36,14 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     Assertions.assertThatThrownBy {
       hearingOutcomeService.createHearingOutcome(
-        adjudicationNumber = 1, hearingId = 1, adjudicator = "test", code = HearingOutcomeCode.REFER_POLICE
+        adjudicationNumber = 1, adjudicator = "test", code = HearingOutcomeCode.REFER_POLICE
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
       hearingOutcomeService.updateHearingOutcome(
-        adjudicationNumber = 1, hearingId = 1, code = HearingOutcomeCode.ADJOURN, adjudicator = "test",
+        adjudicationNumber = 1, code = HearingOutcomeCode.ADJOURN, adjudicator = "test",
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
@@ -87,7 +87,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = hearingOutcomeService.createHearingOutcome(
-        1, 1, HearingOutcomeCode.REFER_POLICE, "test", HearingOutcomeAdjournReason.LEGAL_ADVICE, "details",
+        1, HearingOutcomeCode.REFER_POLICE, "test", HearingOutcomeAdjournReason.LEGAL_ADVICE, "details",
         HearingOutcomeFinding.NOT_PROCEED_WITH, HearingOutcomePlea.UNFIT
       )
 
@@ -115,9 +115,9 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.createHearingOutcome(1, 1, HearingOutcomeCode.REFER_POLICE, "testing",)
+        hearingOutcomeService.createHearingOutcome(1, HearingOutcomeCode.REFER_POLICE, "testing",)
       }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("Hearing not found for 1")
+        .hasMessageContaining("Hearing not found")
     }
 
     @CsvSource("COMPLETE")
@@ -125,7 +125,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `throws invalid state exception if finding not present`(code: HearingOutcomeCode) {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.createHearingOutcome(
-          adjudicationNumber = 1L, hearingId = 1L, adjudicator = "test", code = code, plea = HearingOutcomePlea.UNFIT,
+          adjudicationNumber = 1L, adjudicator = "test", code = code, plea = HearingOutcomePlea.UNFIT,
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing mandatory field")
@@ -136,7 +136,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `throws invalid state exception if plea is not present`(code: HearingOutcomeCode) {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.createHearingOutcome(
-          adjudicationNumber = 1L, hearingId = 1L, adjudicator = "test", code = code,
+          adjudicationNumber = 1L, adjudicator = "test", code = code,
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing mandatory field")
@@ -147,7 +147,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `validation details for bad refer request`(code: HearingOutcomeCode) {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.createHearingOutcome(
-          adjudicationNumber = 1L, hearingId = 1L, code = code, adjudicator = "test"
+          adjudicationNumber = 1L, code = code, adjudicator = "test"
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing mandatory field")
@@ -157,7 +157,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `validation of reason for adjourn`() {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.createHearingOutcome(
-          adjudicationNumber = 1L, hearingId = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test", details = "details", plea = HearingOutcomePlea.ABSTAIN
+          adjudicationNumber = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test", details = "details", plea = HearingOutcomePlea.ABSTAIN
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing mandatory field")
@@ -232,7 +232,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       val response = hearingOutcomeService.updateHearingOutcome(
         adjudicationNumber = 1,
-        hearingId = 1,
         code = code,
         adjudicator = "updated test",
       )
@@ -256,7 +255,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       val response = hearingOutcomeService.updateHearingOutcome(
         adjudicationNumber = 1,
-        hearingId = 1,
         code = HearingOutcomeCode.ADJOURN,
         adjudicator = "updated test",
         details = "updated details",
@@ -285,7 +283,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       val response = hearingOutcomeService.updateHearingOutcome(
         adjudicationNumber = 1,
-        hearingId = 1,
         code = HearingOutcomeCode.COMPLETE,
         adjudicator = "updated test",
         plea = HearingOutcomePlea.ABSTAIN,
@@ -315,9 +312,9 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.updateHearingOutcome(1, 1, HearingOutcomeCode.REFER_POLICE, "testing",)
+        hearingOutcomeService.updateHearingOutcome(1, HearingOutcomeCode.REFER_POLICE, "testing",)
       }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("Hearing not found for 1")
+        .hasMessageContaining("Hearing not found")
     }
 
     @Test
@@ -329,9 +326,9 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.updateHearingOutcome(1, 1, HearingOutcomeCode.REFER_POLICE, "testing",)
+        hearingOutcomeService.updateHearingOutcome(1, HearingOutcomeCode.REFER_POLICE, "testing",)
       }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("outcome not found for hearing 1")
+        .hasMessageContaining("outcome not found for hearing")
     }
 
     @CsvSource("COMPLETE")
@@ -339,7 +336,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `throws invalid state exception if finding not present`(code: HearingOutcomeCode) {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.updateHearingOutcome(
-          adjudicationNumber = 1L, hearingId = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test", plea = HearingOutcomePlea.UNFIT,
+          adjudicationNumber = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test", plea = HearingOutcomePlea.UNFIT,
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing mandatory field")
@@ -350,7 +347,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `throws invalid state exception if plea is not present`(code: HearingOutcomeCode) {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.updateHearingOutcome(
-          adjudicationNumber = 1L, hearingId = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test",
+          adjudicationNumber = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test",
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing mandatory field")
@@ -361,7 +358,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `validation of details for bad request`(code: HearingOutcomeCode) {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.updateHearingOutcome(
-          adjudicationNumber = 1L, hearingId = 1L, code = code, adjudicator = "test"
+          adjudicationNumber = 1L, code = code, adjudicator = "test"
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing mandatory field")
@@ -371,7 +368,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `validation of reason for adjourn`() {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.updateHearingOutcome(
-          adjudicationNumber = 1L, hearingId = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test"
+          adjudicationNumber = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test"
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing mandatory field")
@@ -382,7 +379,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       val response = hearingOutcomeService.updateHearingOutcome(
         adjudicationNumber = 1,
-        hearingId = 1,
         code = request.code,
         adjudicator = "updated test",
         reason = request.reason,
@@ -445,7 +441,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.deleteHearingOutcome(1, 1)
       }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("outcome not found for hearing 1")
+        .hasMessageContaining("outcome not found for hearing")
     }
   }
 

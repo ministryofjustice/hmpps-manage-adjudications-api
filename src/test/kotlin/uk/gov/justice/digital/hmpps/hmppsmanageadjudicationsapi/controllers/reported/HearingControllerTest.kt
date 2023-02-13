@@ -108,43 +108,41 @@ class HearingControllerTest : TestControllerBase() {
       whenever(
         hearingService.deleteHearing(
           ArgumentMatchers.anyLong(),
-          ArgumentMatchers.anyLong(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
-      deleteHearingRequest(1, 1).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+      deleteHearingRequest(1,).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
-      deleteHearingRequest(1, 1).andExpect(MockMvcResultMatchers.status().isForbidden)
+      deleteHearingRequest(1,).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
-      deleteHearingRequest(1, 1).andExpect(MockMvcResultMatchers.status().isForbidden)
+      deleteHearingRequest(1,).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to delete a hearing`() {
-      deleteHearingRequest(1, 1)
+      deleteHearingRequest(1,)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingService).deleteHearing(1, 1)
+      verify(hearingService).deleteHearing(1,)
     }
 
     private fun deleteHearingRequest(
       id: Long,
-      hearingId: Long
     ): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing/$hearingId")
+          MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing")
             .header("Content-Type", "application/json")
         )
     }
@@ -158,7 +156,6 @@ class HearingControllerTest : TestControllerBase() {
         hearingService.amendHearing(
           ArgumentMatchers.anyLong(),
           ArgumentMatchers.anyLong(),
-          ArgumentMatchers.anyLong(),
           any(),
           any(),
         )
@@ -168,7 +165,7 @@ class HearingControllerTest : TestControllerBase() {
     @Test
     fun `responds with a unauthorised status code`() {
       amendHearingRequest(
-        1, 1,
+        1,
         HEARING_REQUEST
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -177,7 +174,7 @@ class HearingControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
       amendHearingRequest(
-        1, 1,
+        1,
         HEARING_REQUEST
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -186,7 +183,7 @@ class HearingControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
       amendHearingRequest(
-        1, 1,
+        1,
         HEARING_REQUEST
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -194,20 +191,19 @@ class HearingControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to amend a hearing`() {
-      amendHearingRequest(1, 1, HEARING_REQUEST)
+      amendHearingRequest(1, HEARING_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingService).amendHearing(1, 1, HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
+      verify(hearingService).amendHearing(1, HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
     }
 
     private fun amendHearingRequest(
       id: Long,
-      hearingId: Long,
       hearing: HearingRequest?
     ): ResultActions {
       val body = objectMapper.writeValueAsString(hearing)
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing/$hearingId")
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing")
             .header("Content-Type", "application/json")
             .content(body)
         )
@@ -267,7 +263,6 @@ class HearingControllerTest : TestControllerBase() {
       whenever(
         hearingOutcomeService.createHearingOutcome(
           ArgumentMatchers.anyLong(),
-          ArgumentMatchers.anyLong(),
           any(),
           any(),
           anyOrNull(),
@@ -280,7 +275,6 @@ class HearingControllerTest : TestControllerBase() {
       whenever(
         referralService.createReferral(
           ArgumentMatchers.anyLong(),
-          ArgumentMatchers.anyLong(),
           any(),
           any(),
           any(),
@@ -292,7 +286,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a unauthorised status code`() {
       createHearingOutcomeRequest(
         1,
-        1,
+
         hearingOutcomeRequest()
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -302,7 +296,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for non ALO`() {
       createHearingOutcomeRequest(
         1,
-        1,
+
         hearingOutcomeRequest()
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -311,18 +305,16 @@ class HearingControllerTest : TestControllerBase() {
     @CsvSource("REFER_POLICE", "REFER_INAD", "COMPLETE", "ADJOURN")
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create a hearing outcome`(code: HearingOutcomeCode) {
-      createHearingOutcomeRequest(1, 1, hearingOutcomeRequest(code))
+      createHearingOutcomeRequest(1, hearingOutcomeRequest(code))
         .andExpect(MockMvcResultMatchers.status().isCreated)
       if (code.outcomeCode != null) verify(referralService).createReferral(
         adjudicationNumber = 1,
-        hearingId = 1,
         code = code,
         adjudicator = "test",
         details = "details"
       )
       else verify(hearingOutcomeService).createHearingOutcome(
         adjudicationNumber = 1,
-        hearingId = 1,
         code = code,
         adjudicator = "test",
         reason = null,
@@ -332,13 +324,12 @@ class HearingControllerTest : TestControllerBase() {
 
     private fun createHearingOutcomeRequest(
       id: Long,
-      hearingId: Long,
       hearingOutcome: HearingOutcomeRequest?
     ): ResultActions {
       val body = objectMapper.writeValueAsString(hearingOutcome)
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.post("/reported-adjudications/$id/hearing/$hearingId/outcome")
+          MockMvcRequestBuilders.post("/reported-adjudications/$id/hearing/outcome")
             .header("Content-Type", "application/json")
             .content(body)
         )
@@ -352,7 +343,6 @@ class HearingControllerTest : TestControllerBase() {
       whenever(
         hearingOutcomeService.updateHearingOutcome(
           ArgumentMatchers.anyLong(),
-          ArgumentMatchers.anyLong(),
           any(),
           any(),
           anyOrNull(),
@@ -365,7 +355,6 @@ class HearingControllerTest : TestControllerBase() {
       whenever(
         referralService.updateReferral(
           ArgumentMatchers.anyLong(),
-          ArgumentMatchers.anyLong(),
           any(),
           any(),
           any(),
@@ -377,7 +366,6 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a unauthorised status code`() {
       updateHearingOutcomeRequest(
         1,
-        1,
         hearingOutcomeRequest()
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -387,7 +375,6 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for non ALO`() {
       updateHearingOutcomeRequest(
         1,
-        1,
         hearingOutcomeRequest()
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -396,18 +383,16 @@ class HearingControllerTest : TestControllerBase() {
     @CsvSource("REFER_POLICE", "REFER_INAD", "COMPLETE", "ADJOURN")
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to update a hearing outcome`(code: HearingOutcomeCode) {
-      updateHearingOutcomeRequest(1, 1, hearingOutcomeRequest(code))
+      updateHearingOutcomeRequest(1, hearingOutcomeRequest(code))
         .andExpect(MockMvcResultMatchers.status().isOk)
       if (code.outcomeCode != null) verify(referralService).updateReferral(
         adjudicationNumber = 1,
-        hearingId = 1,
         code = code,
         adjudicator = "test",
         details = "details"
       )
       else verify(hearingOutcomeService).updateHearingOutcome(
         adjudicationNumber = 1,
-        hearingId = 1,
         code = code,
         adjudicator = "test",
         details = "details"
@@ -416,13 +401,12 @@ class HearingControllerTest : TestControllerBase() {
 
     private fun updateHearingOutcomeRequest(
       id: Long,
-      hearingId: Long,
       hearingOutcome: HearingOutcomeRequest?
     ): ResultActions {
       val body = objectMapper.writeValueAsString(hearingOutcome)
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing/$hearingId/outcome")
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing/outcome")
             .header("Content-Type", "application/json")
             .content(body)
         )

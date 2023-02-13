@@ -14,10 +14,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Hea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getHearing
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
+import javax.validation.ValidationException
 
 @Transactional
 @Service
@@ -37,7 +39,8 @@ class HearingService(
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
       it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED)
-    }
+      it.hearings.validateHearingDate(dateTimeOfHearing)
+    }.validateCanCreate()
 
     val oicHearingId = prisonApiGateway.createHearing(
       adjudicationNumber = adjudicationNumber,
@@ -68,13 +71,14 @@ class HearingService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun amendHearing(adjudicationNumber: Long, hearingId: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
+  fun amendHearing(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
       it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED)
     }
 
-    val hearingToEdit = reportedAdjudication.getHearing(hearingId)
+    val hearingToEdit = reportedAdjudication.getHearing()
+    reportedAdjudication.hearings.filter { it.id != hearingToEdit.id }.validateHearingDate(dateTimeOfHearing)
 
     prisonApiGateway.amendHearing(
       adjudicationNumber = adjudicationNumber,
@@ -97,9 +101,9 @@ class HearingService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun deleteHearing(adjudicationNumber: Long, hearingId: Long): ReportedAdjudicationDto {
+  fun deleteHearing(adjudicationNumber: Long): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val hearingToRemove = reportedAdjudication.getHearing(hearingId)
+    val hearingToRemove = reportedAdjudication.getHearing()
 
     prisonApiGateway.deleteHearing(
       adjudicationNumber = adjudicationNumber,
@@ -144,12 +148,23 @@ class HearingService(
 
   companion object {
 
-    fun ReportedAdjudication.getHearing(hearingId: Long) =
-      this.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException(hearingId)
-    private fun throwHearingNotFoundException(id: Long): Nothing =
-      throw EntityNotFoundException("Hearing not found for $id")
+    fun ReportedAdjudication.validateCanCreate(): ReportedAdjudication {
+      val latestHearing = this.getLatestHearing() ?: return this
+      latestHearing.hearingOutcome ?: throw ValidationException("Adjudication already has a hearing without outcome")
+      return this
+    }
 
-    fun ReportedAdjudication.calcFirstHearingDate(): LocalDateTime? =
-      this.hearings.minOfOrNull { it.dateTimeOfHearing }
+    fun List<Hearing>.validateHearingDate(date: LocalDateTime) {
+      if (this.any { it.dateTimeOfHearing.isAfter(date) })
+        throw ValidationException("A hearing can not be before the previous hearing")
+    }
+
+    fun ReportedAdjudication.getHearing(): Hearing = this.getLatestHearing() ?: throwHearingNotFoundException()
+
+    fun ReportedAdjudication.calcFirstHearingDate(): LocalDateTime? = this.hearings.minOfOrNull { it.dateTimeOfHearing }
+
+    private fun throwHearingNotFoundException(): Nothing = throw EntityNotFoundException("Hearing not found")
+
+    private fun ReportedAdjudication.getLatestHearing(): Hearing? = this.hearings.maxByOrNull { it.dateTimeOfHearing }
   }
 }

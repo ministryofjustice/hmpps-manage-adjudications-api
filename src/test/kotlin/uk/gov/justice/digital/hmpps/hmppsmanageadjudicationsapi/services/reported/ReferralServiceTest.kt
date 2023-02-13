@@ -30,11 +30,11 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
   fun `create outcome and hearing outcome for referral`() {
 
     referralService.createReferral(
-      1, 1, HearingOutcomeCode.REFER_POLICE, "test", "details",
+      1, HearingOutcomeCode.REFER_POLICE, "test", "details",
     )
 
     verify(hearingOutcomeService, atLeastOnce()).createHearingOutcome(
-      adjudicationNumber = 1, hearingId = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = "test", details = "details",
+      adjudicationNumber = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = "test", details = "details",
     )
 
     verify(outcomeService, atLeastOnce()).createOutcome(adjudicationNumber = 1, code = OutcomeCode.REFER_POLICE, details = "details")
@@ -44,11 +44,11 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
   fun `updates outcome and hearing outcome for referral`() {
 
     referralService.updateReferral(
-      1, 1, HearingOutcomeCode.REFER_INAD, "test 2", "details 2",
+      1, HearingOutcomeCode.REFER_INAD, "test 2", "details 2",
     )
 
     verify(hearingOutcomeService, atLeastOnce()).updateHearingOutcome(
-      adjudicationNumber = 1, hearingId = 1, code = HearingOutcomeCode.REFER_INAD, adjudicator = "test 2", details = "details 2"
+      adjudicationNumber = 1, code = HearingOutcomeCode.REFER_INAD, adjudicator = "test 2", details = "details 2"
     )
 
     // TODO not implemented yet verify(outcomeService, atLeastOnce()).createOutcome(adjudicationNumber = 1, code = OutcomeCode.REFER_POLICE, details = "details 2")
