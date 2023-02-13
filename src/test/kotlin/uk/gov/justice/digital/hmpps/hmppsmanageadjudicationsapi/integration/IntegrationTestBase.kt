@@ -84,9 +84,12 @@ abstract class IntegrationTestBase {
     it.contentType = contentType
   }
 
-  fun setAuditTime(auditDateTime: LocalDateTime) {
-    auditingHandler.setDateTimeProvider(dateTimeProvider)
-    whenever(dateTimeProvider.now).thenReturn(Optional.of(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME))
+  fun setAuditTime(auditDateTime: LocalDateTime? = null) {
+    if (auditDateTime == null) auditingHandler.setDateTimeProvider(null)
+    else {
+      auditingHandler.setDateTimeProvider(dateTimeProvider)
+      whenever(dateTimeProvider.now).thenReturn(Optional.of(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME))
+    }
   }
 
   fun integrationTestData(): IntegrationTestData {
