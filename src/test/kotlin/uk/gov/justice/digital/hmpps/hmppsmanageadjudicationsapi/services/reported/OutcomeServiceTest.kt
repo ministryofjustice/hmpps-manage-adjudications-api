@@ -133,11 +133,18 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         Outcome(id = 1, code = OutcomeCode.REFER_INAD)
       )
     }
+    private val reportedAdjudicationWithOutcomeAndNoHearings = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+      it.hearings.clear()
+      it.outcomes.add(
+        Outcome(id = 1, code = OutcomeCode.REFER_POLICE)
+      )
+    }
 
     @BeforeEach
     fun init() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(reportedAdjudicationWithOutcome)
+      whenever(reportedAdjudicationRepository.findByReportNumber(3)).thenReturn(reportedAdjudicationWithOutcomeAndNoHearings)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         reportedAdjudication.also {
           it.createDateTime = LocalDateTime.now()
@@ -147,7 +154,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `delete outcome `() {
+    fun `delete outcome when we have hearings `() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.deleteOutcome(
@@ -157,7 +164,24 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.outcomes).isEmpty()
-      // TODO statuses...do on another ticket i think.
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `delete outcome when we have no hearings `() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.deleteOutcome(
+        3, 1,
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes).isEmpty()
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
+
       assertThat(response).isNotNull
     }
 
