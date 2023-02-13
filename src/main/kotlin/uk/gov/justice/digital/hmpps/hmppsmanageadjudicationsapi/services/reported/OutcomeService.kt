@@ -95,14 +95,15 @@ class OutcomeService(
       this.outcomes.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Outcome not found for $id")
 
     fun ReportedAdjudication.calculateStatus() {
-      when (this.outcomes.isEmpty()) {
-        true -> {
-          this.status = if (hearings.isEmpty()) ReportedAdjudicationStatus.UNSCHEDULED else ReportedAdjudicationStatus.SCHEDULED
-        }
-        false -> {
+      this.status = when (this.outcomes.isEmpty()) {
+        true ->
+          when (this.hearings.isEmpty()) {
+            true -> ReportedAdjudicationStatus.UNSCHEDULED
+            false -> ReportedAdjudicationStatus.SCHEDULED
+          }
+        false ->
           // TODO review at later point.  for now, it can just be the previous outcome status
-          this.status = this.outcomes.sortedByDescending { it.createDateTime }.first().code.status
-        }
+          this.outcomes.sortedByDescending { it.createDateTime }.first().code.status
       }
     }
   }
