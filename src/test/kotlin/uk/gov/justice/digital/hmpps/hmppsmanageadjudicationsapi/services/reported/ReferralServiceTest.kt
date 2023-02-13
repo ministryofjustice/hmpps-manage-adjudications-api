@@ -51,7 +51,7 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
       adjudicationNumber = 1, code = HearingOutcomeCode.REFER_INAD, adjudicator = "test 2", details = "details 2"
     )
 
-    // TODO not implemented yet verify(outcomeService, atLeastOnce()).createOutcome(adjudicationNumber = 1, code = OutcomeCode.REFER_POLICE, details = "details 2")
+    verify(outcomeService, atLeastOnce()).updateReferral(adjudicationNumber = 1, code = OutcomeCode.REFER_INAD, details = "details 2")
   }
 
   @Test

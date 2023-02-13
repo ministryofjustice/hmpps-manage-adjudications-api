@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -326,10 +325,9 @@ class HearingsIntTest : IntegrationTestBase() {
   }
 
   @Test
-  @Disabled // currently not implemented fully so status will not update
-  fun `update hearing outcome to a referral`() {
+  fun `update details of hearing outcome for referral`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    initDataForHearings().createHearing().createHearingOutcome()
+    initDataForHearings().createHearing().createHearingOutcome(code = HearingOutcomeCode.REFER_INAD)
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome")
