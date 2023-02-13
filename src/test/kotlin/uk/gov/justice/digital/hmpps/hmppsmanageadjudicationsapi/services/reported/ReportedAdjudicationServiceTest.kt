@@ -505,6 +505,15 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class OutcomesHistory {
+
+    @Test
+    fun `outcome history DTO`() {
+      TODO("implement me - work out what this should look like and build up adjudication and expected output")
+    }
+  }
+
   companion object {
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)

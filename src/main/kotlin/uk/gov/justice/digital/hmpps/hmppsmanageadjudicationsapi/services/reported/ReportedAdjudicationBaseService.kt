@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentSta
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedDamageDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedEvidenceDto
@@ -32,44 +33,53 @@ import javax.persistence.EntityNotFoundException
 open class ReportedDtoService(
   protected val offenceCodeLookupService: OffenceCodeLookupService,
 ) {
-  protected fun ReportedAdjudication.toDto(): ReportedAdjudicationDto = ReportedAdjudicationDto(
-    adjudicationNumber = reportNumber,
-    prisonerNumber = prisonerNumber,
-    bookingId = bookingId,
-    incidentDetails = IncidentDetailsDto(
-      locationId = locationId,
-      dateTimeOfIncident = dateTimeOfIncident,
-      dateTimeOfDiscovery = dateTimeOfDiscovery,
-      handoverDeadline = handoverDeadline
-    ),
-    isYouthOffender = isYouthOffender,
-    incidentRole = IncidentRoleDto(
-      roleCode = incidentRoleCode,
-      offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleCode, isYouthOffender),
-      associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
-      associatedPrisonersName = incidentRoleAssociatedPrisonersName,
-    ),
-    offenceDetails = toReportedOffence(offenceDetails.first(), isYouthOffender, gender, offenceCodeLookupService),
-    incidentStatement = IncidentStatementDto(
-      statement = statement,
-      completed = true,
-    ),
-    createdByUserId = createdByUserId!!,
-    createdDateTime = createDateTime!!,
-    reviewedByUserId = reviewUserId,
-    damages = toReportedDamages(damages),
-    evidence = toReportedEvidence(evidence),
-    witnesses = toReportedWitnesses(witnesses),
-    status = status,
-    statusReason = statusReason,
-    statusDetails = statusDetails,
-    hearings = toHearings(hearings),
-    issuingOfficer = issuingOfficer,
-    dateTimeOfIssue = dateTimeOfIssue,
-    gender = gender,
-    dateTimeOfFirstHearing = dateTimeOfFirstHearing,
-    outcomes = outcomes.createCombinedOutcomes(),
-  )
+  protected fun ReportedAdjudication.toDto(): ReportedAdjudicationDto {
+    val hearings = this.hearings.toHearings()
+    val outcomes = outcomes.createCombinedOutcomes()
+    return ReportedAdjudicationDto(
+      adjudicationNumber = reportNumber,
+      prisonerNumber = prisonerNumber,
+      bookingId = bookingId,
+      incidentDetails = IncidentDetailsDto(
+        locationId = locationId,
+        dateTimeOfIncident = dateTimeOfIncident,
+        dateTimeOfDiscovery = dateTimeOfDiscovery,
+        handoverDeadline = handoverDeadline
+      ),
+      isYouthOffender = isYouthOffender,
+      incidentRole = IncidentRoleDto(
+        roleCode = incidentRoleCode,
+        offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleCode, isYouthOffender),
+        associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
+        associatedPrisonersName = incidentRoleAssociatedPrisonersName,
+      ),
+      offenceDetails = toReportedOffence(offenceDetails.first(), isYouthOffender, gender, offenceCodeLookupService),
+      incidentStatement = IncidentStatementDto(
+        statement = statement,
+        completed = true,
+      ),
+      createdByUserId = createdByUserId!!,
+      createdDateTime = createDateTime!!,
+      reviewedByUserId = reviewUserId,
+      damages = this.damages.toReportedDamages(),
+      evidence = this.evidence.toReportedEvidence(),
+      witnesses = this.witnesses.toReportedWitnesses(),
+      status = status,
+      statusReason = statusReason,
+      statusDetails = statusDetails,
+      hearings = hearings,
+      issuingOfficer = issuingOfficer,
+      dateTimeOfIssue = dateTimeOfIssue,
+      gender = gender,
+      dateTimeOfFirstHearing = dateTimeOfFirstHearing,
+      outcomes = outcomes,
+      history = createHistory(hearings, outcomes)
+    )
+  }
+
+  private fun createHistory(hearings: List<HearingDto>, outcomes: List<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
+    TODO("implement me")
+  }
 
   protected fun List<Outcome>.createCombinedOutcomes(): List<CombinedOutcomeDto> {
     if (this.isEmpty()) return emptyList()
@@ -119,8 +129,8 @@ open class ReportedDtoService(
       victimOtherPersonsName = offence.victimOtherPersonsName,
     )
 
-  private fun toReportedDamages(damages: MutableList<ReportedDamage>): List<ReportedDamageDto> =
-    damages.map {
+  private fun List<ReportedDamage>.toReportedDamages(): List<ReportedDamageDto> =
+    this.map {
       ReportedDamageDto(
         code = it.code,
         details = it.details,
@@ -128,8 +138,8 @@ open class ReportedDtoService(
       )
     }.toList()
 
-  private fun toReportedEvidence(evidence: MutableList<ReportedEvidence>): List<ReportedEvidenceDto> =
-    evidence.map {
+  private fun List<ReportedEvidence>.toReportedEvidence(): List<ReportedEvidenceDto> =
+    this.map {
       ReportedEvidenceDto(
         code = it.code,
         identifier = it.identifier,
@@ -138,8 +148,8 @@ open class ReportedDtoService(
       )
     }.toList()
 
-  private fun toReportedWitnesses(witnesses: MutableList<ReportedWitness>): List<ReportedWitnessDto> =
-    witnesses.map {
+  private fun List<ReportedWitness>.toReportedWitnesses(): List<ReportedWitnessDto> =
+    this.map {
       ReportedWitnessDto(
         code = it.code,
         firstName = it.firstName,
@@ -148,8 +158,8 @@ open class ReportedDtoService(
       )
     }.toList()
 
-  private fun toHearings(hearings: MutableList<Hearing>): List<HearingDto> =
-    hearings.map {
+  private fun List<Hearing>.toHearings(): List<HearingDto> =
+    this.map {
       HearingDto(
         id = it.id,
         locationId = it.locationId,
