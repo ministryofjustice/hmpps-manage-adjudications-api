@@ -37,16 +37,19 @@ class ReferralService(
   fun updateReferral(
     adjudicationNumber: Long,
     code: HearingOutcomeCode,
-    adjudicator: String,
     details: String,
   ): ReportedAdjudicationDto {
-    return hearingOutcomeService.updateHearingOutcome(
+    hearingOutcomeService.updateHearingOutcome(
       adjudicationNumber = adjudicationNumber,
       code = code,
-      adjudicator = adjudicator,
       details = details,
     )
-    // TODO not implemented update outcome yet.  later tickets, plus can remove a referral too.
+
+    return outcomeService.updateReferral(
+      adjudicationNumber = adjudicationNumber,
+      code = code.outcomeCode!!,
+      details = details,
+    )
   }
 
   fun removeReferral(adjudicationNumber: Long): ReportedAdjudicationDto {

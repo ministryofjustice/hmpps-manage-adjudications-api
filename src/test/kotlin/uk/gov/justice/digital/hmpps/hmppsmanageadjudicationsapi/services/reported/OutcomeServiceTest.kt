@@ -41,6 +41,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       outcomeService.deleteOutcome(1, 1)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      outcomeService.updateReferral(1, OutcomeCode.REFER_INAD, "updated")
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
   }
 
   @Nested
@@ -257,6 +262,68 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.last().outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
       assertThat(result.last().referralOutcome).isNotNull
       assertThat(result.last().referralOutcome!!.code).isEqualTo(OutcomeCode.NOT_PROCEED)
+    }
+  }
+
+  @Nested
+  inner class UpdateOutcome {
+
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+      .also {
+        it.outcomes.clear()
+        it.outcomes.add(
+          Outcome(id = 1, code = OutcomeCode.REFER_POLICE, details = "ref police")
+        )
+        it.outcomes.add(
+          Outcome(id = 2, code = OutcomeCode.REFER_INAD, details = "ref inad").also {
+            o ->
+            o.createDateTime = LocalDateTime.now()
+          }
+        )
+        it.outcomes.add(
+          Outcome(id = 3, code = OutcomeCode.REFER_INAD, details = "ref inad").also {
+            o ->
+            o.createDateTime = LocalDateTime.now().plusDays(1)
+          }
+        )
+      }
+
+    @BeforeEach
+    fun init() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = ReportedAdjudicationStatus.UNSCHEDULED
+          it.createdByUserId = "test"
+          it.createDateTime = LocalDateTime.now()
+        }
+      )
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+    }
+
+    @Test
+    fun `throws entity not found if no matching referral`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.outcomes.removeFirst()
+        }
+      )
+
+      Assertions.assertThatThrownBy {
+        outcomeService.updateReferral(1, OutcomeCode.REFER_POLICE, "updated")
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Referral not found for 1235")
+    }
+    @CsvSource("REFER_POLICE", "REFER_INAD")
+    @ParameterizedTest
+    fun `update outcome details for referral`(code: OutcomeCode) {
+      val id = if (code == OutcomeCode.REFER_INAD) 3L else 1L
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val response = outcomeService.updateReferral(1, code, code.name)
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first { it.id == id }.details).isEqualTo(code.name)
+      assertThat(response).isNotNull
     }
   }
 }

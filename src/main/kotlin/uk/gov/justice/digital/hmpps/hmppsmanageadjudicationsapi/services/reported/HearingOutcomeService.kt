@@ -57,7 +57,7 @@ class HearingOutcomeService(
   fun updateHearingOutcome(
     adjudicationNumber: Long,
     code: HearingOutcomeCode,
-    adjudicator: String,
+    adjudicator: String? = null,
     reason: HearingOutcomeAdjournReason? = null,
     details: String? = null,
     finding: HearingOutcomeFinding? = null,
@@ -67,7 +67,7 @@ class HearingOutcomeService(
     val outcomeToAmend = reportedAdjudication.getHearingOutcome()
 
     outcomeToAmend.code = code
-    outcomeToAmend.adjudicator = adjudicator
+    if (adjudicator != null) outcomeToAmend.adjudicator = adjudicator
 
     when (outcomeToAmend.code) {
       HearingOutcomeCode.COMPLETE -> {

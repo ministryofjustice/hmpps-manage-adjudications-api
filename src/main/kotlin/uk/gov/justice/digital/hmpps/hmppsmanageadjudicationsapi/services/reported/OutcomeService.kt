@@ -73,8 +73,21 @@ class OutcomeService(
     return reportedAdjudication.outcomes.createCombinedOutcomes()
   }
 
+  fun updateReferral(adjudicationNumber: Long, code: OutcomeCode, details: String): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+
+    reportedAdjudication.getReferral(code).also {
+      it.details = details
+    }
+
+    return saveToDto(reportedAdjudication)
+  }
+
   companion object {
     private fun validateDetails(details: String?) = details ?: throw ValidationException("details are required")
+
+    fun ReportedAdjudication.getReferral(code: OutcomeCode) =
+      this.outcomes.filter { it.code == code }.sortedByDescending { it.createDateTime }.firstOrNull() ?: throw EntityNotFoundException("Referral not found for ${this.reportNumber}")
 
     fun ReportedAdjudication.getOutcome(id: Long) =
       this.outcomes.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Outcome not found for $id")

@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -326,17 +325,15 @@ class HearingsIntTest : IntegrationTestBase() {
   }
 
   @Test
-  @Disabled // currently not implemented fully so status will not update
-  fun `update hearing outcome to a referral`() {
+  fun `update details of hearing outcome for referral`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    initDataForHearings().createHearing().createHearingOutcome()
+    initDataForHearings().createHearing().createHearingOutcome(code = HearingOutcomeCode.REFER_INAD)
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
-          "adjudicator" to "updated",
           "code" to HearingOutcomeCode.REFER_INAD,
           "details" to "details updated"
         )
@@ -352,8 +349,6 @@ class HearingsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea").doesNotExist()
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.finding").doesNotExist()
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.details").isEqualTo("details updated")
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
-      .isEqualTo("updated")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.details").isEqualTo("details updated")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.REFER_INAD.name)
   }
