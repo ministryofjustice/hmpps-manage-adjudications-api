@@ -286,7 +286,6 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a unauthorised status code`() {
       createHearingOutcomeRequest(
         1,
-
         hearingOutcomeRequest()
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -296,9 +295,26 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for non ALO`() {
       createHearingOutcomeRequest(
         1,
-
         hearingOutcomeRequest()
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `returns bad request if adjudicator not set when required`() {
+      createHearingOutcomeRequest(
+        1,
+        NO_ADJUDICATOR_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `returns bad request if details not set when required`() {
+      createHearingOutcomeRequest(
+        1,
+        NO_DETAILS_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isBadRequest)
     }
 
     @ParameterizedTest
@@ -378,6 +394,24 @@ class HearingControllerTest : TestControllerBase() {
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `returns bad request if adjudicator not set when required`() {
+      updateHearingOutcomeRequest(
+        1,
+        NO_ADJUDICATOR_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `returns bad request if details not set when required`() {
+      updateHearingOutcomeRequest(
+        1,
+        NO_DETAILS_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+    }
+
     @ParameterizedTest
     @CsvSource("REFER_POLICE", "REFER_INAD", "COMPLETE", "ADJOURN")
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
@@ -413,6 +447,12 @@ class HearingControllerTest : TestControllerBase() {
   companion object {
     private val HEARING_REQUEST = HearingRequest(locationId = 1L, dateTimeOfHearing = LocalDateTime.now(), oicHearingType = OicHearingType.GOV)
     private fun hearingOutcomeRequest(code: HearingOutcomeCode? = HearingOutcomeCode.REFER_POLICE) = HearingOutcomeRequest(adjudicator = "test", code = code!!, details = "details")
+    private val NO_ADJUDICATOR_REQUEST = HearingOutcomeRequest(
+      code = HearingOutcomeCode.ADJOURN
+    )
+    private val NO_DETAILS_REQUEST = HearingOutcomeRequest(
+      code = HearingOutcomeCode.REFER_INAD
+    )
 
     private val ALL_HEARINGS_DTO =
       listOf(

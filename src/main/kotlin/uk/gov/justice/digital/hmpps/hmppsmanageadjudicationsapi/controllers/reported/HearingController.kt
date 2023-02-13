@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 import java.time.LocalDate
 import java.time.LocalDateTime
+import javax.validation.ValidationException
 
 @Schema(description = "All hearings response")
 data class HearingSummaryResponse(
@@ -135,7 +136,7 @@ class HearingController(
       when (hearingOutcomeRequest.code.outcomeCode) {
         null -> hearingOutcomeService.createHearingOutcome(
           adjudicationNumber = adjudicationNumber,
-          adjudicator = hearingOutcomeRequest.adjudicator!!,
+          adjudicator = validateAdjudicator(hearingOutcomeRequest.adjudicator),
           code = hearingOutcomeRequest.code,
           reason = hearingOutcomeRequest.reason,
           details = hearingOutcomeRequest.details,
@@ -145,8 +146,8 @@ class HearingController(
         else -> referralService.createReferral(
           adjudicationNumber = adjudicationNumber,
           code = hearingOutcomeRequest.code,
-          adjudicator = hearingOutcomeRequest.adjudicator!!,
-          details = hearingOutcomeRequest.details!!
+          adjudicator = validateAdjudicator(hearingOutcomeRequest.adjudicator),
+          details = validateDetails(hearingOutcomeRequest.details)
         )
       }
 
@@ -165,7 +166,7 @@ class HearingController(
         null -> hearingOutcomeService.updateHearingOutcome(
           adjudicationNumber = adjudicationNumber,
           code = hearingOutcomeRequest.code,
-          adjudicator = hearingOutcomeRequest.adjudicator!!,
+          adjudicator = validateAdjudicator(hearingOutcomeRequest.adjudicator),
           reason = hearingOutcomeRequest.reason,
           details = hearingOutcomeRequest.details,
           finding = hearingOutcomeRequest.finding,
@@ -174,10 +175,18 @@ class HearingController(
         else -> referralService.updateReferral(
           adjudicationNumber = adjudicationNumber,
           code = hearingOutcomeRequest.code,
-          details = hearingOutcomeRequest.details!!
+          details = validateDetails(hearingOutcomeRequest.details)
         )
       }
 
     return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  companion object {
+    fun validateAdjudicator(adjudicator: String?) =
+      adjudicator ?: throw ValidationException("adjudicator is required")
+
+    fun validateDetails(details: String?) =
+      details ?: throw ValidationException("details is required")
   }
 }
