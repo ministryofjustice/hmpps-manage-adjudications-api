@@ -45,8 +45,8 @@ data class HearingRequest(
 
 @Schema(description = "Request to create a hearing outcome")
 data class HearingOutcomeRequest(
-  @Schema(description = "the name of the adjudicator")
-  val adjudicator: String,
+  @Schema(description = "the name of the adjudicator, optional when editing a referral")
+  val adjudicator: String? = null,
   @Schema(description = "the outcome code")
   val code: HearingOutcomeCode,
   @Schema(description = "reason")
@@ -135,7 +135,7 @@ class HearingController(
       when (hearingOutcomeRequest.code.outcomeCode) {
         null -> hearingOutcomeService.createHearingOutcome(
           adjudicationNumber = adjudicationNumber,
-          adjudicator = hearingOutcomeRequest.adjudicator,
+          adjudicator = hearingOutcomeRequest.adjudicator!!,
           code = hearingOutcomeRequest.code,
           reason = hearingOutcomeRequest.reason,
           details = hearingOutcomeRequest.details,
@@ -145,7 +145,7 @@ class HearingController(
         else -> referralService.createReferral(
           adjudicationNumber = adjudicationNumber,
           code = hearingOutcomeRequest.code,
-          adjudicator = hearingOutcomeRequest.adjudicator,
+          adjudicator = hearingOutcomeRequest.adjudicator!!,
           details = hearingOutcomeRequest.details!!
         )
       }
@@ -165,7 +165,7 @@ class HearingController(
         null -> hearingOutcomeService.updateHearingOutcome(
           adjudicationNumber = adjudicationNumber,
           code = hearingOutcomeRequest.code,
-          adjudicator = hearingOutcomeRequest.adjudicator,
+          adjudicator = hearingOutcomeRequest.adjudicator!!,
           reason = hearingOutcomeRequest.reason,
           details = hearingOutcomeRequest.details,
           finding = hearingOutcomeRequest.finding,
@@ -174,7 +174,6 @@ class HearingController(
         else -> referralService.updateReferral(
           adjudicationNumber = adjudicationNumber,
           code = hearingOutcomeRequest.code,
-          adjudicator = hearingOutcomeRequest.adjudicator,
           details = hearingOutcomeRequest.details!!
         )
       }

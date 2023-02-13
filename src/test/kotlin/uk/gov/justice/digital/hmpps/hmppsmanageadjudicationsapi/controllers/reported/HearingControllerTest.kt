@@ -357,7 +357,6 @@ class HearingControllerTest : TestControllerBase() {
           ArgumentMatchers.anyLong(),
           any(),
           any(),
-          any(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -388,7 +387,6 @@ class HearingControllerTest : TestControllerBase() {
       if (code.outcomeCode != null) verify(referralService).updateReferral(
         adjudicationNumber = 1,
         code = code,
-        adjudicator = "test",
         details = "details"
       )
       else verify(hearingOutcomeService).updateHearingOutcome(

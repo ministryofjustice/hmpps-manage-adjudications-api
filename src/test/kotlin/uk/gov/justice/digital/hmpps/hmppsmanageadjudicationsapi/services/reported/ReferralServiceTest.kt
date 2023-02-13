@@ -44,11 +44,11 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
   fun `updates outcome and hearing outcome for referral`() {
 
     referralService.updateReferral(
-      1, HearingOutcomeCode.REFER_INAD, "test 2", "details 2",
+      1, HearingOutcomeCode.REFER_INAD, "details 2",
     )
 
     verify(hearingOutcomeService, atLeastOnce()).updateHearingOutcome(
-      adjudicationNumber = 1, code = HearingOutcomeCode.REFER_INAD, adjudicator = "test 2", details = "details 2"
+      adjudicationNumber = 1, code = HearingOutcomeCode.REFER_INAD, details = "details 2"
     )
 
     verify(outcomeService, atLeastOnce()).updateReferral(adjudicationNumber = 1, code = OutcomeCode.REFER_INAD, details = "details 2")

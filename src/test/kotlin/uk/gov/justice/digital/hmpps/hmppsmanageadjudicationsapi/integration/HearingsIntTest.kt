@@ -334,7 +334,6 @@ class HearingsIntTest : IntegrationTestBase() {
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
-          "adjudicator" to "updated",
           "code" to HearingOutcomeCode.REFER_INAD,
           "details" to "details updated"
         )
@@ -350,8 +349,6 @@ class HearingsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea").doesNotExist()
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.finding").doesNotExist()
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.details").isEqualTo("details updated")
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
-      .isEqualTo("updated")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.details").isEqualTo("details updated")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.REFER_INAD.name)
   }
