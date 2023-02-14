@@ -77,7 +77,7 @@ open class ReportedDtoService(
     )
   }
 
-  private fun createHistory(hearings: List<HearingDto>, outcomes: List<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
+  fun createHistory(hearings: List<HearingDto>, outcomes: List<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
     TODO("implement me")
   }
 
@@ -199,6 +199,7 @@ open class ReportedAdjudicationBaseService(
     reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(
       adjudicationNumber
     )
+
   protected fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
     reportedAdjudicationRepository.save(reportedAdjudication).toDto()
 

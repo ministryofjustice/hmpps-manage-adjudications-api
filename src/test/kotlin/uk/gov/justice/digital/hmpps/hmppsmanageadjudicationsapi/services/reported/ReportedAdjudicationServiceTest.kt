@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -14,7 +15,12 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -22,7 +28,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Adjudic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
@@ -467,7 +472,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   inner class Issued {
 
     private val now = LocalDateTime.now()
-    private val reportedAdjudication = EntityBuilder().reportedAdjudication(1)
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(1)
       .also {
         it.createdByUserId = "A_SMITH"
         it.createDateTime = LocalDateTime.now()
@@ -508,9 +513,242 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class OutcomesHistory {
 
+    private var reportedAdjudication = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+      it.hearings.clear()
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.REFER_POLICE).also {
+          o ->
+          o.createDateTime = LocalDateTime.now()
+        }
+      )
+    }
+
+    private val reportedAdjudication2 = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+      it.hearings.clear()
+      it.outcomes.add(Outcome(code = OutcomeCode.NOT_PROCEED))
+    }
+
+    private var reportedAdjudication3 = reportedAdjudication.also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
+          o ->
+          o.createDateTime = LocalDateTime.now().plusDays(1)
+        }
+      )
+    }
+
+    private var reportedAdjudication4 = reportedAdjudication3.also {
+      it.hearings.add(
+        Hearing(locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = 1L)
+      )
+    }
+
+    private var reportedAdjudication5 = reportedAdjudication4.also {
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.REFER_INAD).also {
+          o ->
+          o.createDateTime = LocalDateTime.now().plusDays(2)
+        }
+      )
+
+      it.hearings.first().also { h ->
+        h.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
+      }
+    }
+
+    private var reportedAdjudication6 = reportedAdjudication5.also {
+      it.hearings.add(
+        Hearing(
+          locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(2), oicHearingId = 1L,
+        )
+      )
+    }
+
+    private var reportedAdjudication7 = reportedAdjudication6.also {
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.REFER_POLICE).also {
+          o ->
+          o.createDateTime = LocalDateTime.now().plusDays(3)
+        }
+      )
+
+      it.hearings.last().also {
+        h ->
+        h.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+      }
+    }
+
+    private val reportedAdjudication8 = reportedAdjudication7.also {
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.PROSECUTION).also {
+          o ->
+          o.createDateTime = LocalDateTime.now().plusDays(4)
+        }
+      )
+    }
+
+    private val reportedAdjudication9 = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+      it.hearings.clear()
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.REFER_INAD).also {
+          o ->
+          o.createDateTime = LocalDateTime.now().plusDays(2)
+        }
+      )
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.REFER_POLICE).also {
+          o ->
+          o.createDateTime = LocalDateTime.now().plusDays(3)
+        }
+      )
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.PROSECUTION).also {
+          o ->
+          o.createDateTime = LocalDateTime.now().plusDays(4)
+        }
+      )
+
+      it.hearings.add(
+        Hearing(
+          locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = 1L,
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
+        )
+      )
+      it.hearings.add(
+        Hearing(
+          locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(2), oicHearingId = 1L,
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+        )
+      )
+    }
+
+    @BeforeEach
+    fun `init`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(reportedAdjudication2)
+      whenever(reportedAdjudicationRepository.findByReportNumber(3)).thenReturn(reportedAdjudication3)
+      whenever(reportedAdjudicationRepository.findByReportNumber(4)).thenReturn(reportedAdjudication4)
+      whenever(reportedAdjudicationRepository.findByReportNumber(5)).thenReturn(reportedAdjudication5)
+      whenever(reportedAdjudicationRepository.findByReportNumber(6)).thenReturn(reportedAdjudication6)
+      whenever(reportedAdjudicationRepository.findByReportNumber(7)).thenReturn(reportedAdjudication7)
+      whenever(reportedAdjudicationRepository.findByReportNumber(8)).thenReturn(reportedAdjudication8)
+      whenever(reportedAdjudicationRepository.findByReportNumber(9)).thenReturn(reportedAdjudication9)
+    }
+
     @Test
-    fun `outcome history DTO`() {
+    fun `outcome history DTO - Refer police no hearing`() {
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+
+      assertThat(result.history.size).isEqualTo(1)
+      assertThat(result.history.first().hearing).isNull()
+      assertThat(result.history.first().outcome).isNotNull
+      assertThat(result.history.first().outcome!!.referralOutcome).isNull()
+      assertThat(result.history.first().outcome!!.outcome).isNotNull
+      assertThat(result.history.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
+    }
+    @Test
+    fun `outcome history DTO - Not proceed no hearing`() {
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(2)
+
+      assertThat(result.history.size).isEqualTo(1)
+      assertThat(result.history.first().hearing).isNull()
+      assertThat(result.history.first().outcome).isNotNull
+      assertThat(result.history.first().outcome!!.referralOutcome).isNull()
+      assertThat(result.history.first().outcome!!.outcome).isNotNull
+      assertThat(result.history.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.NOT_PROCEED)
+    }
+    @Test
+    fun `outcome history DTO - Refer police, No prosecution, schedule hearing`() {
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(3).validateFirstItem()
+
+      assertThat(result.history.size).isEqualTo(1)
+    }
+    @Test
+    fun `outcome history DTO - Refer police, No prosecution, hearing scheduled`() {
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(4).validateFirstItem()
+
+      assertThat(result.history.size).isEqualTo(2)
+
+      assertThat(result.history.last().hearing).isNotNull
+      assertThat(result.history.last().hearing!!.outcome).isNull()
+      assertThat(result.history.last().outcome).isNull()
+    }
+    @Test
+    fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD`() {
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(5).validateFirstItem().validateSecondItem()
+
+      assertThat(result.history.size).isEqualTo(2)
+    }
+    @Test
+    fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD, hearing scheduled`() {
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(6).validateFirstItem().validateSecondItem()
+
+      assertThat(result.history.size).isEqualTo(3)
+
+      assertThat(result.history.last().hearing).isNotNull
+      assertThat(result.history.last().hearing!!.outcome).isNull()
+      assertThat(result.history.last().outcome).isNull()
+    }
+    @Test
+    fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD, hearing scheduled, refer to police`() {
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(7).validateFirstItem().validateSecondItem()
+
+      assertThat(result.history.size).isEqualTo(3)
+
+      assertThat(result.history.last().hearing).isNotNull
+      assertThat(result.history.last().hearing!!.outcome).isNotNull
+      assertThat(result.history.last().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
+      assertThat(result.history.last().outcome).isNotNull
+      assertThat(result.history.last().outcome!!.outcome).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(result.history.last().outcome!!.referralOutcome).isNull()
+    }
+    @Test
+    fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD, hearing scheduled, refer to police, prosecution YES`() {
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(8).validateFirstItem().validateSecondItem()
+
+      assertThat(result.history.size).isEqualTo(3)
+
+      assertThat(result.history.last().hearing).isNotNull
+      assertThat(result.history.last().hearing!!.outcome).isNotNull
+      assertThat(result.history.last().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
+      assertThat(result.history.last().outcome).isNotNull
+      assertThat(result.history.last().outcome!!.outcome).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(result.history.last().outcome!!.referralOutcome).isNotNull
+      assertThat(result.history.last().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.PROSECUTION)
+    }
+    @Test
+    fun `outcome history DTO - Schedule hearing, refer to inad, scheduled hearing, refer to police, prosecution yes`() {
       TODO("implement me - work out what this should look like and build up adjudication and expected output")
+    }
+
+    private fun ReportedAdjudicationDto.validateFirstItem(): ReportedAdjudicationDto {
+      assertThat(this.history.first().hearing).isNull()
+      assertThat(this.history.first().outcome).isNotNull
+      assertThat(this.history.first().outcome!!.referralOutcome).isNotNull
+      assertThat(this.history.first().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
+      assertThat(this.history.first().outcome!!.outcome).isNotNull
+      assertThat(this.history.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
+
+      return this
+    }
+
+    private fun ReportedAdjudicationDto.validateSecondItem(): ReportedAdjudicationDto {
+      assertThat(this.history[1].hearing).isNotNull
+      assertThat(this.history[1].hearing!!.outcome).isNotNull
+      assertThat(this.history[1].hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.REFER_INAD)
+      assertThat(this.history[1].outcome).isNotNull
+      assertThat(this.history[1].outcome!!.outcome).isNotNull
+      assertThat(this.history[1].outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_INAD)
+
+      return this
     }
   }
 
@@ -524,8 +762,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     private const val OFFENCE_CODE_2_NOMIS_CODE_ON_OWN = "5b"
     private const val OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "25z"
 
-    private const val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6(a)"
-    private const val OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another paragraph description"
     private const val OFFENCE_CODE_3_NOMIS_CODE_ON_OWN = "5f"
     private const val OFFENCE_CODE_3_NOMIS_CODE_ASSISTED = "25f"
 
