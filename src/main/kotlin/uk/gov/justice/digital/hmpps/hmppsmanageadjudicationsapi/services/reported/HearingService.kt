@@ -109,6 +109,9 @@ class HearingService(
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val hearingToRemove = reportedAdjudication.getHearing()
 
+    if (reportedAdjudication.lastOutcomeIsScheduleHearing())
+      reportedAdjudication.outcomes.removeLast()
+
     prisonApiGateway.deleteHearing(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = hearingToRemove.oicHearingId
@@ -162,6 +165,9 @@ class HearingService(
       if (this.any { it.dateTimeOfHearing.isAfter(date) })
         throw ValidationException("A hearing can not be before the previous hearing")
     }
+
+    fun ReportedAdjudication.lastOutcomeIsScheduleHearing() =
+      this.outcomes.maxByOrNull { it.createDateTime!! }?.code == OutcomeCode.SCHEDULE_HEARING
 
     fun ReportedAdjudication.lastOutcomeIsRefer() =
       listOf(OutcomeCode.REFER_INAD, OutcomeCode.REFER_POLICE).contains(this.outcomes.maxByOrNull { it.createDateTime!! }?.code)

@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidenc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
@@ -534,7 +535,8 @@ class IntegrationTestData(
 
   fun createOutcome(
     testDataSet: AdjudicationIntTestDataSet,
-    code: OutcomeCode? = OutcomeCode.REFER_POLICE
+    code: OutcomeCode? = OutcomeCode.REFER_POLICE,
+    reason: NotProceedReason? = null
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/outcome")
@@ -543,6 +545,7 @@ class IntegrationTestData(
         mapOf(
           "code" to code,
           "details" to "details",
+          "reason" to reason
         )
       )
       .exchange()

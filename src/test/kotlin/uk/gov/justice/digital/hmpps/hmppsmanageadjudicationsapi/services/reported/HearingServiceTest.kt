@@ -443,6 +443,32 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
       assertThat(argumentCaptor.value.dateTimeOfFirstHearing).isEqualTo(reportedAdjudication.hearings.first().dateTimeOfHearing)
     }
+
+    @Test
+    fun `delete hearing removes last outcome if it was SCHEDULE HEARING`() {
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication()
+          .also {
+            it.hearings.add(
+              Hearing(agencyId = "", locationId = 1L, oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(5), oicHearingId = 1L, reportNumber = 1L)
+            )
+            it.outcomes.add(Outcome(code = OutcomeCode.REFER_INAD).also { o -> o.createDateTime = LocalDateTime.now() })
+            it.outcomes.add(Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) })
+          }
+      )
+
+      hearingService.deleteHearing(
+        1235L,
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(prisonApiGateway, atLeastOnce()).deleteHearing(1235L, 1)
+
+      assertThat(argumentCaptor.value.outcomes.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.REFER_INAD)
+    }
   }
 
   @Nested
