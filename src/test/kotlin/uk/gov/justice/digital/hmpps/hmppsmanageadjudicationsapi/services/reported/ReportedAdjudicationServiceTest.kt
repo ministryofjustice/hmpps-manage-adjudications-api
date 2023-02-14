@@ -711,6 +711,41 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
+    private val reportedAdjudicationAdjourned = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+      it.hearings.clear()
+
+      reportedAdjudicationReferPolice.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
+          it.createDateTime = LocalDateTime.now().plusDays(1)
+        }
+      )
+
+      it.hearings.add(
+        Hearing(
+          locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = 1L,
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
+        )
+      )
+    }
+
+    private val reportedAdjudicationReferPoliceReferInadAdjourned = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+      it.hearings.clear()
+
+      reportedAdjudicationInadHearing.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+      reportedAdjudicationInadHearing.hearings.forEach { h -> it.hearings.add(h.copy()) }
+
+      it.hearings.last().also {
+        h ->
+        h.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
+      }
+    }
+
     @BeforeEach
     fun `init`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudicationReferPolice)
@@ -723,6 +758,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(9)).thenReturn(reportedAdjudicationProsecutionAllHearings)
       whenever(reportedAdjudicationRepository.findByReportNumber(11)).thenReturn(reportedAdjudicationReferPoliceNotProceed)
       whenever(reportedAdjudicationRepository.findByReportNumber(12)).thenReturn(reportedAdjudicationReferInadNotProceed)
+      whenever(reportedAdjudicationRepository.findByReportNumber(13)).thenReturn(reportedAdjudicationAdjourned)
+      whenever(reportedAdjudicationRepository.findByReportNumber(14)).thenReturn(reportedAdjudicationReferPoliceReferInadAdjourned)
     }
 
     @Test
@@ -879,6 +916,28 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.history.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_INAD)
       assertThat(result.history.first().outcome!!.referralOutcome).isNotNull
       assertThat(result.history.first().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.NOT_PROCEED)
+    }
+
+    @Test
+    fun `outcome history DTO - refer to police, no prosecution, hearing scheduled and adjourned`() {
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(13).validateFirstItem()
+      assertThat(result.history.size).isEqualTo(2)
+
+      assertThat(result.history.last().hearing).isNotNull
+      assertThat(result.history.last().hearing!!.outcome).isNotNull
+      assertThat(result.history.last().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(result.history.last().outcome).isNull()
+    }
+
+    @Test
+    fun `outcome history DTO - refer to police, no prosecution, hearing scheduled, refer to inad, hearing scheduled and adjourned`() {
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(14).validateFirstItem().validateSecondItem()
+      assertThat(result.history.size).isEqualTo(3)
+
+      assertThat(result.history.last().hearing).isNotNull
+      assertThat(result.history.last().hearing!!.outcome).isNotNull
+      assertThat(result.history.last().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(result.history.last().outcome).isNull()
     }
 
     private fun ReportedAdjudicationDto.validateFirstItem(): ReportedAdjudicationDto {
