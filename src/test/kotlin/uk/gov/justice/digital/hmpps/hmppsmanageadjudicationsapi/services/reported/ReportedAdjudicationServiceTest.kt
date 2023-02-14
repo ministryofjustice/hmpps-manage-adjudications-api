@@ -513,7 +513,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class OutcomesHistory {
 
-    private var reportedAdjudication = entityBuilder.reportedAdjudication().also {
+    private val reportedAdjudication = entityBuilder.reportedAdjudication().also {
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
       it.hearings.clear()
@@ -532,9 +532,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.outcomes.add(Outcome(code = OutcomeCode.NOT_PROCEED))
     }
 
-    private var reportedAdjudication3 = reportedAdjudication.also {
+    private val reportedAdjudication3 = entityBuilder.reportedAdjudication().also {
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
+
+      reportedAdjudication.outcomes.forEach { o -> it.outcomes.add(o) }
       it.outcomes.add(
         Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
           o ->
@@ -543,13 +545,23 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
-    private var reportedAdjudication4 = reportedAdjudication3.also {
+    private val reportedAdjudication4 = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+
+      reportedAdjudication3.outcomes.forEach { o -> it.outcomes.add(o) }
       it.hearings.add(
         Hearing(locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = 1L)
       )
     }
 
-    private var reportedAdjudication5 = reportedAdjudication4.also {
+    private val reportedAdjudication5 = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+
+      reportedAdjudication4.outcomes.forEach { o -> it.outcomes.add(o) }
+      reportedAdjudication4.hearings.forEach { h -> it.hearings.add(h) }
+
       it.outcomes.add(
         Outcome(code = OutcomeCode.REFER_INAD).also {
           o ->
@@ -562,7 +574,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
     }
 
-    private var reportedAdjudication6 = reportedAdjudication5.also {
+    private val reportedAdjudication6 = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+
+      reportedAdjudication5.outcomes.forEach { o -> it.outcomes.add(o) }
+      reportedAdjudication5.hearings.forEach { h -> it.hearings.add(h) }
+
       it.hearings.add(
         Hearing(
           locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(2), oicHearingId = 1L,
@@ -570,7 +588,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
-    private var reportedAdjudication7 = reportedAdjudication6.also {
+    private val reportedAdjudication7 = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+
+      reportedAdjudication6.outcomes.forEach { o -> it.outcomes.add(o) }
+      reportedAdjudication6.hearings.forEach { h -> it.hearings.add(h) }
+
       it.outcomes.add(
         Outcome(code = OutcomeCode.REFER_POLICE).also {
           o ->
@@ -584,7 +608,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
     }
 
-    private val reportedAdjudication8 = reportedAdjudication7.also {
+    private val reportedAdjudication8 = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+
+      reportedAdjudication7.outcomes.forEach { o -> it.outcomes.add(o) }
+      reportedAdjudication7.hearings.forEach { h -> it.hearings.add(h) }
+
       it.outcomes.add(
         Outcome(code = OutcomeCode.PROSECUTION).also {
           o ->
@@ -641,6 +671,38 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(7)).thenReturn(reportedAdjudication7)
       whenever(reportedAdjudicationRepository.findByReportNumber(8)).thenReturn(reportedAdjudication8)
       whenever(reportedAdjudicationRepository.findByReportNumber(9)).thenReturn(reportedAdjudication9)
+    }
+
+    @Test
+    fun `no data`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(0)).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.clear()
+        }
+      )
+
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(0)
+
+      assertThat(result.history.isEmpty()).isTrue
+    }
+
+    @Test
+    fun `single hearing`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(10)).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+        }
+      )
+
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(10)
+
+      assertThat(result.history.size).isEqualTo(1)
+      assertThat(result.history.first().hearing).isNotNull
+      assertThat(result.history.first().outcome).isNull()
+      assertThat(result.history.first().hearing!!.outcome).isNull()
     }
 
     @Test

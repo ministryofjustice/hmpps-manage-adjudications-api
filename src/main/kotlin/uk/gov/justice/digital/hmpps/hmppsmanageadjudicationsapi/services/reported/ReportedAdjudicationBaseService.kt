@@ -77,8 +77,16 @@ open class ReportedDtoService(
     )
   }
 
-  fun createHistory(hearings: List<HearingDto>, outcomes: List<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
-    TODO("implement me")
+  private fun createHistory(hearings: List<HearingDto>, outcomes: List<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
+    if (hearings.isEmpty() && outcomes.isEmpty()) return listOf()
+    if (outcomes.isEmpty() && hearings.size == 1) return listOf(OutcomeHistoryDto(hearing = hearings.first()))
+    if (hearings.isEmpty() && outcomes.size == 1) return listOf(OutcomeHistoryDto(outcome = outcomes.first()))
+
+    val history = mutableListOf<OutcomeHistoryDto>()
+    /*
+        outcomes are more important than hearings so should control loop.
+     */
+    return history.toList()
   }
 
   protected fun List<Outcome>.createCombinedOutcomes(): List<CombinedOutcomeDto> {
