@@ -62,6 +62,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         it.createdByUserId = ""
         it.createDateTime = LocalDateTime.now()
         it.hearings.clear()
+        it.outcomes.clear()
       }
 
     @BeforeEach
@@ -176,7 +177,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
     @CsvSource("REFER_POLICE", "REFER_INAD")
     @ParameterizedTest
-    fun `create a NO_PROSECUTION outcome when creating a hearing if the previous outcome is a REFER_POLICE`(code: OutcomeCode) {
+    fun `create a SCHEDULE_HEARING outcome when creating a hearing if the previous outcome is a REFER_POLICE`(code: OutcomeCode) {
       val reportedAdjudicationReferPolice = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
         .also {
           it.createdByUserId = ""

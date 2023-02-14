@@ -550,7 +550,8 @@ class IntegrationTestData(
 
   fun createHearing(
     testDataSet: AdjudicationIntTestDataSet,
-    dateTimeOfHearing: LocalDateTime? = null
+    dateTimeOfHearing: LocalDateTime? = null,
+    oicHearingType: OicHearingType? = OicHearingType.GOV
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/hearing")
@@ -559,7 +560,7 @@ class IntegrationTestData(
         mapOf(
           "locationId" to testDataSet.locationId,
           "dateTimeOfHearing" to (dateTimeOfHearing ?: testDataSet.dateTimeOfHearing!!),
-          "oicHearingType" to OicHearingType.GOV.name,
+          "oicHearingType" to oicHearingType!!.name,
         )
       )
       .exchange()

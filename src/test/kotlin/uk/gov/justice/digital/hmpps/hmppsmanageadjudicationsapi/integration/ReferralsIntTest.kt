@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 
 class ReferralsIntTest : OutcomeIntTest() {
 
@@ -104,7 +105,7 @@ class ReferralsIntTest : OutcomeIntTest() {
       IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_INAD
     )
 
-    integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.plusDays(1))
+    integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.plusDays(1), OicHearingType.INAD_ADULT)
 
     integrationTestData().createHearingOutcome(
       IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_POLICE
@@ -136,5 +137,13 @@ class ReferralsIntTest : OutcomeIntTest() {
       .jsonPath("$.reportedAdjudication.outcomes[1].referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
       .jsonPath("$.reportedAdjudication.hearings[1].outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.history.size()").isEqualTo(3)
+      .jsonPath("$.reportedAdjudication.history[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.history[0].hearing").doesNotExist()
+      .jsonPath("$.reportedAdjudication.history[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
+      .jsonPath("$.reportedAdjudication.history[1].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
+      .jsonPath("$.reportedAdjudication.history[1].outcome.referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
+      .jsonPath("$.reportedAdjudication.history[2].hearing.oicHearingType").isEqualTo(OicHearingType.INAD_ADULT.name)
+      .jsonPath("$.reportedAdjudication.history[2].outcome").doesNotExist()
   }
 }
