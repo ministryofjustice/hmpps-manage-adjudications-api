@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedWit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -73,19 +74,30 @@ open class ReportedDtoService(
       gender = gender,
       dateTimeOfFirstHearing = dateTimeOfFirstHearing,
       outcomes = outcomes,
-      history = createHistory(hearings, outcomes)
+      history = createHistory(hearings.toMutableList(), outcomes.toMutableList())
     )
   }
 
-  private fun createHistory(hearings: List<HearingDto>, outcomes: List<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
+  private fun createHistory(hearings: MutableList<HearingDto>, outcomes: MutableList<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
     if (hearings.isEmpty() && outcomes.isEmpty()) return listOf()
-    if (outcomes.isEmpty() && hearings.size == 1) return listOf(OutcomeHistoryDto(hearing = hearings.first()))
-    if (hearings.isEmpty() && outcomes.size == 1) return listOf(OutcomeHistoryDto(outcome = outcomes.first()))
+    if (outcomes.isEmpty()) return hearings.map { OutcomeHistoryDto(hearing = it) }
+    if (hearings.isEmpty()) return outcomes.map { OutcomeHistoryDto(outcome = it) }
 
     val history = mutableListOf<OutcomeHistoryDto>()
-    /*
-        outcomes are more important than hearings so should control loop.
-     */
+    val referPoliceOutcomeCount = outcomes.count { it.outcome.code == OutcomeCode.REFER_POLICE }
+    val referPoliceHearingOutcomeCount = hearings.count { it.outcome?.code == HearingOutcomeCode.REFER_POLICE }
+
+    // special case.  if we have more refer police outcomes than hearing outcomes, it means the first action was to refer to police
+    if (referPoliceOutcomeCount > referPoliceHearingOutcomeCount)
+      history.add(OutcomeHistoryDto(outcome = outcomes.removeFirst()))
+
+    do {
+      val hearing = hearings.removeFirst()
+      // note: currently this is only for referrals, no adjourn or completed outcomes present yet.  TODO - amend this code
+      val outcome = outcomes.filter { it.outcome.code == hearing.outcome?.code?.outcomeCode }.toMutableList().removeFirstOrNull()
+      history.add(OutcomeHistoryDto(hearing = hearing, outcome = outcome))
+    } while (hearings.isNotEmpty())
+
     return history.toList()
   }
 

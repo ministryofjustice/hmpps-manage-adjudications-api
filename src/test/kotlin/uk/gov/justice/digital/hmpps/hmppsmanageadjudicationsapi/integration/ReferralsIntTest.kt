@@ -96,14 +96,6 @@ class ReferralsIntTest : OutcomeIntTest() {
   fun `remove referral, referral outcome and hearing outcome for a POLICE_REFER related to complex example`() {
     initDataForOutcome().createOutcome()
 
-    integrationTestData().createOutcome(
-      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.SCHEDULE_HEARING
-    ).expectStatus().isCreated
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.outcomes[0].referralOutcome").exists()
-      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
-
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -111,16 +103,6 @@ class ReferralsIntTest : OutcomeIntTest() {
     integrationTestData().createHearingOutcome(
       IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_INAD
     )
-
-    integrationTestData().createOutcome(
-      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.SCHEDULE_HEARING
-    )
-      .expectStatus().isCreated
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(2)
-      .jsonPath("$.reportedAdjudication.outcomes[0].referralOutcome").exists()
-      .jsonPath("$.reportedAdjudication.outcomes[1].referralOutcome").exists()
-      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(1)
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.plusDays(1))
 
@@ -152,7 +134,7 @@ class ReferralsIntTest : OutcomeIntTest() {
       .jsonPath("$.reportedAdjudication.outcomes[0].referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
       .jsonPath("$.reportedAdjudication.outcomes[1].referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
-      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.SCHEDULE_HEARING.name)
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
       .jsonPath("$.reportedAdjudication.hearings[1].outcome").doesNotExist()
   }
 }

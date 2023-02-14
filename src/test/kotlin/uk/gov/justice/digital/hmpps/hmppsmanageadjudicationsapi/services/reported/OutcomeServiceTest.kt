@@ -225,7 +225,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       it.outcomes.add(
         Outcome(
           code = OutcomeCode.SCHEDULE_HEARING,
-        ).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) }
+        ).also { o -> o.createDateTime = LocalDateTime.now() }
       )
       it.outcomes.add(
         Outcome(

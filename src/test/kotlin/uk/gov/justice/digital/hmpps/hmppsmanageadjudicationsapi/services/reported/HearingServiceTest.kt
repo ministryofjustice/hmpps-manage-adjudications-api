@@ -14,6 +14,8 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
@@ -95,7 +97,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("oic hearing type is not applicable for rule set")
     }
 
-    @CsvSource("REJECTED", "NOT_PROCEED", "AWAITING_REVIEW", "REFER_POLICE")
+    @CsvSource("REJECTED", "NOT_PROCEED", "AWAITING_REVIEW")
     @ParameterizedTest
     fun `hearing is in invalid state`(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
@@ -170,6 +172,82 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.dateTimeOfFirstHearing).isEqualTo(now)
 
       assertThat(response).isNotNull
+    }
+
+    @CsvSource("REFER_POLICE", "REFER_INAD")
+    @ParameterizedTest
+    fun `create a NO_PROSECUTION outcome when creating a hearing if the previous outcome is a REFER_POLICE`(code: OutcomeCode) {
+      val reportedAdjudicationReferPolice = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+        .also {
+          it.createdByUserId = ""
+          it.createDateTime = LocalDateTime.now()
+          it.hearings.clear()
+          it.outcomes.add(
+            Outcome(code = if (code == OutcomeCode.REFER_INAD) OutcomeCode.REFER_POLICE else OutcomeCode.REFER_INAD).also {
+              o ->
+              o.createDateTime = LocalDateTime.now()
+            }
+          )
+          it.outcomes.add(
+            Outcome(code = code).also {
+              o ->
+              o.createDateTime = LocalDateTime.now().plusDays(1)
+            }
+          )
+        }
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudicationReferPolice.also {
+          it.status = code.status
+        }
+      )
+
+      hearingService.createHearing(
+        1235L,
+        1,
+        LocalDateTime.now().plusDays(2),
+        OicHearingType.GOV_ADULT,
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.size).isEqualTo(3)
+      assertThat(argumentCaptor.value.outcomes.last().code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
+    }
+
+    @Test
+    fun `does not create a SCHEDULE_HEARING outcome when creating a hearing if the previous outcome is not a REFER`() {
+      val reportedAdjudicationReferInad = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+        .also {
+          it.createdByUserId = ""
+          it.createDateTime = LocalDateTime.now()
+          it.hearings.clear()
+          it.outcomes.add(
+            Outcome(code = OutcomeCode.NOT_PROCEED).also {
+              o ->
+              o.createDateTime = LocalDateTime.now()
+            }
+          )
+        }
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudicationReferInad.also {
+          it.status = ReportedAdjudicationStatus.REFER_INAD
+        }
+      )
+
+      hearingService.createHearing(
+        1235L,
+        1,
+        LocalDateTime.now().plusDays(2),
+        OicHearingType.GOV_ADULT,
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.size).isEqualTo(1)
     }
   }
 

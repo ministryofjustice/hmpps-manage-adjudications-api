@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus.Companion.validateTransition
@@ -14,7 +16,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Hea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getHearing
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -41,6 +42,9 @@ class HearingService(
       it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED)
       it.hearings.validateHearingDate(dateTimeOfHearing)
     }.validateCanCreate()
+
+    if (reportedAdjudication.lastOutcomeIsRefer())
+      reportedAdjudication.outcomes.add(Outcome(code = OutcomeCode.SCHEDULE_HEARING))
 
     val oicHearingId = prisonApiGateway.createHearing(
       adjudicationNumber = adjudicationNumber,
@@ -158,6 +162,9 @@ class HearingService(
       if (this.any { it.dateTimeOfHearing.isAfter(date) })
         throw ValidationException("A hearing can not be before the previous hearing")
     }
+
+    fun ReportedAdjudication.lastOutcomeIsRefer() =
+      listOf(OutcomeCode.REFER_INAD, OutcomeCode.REFER_POLICE).contains(this.outcomes.maxByOrNull { it.createDateTime!! }?.code)
 
     fun ReportedAdjudication.getHearing(): Hearing = this.getLatestHearing() ?: throwHearingNotFoundException()
 

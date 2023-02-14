@@ -206,7 +206,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       "RETURNED, REJECTED",
       "RETURNED, RETURNED",
       "SCHEDULED, SCHEDULED",
-      "REFER_POLICE, SCHEDULED",
       "NOT_PROCEED, SCHEDULED",
     )
     fun `setting status for a reported adjudication throws an illegal state exception for invalid transitions`(
@@ -532,40 +531,40 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.outcomes.add(Outcome(code = OutcomeCode.NOT_PROCEED))
     }
 
-    private val reportedAdjudication3 = entityBuilder.reportedAdjudication().also {
+    private val reportedAdjudication4 = entityBuilder.reportedAdjudication().also {
+      it.hearings.clear()
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
 
-      reportedAdjudication.outcomes.forEach { o -> it.outcomes.add(o) }
+      reportedAdjudication.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
       it.outcomes.add(
         Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
-          o ->
-          o.createDateTime = LocalDateTime.now().plusDays(1)
+          it.createDateTime = LocalDateTime.now().plusDays(1)
         }
       )
-    }
-
-    private val reportedAdjudication4 = entityBuilder.reportedAdjudication().also {
-      it.createDateTime = LocalDateTime.now()
-      it.createdByUserId = ""
-
-      reportedAdjudication3.outcomes.forEach { o -> it.outcomes.add(o) }
       it.hearings.add(
         Hearing(locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = 1L)
       )
     }
 
     private val reportedAdjudication5 = entityBuilder.reportedAdjudication().also {
+      it.hearings.clear()
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
 
-      reportedAdjudication4.outcomes.forEach { o -> it.outcomes.add(o) }
-      reportedAdjudication4.hearings.forEach { h -> it.hearings.add(h) }
+      reportedAdjudication4.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+      reportedAdjudication4.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
       it.outcomes.add(
         Outcome(code = OutcomeCode.REFER_INAD).also {
           o ->
           o.createDateTime = LocalDateTime.now().plusDays(2)
+        }
+      )
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
+          o ->
+          o.createDateTime = LocalDateTime.now().plusDays(2).plusHours(1)
         }
       )
 
@@ -575,11 +574,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
 
     private val reportedAdjudication6 = entityBuilder.reportedAdjudication().also {
+      it.hearings.clear()
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
 
-      reportedAdjudication5.outcomes.forEach { o -> it.outcomes.add(o) }
-      reportedAdjudication5.hearings.forEach { h -> it.hearings.add(h) }
+      reportedAdjudication5.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+      reportedAdjudication5.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
       it.hearings.add(
         Hearing(
@@ -589,16 +589,17 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
 
     private val reportedAdjudication7 = entityBuilder.reportedAdjudication().also {
+      it.hearings.clear()
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
 
-      reportedAdjudication6.outcomes.forEach { o -> it.outcomes.add(o) }
-      reportedAdjudication6.hearings.forEach { h -> it.hearings.add(h) }
+      reportedAdjudication6.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+      reportedAdjudication6.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
       it.outcomes.add(
         Outcome(code = OutcomeCode.REFER_POLICE).also {
           o ->
-          o.createDateTime = LocalDateTime.now().plusDays(3)
+          o.createDateTime = LocalDateTime.now().plusDays(4)
         }
       )
 
@@ -609,16 +610,36 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
 
     private val reportedAdjudication8 = entityBuilder.reportedAdjudication().also {
+      it.hearings.clear()
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
 
-      reportedAdjudication7.outcomes.forEach { o -> it.outcomes.add(o) }
-      reportedAdjudication7.hearings.forEach { h -> it.hearings.add(h) }
+      reportedAdjudication7.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+      reportedAdjudication7.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
       it.outcomes.add(
         Outcome(code = OutcomeCode.PROSECUTION).also {
           o ->
-          o.createDateTime = LocalDateTime.now().plusDays(4)
+          o.createDateTime = LocalDateTime.now().plusDays(5)
+        }
+      )
+    }
+
+    private val reportedAdjudication11 = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+      it.hearings.clear()
+
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.REFER_POLICE).also {
+          o ->
+          o.createDateTime = LocalDateTime.now().plusDays(2)
+        }
+      )
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.NOT_PROCEED).also {
+          o ->
+          o.createDateTime = LocalDateTime.now().plusDays(3)
         }
       )
     }
@@ -634,15 +655,21 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         }
       )
       it.outcomes.add(
-        Outcome(code = OutcomeCode.REFER_POLICE).also {
+        Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
           o ->
           o.createDateTime = LocalDateTime.now().plusDays(3)
         }
       )
       it.outcomes.add(
-        Outcome(code = OutcomeCode.PROSECUTION).also {
+        Outcome(code = OutcomeCode.REFER_POLICE).also {
           o ->
           o.createDateTime = LocalDateTime.now().plusDays(4)
+        }
+      )
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.PROSECUTION).also {
+          o ->
+          o.createDateTime = LocalDateTime.now().plusDays(5)
         }
       )
 
@@ -664,13 +691,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `init`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(reportedAdjudication2)
-      whenever(reportedAdjudicationRepository.findByReportNumber(3)).thenReturn(reportedAdjudication3)
       whenever(reportedAdjudicationRepository.findByReportNumber(4)).thenReturn(reportedAdjudication4)
       whenever(reportedAdjudicationRepository.findByReportNumber(5)).thenReturn(reportedAdjudication5)
       whenever(reportedAdjudicationRepository.findByReportNumber(6)).thenReturn(reportedAdjudication6)
       whenever(reportedAdjudicationRepository.findByReportNumber(7)).thenReturn(reportedAdjudication7)
       whenever(reportedAdjudicationRepository.findByReportNumber(8)).thenReturn(reportedAdjudication8)
       whenever(reportedAdjudicationRepository.findByReportNumber(9)).thenReturn(reportedAdjudication9)
+      whenever(reportedAdjudicationRepository.findByReportNumber(11)).thenReturn(reportedAdjudication11)
     }
 
     @Test
@@ -727,12 +754,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.history.first().outcome!!.outcome).isNotNull
       assertThat(result.history.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.NOT_PROCEED)
     }
-    @Test
-    fun `outcome history DTO - Refer police, No prosecution, schedule hearing`() {
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(3).validateFirstItem()
 
-      assertThat(result.history.size).isEqualTo(1)
-    }
     @Test
     fun `outcome history DTO - Refer police, No prosecution, hearing scheduled`() {
       val result = reportedAdjudicationService.getReportedAdjudicationDetails(4).validateFirstItem()
@@ -769,7 +791,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.history.last().hearing!!.outcome).isNotNull
       assertThat(result.history.last().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
       assertThat(result.history.last().outcome).isNotNull
-      assertThat(result.history.last().outcome!!.outcome).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(result.history.last().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
       assertThat(result.history.last().outcome!!.referralOutcome).isNull()
     }
     @Test
@@ -782,7 +804,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.history.last().hearing!!.outcome).isNotNull
       assertThat(result.history.last().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
       assertThat(result.history.last().outcome).isNotNull
-      assertThat(result.history.last().outcome!!.outcome).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(result.history.last().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
       assertThat(result.history.last().outcome!!.referralOutcome).isNotNull
       assertThat(result.history.last().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.PROSECUTION)
     }
@@ -806,6 +828,18 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.history.last().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
       assertThat(result.history.last().outcome!!.referralOutcome).isNotNull
       assertThat(result.history.last().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.PROSECUTION)
+    }
+
+    @Test
+    fun `outcome history DTO - Refer police no hearing, No prosecution, Not proceed`() {
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(11)
+      assertThat(result.history.size).isEqualTo(1)
+
+      assertThat(result.history.first().hearing).isNull()
+      assertThat(result.history.first().outcome).isNotNull
+      assertThat(result.history.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(result.history.first().outcome!!.referralOutcome).isNotNull
+      assertThat(result.history.first().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.NOT_PROCEED)
     }
 
     private fun ReportedAdjudicationDto.validateFirstItem(): ReportedAdjudicationDto {
