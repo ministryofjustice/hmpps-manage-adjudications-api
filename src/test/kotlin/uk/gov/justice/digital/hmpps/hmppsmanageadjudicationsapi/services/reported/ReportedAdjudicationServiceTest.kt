@@ -726,7 +726,24 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
     @Test
     fun `outcome history DTO - Schedule hearing, refer to inad, scheduled hearing, refer to police, prosecution yes`() {
-      TODO("implement me - work out what this should look like and build up adjudication and expected output")
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(9)
+
+      assertThat(result.history.size).isEqualTo(2)
+      assertThat(result.history.first().hearing).isNotNull
+      assertThat(result.history.first().hearing!!.outcome).isNotNull
+      assertThat(result.history.first().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.REFER_INAD)
+      assertThat(result.history.first().outcome).isNotNull
+      assertThat(result.history.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_INAD)
+      assertThat(result.history.first().outcome!!.referralOutcome).isNotNull
+      assertThat(result.history.first().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
+
+      assertThat(result.history.last().hearing).isNotNull
+      assertThat(result.history.last().hearing!!.outcome).isNotNull
+      assertThat(result.history.last().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
+      assertThat(result.history.last().outcome).isNotNull
+      assertThat(result.history.last().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(result.history.last().outcome!!.referralOutcome).isNotNull
+      assertThat(result.history.last().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.PROSECUTION)
     }
 
     private fun ReportedAdjudicationDto.validateFirstItem(): ReportedAdjudicationDto {
