@@ -237,4 +237,36 @@ class ReferralsIntTest : OutcomeIntTest() {
       .jsonPath("$.reportedAdjudication.history[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
       .jsonPath("$.reportedAdjudication.history[0].outcome.referralOutcome").doesNotExist()
   }
+
+  @Test
+  fun `police refer from hearing leads to prosecution, then referral is removed`() {
+    initDataForOutcome()
+
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, LocalDateTime.now())
+
+    integrationTestData().createHearingOutcome(
+      IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_POLICE
+    )
+
+    integrationTestData().createOutcome(
+      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.PROSECUTION,
+    ).expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.history.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.history[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.history[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.PROSECUTION.name)
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.PROSECUTION.name)
+
+    webTestClient.delete()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/remove-referral")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.history.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.history[0].outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
+  }
 }
