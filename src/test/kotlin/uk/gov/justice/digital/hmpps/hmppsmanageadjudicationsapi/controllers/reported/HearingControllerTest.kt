@@ -93,7 +93,7 @@ class HearingControllerTest : TestControllerBase() {
       val body = objectMapper.writeValueAsString(hearing)
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.post("/reported-adjudications/$id/hearing")
+          MockMvcRequestBuilders.post("/reported-adjudications/$id/hearing/v2")
             .header("Content-Type", "application/json")
             .content(body)
         )
@@ -142,7 +142,7 @@ class HearingControllerTest : TestControllerBase() {
     ): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing")
+          MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing/v2")
             .header("Content-Type", "application/json")
         )
     }
@@ -203,7 +203,7 @@ class HearingControllerTest : TestControllerBase() {
       val body = objectMapper.writeValueAsString(hearing)
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing")
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing/v2")
             .header("Content-Type", "application/json")
             .content(body)
         )

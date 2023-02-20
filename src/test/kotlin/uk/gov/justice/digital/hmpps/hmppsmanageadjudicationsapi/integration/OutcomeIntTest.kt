@@ -37,6 +37,22 @@ class OutcomeIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
   }
 
+  @Test
+  fun `refer to police leads to police prosecution`() {
+    initDataForOutcome().createOutcome()
+
+    integrationTestData().createOutcome(
+      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.PROSECUTION
+    ).expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.history.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.history[0].outcome.referralOutcome").exists()
+      .jsonPath("$.reportedAdjudication.history[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.history[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.PROSECUTION.name)
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.PROSECUTION.name)
+      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
+  }
+
   protected fun initDataForOutcome(): IntegrationTestScenario {
     prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
 

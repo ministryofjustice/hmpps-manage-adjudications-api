@@ -557,7 +557,7 @@ class IntegrationTestData(
     oicHearingType: OicHearingType? = OicHearingType.GOV
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/hearing")
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/hearing/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
