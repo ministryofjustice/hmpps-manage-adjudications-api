@@ -71,6 +71,48 @@ class HearingController(
   @PostMapping(value = ["/{adjudicationNumber}/hearing"])
   @Operation(summary = "Create a new hearing")
   @ResponseStatus(HttpStatus.CREATED)
+  fun createHearingV1(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody hearingRequest: HearingRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = hearingService.createHearingV1(
+      adjudicationNumber, hearingRequest.locationId, hearingRequest.dateTimeOfHearing, hearingRequest.oicHearingType,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @PutMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}"])
+  @Operation(summary = "Amend an existing hearing")
+  @ResponseStatus(HttpStatus.OK)
+  fun amendHearingV1(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "hearingId") hearingId: Long,
+    @RequestBody hearingRequest: HearingRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = hearingService.amendHearingV1(
+      adjudicationNumber, hearingId, hearingRequest.locationId, hearingRequest.dateTimeOfHearing, hearingRequest.oicHearingType,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @DeleteMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}"])
+  @Operation(summary = "deletes a hearing")
+  @ResponseStatus(HttpStatus.OK)
+  fun deleteHearingV1(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "hearingId") hearingId: Long,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = hearingService.deleteHearingV1(
+      adjudicationNumber, hearingId
+    )
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @PostMapping(value = ["/{adjudicationNumber}/hearing/v2"])
+  @Operation(summary = "Create a new hearing")
+  @ResponseStatus(HttpStatus.CREATED)
   fun createHearing(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody hearingRequest: HearingRequest
@@ -85,8 +127,8 @@ class HearingController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @PutMapping(value = ["/{adjudicationNumber}/hearing"])
-  @Operation(summary = "Amends leatest hearing")
+  @PutMapping(value = ["/{adjudicationNumber}/hearing/v2"])
+  @Operation(summary = "Amends latest hearing")
   @ResponseStatus(HttpStatus.OK)
   fun amendHearing(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
@@ -102,7 +144,7 @@ class HearingController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @DeleteMapping(value = ["/{adjudicationNumber}/hearing"])
+  @DeleteMapping(value = ["/{adjudicationNumber}/hearing/v2"])
   @Operation(summary = "deletes latest hearing")
   @ResponseStatus(HttpStatus.OK)
   fun deleteHearing(
