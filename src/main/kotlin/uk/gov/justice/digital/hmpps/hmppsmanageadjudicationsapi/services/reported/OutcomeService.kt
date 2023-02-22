@@ -39,6 +39,9 @@ class OutcomeService(
       it.status = code.status
     }
 
+    if (reportedAdjudication.lastOutcomeIsRefer())
+      reportedAdjudication.outcomes.maxBy { it.createDateTime!! }.code.validateReferral(code)
+
     when (code) {
       OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD -> validateDetails(details)
       OutcomeCode.NOT_PROCEED -> {
@@ -89,10 +92,16 @@ class OutcomeService(
     private fun validateDetails(details: String?) = details ?: throw ValidationException("details are required")
 
     fun ReportedAdjudication.getReferral(code: OutcomeCode) =
-      this.outcomes.filter { it.code == code }.sortedByDescending { it.createDateTime }.firstOrNull() ?: throw EntityNotFoundException("Referral not found for ${this.reportNumber}")
+      this.outcomes.filter { it.code == code }.sortedByDescending { it.createDateTime }.firstOrNull()
+        ?: throw EntityNotFoundException("Referral not found for ${this.reportNumber}")
 
     fun ReportedAdjudication.getOutcome(id: Long) =
       this.outcomes.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Outcome not found for $id")
+
+    fun OutcomeCode.validateReferral(to: OutcomeCode) {
+      if (!this.canTransitionTo(to))
+        throw ValidationException("Invalid referral transition")
+    }
 
     fun ReportedAdjudication.calculateStatus() {
       this.status = when (this.outcomes.isEmpty()) {
@@ -101,10 +110,17 @@ class OutcomeService(
             true -> ReportedAdjudicationStatus.UNSCHEDULED
             false -> ReportedAdjudicationStatus.SCHEDULED
           }
+
         false ->
           // TODO review at later point.  for now, it can just be the previous outcome status
           this.outcomes.sortedByDescending { it.createDateTime }.first().code.status
       }
     }
+
+    fun ReportedAdjudication.lastOutcomeIsRefer() =
+      listOf(
+        OutcomeCode.REFER_INAD,
+        OutcomeCode.REFER_POLICE
+      ).contains(this.outcomes.maxByOrNull { it.createDateTime!! }?.code)
   }
 }
