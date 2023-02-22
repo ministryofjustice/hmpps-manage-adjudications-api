@@ -245,7 +245,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REFER_POLICE", "REFER_INAD", "SCHEDULE_HEARING")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "NOT_PROCEED")
     fun `throws invalid state if delete latest outcome is invalid type `(code: OutcomeCode) {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         reportedAdjudication
@@ -257,7 +257,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         outcomeService.deleteOutcome(1,)
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("Unable to delete referral via api - DEL/outcome")
+        .hasMessageContaining("Unable to delete via api - DEL/outcome")
     }
 
     @Test

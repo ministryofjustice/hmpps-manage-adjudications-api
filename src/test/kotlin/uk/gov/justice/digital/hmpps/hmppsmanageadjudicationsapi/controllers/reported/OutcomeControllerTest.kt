@@ -124,7 +124,7 @@ class OutcomeControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to reemove a referral`() {
+    fun `makes a call to remove a referral`() {
       removeReferralRequest(1,)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(referralService).removeReferral(1,)

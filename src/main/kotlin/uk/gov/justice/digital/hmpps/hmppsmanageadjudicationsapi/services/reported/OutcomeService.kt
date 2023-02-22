@@ -65,9 +65,8 @@ class OutcomeService(
 
   fun deleteOutcome(adjudicationNumber: Long, id: Long? = null): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-
     val outcomeToDelete = when (id) {
-      null -> reportedAdjudication.latestOutcome()?.canDelete() ?: throw EntityNotFoundException("Outcome not found for $adjudicationNumber")
+      null -> reportedAdjudication.latestOutcome()?.canDelete(reportedAdjudication.hearings.isNotEmpty()) ?: throw EntityNotFoundException("Outcome not found for $adjudicationNumber")
       else -> reportedAdjudication.getOutcome(id)
     }
 
@@ -108,8 +107,10 @@ class OutcomeService(
         throw ValidationException("Invalid referral transition")
     }
 
-    fun Outcome.canDelete(): Outcome {
-      if (OutcomeCode.referrals().contains(this.code) || this.code == OutcomeCode.SCHEDULE_HEARING) throw ValidationException("Unable to delete referral via api - DEL/outcome")
+    fun Outcome.canDelete(hasHearings: Boolean): Outcome {
+      val acceptableItems = if (!hasHearings) listOf(OutcomeCode.NOT_PROCEED) else emptyList()
+      if (acceptableItems.none { it == this.code }) throw ValidationException("Unable to delete via api - DEL/outcome")
+
       return this
     }
 
