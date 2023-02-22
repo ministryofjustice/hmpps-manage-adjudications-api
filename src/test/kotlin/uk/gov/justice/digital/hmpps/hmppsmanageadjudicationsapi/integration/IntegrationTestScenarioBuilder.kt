@@ -4,6 +4,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 
@@ -98,9 +99,10 @@ class IntegrationTestScenario(
   }
 
   fun createOutcome(
-    code: OutcomeCode? = OutcomeCode.REFER_POLICE
+    code: OutcomeCode? = OutcomeCode.REFER_POLICE,
+    reason: NotProceedReason? = null,
   ): WebTestClient.ResponseSpec {
-    return intTestData.createOutcome(testAdjudicationDataSet, code)
+    return intTestData.createOutcome(testAdjudicationDataSet, code, reason)
   }
 
   fun issueReport(reportNumber: String): IntegrationTestScenario {

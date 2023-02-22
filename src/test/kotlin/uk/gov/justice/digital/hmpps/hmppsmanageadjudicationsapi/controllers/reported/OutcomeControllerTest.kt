@@ -148,6 +148,7 @@ class OutcomeControllerTest : TestControllerBase() {
       whenever(
         outcomeService.deleteOutcome(
           anyLong(),
+          anyOrNull(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -180,9 +181,8 @@ class OutcomeControllerTest : TestControllerBase() {
     fun `makes a call to delete an outcome`() {
       deleteOutcomeRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(outcomeService).createOutcome(
+      verify(outcomeService).deleteOutcome(
         1,
-        OutcomeCode.REFER_POLICE,
       )
     }
 

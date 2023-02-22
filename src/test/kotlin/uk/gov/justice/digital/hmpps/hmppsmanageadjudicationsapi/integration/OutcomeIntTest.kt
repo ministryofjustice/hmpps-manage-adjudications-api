@@ -39,7 +39,7 @@ class OutcomeIntTest : IntegrationTestBase() {
 
   @Test
   fun `delete an outcome - not proceed `() {
-    initDataForOutcome().createOutcome(code = OutcomeCode.NOT_PROCEED)
+    initDataForOutcome().createOutcome(code = OutcomeCode.NOT_PROCEED, reason = NotProceedReason.NOT_FAIR).expectStatus().isCreated
 
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome")

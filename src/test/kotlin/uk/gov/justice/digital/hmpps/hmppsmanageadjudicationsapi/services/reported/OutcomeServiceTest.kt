@@ -175,11 +175,19 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
+    private val reportedAdjudicationLatestOutcome = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+      it.hearings.clear()
+      it.outcomes.add(
+        Outcome(id = 1, code = OutcomeCode.NOT_PROCEED)
+      )
+    }
+
     @BeforeEach
     fun init() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(reportedAdjudicationWithOutcome)
       whenever(reportedAdjudicationRepository.findByReportNumber(3)).thenReturn(reportedAdjudicationWithOutcomeAndNoHearings)
+      whenever(reportedAdjudicationRepository.findByReportNumber(4)).thenReturn(reportedAdjudicationLatestOutcome)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         reportedAdjudication.also {
           it.createDateTime = LocalDateTime.now()
@@ -236,12 +244,28 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("Outcome not found for 1")
     }
 
+    @ParameterizedTest
+    @CsvSource("REFER_POLICE", "REFER_INAD")
+    fun `throws invalid state if delete latest outcome is invalid type `(code: OutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+        reportedAdjudication
+          .also {
+            it.outcomes.add(Outcome(code = code).also { o -> o.createDateTime = LocalDateTime.now() })
+          }
+      )
+
+      Assertions.assertThatThrownBy {
+        outcomeService.deleteOutcome(1,)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Unable to delete referral via api - DEL/outcome")
+    }
+
     @Test
     fun `delete latest outcome succeeds`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.deleteOutcome(
-        3,
+        4,
       )
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 

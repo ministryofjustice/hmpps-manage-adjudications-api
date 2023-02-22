@@ -40,6 +40,10 @@ enum class OutcomeCode(val status: ReportedAdjudicationStatus) {
     val from = this
     return from.nextStates().contains(to)
   }
+
+  companion object {
+    fun referrals() = listOf(REFER_POLICE, REFER_INAD)
+  }
 }
 
 enum class NotProceedReason {

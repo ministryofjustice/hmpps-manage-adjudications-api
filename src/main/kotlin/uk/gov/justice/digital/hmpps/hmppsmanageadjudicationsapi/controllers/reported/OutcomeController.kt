@@ -61,4 +61,17 @@ class OutcomeController(
 
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
+
+  @Operation(summary = "remove an outcome")
+  @DeleteMapping(value = ["/{adjudicationNumber}/outcome"])
+  @ResponseStatus(HttpStatus.OK)
+  fun removeOutcome(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = outcomeService.deleteOutcome(
+      adjudicationNumber = adjudicationNumber,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
 }
