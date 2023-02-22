@@ -109,7 +109,7 @@ class OutcomeService(
     }
 
     fun Outcome.canDelete(): Outcome {
-      if (OutcomeCode.referrals().contains(this.code)) throw ValidationException("Unable to delete referral via api - DEL/outcome")
+      if (OutcomeCode.referrals().contains(this.code) || this.code == OutcomeCode.SCHEDULE_HEARING) throw ValidationException("Unable to delete referral via api - DEL/outcome")
       return this
     }
 

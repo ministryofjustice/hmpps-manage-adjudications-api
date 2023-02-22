@@ -245,7 +245,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REFER_POLICE", "REFER_INAD")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "SCHEDULE_HEARING")
     fun `throws invalid state if delete latest outcome is invalid type `(code: OutcomeCode) {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         reportedAdjudication
