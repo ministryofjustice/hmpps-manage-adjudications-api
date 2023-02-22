@@ -38,6 +38,22 @@ class OutcomeIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `delete an outcome - not proceed `() {
+    initDataForOutcome().createOutcome(code = OutcomeCode.NOT_PROCEED)
+
+    webTestClient.delete()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.history.size()")
+      .isEqualTo(0)
+      .jsonPath("$.reportedAdjudication.outcomes.size()")
+      .isEqualTo(0)
+  }
+
+  @Test
   fun `refer to police leads to police prosecution`() {
     initDataForOutcome().createOutcome()
 

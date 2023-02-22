@@ -227,6 +227,29 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Outcome not found for 1")
     }
+
+    @Test
+    fun `delete latest outcome throws not found if no outcomes present `() {
+      Assertions.assertThatThrownBy {
+        outcomeService.deleteOutcome(1,)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Outcome not found for 1")
+    }
+
+    @Test
+    fun `delete latest outcome succeeds`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.deleteOutcome(
+        3,
+      )
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes).isEmpty()
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
+
+      assertThat(response).isNotNull
+    }
   }
 
   @Nested

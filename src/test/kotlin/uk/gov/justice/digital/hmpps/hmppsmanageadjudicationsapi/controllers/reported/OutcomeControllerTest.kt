@@ -140,6 +140,62 @@ class OutcomeControllerTest : TestControllerBase() {
         )
     }
   }
+
+  @Nested
+  inner class DeleteOutcome {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        outcomeService.deleteOutcome(
+          anyLong(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      deleteOutcomeRequest(
+        1
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      deleteOutcomeRequest(
+        1
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      deleteOutcomeRequest(
+        1,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to delete an outcome`() {
+      deleteOutcomeRequest(1)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+      verify(outcomeService).createOutcome(
+        1,
+        OutcomeCode.REFER_POLICE,
+      )
+    }
+
+    private fun deleteOutcomeRequest(
+      id: Long,
+    ): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.delete("/reported-adjudications/$id/outcome")
+            .header("Content-Type", "application/json")
+        )
+    }
+  }
   companion object {
     private val OUTCOME_REQUEST = OutcomeRequest(code = OutcomeCode.REFER_POLICE)
   }

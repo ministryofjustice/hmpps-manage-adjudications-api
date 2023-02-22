@@ -40,7 +40,7 @@ class OutcomeService(
     }
 
     if (reportedAdjudication.lastOutcomeIsRefer())
-      reportedAdjudication.outcomes.maxBy { it.createDateTime!! }.code.validateReferral(code)
+      reportedAdjudication.latestOutcome()!!.code.validateReferral(code)
 
     when (code) {
       OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD -> validateDetails(details)
@@ -63,9 +63,9 @@ class OutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun deleteOutcome(adjudicationNumber: Long, id: Long): ReportedAdjudicationDto {
+  fun deleteOutcome(adjudicationNumber: Long, id: Long? = null): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val outcomeToDelete = reportedAdjudication.getOutcome(id)
+    val outcomeToDelete = reportedAdjudication.getOutcome(id!!)
 
     reportedAdjudication.outcomes.remove(outcomeToDelete)
     reportedAdjudication.calculateStatus()
@@ -91,6 +91,7 @@ class OutcomeService(
   companion object {
     private fun validateDetails(details: String?) = details ?: throw ValidationException("details are required")
 
+    fun ReportedAdjudication.latestOutcome(): Outcome? = this.outcomes.maxByOrNull { it.createDateTime!! }
     fun ReportedAdjudication.getReferral(code: OutcomeCode) =
       this.outcomes.filter { it.code == code }.sortedByDescending { it.createDateTime }.firstOrNull()
         ?: throw EntityNotFoundException("Referral not found for ${this.reportNumber}")
