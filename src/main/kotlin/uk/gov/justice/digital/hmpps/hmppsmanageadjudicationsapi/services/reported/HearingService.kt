@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Hea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.lastOutcomeIsRefer
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
@@ -250,9 +251,6 @@ class HearingService(
 
     fun ReportedAdjudication.lastOutcomeIsScheduleHearing() =
       this.outcomes.maxByOrNull { it.createDateTime!! }?.code == OutcomeCode.SCHEDULE_HEARING
-
-    fun ReportedAdjudication.lastOutcomeIsRefer() =
-      listOf(OutcomeCode.REFER_INAD, OutcomeCode.REFER_POLICE).contains(this.outcomes.maxByOrNull { it.createDateTime!! }?.code)
 
     fun ReportedAdjudication.getHearing(): Hearing = this.getLatestHearing() ?: throwHearingNotFoundException()
 
