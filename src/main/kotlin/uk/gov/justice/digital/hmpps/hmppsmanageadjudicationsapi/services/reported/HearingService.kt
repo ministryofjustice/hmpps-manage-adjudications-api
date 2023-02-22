@@ -190,7 +190,7 @@ class HearingService(
 
   fun deleteHearing(adjudicationNumber: Long): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val hearingToRemove = reportedAdjudication.getHearing()
+    val hearingToRemove = reportedAdjudication.getHearing().canDelete()
 
     if (reportedAdjudication.lastOutcomeIsScheduleHearing())
       reportedAdjudication.outcomes.removeLast()
@@ -255,6 +255,11 @@ class HearingService(
     fun ReportedAdjudication.getHearing(): Hearing = this.getLatestHearing() ?: throwHearingNotFoundException()
 
     fun ReportedAdjudication.calcFirstHearingDate(): LocalDateTime? = this.hearings.minOfOrNull { it.dateTimeOfHearing }
+
+    fun Hearing.canDelete(): Hearing {
+      if (OutcomeCode.referrals().contains(this.hearingOutcome?.code?.outcomeCode)) throw ValidationException("Unable to delete hearing via api DEL/hearing - referral associated to this hearing")
+      return this
+    }
 
     private fun throwHearingNotFoundException(): Nothing = throw EntityNotFoundException("Hearing not found")
 
