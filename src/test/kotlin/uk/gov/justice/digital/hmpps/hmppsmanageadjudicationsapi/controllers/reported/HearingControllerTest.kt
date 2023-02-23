@@ -341,8 +341,7 @@ class HearingControllerTest : TestControllerBase() {
           anyOrNull(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
-
-   }
+    }
 
     @Test
     fun `responds with a unauthorised status code`() {
