@@ -76,8 +76,7 @@ class ReferralService(
 
   companion object {
     fun List<CombinedOutcomeDto>.validateHasReferral(): List<CombinedOutcomeDto> {
-      val referrals = listOf(OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD)
-      if (this.none { referrals.contains(it.outcome.code) }) throw ValidationException("No referral for adjudication")
+      if (this.none { OutcomeCode.referrals().contains(it.outcome.code) }) throw ValidationException("No referral for adjudication")
 
       return this
     }

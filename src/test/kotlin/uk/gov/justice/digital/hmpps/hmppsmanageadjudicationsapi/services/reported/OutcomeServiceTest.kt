@@ -175,11 +175,19 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
+    private val reportedAdjudicationLatestOutcome = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+      it.hearings.clear()
+      it.outcomes.add(
+        Outcome(id = 1, code = OutcomeCode.NOT_PROCEED)
+      )
+    }
+
     @BeforeEach
     fun init() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(reportedAdjudicationWithOutcome)
       whenever(reportedAdjudicationRepository.findByReportNumber(3)).thenReturn(reportedAdjudicationWithOutcomeAndNoHearings)
+      whenever(reportedAdjudicationRepository.findByReportNumber(4)).thenReturn(reportedAdjudicationLatestOutcome)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         reportedAdjudication.also {
           it.createDateTime = LocalDateTime.now()
@@ -226,6 +234,45 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcomeService.deleteOutcome(1, 1)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Outcome not found for 1")
+    }
+
+    @Test
+    fun `delete latest outcome throws not found if no outcomes present `() {
+      Assertions.assertThatThrownBy {
+        outcomeService.deleteOutcome(1,)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Outcome not found for 1")
+    }
+
+    @ParameterizedTest
+    @CsvSource("REFER_POLICE", "REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "NOT_PROCEED")
+    fun `throws invalid state if delete latest outcome is invalid type `(code: OutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+        reportedAdjudication
+          .also {
+            it.outcomes.add(Outcome(code = code).also { o -> o.createDateTime = LocalDateTime.now() })
+          }
+      )
+
+      Assertions.assertThatThrownBy {
+        outcomeService.deleteOutcome(1,)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Unable to delete via api - DEL/outcome")
+    }
+
+    @Test
+    fun `delete latest outcome succeeds`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.deleteOutcome(
+        4,
+      )
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes).isEmpty()
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
+
+      assertThat(response).isNotNull
     }
   }
 

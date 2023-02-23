@@ -40,7 +40,7 @@ class OutcomeService(
     }
 
     if (reportedAdjudication.lastOutcomeIsRefer())
-      reportedAdjudication.outcomes.maxBy { it.createDateTime!! }.code.validateReferral(code)
+      reportedAdjudication.latestOutcome()!!.code.validateReferral(code)
 
     when (code) {
       OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD -> validateDetails(details)
@@ -63,9 +63,12 @@ class OutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun deleteOutcome(adjudicationNumber: Long, id: Long): ReportedAdjudicationDto {
+  fun deleteOutcome(adjudicationNumber: Long, id: Long? = null): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val outcomeToDelete = reportedAdjudication.getOutcome(id)
+    val outcomeToDelete = when (id) {
+      null -> reportedAdjudication.latestOutcome()?.canDelete(reportedAdjudication.hearings.isNotEmpty()) ?: throw EntityNotFoundException("Outcome not found for $adjudicationNumber")
+      else -> reportedAdjudication.getOutcome(id)
+    }
 
     reportedAdjudication.outcomes.remove(outcomeToDelete)
     reportedAdjudication.calculateStatus()
@@ -91,6 +94,7 @@ class OutcomeService(
   companion object {
     private fun validateDetails(details: String?) = details ?: throw ValidationException("details are required")
 
+    fun ReportedAdjudication.latestOutcome(): Outcome? = this.outcomes.maxByOrNull { it.createDateTime!! }
     fun ReportedAdjudication.getReferral(code: OutcomeCode) =
       this.outcomes.filter { it.code == code }.sortedByDescending { it.createDateTime }.firstOrNull()
         ?: throw EntityNotFoundException("Referral not found for ${this.reportNumber}")
@@ -101,6 +105,13 @@ class OutcomeService(
     fun OutcomeCode.validateReferral(to: OutcomeCode) {
       if (!this.canTransitionTo(to))
         throw ValidationException("Invalid referral transition")
+    }
+
+    fun Outcome.canDelete(hasHearings: Boolean): Outcome {
+      val acceptableItems = if (!hasHearings) listOf(OutcomeCode.NOT_PROCEED) else emptyList()
+      if (acceptableItems.none { it == this.code }) throw ValidationException("Unable to delete via api - DEL/outcome")
+
+      return this
     }
 
     fun ReportedAdjudication.calculateStatus() {
@@ -118,9 +129,6 @@ class OutcomeService(
     }
 
     fun ReportedAdjudication.lastOutcomeIsRefer() =
-      listOf(
-        OutcomeCode.REFER_INAD,
-        OutcomeCode.REFER_POLICE
-      ).contains(this.outcomes.maxByOrNull { it.createDateTime!! }?.code)
+      OutcomeCode.referrals().contains(this.outcomes.maxByOrNull { it.createDateTime!! }?.code)
   }
 }

@@ -14,6 +14,8 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -468,6 +470,28 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.outcomes.size).isEqualTo(1)
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.REFER_INAD)
+    }
+
+    @Test
+    fun `delete hearing throws validation exception if linked to referral outcome `() {
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication()
+          .also {
+            it.hearings.clear()
+            it.hearings.add(
+              Hearing(
+                agencyId = "", locationId = 1L, oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(5), oicHearingId = 1L, reportNumber = 1L,
+                hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+              )
+            )
+          }
+      )
+
+      Assertions.assertThatThrownBy {
+        hearingService.deleteHearing(1,)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Unable to delete hearing via api DEL/hearing - referral associated to this hearing")
     }
   }
 

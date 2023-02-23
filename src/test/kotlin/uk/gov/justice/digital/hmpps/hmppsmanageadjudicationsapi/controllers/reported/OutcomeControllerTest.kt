@@ -124,7 +124,7 @@ class OutcomeControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to reemove a referral`() {
+    fun `makes a call to remove a referral`() {
       removeReferralRequest(1,)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(referralService).removeReferral(1,)
@@ -136,6 +136,62 @@ class OutcomeControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.delete("/reported-adjudications/$id/remove-referral")
+            .header("Content-Type", "application/json")
+        )
+    }
+  }
+
+  @Nested
+  inner class DeleteOutcome {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        outcomeService.deleteOutcome(
+          anyLong(),
+          anyOrNull(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      deleteOutcomeRequest(
+        1
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      deleteOutcomeRequest(
+        1
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      deleteOutcomeRequest(
+        1,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to delete an outcome`() {
+      deleteOutcomeRequest(1)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+      verify(outcomeService).deleteOutcome(
+        1,
+      )
+    }
+
+    private fun deleteOutcomeRequest(
+      id: Long,
+    ): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.delete("/reported-adjudications/$id/outcome")
             .header("Content-Type", "application/json")
         )
     }
