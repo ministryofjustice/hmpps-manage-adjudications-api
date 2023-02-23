@@ -36,12 +36,14 @@ class ReferralService(
 
   fun updateReferral(
     adjudicationNumber: Long,
+    adjudicator: String? = null,
     code: HearingOutcomeCode,
     details: String,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.updateHearingOutcome(
       adjudicationNumber = adjudicationNumber,
       code = code,
+      adjudicator = adjudicator,
       details = details,
     )
 

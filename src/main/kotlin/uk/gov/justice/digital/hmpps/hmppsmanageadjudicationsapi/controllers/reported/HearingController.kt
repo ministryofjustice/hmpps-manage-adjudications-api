@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingOutcomeService
@@ -25,7 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 import java.time.LocalDate
 import java.time.LocalDateTime
-import javax.validation.ValidationException
 
 @Schema(description = "All hearings response")
 data class HearingSummaryResponse(
@@ -44,20 +42,28 @@ data class HearingRequest(
   val oicHearingType: OicHearingType,
 )
 
-@Schema(description = "Request to create a hearing outcome")
-data class HearingOutcomeRequest(
+@Schema(description = "Request to create a referral for latest hearing")
+data class ReferralRequest(
+  @Schema(description = "the name of the adjudicator, optional when editing a referral")
+  val adjudicator: String? = null,
+  @Schema(description = "the outcome code")
+  val code: HearingOutcomeCode,
+  @Schema(description = "details")
+  val details: String,
+)
+
+@Schema(description = "Request to create an adjourn for latest hearing")
+data class AdjournRequest(
   @Schema(description = "the name of the adjudicator, optional when editing a referral")
   val adjudicator: String? = null,
   @Schema(description = "the outcome code")
   val code: HearingOutcomeCode,
   @Schema(description = "reason")
-  val reason: HearingOutcomeAdjournReason? = null,
+  val reason: HearingOutcomeAdjournReason,
   @Schema(description = "details")
-  val details: String? = null,
-  @Schema(description = "finding")
-  val finding: HearingOutcomeFinding? = null,
+  val details: String,
   @Schema(description = "plea")
-  val plea: HearingOutcomePlea? = null,
+  val plea: HearingOutcomePlea,
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
@@ -167,68 +173,79 @@ class HearingController(
     )
   }
 
-  @Operation(summary = "create a hearing outcome for latest hearing")
-  @PostMapping(value = ["/{adjudicationNumber}/hearing/outcome"])
+  @Operation(summary = "create a referral for latest hearing")
+  @PostMapping(value = ["/{adjudicationNumber}/hearing/outcome/referral"])
   @ResponseStatus(HttpStatus.CREATED)
-  fun createHearingOutcome(
+  fun createReferral(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody hearingOutcomeRequest: HearingOutcomeRequest
+    @RequestBody referralRequest: ReferralRequest
   ): ReportedAdjudicationResponse {
     val reportedAdjudication =
-      when (hearingOutcomeRequest.code.outcomeCode) {
-        null -> hearingOutcomeService.createHearingOutcome(
-          adjudicationNumber = adjudicationNumber,
-          adjudicator = validateAdjudicator(hearingOutcomeRequest.adjudicator),
-          code = hearingOutcomeRequest.code,
-          reason = hearingOutcomeRequest.reason,
-          details = hearingOutcomeRequest.details,
-          finding = hearingOutcomeRequest.finding,
-          plea = hearingOutcomeRequest.plea,
-        )
-        else -> referralService.createReferral(
-          adjudicationNumber = adjudicationNumber,
-          code = hearingOutcomeRequest.code,
-          adjudicator = validateAdjudicator(hearingOutcomeRequest.adjudicator),
-          details = validateDetails(hearingOutcomeRequest.details)
-        )
-      }
+      referralService.createReferral(
+        adjudicationNumber = adjudicationNumber,
+        code = referralRequest.code,
+        adjudicator = referralRequest.adjudicator!!,
+        details = referralRequest.details
+      )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "update a hearing outcome for latest hearing")
-  @PutMapping(value = ["/{adjudicationNumber}/hearing/outcome"])
+  @Operation(summary = "update a referral for latest hearing")
+  @PutMapping(value = ["/{adjudicationNumber}/hearing/outcome/referral"])
   @ResponseStatus(HttpStatus.OK)
-  fun updateHearingOutcome(
+  fun updateReferral(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody hearingOutcomeRequest: HearingOutcomeRequest
+    @RequestBody referralRequest: ReferralRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication =
-      when (hearingOutcomeRequest.code.outcomeCode) {
-        null -> hearingOutcomeService.updateHearingOutcome(
-          adjudicationNumber = adjudicationNumber,
-          code = hearingOutcomeRequest.code,
-          adjudicator = validateAdjudicator(hearingOutcomeRequest.adjudicator),
-          reason = hearingOutcomeRequest.reason,
-          details = hearingOutcomeRequest.details,
-          finding = hearingOutcomeRequest.finding,
-          plea = hearingOutcomeRequest.plea,
-        )
-        else -> referralService.updateReferral(
-          adjudicationNumber = adjudicationNumber,
-          code = hearingOutcomeRequest.code,
-          details = validateDetails(hearingOutcomeRequest.details)
-        )
-      }
+      referralService.updateReferral(
+        adjudicationNumber = adjudicationNumber,
+        code = referralRequest.code,
+        adjudicator = referralRequest.adjudicator,
+        details = referralRequest.details
+      )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  companion object {
-    fun validateAdjudicator(adjudicator: String?) =
-      adjudicator ?: throw ValidationException("adjudicator is required")
+  @Operation(summary = "create a adjourn for latest hearing")
+  @PostMapping(value = ["/{adjudicationNumber}/hearing/outcome/adjourn"])
+  @ResponseStatus(HttpStatus.CREATED)
+  fun createAdjourn(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody adjournRequest: AdjournRequest,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication =
+      hearingOutcomeService.createHearingOutcome(
+        adjudicationNumber = adjudicationNumber,
+        code = adjournRequest.code,
+        adjudicator = adjournRequest.adjudicator!!,
+        details = adjournRequest.details,
+        reason = adjournRequest.reason,
+        plea = adjournRequest.plea,
+      )
 
-    fun validateDetails(details: String?) =
-      details ?: throw ValidationException("details is required")
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(summary = "update a adjourn for latest hearing")
+  @PutMapping(value = ["/{adjudicationNumber}/hearing/outcome/adjourn"])
+  @ResponseStatus(HttpStatus.OK)
+  fun updateAdjourn(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody adjournRequest: AdjournRequest,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication =
+      hearingOutcomeService.updateHearingOutcome(
+        adjudicationNumber = adjudicationNumber,
+        code = adjournRequest.code,
+        adjudicator = adjournRequest.adjudicator,
+        details = adjournRequest.details,
+        reason = adjournRequest.reason,
+        plea = adjournRequest.plea,
+      )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
   }
 }

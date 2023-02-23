@@ -256,21 +256,10 @@ class HearingControllerTest : TestControllerBase() {
   }
 
   @Nested
-  inner class CreateHearingOutcome {
+  inner class CreateReferral {
 
     @BeforeEach
     fun beforeEach() {
-      whenever(
-        hearingOutcomeService.createHearingOutcome(
-          ArgumentMatchers.anyLong(),
-          any(),
-          any(),
-          anyOrNull(),
-          anyOrNull(),
-          anyOrNull(),
-          anyOrNull(),
-        )
-      ).thenReturn(REPORTED_ADJUDICATION_DTO)
 
       whenever(
         referralService.createReferral(
@@ -284,68 +273,43 @@ class HearingControllerTest : TestControllerBase() {
 
     @Test
     fun `responds with a unauthorised status code`() {
-      createHearingOutcomeRequest(
+      createReferralRequest(
         1,
-        hearingOutcomeRequest()
+        referralRequest()
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
-      createHearingOutcomeRequest(
+      createReferralRequest(
         1,
-        hearingOutcomeRequest()
+        referralRequest()
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `returns bad request if adjudicator not set when required`() {
-      createHearingOutcomeRequest(
-        1,
-        NO_ADJUDICATOR_REQUEST
-      ).andExpect(MockMvcResultMatchers.status().isBadRequest)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `returns bad request if details not set when required`() {
-      createHearingOutcomeRequest(
-        1,
-        NO_DETAILS_REQUEST
-      ).andExpect(MockMvcResultMatchers.status().isBadRequest)
-    }
-
     @ParameterizedTest
-    @CsvSource("REFER_POLICE", "REFER_INAD", "COMPLETE", "ADJOURN")
+    @CsvSource("REFER_POLICE", "REFER_INAD")
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create a hearing outcome`(code: HearingOutcomeCode) {
-      createHearingOutcomeRequest(1, hearingOutcomeRequest(code))
+      createReferralRequest(1, referralRequest(code))
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      if (code.outcomeCode != null) verify(referralService).createReferral(
+      verify(referralService).createReferral(
         adjudicationNumber = 1,
         code = code,
         adjudicator = "test",
-        details = "details"
-      )
-      else verify(hearingOutcomeService).createHearingOutcome(
-        adjudicationNumber = 1,
-        code = code,
-        adjudicator = "test",
-        reason = null,
         details = "details"
       )
     }
 
-    private fun createHearingOutcomeRequest(
+    private fun createReferralRequest(
       id: Long,
-      hearingOutcome: HearingOutcomeRequest?
+      referralRequest: ReferralRequest
     ): ResultActions {
-      val body = objectMapper.writeValueAsString(hearingOutcome)
+      val body = objectMapper.writeValueAsString(referralRequest)
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.post("/reported-adjudications/$id/hearing/outcome")
+          MockMvcRequestBuilders.post("/reported-adjudications/$id/hearing/outcome/referral")
             .header("Content-Type", "application/json")
             .content(body)
         )
@@ -353,25 +317,15 @@ class HearingControllerTest : TestControllerBase() {
   }
 
   @Nested
-  inner class UpdateHearingOutcome {
+  inner class UpdateReferral {
     @BeforeEach
     fun beforeEach() {
-      whenever(
-        hearingOutcomeService.updateHearingOutcome(
-          ArgumentMatchers.anyLong(),
-          any(),
-          any(),
-          anyOrNull(),
-          anyOrNull(),
-          anyOrNull(),
-          anyOrNull(),
-        )
-      ).thenReturn(REPORTED_ADJUDICATION_DTO)
 
       whenever(
         referralService.updateReferral(
           ArgumentMatchers.anyLong(),
           any(),
+          anyOrNull(),
           any(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -379,66 +333,42 @@ class HearingControllerTest : TestControllerBase() {
 
     @Test
     fun `responds with a unauthorised status code`() {
-      updateHearingOutcomeRequest(
+      updateReferralRequest(
         1,
-        hearingOutcomeRequest()
+        referralRequest()
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
-      updateHearingOutcomeRequest(
+      updateReferralRequest(
         1,
-        hearingOutcomeRequest()
+        referralRequest()
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `returns bad request if adjudicator not set when required`() {
-      updateHearingOutcomeRequest(
-        1,
-        NO_ADJUDICATOR_REQUEST
-      ).andExpect(MockMvcResultMatchers.status().isBadRequest)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `returns bad request if details not set when required`() {
-      updateHearingOutcomeRequest(
-        1,
-        NO_DETAILS_REQUEST
-      ).andExpect(MockMvcResultMatchers.status().isBadRequest)
-    }
-
     @ParameterizedTest
-    @CsvSource("REFER_POLICE", "REFER_INAD", "COMPLETE", "ADJOURN")
+    @CsvSource("REFER_POLICE", "REFER_INAD")
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to update a hearing outcome`(code: HearingOutcomeCode) {
-      updateHearingOutcomeRequest(1, hearingOutcomeRequest(code))
+      updateReferralRequest(1, referralRequest(code))
         .andExpect(MockMvcResultMatchers.status().isOk)
-      if (code.outcomeCode != null) verify(referralService).updateReferral(
+      verify(referralService).updateReferral(
         adjudicationNumber = 1,
         code = code,
-        details = "details"
-      )
-      else verify(hearingOutcomeService).updateHearingOutcome(
-        adjudicationNumber = 1,
-        code = code,
-        adjudicator = "test",
         details = "details"
       )
     }
 
-    private fun updateHearingOutcomeRequest(
+    private fun updateReferralRequest(
       id: Long,
-      hearingOutcome: HearingOutcomeRequest?
+      referralRequest: ReferralRequest
     ): ResultActions {
-      val body = objectMapper.writeValueAsString(hearingOutcome)
+      val body = objectMapper.writeValueAsString(referralRequest)
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing/outcome")
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing/outcome/referral")
             .header("Content-Type", "application/json")
             .content(body)
         )
@@ -446,13 +376,7 @@ class HearingControllerTest : TestControllerBase() {
   }
   companion object {
     private val HEARING_REQUEST = HearingRequest(locationId = 1L, dateTimeOfHearing = LocalDateTime.now(), oicHearingType = OicHearingType.GOV)
-    private fun hearingOutcomeRequest(code: HearingOutcomeCode? = HearingOutcomeCode.REFER_POLICE) = HearingOutcomeRequest(adjudicator = "test", code = code!!, details = "details")
-    private val NO_ADJUDICATOR_REQUEST = HearingOutcomeRequest(
-      code = HearingOutcomeCode.ADJOURN
-    )
-    private val NO_DETAILS_REQUEST = HearingOutcomeRequest(
-      code = HearingOutcomeCode.REFER_INAD
-    )
+    private fun referralRequest(code: HearingOutcomeCode? = HearingOutcomeCode.REFER_POLICE) = ReferralRequest(adjudicator = "test", code = code!!, details = "details")
 
     private val ALL_HEARINGS_DTO =
       listOf(
