@@ -257,7 +257,8 @@ class HearingService(
     fun ReportedAdjudication.calcFirstHearingDate(): LocalDateTime? = this.hearings.minOfOrNull { it.dateTimeOfHearing }
 
     fun Hearing.canDelete(): Hearing {
-      if (OutcomeCode.referrals().contains(this.hearingOutcome?.code?.outcomeCode)) throw ValidationException("Unable to delete hearing via api DEL/hearing - referral associated to this hearing")
+      if (OutcomeCode.referrals().contains(this.hearingOutcome?.code?.outcomeCode))
+        throw ValidationException("Unable to delete hearing via api DEL/hearing - referral associated to this hearing")
       return this
     }
 
