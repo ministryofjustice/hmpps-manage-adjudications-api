@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingOutcomeService
@@ -54,8 +53,6 @@ data class HearingOutcomeRequest(
   val reason: HearingOutcomeAdjournReason? = null,
   @Schema(description = "details")
   val details: String? = null,
-  @Schema(description = "finding")
-  val finding: HearingOutcomeFinding? = null,
   @Schema(description = "plea")
   val plea: HearingOutcomePlea? = null,
 )
@@ -182,7 +179,6 @@ class HearingController(
           code = hearingOutcomeRequest.code,
           reason = hearingOutcomeRequest.reason,
           details = hearingOutcomeRequest.details,
-          finding = hearingOutcomeRequest.finding,
           plea = hearingOutcomeRequest.plea,
         )
         else -> referralService.createReferral(
@@ -211,7 +207,6 @@ class HearingController(
           adjudicator = validateAdjudicator(hearingOutcomeRequest.adjudicator),
           reason = hearingOutcomeRequest.reason,
           details = hearingOutcomeRequest.details,
-          finding = hearingOutcomeRequest.finding,
           plea = hearingOutcomeRequest.plea,
         )
         else -> referralService.updateReferral(
