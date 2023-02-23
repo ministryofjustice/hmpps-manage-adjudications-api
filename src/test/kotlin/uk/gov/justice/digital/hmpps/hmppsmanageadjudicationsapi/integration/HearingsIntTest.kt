@@ -225,17 +225,16 @@ class HearingsIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `create hearing outcome`() {
+  fun `create hearing outcome - adjourn`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     initDataForHearings().createHearing()
 
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/adjourn")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
           "adjudicator" to "test",
-          "code" to HearingOutcomeCode.COMPLETE,
           "reason" to HearingOutcomeAdjournReason.LEGAL_ADVICE,
           "details" to "details",
           "plea" to HearingOutcomePlea.UNFIT,
@@ -253,7 +252,7 @@ class HearingsIntTest : IntegrationTestBase() {
       .isEqualTo("details")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea")
       .isEqualTo(HearingOutcomePlea.UNFIT.name)
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.COMPLETE.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.ADJOURN.name)
   }
 
   @Test
@@ -262,7 +261,7 @@ class HearingsIntTest : IntegrationTestBase() {
     initDataForHearings().createHearing()
 
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/referral")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -290,63 +289,6 @@ class HearingsIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `update hearing outcome`() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    initDataForHearings().createHearing().createHearingOutcome()
-
-    webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .bodyValue(
-        mapOf(
-          "adjudicator" to "updated",
-          "code" to HearingOutcomeCode.COMPLETE,
-          "plea" to HearingOutcomePlea.ABSTAIN,
-        )
-      )
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
-      .isEqualTo("updated")
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason").doesNotExist()
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.details").doesNotExist()
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea")
-      .isEqualTo(HearingOutcomePlea.ABSTAIN.name)
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.COMPLETE.name)
-  }
-
-  @Test
-  fun `update details of hearing outcome for referral`() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    initDataForHearings().createHearing().createHearingOutcome(code = HearingOutcomeCode.REFER_INAD)
-
-    webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .bodyValue(
-        mapOf(
-          "code" to HearingOutcomeCode.REFER_INAD,
-          "details" to "details updated"
-        )
-      )
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
-      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_INAD.name)
-      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason").doesNotExist()
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea").doesNotExist()
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.finding").doesNotExist()
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.details").isEqualTo("details updated")
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.details").isEqualTo("details updated")
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.REFER_INAD.name)
-  }
-
-  @Test
   fun `referral transaction is rolled back when hearing outcome succeeds and outcome creation fails`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     initDataForHearings().createHearing()
@@ -365,7 +307,7 @@ class HearingsIntTest : IntegrationTestBase() {
       .expectStatus().is2xxSuccessful
 
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/referral")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(

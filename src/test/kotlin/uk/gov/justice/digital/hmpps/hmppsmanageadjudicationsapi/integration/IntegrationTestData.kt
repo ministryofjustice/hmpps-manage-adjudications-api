@@ -569,20 +569,38 @@ class IntegrationTestData(
       .exchange()
   }
 
-  fun createHearingOutcome(
+  fun createAdjourn(
     testDataSet: AdjudicationIntTestDataSet,
-    code: HearingOutcomeCode? = HearingOutcomeCode.ADJOURN
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/hearing/outcome")
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/hearing/outcome/adjourn")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "details" to "details",
+          "adjudicator" to "testing",
+          "reason" to HearingOutcomeAdjournReason.LEGAL_ADVICE,
+          "plea" to HearingOutcomePlea.UNFIT,
+        )
+      )
+      .exchange()
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
+  fun createReferral(
+    testDataSet: AdjudicationIntTestDataSet,
+    code: HearingOutcomeCode,
+  ): ReportedAdjudicationResponse {
+    return webTestClient.post()
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/hearing/outcome/referral")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
           "code" to code,
           "details" to "details",
           "adjudicator" to "testing",
-          "reason" to HearingOutcomeAdjournReason.LEGAL_ADVICE,
-          "plea" to HearingOutcomePlea.UNFIT,
         )
       )
       .exchange()

@@ -13,7 +13,7 @@ class ReferralsIntTest : OutcomeIntTest() {
   @Test
   fun `remove referral with hearing`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    initDataForHearings().createHearing().createHearingOutcome(HearingOutcomeCode.REFER_POLICE)
+    initDataForHearings().createHearing().createReferral(HearingOutcomeCode.REFER_POLICE)
 
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/remove-referral")
@@ -28,7 +28,7 @@ class ReferralsIntTest : OutcomeIntTest() {
   @Test
   fun `remove referral with hearing and referral outcome`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    initDataForHearings().createHearing().createHearingOutcome(HearingOutcomeCode.REFER_POLICE)
+    initDataForHearings().createHearing().createReferral(HearingOutcomeCode.REFER_POLICE)
       .createOutcome(OutcomeCode.PROSECUTION).expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
@@ -88,13 +88,13 @@ class ReferralsIntTest : OutcomeIntTest() {
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION)
 
-    integrationTestData().createHearingOutcome(
+    integrationTestData().createReferral(
       IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_INAD
     )
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.plusDays(1), OicHearingType.INAD_ADULT)
 
-    integrationTestData().createHearingOutcome(
+    integrationTestData().createReferral(
       IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_POLICE
     )
 
@@ -142,7 +142,7 @@ class ReferralsIntTest : OutcomeIntTest() {
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION)
 
-    integrationTestData().createHearingOutcome(
+    integrationTestData().createReferral(
       IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_INAD
     )
 
@@ -176,7 +176,7 @@ class ReferralsIntTest : OutcomeIntTest() {
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, LocalDateTime.now())
 
-    integrationTestData().createHearingOutcome(
+    integrationTestData().createReferral(
       IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_INAD
     )
 
@@ -211,7 +211,7 @@ class ReferralsIntTest : OutcomeIntTest() {
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, LocalDateTime.now())
 
-    integrationTestData().createHearingOutcome(
+    integrationTestData().createReferral(
       IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_POLICE
     )
 
@@ -246,7 +246,7 @@ class ReferralsIntTest : OutcomeIntTest() {
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, LocalDateTime.now())
 
-    integrationTestData().createHearingOutcome(
+    integrationTestData().createReferral(
       IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_POLICE
     )
 
