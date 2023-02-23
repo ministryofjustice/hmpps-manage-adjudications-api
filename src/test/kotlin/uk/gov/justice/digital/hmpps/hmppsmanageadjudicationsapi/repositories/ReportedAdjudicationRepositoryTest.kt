@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -445,14 +444,14 @@ class ReportedAdjudicationRepositoryTest {
   fun `hearing outcome`() {
     val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
     adjudication!!.hearings.first().hearingOutcome = HearingOutcome(
-      adjudicator = "test", code = HearingOutcomeCode.REFER_POLICE, finding = HearingOutcomeFinding.DISMISSED
+      adjudicator = "test", code = HearingOutcomeCode.REFER_POLICE,
     )
 
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity.hearings.first().hearingOutcome)
-      .extracting("code", "adjudicator", "finding")
-      .contains(HearingOutcomeCode.REFER_POLICE, "test", HearingOutcomeFinding.DISMISSED)
+      .extracting("code", "adjudicator")
+      .contains(HearingOutcomeCode.REFER_POLICE, "test")
   }
 
   @Test

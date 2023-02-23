@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -88,7 +87,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       val response = hearingOutcomeService.createHearingOutcome(
         1, HearingOutcomeCode.REFER_POLICE, "test", HearingOutcomeAdjournReason.LEGAL_ADVICE, "details",
-        HearingOutcomeFinding.NOT_PROCEED_WITH, HearingOutcomePlea.UNFIT
+        HearingOutcomePlea.UNFIT
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -99,8 +98,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("details")
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason)
         .isEqualTo(HearingOutcomeAdjournReason.LEGAL_ADVICE)
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.finding)
-        .isEqualTo(HearingOutcomeFinding.NOT_PROCEED_WITH)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea)
         .isEqualTo(HearingOutcomePlea.UNFIT)
 
@@ -118,17 +115,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         hearingOutcomeService.createHearingOutcome(1, HearingOutcomeCode.REFER_POLICE, "testing",)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Hearing not found")
-    }
-
-    @CsvSource("COMPLETE")
-    @ParameterizedTest
-    fun `throws invalid state exception if finding not present`(code: HearingOutcomeCode) {
-      Assertions.assertThatThrownBy {
-        hearingOutcomeService.createHearingOutcome(
-          adjudicationNumber = 1L, adjudicator = "test", code = code, plea = HearingOutcomePlea.UNFIT,
-        )
-      }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("missing mandatory field")
     }
 
     @CsvSource("COMPLETE", "ADJOURN")
@@ -176,7 +162,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
           plea = HearingOutcomePlea.UNFIT,
           details = "details",
           adjudicator = "adjudicator",
-          finding = HearingOutcomeFinding.DISMISSED,
         )
       }
 
@@ -220,7 +205,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
           adjudicator = "",
           code = HearingOutcomeCode.COMPLETE,
           plea = HearingOutcomePlea.ABSTAIN,
-          finding = HearingOutcomeFinding.PROVED
         )
       )
     }
@@ -243,7 +227,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(code)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isNull()
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isNull()
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.finding).isNull()
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isNull()
 
       assertThat(response).isNotNull
@@ -270,7 +253,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason)
         .isEqualTo(HearingOutcomeAdjournReason.LEGAL_REPRESENTATION)
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.finding).isNull()
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea)
         .isEqualTo(HearingOutcomePlea.ABSTAIN)
 
@@ -286,7 +268,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         code = HearingOutcomeCode.COMPLETE,
         adjudicator = "updated test",
         plea = HearingOutcomePlea.ABSTAIN,
-        finding = HearingOutcomeFinding.PROVED,
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -296,8 +277,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isNull()
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isNull()
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.finding)
-        .isEqualTo(HearingOutcomeFinding.PROVED)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea)
         .isEqualTo(HearingOutcomePlea.ABSTAIN)
 
@@ -331,23 +310,12 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("outcome not found for hearing")
     }
 
-    @CsvSource("COMPLETE")
-    @ParameterizedTest
-    fun `throws invalid state exception if finding not present`(code: HearingOutcomeCode) {
-      Assertions.assertThatThrownBy {
-        hearingOutcomeService.updateHearingOutcome(
-          adjudicationNumber = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test", plea = HearingOutcomePlea.UNFIT,
-        )
-      }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("missing mandatory field")
-    }
-
     @CsvSource("COMPLETE", "ADJOURN")
     @ParameterizedTest
     fun `throws invalid state exception if plea is not present`(code: HearingOutcomeCode) {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.updateHearingOutcome(
-          adjudicationNumber = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test",
+          adjudicationNumber = 1L, code = code, adjudicator = "test",
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing mandatory field")
@@ -384,7 +352,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         reason = request.reason,
         details = request.details,
         plea = request.plea,
-        finding = request.finding
       )
 
       verify(reportedAdjudicationRepository, atLeastOnce()).save(argumentCaptor.capture())
@@ -394,7 +361,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       request.code.outcomeCode ?: assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo(request.details)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(request.code)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isEqualTo(request.reason)
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.finding).isEqualTo(request.finding)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(request.plea)
 
       assertThat(response).isNotNull

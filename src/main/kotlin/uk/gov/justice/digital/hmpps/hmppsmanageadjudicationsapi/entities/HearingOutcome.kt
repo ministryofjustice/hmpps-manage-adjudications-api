@@ -19,8 +19,6 @@ data class HearingOutcome(
   @Enumerated(EnumType.STRING)
   var code: HearingOutcomeCode,
   @Enumerated(EnumType.STRING)
-  var finding: HearingOutcomeFinding? = null,
-  @Enumerated(EnumType.STRING)
   var plea: HearingOutcomePlea? = null,
 ) : BaseEntity()
 
@@ -30,10 +28,6 @@ enum class HearingOutcomeCode(val outcomeCode: OutcomeCode? = null) {
 
 enum class HearingOutcomeAdjournReason {
   LEGAL_ADVICE, LEGAL_REPRESENTATION, RO_ATTEND, HELP, UNFIT, WITNESS, WITNESS_SUPPORT, MCKENZIE, EVIDENCE, INVESTIGATION, OTHER
-}
-
-enum class HearingOutcomeFinding {
-  PROVED, DISMISSED, NOT_PROCEED_WITH
 }
 
 enum class HearingOutcomePlea {
