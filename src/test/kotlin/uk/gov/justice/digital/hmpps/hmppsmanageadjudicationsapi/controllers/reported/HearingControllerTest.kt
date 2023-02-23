@@ -260,7 +260,6 @@ class HearingControllerTest : TestControllerBase() {
 
     @BeforeEach
     fun beforeEach() {
-
       whenever(
         referralService.createReferral(
           ArgumentMatchers.anyLong(),

@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -239,7 +238,6 @@ class HearingsIntTest : IntegrationTestBase() {
           "code" to HearingOutcomeCode.COMPLETE,
           "reason" to HearingOutcomeAdjournReason.LEGAL_ADVICE,
           "details" to "details",
-          "finding" to HearingOutcomeFinding.DISMISSED,
           "plea" to HearingOutcomePlea.UNFIT,
         )
       )
@@ -253,8 +251,6 @@ class HearingsIntTest : IntegrationTestBase() {
       .isEqualTo(HearingOutcomeAdjournReason.LEGAL_ADVICE.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.details")
       .isEqualTo("details")
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.finding")
-      .isEqualTo(HearingOutcomeFinding.DISMISSED.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea")
       .isEqualTo(HearingOutcomePlea.UNFIT.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.COMPLETE.name)
@@ -305,7 +301,6 @@ class HearingsIntTest : IntegrationTestBase() {
         mapOf(
           "adjudicator" to "updated",
           "code" to HearingOutcomeCode.COMPLETE,
-          "finding" to HearingOutcomeFinding.NOT_PROCEED_WITH,
           "plea" to HearingOutcomePlea.ABSTAIN,
         )
       )
@@ -317,8 +312,6 @@ class HearingsIntTest : IntegrationTestBase() {
       .isEqualTo("updated")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason").doesNotExist()
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.details").doesNotExist()
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.finding")
-      .isEqualTo(HearingOutcomeFinding.NOT_PROCEED_WITH.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea")
       .isEqualTo(HearingOutcomePlea.ABSTAIN.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.COMPLETE.name)

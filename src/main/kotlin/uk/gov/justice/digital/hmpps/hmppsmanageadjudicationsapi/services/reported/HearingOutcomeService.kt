@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeFinding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -35,7 +34,6 @@ class HearingOutcomeService(
     adjudicator: String,
     reason: HearingOutcomeAdjournReason? = null,
     details: String? = null,
-    finding: HearingOutcomeFinding? = null,
     plea: HearingOutcomePlea? = null
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
@@ -45,7 +43,6 @@ class HearingOutcomeService(
       reason = reason,
       details = details,
       adjudicator = adjudicator,
-      finding = finding,
       plea = plea,
     ).validate()
 
@@ -60,7 +57,6 @@ class HearingOutcomeService(
     adjudicator: String? = null,
     reason: HearingOutcomeAdjournReason? = null,
     details: String? = null,
-    finding: HearingOutcomeFinding? = null,
     plea: HearingOutcomePlea? = null
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
@@ -74,19 +70,16 @@ class HearingOutcomeService(
         outcomeToAmend.details = null
         outcomeToAmend.reason = null
         outcomeToAmend.plea = plea
-        outcomeToAmend.finding = finding
       }
       HearingOutcomeCode.ADJOURN -> {
         outcomeToAmend.details = details
         outcomeToAmend.reason = reason
         outcomeToAmend.plea = plea
-        outcomeToAmend.finding = null
       }
       else -> {
         outcomeToAmend.details = details
         outcomeToAmend.reason = null
         outcomeToAmend.plea = null
-        outcomeToAmend.finding = null
       }
     }
 
@@ -120,7 +113,6 @@ class HearingOutcomeService(
       when (this.code) {
         HearingOutcomeCode.COMPLETE -> {
           validateField(this.plea)
-          validateField(this.finding)
         }
         HearingOutcomeCode.ADJOURN -> {
           validateField(this.details)
