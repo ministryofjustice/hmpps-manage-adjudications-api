@@ -34,26 +34,6 @@ class ReferralService(
     )
   }
 
-  fun updateReferral(
-    adjudicationNumber: Long,
-    adjudicator: String? = null,
-    code: HearingOutcomeCode,
-    details: String,
-  ): ReportedAdjudicationDto {
-    hearingOutcomeService.updateHearingOutcome(
-      adjudicationNumber = adjudicationNumber,
-      code = code,
-      adjudicator = adjudicator,
-      details = details,
-    )
-
-    return outcomeService.updateReferral(
-      adjudicationNumber = adjudicationNumber,
-      code = code.outcomeCode!!,
-      details = details,
-    )
-  }
-
   fun removeReferral(adjudicationNumber: Long): ReportedAdjudicationDto {
     val outcomes = outcomeService.getOutcomes(adjudicationNumber).validateHasReferral()
     val outcomeToRemove = outcomes.last()

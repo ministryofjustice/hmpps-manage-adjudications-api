@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 import java.time.LocalDate
 import java.time.LocalDateTime
+import javax.validation.ValidationException
 
 @Schema(description = "All hearings response")
 data class HearingSummaryResponse(
@@ -57,8 +58,6 @@ data class AdjournRequest(
   @Schema(description = "the name of the adjudicator, optional when editing a referral")
   val adjudicator: String? = null,
   @Schema(description = "the outcome code")
-  val code: HearingOutcomeCode,
-  @Schema(description = "reason")
   val reason: HearingOutcomeAdjournReason,
   @Schema(description = "details")
   val details: String,
@@ -183,26 +182,8 @@ class HearingController(
     val reportedAdjudication =
       referralService.createReferral(
         adjudicationNumber = adjudicationNumber,
-        code = referralRequest.code,
+        code = referralRequest.code.validateReferral(),
         adjudicator = referralRequest.adjudicator!!,
-        details = referralRequest.details
-      )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
-
-  @Operation(summary = "update a referral for latest hearing")
-  @PutMapping(value = ["/{adjudicationNumber}/hearing/outcome/referral"])
-  @ResponseStatus(HttpStatus.OK)
-  fun updateReferral(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody referralRequest: ReferralRequest,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication =
-      referralService.updateReferral(
-        adjudicationNumber = adjudicationNumber,
-        code = referralRequest.code,
-        adjudicator = referralRequest.adjudicator,
         details = referralRequest.details
       )
 
@@ -219,7 +200,7 @@ class HearingController(
     val reportedAdjudication =
       hearingOutcomeService.createHearingOutcome(
         adjudicationNumber = adjudicationNumber,
-        code = adjournRequest.code,
+        code = HearingOutcomeCode.ADJOURN,
         adjudicator = adjournRequest.adjudicator!!,
         details = adjournRequest.details,
         reason = adjournRequest.reason,
@@ -229,23 +210,10 @@ class HearingController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "update a adjourn for latest hearing")
-  @PutMapping(value = ["/{adjudicationNumber}/hearing/outcome/adjourn"])
-  @ResponseStatus(HttpStatus.OK)
-  fun updateAdjourn(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody adjournRequest: AdjournRequest,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication =
-      hearingOutcomeService.updateHearingOutcome(
-        adjudicationNumber = adjudicationNumber,
-        code = adjournRequest.code,
-        adjudicator = adjournRequest.adjudicator,
-        details = adjournRequest.details,
-        reason = adjournRequest.reason,
-        plea = adjournRequest.plea,
-      )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
+  companion object {
+    fun HearingOutcomeCode.validateReferral(): HearingOutcomeCode {
+      this.outcomeCode ?: throw ValidationException("invalid referral type")
+      return this
+    }
   }
 }

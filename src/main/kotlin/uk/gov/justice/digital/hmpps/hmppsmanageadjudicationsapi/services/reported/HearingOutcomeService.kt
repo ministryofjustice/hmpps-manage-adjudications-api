@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -51,43 +50,6 @@ class HearingOutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun updateHearingOutcome(
-    adjudicationNumber: Long,
-    code: HearingOutcomeCode,
-    adjudicator: String? = null,
-    reason: HearingOutcomeAdjournReason? = null,
-    details: String? = null,
-    plea: HearingOutcomePlea? = null
-  ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val outcomeToAmend = reportedAdjudication.getHearingOutcome()
-
-    outcomeToAmend.code = code
-    if (adjudicator != null) outcomeToAmend.adjudicator = adjudicator
-
-    when (outcomeToAmend.code) {
-      HearingOutcomeCode.COMPLETE -> {
-        outcomeToAmend.details = null
-        outcomeToAmend.reason = null
-        outcomeToAmend.plea = plea
-      }
-      HearingOutcomeCode.ADJOURN -> {
-        outcomeToAmend.details = details
-        outcomeToAmend.reason = reason
-        outcomeToAmend.plea = plea
-      }
-      else -> {
-        outcomeToAmend.details = details
-        outcomeToAmend.reason = null
-        outcomeToAmend.plea = null
-      }
-    }
-
-    outcomeToAmend.validate()
-
-    return saveToDto(reportedAdjudication)
-  }
-
   fun deleteHearingOutcome(adjudicationNumber: Long, hearingId: Long): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val outcomeToRemove = reportedAdjudication.getHearing()
@@ -119,12 +81,10 @@ class HearingOutcomeService(
           validateField(this.reason)
           validateField(this.plea)
         }
-        else -> {}
+        else -> validateField(this.details)
       }
       return this
     }
-
-    fun ReportedAdjudication.getHearingOutcome() = this.getHearing().hearingOutcome.hearingOutcomeExists()
 
     fun HearingOutcome?.hearingOutcomeExists() = this ?: throw EntityNotFoundException("outcome not found for hearing")
 

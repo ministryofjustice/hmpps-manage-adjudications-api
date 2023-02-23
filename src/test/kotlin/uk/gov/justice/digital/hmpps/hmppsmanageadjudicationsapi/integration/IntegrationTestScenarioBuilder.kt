@@ -88,12 +88,19 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun createHearingOutcome(
-    code: HearingOutcomeCode? = HearingOutcomeCode.ADJOURN
-  ): IntegrationTestScenario {
-    intTestData.createHearingOutcome(
+  fun createAdjourn(): IntegrationTestScenario {
+    intTestData.createAdjourn(
       testAdjudicationDataSet,
-      code
+    )
+    return this
+  }
+
+  fun createReferral(
+    code: HearingOutcomeCode
+  ): IntegrationTestScenario {
+    intTestData.createReferral(
+      testAdjudicationDataSet,
+      code,
     )
     return this
   }

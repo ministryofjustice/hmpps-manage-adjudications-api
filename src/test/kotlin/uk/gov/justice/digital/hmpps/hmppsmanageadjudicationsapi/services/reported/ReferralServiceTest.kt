@@ -41,20 +41,6 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
   }
 
   @Test
-  fun `updates outcome and hearing outcome for referral`() {
-
-    referralService.updateReferral(
-      1, HearingOutcomeCode.REFER_INAD, "details 2",
-    )
-
-    verify(hearingOutcomeService, atLeastOnce()).updateHearingOutcome(
-      adjudicationNumber = 1, code = HearingOutcomeCode.REFER_INAD, details = "details 2"
-    )
-
-    verify(outcomeService, atLeastOnce()).updateReferral(adjudicationNumber = 1, code = OutcomeCode.REFER_INAD, details = "details 2")
-  }
-
-  @Test
   fun `remove referral should only remove outcome`() {
     whenever(outcomeService.getOutcomes(1)).thenReturn(
       listOf(
