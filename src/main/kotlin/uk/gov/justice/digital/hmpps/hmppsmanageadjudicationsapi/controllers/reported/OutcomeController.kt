@@ -108,6 +108,41 @@ class OutcomeController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
+  @Operation(summary = "create a dismissed from hearing outcome")
+  @PostMapping(value = ["/{adjudicationNumber}/complete-hearing/dismissed"])
+  @ResponseStatus(HttpStatus.CREATED)
+  fun createDismissed(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody completedDismissedRequest: HearingCompletedDismissedRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = completedHearingService.createDismissed(
+      adjudicationNumber = adjudicationNumber,
+      adjudicator = completedDismissedRequest.adjudicator,
+      plea = completedDismissedRequest.plea,
+      details = completedDismissedRequest.details,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(summary = "create a not proceed from hearing outcome")
+  @PostMapping(value = ["/{adjudicationNumber}/complete-hearing/not-proceed"])
+  @ResponseStatus(HttpStatus.CREATED)
+  fun createNotProceedFromHearing(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody completedNotProceedRequest: HearingCompletedNotProceedRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = completedHearingService.createNotProceed(
+      adjudicationNumber = adjudicationNumber,
+      adjudicator = completedNotProceedRequest.adjudicator,
+      plea = completedNotProceedRequest.plea,
+      reason = completedNotProceedRequest.reason,
+      details = completedNotProceedRequest.details,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
   @Operation(summary = "remove a referral")
   @DeleteMapping(value = ["/{adjudicationNumber}/remove-referral"])
   @ResponseStatus(HttpStatus.OK)

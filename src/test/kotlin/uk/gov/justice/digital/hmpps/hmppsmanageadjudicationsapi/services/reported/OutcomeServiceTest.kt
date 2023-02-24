@@ -150,7 +150,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `create dismissed `() {
-      reportedAdjudication.status = ReportedAdjudicationStatus.UNSCHEDULED
+      reportedAdjudication.status = ReportedAdjudicationStatus.SCHEDULED
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
@@ -164,11 +164,12 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.DISMISSED)
       assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("details")
+      assertThat(response).isNotNull
     }
 
     @Test
     fun `create prosecution `() {
-      reportedAdjudication.status = ReportedAdjudicationStatus.UNSCHEDULED
+      reportedAdjudication.status = ReportedAdjudicationStatus.REFER_POLICE
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
@@ -182,6 +183,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.PROSECUTION)
       assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("details")
+      assertThat(response).isNotNull
     }
 
     @ParameterizedTest

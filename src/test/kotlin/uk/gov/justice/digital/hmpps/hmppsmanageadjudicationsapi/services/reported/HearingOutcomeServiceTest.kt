@@ -111,6 +111,25 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `create a completed hearing`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = hearingOutcomeService.createCompletedHearing(
+        1, "test", HearingOutcomePlea.UNFIT
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("test")
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea)
+        .isEqualTo(HearingOutcomePlea.UNFIT)
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
     fun `throws an entity not found if the hearing for the supplied id does not exists`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication

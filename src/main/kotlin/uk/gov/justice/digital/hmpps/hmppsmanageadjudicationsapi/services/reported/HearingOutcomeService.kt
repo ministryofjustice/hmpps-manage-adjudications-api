@@ -30,11 +30,13 @@ class HearingOutcomeService(
     code: HearingOutcomeCode,
     adjudicator: String,
     details: String,
-  ): ReportedAdjudicationDto {
-    return createHearingOutcome(
-      adjudicationNumber = adjudicationNumber, code = code.validateReferral(), adjudicator = adjudicator, details = details
+  ): ReportedAdjudicationDto =
+    createHearingOutcome(
+      adjudicationNumber = adjudicationNumber,
+      code = code.validateReferral(),
+      adjudicator = adjudicator,
+      details = details
     )
-  }
 
   fun createAdjourn(
     adjudicationNumber: Long,
@@ -56,9 +58,12 @@ class HearingOutcomeService(
     adjudicationNumber: Long,
     adjudicator: String,
     plea: HearingOutcomePlea,
-  ): ReportedAdjudicationDto {
-    TODO("implement me")
-  }
+  ): ReportedAdjudicationDto = createHearingOutcome(
+    adjudicationNumber = adjudicationNumber,
+    code = HearingOutcomeCode.COMPLETE,
+    adjudicator = adjudicator,
+    plea = plea
+  )
 
   private fun createHearingOutcome(
     adjudicationNumber: Long,

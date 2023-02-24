@@ -244,7 +244,7 @@ class OutcomeControllerTest : TestControllerBase() {
       }
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.post("/reported-adjudications/$id/outcome/complete-hearing/$path")
+          MockMvcRequestBuilders.post("/reported-adjudications/$id/complete-hearing/$path")
             .header("Content-Type", "application/json")
             .content(body)
         )

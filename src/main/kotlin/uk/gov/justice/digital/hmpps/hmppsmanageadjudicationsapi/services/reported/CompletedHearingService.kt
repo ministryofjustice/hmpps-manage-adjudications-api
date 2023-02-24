@@ -19,7 +19,13 @@ class CompletedHearingService(
     plea: HearingOutcomePlea,
     details: String,
   ): ReportedAdjudicationDto {
-    TODO("implement me")
+    hearingOutcomeService.createCompletedHearing(
+      adjudicationNumber = adjudicationNumber, adjudicator = adjudicator, plea = plea
+    )
+
+    return outcomeService.createDismissed(
+      adjudicationNumber = adjudicationNumber, details = details
+    )
   }
 
   fun createNotProceed(
@@ -29,6 +35,12 @@ class CompletedHearingService(
     reason: NotProceedReason,
     details: String,
   ): ReportedAdjudicationDto {
-    TODO("implement me")
+    hearingOutcomeService.createCompletedHearing(
+      adjudicationNumber = adjudicationNumber, adjudicator = adjudicator, plea = plea
+    )
+
+    return outcomeService.createNotProceed(
+      adjudicationNumber = adjudicationNumber, reason = reason, details = details
+    )
   }
 }
