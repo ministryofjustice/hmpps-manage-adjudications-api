@@ -17,11 +17,10 @@ class OutcomeIntTest : IntegrationTestBase() {
     initDataForOutcome()
 
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome/not-proceed")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
-          "code" to OutcomeCode.NOT_PROCEED,
           "details" to "details",
           "reason" to NotProceedReason.NOT_FAIR,
         )
@@ -39,10 +38,10 @@ class OutcomeIntTest : IntegrationTestBase() {
 
   @Test
   fun `delete an outcome - not proceed `() {
-    initDataForOutcome().createOutcome(code = OutcomeCode.NOT_PROCEED, reason = NotProceedReason.NOT_FAIR).expectStatus().isCreated
+    initDataForOutcome().createOutcomeNotProceed().expectStatus().isCreated
 
     webTestClient.delete()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome/not-proceed")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -55,10 +54,10 @@ class OutcomeIntTest : IntegrationTestBase() {
 
   @Test
   fun `refer to police leads to police prosecution`() {
-    initDataForOutcome().createOutcome()
+    initDataForOutcome().createOutcomeReferPolice()
 
-    integrationTestData().createOutcome(
-      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.PROSECUTION
+    integrationTestData().createOutcomeProsecution(
+      IntegrationTestData.DEFAULT_ADJUDICATION,
     ).expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.history.size()").isEqualTo(1)

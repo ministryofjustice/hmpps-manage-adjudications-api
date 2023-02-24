@@ -5,6 +5,7 @@ import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
 import javax.persistence.Table
+import javax.validation.ValidationException
 
 @Entity
 @Table(name = "outcome")
@@ -33,6 +34,11 @@ enum class OutcomeCode(val status: ReportedAdjudicationStatus) {
 
   PROSECUTION(ReportedAdjudicationStatus.PROSECUTION),
   SCHEDULE_HEARING(ReportedAdjudicationStatus.SCHEDULED);
+
+  fun validateReferral(): OutcomeCode {
+    if (referrals().none { this == it }) throw ValidationException("invalid referral type")
+    return this
+  }
 
   open fun nextStates(): List<OutcomeCode> = listOf()
 

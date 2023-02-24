@@ -89,7 +89,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `create an adjourn` () {
+    fun `create an adjourn`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = hearingOutcomeService.createAdjourn(

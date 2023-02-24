@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
@@ -15,6 +17,7 @@ import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
@@ -34,60 +37,106 @@ class OutcomeControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        outcomeService.createOutcome(
+        outcomeService.createNotProceed(
           anyLong(),
           any(),
-          anyOrNull(),
-          anyOrNull(),
+          any(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+
+      whenever(
+        outcomeService.createProsecution(
+          anyLong(),
+          any(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+
+      whenever(
+        outcomeService.createReferral(
+          anyLong(),
+          any(),
+          any(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
-    @Test
-    fun `responds with a unauthorised status code`() {
+    @CsvSource("REFER_POLICE", "PROSECUTION", "NOT_PROCEED")
+    @ParameterizedTest
+    fun `responds with a unauthorised status code`(code: OutcomeCode) {
       createOutcomeRequest(
         1,
-        OUTCOME_REQUEST
+        code,
+        if (code != OutcomeCode.NOT_PROCEED) OUTCOME_REQUEST else null,
+        if (code == OutcomeCode.NOT_PROCEED) NOT_PROCEED_REQUEST else null
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
-    @Test
+    @CsvSource("REFER_POLICE", "PROSECUTION", "NOT_PROCEED")
+    @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `responds with a forbidden status code for non ALO`() {
+    fun `responds with a forbidden status code for non ALO`(code: OutcomeCode) {
       createOutcomeRequest(
         1,
-        OUTCOME_REQUEST
+        code,
+        if (code != OutcomeCode.NOT_PROCEED) OUTCOME_REQUEST else null,
+        if (code == OutcomeCode.NOT_PROCEED) NOT_PROCEED_REQUEST else null
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @Test
+    @CsvSource("REFER_POLICE", "PROSECUTION", "NOT_PROCEED")
+    @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
-    fun `responds with a forbidden status code for ALO without write scope`() {
+    fun `responds with a forbidden status code for ALO without write scope`(code: OutcomeCode) {
       createOutcomeRequest(
         1,
-        OUTCOME_REQUEST
+        code,
+        if (code != OutcomeCode.NOT_PROCEED) OUTCOME_REQUEST else null,
+        if (code == OutcomeCode.NOT_PROCEED) NOT_PROCEED_REQUEST else null
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @Test
+    @CsvSource("REFER_POLICE", "PROSECUTION", "NOT_PROCEED")
+    @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to create an outcome`() {
-      createOutcomeRequest(1, OUTCOME_REQUEST)
-        .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(outcomeService).createOutcome(
-        1,
-        OutcomeCode.REFER_POLICE,
+    fun `makes a call to create an outcome`(code: OutcomeCode) {
+      createOutcomeRequest(
+        1, code,
+        if (code != OutcomeCode.NOT_PROCEED) OUTCOME_REQUEST else null,
+        if (code == OutcomeCode.NOT_PROCEED) NOT_PROCEED_REQUEST else null
       )
+        .andExpect(MockMvcResultMatchers.status().isCreated)
+
+      when (code) {
+        OutcomeCode.REFER_POLICE -> verify(outcomeService).createReferral(
+          1, OutcomeCode.REFER_POLICE, "details"
+        )
+        OutcomeCode.NOT_PROCEED -> verify(outcomeService).createNotProceed(
+          1, NotProceedReason.NOT_FAIR, "details"
+        )
+        OutcomeCode.PROSECUTION -> verify(outcomeService).createProsecution(
+          1, "details"
+        )
+
+        else -> {}
+      }
     }
 
     private fun createOutcomeRequest(
       id: Long,
-      outcome: OutcomeRequest?
+      code: OutcomeCode,
+      outcome: OutcomeRequest? = null,
+      notProceedRequest: NotProceedRequest? = null,
     ): ResultActions {
-      val body = objectMapper.writeValueAsString(outcome)
+      val body = objectMapper.writeValueAsString(outcome ?: notProceedRequest)
+      val path = when (code) {
+        OutcomeCode.REFER_POLICE -> "refer-police"
+        OutcomeCode.NOT_PROCEED -> "not-proceed"
+        OutcomeCode.PROSECUTION -> "prosecution"
+        else -> ""
+      }
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.post("/reported-adjudications/$id/outcome")
+          MockMvcRequestBuilders.post("/reported-adjudications/$id/outcome/$path")
             .header("Content-Type", "application/json")
             .content(body)
         )
@@ -191,12 +240,13 @@ class OutcomeControllerTest : TestControllerBase() {
     ): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.delete("/reported-adjudications/$id/outcome")
+          MockMvcRequestBuilders.delete("/reported-adjudications/$id/outcome/not-proceed")
             .header("Content-Type", "application/json")
         )
     }
   }
   companion object {
-    private val OUTCOME_REQUEST = OutcomeRequest(code = OutcomeCode.REFER_POLICE)
+    private val OUTCOME_REQUEST = OutcomeRequest(details = "details")
+    private val NOT_PROCEED_REQUEST = NotProceedRequest(reason = NotProceedReason.NOT_FAIR, details = "details")
   }
 }

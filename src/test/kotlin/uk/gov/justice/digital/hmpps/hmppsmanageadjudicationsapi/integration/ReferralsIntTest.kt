@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
@@ -29,7 +28,7 @@ class ReferralsIntTest : OutcomeIntTest() {
   fun `remove referral with hearing and referral outcome`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     initDataForHearings().createHearing().createReferral(HearingOutcomeCode.REFER_POLICE)
-      .createOutcome(OutcomeCode.PROSECUTION).expectStatus().isCreated
+      .createOutcomeProsecution().expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
       .jsonPath("$.reportedAdjudication.outcomes[0].referralOutcome").exists()
@@ -47,7 +46,7 @@ class ReferralsIntTest : OutcomeIntTest() {
 
   @Test
   fun `remove referral without hearing`() {
-    initDataForOutcome().createOutcome()
+    initDataForOutcome().createOutcomeReferPolice()
 
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/remove-referral")
@@ -61,10 +60,10 @@ class ReferralsIntTest : OutcomeIntTest() {
 
   @Test
   fun `remove referral and referral outcome`() {
-    initDataForOutcome().createOutcome()
+    initDataForOutcome().createOutcomeReferPolice()
 
-    integrationTestData().createOutcome(
-      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.PROSECUTION
+    integrationTestData().createOutcomeProsecution(
+      IntegrationTestData.DEFAULT_ADJUDICATION,
     ).expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
@@ -82,7 +81,7 @@ class ReferralsIntTest : OutcomeIntTest() {
 
   @Test
   fun `remove referral, referral outcome and hearing outcome for a POLICE_REFER related to complex example, police refer - no hearing, inad refer, police refer, prosecute`() {
-    initDataForOutcome().createOutcome()
+    initDataForOutcome().createOutcomeReferPolice()
 
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
@@ -98,8 +97,8 @@ class ReferralsIntTest : OutcomeIntTest() {
       IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_POLICE
     )
 
-    integrationTestData().createOutcome(
-      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.PROSECUTION
+    integrationTestData().createOutcomeProsecution(
+      IntegrationTestData.DEFAULT_ADJUDICATION,
     ).expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(3)
@@ -146,8 +145,8 @@ class ReferralsIntTest : OutcomeIntTest() {
       IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_INAD
     )
 
-    integrationTestData().createOutcome(
-      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.NOT_PROCEED, NotProceedReason.NOT_FAIR
+    integrationTestData().createOutcomeNotProceed(
+      IntegrationTestData.DEFAULT_ADJUDICATION,
     ).expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
@@ -250,8 +249,8 @@ class ReferralsIntTest : OutcomeIntTest() {
       IntegrationTestData.DEFAULT_ADJUDICATION, HearingOutcomeCode.REFER_POLICE
     )
 
-    integrationTestData().createOutcome(
-      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.PROSECUTION,
+    integrationTestData().createOutcomeProsecution(
+      IntegrationTestData.DEFAULT_ADJUDICATION,
     ).expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.history.size()").isEqualTo(1)

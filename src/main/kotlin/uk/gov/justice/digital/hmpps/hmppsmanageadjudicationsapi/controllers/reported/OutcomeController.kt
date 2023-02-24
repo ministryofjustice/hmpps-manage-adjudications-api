@@ -15,14 +15,18 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 
-@Schema(description = "Request to add an outcome")
+@Schema(description = "Request to add a Prosecution or police referral")
 data class OutcomeRequest(
-  @Schema(description = "outcome code")
-  val code: OutcomeCode,
   @Schema(description = "details")
-  val details: String? = null,
-  @Schema(description = "not proceeded with reason")
-  val reason: NotProceedReason? = null
+  val details: String,
+)
+
+@Schema(description = "Request to add a not proceed - via referral or without hearing")
+data class NotProceedRequest(
+  @Schema(description = "details")
+  val details: String,
+  @Schema(description = "reason")
+  val reason: NotProceedReason,
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
@@ -32,18 +36,48 @@ class OutcomeController(
   private val referralService: ReferralService,
 ) : ReportedAdjudicationBaseController() {
 
-  @Operation(summary = "create a not proceed, refer police or prosecution outcome")
-  @PostMapping(value = ["/{adjudicationNumber}/outcome"])
+  @Operation(summary = "create a not proceed outcome")
+  @PostMapping(value = ["/{adjudicationNumber}/outcome/not-proceed"])
   @ResponseStatus(HttpStatus.CREATED)
-  fun createOutcome(
+  fun createNotProceed(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody notProceedRequest: NotProceedRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = outcomeService.createNotProceed(
+      adjudicationNumber = adjudicationNumber,
+      details = notProceedRequest.details,
+      reason = notProceedRequest.reason,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(summary = "create a prosecution outcome")
+  @PostMapping(value = ["/{adjudicationNumber}/outcome/prosecution"])
+  @ResponseStatus(HttpStatus.CREATED)
+  fun createProsecution(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody outcomeRequest: OutcomeRequest
   ): ReportedAdjudicationResponse {
-    val reportedAdjudication = outcomeService.createOutcome(
+    val reportedAdjudication = outcomeService.createProsecution(
       adjudicationNumber = adjudicationNumber,
-      code = outcomeRequest.code,
       details = outcomeRequest.details,
-      reason = outcomeRequest.reason,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(summary = "create a police refer outcome")
+  @PostMapping(value = ["/{adjudicationNumber}/outcome/refer-police"])
+  @ResponseStatus(HttpStatus.CREATED)
+  fun createRefPolice(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody outcomeRequest: OutcomeRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = outcomeService.createReferral(
+      adjudicationNumber = adjudicationNumber,
+      code = OutcomeCode.REFER_POLICE,
+      details = outcomeRequest.details,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
@@ -63,7 +97,7 @@ class OutcomeController(
   }
 
   @Operation(summary = "remove a not proceed without a referral or hearing")
-  @DeleteMapping(value = ["/{adjudicationNumber}/outcome"])
+  @DeleteMapping(value = ["/{adjudicationNumber}/outcome/not-proceed"])
   @ResponseStatus(HttpStatus.OK)
   fun removeNotProceedWithoutReferral(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,

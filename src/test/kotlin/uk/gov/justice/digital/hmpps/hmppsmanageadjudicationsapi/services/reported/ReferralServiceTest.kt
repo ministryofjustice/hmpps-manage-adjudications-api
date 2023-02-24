@@ -37,7 +37,7 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
       adjudicationNumber = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = "test", details = "details",
     )
 
-    verify(outcomeService, atLeastOnce()).createOutcome(adjudicationNumber = 1, code = OutcomeCode.REFER_POLICE, details = "details")
+    verify(outcomeService, atLeastOnce()).createReferral(adjudicationNumber = 1, code = OutcomeCode.REFER_POLICE, details = "details")
   }
 
   @Test
