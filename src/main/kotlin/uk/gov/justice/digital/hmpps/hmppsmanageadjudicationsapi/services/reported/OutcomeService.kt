@@ -72,16 +72,6 @@ class OutcomeService(
     if (reportedAdjudication.lastOutcomeIsRefer())
       reportedAdjudication.latestOutcome()!!.code.validateReferralTransition(code)
 
-    when (code) {
-      OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD -> validateDetails(details)
-      OutcomeCode.NOT_PROCEED -> {
-        validateDetails(details)
-        reason ?: throw ValidationException("a reason is required")
-      }
-
-      else -> {} // TODO(" currently referral outcome PROSECUTION, SCHEDULE_HEARING, nothing to do at present")
-    }
-
     reportedAdjudication.outcomes.add(
       Outcome(
         code = code,
@@ -112,8 +102,6 @@ class OutcomeService(
   }
 
   companion object {
-    private fun validateDetails(details: String?) = details ?: throw ValidationException("details are required")
-
     fun ReportedAdjudication.latestOutcome(): Outcome? = this.outcomes.maxByOrNull { it.createDateTime!! }
 
     fun ReportedAdjudication.getOutcome(id: Long) =
