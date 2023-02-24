@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus.Companion.validateTransition
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -126,20 +125,6 @@ class OutcomeService(
       if (acceptableItems.none { it == this.code }) throw ValidationException("Unable to delete via api - DEL/outcome")
 
       return this
-    }
-
-    fun ReportedAdjudication.calculateStatus() {
-      this.status = when (this.outcomes.isEmpty()) {
-        true ->
-          when (this.hearings.isEmpty()) {
-            true -> ReportedAdjudicationStatus.UNSCHEDULED
-            false -> ReportedAdjudicationStatus.SCHEDULED
-          }
-
-        false ->
-          // TODO review at later point.  for now, it can just be the previous outcome status
-          this.outcomes.sortedByDescending { it.createDateTime }.first().code.status
-      }
     }
 
     fun ReportedAdjudication.lastOutcomeIsRefer() =

@@ -64,7 +64,6 @@ data class ReportedAdjudication(
   @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")
   var outcomes: MutableList<Outcome>,
-
 ) :
   BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reason: String? = null, details: String? = null, reviewUserId: String? = null) {
@@ -76,6 +75,20 @@ data class ReportedAdjudication(
       this.reviewUserId = reviewUserId
     } else {
       throw IllegalStateException("ReportedAdjudication ${this.reportNumber} cannot transition from ${this.status} to $to")
+    }
+  }
+
+  fun calculateStatus() {
+    this.status = when (this.outcomes.isEmpty()) {
+      true ->
+        when (this.hearings.isEmpty()) {
+          true -> ReportedAdjudicationStatus.UNSCHEDULED
+          false -> ReportedAdjudicationStatus.SCHEDULED
+        }
+
+      false ->
+        // TODO review at later point.  for now, it can just be the previous outcome status
+        this.outcomes.sortedByDescending { it.createDateTime }.first().code.status
     }
   }
 }

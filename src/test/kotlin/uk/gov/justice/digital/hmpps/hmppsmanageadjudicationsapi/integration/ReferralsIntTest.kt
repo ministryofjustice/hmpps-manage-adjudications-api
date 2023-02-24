@@ -80,6 +80,27 @@ class ReferralsIntTest : OutcomeIntTest() {
   }
 
   @Test
+  fun `create police referral without hearing, schedule a new hearing and then remove it`() {
+    initDataForOutcome().createOutcomeReferPolice()
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION,)
+      .expectStatus().isCreated
+
+    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
+
+    webTestClient.delete()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
+  }
+
+  @Test
   fun `remove referral, referral outcome and hearing outcome for a POLICE_REFER related to complex example, police refer - no hearing, inad refer, police refer, prosecute`() {
     initDataForOutcome().createOutcomeReferPolice()
 
@@ -196,7 +217,7 @@ class ReferralsIntTest : OutcomeIntTest() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.status")
-      .isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
+      .isEqualTo(ReportedAdjudicationStatus.REFER_INAD.name)
       .jsonPath("$.reportedAdjudication.history.size()").isEqualTo(1)
       .jsonPath("$.reportedAdjudication.history[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
       .jsonPath("$.reportedAdjudication.history[0].outcome.referralOutcome").doesNotExist()
@@ -231,7 +252,7 @@ class ReferralsIntTest : OutcomeIntTest() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.status")
-      .isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
+      .isEqualTo(ReportedAdjudicationStatus.REFER_POLICE.name)
       .jsonPath("$.reportedAdjudication.history.size()").isEqualTo(1)
       .jsonPath("$.reportedAdjudication.history[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
       .jsonPath("$.reportedAdjudication.history[0].outcome.referralOutcome").doesNotExist()
