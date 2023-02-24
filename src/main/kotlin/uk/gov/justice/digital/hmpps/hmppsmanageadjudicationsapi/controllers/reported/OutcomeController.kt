@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.CompletedHearingService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 
@@ -29,11 +31,34 @@ data class NotProceedRequest(
   val reason: NotProceedReason,
 )
 
+@Schema(description = "Request to add a not proceed - hearing completed")
+data class HearingCompletedNotProceedRequest(
+  @Schema(description = "the name of the adjudicator")
+  val adjudicator: String,
+  @Schema(description = "plea")
+  val plea: HearingOutcomePlea,
+  @Schema(description = "reason")
+  val reason: NotProceedReason,
+  @Schema(description = "details")
+  val details: String,
+)
+
+@Schema(description = "Request to add dismissed - hearing completed")
+data class HearingCompletedDismissedRequest(
+  @Schema(description = "the name of the adjudicator")
+  val adjudicator: String,
+  @Schema(description = "plea")
+  val plea: HearingOutcomePlea,
+  @Schema(description = "details")
+  val details: String,
+)
+
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
 class OutcomeController(
   private val outcomeService: OutcomeService,
   private val referralService: ReferralService,
+  private val completedHearingService: CompletedHearingService,
 ) : ReportedAdjudicationBaseController() {
 
   @Operation(summary = "create a not proceed outcome")

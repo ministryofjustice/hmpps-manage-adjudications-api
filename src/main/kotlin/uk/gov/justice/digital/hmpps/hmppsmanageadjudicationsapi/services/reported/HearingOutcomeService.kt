@@ -42,7 +42,6 @@ class HearingOutcomeService(
     reason: HearingOutcomeAdjournReason,
     details: String,
     plea: HearingOutcomePlea,
-
   ): ReportedAdjudicationDto =
     createHearingOutcome(
       adjudicationNumber = adjudicationNumber,
@@ -52,6 +51,14 @@ class HearingOutcomeService(
       plea = plea,
       details = details
     )
+
+  fun createCompletedHearing(
+    adjudicationNumber: Long,
+    adjudicator: String,
+    plea: HearingOutcomePlea,
+  ): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
 
   private fun createHearingOutcome(
     adjudicationNumber: Long,

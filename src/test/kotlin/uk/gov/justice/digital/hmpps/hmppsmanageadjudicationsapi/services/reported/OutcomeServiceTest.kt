@@ -148,6 +148,42 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
 
+    @Test
+    fun `create dismissed `() {
+      reportedAdjudication.status = ReportedAdjudicationStatus.UNSCHEDULED
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.createDismissed(
+        1235L,
+        "details",
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.DISMISSED)
+      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("details")
+    }
+
+    @Test
+    fun `create prosecution `() {
+      reportedAdjudication.status = ReportedAdjudicationStatus.UNSCHEDULED
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.createProsecution(
+        1235L,
+        "details",
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.PROSECUTION)
+      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("details")
+    }
+
     @ParameterizedTest
     @CsvSource("UNSCHEDULED, REFER_POLICE", "SCHEDULED, REFER_INAD")
     fun `create referral`(codeFrom: ReportedAdjudicationStatus, code: OutcomeCode) {

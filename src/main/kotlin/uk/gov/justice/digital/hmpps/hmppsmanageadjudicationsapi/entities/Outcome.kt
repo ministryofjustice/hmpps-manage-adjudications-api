@@ -31,7 +31,7 @@ enum class OutcomeCode(val status: ReportedAdjudicationStatus) {
     }
   },
   NOT_PROCEED(ReportedAdjudicationStatus.NOT_PROCEED),
-
+  DISMISSED(ReportedAdjudicationStatus.DISMISSED),
   PROSECUTION(ReportedAdjudicationStatus.PROSECUTION),
   SCHEDULE_HEARING(ReportedAdjudicationStatus.SCHEDULED);
 

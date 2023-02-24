@@ -37,6 +37,15 @@ class OutcomeService(
     details = details,
   )
 
+  fun createDismissed(
+    adjudicationNumber: Long,
+    details: String,
+  ): ReportedAdjudicationDto = createOutcome(
+    adjudicationNumber = adjudicationNumber,
+    code = OutcomeCode.DISMISSED,
+    details = details,
+  )
+
   fun createNotProceed(
     adjudicationNumber: Long,
     reason: NotProceedReason,

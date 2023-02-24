@@ -115,6 +115,7 @@ enum class ReportedAdjudicationStatus {
     }
   },
   PROSECUTION,
+  DISMISSED,
   NOT_PROCEED;
   open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
   fun canTransitionFrom(from: ReportedAdjudicationStatus): Boolean {
