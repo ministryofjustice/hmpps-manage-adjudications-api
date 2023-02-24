@@ -33,7 +33,7 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
       1, HearingOutcomeCode.REFER_POLICE, "test", "details",
     )
 
-    verify(hearingOutcomeService, atLeastOnce()).createHearingOutcome(
+    verify(hearingOutcomeService, atLeastOnce()).createReferral(
       adjudicationNumber = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = "test", details = "details",
     )
 

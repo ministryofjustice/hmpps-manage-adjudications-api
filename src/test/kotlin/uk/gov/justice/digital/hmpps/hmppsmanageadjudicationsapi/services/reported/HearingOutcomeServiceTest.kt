@@ -5,8 +5,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
@@ -32,8 +30,8 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     Assertions.assertThatThrownBy {
-      hearingOutcomeService.createHearingOutcome(
-        adjudicationNumber = 1, adjudicator = "test", code = HearingOutcomeCode.REFER_POLICE
+      hearingOutcomeService.createReferral(
+        adjudicationNumber = 1, adjudicator = "test", code = HearingOutcomeCode.REFER_POLICE, details = ""
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
@@ -73,12 +71,11 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `create hearing outcome`() {
+    fun `create a referral outcome`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
-      val response = hearingOutcomeService.createHearingOutcome(
-        1, HearingOutcomeCode.REFER_POLICE, "test", HearingOutcomeAdjournReason.LEGAL_ADVICE, "details",
-        HearingOutcomePlea.UNFIT
+      val response = hearingOutcomeService.createReferral(
+        1, HearingOutcomeCode.REFER_POLICE, "test", "details",
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -86,6 +83,24 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("test")
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("details")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `create an adjourn` () {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = hearingOutcomeService.createAdjourn(
+        1, "test", HearingOutcomeAdjournReason.LEGAL_ADVICE, "details", HearingOutcomePlea.UNFIT
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("test")
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("details")
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason)
         .isEqualTo(HearingOutcomeAdjournReason.LEGAL_ADVICE)
@@ -103,41 +118,19 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.createHearingOutcome(1, HearingOutcomeCode.REFER_POLICE, "testing",)
+        hearingOutcomeService.createReferral(1, HearingOutcomeCode.REFER_POLICE, "testing", "")
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Hearing not found")
     }
 
-    @CsvSource("COMPLETE", "ADJOURN")
-    @ParameterizedTest
-    fun `throws invalid state exception if plea is not present`(code: HearingOutcomeCode) {
-      Assertions.assertThatThrownBy {
-        hearingOutcomeService.createHearingOutcome(
-          adjudicationNumber = 1L, adjudicator = "test", code = code,
-        )
-      }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("missing mandatory field")
-    }
-
-    @ParameterizedTest
-    @CsvSource("ADJOURN")
-    fun `validation details for bad refer request`(code: HearingOutcomeCode) {
-      Assertions.assertThatThrownBy {
-        hearingOutcomeService.createHearingOutcome(
-          adjudicationNumber = 1L, code = code, adjudicator = "test"
-        )
-      }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("missing mandatory field")
-    }
-
     @Test
-    fun `validation of reason for adjourn`() {
+    fun `throws exception if referral validation fails`() {
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.createHearingOutcome(
-          adjudicationNumber = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test", details = "details", plea = HearingOutcomePlea.ABSTAIN
+        hearingOutcomeService.createReferral(
+          adjudicationNumber = 1L, code = HearingOutcomeCode.ADJOURN, adjudicator = "test", details = "details",
         )
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("missing mandatory field")
+        .hasMessageContaining("invalid referral type")
     }
   }
 

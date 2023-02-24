@@ -32,7 +32,7 @@ class OutcomeController(
   private val referralService: ReferralService,
 ) : ReportedAdjudicationBaseController() {
 
-  @Operation(summary = "create an outcome")
+  @Operation(summary = "create a not proceed, refer police or prosecution outcome")
   @PostMapping(value = ["/{adjudicationNumber}/outcome"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createOutcome(
@@ -62,10 +62,10 @@ class OutcomeController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "remove an outcome")
+  @Operation(summary = "remove a not proceed without a referral or hearing")
   @DeleteMapping(value = ["/{adjudicationNumber}/outcome"])
   @ResponseStatus(HttpStatus.OK)
-  fun removeOutcome(
+  fun removeNotProceedWithoutReferral(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.deleteOutcome(
