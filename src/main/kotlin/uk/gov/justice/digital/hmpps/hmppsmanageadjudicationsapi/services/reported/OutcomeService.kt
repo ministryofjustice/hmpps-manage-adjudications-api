@@ -29,11 +29,9 @@ class OutcomeService(
 
   fun createProsecution(
     adjudicationNumber: Long,
-    details: String,
   ): ReportedAdjudicationDto = createOutcome(
     adjudicationNumber = adjudicationNumber,
     code = OutcomeCode.PROSECUTION,
-    details = details,
   )
 
   fun createDismissed(
