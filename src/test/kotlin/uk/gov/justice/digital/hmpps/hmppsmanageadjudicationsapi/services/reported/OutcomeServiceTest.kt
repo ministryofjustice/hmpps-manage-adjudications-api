@@ -33,7 +33,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      outcomeService.createProsecution(1, "")
+      outcomeService.createProsecution(1,)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
@@ -175,14 +175,13 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       val response = outcomeService.createProsecution(
         1235L,
-        "details",
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.PROSECUTION)
-      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("details")
+      assertThat(argumentCaptor.value.outcomes.first().details).isNull()
       assertThat(response).isNotNull
     }
 

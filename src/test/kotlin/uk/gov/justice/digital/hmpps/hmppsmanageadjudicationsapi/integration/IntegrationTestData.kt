@@ -552,11 +552,6 @@ class IntegrationTestData(
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/outcome/prosecution")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .bodyValue(
-        mapOf(
-          "details" to "details",
-        )
-      )
       .exchange()
   }
 

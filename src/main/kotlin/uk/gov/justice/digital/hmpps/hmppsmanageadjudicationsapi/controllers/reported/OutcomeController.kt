@@ -17,8 +17,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 
-@Schema(description = "Request to add a Prosecution or police referral")
-data class OutcomeRequest(
+@Schema(description = "Request to add a police referral")
+data class PoliceReferralRequest(
   @Schema(description = "details")
   val details: String,
 )
@@ -82,11 +82,9 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createProsecution(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody outcomeRequest: OutcomeRequest
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.createProsecution(
       adjudicationNumber = adjudicationNumber,
-      details = outcomeRequest.details,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
@@ -97,12 +95,12 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createRefPolice(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody outcomeRequest: OutcomeRequest
+    @RequestBody policeReferralRequest: PoliceReferralRequest
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.createReferral(
       adjudicationNumber = adjudicationNumber,
       code = OutcomeCode.REFER_POLICE,
-      details = outcomeRequest.details,
+      details = policeReferralRequest.details,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
