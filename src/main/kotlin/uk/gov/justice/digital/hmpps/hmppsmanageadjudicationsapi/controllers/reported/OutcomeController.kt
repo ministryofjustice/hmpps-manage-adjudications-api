@@ -153,6 +153,24 @@ class OutcomeController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
+  @Operation(summary = "create a charge proved from hearing outcome")
+  @PostMapping(value = ["/{adjudicationNumber}/complete-hearing/charge-proved"])
+  @ResponseStatus(HttpStatus.CREATED)
+  fun createChargeProvedFromHearing(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody chargeProvedRequest: HearingCompletedChargeProvedRequest,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = completedHearingService.createChargeProved(
+      adjudicationNumber = adjudicationNumber,
+      adjudicator = chargeProvedRequest.adjudicator,
+      plea = chargeProvedRequest.plea,
+      amount = chargeProvedRequest.amount,
+      caution = chargeProvedRequest.caution,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
   @Operation(summary = "remove a referral")
   @DeleteMapping(value = ["/{adjudicationNumber}/remove-referral"])
   @ResponseStatus(HttpStatus.OK)

@@ -182,10 +182,14 @@ data class OutcomeDto(
   val id: Long? = null,
   @Schema(description = "outcome code")
   val code: OutcomeCode,
-  @Schema(description = "details")
+  @Schema(description = "optional details")
   val details: String? = null,
-  @Schema(description = "not proceeded with reason")
+  @Schema(description = "optional not proceeded with reason")
   val reason: NotProceedReason? = null,
+  @Schema(description = "optional amount if damages are to be reclaimed")
+  val amount: Double? = null,
+  @Schema(description = "optional is this outcome a caution")
+  val caution: Boolean? = null,
 )
 
 @Schema(description = "Combined Outcome - currently to support referral but maybe expanded once awards are added")

@@ -17,6 +17,8 @@ data class Outcome(
   var reason: NotProceedReason? = null,
   @Enumerated(EnumType.STRING)
   var code: OutcomeCode,
+  var amount: Double? = null,
+  var caution: Boolean? = null,
 ) : BaseEntity()
 
 enum class OutcomeCode(val status: ReportedAdjudicationStatus) {

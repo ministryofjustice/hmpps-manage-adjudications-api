@@ -205,6 +205,8 @@ open class ReportedDtoService(
       code = this.code,
       details = this.details,
       reason = this.reason,
+      amount = this.amount,
+      caution = this.caution,
     )
 }
 

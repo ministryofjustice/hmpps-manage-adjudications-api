@@ -208,24 +208,4 @@ class OutcomeIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isNotFound
   }
-
-  protected fun initDataForOutcome(): IntegrationTestScenario {
-    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
-
-    val intTestData = integrationTestData()
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
-
-    return draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
-      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
-  }
 }

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -193,32 +194,28 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource(
-      "UNSCHEDULED, UNSCHEDULED",
-      "UNSCHEDULED, REJECTED",
-      "UNSCHEDULED, AWAITING_REVIEW",
-      "UNSCHEDULED, RETURNED",
-      "REJECTED, UNSCHEDULED",
-      "REJECTED, REJECTED",
-      "REJECTED, AWAITING_REVIEW",
-      "REJECTED, RETURNED",
-      "RETURNED, UNSCHEDULED",
-      "RETURNED, REJECTED",
-      "RETURNED, RETURNED",
-      "SCHEDULED, SCHEDULED",
-      "NOT_PROCEED, SCHEDULED",
-    )
+    @EnumSource(ReportedAdjudicationStatus::class)
     fun `setting status for a reported adjudication throws an illegal state exception for invalid transitions`(
       from: ReportedAdjudicationStatus,
-      to: ReportedAdjudicationStatus
     ) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = from
         }
       )
-      Assertions.assertThrows(IllegalStateException::class.java) {
-        reportedAdjudicationService.setStatus(1, to)
+      ReportedAdjudicationStatus.values().filter { it != ReportedAdjudicationStatus.ACCEPTED }.filter { !from.nextStates().contains(it) }.forEach {
+        Assertions.assertThrows(IllegalStateException::class.java) {
+          reportedAdjudicationService.setStatus(1, it)
+        }
+      }
+    }
+
+    @Test
+    fun `ensure all status are connected - should catch any new status not wired up - if this test fails you need to add the status to the correct next states `() {
+      val endStatus = ReportedAdjudicationStatus.values().filter { it.nextStates().isEmpty() }
+      val transitionStatus = ReportedAdjudicationStatus.values().filter { it.nextStates().isNotEmpty() }
+      repeat(endStatus.size) {
+        assertThat(transitionStatus.any { it.nextStates().contains(it) }).isTrue()
       }
     }
 

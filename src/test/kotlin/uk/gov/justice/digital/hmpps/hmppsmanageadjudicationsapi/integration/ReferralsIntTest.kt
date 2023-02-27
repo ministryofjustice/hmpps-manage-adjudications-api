@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -7,7 +8,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDateTime
 
-class ReferralsIntTest : OutcomeIntTest() {
+class ReferralsIntTest : IntegrationTestBase() {
+
+  @BeforeEach
+  fun setUp() {
+    setAuditTime()
+  }
 
   @Test
   fun `remove referral with hearing`() {

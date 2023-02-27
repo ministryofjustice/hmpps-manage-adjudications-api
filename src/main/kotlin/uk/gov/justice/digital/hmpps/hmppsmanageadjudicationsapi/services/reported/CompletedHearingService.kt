@@ -51,6 +51,12 @@ class CompletedHearingService(
     amount: Double? = null,
     caution: Boolean,
   ): ReportedAdjudicationDto {
-    TODO("implement me")
+    hearingOutcomeService.createCompletedHearing(
+      adjudicationNumber = adjudicationNumber, adjudicator = adjudicator, plea = plea
+    )
+
+    return outcomeService.createChargeProved(
+      adjudicationNumber = adjudicationNumber, amount = amount, caution = caution
+    )
   }
 }
