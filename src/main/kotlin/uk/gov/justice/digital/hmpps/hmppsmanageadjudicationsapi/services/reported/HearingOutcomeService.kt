@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Authent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getHearing
 import javax.persistence.EntityNotFoundException
-import javax.validation.ValidationException
 
 @Service
 @Transactional
@@ -26,8 +25,47 @@ class HearingOutcomeService(
   offenceCodeLookupService,
   authenticationFacade,
 ) {
+  fun createReferral(
+    adjudicationNumber: Long,
+    code: HearingOutcomeCode,
+    adjudicator: String,
+    details: String,
+  ): ReportedAdjudicationDto =
+    createHearingOutcome(
+      adjudicationNumber = adjudicationNumber,
+      code = code.validateReferral(),
+      adjudicator = adjudicator,
+      details = details
+    )
 
-  fun createHearingOutcome(
+  fun createAdjourn(
+    adjudicationNumber: Long,
+    adjudicator: String,
+    reason: HearingOutcomeAdjournReason,
+    details: String,
+    plea: HearingOutcomePlea,
+  ): ReportedAdjudicationDto =
+    createHearingOutcome(
+      adjudicationNumber = adjudicationNumber,
+      code = HearingOutcomeCode.ADJOURN,
+      adjudicator = adjudicator,
+      reason = reason,
+      plea = plea,
+      details = details
+    )
+
+  fun createCompletedHearing(
+    adjudicationNumber: Long,
+    adjudicator: String,
+    plea: HearingOutcomePlea,
+  ): ReportedAdjudicationDto = createHearingOutcome(
+    adjudicationNumber = adjudicationNumber,
+    code = HearingOutcomeCode.COMPLETE,
+    adjudicator = adjudicator,
+    plea = plea
+  )
+
+  private fun createHearingOutcome(
     adjudicationNumber: Long,
     code: HearingOutcomeCode,
     adjudicator: String,
@@ -43,7 +81,7 @@ class HearingOutcomeService(
       details = details,
       adjudicator = adjudicator,
       plea = plea,
-    ).validate()
+    )
 
     hearingToAddOutcomeTo.hearingOutcome = hearingOutcome
 
@@ -71,23 +109,6 @@ class HearingOutcomeService(
   }
 
   companion object {
-    fun HearingOutcome.validate(): HearingOutcome {
-      when (this.code) {
-        HearingOutcomeCode.COMPLETE -> {
-          validateField(this.plea)
-        }
-        HearingOutcomeCode.ADJOURN -> {
-          validateField(this.details)
-          validateField(this.reason)
-          validateField(this.plea)
-        }
-        else -> validateField(this.details)
-      }
-      return this
-    }
-
     fun HearingOutcome?.hearingOutcomeExists() = this ?: throw EntityNotFoundException("outcome not found for hearing")
-
-    private fun validateField(field: Any?) = field ?: throw ValidationException("missing mandatory field")
   }
 }

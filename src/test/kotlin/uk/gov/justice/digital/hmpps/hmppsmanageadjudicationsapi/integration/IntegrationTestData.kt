@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
@@ -533,19 +532,44 @@ class IntegrationTestData(
       .exchange()
   }
 
-  fun createOutcome(
+  fun createOutcomeReferPolice(
     testDataSet: AdjudicationIntTestDataSet,
-    code: OutcomeCode? = OutcomeCode.REFER_POLICE,
-    reason: NotProceedReason? = null
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/outcome")
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/outcome/refer-police")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
-          "code" to code,
           "details" to "details",
-          "reason" to reason
+        )
+      )
+      .exchange()
+  }
+
+  fun createOutcomeProsecution(
+    testDataSet: AdjudicationIntTestDataSet,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.post()
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/outcome/prosecution")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "details" to "details",
+        )
+      )
+      .exchange()
+  }
+
+  fun createOutcomeNotProceed(
+    testDataSet: AdjudicationIntTestDataSet,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.post()
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/outcome/not-proceed")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "details" to "details",
+          "reason" to NotProceedReason.NOT_FAIR,
         )
       )
       .exchange()

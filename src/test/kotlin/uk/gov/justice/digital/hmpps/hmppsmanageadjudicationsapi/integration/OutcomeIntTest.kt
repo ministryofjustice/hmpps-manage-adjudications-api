@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -13,15 +14,14 @@ class OutcomeIntTest : IntegrationTestBase() {
     setAuditTime()
   }
   @Test
-  fun `create outcome`() {
+  fun `create outcome - not proceed`() {
     initDataForOutcome()
 
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome/not-proceed")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
-          "code" to OutcomeCode.NOT_PROCEED,
           "details" to "details",
           "reason" to NotProceedReason.NOT_FAIR,
         )
@@ -31,7 +31,7 @@ class OutcomeIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.status")
       .isEqualTo(ReportedAdjudicationStatus.NOT_PROCEED.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome..id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.id").isNotEmpty
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.details").isEqualTo("details")
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.reason").isEqualTo(NotProceedReason.NOT_FAIR.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
@@ -39,10 +39,10 @@ class OutcomeIntTest : IntegrationTestBase() {
 
   @Test
   fun `delete an outcome - not proceed `() {
-    initDataForOutcome().createOutcome(code = OutcomeCode.NOT_PROCEED, reason = NotProceedReason.NOT_FAIR).expectStatus().isCreated
+    initDataForOutcome().createOutcomeNotProceed().expectStatus().isCreated
 
     webTestClient.delete()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome/not-proceed")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -55,10 +55,10 @@ class OutcomeIntTest : IntegrationTestBase() {
 
   @Test
   fun `refer to police leads to police prosecution`() {
-    initDataForOutcome().createOutcome()
+    initDataForOutcome().createOutcomeReferPolice()
 
-    integrationTestData().createOutcome(
-      IntegrationTestData.DEFAULT_ADJUDICATION, OutcomeCode.PROSECUTION
+    integrationTestData().createOutcomeProsecution(
+      IntegrationTestData.DEFAULT_ADJUDICATION,
     ).expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.history.size()").isEqualTo(1)
@@ -67,6 +67,99 @@ class OutcomeIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.history[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.PROSECUTION.name)
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.PROSECUTION.name)
       .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
+  }
+
+  @Test
+  fun `create completed hearing outcome - not proceed`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForOutcome().createHearing()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/complete-hearing/not-proceed")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "plea" to HearingOutcomePlea.NOT_GUILTY,
+          "details" to "details",
+          "reason" to NotProceedReason.NOT_FAIR,
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.NOT_PROCEED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator").isEqualTo("test")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea").isEqualTo(HearingOutcomePlea.NOT_GUILTY.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.details").isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.reason").isEqualTo(NotProceedReason.NOT_FAIR.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
+  }
+
+  @Test
+  fun `create completed hearing outcome - dismissed`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForOutcome().createHearing()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/complete-hearing/dismissed")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "plea" to HearingOutcomePlea.NOT_GUILTY,
+          "details" to "details",
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.DISMISSED.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator").isEqualTo("test")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea").isEqualTo(HearingOutcomePlea.NOT_GUILTY.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.details").isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.code").isEqualTo(OutcomeCode.DISMISSED.name)
+  }
+
+  @Test
+  fun `create completed hearing outcome - dismissed throws exception when hearing is missing`() {
+    initDataForOutcome()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/complete-hearing/dismissed")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "plea" to HearingOutcomePlea.NOT_GUILTY,
+          "details" to "details",
+        )
+      )
+      .exchange()
+      .expectStatus().isNotFound
+  }
+
+  @Test
+  fun `create completed hearing outcome - not proceed throws exception when hearing is missing`() {
+    initDataForOutcome()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/complete-hearing/not-proceed")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "plea" to HearingOutcomePlea.NOT_GUILTY,
+          "reason" to NotProceedReason.NOT_FAIR,
+          "details" to "details",
+        )
+      )
+      .exchange()
+      .expectStatus().isNotFound
   }
 
   protected fun initDataForOutcome(): IntegrationTestScenario {

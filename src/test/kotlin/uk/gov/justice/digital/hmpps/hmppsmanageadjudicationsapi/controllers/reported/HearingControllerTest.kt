@@ -332,9 +332,8 @@ class HearingControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        hearingOutcomeService.createHearingOutcome(
+        hearingOutcomeService.createAdjourn(
           ArgumentMatchers.anyLong(),
-          any(),
           any(),
           anyOrNull(),
           anyOrNull(),
@@ -365,9 +364,8 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to create an adjourn`() {
       createAdjournRequest(1, adjournRequest)
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(hearingOutcomeService).createHearingOutcome(
+      verify(hearingOutcomeService).createAdjourn(
         adjudicationNumber = 1,
-        code = HearingOutcomeCode.ADJOURN,
         adjudicator = "test",
         reason = HearingOutcomeAdjournReason.HELP,
         plea = HearingOutcomePlea.ABSTAIN,

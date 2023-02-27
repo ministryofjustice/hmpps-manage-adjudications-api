@@ -21,13 +21,13 @@ class ReferralService(
     adjudicator: String,
     details: String,
   ): ReportedAdjudicationDto {
-    hearingOutcomeService.createHearingOutcome(
+    hearingOutcomeService.createReferral(
       adjudicationNumber = adjudicationNumber,
       code = code,
       adjudicator = adjudicator,
       details = details,
     )
-    return outcomeService.createOutcome(
+    return outcomeService.createReferral(
       adjudicationNumber = adjudicationNumber,
       code = code.outcomeCode!!,
       details = details

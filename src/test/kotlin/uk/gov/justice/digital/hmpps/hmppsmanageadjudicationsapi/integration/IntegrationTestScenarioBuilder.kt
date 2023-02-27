@@ -4,8 +4,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 
 class IntegrationTestScenarioBuilder(
@@ -105,11 +103,16 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun createOutcome(
-    code: OutcomeCode? = OutcomeCode.REFER_POLICE,
-    reason: NotProceedReason? = null,
-  ): WebTestClient.ResponseSpec {
-    return intTestData.createOutcome(testAdjudicationDataSet, code, reason)
+  fun createOutcomeReferPolice(): WebTestClient.ResponseSpec {
+    return intTestData.createOutcomeReferPolice(testAdjudicationDataSet)
+  }
+
+  fun createOutcomeProsecution(): WebTestClient.ResponseSpec {
+    return intTestData.createOutcomeProsecution(testAdjudicationDataSet)
+  }
+
+  fun createOutcomeNotProceed(): WebTestClient.ResponseSpec {
+    return intTestData.createOutcomeNotProceed(testAdjudicationDataSet)
   }
 
   fun issueReport(reportNumber: String): IntegrationTestScenario {

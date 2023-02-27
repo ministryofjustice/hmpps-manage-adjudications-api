@@ -28,7 +28,17 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     Assertions.assertThatThrownBy {
-      outcomeService.createOutcome(1, OutcomeCode.REFER_POLICE)
+      outcomeService.createReferral(1, OutcomeCode.REFER_POLICE, "")
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      outcomeService.createProsecution(1, "")
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      outcomeService.createNotProceed(1, NotProceedReason.NOT_FAIR, "")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
@@ -39,11 +49,6 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     Assertions.assertThatThrownBy {
       outcomeService.deleteOutcome(1, 1)
-    }.isInstanceOf(EntityNotFoundException::class.java)
-      .hasMessageContaining("ReportedAdjudication not found for 1")
-
-    Assertions.assertThatThrownBy {
-      outcomeService.updateReferral(1, OutcomeCode.REFER_INAD, "updated")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }
@@ -77,9 +82,20 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         OutcomeCode.REFER_INAD else OutcomeCode.REFER_POLICE
 
       Assertions.assertThatThrownBy {
-        outcomeService.createOutcome(adjudicationNumber = 1, code = code, details = "details")
+        outcomeService.createReferral(adjudicationNumber = 1, code = code, details = "details")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Invalid status transition")
+    }
+
+    @CsvSource("NOT_PROCEED", "PROSECUTION", "SCHEDULE_HEARING")
+    @ParameterizedTest
+    fun `throws exception if referral validation fails`(code: OutcomeCode) {
+      Assertions.assertThatThrownBy {
+        outcomeService.createReferral(
+          adjudicationNumber = 1L, code = code, details = "details",
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("invalid referral type")
     }
 
     @ParameterizedTest
@@ -105,48 +121,82 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        outcomeService.createOutcome(adjudicationNumber = 1, code = codeTo, details = "details")
+        outcomeService.createReferral(adjudicationNumber = 1, code = codeTo, details = "details")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Invalid referral transition")
     }
 
     @Test
-    fun `validation exception if missing reason for not proceed`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+    fun `create not proceed `() {
+      reportedAdjudication.status = ReportedAdjudicationStatus.UNSCHEDULED
 
-      Assertions.assertThatThrownBy {
-        outcomeService.createOutcome(adjudicationNumber = 1, code = OutcomeCode.NOT_PROCEED, details = "details")
-      }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("a reason is required")
-    }
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
-    @ParameterizedTest
-    @CsvSource("UNSCHEDULED,REFER_POLICE", "UNSCHEDULED,NOT_PROCEED", "SCHEDULED,REFER_INAD")
-    fun `validation exception if missing details`(codeFrom: ReportedAdjudicationStatus, code: OutcomeCode) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        reportedAdjudication.also {
-          it.status = codeFrom
-        }
+      val response = outcomeService.createNotProceed(
+        1235L,
+        NotProceedReason.NOT_FAIR,
+        "details",
       )
 
-      Assertions.assertThatThrownBy {
-        outcomeService.createOutcome(1, code)
-      }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("details are required")
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.NOT_PROCEED)
+      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("details")
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.valueOf(OutcomeCode.NOT_PROCEED.name))
+      assertThat(argumentCaptor.value.outcomes.first().reason).isEqualTo(NotProceedReason.NOT_FAIR)
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `create dismissed `() {
+      reportedAdjudication.status = ReportedAdjudicationStatus.SCHEDULED
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.createDismissed(
+        1235L,
+        "details",
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.DISMISSED)
+      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("details")
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `create prosecution `() {
+      reportedAdjudication.status = ReportedAdjudicationStatus.REFER_POLICE
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.createProsecution(
+        1235L,
+        "details",
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.PROSECUTION)
+      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("details")
+      assertThat(response).isNotNull
     }
 
     @ParameterizedTest
-    @CsvSource("UNSCHEDULED, REFER_POLICE", "UNSCHEDULED, NOT_PROCEED", "SCHEDULED, REFER_INAD")
-    fun `create outcome`(codeFrom: ReportedAdjudicationStatus, code: OutcomeCode) {
+    @CsvSource("UNSCHEDULED, REFER_POLICE", "SCHEDULED, REFER_INAD")
+    fun `create referral`(codeFrom: ReportedAdjudicationStatus, code: OutcomeCode) {
       reportedAdjudication.status = codeFrom
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
-      val response = outcomeService.createOutcome(
+      val response = outcomeService.createReferral(
         1235L,
         code,
         "details",
-        NotProceedReason.RELEASED
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -155,7 +205,6 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(code)
       assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("details")
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.valueOf(code.name))
-      assertThat(argumentCaptor.value.outcomes.first().reason).isEqualTo(NotProceedReason.RELEASED)
       assertThat(response).isNotNull
     }
   }
@@ -368,68 +417,6 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.last().outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
       assertThat(result.last().referralOutcome).isNotNull
       assertThat(result.last().referralOutcome!!.code).isEqualTo(OutcomeCode.NOT_PROCEED)
-    }
-  }
-
-  @Nested
-  inner class UpdateOutcome {
-
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
-      .also {
-        it.outcomes.clear()
-        it.outcomes.add(
-          Outcome(id = 1, code = OutcomeCode.REFER_POLICE, details = "ref police")
-        )
-        it.outcomes.add(
-          Outcome(id = 2, code = OutcomeCode.REFER_INAD, details = "ref inad").also {
-            o ->
-            o.createDateTime = LocalDateTime.now()
-          }
-        )
-        it.outcomes.add(
-          Outcome(id = 3, code = OutcomeCode.REFER_INAD, details = "ref inad").also {
-            o ->
-            o.createDateTime = LocalDateTime.now().plusDays(1)
-          }
-        )
-      }
-
-    @BeforeEach
-    fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        reportedAdjudication.also {
-          it.status = ReportedAdjudicationStatus.UNSCHEDULED
-          it.createdByUserId = "test"
-          it.createDateTime = LocalDateTime.now()
-        }
-      )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-    }
-
-    @Test
-    fun `throws entity not found if no matching referral`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        reportedAdjudication.also {
-          it.outcomes.removeFirst()
-        }
-      )
-
-      Assertions.assertThatThrownBy {
-        outcomeService.updateReferral(1, OutcomeCode.REFER_POLICE, "updated")
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("Referral not found for 1235")
-    }
-    @CsvSource("REFER_POLICE", "REFER_INAD")
-    @ParameterizedTest
-    fun `update outcome details for referral`(code: OutcomeCode) {
-      val id = if (code == OutcomeCode.REFER_INAD) 3L else 1L
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-      val response = outcomeService.updateReferral(1, code, code.name)
-
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.outcomes.first { it.id == id }.details).isEqualTo(code.name)
-      assertThat(response).isNotNull
     }
   }
 }

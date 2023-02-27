@@ -200,13 +200,10 @@ class HearingService(
       oicHearingId = hearingToRemove.oicHearingId
     )
 
-    reportedAdjudication.let {
+    reportedAdjudication.also {
       it.hearings.remove(hearingToRemove)
-      if (it.hearings.isEmpty())
-        it.status = ReportedAdjudicationStatus.UNSCHEDULED
-
       it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
-    }
+    }.calculateStatus()
 
     return saveToDto(reportedAdjudication)
   }

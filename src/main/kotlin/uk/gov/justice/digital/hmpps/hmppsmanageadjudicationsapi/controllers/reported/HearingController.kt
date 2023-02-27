@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 import java.time.LocalDate
 import java.time.LocalDateTime
-import javax.validation.ValidationException
 
 @Schema(description = "All hearings response")
 data class HearingSummaryResponse(
@@ -45,8 +44,8 @@ data class HearingRequest(
 
 @Schema(description = "Request to create a referral for latest hearing")
 data class ReferralRequest(
-  @Schema(description = "the name of the adjudicator, optional when editing a referral")
-  val adjudicator: String? = null,
+  @Schema(description = "the name of the adjudicator")
+  val adjudicator: String,
   @Schema(description = "the outcome code")
   val code: HearingOutcomeCode,
   @Schema(description = "details")
@@ -55,8 +54,8 @@ data class ReferralRequest(
 
 @Schema(description = "Request to create an adjourn for latest hearing")
 data class AdjournRequest(
-  @Schema(description = "the name of the adjudicator, optional when editing a referral")
-  val adjudicator: String? = null,
+  @Schema(description = "the name of the adjudicator")
+  val adjudicator: String,
   @Schema(description = "the outcome code")
   val reason: HearingOutcomeAdjournReason,
   @Schema(description = "details")
@@ -183,7 +182,7 @@ class HearingController(
       referralService.createReferral(
         adjudicationNumber = adjudicationNumber,
         code = referralRequest.code.validateReferral(),
-        adjudicator = referralRequest.adjudicator!!,
+        adjudicator = referralRequest.adjudicator,
         details = referralRequest.details
       )
 
@@ -198,22 +197,14 @@ class HearingController(
     @RequestBody adjournRequest: AdjournRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication =
-      hearingOutcomeService.createHearingOutcome(
+      hearingOutcomeService.createAdjourn(
         adjudicationNumber = adjudicationNumber,
-        code = HearingOutcomeCode.ADJOURN,
-        adjudicator = adjournRequest.adjudicator!!,
+        adjudicator = adjournRequest.adjudicator,
         details = adjournRequest.details,
         reason = adjournRequest.reason,
         plea = adjournRequest.plea,
       )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
-  }
-
-  companion object {
-    fun HearingOutcomeCode.validateReferral(): HearingOutcomeCode {
-      this.outcomeCode ?: throw ValidationException("invalid referral type")
-      return this
-    }
   }
 }
