@@ -52,7 +52,6 @@ class OutcomeControllerTest : TestControllerBase() {
       whenever(
         outcomeService.createProsecution(
           anyLong(),
-          any(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
 
@@ -71,7 +70,7 @@ class OutcomeControllerTest : TestControllerBase() {
       createOutcomeRequest(
         1,
         code,
-        if (code != OutcomeCode.NOT_PROCEED) OUTCOME_REQUEST else null,
+        if (code == OutcomeCode.REFER_POLICE) POLICE_REFER_REQUEST else null,
         if (code == OutcomeCode.NOT_PROCEED) NOT_PROCEED_REQUEST else null
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -83,7 +82,7 @@ class OutcomeControllerTest : TestControllerBase() {
       createOutcomeRequest(
         1,
         code,
-        if (code != OutcomeCode.NOT_PROCEED) OUTCOME_REQUEST else null,
+        if (code == OutcomeCode.REFER_POLICE) POLICE_REFER_REQUEST else null,
         if (code == OutcomeCode.NOT_PROCEED) NOT_PROCEED_REQUEST else null
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -95,7 +94,7 @@ class OutcomeControllerTest : TestControllerBase() {
       createOutcomeRequest(
         1,
         code,
-        if (code != OutcomeCode.NOT_PROCEED) OUTCOME_REQUEST else null,
+        if (code == OutcomeCode.REFER_POLICE) POLICE_REFER_REQUEST else null,
         if (code == OutcomeCode.NOT_PROCEED) NOT_PROCEED_REQUEST else null
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -106,7 +105,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun `makes a call to create an outcome`(code: OutcomeCode) {
       createOutcomeRequest(
         1, code,
-        if (code != OutcomeCode.NOT_PROCEED) OUTCOME_REQUEST else null,
+        if (code == OutcomeCode.REFER_POLICE) POLICE_REFER_REQUEST else null,
         if (code == OutcomeCode.NOT_PROCEED) NOT_PROCEED_REQUEST else null
       )
         .andExpect(MockMvcResultMatchers.status().isCreated)
@@ -119,7 +118,7 @@ class OutcomeControllerTest : TestControllerBase() {
           1, NotProceedReason.NOT_FAIR, "details"
         )
         OutcomeCode.PROSECUTION -> verify(outcomeService).createProsecution(
-          1, "details"
+          1,
         )
 
         else -> {}
@@ -129,10 +128,10 @@ class OutcomeControllerTest : TestControllerBase() {
     private fun createOutcomeRequest(
       id: Long,
       code: OutcomeCode,
-      outcomeRequest: OutcomeRequest? = null,
+      policeReferralRequest: PoliceReferralRequest? = null,
       notProceedRequest: NotProceedRequest? = null,
     ): ResultActions {
-      val body = objectMapper.writeValueAsString(outcomeRequest ?: notProceedRequest)
+      val body = objectMapper.writeValueAsString(policeReferralRequest ?: notProceedRequest)
       val path = when (code) {
         OutcomeCode.REFER_POLICE -> "refer-police"
         OutcomeCode.NOT_PROCEED -> "not-proceed"
@@ -421,7 +420,7 @@ class OutcomeControllerTest : TestControllerBase() {
     }
   }
   companion object {
-    private val OUTCOME_REQUEST = OutcomeRequest(details = "details")
+    private val POLICE_REFER_REQUEST = PoliceReferralRequest(details = "details")
     private val NOT_PROCEED_REQUEST = NotProceedRequest(reason = NotProceedReason.NOT_FAIR, details = "details")
     private val COMPLETED_NOT_PROCEED_REQUEST = HearingCompletedNotProceedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, reason = NotProceedReason.NOT_FAIR, details = "details")
     private val COMPLETED_DISMISSED_REQUEST = HearingCompletedDismissedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, details = "details")
