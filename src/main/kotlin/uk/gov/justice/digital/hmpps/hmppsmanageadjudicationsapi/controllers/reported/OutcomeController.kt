@@ -53,6 +53,18 @@ data class HearingCompletedDismissedRequest(
   val details: String,
 )
 
+@Schema(description = "Request to add charge proved - hearing completed")
+data class HearingCompletedChargeProvedRequest(
+  @Schema(description = "the name of the adjudicator")
+  val adjudicator: String,
+  @Schema(description = "plea")
+  val plea: HearingOutcomePlea,
+  @Schema(description = "optional amount - money being recovered for damages ", required = false)
+  val amount: Double? = null,
+  @Schema(description = "is this a caution")
+  val caution: Boolean,
+)
+
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
 class OutcomeController(

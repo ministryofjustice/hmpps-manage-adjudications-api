@@ -56,4 +56,22 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
       )
     }
   }
+
+  @Nested
+  inner class CreateChargeProved {
+    @Test
+    fun `creates a charge proved outcome and hearing outcome of completed `() {
+      completedHearingService.createChargeProved(
+        adjudicationNumber = 1L, adjudicator = "test", plea = HearingOutcomePlea.UNFIT, amount = 0.0, caution = false,
+      )
+
+      verify(outcomeService).createChargeProved(
+        adjudicationNumber = 1L, amount = 0.0, caution = false
+      )
+
+      verify(hearingOutcomeService).createCompletedHearing(
+        adjudicationNumber = 1L, adjudicator = "test", plea = HearingOutcomePlea.UNFIT
+      )
+    }
+  }
 }

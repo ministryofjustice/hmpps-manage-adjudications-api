@@ -43,4 +43,14 @@ class CompletedHearingService(
       adjudicationNumber = adjudicationNumber, reason = reason, details = details
     )
   }
+
+  fun createChargeProved(
+    adjudicationNumber: Long,
+    adjudicator: String,
+    plea: HearingOutcomePlea,
+    amount: Double? = null,
+    caution: Boolean,
+  ): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
 }

@@ -353,11 +353,78 @@ class OutcomeControllerTest : TestControllerBase() {
         )
     }
   }
+
+  @Nested
+  inner class CreateChargeProved {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        completedHearingService.createChargeProved(
+          anyLong(),
+          any(),
+          any(),
+          anyOrNull(),
+          any(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      createChargeProvedRequest(
+        1,
+        CHARGE_PROVED_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      createChargeProvedRequest(
+        1,
+        CHARGE_PROVED_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      createChargeProvedRequest(
+        1,
+        CHARGE_PROVED_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to create a proven outcome`() {
+      createChargeProvedRequest(1, CHARGE_PROVED_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+      verify(completedHearingService).createChargeProved(
+        1,
+        CHARGE_PROVED_REQUEST.adjudicator, CHARGE_PROVED_REQUEST.plea, CHARGE_PROVED_REQUEST.amount, CHARGE_PROVED_REQUEST.caution
+      )
+    }
+
+    private fun createChargeProvedRequest(
+      id: Long,
+      proven: HearingCompletedChargeProvedRequest,
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(proven)
+
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.post("/reported-adjudications/$id/complete-hearing/charge-proved")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
   companion object {
     private val OUTCOME_REQUEST = OutcomeRequest(details = "details")
     private val NOT_PROCEED_REQUEST = NotProceedRequest(reason = NotProceedReason.NOT_FAIR, details = "details")
-
     private val COMPLETED_NOT_PROCEED_REQUEST = HearingCompletedNotProceedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, reason = NotProceedReason.NOT_FAIR, details = "details")
     private val COMPLETED_DISMISSED_REQUEST = HearingCompletedDismissedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, details = "details")
+    private val CHARGE_PROVED_REQUEST = HearingCompletedChargeProvedRequest(adjudicator = "test", plea = HearingOutcomePlea.GUILTY, caution = false)
   }
 }

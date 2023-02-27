@@ -114,7 +114,7 @@ enum class ReportedAdjudicationStatus {
   },
   SCHEDULED {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(UNSCHEDULED, REFER_POLICE, REFER_INAD, DISMISSED, NOT_PROCEED)
+      return listOf(UNSCHEDULED, REFER_POLICE, REFER_INAD, DISMISSED, NOT_PROCEED, CHARGE_PROVED)
     }
   },
   REFER_POLICE {
@@ -129,7 +129,8 @@ enum class ReportedAdjudicationStatus {
   },
   PROSECUTION,
   DISMISSED,
-  NOT_PROCEED;
+  NOT_PROCEED,
+  CHARGE_PROVED;
   open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
   fun canTransitionFrom(from: ReportedAdjudicationStatus): Boolean {
     val to = this

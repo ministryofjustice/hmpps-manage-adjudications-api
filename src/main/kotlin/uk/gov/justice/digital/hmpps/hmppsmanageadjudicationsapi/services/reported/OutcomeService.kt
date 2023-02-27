@@ -66,6 +66,14 @@ class OutcomeService(
     details = details,
   )
 
+  fun createChargeProved(
+    adjudicationNumber: Long,
+    amount: Double? = null,
+    caution: Boolean,
+  ): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
+
   private fun createOutcome(
     adjudicationNumber: Long,
     code: OutcomeCode,

@@ -207,6 +207,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.valueOf(code.name))
       assertThat(response).isNotNull
     }
+
+    @Test
+    fun `create charge proved `() {
+      TODO("implement me")
+    }
   }
 
   @Nested
