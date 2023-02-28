@@ -51,6 +51,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       outcomeService.deleteOutcome(1, 1)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      outcomeService.createChargeProved(1, 0.0, false)
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
   }
 
   @Nested
@@ -70,7 +75,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REJECTED", "AWAITING_REVIEW", "NOT_PROCEED", "REFER_INAD", "REFER_POLICE", "UNSCHEDULED")
+    @CsvSource("REJECTED", "AWAITING_REVIEW", "NOT_PROCEED", "REFER_INAD", "REFER_POLICE", "UNSCHEDULED", "CHARGE_PROVED")
     fun `create outcome throws exception if invalid state `(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
@@ -206,6 +211,27 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.valueOf(code.name))
       assertThat(response).isNotNull
     }
+
+    @Test
+    fun `create charge proved `() {
+      reportedAdjudication.status = ReportedAdjudicationStatus.SCHEDULED
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.createChargeProved(
+        1235L, 100.0, true
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.outcomes.first().details).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().amount).isEqualTo(100.0)
+      assertThat(argumentCaptor.value.outcomes.first().caution).isEqualTo(true)
+
+      assertThat(response).isNotNull
+    }
   }
 
   @Nested
@@ -293,7 +319,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REFER_POLICE", "REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "NOT_PROCEED")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "NOT_PROCEED", "CHARGE_PROVED")
     fun `throws invalid state if delete latest outcome is invalid type `(code: OutcomeCode) {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         reportedAdjudication

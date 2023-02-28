@@ -126,6 +126,35 @@ class OutcomeIntTest : IntegrationTestBase() {
   }
 
   @Test
+  fun `create completed hearing outcome - charge proved`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForOutcome().createHearing()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/complete-hearing/charge-proved")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "plea" to HearingOutcomePlea.NOT_GUILTY,
+          "amount" to 100.50,
+          "caution" to true,
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator").isEqualTo("test")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea").isEqualTo(HearingOutcomePlea.NOT_GUILTY.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.amount").isEqualTo(100.50)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.caution").isEqualTo(true)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.code").isEqualTo(OutcomeCode.CHARGE_PROVED.name)
+  }
+
+  @Test
   fun `create completed hearing outcome - dismissed throws exception when hearing is missing`() {
     initDataForOutcome()
 
@@ -162,23 +191,21 @@ class OutcomeIntTest : IntegrationTestBase() {
       .expectStatus().isNotFound
   }
 
-  protected fun initDataForOutcome(): IntegrationTestScenario {
-    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+  @Test
+  fun `create completed hearing outcome - charge proved throws exception when hearing is missing`() {
+    initDataForOutcome()
 
-    val intTestData = integrationTestData()
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
-
-    return draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
-      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/complete-hearing/charge-proved")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "plea" to HearingOutcomePlea.NOT_GUILTY,
+          "caution" to false,
+        )
+      )
+      .exchange()
+      .expectStatus().isNotFound
   }
 }

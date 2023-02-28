@@ -64,11 +64,24 @@ class OutcomeService(
     details = details,
   )
 
+  fun createChargeProved(
+    adjudicationNumber: Long,
+    amount: Double? = null,
+    caution: Boolean,
+  ): ReportedAdjudicationDto = createOutcome(
+    adjudicationNumber = adjudicationNumber,
+    code = OutcomeCode.CHARGE_PROVED,
+    amount = amount,
+    caution = caution
+  )
+
   private fun createOutcome(
     adjudicationNumber: Long,
     code: OutcomeCode,
     details: String? = null,
-    reason: NotProceedReason? = null
+    reason: NotProceedReason? = null,
+    amount: Double? = null,
+    caution: Boolean? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       it.status.validateTransition(code.status)
@@ -83,6 +96,8 @@ class OutcomeService(
         code = code,
         details = details,
         reason = reason,
+        amount = amount,
+        caution = caution,
       )
     )
 
