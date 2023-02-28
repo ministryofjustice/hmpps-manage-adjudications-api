@@ -253,6 +253,10 @@ class HearingsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea")
       .isEqualTo(HearingOutcomePlea.UNFIT.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.ADJOURN.name)
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing").exists()
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(HearingOutcomeCode.ADJOURN.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome").doesNotExist()
   }
 
   @Test
@@ -325,7 +329,7 @@ class HearingsIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
-      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(0)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
       .jsonPath("$.reportedAdjudication.hearings[0].outcome").doesNotExist()
   }
 

@@ -61,9 +61,7 @@ data class ReportedAdjudicationDto(
   @Schema(description = "date time of first hearing")
   val dateTimeOfFirstHearing: LocalDateTime? = null,
   @Schema(description = "Hearings, hearing outcomes, referrals and outcomes in chronological order")
-  val history: List<OutcomeHistoryDto>,
-  @Schema(description = "outcomes")
-  val outcomes: List<CombinedOutcomeDto>,
+  val outcomes: List<OutcomeHistoryDto>,
 )
 
 @Schema(description = "Details of an offence")

@@ -73,8 +73,7 @@ open class ReportedDtoService(
       dateTimeOfIssue = dateTimeOfIssue,
       gender = gender,
       dateTimeOfFirstHearing = dateTimeOfFirstHearing,
-      outcomes = outcomes,
-      history = createHistory(hearings.toMutableList(), outcomes.toMutableList())
+      outcomes = createHistory(hearings.toMutableList(), outcomes.toMutableList())
     )
   }
 
