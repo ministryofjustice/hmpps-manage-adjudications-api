@@ -94,7 +94,7 @@ open class ReportedDtoService(
       val hearing = hearings.removeFirst()
       val outcome = when (hearing.outcome ?: false) {
         false -> emptyList()
-        else -> when(hearing.outcome!!.code.outcomeCode) {
+        else -> when (hearing.outcome!!.code.outcomeCode) {
           // note only one completed hearing outcome can exist as it's an end state
           null -> outcomes.filter { OutcomeCode.completedHearings().contains(it.outcome.code) }
           else -> outcomes.filter { it.outcome.code == hearing.outcome.code.outcomeCode }
