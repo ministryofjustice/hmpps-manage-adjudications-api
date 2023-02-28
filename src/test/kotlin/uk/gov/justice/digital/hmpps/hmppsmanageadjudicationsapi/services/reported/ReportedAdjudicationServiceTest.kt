@@ -792,6 +792,26 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
+    private val reportedAdjudicationCompletedHearingAfterAdjourn = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+      it.hearings.clear()
+
+      reportedAdjudicationReferPoliceReferInadAdjourned.hearings.forEach { h -> it.hearings.add(h.copy()) }
+      reportedAdjudicationReferPoliceReferInadAdjourned.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+
+      it.hearings.add(
+        Hearing(
+          oicHearingId = 1, dateTimeOfHearing = LocalDateTime.now().plusDays(5), locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV,
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
+        )
+      )
+
+      it.outcomes.add(
+        Outcome(code = OutcomeCode.CHARGE_PROVED)
+      )
+    }
+
     @BeforeEach
     fun `init`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudicationReferPolice)
@@ -809,6 +829,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(15)).thenReturn(reportedAdjudicationCompletedHearingDismissed)
       whenever(reportedAdjudicationRepository.findByReportNumber(16)).thenReturn(reportedAdjudicationCompletedHearingNotProceed)
       whenever(reportedAdjudicationRepository.findByReportNumber(17)).thenReturn(reportedAdjudicationCompletedHearingChargeProved)
+      whenever(reportedAdjudicationRepository.findByReportNumber(18)).thenReturn(reportedAdjudicationCompletedHearingAfterAdjourn)
     }
 
     @Test
@@ -1033,7 +1054,16 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - refer to police, no prosecution, hearing scheduled and adjourned, rescheduled and charge proved `() {
-      TODO("implement me")
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(18).validateFirstItem().validateSecondItem()
+      assertThat(result.outcomes.size).isEqualTo(4)
+
+      assertThat(result.outcomes.last().hearing).isNotNull
+      assertThat(result.outcomes.last().hearing!!.outcome).isNotNull
+      assertThat(result.outcomes.last().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(result.outcomes.last().outcome).isNotNull
+      assertThat(result.outcomes.last().outcome!!.outcome).isNotNull
+      assertThat(result.outcomes.last().outcome!!.referralOutcome).isNull()
+      assertThat(result.outcomes.last().outcome!!.outcome.code).isEqualTo(OutcomeCode.CHARGE_PROVED)
     }
 
     private fun ReportedAdjudicationDto.validateFirstItem(): ReportedAdjudicationDto {

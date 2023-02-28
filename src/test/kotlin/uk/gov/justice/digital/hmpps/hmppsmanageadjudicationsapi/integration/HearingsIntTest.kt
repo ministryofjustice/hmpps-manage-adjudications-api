@@ -280,8 +280,8 @@ class HearingsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_POLICE.name)
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.details").isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details").isEqualTo("details")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
       .isEqualTo("test")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason").doesNotExist()
