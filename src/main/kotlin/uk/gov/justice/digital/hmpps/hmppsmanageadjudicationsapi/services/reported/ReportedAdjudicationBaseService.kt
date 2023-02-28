@@ -92,8 +92,11 @@ open class ReportedDtoService(
 
     do {
       val hearing = hearings.removeFirst()
-      // note: currently this is only for referrals, no adjourn or completed outcomes present yet.  TODO - amend this code
-      val outcome = outcomes.filter { it.outcome.code == hearing.outcome?.code?.outcomeCode }.toMutableList().removeFirstOrNull()
+      val outcome = when (hearing.outcome?.code?.outcomeCode) {
+        null -> outcomes.filter { OutcomeCode.completedHearings().contains(it.outcome.code) }
+        else -> outcomes.filter { it.outcome.code == hearing.outcome.code.outcomeCode }
+      }.toMutableList().removeFirstOrNull()
+
       history.add(OutcomeHistoryDto(hearing = hearing, outcome = outcome))
     } while (hearings.isNotEmpty())
 
