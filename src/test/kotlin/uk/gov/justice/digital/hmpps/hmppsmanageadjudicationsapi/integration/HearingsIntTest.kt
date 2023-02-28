@@ -330,7 +330,8 @@ class HearingsIntTest : IntegrationTestBase() {
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing").exists()
   }
 
   @Test
