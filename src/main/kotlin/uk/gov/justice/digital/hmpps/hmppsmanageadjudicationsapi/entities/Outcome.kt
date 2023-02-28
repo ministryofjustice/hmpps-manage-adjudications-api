@@ -52,6 +52,7 @@ enum class OutcomeCode(val status: ReportedAdjudicationStatus) {
 
   companion object {
     fun referrals() = listOf(REFER_POLICE, REFER_INAD)
+    fun completedHearings() = listOf(CHARGE_PROVED, DISMISSED, NOT_PROCEED)
   }
 }
 

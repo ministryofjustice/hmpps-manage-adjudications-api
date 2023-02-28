@@ -73,8 +73,7 @@ open class ReportedDtoService(
       dateTimeOfIssue = dateTimeOfIssue,
       gender = gender,
       dateTimeOfFirstHearing = dateTimeOfFirstHearing,
-      outcomes = outcomes,
-      history = createHistory(hearings.toMutableList(), outcomes.toMutableList())
+      outcomes = createHistory(hearings.toMutableList(), outcomes.toMutableList())
     )
   }
 
@@ -93,9 +92,18 @@ open class ReportedDtoService(
 
     do {
       val hearing = hearings.removeFirst()
-      // note: currently this is only for referrals, no adjourn or completed outcomes present yet.  TODO - amend this code
-      val outcome = outcomes.filter { it.outcome.code == hearing.outcome?.code?.outcomeCode }.toMutableList().removeFirstOrNull()
-      history.add(OutcomeHistoryDto(hearing = hearing, outcome = outcome))
+      val outcome = when (hearing.outcome ?: false) {
+        false -> emptyList()
+        else -> when (hearing.outcome!!.code.outcomeCode) {
+          // note only one completed hearing outcome can exist as it's an end state
+          null -> outcomes.filter { OutcomeCode.completedHearings().contains(it.outcome.code) }
+          else -> outcomes.filter { it.outcome.code == hearing.outcome.code.outcomeCode }
+        }
+      }.toMutableList().removeFirstOrNull()
+
+      history.add(
+        OutcomeHistoryDto(hearing = hearing, outcome = outcome)
+      )
     } while (hearings.isNotEmpty())
 
     return history.toList()

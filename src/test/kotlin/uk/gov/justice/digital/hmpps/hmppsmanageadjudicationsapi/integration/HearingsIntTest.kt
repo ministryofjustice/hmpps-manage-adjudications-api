@@ -253,6 +253,10 @@ class HearingsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea")
       .isEqualTo(HearingOutcomePlea.UNFIT.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.ADJOURN.name)
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing").exists()
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(HearingOutcomeCode.ADJOURN.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome").doesNotExist()
   }
 
   @Test
@@ -276,8 +280,8 @@ class HearingsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_POLICE.name)
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.details").isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details").isEqualTo("details")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
       .isEqualTo("test")
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.reason").doesNotExist()
@@ -325,8 +329,9 @@ class HearingsIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
-      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(0)
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing").exists()
   }
 
   @Test
