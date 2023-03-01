@@ -46,9 +46,7 @@ class ReferralService(
     hearingOutcomeService.getHearingOutcomeForReferral(
       adjudicationNumber = adjudicationNumber, code = outcomeToRemove.outcome.code, outcomeIndex = outcomeIndex
     )?.let {
-      hearingOutcomeService.deleteHearingOutcome(
-        adjudicationNumber = adjudicationNumber, hearingId = it.id!!
-      )
+      hearingOutcomeService.deleteHearingOutcome(adjudicationNumber = adjudicationNumber,)
     }
 
     return outcomeService.deleteOutcome(

@@ -59,4 +59,10 @@ class CompletedHearingService(
       adjudicationNumber = adjudicationNumber, amount = amount, caution = caution
     )
   }
+
+  fun removeOutcome(
+    adjudicationNumber: Long
+  ): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
 }

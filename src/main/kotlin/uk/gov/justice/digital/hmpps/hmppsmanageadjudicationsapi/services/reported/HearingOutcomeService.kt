@@ -88,7 +88,7 @@ class HearingOutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun deleteHearingOutcome(adjudicationNumber: Long, hearingId: Long): ReportedAdjudicationDto {
+  fun deleteHearingOutcome(adjudicationNumber: Long): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val outcomeToRemove = reportedAdjudication.getHearing()
 

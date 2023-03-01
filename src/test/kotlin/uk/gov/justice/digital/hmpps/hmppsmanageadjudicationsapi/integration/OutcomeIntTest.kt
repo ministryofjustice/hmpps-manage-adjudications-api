@@ -211,4 +211,35 @@ class OutcomeIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isNotFound
   }
+
+  @Test
+  fun `remove completed hearing outcome `() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForOutcome().createHearing()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/complete-hearing/charge-proved")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "plea" to HearingOutcomePlea.NOT_GUILTY,
+          "amount" to 100.50,
+          "caution" to true,
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+
+    webTestClient.delete()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/remove-completed-hearing")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome").doesNotExist()
+  }
 }

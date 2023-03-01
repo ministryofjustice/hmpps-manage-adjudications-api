@@ -398,8 +398,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `throws invalid request if the hearing has an outcome associated to it ` () {
-
+    fun `throws invalid request if the hearing has an outcome associated to it `() {
     }
 
     @Test
@@ -477,7 +476,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.REFER_INAD)
     }
 
-    @CsvSource("COMPLETE","REFER_POLICE", "REFER_INAD")
+    @CsvSource("COMPLETE", "REFER_POLICE", "REFER_INAD")
     @ParameterizedTest
     fun `delete hearing throws validation exception if linked to specific outcome `(code: HearingOutcomeCode) {
 
@@ -499,7 +498,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Unable to delete hearing via api DEL/hearing")
     }
-
   }
 
   @Nested

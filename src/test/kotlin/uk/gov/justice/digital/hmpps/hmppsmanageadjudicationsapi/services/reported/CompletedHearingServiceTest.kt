@@ -74,4 +74,16 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
       )
     }
   }
+
+  @Nested
+  inner class RemoveCompletedHearingOutcome {
+
+    @Test
+    fun `remove a completed hearing outcome removes outcome and hearing outcome `() {
+      completedHearingService.removeOutcome(adjudicationNumber = 1L,)
+
+      verify(outcomeService).deleteOutcome(adjudicationNumber = 1L,)
+      verify(hearingOutcomeService).deleteHearingOutcome(adjudicationNumber = 1L,)
+    }
+  }
 }
