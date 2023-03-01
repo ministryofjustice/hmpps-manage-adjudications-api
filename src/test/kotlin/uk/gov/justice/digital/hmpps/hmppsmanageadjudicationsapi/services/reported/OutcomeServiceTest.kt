@@ -56,6 +56,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       outcomeService.createChargeProved(1, 0.0, false)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      outcomeService.getLatestOutcome(1,)
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
   }
 
   @Nested

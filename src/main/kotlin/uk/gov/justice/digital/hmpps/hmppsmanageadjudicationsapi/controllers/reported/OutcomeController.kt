@@ -196,4 +196,17 @@ class OutcomeController(
 
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
+
+  @Operation(summary = "remove a completed hearing outcome")
+  @DeleteMapping(value = ["/{adjudicationNumber}/remove-completed-hearing"])
+  @ResponseStatus(HttpStatus.OK)
+  fun removeCompletedHearingOutcome(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = completedHearingService.removeOutcome(
+      adjudicationNumber = adjudicationNumber,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
 }

@@ -63,6 +63,12 @@ class CompletedHearingService(
   fun removeOutcome(
     adjudicationNumber: Long
   ): ReportedAdjudicationDto {
-    TODO("implement me")
+    outcomeService.deleteOutcome(
+      adjudicationNumber = adjudicationNumber
+    )
+
+    return hearingOutcomeService.deleteHearingOutcome(
+      adjudicationNumber = adjudicationNumber
+    )
   }
 }
