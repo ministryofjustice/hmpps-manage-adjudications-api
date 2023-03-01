@@ -398,6 +398,11 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `throws invalid request if the hearing has an outcome associated to it ` () {
+
+    }
+
+    @Test
     fun `delete a hearing`() {
       val response = hearingService.deleteHearing(
         1235L,
@@ -472,8 +477,9 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.REFER_INAD)
     }
 
-    @Test
-    fun `delete hearing throws validation exception if linked to referral outcome `() {
+    @CsvSource("COMPLETE","REFER_POLICE", "REFER_INAD")
+    @ParameterizedTest
+    fun `delete hearing throws validation exception if linked to specific outcome `(code: HearingOutcomeCode) {
 
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication()
@@ -482,7 +488,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
             it.hearings.add(
               Hearing(
                 agencyId = "", locationId = 1L, oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(5), oicHearingId = 1L, reportNumber = 1L,
-                hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+                hearingOutcome = HearingOutcome(code = code, adjudicator = "")
               )
             )
           }
@@ -491,8 +497,9 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         hearingService.deleteHearing(1,)
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("Unable to delete hearing via api DEL/hearing - referral associated to this hearing")
+        .hasMessageContaining("Unable to delete hearing via api DEL/hearing")
     }
+
   }
 
   @Nested
