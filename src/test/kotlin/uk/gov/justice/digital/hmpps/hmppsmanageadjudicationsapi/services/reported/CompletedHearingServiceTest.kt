@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
-import javax.persistence.EntityNotFoundException
+import javax.validation.ValidationException
 
 class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
 
@@ -87,23 +87,22 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `remove a completed hearing outcome removes outcome and hearing outcome `() {
+      whenever(outcomeService.getLatestOutcome(1L)).thenReturn(Outcome(id = 1L, code = OutcomeCode.CHARGE_PROVED))
       completedHearingService.removeOutcome(adjudicationNumber = 1L,)
 
-      whenever(outcomeService.getLatestOutcome(1L)).thenReturn(Outcome(code = OutcomeCode.CHARGE_PROVED))
-      verify(outcomeService, atLeastOnce()).deleteOutcome(adjudicationNumber = 1L,)
+      verify(outcomeService, atLeastOnce()).deleteOutcome(adjudicationNumber = 1L, id = 1L,)
       verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(adjudicationNumber = 1L,)
     }
 
     @Test
     fun `remove a completed hearing outcome throws validation exception if not a completed outcome type `() {
-
       Assertions.assertThatThrownBy {
         completedHearingService.removeOutcome(adjudicationNumber = 1L,)
-      }.isInstanceOf(EntityNotFoundException::class.java)
+      }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("No completed hearing outcome to remove")
 
       whenever(outcomeService.getLatestOutcome(1L)).thenReturn(null)
-      verify(outcomeService, never()).deleteOutcome(adjudicationNumber = 1L,)
+      verify(outcomeService, never()).deleteOutcome(adjudicationNumber = 1L, id = 1L,)
       verify(hearingOutcomeService, never()).deleteHearingOutcome(adjudicationNumber = 1L,)
     }
   }
