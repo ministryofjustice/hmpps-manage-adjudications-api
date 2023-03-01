@@ -3,11 +3,13 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssueHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DisIssueHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -20,6 +22,7 @@ import javax.validation.ValidationException
 @Service
 class ReportedAdjudicationService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  private val disIssueHistoryRepository: DisIssueHistoryRepository,
   private val prisonApiGateway: PrisonApiGateway,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
@@ -67,6 +70,15 @@ class ReportedAdjudicationService(
   fun setIssued(adjudicationNumber: Long, dateTimeOfIssue: LocalDateTime): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       it.status.canBeIssuedValidation()
+      if (it.dateTimeOfIssue != null) {
+        disIssueHistoryRepository.save(
+          DisIssueHistory(
+            reportedAdjudicationId = it.id!!,
+            issuingOfficer = it.issuingOfficer!!,
+            dateTimeOfIssue = it.dateTimeOfIssue!!
+          )
+        )
+      }
       it.issuingOfficer = authenticationFacade.currentUsername
       it.dateTimeOfIssue = dateTimeOfIssue
     }

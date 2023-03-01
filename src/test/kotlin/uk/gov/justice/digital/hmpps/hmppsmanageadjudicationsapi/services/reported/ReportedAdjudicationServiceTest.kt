@@ -39,6 +39,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   private var reportedAdjudicationService =
     ReportedAdjudicationService(
       reportedAdjudicationRepository,
+      disIssueHistoryRepository,
       prisonApiGateway,
       offenceCodeLookupService,
       authenticationFacade,
