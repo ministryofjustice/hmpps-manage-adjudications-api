@@ -256,7 +256,7 @@ class HearingService(
 
     fun Hearing.canDelete(): Hearing {
       if (OutcomeCode.referrals().contains(this.hearingOutcome?.code?.outcomeCode) || this.hearingOutcome?.code == HearingOutcomeCode.COMPLETE)
-        throw ValidationException("Unable to delete hearing via api DEL/hearing - referral associated to this hearing")
+        throw ValidationException("Unable to delete hearing via api DEL/hearing - outcome associated to this hearing")
       return this
     }
 
