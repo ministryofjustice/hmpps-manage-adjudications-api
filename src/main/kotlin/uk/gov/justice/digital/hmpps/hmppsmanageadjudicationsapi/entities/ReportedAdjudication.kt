@@ -85,10 +85,7 @@ data class ReportedAdjudication(
           true -> ReportedAdjudicationStatus.UNSCHEDULED
           false -> ReportedAdjudicationStatus.SCHEDULED
         }
-
-      false ->
-        // TODO review at later point.  for now, it can just be the previous outcome status
-        this.outcomes.sortedByDescending { it.createDateTime }.first().code.status
+      false -> this.outcomes.sortedByDescending { it.createDateTime }.first().code.status
     }
   }
 }
