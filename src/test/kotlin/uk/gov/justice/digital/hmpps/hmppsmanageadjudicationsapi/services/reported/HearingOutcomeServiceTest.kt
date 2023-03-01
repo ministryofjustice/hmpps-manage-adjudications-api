@@ -45,7 +45,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     Assertions.assertThatThrownBy {
       hearingOutcomeService.deleteHearingOutcome(
-        adjudicationNumber = 1, 1,
+        adjudicationNumber = 1,
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
@@ -177,21 +177,18 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `delete hearing outcome`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
-      val response = hearingOutcomeService.deleteHearingOutcome(
-        2, 1,
-      )
+      val response = hearingOutcomeService.deleteHearingOutcome(2,)
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNull()
-      // TODO statuses...do on another ticket i think.
       assertThat(response).isNotNull
     }
 
     @Test
     fun `delete hearing outcome throws no outcome found for adjudication `() {
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.deleteHearingOutcome(1, 1)
+        hearingOutcomeService.deleteHearingOutcome(1,)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("outcome not found for hearing")
     }

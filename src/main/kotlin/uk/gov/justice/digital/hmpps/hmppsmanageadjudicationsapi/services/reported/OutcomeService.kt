@@ -122,6 +122,8 @@ class OutcomeService(
     return reportedAdjudication.outcomes.createCombinedOutcomes()
   }
 
+  fun getLatestOutcome(adjudicationNumber: Long): Outcome? = findByAdjudicationNumber(adjudicationNumber).latestOutcome()
+
   companion object {
     fun ReportedAdjudication.latestOutcome(): Outcome? = this.outcomes.maxByOrNull { it.createDateTime!! }
 

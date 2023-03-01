@@ -56,6 +56,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       outcomeService.createChargeProved(1, 0.0, false)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      outcomeService.getLatestOutcome(1,)
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
   }
 
   @Nested
@@ -345,6 +350,27 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.outcomes).isEmpty()
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
+
+      assertThat(response).isNotNull
+    }
+
+    @CsvSource("CHARGE_PROVED", "NOT_PROCEED", "DISMISSED")
+    @ParameterizedTest
+    fun `delete a completed hearing outcome `(code: OutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+        reportedAdjudication
+          .also {
+            it.outcomes.add(Outcome(id = 1, code = code).also { o -> o.createDateTime = LocalDateTime.now() })
+          }
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val response = outcomeService.deleteOutcome(
+        1, 1,
+      )
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes).isEmpty()
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
 
       assertThat(response).isNotNull
     }

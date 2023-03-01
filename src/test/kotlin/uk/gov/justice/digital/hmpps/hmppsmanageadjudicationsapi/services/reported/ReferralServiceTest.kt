@@ -56,7 +56,7 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
     referralService.removeReferral(1,)
 
     verify(outcomeService, atLeastOnce()).deleteOutcome(1, 1)
-    verify(hearingOutcomeService, never()).deleteHearingOutcome(1, 1)
+    verify(hearingOutcomeService, never()).deleteHearingOutcome(1,)
   }
 
   @Test
@@ -79,7 +79,7 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
     referralService.removeReferral(1,)
 
     verify(outcomeService, atLeastOnce()).deleteOutcome(1, 1)
-    verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(1, 1)
+    verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(1,)
   }
 
   @Test
@@ -113,7 +113,7 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
 
     verify(outcomeService, atLeast(1)).deleteOutcome(1, 1)
     verify(outcomeService, atLeast(1)).deleteOutcome(1, 2)
-    verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(1, 1)
+    verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(1,)
   }
 
   @Test
