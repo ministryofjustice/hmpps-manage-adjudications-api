@@ -15,8 +15,10 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssueHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -475,6 +477,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         it.createDateTime = LocalDateTime.now()
       }
 
+    private val reportedAdjudicationDisIssued = entityBuilder.reportedAdjudication(1)
+      .copy(id = 10L)
+      .also {
+        it.createdByUserId = "A_SMITH"
+        it.createDateTime = now.minusHours(2)
+        it.issuingOfficer = "B_JOHNSON" // "B_JOHNSON"
+        it.dateTimeOfIssue = now.minusHours(1)
+      }
     @ParameterizedTest
     @CsvSource("SCHEDULED", "UNSCHEDULED")
     fun `issue a reported adjudication DIS form with valid status`(status: ReportedAdjudicationStatus) {
@@ -487,9 +497,33 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verifyNoInteractions(disIssueHistoryRepository)
 
       assertThat(argumentCaptor.value.issuingOfficer).isEqualTo("ITAG_USER")
       assertThat(argumentCaptor.value.dateTimeOfIssue).isEqualTo(now)
+      assertThat(response).isNotNull
+    }
+
+    @ParameterizedTest
+    @CsvSource("SCHEDULED", "UNSCHEDULED")
+    fun `re-issue a reported adjudication DIS form`(status: ReportedAdjudicationStatus) {
+      reportedAdjudicationDisIssued.status = status
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationDisIssued)
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudicationDisIssued)
+
+      val response = reportedAdjudicationService.setIssued(1, now)
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      val argumentCaptorDisHistory = ArgumentCaptor.forClass(DisIssueHistory::class.java)
+      verify(disIssueHistoryRepository).save(argumentCaptorDisHistory.capture())
+
+      assertThat(argumentCaptor.value.issuingOfficer).isEqualTo("ITAG_USER")
+      assertThat(argumentCaptor.value.dateTimeOfIssue).isEqualTo(now)
+      assertThat(argumentCaptorDisHistory.value.issuingOfficer).isEqualTo("B_JOHNSON")
+      assertThat(argumentCaptorDisHistory.value.dateTimeOfIssue).isEqualTo(now.minusHours(1))
       assertThat(response).isNotNull
     }
 
