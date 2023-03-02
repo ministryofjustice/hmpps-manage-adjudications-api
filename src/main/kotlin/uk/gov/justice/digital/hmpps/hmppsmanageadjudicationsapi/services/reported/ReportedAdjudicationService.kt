@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DisIssueHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -22,7 +21,6 @@ import javax.validation.ValidationException
 @Service
 class ReportedAdjudicationService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
-  private val disIssueHistoryRepository: DisIssueHistoryRepository,
   private val prisonApiGateway: PrisonApiGateway,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
@@ -71,9 +69,8 @@ class ReportedAdjudicationService(
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       it.status.canBeIssuedValidation()
       if (it.dateTimeOfIssue != null) {
-        disIssueHistoryRepository.save(
+        it.disIssueHistory.add(
           DisIssueHistory(
-            reportedAdjudicationId = it.id!!,
             issuingOfficer = it.issuingOfficer!!,
             dateTimeOfIssue = it.dateTimeOfIssue!!
           )

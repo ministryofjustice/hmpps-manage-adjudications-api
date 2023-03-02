@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DisIssueHistoryRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -19,7 +18,6 @@ abstract class ReportedAdjudicationTestBase : TestsToImplement {
   internal val offenceCodeLookupService: OffenceCodeLookupService = mock()
   internal val authenticationFacade: AuthenticationFacade = mock()
   internal val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
-  internal val disIssueHistoryRepository: DisIssueHistoryRepository = mock()
 
   @BeforeEach
   fun beforeEach() {

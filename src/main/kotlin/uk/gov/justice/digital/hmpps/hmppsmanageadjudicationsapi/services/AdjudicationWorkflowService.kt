@@ -168,6 +168,7 @@ class AdjudicationWorkflowService(
         draftCreatedOn = draftAdjudication.createDateTime!!,
         hearings = mutableListOf(),
         outcomes = mutableListOf(),
+        disIssueHistory = mutableListOf(),
       )
     )
   }

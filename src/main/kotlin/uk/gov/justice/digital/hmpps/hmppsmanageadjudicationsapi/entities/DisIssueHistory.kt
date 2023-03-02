@@ -9,7 +9,6 @@ import javax.persistence.Table
 @Table(name = "dis_issue_history")
 data class DisIssueHistory(
   override val id: Long? = null,
-  var reportedAdjudicationId: Long,
   @field:Length(max = 32)
   var issuingOfficer: String,
   var dateTimeOfIssue: LocalDateTime

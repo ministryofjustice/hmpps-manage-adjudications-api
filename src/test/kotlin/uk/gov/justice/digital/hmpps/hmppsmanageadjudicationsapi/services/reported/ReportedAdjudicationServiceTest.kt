@@ -15,10 +15,8 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssueHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -41,7 +39,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   private var reportedAdjudicationService =
     ReportedAdjudicationService(
       reportedAdjudicationRepository,
-      disIssueHistoryRepository,
       prisonApiGateway,
       offenceCodeLookupService,
       authenticationFacade,
@@ -497,10 +494,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verifyNoInteractions(disIssueHistoryRepository)
 
       assertThat(argumentCaptor.value.issuingOfficer).isEqualTo("ITAG_USER")
       assertThat(argumentCaptor.value.dateTimeOfIssue).isEqualTo(now)
+      assertThat(argumentCaptor.value.disIssueHistory.size).isEqualTo(0)
       assertThat(response).isNotNull
     }
 
@@ -517,13 +514,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      val argumentCaptorDisHistory = ArgumentCaptor.forClass(DisIssueHistory::class.java)
-      verify(disIssueHistoryRepository).save(argumentCaptorDisHistory.capture())
-
       assertThat(argumentCaptor.value.issuingOfficer).isEqualTo("ITAG_USER")
       assertThat(argumentCaptor.value.dateTimeOfIssue).isEqualTo(now)
-      assertThat(argumentCaptorDisHistory.value.issuingOfficer).isEqualTo("B_JOHNSON")
-      assertThat(argumentCaptorDisHistory.value.dateTimeOfIssue).isEqualTo(now.minusHours(1))
+      assertThat(argumentCaptor.value.disIssueHistory[0].issuingOfficer).isEqualTo("B_JOHNSON")
+      assertThat(argumentCaptor.value.disIssueHistory[0].dateTimeOfIssue).isEqualTo(now.minusHours(1))
       assertThat(response).isNotNull
     }
 
