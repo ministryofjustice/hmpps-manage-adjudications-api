@@ -519,7 +519,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `set issued details for DIS form `() {
+  fun `set issued and then re-issue details for DIS form `() {
     prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
 
     val intTestData = integrationTestData()
@@ -554,5 +554,24 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.issuingOfficer").isEqualTo("ITAG_USER")
       .jsonPath("$.reportedAdjudication.dateTimeOfIssue").isEqualTo("2022-11-29T10:00:00")
+      .jsonPath("$.reportedAdjudication.disIssueHistory.size()").isEqualTo(0)
+
+    // re-issue DIS1/2
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/issue")
+      .headers(setHeaders(username = IntegrationTestData.DEFAULT_CREATED_USER_ID))
+      .bodyValue(
+        mapOf(
+          "dateTimeOfIssue" to dateTimeOfIssue.plusHours(1)
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.issuingOfficer").isEqualTo("B_MILLS")
+      .jsonPath("$.reportedAdjudication.dateTimeOfIssue").isEqualTo("2022-11-29T11:00:00")
+      .jsonPath("$.reportedAdjudication.disIssueHistory[0].issuingOfficer").isEqualTo("ITAG_USER")
+      .jsonPath("$.reportedAdjudication.disIssueHistory[0].dateTimeOfIssue").isEqualTo("2022-11-29T10:00:00")
   }
 }

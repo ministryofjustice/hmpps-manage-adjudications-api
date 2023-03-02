@@ -76,6 +76,7 @@ open class TestControllerBase {
         evidence = listOf(),
         witnesses = listOf(),
         hearings = listOf(),
+        disIssueHistory = listOf(),
         gender = Gender.MALE,
         outcomes = listOf(),
       )

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DisIssueHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
@@ -14,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedDamageDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedEvidenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedWitnessDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssueHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
@@ -71,6 +73,7 @@ open class ReportedDtoService(
       hearings = hearings,
       issuingOfficer = issuingOfficer,
       dateTimeOfIssue = dateTimeOfIssue,
+      disIssueHistory = this.disIssueHistory.toDisIssueHistory(),
       gender = gender,
       dateTimeOfFirstHearing = dateTimeOfFirstHearing,
       outcomes = createHistory(hearings.toMutableList(), outcomes.toMutableList())
@@ -216,6 +219,14 @@ open class ReportedDtoService(
       amount = this.amount,
       caution = this.caution,
     )
+
+  private fun List<DisIssueHistory>.toDisIssueHistory(): List<DisIssueHistoryDto> =
+    this.map {
+      DisIssueHistoryDto(
+        issuingOfficer = it.issuingOfficer,
+        dateTimeOfIssue = it.dateTimeOfIssue,
+      )
+    }.sortedBy { it.dateTimeOfIssue }.toList()
 }
 
 open class ReportedAdjudicationBaseService(
