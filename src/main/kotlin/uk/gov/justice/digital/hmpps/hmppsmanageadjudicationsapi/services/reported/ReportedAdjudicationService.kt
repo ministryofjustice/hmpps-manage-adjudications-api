@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssueHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -67,6 +68,14 @@ class ReportedAdjudicationService(
   fun setIssued(adjudicationNumber: Long, dateTimeOfIssue: LocalDateTime): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       it.status.canBeIssuedValidation()
+      if (it.dateTimeOfIssue != null) {
+        it.disIssueHistory.add(
+          DisIssueHistory(
+            issuingOfficer = it.issuingOfficer!!,
+            dateTimeOfIssue = it.dateTimeOfIssue!!
+          )
+        )
+      }
       it.issuingOfficer = authenticationFacade.currentUsername
       it.dateTimeOfIssue = dateTimeOfIssue
     }

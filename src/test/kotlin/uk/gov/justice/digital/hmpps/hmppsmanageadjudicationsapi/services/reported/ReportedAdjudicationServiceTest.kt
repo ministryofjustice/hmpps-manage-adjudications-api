@@ -474,6 +474,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         it.createDateTime = LocalDateTime.now()
       }
 
+    private val reportedAdjudicationDisIssued = entityBuilder.reportedAdjudication(1)
+      .also {
+        it.createdByUserId = "A_SMITH"
+        it.createDateTime = now.minusHours(2)
+        it.issuingOfficer = "B_JOHNSON"
+        it.dateTimeOfIssue = now.minusHours(1)
+      }
     @ParameterizedTest
     @CsvSource("SCHEDULED", "UNSCHEDULED")
     fun `issue a reported adjudication DIS form with valid status`(status: ReportedAdjudicationStatus) {
@@ -489,6 +496,27 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.issuingOfficer).isEqualTo("ITAG_USER")
       assertThat(argumentCaptor.value.dateTimeOfIssue).isEqualTo(now)
+      assertThat(argumentCaptor.value.disIssueHistory.size).isEqualTo(0)
+      assertThat(response).isNotNull
+    }
+
+    @ParameterizedTest
+    @CsvSource("SCHEDULED", "UNSCHEDULED")
+    fun `re-issue a reported adjudication DIS form`(status: ReportedAdjudicationStatus) {
+      reportedAdjudicationDisIssued.status = status
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationDisIssued)
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudicationDisIssued)
+
+      val response = reportedAdjudicationService.setIssued(1, now)
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.issuingOfficer).isEqualTo("ITAG_USER")
+      assertThat(argumentCaptor.value.dateTimeOfIssue).isEqualTo(now)
+      assertThat(argumentCaptor.value.disIssueHistory[0].issuingOfficer).isEqualTo("B_JOHNSON")
+      assertThat(argumentCaptor.value.disIssueHistory[0].dateTimeOfIssue).isEqualTo(now.minusHours(1))
       assertThat(response).isNotNull
     }
 

@@ -84,6 +84,7 @@ class EntityBuilder {
         )
       ),
       outcomes = mutableListOf(),
+      disIssueHistory = mutableListOf(),
     )
   }
 }

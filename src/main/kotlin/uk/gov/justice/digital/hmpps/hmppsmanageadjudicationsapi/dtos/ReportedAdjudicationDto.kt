@@ -54,10 +54,12 @@ data class ReportedAdjudicationDto(
   val witnesses: List<ReportedWitnessDto>,
   @Schema(description = "Hearings related to adjudication")
   val hearings: List<HearingDto>,
-  @Schema(description = "issuing officer")
+  @Schema(description = "The last issuing officer")
   val issuingOfficer: String? = null,
-  @Schema(description = "date time of form issued")
+  @Schema(description = "The last date time of form issued")
   val dateTimeOfIssue: LocalDateTime? = null,
+  @Schema(description = "Previous DIS1/2 issues")
+  val disIssueHistory: List<DisIssueHistoryDto>,
   @Schema(description = "date time of first hearing")
   val dateTimeOfFirstHearing: LocalDateTime? = null,
   @Schema(description = "Hearings, hearing outcomes, referrals and outcomes in chronological order")
@@ -196,4 +198,12 @@ data class CombinedOutcomeDto(
   val outcome: OutcomeDto,
   @Schema(description = "the optional referral outcome")
   val referralOutcome: OutcomeDto? = null,
+)
+
+@Schema(description = "Previous DIS1/2 issues")
+data class DisIssueHistoryDto(
+  @Schema(description = "Previous issuing officer")
+  var issuingOfficer: String,
+  @Schema(description = "Previous date time of form issued")
+  var dateTimeOfIssue: LocalDateTime,
 )
