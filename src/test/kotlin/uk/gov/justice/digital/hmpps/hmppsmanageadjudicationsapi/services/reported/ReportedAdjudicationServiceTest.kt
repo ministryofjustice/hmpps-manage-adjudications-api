@@ -478,7 +478,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       .also {
         it.createdByUserId = "A_SMITH"
         it.createDateTime = now.minusHours(2)
-        it.issuingOfficer = "B_JOHNSON" // "B_JOHNSON"
+        it.issuingOfficer = "B_JOHNSON"
         it.dateTimeOfIssue = now.minusHours(1)
       }
     @ParameterizedTest
