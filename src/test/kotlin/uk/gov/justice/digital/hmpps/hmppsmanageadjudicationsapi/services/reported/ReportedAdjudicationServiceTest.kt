@@ -475,7 +475,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
 
     private val reportedAdjudicationDisIssued = entityBuilder.reportedAdjudication(1)
-      .copy(id = 10L)
       .also {
         it.createdByUserId = "A_SMITH"
         it.createDateTime = now.minusHours(2)
