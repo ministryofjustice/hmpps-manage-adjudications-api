@@ -8,11 +8,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getHearing
 import javax.persistence.EntityNotFoundException
+import javax.validation.ValidationException
 
 @Service
 @Transactional
@@ -68,7 +70,9 @@ class HearingOutcomeService(
   fun removeAdjourn(
     adjudicationNumber: Long
   ): ReportedAdjudicationDto {
-    TODO("implement me")
+    findByAdjudicationNumber(adjudicationNumber).latestOutcomeIsAdjourn()
+
+    return deleteHearingOutcome(adjudicationNumber = adjudicationNumber)
   }
 
   private fun createHearingOutcome(
@@ -80,16 +84,14 @@ class HearingOutcomeService(
     plea: HearingOutcomePlea? = null
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val hearingToAddOutcomeTo = reportedAdjudication.getHearing()
-    val hearingOutcome = HearingOutcome(
+
+    reportedAdjudication.getHearing().hearingOutcome = HearingOutcome(
       code = code,
       reason = reason,
       details = details,
       adjudicator = adjudicator,
       plea = plea,
     )
-
-    hearingToAddOutcomeTo.hearingOutcome = hearingOutcome
 
     return saveToDto(reportedAdjudication)
   }
@@ -116,5 +118,11 @@ class HearingOutcomeService(
 
   companion object {
     fun HearingOutcome?.hearingOutcomeExists() = this ?: throw EntityNotFoundException("outcome not found for hearing")
+
+    fun ReportedAdjudication.latestOutcomeIsAdjourn() {
+      val latest = this.getHearing().hearingOutcome ?: throw EntityNotFoundException("outcome not found for hearing")
+      if (latest.code != HearingOutcomeCode.ADJOURN)
+        throw ValidationException("latest outcome is not an adjourn")
+    }
   }
 }

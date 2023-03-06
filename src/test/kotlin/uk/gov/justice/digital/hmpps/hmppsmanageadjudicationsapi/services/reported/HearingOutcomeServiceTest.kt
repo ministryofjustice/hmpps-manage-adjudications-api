@@ -51,6 +51,13 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      hearingOutcomeService.removeAdjourn(
+        adjudicationNumber = 1,
+      )
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
   }
 
   @Nested
@@ -191,13 +198,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `delete adjourn outcome`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         reportedAdjudication.also {
-          it.hearings.clear()
-          it.hearings.add(
-            Hearing(
-              agencyId = "", locationId = 1, oicHearingType = OicHearingType.GOV, dateTimeOfHearing = LocalDateTime.now(), oicHearingId = 1, reportNumber = 1,
-              hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
-            )
-          )
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
         }
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -223,13 +224,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `remove adjourn throws exception if latest outcome is not an adjourn `(code: HearingOutcomeCode) {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         reportedAdjudication.also {
-          it.hearings.clear()
-          it.hearings.add(
-            Hearing(
-              agencyId = "", locationId = 1, oicHearingType = OicHearingType.GOV, dateTimeOfHearing = LocalDateTime.now(), oicHearingId = 1, reportNumber = 1,
-              hearingOutcome = HearingOutcome(code = code, adjudicator = "")
-            )
-          )
+          it.hearings.first().hearingOutcome = HearingOutcome(code = code, adjudicator = "")
         }
       )
 
@@ -239,6 +234,32 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("latest outcome is not an adjourn")
+    }
+
+    @Test
+    fun `remove adjourn throws exception if no hearing `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.clear()
+        }
+      )
+
+      Assertions.assertThatThrownBy {
+        hearingOutcomeService.removeAdjourn(
+          adjudicationNumber = 1L,
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Hearing not found")
+    }
+
+    @Test
+    fun `remove adjourn throws exception if no outcome `() {
+      Assertions.assertThatThrownBy {
+        hearingOutcomeService.removeAdjourn(
+          adjudicationNumber = 1L,
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("outcome not found for hearing")
     }
   }
 

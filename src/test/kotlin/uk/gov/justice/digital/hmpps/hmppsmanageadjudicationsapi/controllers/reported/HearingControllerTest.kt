@@ -417,7 +417,7 @@ class HearingControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to delete an adjourn`() {
       deleteAdjournRequest(1,)
-        .andExpect(MockMvcResultMatchers.status().isCreated)
+        .andExpect(MockMvcResultMatchers.status().isOk)
       verify(hearingOutcomeService).removeAdjourn(
         adjudicationNumber = 1,
       )
