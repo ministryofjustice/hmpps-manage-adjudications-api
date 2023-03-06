@@ -65,6 +65,12 @@ class HearingOutcomeService(
     plea = plea
   )
 
+  fun removeAdjourn(
+    adjudicationNumber: Long
+  ): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
+
   private fun createHearingOutcome(
     adjudicationNumber: Long,
     code: HearingOutcomeCode,

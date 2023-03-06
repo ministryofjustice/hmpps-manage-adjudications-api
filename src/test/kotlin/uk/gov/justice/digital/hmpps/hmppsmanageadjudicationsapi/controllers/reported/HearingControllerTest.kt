@@ -392,7 +392,7 @@ class HearingControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        hearingOutcomeService.deleteHearingOutcome(
+        hearingOutcomeService.removeAdjourn(
           ArgumentMatchers.anyLong(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -418,7 +418,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to delete an adjourn`() {
       deleteAdjournRequest(1,)
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(hearingOutcomeService).deleteHearingOutcome(
+      verify(hearingOutcomeService).removeAdjourn(
         adjudicationNumber = 1,
       )
     }

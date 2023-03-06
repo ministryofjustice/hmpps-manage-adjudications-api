@@ -5,6 +5,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
@@ -186,11 +188,57 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `delete adjourn outcome`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.clear()
+          it.hearings.add(
+            Hearing(
+              agencyId = "", locationId = 1, oicHearingType = OicHearingType.GOV, dateTimeOfHearing = LocalDateTime.now(), oicHearingId = 1, reportNumber = 1,
+              hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
+            )
+          )
+        }
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = hearingOutcomeService.removeAdjourn(1,)
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNull()
+      assertThat(response).isNotNull
+    }
+
+    @Test
     fun `delete hearing outcome throws no outcome found for adjudication `() {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.deleteHearingOutcome(1,)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("outcome not found for hearing")
+    }
+
+    @CsvSource("REFER_POLICE", "REFER_INAD", "COMPLETE")
+    @ParameterizedTest
+    fun `remove adjourn throws exception if latest outcome is not an adjourn `(code: HearingOutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.clear()
+          it.hearings.add(
+            Hearing(
+              agencyId = "", locationId = 1, oicHearingType = OicHearingType.GOV, dateTimeOfHearing = LocalDateTime.now(), oicHearingId = 1, reportNumber = 1,
+              hearingOutcome = HearingOutcome(code = code, adjudicator = "")
+            )
+          )
+        }
+      )
+
+      Assertions.assertThatThrownBy {
+        hearingOutcomeService.removeAdjourn(
+          adjudicationNumber = 1L,
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("latest outcome is not an adjourn")
     }
   }
 
