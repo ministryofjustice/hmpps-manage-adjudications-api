@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.CompletedHearingService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
@@ -531,11 +532,72 @@ class OutcomeControllerTest : TestControllerBase() {
         )
     }
   }
+
+  @Nested
+  inner class CreateQuashed {
+    @BeforeEach
+    fun beforeEach() {
+
+      whenever(
+        outcomeService.createQuashed(
+          anyLong(),
+          any(),
+          any(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      createQuashedRequest(
+        1, QUASHED_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      createQuashedRequest(
+        1, QUASHED_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      createQuashedRequest(
+        1, QUASHED_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to create a quashed outcome`() {
+      createQuashedRequest(1, QUASHED_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isCreated)
+
+      verify(outcomeService).createQuashed(1, QUASHED_REQUEST.reason, QUASHED_REQUEST.details)
+    }
+
+    private fun createQuashedRequest(
+      id: Long,
+      request: QuashedRequest,
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(request)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.post("/reported-adjudications/$id/outcome/quashed")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
   companion object {
     private val POLICE_REFER_REQUEST = PoliceReferralRequest(details = "details")
     private val NOT_PROCEED_REQUEST = NotProceedRequest(reason = NotProceedReason.NOT_FAIR, details = "details")
     private val COMPLETED_NOT_PROCEED_REQUEST = HearingCompletedNotProceedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, reason = NotProceedReason.NOT_FAIR, details = "details")
     private val COMPLETED_DISMISSED_REQUEST = HearingCompletedDismissedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, details = "details")
     private val CHARGE_PROVED_REQUEST = HearingCompletedChargeProvedRequest(adjudicator = "test", plea = HearingOutcomePlea.GUILTY, caution = false)
+    private val QUASHED_REQUEST = QuashedRequest(reason = QuashedReason.APPEAL_UPHELD, details = "details")
   }
 }

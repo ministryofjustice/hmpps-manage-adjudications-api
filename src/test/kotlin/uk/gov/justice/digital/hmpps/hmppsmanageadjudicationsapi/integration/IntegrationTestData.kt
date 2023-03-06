@@ -608,6 +608,26 @@ class IntegrationTestData(
       .blockFirst()!!
   }
 
+  fun createChargeProved(
+    testDataSet: AdjudicationIntTestDataSet,
+  ): ReportedAdjudicationResponse {
+    return webTestClient.post()
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/complete-hearing/charge-proved")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "plea" to HearingOutcomePlea.NOT_GUILTY,
+          "amount" to 100.50,
+          "caution" to true,
+        )
+      )
+      .exchange()
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
   fun createReferral(
     testDataSet: AdjudicationIntTestDataSet,
     code: HearingOutcomeCode,

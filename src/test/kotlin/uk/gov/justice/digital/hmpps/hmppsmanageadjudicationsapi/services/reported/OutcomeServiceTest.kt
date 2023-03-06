@@ -14,6 +14,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDateTime
@@ -61,6 +62,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       outcomeService.getLatestOutcome(1,)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      outcomeService.createQuashed(1, QuashedReason.APPEAL_UPHELD, "details")
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
   }
 
   @Nested
@@ -80,7 +86,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REJECTED", "AWAITING_REVIEW", "NOT_PROCEED", "REFER_INAD", "REFER_POLICE", "UNSCHEDULED", "CHARGE_PROVED")
+    @CsvSource("REJECTED", "AWAITING_REVIEW", "NOT_PROCEED", "REFER_INAD", "REFER_POLICE", "UNSCHEDULED", "CHARGE_PROVED", "QUASHED")
     fun `create outcome throws exception if invalid state `(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
@@ -97,7 +103,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("Invalid status transition")
     }
 
-    @CsvSource("NOT_PROCEED", "PROSECUTION", "SCHEDULE_HEARING")
+    @CsvSource("NOT_PROCEED", "PROSECUTION", "SCHEDULE_HEARING", "QUASHED")
     @ParameterizedTest
     fun `throws exception if referral validation fails`(code: OutcomeCode) {
       Assertions.assertThatThrownBy {
@@ -193,6 +199,52 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.PROSECUTION)
       assertThat(argumentCaptor.value.outcomes.first().details).isNull()
       assertThat(response).isNotNull
+    }
+
+    @CsvSource("CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
+    @ParameterizedTest
+    fun `create quashed`(code: OutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = code.status
+          it.createdByUserId = "test"
+          it.createDateTime = LocalDateTime.now()
+          it.outcomes.add(
+            Outcome(code = code)
+          )
+        }
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.createQuashed(
+        1235L, QuashedReason.APPEAL_UPHELD, "details"
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.outcomes.last()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.last().code).isEqualTo(OutcomeCode.QUASHED)
+      assertThat(argumentCaptor.value.outcomes.last().details).isEqualTo("details")
+      assertThat(response).isNotNull
+    }
+
+    @CsvSource("PROSECUTION", "REFER_POLICE", "REFER_INAD", "QUASHED", "SCHEDULE_HEARING")
+    @ParameterizedTest
+    fun `create quashed throws exception if previous outcome is not a hearing completed option `(code: OutcomeCode) {
+      Assertions.assertThatThrownBy {
+        outcomeService.createQuashed(1, QuashedReason.APPEAL_UPHELD, "details")
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("unable to quash this outcome")
+    }
+
+    @Test
+    fun `create quashed throws exception if previous outcome is NOT_PROCEED and not from hearing completed action `() {
+      Assertions.assertThatThrownBy {
+        outcomeService.createQuashed(1, QuashedReason.APPEAL_UPHELD, "details")
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("unable to quash this outcome")
     }
 
     @ParameterizedTest
