@@ -73,7 +73,7 @@ class OutcomeController(
   private val completedHearingService: CompletedHearingService,
 ) : ReportedAdjudicationBaseController() {
 
-  @Operation(summary = "create a not proceed outcome")
+  @Operation(summary = "create a not proceed outcome - via referral or without hearing")
   @PostMapping(value = ["/{adjudicationNumber}/outcome/not-proceed"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createNotProceed(

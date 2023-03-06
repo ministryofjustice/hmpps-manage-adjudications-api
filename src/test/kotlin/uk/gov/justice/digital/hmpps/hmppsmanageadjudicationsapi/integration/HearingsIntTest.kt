@@ -355,4 +355,34 @@ class HearingsIntTest : IntegrationTestBase() {
       .jsonPath("$.hearings[0].dateTimeOfHearing")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearingISOString)
   }
+
+  @Test
+  fun `remove adjourn outcome `() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForHearings().createHearing()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/adjourn")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "reason" to HearingOutcomeAdjournReason.LEGAL_ADVICE,
+          "details" to "details",
+          "plea" to HearingOutcomePlea.UNFIT,
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+
+    webTestClient.delete()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/adjourn")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing").exists()
+  }
 }
