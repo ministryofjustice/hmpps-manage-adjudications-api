@@ -243,6 +243,7 @@ class HearingsIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isCreated
       .expectBody()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.ADJOURNED.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
       .isEqualTo("test")
@@ -367,6 +368,7 @@ class HearingsIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
       .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome").doesNotExist()
       .jsonPath("$.reportedAdjudication.outcomes[0].hearing").exists()
