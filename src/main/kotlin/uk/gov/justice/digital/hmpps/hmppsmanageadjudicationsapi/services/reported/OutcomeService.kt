@@ -157,7 +157,7 @@ class OutcomeService(
     }
 
     fun Outcome.canDelete(hasHearings: Boolean): Outcome {
-      val acceptableItems = if (!hasHearings) listOf(OutcomeCode.NOT_PROCEED) else emptyList()
+      val acceptableItems = if (!hasHearings) listOf(OutcomeCode.NOT_PROCEED) else listOf(OutcomeCode.QUASHED)
       if (acceptableItems.none { it == this.code }) throw ValidationException("Unable to delete via api - DEL/outcome")
 
       return this

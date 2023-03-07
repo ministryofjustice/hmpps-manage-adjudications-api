@@ -412,7 +412,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.outcomes).isEmpty()
+      if (code == OutcomeCode.NOT_PROCEED) assertThat(argumentCaptor.value.outcomes).isEmpty() else assertThat(argumentCaptor.value.outcomes.size).isEqualTo(1)
       if (code == OutcomeCode.NOT_PROCEED) assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
       else assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED)
 
