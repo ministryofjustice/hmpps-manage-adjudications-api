@@ -46,13 +46,11 @@ class OutcomeIntTest : IntegrationTestBase() {
     initDataForOutcome().createOutcomeNotProceed().expectStatus().isCreated
 
     webTestClient.delete()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome/not-proceed")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.reportedAdjudication.outcomes.size()")
-      .isEqualTo(0)
       .jsonPath("$.reportedAdjudication.outcomes.size()")
       .isEqualTo(0)
   }
@@ -254,5 +252,34 @@ class OutcomeIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.quashedReason").isEqualTo(QuashedReason.APPEAL_UPHELD.name)
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.details").isEqualTo("details")
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.code").isEqualTo(OutcomeCode.QUASHED.name)
+  }
+
+  @Test
+  fun `remove quashed outcome `() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForOutcome().createHearing().createChargeProved()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome/quashed")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "reason" to QuashedReason.APPEAL_UPHELD,
+          "details" to "details",
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+
+    webTestClient.delete()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.outcomes.size()")
+      .isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
   }
 }

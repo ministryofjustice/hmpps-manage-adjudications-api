@@ -209,10 +209,10 @@ class OutcomeController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "remove a not proceed without a referral or hearing")
-  @DeleteMapping(value = ["/{adjudicationNumber}/outcome/not-proceed"])
+  @Operation(summary = "remove a not proceed without a referral or hearing, or a quashed outcome")
+  @DeleteMapping(value = ["/{adjudicationNumber}/outcome"])
   @ResponseStatus(HttpStatus.OK)
-  fun removeNotProceedWithoutReferral(
+  fun removeNotProceedWithoutReferralOrQuashed(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.deleteOutcome(

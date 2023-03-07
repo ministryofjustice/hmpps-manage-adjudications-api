@@ -413,7 +413,7 @@ class OutcomeControllerTest : TestControllerBase() {
     ): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.delete("/reported-adjudications/$id/outcome/not-proceed")
+          MockMvcRequestBuilders.delete("/reported-adjudications/$id/outcome")
             .header("Content-Type", "application/json")
         )
     }

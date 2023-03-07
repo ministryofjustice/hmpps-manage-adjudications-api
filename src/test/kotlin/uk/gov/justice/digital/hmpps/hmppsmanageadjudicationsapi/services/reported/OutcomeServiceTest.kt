@@ -313,19 +313,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
-    private val reportedAdjudicationLatestOutcome = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
-      it.hearings.clear()
-      it.outcomes.add(
-        Outcome(id = 1, code = OutcomeCode.NOT_PROCEED)
-      )
-    }
-
     @BeforeEach
     fun init() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(reportedAdjudicationWithOutcome)
       whenever(reportedAdjudicationRepository.findByReportNumber(3)).thenReturn(reportedAdjudicationWithOutcomeAndNoHearings)
-      whenever(reportedAdjudicationRepository.findByReportNumber(4)).thenReturn(reportedAdjudicationLatestOutcome)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         reportedAdjudication.also {
           it.createDateTime = LocalDateTime.now()
@@ -398,8 +390,21 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("Unable to delete via api - DEL/outcome")
     }
 
-    @Test
-    fun `delete latest outcome succeeds`() {
+    @CsvSource("QUASHED", "NOT_PROCEED")
+    @ParameterizedTest
+    fun `delete latest outcome succeeds without provided id `(code: OutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+          if (code == OutcomeCode.NOT_PROCEED) it.hearings.clear()
+          it.outcomes.add(
+            Outcome(id = 1, code = code).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) }
+          )
+          if (code == OutcomeCode.QUASHED)
+            it.outcomes.add(
+              Outcome(id = 1, code = OutcomeCode.CHARGE_PROVED).also { o -> o.createDateTime = LocalDateTime.now() }
+            )
+        }
+      )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.deleteOutcome(
@@ -408,7 +413,8 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.outcomes).isEmpty()
-      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
+      if (code == OutcomeCode.NOT_PROCEED) assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
+      else assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED)
 
       assertThat(response).isNotNull
     }
