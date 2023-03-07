@@ -86,6 +86,13 @@ class IntegrationTestScenario(
     return this
   }
 
+  fun createChargeProved(): IntegrationTestScenario {
+    intTestData.createChargeProved(
+      testAdjudicationDataSet,
+    )
+    return this
+  }
+
   fun createAdjourn(): IntegrationTestScenario {
     intTestData.createAdjourn(
       testAdjudicationDataSet,

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.CompletedHearingService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
@@ -65,6 +66,14 @@ data class HearingCompletedChargeProvedRequest(
   val caution: Boolean,
 )
 
+@Schema(description = "Request to quash charge")
+data class QuashedRequest(
+  @Schema(description = "details")
+  val details: String,
+  @Schema(description = "reason")
+  val reason: QuashedReason,
+)
+
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
 class OutcomeController(
@@ -73,7 +82,7 @@ class OutcomeController(
   private val completedHearingService: CompletedHearingService,
 ) : ReportedAdjudicationBaseController() {
 
-  @Operation(summary = "create a not proceed outcome")
+  @Operation(summary = "create a not proceed outcome - via referral or without hearing")
   @PostMapping(value = ["/{adjudicationNumber}/outcome/not-proceed"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createNotProceed(
@@ -97,6 +106,22 @@ class OutcomeController(
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.createProsecution(
       adjudicationNumber = adjudicationNumber,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(summary = "quash an outcome")
+  @PostMapping(value = ["/{adjudicationNumber}/outcome/quashed"])
+  @ResponseStatus(HttpStatus.CREATED)
+  fun createQuashed(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody quashedRequest: QuashedRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = outcomeService.createQuashed(
+      adjudicationNumber = adjudicationNumber,
+      reason = quashedRequest.reason,
+      details = quashedRequest.details,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
@@ -184,10 +209,10 @@ class OutcomeController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "remove a not proceed without a referral or hearing")
-  @DeleteMapping(value = ["/{adjudicationNumber}/outcome/not-proceed"])
+  @Operation(summary = "remove a not proceed without a referral or hearing, or a quashed outcome")
+  @DeleteMapping(value = ["/{adjudicationNumber}/outcome"])
   @ResponseStatus(HttpStatus.OK)
-  fun removeNotProceedWithoutReferral(
+  fun removeNotProceedWithoutReferralOrQuashed(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.deleteOutcome(

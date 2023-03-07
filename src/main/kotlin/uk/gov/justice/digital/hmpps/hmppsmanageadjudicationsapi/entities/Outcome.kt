@@ -19,6 +19,8 @@ data class Outcome(
   var code: OutcomeCode,
   var amount: Double? = null,
   var caution: Boolean? = null,
+  @Enumerated(EnumType.STRING)
+  var quashedReason: QuashedReason? = null,
 ) : BaseEntity()
 
 enum class OutcomeCode(val status: ReportedAdjudicationStatus) {
@@ -36,7 +38,8 @@ enum class OutcomeCode(val status: ReportedAdjudicationStatus) {
   DISMISSED(ReportedAdjudicationStatus.DISMISSED),
   PROSECUTION(ReportedAdjudicationStatus.PROSECUTION),
   SCHEDULE_HEARING(ReportedAdjudicationStatus.SCHEDULED),
-  CHARGE_PROVED(ReportedAdjudicationStatus.CHARGE_PROVED);
+  CHARGE_PROVED(ReportedAdjudicationStatus.CHARGE_PROVED),
+  QUASHED(ReportedAdjudicationStatus.QUASHED);
 
   fun validateReferral(): OutcomeCode {
     if (referrals().none { this == it }) throw ValidationException("invalid referral type")
@@ -58,4 +61,8 @@ enum class OutcomeCode(val status: ReportedAdjudicationStatus) {
 
 enum class NotProceedReason {
   ANOTHER_WAY, RELEASED, WITNESS_NOT_ATTEND, UNFIT, FLAWED, EXPIRED_NOTICE, EXPIRED_HEARING, NOT_FAIR, OTHER
+}
+
+enum class QuashedReason {
+  FLAWED_CASE, JUDICIAL_REVIEW, APPEAL_UPHELD
 }

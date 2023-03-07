@@ -387,6 +387,54 @@ class HearingControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class DeleteAdjourn {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        hearingOutcomeService.removeAdjourn(
+          ArgumentMatchers.anyLong(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      deleteAdjournRequest(
+        1,
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      deleteAdjournRequest(
+        1,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to delete an adjourn`() {
+      deleteAdjournRequest(1,)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+      verify(hearingOutcomeService).removeAdjourn(
+        adjudicationNumber = 1,
+      )
+    }
+
+    private fun deleteAdjournRequest(
+      id: Long,
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(adjournRequest)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing/outcome/adjourn")
+            .header("Content-Type", "application/json")
+        )
+    }
+  }
+
   companion object {
     private val HEARING_REQUEST = HearingRequest(locationId = 1L, dateTimeOfHearing = LocalDateTime.now(), oicHearingType = OicHearingType.GOV)
     private fun referralRequest(code: HearingOutcomeCode? = HearingOutcomeCode.REFER_POLICE) = ReferralRequest(adjudicator = "test", code = code!!, details = "details")

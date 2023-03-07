@@ -95,19 +95,19 @@ open class ReportedDtoService(
 
     do {
       val hearing = hearings.removeFirst()
-      val outcome = when (hearing.outcome ?: false) {
-        false -> emptyList()
-        else -> when (hearing.outcome!!.code.outcomeCode) {
-          // note only one completed hearing outcome can exist as it's an end state
-          null -> outcomes.filter { OutcomeCode.completedHearings().contains(it.outcome.code) }
-          else -> outcomes.filter { it.outcome.code == hearing.outcome.code.outcomeCode }
-        }
-      }.toMutableList().removeFirstOrNull()
+      val outcome = if (hearing.hearingHasNoAssociatedOutcome()) null else outcomes.removeFirstOrNull()
 
       history.add(
         OutcomeHistoryDto(hearing = hearing, outcome = outcome)
       )
     } while (hearings.isNotEmpty())
+
+    // quashed will be left if it is present
+    outcomes.removeFirstOrNull()?.let {
+      history.add(
+        OutcomeHistoryDto(outcome = it)
+      )
+    }
 
     return history.toList()
   }
@@ -218,6 +218,7 @@ open class ReportedDtoService(
       reason = this.reason,
       amount = this.amount,
       caution = this.caution,
+      quashedReason = this.quashedReason,
     )
 
   private fun List<DisIssueHistory>.toDisIssueHistory(): List<DisIssueHistoryDto> =
@@ -227,6 +228,11 @@ open class ReportedDtoService(
         dateTimeOfIssue = it.dateTimeOfIssue,
       )
     }.sortedBy { it.dateTimeOfIssue }.toList()
+
+  companion object {
+    fun HearingDto.hearingHasNoAssociatedOutcome() =
+      this.outcome == null || this.outcome.code == HearingOutcomeCode.ADJOURN
+  }
 }
 
 open class ReportedAdjudicationBaseService(

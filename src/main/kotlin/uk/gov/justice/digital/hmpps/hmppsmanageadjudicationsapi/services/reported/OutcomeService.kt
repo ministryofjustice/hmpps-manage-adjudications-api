@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus.Companion.validateTransition
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -75,6 +76,21 @@ class OutcomeService(
     caution = caution
   )
 
+  fun createQuashed(
+    adjudicationNumber: Long,
+    reason: QuashedReason,
+    details: String,
+  ): ReportedAdjudicationDto {
+    findByAdjudicationNumber(adjudicationNumber).latestOutcome().canQuash()
+
+    return createOutcome(
+      adjudicationNumber = adjudicationNumber,
+      code = OutcomeCode.QUASHED,
+      details = details,
+      quashedReason = reason
+    )
+  }
+
   private fun createOutcome(
     adjudicationNumber: Long,
     code: OutcomeCode,
@@ -82,6 +98,7 @@ class OutcomeService(
     reason: NotProceedReason? = null,
     amount: Double? = null,
     caution: Boolean? = null,
+    quashedReason: QuashedReason? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       it.status.validateTransition(code.status)
@@ -98,6 +115,7 @@ class OutcomeService(
         reason = reason,
         amount = amount,
         caution = caution,
+        quashedReason = quashedReason,
       )
     )
 
@@ -136,7 +154,7 @@ class OutcomeService(
     }
 
     fun Outcome.canDelete(hasHearings: Boolean): Outcome {
-      val acceptableItems = if (!hasHearings) listOf(OutcomeCode.NOT_PROCEED) else emptyList()
+      val acceptableItems = if (!hasHearings) listOf(OutcomeCode.NOT_PROCEED) else listOf(OutcomeCode.QUASHED)
       if (acceptableItems.none { it == this.code }) throw ValidationException("Unable to delete via api - DEL/outcome")
 
       return this
@@ -144,5 +162,10 @@ class OutcomeService(
 
     fun ReportedAdjudication.lastOutcomeIsRefer() =
       OutcomeCode.referrals().contains(this.outcomes.maxByOrNull { it.createDateTime!! }?.code)
+
+    fun Outcome?.canQuash() {
+      if (this?.code != OutcomeCode.CHARGE_PROVED)
+        throw ValidationException("unable to quash this outcome")
+    }
   }
 }
