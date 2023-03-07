@@ -231,12 +231,12 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
 
-    @CsvSource("REFER_POLICE", "REFER_INAD", "ADJOURN")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "DISMISSED", "SCHEDULE_HEARING", "PROSECUTION", "NOT_PROCEED", "QUASHED")
     @ParameterizedTest
-    fun `create quashed throws exception if previous outcome is not a hearing completed option `(code: HearingOutcomeCode) {
+    fun `create quashed throws exception if previous outcome is not a charge proved `(code: OutcomeCode) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.hearings.first().hearingOutcome = HearingOutcome(code = code, adjudicator = "")
+          it.outcomes.add(Outcome(code = code))
         }
       )
 

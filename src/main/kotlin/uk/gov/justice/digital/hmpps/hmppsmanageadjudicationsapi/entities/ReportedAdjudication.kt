@@ -128,16 +128,8 @@ enum class ReportedAdjudicationStatus {
     }
   },
   PROSECUTION,
-  DISMISSED {
-    override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(QUASHED)
-    }
-  },
-  NOT_PROCEED {
-    override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(QUASHED)
-    }
-  },
+  DISMISSED,
+  NOT_PROCEED,
   CHARGE_PROVED {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
       return listOf(QUASHED)

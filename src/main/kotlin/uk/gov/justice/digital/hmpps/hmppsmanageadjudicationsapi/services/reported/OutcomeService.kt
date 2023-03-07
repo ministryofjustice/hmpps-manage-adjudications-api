@@ -3,8 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -14,7 +12,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getHearing
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 import javax.validation.ValidationException
@@ -84,7 +81,7 @@ class OutcomeService(
     reason: QuashedReason,
     details: String,
   ): ReportedAdjudicationDto {
-    findByAdjudicationNumber(adjudicationNumber).getHearing().hearingOutcome.canQuash()
+    findByAdjudicationNumber(adjudicationNumber).latestOutcome().canQuash()
 
     return createOutcome(
       adjudicationNumber = adjudicationNumber,
@@ -166,8 +163,8 @@ class OutcomeService(
     fun ReportedAdjudication.lastOutcomeIsRefer() =
       OutcomeCode.referrals().contains(this.outcomes.maxByOrNull { it.createDateTime!! }?.code)
 
-    fun HearingOutcome?.canQuash() {
-      if (this?.code != HearingOutcomeCode.COMPLETE)
+    fun Outcome?.canQuash() {
+      if (this?.code != OutcomeCode.CHARGE_PROVED)
         throw ValidationException("unable to quash this outcome")
     }
   }
