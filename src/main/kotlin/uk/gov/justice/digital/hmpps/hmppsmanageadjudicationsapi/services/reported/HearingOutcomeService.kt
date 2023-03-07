@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -83,7 +84,9 @@ class HearingOutcomeService(
     details: String? = null,
     plea: HearingOutcomePlea? = null
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+      if (code == HearingOutcomeCode.ADJOURN) it.status = ReportedAdjudicationStatus.ADJOURNED
+    }
 
     reportedAdjudication.getHearing().hearingOutcome = HearingOutcome(
       code = code,
@@ -97,7 +100,9 @@ class HearingOutcomeService(
   }
 
   fun deleteHearingOutcome(adjudicationNumber: Long): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+      if (it.status == ReportedAdjudicationStatus.ADJOURNED) it.calculateStatus()
+    }
     val outcomeToRemove = reportedAdjudication.getHearing()
 
     outcomeToRemove.hearingOutcome.hearingOutcomeExists()

@@ -243,6 +243,7 @@ class HearingsIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isCreated
       .expectBody()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.ADJOURNED.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.id").isNotEmpty
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator")
       .isEqualTo("test")
@@ -367,8 +368,31 @@ class HearingsIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
       .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome").doesNotExist()
       .jsonPath("$.reportedAdjudication.outcomes[0].hearing").exists()
+  }
+
+  @Test
+  fun `create hearing outcome - adjourn and then create new hearing`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForHearings().createHearing().createAdjourn()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "locationId" to 1,
+          "dateTimeOfHearing" to LocalDateTime.now(),
+          "oicHearingType" to OicHearingType.GOV.name,
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
   }
 }

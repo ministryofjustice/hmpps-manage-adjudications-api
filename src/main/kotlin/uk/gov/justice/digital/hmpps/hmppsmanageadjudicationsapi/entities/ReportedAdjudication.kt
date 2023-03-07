@@ -114,7 +114,7 @@ enum class ReportedAdjudicationStatus {
   },
   SCHEDULED {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(UNSCHEDULED, REFER_POLICE, REFER_INAD, DISMISSED, NOT_PROCEED, CHARGE_PROVED)
+      return listOf(UNSCHEDULED, REFER_POLICE, REFER_INAD, DISMISSED, NOT_PROCEED, CHARGE_PROVED, ADJOURNED)
     }
   },
   REFER_POLICE {
@@ -130,6 +130,11 @@ enum class ReportedAdjudicationStatus {
   PROSECUTION,
   DISMISSED,
   NOT_PROCEED,
+  ADJOURNED {
+    override fun nextStates(): List<ReportedAdjudicationStatus> {
+      return listOf(SCHEDULED)
+    }
+  },
   CHARGE_PROVED {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
       return listOf(QUASHED)
