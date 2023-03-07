@@ -111,6 +111,22 @@ class OutcomeController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
+  @Operation(summary = "quash an outcome")
+  @PostMapping(value = ["/{adjudicationNumber}/outcome/quashed"])
+  @ResponseStatus(HttpStatus.CREATED)
+  fun createQuashed(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody quashedRequest: QuashedRequest
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = outcomeService.createQuashed(
+      adjudicationNumber = adjudicationNumber,
+      reason = quashedRequest.reason,
+      details = quashedRequest.details,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
   @Operation(summary = "create a police refer outcome")
   @PostMapping(value = ["/{adjudicationNumber}/outcome/refer-police"])
   @ResponseStatus(HttpStatus.CREATED)

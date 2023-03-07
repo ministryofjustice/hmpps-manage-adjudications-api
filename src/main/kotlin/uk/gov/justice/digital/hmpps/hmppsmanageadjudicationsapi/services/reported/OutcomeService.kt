@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -12,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getHearing
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 import javax.validation.ValidationException
@@ -81,7 +84,14 @@ class OutcomeService(
     reason: QuashedReason,
     details: String,
   ): ReportedAdjudicationDto {
-    TODO("implement me")
+    findByAdjudicationNumber(adjudicationNumber).getHearing().hearingOutcome.canQuash()
+
+    return createOutcome(
+      adjudicationNumber = adjudicationNumber,
+      code = OutcomeCode.QUASHED,
+      details = details,
+      quashedReason = reason
+    )
   }
 
   private fun createOutcome(
@@ -91,6 +101,7 @@ class OutcomeService(
     reason: NotProceedReason? = null,
     amount: Double? = null,
     caution: Boolean? = null,
+    quashedReason: QuashedReason? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       it.status.validateTransition(code.status)
@@ -107,6 +118,7 @@ class OutcomeService(
         reason = reason,
         amount = amount,
         caution = caution,
+        quashedReason = quashedReason,
       )
     )
 
@@ -153,5 +165,10 @@ class OutcomeService(
 
     fun ReportedAdjudication.lastOutcomeIsRefer() =
       OutcomeCode.referrals().contains(this.outcomes.maxByOrNull { it.createDateTime!! }?.code)
+
+    fun HearingOutcome?.canQuash() {
+      if (this?.code != HearingOutcomeCode.COMPLETE)
+        throw ValidationException("unable to quash this outcome")
+    }
   }
 }

@@ -11,6 +11,8 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -201,17 +203,15 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
 
-    @CsvSource("CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
-    @ParameterizedTest
-    fun `create quashed`(code: OutcomeCode) {
+    @Test
+    fun `create quashed`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.status = code.status
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.createdByUserId = "test"
           it.createDateTime = LocalDateTime.now()
-          it.outcomes.add(
-            Outcome(code = code)
-          )
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "test")
+          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
         }
       )
 
@@ -226,13 +226,20 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.size).isEqualTo(2)
       assertThat(argumentCaptor.value.outcomes.last()).isNotNull
       assertThat(argumentCaptor.value.outcomes.last().code).isEqualTo(OutcomeCode.QUASHED)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.QUASHED)
       assertThat(argumentCaptor.value.outcomes.last().details).isEqualTo("details")
       assertThat(response).isNotNull
     }
 
-    @CsvSource("PROSECUTION", "REFER_POLICE", "REFER_INAD", "QUASHED", "SCHEDULE_HEARING")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "ADJOURN")
     @ParameterizedTest
-    fun `create quashed throws exception if previous outcome is not a hearing completed option `(code: OutcomeCode) {
+    fun `create quashed throws exception if previous outcome is not a hearing completed option `(code: HearingOutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = code, adjudicator = "")
+        }
+      )
+
       Assertions.assertThatThrownBy {
         outcomeService.createQuashed(1, QuashedReason.APPEAL_UPHELD, "details")
       }.isInstanceOf(ValidationException::class.java)
@@ -240,7 +247,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `create quashed throws exception if previous outcome is NOT_PROCEED and not from hearing completed action `() {
+    fun `create quashed throws exception if no previous hearing outcome `() {
       Assertions.assertThatThrownBy {
         outcomeService.createQuashed(1, QuashedReason.APPEAL_UPHELD, "details")
       }.isInstanceOf(ValidationException::class.java)
