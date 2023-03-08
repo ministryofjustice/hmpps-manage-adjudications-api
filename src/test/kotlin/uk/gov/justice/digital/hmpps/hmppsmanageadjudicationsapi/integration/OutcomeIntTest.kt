@@ -284,7 +284,7 @@ class OutcomeIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `amend outcome `() {
+  fun `amend outcome - not proceed without hearing `() {
     initDataForOutcome().createOutcomeNotProceed()
 
     webTestClient.put()
