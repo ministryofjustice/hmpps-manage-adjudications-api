@@ -35,7 +35,7 @@ class ReferralService(
   }
 
   fun removeReferral(adjudicationNumber: Long): ReportedAdjudicationDto {
-    val outcomes = outcomeService.getOutcomes(adjudicationNumber).validateHasReferral()
+    val outcomes = outcomeService.getOutcomes(adjudicationNumber).validateHasReferral().validateReferralIsLatest()
     val outcomeToRemove = outcomes.last()
     val outcomeIndex = outcomes.filter { it.outcome.code == outcomeToRemove.outcome.code }.indexOf(outcomeToRemove)
 
@@ -56,7 +56,15 @@ class ReferralService(
 
   companion object {
     fun List<CombinedOutcomeDto>.validateHasReferral(): List<CombinedOutcomeDto> {
-      if (this.none { OutcomeCode.referrals().contains(it.outcome.code) }) throw ValidationException("No referral for adjudication")
+      if (this.none { OutcomeCode.referrals().contains(it.outcome.code) })
+        throw ValidationException("No referral for adjudication")
+
+      return this
+    }
+
+    fun List<CombinedOutcomeDto>.validateReferralIsLatest(): List<CombinedOutcomeDto> {
+      if (OutcomeCode.referrals().none { it == this.last().outcome.code })
+        throw ValidationException("Referral can not be removed as its not the latest outcome")
 
       return this
     }
