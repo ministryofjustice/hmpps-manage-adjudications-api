@@ -599,9 +599,10 @@ class OutcomeControllerTest : TestControllerBase() {
     fun beforeEach() {
 
       whenever(
-        outcomeService.amendOutcomeWithoutHearing(
+        outcomeService.amendOutcomeViaApi(
           anyLong(),
           any(),
+          anyOrNull(),
           anyOrNull(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -636,7 +637,7 @@ class OutcomeControllerTest : TestControllerBase() {
       amendOutcomeRequest(1, AMEND_OUTCOME_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(outcomeService).amendOutcomeWithoutHearing(1, "details")
+      verify(outcomeService).amendOutcomeViaApi(1, "details")
     }
 
     private fun amendOutcomeRequest(

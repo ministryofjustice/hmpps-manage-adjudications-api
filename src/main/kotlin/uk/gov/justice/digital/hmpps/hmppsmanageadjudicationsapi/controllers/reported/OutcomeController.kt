@@ -75,12 +75,15 @@ data class QuashedRequest(
   val reason: QuashedReason,
 )
 
-@Schema(description = "amend outcome without a hearing - NOT PROCEED and REFER POLICE")
+@Schema(description = "amend outcome without a hearing - NOT PROCEED, REFER POLICE, QUASHED")
 data class AmendOutcomeRequest(
   @Schema(description = "details")
   val details: String,
   @Schema(description = "not proceed reason")
   val reason: NotProceedReason? = null,
+  @Schema(description = "quashed reason")
+  val quashedReason: QuashedReason? = null,
+
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
@@ -244,14 +247,14 @@ class OutcomeController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "amend outcome without a hearing - refer police or not proceed")
+  @Operation(summary = "amend outcome without a hearing - refer police, not proceed or quashed")
   @PutMapping(value = ["/{adjudicationNumber}/outcome"])
   @ResponseStatus(HttpStatus.OK)
   fun amendOutcome(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody amendOutcomeRequest: AmendOutcomeRequest,
   ): ReportedAdjudicationResponse {
-    val reportedAdjudication = outcomeService.amendOutcomeWithoutHearing(
+    val reportedAdjudication = outcomeService.amendOutcomeViaApi(
       adjudicationNumber = adjudicationNumber,
       details = amendOutcomeRequest.details,
       reason = amendOutcomeRequest.reason,

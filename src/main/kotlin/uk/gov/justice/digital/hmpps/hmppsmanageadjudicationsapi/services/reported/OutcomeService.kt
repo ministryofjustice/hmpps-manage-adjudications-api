@@ -91,10 +91,11 @@ class OutcomeService(
     )
   }
 
-  fun amendOutcomeWithoutHearing(
+  fun amendOutcomeViaApi(
     adjudicationNumber: Long,
     details: String,
     reason: NotProceedReason? = null,
+    quashedReason: QuashedReason? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     reportedAdjudication.latestOutcome().canAmendViaApi(reportedAdjudication.hearings.isNotEmpty())
@@ -103,6 +104,7 @@ class OutcomeService(
       adjudicationNumber = adjudicationNumber,
       details = details,
       reason = reason,
+      quashedReason = quashedReason,
     )
   }
 
@@ -141,12 +143,14 @@ class OutcomeService(
     adjudicationNumber: Long,
     details: String,
     reason: NotProceedReason? = null,
+    quashedReason: QuashedReason? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
     reportedAdjudication.latestOutcome()!!.let {
       it.details = details
       reason?.let { updated -> it.reason = updated }
+      quashedReason?.let { updated -> it.quashedReason = updated }
     }
 
     return saveToDto(reportedAdjudication)
@@ -199,7 +203,7 @@ class OutcomeService(
     }
 
     fun Outcome?.canAmendViaApi(hasHearings: Boolean) {
-      if (hasHearings || !listOf(OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED).contains(this?.code))
+      if ((hasHearings && this?.code != OutcomeCode.QUASHED) || (!hasHearings && !listOf(OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED).contains(this?.code)))
         throw ValidationException("unable to amend this outcome")
     }
   }

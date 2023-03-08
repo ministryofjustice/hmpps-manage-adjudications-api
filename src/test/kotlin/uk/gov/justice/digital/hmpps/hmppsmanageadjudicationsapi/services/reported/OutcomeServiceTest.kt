@@ -71,7 +71,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      outcomeService.amendOutcomeWithoutHearing(1, "details")
+      outcomeService.amendOutcomeViaApi(1, "details")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }
@@ -566,7 +566,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
-      val response = outcomeService.amendOutcomeWithoutHearing(1235L, "updated",)
+      val response = outcomeService.amendOutcomeViaApi(1235L, "updated",)
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
@@ -582,6 +582,33 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `amend quashed succeeds `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = OutcomeCode.QUASHED.status
+          it.outcomes.add(Outcome(code = OutcomeCode.QUASHED, details = "previous", quashedReason = QuashedReason.APPEAL_UPHELD))
+        }
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.amendOutcomeViaApi(
+        adjudicationNumber = 1235L, details = "updated", quashedReason = QuashedReason.FLAWED_CASE
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.QUASHED)
+      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("updated")
+      assertThat(argumentCaptor.value.outcomes.first().reason).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().quashedReason).isEqualTo(QuashedReason.FLAWED_CASE)
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
     fun `amend not proceed succeeds `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
@@ -592,7 +619,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
-      val response = outcomeService.amendOutcomeWithoutHearing(1235L, "updated", NotProceedReason.WITNESS_NOT_ATTEND)
+      val response = outcomeService.amendOutcomeViaApi(1235L, "updated", NotProceedReason.WITNESS_NOT_ATTEND)
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
@@ -607,7 +634,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
 
-    @CsvSource("REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "QUASHED", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
+    @CsvSource("REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
     @ParameterizedTest
     fun `throws validation exception if invalid outcome type for amend `(code: OutcomeCode) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
@@ -617,7 +644,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         }
       )
       Assertions.assertThatThrownBy {
-        outcomeService.amendOutcomeWithoutHearing(1, "details")
+        outcomeService.amendOutcomeViaApi(1, "details")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("unable to amend this outcome")
     }
@@ -627,7 +654,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
 
       Assertions.assertThatThrownBy {
-        outcomeService.amendOutcomeWithoutHearing(1, "details")
+        outcomeService.amendOutcomeViaApi(1, "details")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("unable to amend this outcome")
     }
