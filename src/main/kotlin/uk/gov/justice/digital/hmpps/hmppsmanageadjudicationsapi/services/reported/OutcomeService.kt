@@ -91,6 +91,22 @@ class OutcomeService(
     )
   }
 
+  fun amendOutcomeWithoutHearing(
+    adjudicationNumber: Long,
+    details: String,
+    reason: NotProceedReason? = null,
+  ): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
+
+  private fun amendOutcome(
+    adjudicationNumber: Long,
+    details: String,
+    reason: NotProceedReason? = null,
+  ): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
+
   private fun createOutcome(
     adjudicationNumber: Long,
     code: OutcomeCode,

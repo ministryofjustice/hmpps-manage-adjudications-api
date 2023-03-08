@@ -74,6 +74,14 @@ data class QuashedRequest(
   val reason: QuashedReason,
 )
 
+@Schema(description = "amend outcome without a hearing - NOT PROCEED and REFER POLICE")
+data class AmendOutcomeRequest(
+  @Schema(description = "details")
+  val details: String,
+  @Schema(description = "not proceed reason")
+  val reason: NotProceedReason? = null,
+)
+
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
 class OutcomeController(

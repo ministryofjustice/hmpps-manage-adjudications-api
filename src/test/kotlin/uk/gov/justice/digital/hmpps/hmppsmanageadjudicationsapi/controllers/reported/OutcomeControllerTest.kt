@@ -592,6 +592,66 @@ class OutcomeControllerTest : TestControllerBase() {
         )
     }
   }
+
+  @Nested
+  inner class AmendOutcome {
+    @BeforeEach
+    fun beforeEach() {
+
+      whenever(
+        outcomeService.amendOutcomeWithoutHearing(
+          anyLong(),
+          any(),
+        )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      amendOutcomeRequest(
+        1, AMEND_OUTCOME_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      amendOutcomeRequest(
+        1, AMEND_OUTCOME_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      amendOutcomeRequest(
+        1, AMEND_OUTCOME_REQUEST
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to create a quashed outcome`() {
+      amendOutcomeRequest(1, AMEND_OUTCOME_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(outcomeService).amendOutcomeWithoutHearing(1, "details")
+    }
+
+    private fun amendOutcomeRequest(
+      id: Long,
+      request: AmendOutcomeRequest,
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(request)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/outcome")
+            .header("Content-Type", "application/json")
+            .content(body)
+        )
+    }
+  }
+
   companion object {
     private val POLICE_REFER_REQUEST = PoliceReferralRequest(details = "details")
     private val NOT_PROCEED_REQUEST = NotProceedRequest(reason = NotProceedReason.NOT_FAIR, details = "details")
@@ -599,5 +659,6 @@ class OutcomeControllerTest : TestControllerBase() {
     private val COMPLETED_DISMISSED_REQUEST = HearingCompletedDismissedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, details = "details")
     private val CHARGE_PROVED_REQUEST = HearingCompletedChargeProvedRequest(adjudicator = "test", plea = HearingOutcomePlea.GUILTY, caution = false)
     private val QUASHED_REQUEST = QuashedRequest(reason = QuashedReason.APPEAL_UPHELD, details = "details")
+    private val AMEND_OUTCOME_REQUEST = AmendOutcomeRequest(details = "details")
   }
 }

@@ -282,4 +282,28 @@ class OutcomeIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.status")
       .isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
   }
+
+  @Test
+  fun `amend outcome `() {
+    initDataForOutcome().createOutcomeNotProceed()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "details" to "updated",
+          "reason" to NotProceedReason.WITNESS_NOT_ATTEND,
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.NOT_PROCEED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details")
+      .isEqualTo("updated")
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.reason")
+      .isEqualTo(NotProceedReason.WITNESS_NOT_ATTEND.name)
+  }
 }
