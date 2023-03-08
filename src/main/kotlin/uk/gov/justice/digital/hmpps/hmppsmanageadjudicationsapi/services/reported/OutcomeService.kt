@@ -96,15 +96,14 @@ class OutcomeService(
     details: String,
     reason: NotProceedReason? = null,
   ): ReportedAdjudicationDto {
-    TODO("implement me")
-  }
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    reportedAdjudication.latestOutcome().canAmendViaApi(reportedAdjudication.hearings.isNotEmpty())
 
-  private fun amendOutcome(
-    adjudicationNumber: Long,
-    details: String,
-    reason: NotProceedReason? = null,
-  ): ReportedAdjudicationDto {
-    TODO("implement me")
+    return amendOutcome(
+      adjudicationNumber = adjudicationNumber,
+      details = details,
+      reason = reason,
+    )
   }
 
   private fun createOutcome(
@@ -134,6 +133,21 @@ class OutcomeService(
         quashedReason = quashedReason,
       )
     )
+
+    return saveToDto(reportedAdjudication)
+  }
+
+  private fun amendOutcome(
+    adjudicationNumber: Long,
+    details: String,
+    reason: NotProceedReason? = null,
+  ): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+
+    reportedAdjudication.latestOutcome()!!.let {
+      it.details = details
+      reason?.let { updated -> it.reason = updated }
+    }
 
     return saveToDto(reportedAdjudication)
   }
@@ -182,6 +196,11 @@ class OutcomeService(
     fun Outcome?.canQuash() {
       if (this?.code != OutcomeCode.CHARGE_PROVED)
         throw ValidationException("unable to quash this outcome")
+    }
+
+    fun Outcome?.canAmendViaApi(hasHearings: Boolean) {
+      if (hasHearings || !listOf(OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED).contains(this?.code))
+        throw ValidationException("unable to amend this outcome")
     }
   }
 }

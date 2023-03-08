@@ -545,10 +545,21 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
   inner class AmendOutcome {
     private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
 
+    @BeforeEach
+    fun init() {
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        reportedAdjudication.also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = "test"
+        }
+      )
+    }
+
     @Test
     fun `amend refer police succeeds `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
+          it.hearings.clear()
           it.status = OutcomeCode.REFER_POLICE.status
           it.outcomes.add(Outcome(code = OutcomeCode.REFER_POLICE, details = "previous"))
         }
@@ -574,6 +585,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `amend not proceed succeeds `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
+          it.hearings.clear()
           it.status = OutcomeCode.NOT_PROCEED.status
           it.outcomes.add(Outcome(code = OutcomeCode.NOT_PROCEED, details = "previous", reason = NotProceedReason.NOT_FAIR))
         }
@@ -607,17 +619,17 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         outcomeService.amendOutcomeWithoutHearing(1, "details")
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("unable to amend this outcome via this endpoint")
+        .hasMessageContaining("unable to amend this outcome")
     }
 
     @Test
-    fun `throws not found exception if no latest outcome to amend `() {
+    fun `throws validation exception if no latest outcome to amend `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
 
       Assertions.assertThatThrownBy {
         outcomeService.amendOutcomeWithoutHearing(1, "details")
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("No outcome to amend")
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("unable to amend this outcome")
     }
   }
 }

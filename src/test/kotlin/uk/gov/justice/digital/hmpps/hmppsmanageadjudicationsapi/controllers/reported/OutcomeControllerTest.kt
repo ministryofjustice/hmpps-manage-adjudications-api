@@ -602,6 +602,7 @@ class OutcomeControllerTest : TestControllerBase() {
         outcomeService.amendOutcomeWithoutHearing(
           anyLong(),
           any(),
+          anyOrNull(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
