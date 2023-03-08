@@ -257,19 +257,7 @@ class OutcomeIntTest : IntegrationTestBase() {
   @Test
   fun `remove quashed outcome `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    initDataForOutcome().createHearing().createChargeProved()
-
-    webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome/quashed")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .bodyValue(
-        mapOf(
-          "reason" to QuashedReason.APPEAL_UPHELD,
-          "details" to "details",
-        )
-      )
-      .exchange()
-      .expectStatus().isCreated
+    initDataForOutcome().createHearing().createChargeProved().createQuashed()
 
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome")
@@ -305,5 +293,51 @@ class OutcomeIntTest : IntegrationTestBase() {
       .isEqualTo("updated")
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.reason")
       .isEqualTo(NotProceedReason.WITNESS_NOT_ATTEND.name)
+  }
+
+  @Test
+  fun `amend outcome - refer police without hearing `() {
+    initDataForOutcome().createOutcomeReferPolice()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "details" to "updated",
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details")
+      .isEqualTo("updated")
+  }
+
+  @Test
+  fun `amend outcome - quashed `() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForOutcome().createHearing().createChargeProved().createQuashed()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "details" to "updated",
+          "quashedReason" to QuashedReason.JUDICIAL_REVIEW,
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.QUASHED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.details")
+      .isEqualTo("updated")
+      .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.quashedReason")
+      .isEqualTo(QuashedReason.JUDICIAL_REVIEW.name)
   }
 }

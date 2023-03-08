@@ -611,7 +611,7 @@ class OutcomeControllerTest : TestControllerBase() {
     @Test
     fun `responds with a unauthorised status code`() {
       amendOutcomeRequest(
-        1, AMEND_OUTCOME_REQUEST
+        1, AMEND_REFER_POLICE_REQUEST
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -619,7 +619,7 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
       amendOutcomeRequest(
-        1, AMEND_OUTCOME_REQUEST
+        1, AMEND_REFER_POLICE_REQUEST
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -627,17 +627,41 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
       amendOutcomeRequest(
-        1, AMEND_OUTCOME_REQUEST
+        1, AMEND_REFER_POLICE_REQUEST
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to create a quashed outcome`() {
-      amendOutcomeRequest(1, AMEND_OUTCOME_REQUEST)
+    fun `makes a call to amend a not proceed outcome`() {
+      amendOutcomeRequest(1, AMEND_NOT_PROCEED_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(outcomeService).amendOutcomeViaApi(1, "details")
+      verify(outcomeService).amendOutcomeViaApi(
+        adjudicationNumber = 1, details = "details", reason = AMEND_NOT_PROCEED_REQUEST.reason
+      )
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to amend a refer police outcome`() {
+      amendOutcomeRequest(1, AMEND_REFER_POLICE_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(outcomeService).amendOutcomeViaApi(
+        adjudicationNumber = 1, details = "details"
+      )
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to amend a quashed outcome`() {
+      amendOutcomeRequest(1, AMEND_QUASHED_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(outcomeService).amendOutcomeViaApi(
+        adjudicationNumber = 1, details = "details", quashedReason = AMEND_QUASHED_REQUEST.quashedReason
+      )
     }
 
     private fun amendOutcomeRequest(
@@ -661,6 +685,8 @@ class OutcomeControllerTest : TestControllerBase() {
     private val COMPLETED_DISMISSED_REQUEST = HearingCompletedDismissedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, details = "details")
     private val CHARGE_PROVED_REQUEST = HearingCompletedChargeProvedRequest(adjudicator = "test", plea = HearingOutcomePlea.GUILTY, caution = false)
     private val QUASHED_REQUEST = QuashedRequest(reason = QuashedReason.APPEAL_UPHELD, details = "details")
-    private val AMEND_OUTCOME_REQUEST = AmendOutcomeRequest(details = "details")
+    private val AMEND_REFER_POLICE_REQUEST = AmendOutcomeRequest(details = "details")
+    private val AMEND_NOT_PROCEED_REQUEST = AmendOutcomeRequest(details = "details", reason = NotProceedReason.NOT_FAIR)
+    private val AMEND_QUASHED_REQUEST = AmendOutcomeRequest(details = "details", quashedReason = QuashedReason.JUDICIAL_REVIEW)
   }
 }

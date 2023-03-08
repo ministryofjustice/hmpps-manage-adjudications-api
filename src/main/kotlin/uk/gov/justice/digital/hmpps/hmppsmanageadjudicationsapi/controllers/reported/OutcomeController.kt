@@ -258,6 +258,7 @@ class OutcomeController(
       adjudicationNumber = adjudicationNumber,
       details = amendOutcomeRequest.details,
       reason = amendOutcomeRequest.reason,
+      quashedReason = amendOutcomeRequest.quashedReason,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
