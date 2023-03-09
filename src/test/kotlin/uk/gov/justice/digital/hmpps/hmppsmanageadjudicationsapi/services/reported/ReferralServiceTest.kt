@@ -133,4 +133,39 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("No referral for adjudication")
   }
+
+  @Test
+  fun `responds with validation error if adjudication has referrals but its not the last record `() {
+    whenever(outcomeService.getOutcomes(1)).thenReturn(
+      listOf(
+        CombinedOutcomeDto(
+          outcome = OutcomeDto(
+            id = 3,
+            code = OutcomeCode.REFER_INAD
+          ),
+        ),
+        CombinedOutcomeDto(
+          outcome = OutcomeDto(
+            id = 1,
+            code = OutcomeCode.REFER_POLICE
+          ),
+          referralOutcome = OutcomeDto(
+            id = 2,
+            code = OutcomeCode.SCHEDULE_HEARING
+          )
+        ),
+        CombinedOutcomeDto(
+          outcome = OutcomeDto(
+            id = 3,
+            code = OutcomeCode.NOT_PROCEED
+          )
+        )
+      )
+    )
+
+    Assertions.assertThatThrownBy {
+      referralService.removeReferral(1,)
+    }.isInstanceOf(ValidationException::class.java)
+      .hasMessageContaining("Referral can not be removed as its not the latest outcome")
+  }
 }

@@ -69,6 +69,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       outcomeService.createQuashed(1, QuashedReason.APPEAL_UPHELD, "details")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      outcomeService.amendOutcomeViaApi(1, "details")
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
   }
 
   @Nested
@@ -533,6 +538,125 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.last().outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
       assertThat(result.last().referralOutcome).isNotNull
       assertThat(result.last().referralOutcome!!.code).isEqualTo(OutcomeCode.NOT_PROCEED)
+    }
+  }
+
+  @Nested
+  inner class AmendOutcome {
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+
+    @BeforeEach
+    fun init() {
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        reportedAdjudication.also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = "test"
+        }
+      )
+    }
+
+    @Test
+    fun `amend refer police succeeds `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.clear()
+          it.status = OutcomeCode.REFER_POLICE.status
+          it.outcomes.add(Outcome(code = OutcomeCode.REFER_POLICE, details = "previous"))
+        }
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.amendOutcomeViaApi(1235L, "updated",)
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("updated")
+      assertThat(argumentCaptor.value.outcomes.first().reason).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `amend quashed succeeds `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = OutcomeCode.QUASHED.status
+          it.outcomes.add(Outcome(code = OutcomeCode.QUASHED, details = "previous", quashedReason = QuashedReason.APPEAL_UPHELD))
+        }
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.amendOutcomeViaApi(
+        adjudicationNumber = 1235L, details = "updated", quashedReason = QuashedReason.FLAWED_CASE
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.QUASHED)
+      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("updated")
+      assertThat(argumentCaptor.value.outcomes.first().reason).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().quashedReason).isEqualTo(QuashedReason.FLAWED_CASE)
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `amend not proceed succeeds `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.clear()
+          it.status = OutcomeCode.NOT_PROCEED.status
+          it.outcomes.add(Outcome(code = OutcomeCode.NOT_PROCEED, details = "previous", reason = NotProceedReason.NOT_FAIR))
+        }
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.amendOutcomeViaApi(1235L, "updated", NotProceedReason.WITNESS_NOT_ATTEND)
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.NOT_PROCEED)
+      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("updated")
+      assertThat(argumentCaptor.value.outcomes.first().reason).isEqualTo(NotProceedReason.WITNESS_NOT_ATTEND)
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
+
+      assertThat(response).isNotNull
+    }
+
+    @CsvSource("REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
+    @ParameterizedTest
+    fun `throws validation exception if invalid outcome type for amend `(code: OutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = code.status
+          it.outcomes.add(Outcome(code = code, details = "previous", reason = NotProceedReason.NOT_FAIR))
+        }
+      )
+      Assertions.assertThatThrownBy {
+        outcomeService.amendOutcomeViaApi(1, "details")
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("unable to amend this outcome")
+    }
+
+    @Test
+    fun `throws validation exception if no latest outcome to amend `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+
+      Assertions.assertThatThrownBy {
+        outcomeService.amendOutcomeViaApi(1, "details")
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("unable to amend this outcome")
     }
   }
 }

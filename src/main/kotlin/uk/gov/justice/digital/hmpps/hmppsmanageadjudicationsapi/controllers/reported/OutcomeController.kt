@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
@@ -72,6 +73,17 @@ data class QuashedRequest(
   val details: String,
   @Schema(description = "reason")
   val reason: QuashedReason,
+)
+
+@Schema(description = "amend outcome without a hearing - NOT PROCEED, REFER POLICE, QUASHED")
+data class AmendOutcomeRequest(
+  @Schema(description = "details")
+  val details: String,
+  @Schema(description = "not proceed reason")
+  val reason: NotProceedReason? = null,
+  @Schema(description = "quashed reason")
+  val quashedReason: QuashedReason? = null,
+
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
@@ -230,6 +242,23 @@ class OutcomeController(
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = completedHearingService.removeOutcome(
       adjudicationNumber = adjudicationNumber,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(summary = "amend outcome without a hearing - refer police, not proceed or quashed")
+  @PutMapping(value = ["/{adjudicationNumber}/outcome"])
+  @ResponseStatus(HttpStatus.OK)
+  fun amendOutcome(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody amendOutcomeRequest: AmendOutcomeRequest,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = outcomeService.amendOutcomeViaApi(
+      adjudicationNumber = adjudicationNumber,
+      details = amendOutcomeRequest.details,
+      reason = amendOutcomeRequest.reason,
+      quashedReason = amendOutcomeRequest.quashedReason,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)

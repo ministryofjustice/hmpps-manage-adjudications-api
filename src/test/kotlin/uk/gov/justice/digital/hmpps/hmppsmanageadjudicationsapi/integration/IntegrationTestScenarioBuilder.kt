@@ -100,6 +100,13 @@ class IntegrationTestScenario(
     return this
   }
 
+  fun createQuashed(): IntegrationTestScenario {
+    intTestData.createQuashed(
+      testAdjudicationDataSet
+    )
+    return this
+  }
+
   fun createReferral(
     code: HearingOutcomeCode
   ): IntegrationTestScenario {
