@@ -149,10 +149,12 @@ class OutcomeService(
 
     reportedAdjudication.latestOutcome()!!.let {
       it.details = details
-      reason?.let { updated -> it.reason = updated }
-      quashedReason?.let { updated -> it.quashedReason = updated }
+      when (it.code) {
+        OutcomeCode.NOT_PROCEED -> reason?.let { updated -> it.reason = updated }
+        OutcomeCode.QUASHED -> quashedReason?.let { updated -> it.quashedReason = updated }
+        else -> {}
+      }
     }
-
     return saveToDto(reportedAdjudication)
   }
 
