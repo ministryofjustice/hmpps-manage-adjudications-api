@@ -647,6 +647,45 @@ class IntegrationTestData(
       .blockFirst()!!
   }
 
+  fun createNotProceed(
+    testDataSet: AdjudicationIntTestDataSet,
+  ): ReportedAdjudicationResponse {
+    return webTestClient.post()
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/complete-hearing/not-proceed")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "plea" to HearingOutcomePlea.NOT_GUILTY,
+          "reason" to NotProceedReason.NOT_FAIR,
+          "details" to "details"
+        )
+      )
+      .exchange()
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
+  fun createDismissed(
+    testDataSet: AdjudicationIntTestDataSet,
+  ): ReportedAdjudicationResponse {
+    return webTestClient.post()
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/complete-hearing/dismissed")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "plea" to HearingOutcomePlea.NOT_GUILTY,
+          "details" to "details"
+        )
+      )
+      .exchange()
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
   fun createReferral(
     testDataSet: AdjudicationIntTestDataSet,
     code: HearingOutcomeCode,

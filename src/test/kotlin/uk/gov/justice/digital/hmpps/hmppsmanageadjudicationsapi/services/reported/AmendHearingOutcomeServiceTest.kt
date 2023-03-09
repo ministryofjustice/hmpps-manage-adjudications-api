@@ -24,7 +24,7 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class AmendHearingOutcomeWhenTypeSame {
 
-    @CsvSource("REFER_POLICE", "REFER_INAD", "ADJOURN", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "ADJOURNED", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
     @ParameterizedTest
     fun `updating the same type calls correct services for simple updates `(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
@@ -38,7 +38,7 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(hearingOutcomeService, atLeastOnce()).amendHearingOutcome(adjudicationNumber = 1L)
-      verify(outcomeService, atLeastOnce()).amendOutcome(adjudicationNumber = 1L)
+      verify(outcomeService, atLeastOnce()).amendOutcomeViaService(adjudicationNumber = 1L)
     }
   }
 

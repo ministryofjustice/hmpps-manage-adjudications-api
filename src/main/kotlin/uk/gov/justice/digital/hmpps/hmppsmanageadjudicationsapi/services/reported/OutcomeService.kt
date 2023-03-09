@@ -108,6 +108,12 @@ class OutcomeService(
     )
   }
 
+  fun amendOutcomeViaService(
+    adjudicationNumber: Long,
+  ): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
+
   private fun createOutcome(
     adjudicationNumber: Long,
     code: OutcomeCode,
@@ -139,7 +145,7 @@ class OutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun amendOutcome(
+  private fun amendOutcome(
     adjudicationNumber: Long,
     details: String? = null,
     reason: NotProceedReason? = null,

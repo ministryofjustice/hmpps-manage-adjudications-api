@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -54,6 +55,13 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     Assertions.assertThatThrownBy {
       hearingOutcomeService.removeAdjourn(
+        adjudicationNumber = 1,
+      )
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      hearingOutcomeService.amendHearingOutcome(
         adjudicationNumber = 1,
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
@@ -374,6 +382,136 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result).isNotNull
       assertThat(result!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
       assertThat(result.id).isEqualTo(1)
+    }
+  }
+
+  @Nested
+  inner class AmendHearingOutcome {
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+      .also {
+        it.hearings.clear()
+        it.hearings.add(Hearing(dateTimeOfHearing = LocalDateTime.now(), oicHearingId = 1L, reportNumber = 1L, agencyId = "", oicHearingType = OicHearingType.GOV, locationId = 1L))
+        it.createdByUserId = ""
+        it.createDateTime = LocalDateTime.now()
+      }
+
+    @BeforeEach
+    fun init() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = ReportedAdjudicationStatus.SCHEDULED
+        }
+      )
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+    }
+
+    @Test
+    fun `throws entity not found if no latest outcome or hearing `() {
+      Assertions.assertThatThrownBy {
+        hearingOutcomeService.amendHearingOutcome(
+          adjudicationNumber = 1,
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("no latest outcome to amend")
+    }
+
+    @CsvSource("ADJOURNED", "REFER_POLICE", "REFER_INAD", "COMPLETED")
+    @ParameterizedTest
+    fun `throws validation exception if the latest outcome is not of the correct type `(code: HearingOutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().hearingOutcome = HearingOutcome(adjudicator = "", code = HearingOutcomeCode.values().first { hoc -> hoc != code })
+        }
+      )
+      Assertions.assertThatThrownBy {
+        hearingOutcomeService.amendHearingOutcome(1,)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("latest outcome is not of same type")
+    }
+
+    @CsvSource("REFER_POLICE", "REFER_INAD")
+    @ParameterizedTest
+    fun `amend referrals `(code: HearingOutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = code, adjudicator = "adjudicator", details = "details")
+          it.outcomes.add(Outcome(code = code.outcomeCode!!, details = "details"))
+        }
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val response = hearingOutcomeService.amendHearingOutcome(
+        adjudicationNumber = 1L,
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(code)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("updated adjudicator")
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isNull()
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isNull()
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("updated details")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `amend adjourn`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().hearingOutcome = HearingOutcome(
+            code = HearingOutcomeCode.ADJOURN,
+            adjudicator = "adjudicator",
+            details = "details",
+            plea = HearingOutcomePlea.NOT_GUILTY,
+            reason = HearingOutcomeAdjournReason.MCKENZIE
+          )
+        }
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val response = hearingOutcomeService.amendHearingOutcome(
+        adjudicationNumber = 1L,
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("updated adjudicator")
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.GUILTY)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isEqualTo(HearingOutcomeAdjournReason.HELP)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("updated details")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `amend completed hearing`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().hearingOutcome = HearingOutcome(
+            code = HearingOutcomeCode.COMPLETE,
+            adjudicator = "adjudicator",
+            plea = HearingOutcomePlea.NOT_GUILTY
+          )
+          it.outcomes.add(Outcome(code = OutcomeCode.NOT_PROCEED, details = "details"))
+        }
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val response = hearingOutcomeService.amendHearingOutcome(
+        adjudicationNumber = 1L,
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("updated adjudicator")
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.GUILTY)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isNull()
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isNull()
+
+      assertThat(response).isNotNull
     }
   }
 }
