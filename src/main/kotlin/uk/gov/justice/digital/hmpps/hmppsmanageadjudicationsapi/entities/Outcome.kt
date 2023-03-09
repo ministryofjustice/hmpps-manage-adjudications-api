@@ -64,5 +64,5 @@ enum class NotProceedReason {
 }
 
 enum class QuashedReason {
-  FLAWED_CASE, JUDICIAL_REVIEW, APPEAL_UPHELD
+  FLAWED_CASE, JUDICIAL_REVIEW, APPEAL_UPHELD, OTHER
 }
