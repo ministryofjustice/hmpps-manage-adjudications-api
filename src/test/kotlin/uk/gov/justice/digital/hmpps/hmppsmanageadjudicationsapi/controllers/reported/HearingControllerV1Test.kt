@@ -32,6 +32,9 @@ class HearingControllerV1Test : TestControllerBase() {
   @MockBean
   lateinit var referralService: ReferralService
 
+  @MockBean
+  lateinit var amendHearingOutcomeService: HearingOutcomeService
+
   @Nested
   inner class CreateHearing {
     @BeforeEach

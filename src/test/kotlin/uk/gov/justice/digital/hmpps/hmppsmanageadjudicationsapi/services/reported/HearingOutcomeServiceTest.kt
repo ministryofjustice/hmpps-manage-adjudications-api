@@ -66,6 +66,13 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      hearingOutcomeService.getCurrentStatusAndLatestOutcome(
+        adjudicationNumber = 1,
+      )
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
   }
 
   @Nested
@@ -512,6 +519,56 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isNull()
 
       assertThat(response).isNotNull
+    }
+  }
+
+  @Nested
+  inner class GetStatusAndLatestOutcome {
+
+    @Test
+    fun `throws entity not found when no hearing `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.DISMISSED
+          it.hearings.clear()
+        }
+      )
+      Assertions.assertThatThrownBy {
+        hearingOutcomeService.getCurrentStatusAndLatestOutcome(
+          adjudicationNumber = 1,
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Hearing not found")
+    }
+
+    @Test
+    fun `throws entity not found when no hearing outcome`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.DISMISSED
+        }
+      )
+      Assertions.assertThatThrownBy {
+        hearingOutcomeService.getCurrentStatusAndLatestOutcome(
+          adjudicationNumber = 1,
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("outcome not found for hearing")
+    }
+
+    @Test
+    fun `returns current status and latest outcome `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.DISMISSED
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "test")
+        }
+      )
+
+      val result = hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)
+
+      assertThat(result.first).isEqualTo(ReportedAdjudicationStatus.DISMISSED)
+      assertThat(result.second.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
     }
   }
 }

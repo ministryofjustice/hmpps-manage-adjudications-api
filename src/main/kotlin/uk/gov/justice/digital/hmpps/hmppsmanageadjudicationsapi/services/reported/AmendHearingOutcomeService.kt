@@ -18,6 +18,33 @@ class AmendHearingOutcomeService(
     status: ReportedAdjudicationStatus,
     amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
   ): ReportedAdjudicationDto {
+    val currentInfo = hearingOutcomeService.getCurrentStatusAndLatestOutcome(
+      adjudicationNumber = adjudicationNumber
+    )
+    return if (currentInfo.first == status) amend(
+      adjudicationNumber = adjudicationNumber,
+      amendHearingOutcomeRequest = amendHearingOutcomeRequest,
+    ) else removeAndCreate(
+      adjudicationNumber = adjudicationNumber
+    )
+  }
+
+  private fun amend(
+    adjudicationNumber: Long,
+    amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
+  ): ReportedAdjudicationDto {
+    hearingOutcomeService.amendHearingOutcome(
+      adjudicationNumber = adjudicationNumber,
+    )
+
+    return outcomeService.amendOutcomeViaService(
+      adjudicationNumber = adjudicationNumber
+    )
+  }
+
+  private fun removeAndCreate(
+    adjudicationNumber: Long,
+  ): ReportedAdjudicationDto {
     TODO("implement me")
   }
 }

@@ -9,6 +9,8 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.AmendHearingOutcomeRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 
 class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
@@ -33,10 +35,15 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         }
       )
 
+      whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)).thenReturn(
+        Pair(ReportedAdjudicationStatus.DISMISSED, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""))
+      )
+
       amendHearingOutcomeService.amendHearingOutcome(
         adjudicationNumber = 1L, status = status, amendHearingOutcomeRequest = AmendHearingOutcomeRequest()
       )
 
+      verify(hearingOutcomeService, atLeastOnce()).getCurrentStatusAndLatestOutcome(adjudicationNumber = 1L)
       verify(hearingOutcomeService, atLeastOnce()).amendHearingOutcome(adjudicationNumber = 1L)
       verify(outcomeService, atLeastOnce()).amendOutcomeViaService(adjudicationNumber = 1L)
     }

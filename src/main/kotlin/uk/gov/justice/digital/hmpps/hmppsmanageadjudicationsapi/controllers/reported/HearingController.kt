@@ -18,7 +18,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSumm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.AmendHearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
@@ -86,6 +88,7 @@ class HearingController(
   private val hearingService: HearingService,
   private val hearingOutcomeService: HearingOutcomeService,
   private val referralService: ReferralService,
+  private val amendHearingOutcomeService: AmendHearingOutcomeService,
 ) : ReportedAdjudicationBaseController() {
 
   @PostMapping(value = ["/{adjudicationNumber}/hearing"])
@@ -231,6 +234,24 @@ class HearingController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = hearingOutcomeService.removeAdjourn(adjudicationNumber = adjudicationNumber)
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(summary = "amends a hearing outcome and associated outcome")
+  @PutMapping(value = ["/{adjudicationNumber}/hearing/outcome/{status}"])
+  @ResponseStatus(HttpStatus.OK)
+  fun amendHearingOutcome(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "status") status: ReportedAdjudicationStatus,
+    @RequestBody amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication =
+      amendHearingOutcomeService.amendHearingOutcome(
+        adjudicationNumber = adjudicationNumber,
+        status = status,
+        amendHearingOutcomeRequest = amendHearingOutcomeRequest,
+      )
+
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 }
