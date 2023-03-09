@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
 class DraftEvidenceServiceTest : ReportedAdjudicationTestBase() {
-  private var evidenceService = EvidenceService(
+  private val evidenceService = EvidenceService(
     reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
   )
 

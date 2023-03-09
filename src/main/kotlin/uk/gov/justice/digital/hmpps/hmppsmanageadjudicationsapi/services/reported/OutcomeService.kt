@@ -139,16 +139,17 @@ class OutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
-  private fun amendOutcome(
+  fun amendOutcome(
     adjudicationNumber: Long,
-    details: String,
+    details: String? = null,
     reason: NotProceedReason? = null,
     quashedReason: QuashedReason? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
     reportedAdjudication.latestOutcome()!!.let {
-      it.details = details
+
+      details?.let { updated -> it.details = updated }
       when (it.code) {
         OutcomeCode.NOT_PROCEED -> reason?.let { updated -> it.reason = updated }
         OutcomeCode.QUASHED -> quashedReason?.let { updated -> it.quashedReason = updated }

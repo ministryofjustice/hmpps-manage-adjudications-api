@@ -111,6 +111,10 @@ class HearingOutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
+  fun amendHearingOutcome(adjudicationNumber: Long): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
+
   fun getHearingOutcomeForReferral(adjudicationNumber: Long, code: OutcomeCode, outcomeIndex: Int): HearingOutcome? {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     if (reportedAdjudication.hearings.none { it.hearingOutcome?.code?.outcomeCode == code }) return null

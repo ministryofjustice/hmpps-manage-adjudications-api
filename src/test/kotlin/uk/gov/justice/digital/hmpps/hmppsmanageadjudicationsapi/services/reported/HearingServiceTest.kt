@@ -32,7 +32,7 @@ import javax.validation.ValidationException
 class HearingServiceTest : ReportedAdjudicationTestBase() {
   private val hearingRepository: HearingRepository = mock()
   private val prisonApiGateway: PrisonApiGateway = mock()
-  private var hearingService = HearingService(
+  private val hearingService = HearingService(
     reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade, hearingRepository, prisonApiGateway
   )
 

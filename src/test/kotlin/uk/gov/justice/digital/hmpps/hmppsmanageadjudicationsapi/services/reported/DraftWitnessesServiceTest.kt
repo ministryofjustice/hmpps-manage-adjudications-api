@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
 class DraftWitnessesServiceTest : ReportedAdjudicationTestBase() {
-  private var witnessesService = WitnessesService(
+  private val witnessesService = WitnessesService(
     reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
   )
 

@@ -26,7 +26,7 @@ import javax.validation.ValidationException
 
 class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
-  private var hearingOutcomeService = HearingOutcomeService(
+  private val hearingOutcomeService = HearingOutcomeService(
     reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
   )
 

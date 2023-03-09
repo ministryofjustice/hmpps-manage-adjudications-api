@@ -35,7 +35,7 @@ import javax.validation.ValidationException
 class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   private val prisonApiGateway: PrisonApiGateway = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private var reportedAdjudicationService =
+  private val reportedAdjudicationService =
     ReportedAdjudicationService(
       reportedAdjudicationRepository,
       prisonApiGateway,

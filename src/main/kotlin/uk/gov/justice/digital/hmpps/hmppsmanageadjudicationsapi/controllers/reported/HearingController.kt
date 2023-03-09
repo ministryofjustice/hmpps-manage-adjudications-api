@@ -56,12 +56,28 @@ data class ReferralRequest(
 data class AdjournRequest(
   @Schema(description = "the name of the adjudicator")
   val adjudicator: String,
-  @Schema(description = "the outcome code")
+  @Schema(description = "the adjourn resaon")
   val reason: HearingOutcomeAdjournReason,
   @Schema(description = "details")
   val details: String,
   @Schema(description = "plea")
   val plea: HearingOutcomePlea,
+)
+
+@Schema(description = "amend hearing outcome request")
+data class AmendHearingOutcomeRequest(
+  @Schema(description = "the name of the adjudicator")
+  val adjudicator: String? = null,
+  @Schema(description = "the adjourn reason")
+  val reason: HearingOutcomeAdjournReason? = null,
+  @Schema(description = "details")
+  val details: String? = null,
+  @Schema(description = "plea")
+  val plea: HearingOutcomePlea? = null,
+  @Schema(description = "caution")
+  val caution: Boolean? = null,
+  @Schema(description = "amount of damages")
+  val amount: Double? = null,
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")

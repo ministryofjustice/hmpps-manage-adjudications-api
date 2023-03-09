@@ -25,7 +25,7 @@ import javax.validation.ValidationException
 
 class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
-  private var outcomeService = OutcomeService(
+  private val outcomeService = OutcomeService(
     reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
   )
 
