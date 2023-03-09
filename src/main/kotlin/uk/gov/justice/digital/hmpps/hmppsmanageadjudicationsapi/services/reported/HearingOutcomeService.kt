@@ -120,7 +120,10 @@ class HearingOutcomeService(
     return Pair(reportedAdjudication.status, reportedAdjudication.latestHearingOutcome())
   }
 
-  fun amendHearingOutcome(adjudicationNumber: Long): ReportedAdjudicationDto {
+  fun amendHearingOutcome(
+    adjudicationNumber: Long,
+    outcomeCodeToAmend: HearingOutcomeCode,
+  ): ReportedAdjudicationDto {
     TODO("implement me")
   }
 
