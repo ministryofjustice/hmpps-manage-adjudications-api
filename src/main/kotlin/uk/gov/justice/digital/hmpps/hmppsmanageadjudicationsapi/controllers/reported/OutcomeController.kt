@@ -83,7 +83,6 @@ data class AmendOutcomeRequest(
   val reason: NotProceedReason? = null,
   @Schema(description = "quashed reason")
   val quashedReason: QuashedReason? = null,
-
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")

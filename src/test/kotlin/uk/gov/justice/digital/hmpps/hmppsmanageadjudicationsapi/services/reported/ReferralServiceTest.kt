@@ -20,7 +20,7 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
   private val outcomeService: OutcomeService = mock()
   private val hearingOutcomeService: HearingOutcomeService = mock()
 
-  private var referralService = ReferralService(hearingOutcomeService, outcomeService)
+  private val referralService = ReferralService(hearingOutcomeService, outcomeService)
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // not applicable

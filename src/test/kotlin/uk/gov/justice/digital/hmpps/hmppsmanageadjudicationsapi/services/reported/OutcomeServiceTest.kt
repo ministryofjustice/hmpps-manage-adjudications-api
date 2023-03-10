@@ -11,6 +11,7 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
@@ -19,13 +20,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 
 class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
-  private var outcomeService = OutcomeService(
+  private val outcomeService = OutcomeService(
     reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
   )
 
@@ -72,6 +74,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     Assertions.assertThatThrownBy {
       outcomeService.amendOutcomeViaApi(1, "details")
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      outcomeService.amendOutcomeViaService(1, OutcomeCode.CHARGE_PROVED,)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }
@@ -542,7 +549,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
   }
 
   @Nested
-  inner class AmendOutcome {
+  inner class AmendOutcomeViaApi {
     private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
 
     @BeforeEach
@@ -657,6 +664,183 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcomeService.amendOutcomeViaApi(1, "details")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("unable to amend this outcome")
+    }
+  }
+
+  @Nested
+  inner class AmendOutcome {
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+      it.hearings.clear()
+      it.hearings.add(Hearing(dateTimeOfHearing = LocalDateTime.now(), oicHearingId = 1L, reportNumber = 1L, agencyId = "", oicHearingType = OicHearingType.GOV, locationId = 1L))
+      it.createdByUserId = ""
+      it.createDateTime = LocalDateTime.now()
+    }
+
+    @BeforeEach
+    fun init() {
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        reportedAdjudication.also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = "test"
+        }
+      )
+    }
+
+    @Test
+    fun `throws entity not found exception if no latest outcome `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      Assertions.assertThatThrownBy {
+        outcomeService.amendOutcomeViaService(1, OutcomeCode.CHARGE_PROVED,)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("no latest outcome to amend")
+    }
+
+    @CsvSource("REFER_POLICE", "REFER_INAD", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
+    @ParameterizedTest
+    fun `throws validation exception if the latest outcome is not of the correct type `(code: OutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.outcomes.add(
+            Outcome(code = OutcomeCode.values().first { oc -> oc != code })
+          )
+        }
+      )
+      Assertions.assertThatThrownBy {
+        outcomeService.amendOutcomeViaService(1, code,)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("latest outcome is not of same type")
+    }
+
+    @CsvSource("QUASHED", "SCHEDULE_HEARING", "REFER_POLICE", "NOT_PROCEED")
+    @ParameterizedTest
+    fun `throws validation exception if outcome code not supported by this function `(code: OutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.outcomes.add(Outcome(code = code))
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
+          if (listOf(OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED).contains(code)) it.hearings.clear()
+        }
+      )
+
+      Assertions.assertThatThrownBy {
+        outcomeService.amendOutcomeViaService(1, OutcomeCode.CHARGE_PROVED,)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("unable to amend via this function")
+    }
+
+    @CsvSource("REFER_INAD", "REFER_POLICE")
+    @ParameterizedTest
+    fun `amends referral successfully `(code: HearingOutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = code, adjudicator = "adjudicator")
+          it.outcomes.add(Outcome(code = code.outcomeCode!!, details = "details"))
+        }
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val response = outcomeService.amendOutcomeViaService(
+        adjudicationNumber = 1L,
+        outcomeCodeToAmend = code.outcomeCode!!,
+        details = "updated",
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(code.outcomeCode!!)
+      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("updated")
+      assertThat(argumentCaptor.value.outcomes.first().reason).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `amends charge proved successfully `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "adjudicator")
+          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED, amount = 100.0, caution = false))
+        }
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val response = outcomeService.amendOutcomeViaService(
+        adjudicationNumber = 1L,
+        outcomeCodeToAmend = OutcomeCode.CHARGE_PROVED,
+        amount = 200.0,
+        caution = true,
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.outcomes.first().details).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().reason).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().amount).isEqualTo(200.0)
+      assertThat(argumentCaptor.value.outcomes.first().caution).isEqualTo(true)
+      assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `amends dismissed successfully `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "adjudicator")
+          it.outcomes.add(Outcome(code = OutcomeCode.DISMISSED, details = "details"))
+        }
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val response = outcomeService.amendOutcomeViaService(
+        adjudicationNumber = 1L,
+        outcomeCodeToAmend = OutcomeCode.DISMISSED,
+        details = "updated",
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.DISMISSED)
+      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("updated")
+      assertThat(argumentCaptor.value.outcomes.first().reason).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `amends not proceed successfully `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "adjudicator")
+          it.outcomes.add(Outcome(code = OutcomeCode.NOT_PROCEED, details = "details", reason = NotProceedReason.NOT_FAIR))
+        }
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val response = outcomeService.amendOutcomeViaService(
+        adjudicationNumber = 1L,
+        outcomeCodeToAmend = OutcomeCode.NOT_PROCEED,
+        details = "updated",
+        notProceedReason = NotProceedReason.WITNESS_NOT_ATTEND,
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.NOT_PROCEED)
+      assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("updated")
+      assertThat(argumentCaptor.value.outcomes.first().reason).isEqualTo(NotProceedReason.WITNESS_NOT_ATTEND)
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
+
+      assertThat(response).isNotNull
     }
   }
 }

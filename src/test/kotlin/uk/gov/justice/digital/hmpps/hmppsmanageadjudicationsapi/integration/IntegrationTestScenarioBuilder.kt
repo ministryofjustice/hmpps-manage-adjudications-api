@@ -93,6 +93,20 @@ class IntegrationTestScenario(
     return this
   }
 
+  fun createNotProceed(): IntegrationTestScenario {
+    intTestData.createNotProceed(
+      testAdjudicationDataSet,
+    )
+    return this
+  }
+
+  fun createDismissed(): IntegrationTestScenario {
+    intTestData.createDismissed(
+      testAdjudicationDataSet,
+    )
+    return this
+  }
+
   fun createAdjourn(): IntegrationTestScenario {
     intTestData.createAdjourn(
       testAdjudicationDataSet,

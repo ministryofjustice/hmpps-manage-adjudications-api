@@ -18,7 +18,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSumm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.AmendHearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
@@ -56,12 +59,30 @@ data class ReferralRequest(
 data class AdjournRequest(
   @Schema(description = "the name of the adjudicator")
   val adjudicator: String,
-  @Schema(description = "the outcome code")
+  @Schema(description = "the adjourn resaon")
   val reason: HearingOutcomeAdjournReason,
   @Schema(description = "details")
   val details: String,
   @Schema(description = "plea")
   val plea: HearingOutcomePlea,
+)
+
+@Schema(description = "amend hearing outcome request")
+data class AmendHearingOutcomeRequest(
+  @Schema(description = "the name of the adjudicator")
+  val adjudicator: String? = null,
+  @Schema(description = "the adjourn reason")
+  val adjournReason: HearingOutcomeAdjournReason? = null,
+  @Schema(description = "not proceed reason")
+  val notProceedReason: NotProceedReason? = null,
+  @Schema(description = "details")
+  val details: String? = null,
+  @Schema(description = "plea")
+  val plea: HearingOutcomePlea? = null,
+  @Schema(description = "caution")
+  val caution: Boolean? = null,
+  @Schema(description = "amount of damages")
+  val amount: Double? = null,
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
@@ -70,6 +91,7 @@ class HearingController(
   private val hearingService: HearingService,
   private val hearingOutcomeService: HearingOutcomeService,
   private val referralService: ReferralService,
+  private val amendHearingOutcomeService: AmendHearingOutcomeService,
 ) : ReportedAdjudicationBaseController() {
 
   @PostMapping(value = ["/{adjudicationNumber}/hearing"])
@@ -215,6 +237,24 @@ class HearingController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = hearingOutcomeService.removeAdjourn(adjudicationNumber = adjudicationNumber)
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(summary = "amends a hearing outcome and associated outcome")
+  @PutMapping(value = ["/{adjudicationNumber}/hearing/outcome/{status}"])
+  @ResponseStatus(HttpStatus.OK)
+  fun amendHearingOutcome(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "status") status: ReportedAdjudicationStatus,
+    @RequestBody amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication =
+      amendHearingOutcomeService.amendHearingOutcome(
+        adjudicationNumber = adjudicationNumber,
+        status = status,
+        amendHearingOutcomeRequest = amendHearingOutcomeRequest,
+      )
+
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 }
