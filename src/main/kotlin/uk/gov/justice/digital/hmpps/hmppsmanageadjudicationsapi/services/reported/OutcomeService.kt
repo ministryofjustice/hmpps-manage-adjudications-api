@@ -119,7 +119,7 @@ class OutcomeService(
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
     reportedAdjudication.latestOutcome()
-      .caneAmendViaService(reportedAdjudication.hearings.isNotEmpty())
+      .canAmendViaService(reportedAdjudication.hearings.isNotEmpty())
       .isLatestSameAsAmendRequest(outcomeCodeToAmend)
 
     return amendOutcome(
@@ -247,7 +247,7 @@ class OutcomeService(
         throw ValidationException("unable to amend this outcome")
     }
 
-    fun Outcome?.caneAmendViaService(hasHearings: Boolean): Outcome {
+    fun Outcome?.canAmendViaService(hasHearings: Boolean): Outcome {
       this ?: throw EntityNotFoundException("no latest outcome to amend")
 
       if (listOf(OutcomeCode.QUASHED, OutcomeCode.SCHEDULE_HEARING).any { it == this.code } ||
