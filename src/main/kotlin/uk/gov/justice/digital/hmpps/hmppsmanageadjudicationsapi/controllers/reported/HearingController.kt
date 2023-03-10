@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSumm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.AmendHearingOutcomeService
@@ -71,7 +72,9 @@ data class AmendHearingOutcomeRequest(
   @Schema(description = "the name of the adjudicator")
   val adjudicator: String? = null,
   @Schema(description = "the adjourn reason")
-  val reason: HearingOutcomeAdjournReason? = null,
+  val adjournReason: HearingOutcomeAdjournReason? = null,
+  @Schema(description = "not proceed reason")
+  val notProceedReason: NotProceedReason? = null,
   @Schema(description = "details")
   val details: String? = null,
   @Schema(description = "plea")

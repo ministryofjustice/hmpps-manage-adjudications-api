@@ -135,7 +135,7 @@ class HearingOutcomeService(
 
     when (outcomeCodeToAmend) {
       HearingOutcomeCode.COMPLETE -> plea?.let { hearingOutcomeToAmend.plea = it }
-      HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_INAD  -> details?.let { hearingOutcomeToAmend.details = it }
+      HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_INAD -> details?.let { hearingOutcomeToAmend.details = it }
       HearingOutcomeCode.ADJOURN -> {
         details?.let { hearingOutcomeToAmend.details = it }
         plea?.let { hearingOutcomeToAmend.plea = it }

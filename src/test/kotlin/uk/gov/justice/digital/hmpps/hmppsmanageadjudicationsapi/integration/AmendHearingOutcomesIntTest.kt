@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 
-class AmendHearingOutcomesTest : IntegrationTestBase() {
+class AmendHearingOutcomesIntTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {
@@ -81,7 +81,7 @@ class AmendHearingOutcomesTest : IntegrationTestBase() {
         mapOf(
           "adjudicator" to "updated adjudicator",
           "plea" to HearingOutcomePlea.NOT_ASKED,
-          "reason" to HearingOutcomeAdjournReason.LEGAL_REPRESENTATION,
+          "adjournReason" to HearingOutcomeAdjournReason.LEGAL_REPRESENTATION,
           "details" to "updated details",
         )
       )
@@ -143,7 +143,7 @@ class AmendHearingOutcomesTest : IntegrationTestBase() {
         mapOf(
           "adjudicator" to "updated adjudicator",
           "plea" to HearingOutcomePlea.NOT_ASKED,
-          "reason" to NotProceedReason.ANOTHER_WAY,
+          "notProceedReason" to NotProceedReason.ANOTHER_WAY,
           "details" to "updated details"
         )
       )

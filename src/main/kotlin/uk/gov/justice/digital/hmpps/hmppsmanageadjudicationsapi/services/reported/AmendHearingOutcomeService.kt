@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.AmendHearingOutcomeRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import javax.transaction.Transactional
 import javax.validation.ValidationException
@@ -40,17 +41,24 @@ class AmendHearingOutcomeService(
     currentStatus: ReportedAdjudicationStatus,
     amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
   ): ReportedAdjudicationDto {
-    hearingOutcomeService.amendHearingOutcome(
+    val updated = hearingOutcomeService.amendHearingOutcome(
       adjudicationNumber = adjudicationNumber,
       outcomeCodeToAmend = currentStatus.mapStatusToHearingOutcomeCode(),
       adjudicator = amendHearingOutcomeRequest.adjudicator,
       details = amendHearingOutcomeRequest.details,
       plea = amendHearingOutcomeRequest.plea,
-      adjournedReason = amendHearingOutcomeRequest.reason,
+      adjournedReason = amendHearingOutcomeRequest.adjournReason,
     )
 
+    val outcomeCodeToAmend = currentStatus.mapStatusToOutcomeCode() ?: return updated
+
     return outcomeService.amendOutcomeViaService(
-      adjudicationNumber = adjudicationNumber
+      adjudicationNumber = adjudicationNumber,
+      outcomeCodeToAmend = outcomeCodeToAmend,
+      details = amendHearingOutcomeRequest.details,
+      notProceedReason = amendHearingOutcomeRequest.notProceedReason,
+      amount = amendHearingOutcomeRequest.amount,
+      caution = amendHearingOutcomeRequest.caution,
     )
   }
 
@@ -71,6 +79,16 @@ class AmendHearingOutcomeService(
         ReportedAdjudicationStatus.ADJOURNED -> HearingOutcomeCode.ADJOURN
         ReportedAdjudicationStatus.CHARGE_PROVED -> HearingOutcomeCode.COMPLETE
         else -> throw ValidationException("unable to amend from this status")
+      }
+
+    fun ReportedAdjudicationStatus.mapStatusToOutcomeCode(): OutcomeCode? =
+      when (this) {
+        ReportedAdjudicationStatus.REFER_POLICE -> OutcomeCode.REFER_POLICE
+        ReportedAdjudicationStatus.REFER_INAD -> OutcomeCode.REFER_INAD
+        ReportedAdjudicationStatus.DISMISSED -> OutcomeCode.DISMISSED
+        ReportedAdjudicationStatus.NOT_PROCEED -> OutcomeCode.NOT_PROCEED
+        ReportedAdjudicationStatus.CHARGE_PROVED -> OutcomeCode.CHARGE_PROVED
+        else -> null
       }
   }
 }

@@ -110,8 +110,25 @@ class OutcomeService(
 
   fun amendOutcomeViaService(
     adjudicationNumber: Long,
+    outcomeCodeToAmend: OutcomeCode,
+    details: String? = null,
+    notProceedReason: NotProceedReason? = null,
+    amount: Double? = null,
+    caution: Boolean? = null,
   ): ReportedAdjudicationDto {
-    TODO("implement me")
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+
+    reportedAdjudication.latestOutcome()
+      .caneAmendViaService(reportedAdjudication.hearings.isNotEmpty())
+      .isLatestSameAsAmendRequest(outcomeCodeToAmend)
+
+    return amendOutcome(
+      adjudicationNumber = adjudicationNumber,
+      details = details,
+      reason = notProceedReason,
+      amount = amount,
+      caution = caution,
+    )
   }
 
   private fun createOutcome(
@@ -150,15 +167,27 @@ class OutcomeService(
     details: String? = null,
     reason: NotProceedReason? = null,
     quashedReason: QuashedReason? = null,
+    amount: Double? = null,
+    caution: Boolean? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
     reportedAdjudication.latestOutcome()!!.let {
 
-      details?.let { updated -> it.details = updated }
       when (it.code) {
-        OutcomeCode.NOT_PROCEED -> reason?.let { updated -> it.reason = updated }
-        OutcomeCode.QUASHED -> quashedReason?.let { updated -> it.quashedReason = updated }
+        OutcomeCode.NOT_PROCEED -> {
+          details?.let { updated -> it.details = updated }
+          reason?.let { updated -> it.reason = updated }
+        }
+        OutcomeCode.QUASHED -> {
+          details?.let { updated -> it.details = updated }
+          quashedReason?.let { updated -> it.quashedReason = updated }
+        }
+        OutcomeCode.CHARGE_PROVED -> {
+          amount?.let { updated -> it.amount = updated }
+          caution?.let { updated -> it.caution = updated }
+        }
+        OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD, OutcomeCode.DISMISSED -> details?.let { updated -> it.details = updated }
         else -> {}
       }
     }
@@ -216,6 +245,21 @@ class OutcomeService(
         (!hasHearings && !listOf(OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED).contains(this?.code))
       )
         throw ValidationException("unable to amend this outcome")
+    }
+
+    fun Outcome?.caneAmendViaService(hasHearings: Boolean): Outcome {
+      this ?: throw EntityNotFoundException("no latest outcome to amend")
+
+      if (listOf(OutcomeCode.QUASHED, OutcomeCode.SCHEDULE_HEARING).any { it == this.code } ||
+        (!hasHearings && listOf(OutcomeCode.NOT_PROCEED, OutcomeCode.REFER_POLICE).any { it == this.code })
+      )
+        throw ValidationException("unable to amend via this function")
+
+      return this
+    }
+
+    fun Outcome.isLatestSameAsAmendRequest(outcomeCodeToAmend: OutcomeCode) {
+      if (this.code != outcomeCodeToAmend) throw ValidationException("latest outcome is not of same type")
     }
   }
 }
