@@ -14,6 +14,8 @@ import javax.validation.ValidationException
 class AmendHearingOutcomeService(
   private val hearingOutcomeService: HearingOutcomeService,
   private val outcomeService: OutcomeService,
+  private val referralService: ReferralService,
+  private val completedHearingService: CompletedHearingService,
 ) {
 
   fun amendHearingOutcome(
