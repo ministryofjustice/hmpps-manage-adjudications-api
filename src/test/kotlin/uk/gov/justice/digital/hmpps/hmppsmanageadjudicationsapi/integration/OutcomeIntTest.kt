@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -339,5 +340,30 @@ class OutcomeIntTest : IntegrationTestBase() {
       .isEqualTo("updated")
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.quashedReason")
       .isEqualTo(QuashedReason.JUDICIAL_REVIEW.name)
+  }
+
+  @Test
+  fun `amend outcome - not proceed when its a referral outcome`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForHearings().createHearing().createReferral(HearingOutcomeCode.REFER_POLICE).createOutcomeNotProceed()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "details" to "updated",
+          "reason" to NotProceedReason.WITNESS_NOT_ATTEND,
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.NOT_PROCEED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.details")
+      .isEqualTo("updated")
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.reason")
+      .isEqualTo(NotProceedReason.WITNESS_NOT_ATTEND.name)
   }
 }

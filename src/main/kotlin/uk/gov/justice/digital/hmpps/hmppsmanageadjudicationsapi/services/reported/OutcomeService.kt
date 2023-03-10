@@ -98,7 +98,8 @@ class OutcomeService(
     quashedReason: QuashedReason? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    reportedAdjudication.latestOutcome().canAmendViaApi(reportedAdjudication.hearings.isNotEmpty())
+    val isReferralOutcome = if (reportedAdjudication.hearings.isNotEmpty()) getOutcomes(adjudicationNumber).isLatestReferralOutcome() else false
+    reportedAdjudication.latestOutcome().canAmendViaApi(reportedAdjudication.hearings.isNotEmpty(), isReferralOutcome)
 
     return amendOutcome(
       adjudicationNumber = adjudicationNumber,
@@ -240,8 +241,9 @@ class OutcomeService(
         throw ValidationException("unable to quash this outcome")
     }
 
-    fun Outcome?.canAmendViaApi(hasHearings: Boolean) {
-      if ((hasHearings && this?.code != OutcomeCode.QUASHED) ||
+    fun Outcome?.canAmendViaApi(hasHearings: Boolean, isReferralOutcome: Boolean) {
+      if ((hasHearings && !isReferralOutcome && this?.code != OutcomeCode.QUASHED) ||
+        (hasHearings && isReferralOutcome && this?.code != OutcomeCode.NOT_PROCEED) ||
         (!hasHearings && !listOf(OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED).contains(this?.code))
       )
         throw ValidationException("unable to amend this outcome")
@@ -261,5 +263,8 @@ class OutcomeService(
     fun Outcome.isLatestSameAsAmendRequest(outcomeCodeToAmend: OutcomeCode) {
       if (this.code != outcomeCodeToAmend) throw ValidationException("latest outcome is not of same type")
     }
+
+    fun List<CombinedOutcomeDto>.isLatestReferralOutcome() =
+      this.lastOrNull()?.referralOutcome != null
   }
 }
