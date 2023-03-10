@@ -208,8 +208,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     initDataForHearings().createHearing().also {
       when (from) {
-        ReportedAdjudicationStatus.REFER_POLICE -> it.createReferral(HearingOutcomeCode.REFER_POLICE)
-        ReportedAdjudicationStatus.REFER_INAD -> it.createReferral(HearingOutcomeCode.REFER_INAD)
+        ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD -> it.createReferral(HearingOutcomeCode.valueOf(from.name))
         ReportedAdjudicationStatus.DISMISSED -> it.createDismissed()
         ReportedAdjudicationStatus.NOT_PROCEED -> it.createNotProceed()
         ReportedAdjudicationStatus.ADJOURNED -> it.createAdjourn()
@@ -256,15 +255,10 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.status")
       .isEqualTo(to.name).also {
         when (to) {
-          ReportedAdjudicationStatus.REFER_POLICE ->
+          ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
             it.jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.details").isEqualTo("updated details")
-              .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(HearingOutcomeCode.REFER_POLICE.name)
-              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
-              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details").isEqualTo("updated details")
-          ReportedAdjudicationStatus.REFER_INAD ->
-            it.jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.details").isEqualTo("updated details")
-              .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(HearingOutcomeCode.REFER_INAD.name)
-              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(to.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(to.name)
               .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details").isEqualTo("updated details")
           ReportedAdjudicationStatus.DISMISSED ->
             it.jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.plea").isEqualTo(HearingOutcomePlea.GUILTY.name)
@@ -282,7 +276,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
               .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(HearingOutcomeCode.ADJOURN.name)
               .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.details").isEqualTo("updated details")
               .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.reason").isEqualTo(HearingOutcomeAdjournReason.MCKENZIE.name)
-              .jsonPath("$.reportedAdjudication.outcomes[0].outcome").isEmpty
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
           ReportedAdjudicationStatus.CHARGE_PROVED ->
             it.jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.plea").isEqualTo(HearingOutcomePlea.GUILTY.name)
               .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(HearingOutcomeCode.COMPLETE.name)

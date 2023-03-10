@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.AmendHearingOutcomeRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -34,7 +35,11 @@ class AmendHearingOutcomeService(
       currentStatus = currentStatus,
       amendHearingOutcomeRequest = amendHearingOutcomeRequest,
     ) else removeAndCreate(
-      adjudicationNumber = adjudicationNumber
+      adjudicationNumber = adjudicationNumber,
+      toStatus = status,
+      currentStatus = currentStatus,
+      latestHearingOutcome = latestHearingOutcome,
+      amendHearingOutcomeRequest = amendHearingOutcomeRequest,
     )
   }
 
@@ -66,8 +71,71 @@ class AmendHearingOutcomeService(
 
   private fun removeAndCreate(
     adjudicationNumber: Long,
+    toStatus: ReportedAdjudicationStatus,
+    currentStatus: ReportedAdjudicationStatus,
+    latestHearingOutcome: HearingOutcome,
+    amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
   ): ReportedAdjudicationDto {
-    TODO("implement me")
+    toStatus.validateCanAmend(false)
+    currentStatus.validateCanAmend(true)
+
+    when (currentStatus) {
+      ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
+        referralService.removeReferral(
+          adjudicationNumber = adjudicationNumber
+        )
+      ReportedAdjudicationStatus.DISMISSED, ReportedAdjudicationStatus.NOT_PROCEED, ReportedAdjudicationStatus.CHARGE_PROVED ->
+        completedHearingService.removeOutcome(
+          adjudicationNumber = adjudicationNumber
+        )
+      ReportedAdjudicationStatus.ADJOURNED ->
+        hearingOutcomeService.removeAdjourn(
+          adjudicationNumber = adjudicationNumber
+        )
+      else -> {}
+    }
+
+    return when (toStatus) {
+      ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
+        referralService.createReferral(
+          adjudicationNumber = adjudicationNumber,
+          code = HearingOutcomeCode.valueOf(toStatus.name),
+          adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
+          details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
+        )
+      ReportedAdjudicationStatus.DISMISSED ->
+        completedHearingService.createDismissed(
+          adjudicationNumber = adjudicationNumber,
+          adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
+          details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
+          plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
+        )
+      ReportedAdjudicationStatus.NOT_PROCEED ->
+        completedHearingService.createNotProceed(
+          adjudicationNumber = adjudicationNumber,
+          adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
+          details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
+          plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
+          reason = amendHearingOutcomeRequest.notProceedReason ?: throw ValidationException("missing reason"),
+        )
+      ReportedAdjudicationStatus.ADJOURNED ->
+        hearingOutcomeService.createAdjourn(
+          adjudicationNumber = adjudicationNumber,
+          adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
+          details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
+          plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
+          reason = amendHearingOutcomeRequest.adjournReason ?: throw ValidationException("missing reason"),
+        )
+      ReportedAdjudicationStatus.CHARGE_PROVED ->
+        completedHearingService.createChargeProved(
+          adjudicationNumber = adjudicationNumber,
+          adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
+          plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
+          amount = amendHearingOutcomeRequest.amount,
+          caution = amendHearingOutcomeRequest.caution ?: throw ValidationException("missing caution")
+        )
+      else -> throw RuntimeException("should not of made it to this point - fatal")
+    }
   }
 
   companion object {
@@ -92,5 +160,13 @@ class AmendHearingOutcomeService(
         ReportedAdjudicationStatus.CHARGE_PROVED -> OutcomeCode.CHARGE_PROVED
         else -> null
       }
+
+    fun ReportedAdjudicationStatus.validateCanAmend(from: Boolean) {
+      val direction = if (from) "from" else "to"
+      when (this) {
+        ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.DISMISSED, ReportedAdjudicationStatus.NOT_PROCEED, ReportedAdjudicationStatus.ADJOURNED, ReportedAdjudicationStatus.CHARGE_PROVED -> {}
+        else -> throw ValidationException("unable to amend $direction $this")
+      }
+    }
   }
 }
