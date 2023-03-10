@@ -413,16 +413,29 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `throws entity not found if no latest outcome or hearing `() {
+    fun `throws entity not found if no hearing `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also { it.hearings.clear() }
+      )
       Assertions.assertThatThrownBy {
         hearingOutcomeService.amendHearingOutcome(
           adjudicationNumber = 1, outcomeCodeToAmend = HearingOutcomeCode.ADJOURN
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("no latest outcome to amend")
+        .hasMessageContaining("Hearing not found")
     }
 
-    @CsvSource("ADJOURNED", "REFER_POLICE", "REFER_INAD", "COMPLETED")
+    @Test
+    fun `throws entity not found if no outcome `() {
+      Assertions.assertThatThrownBy {
+        hearingOutcomeService.amendHearingOutcome(
+          adjudicationNumber = 1, outcomeCodeToAmend = HearingOutcomeCode.ADJOURN
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("outcome not found for hearing")
+    }
+
+    @CsvSource("ADJOURN", "REFER_POLICE", "REFER_INAD", "COMPLETE")
     @ParameterizedTest
     fun `throws validation exception if the latest outcome is not of the correct type `(code: HearingOutcomeCode) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
@@ -449,6 +462,8 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val response = hearingOutcomeService.amendHearingOutcome(
         adjudicationNumber = 1L,
         outcomeCodeToAmend = code,
+        adjudicator = "updated adjudicator",
+        details = "updated details",
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -479,7 +494,11 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val response = hearingOutcomeService.amendHearingOutcome(
         adjudicationNumber = 1L,
+        adjudicator = "updated adjudicator",
         outcomeCodeToAmend = HearingOutcomeCode.ADJOURN,
+        details = "updated details",
+        plea = HearingOutcomePlea.GUILTY,
+        adjournedReason = HearingOutcomeAdjournReason.HELP,
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -510,6 +529,8 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val response = hearingOutcomeService.amendHearingOutcome(
         adjudicationNumber = 1L,
         outcomeCodeToAmend = HearingOutcomeCode.COMPLETE,
+        adjudicator = "updated adjudicator",
+        plea = HearingOutcomePlea.GUILTY,
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())

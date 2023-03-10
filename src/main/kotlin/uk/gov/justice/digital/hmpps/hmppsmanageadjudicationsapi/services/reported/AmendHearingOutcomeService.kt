@@ -42,7 +42,11 @@ class AmendHearingOutcomeService(
   ): ReportedAdjudicationDto {
     hearingOutcomeService.amendHearingOutcome(
       adjudicationNumber = adjudicationNumber,
-      outcomeCodeToAmend = currentStatus.mapStatusToHearingOutcomeCode()
+      outcomeCodeToAmend = currentStatus.mapStatusToHearingOutcomeCode(),
+      adjudicator = amendHearingOutcomeRequest.adjudicator,
+      details = amendHearingOutcomeRequest.details,
+      plea = amendHearingOutcomeRequest.plea,
+      adjournedReason = amendHearingOutcomeRequest.reason,
     )
 
     return outcomeService.amendOutcomeViaService(

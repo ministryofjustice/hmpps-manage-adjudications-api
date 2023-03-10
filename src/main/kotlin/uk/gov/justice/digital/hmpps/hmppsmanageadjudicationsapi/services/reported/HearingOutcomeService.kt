@@ -123,8 +123,27 @@ class HearingOutcomeService(
   fun amendHearingOutcome(
     adjudicationNumber: Long,
     outcomeCodeToAmend: HearingOutcomeCode,
+    adjudicator: String? = null,
+    details: String? = null,
+    plea: HearingOutcomePlea? = null,
+    adjournedReason: HearingOutcomeAdjournReason? = null,
   ): ReportedAdjudicationDto {
-    TODO("implement me")
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val hearingOutcomeToAmend = reportedAdjudication.latestHearingOutcome().isLatestSameAsAmendRequest(outcomeCodeToAmend)
+
+    adjudicator?.let { hearingOutcomeToAmend.adjudicator = it }
+
+    when (outcomeCodeToAmend) {
+      HearingOutcomeCode.COMPLETE -> plea?.let { hearingOutcomeToAmend.plea = it }
+      HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_INAD  -> details?.let { hearingOutcomeToAmend.details = it }
+      HearingOutcomeCode.ADJOURN -> {
+        details?.let { hearingOutcomeToAmend.details = it }
+        plea?.let { hearingOutcomeToAmend.plea = it }
+        adjournedReason?.let { hearingOutcomeToAmend.reason = it }
+      }
+    }
+
+    return saveToDto(reportedAdjudication)
   }
 
   fun getHearingOutcomeForReferral(adjudicationNumber: Long, code: OutcomeCode, outcomeIndex: Int): HearingOutcome? {
@@ -148,5 +167,10 @@ class HearingOutcomeService(
 
     fun ReportedAdjudication.latestHearingOutcome(): HearingOutcome =
       this.getHearing().hearingOutcome ?: throw EntityNotFoundException("outcome not found for hearing")
+  }
+
+  fun HearingOutcome.isLatestSameAsAmendRequest(outcomeCodeToAmend: HearingOutcomeCode): HearingOutcome {
+    if (this.code != outcomeCodeToAmend) throw ValidationException("latest outcome is not of same type")
+    return this
   }
 }
