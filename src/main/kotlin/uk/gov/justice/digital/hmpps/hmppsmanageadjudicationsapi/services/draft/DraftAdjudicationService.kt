@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleAssociatedPrisonerRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleRequest
@@ -87,12 +86,13 @@ class DraftAdjudicationService(
     delete()
   }
 
-  fun deleteDraftAdjudications(id: Long, userName: String) {
+  fun deleteDraftAdjudications(id: Long) {
     val draftAdjudication = find(id)
-    if (draftAdjudication.reportByUserId == userName) {
+    val username = authenticationFacade.currentUsername
+    if (draftAdjudication.reportByUserId == username) {
       delete(draftAdjudication)
     } else {
-      throw ForbiddenException("Only creator(owner) of draft adjudication can delete draft adjudication report. Owner username: ${draftAdjudication.reportByUserId}, deletion attempt by username: $userName.")
+      throw ForbiddenException("Only creator(owner) of draft adjudication can delete draft adjudication report. Owner username: ${draftAdjudication.reportByUserId}, deletion attempt by username: $username.")
     }
   }
 

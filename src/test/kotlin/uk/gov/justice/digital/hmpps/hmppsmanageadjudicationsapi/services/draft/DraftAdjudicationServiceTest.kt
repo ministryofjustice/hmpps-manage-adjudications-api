@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
@@ -23,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import java.time.Clock
 import java.time.LocalDate
@@ -823,6 +825,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     private val draftAdjudication =
       DraftAdjudication(
         id = 1,
+        reportByUserId = "ITAG_USER",
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         agencyId = "MDI",
@@ -849,6 +852,31 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.gender).isEqualTo(Gender.FEMALE)
       assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `trow exception if not owner trying to delete draft adjudication`() {
+      whenever(authenticationFacade.currentUsername).thenReturn("not_owner")
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+
+      assertThatThrownBy {
+        draftAdjudicationService.deleteDraftAdjudications(1)
+      }.isInstanceOf(ForbiddenException::class.java)
+        .hasMessageContaining("Only creator(owner) of draft adjudication can delete draft adjudication report. Owner username: ITAG_USER, deletion attempt by username: not_owner.")
+    }
+
+    @Test
+    fun `delete draft adjudication by owner`() {
+      whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+
+      draftAdjudicationService.deleteDraftAdjudications(1)
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+
+      verify(draftAdjudicationRepository, times(1)).delete(draftAdjudication)
+      verify(draftAdjudicationRepository).delete(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.id).isEqualTo(1)
     }
   }
 
