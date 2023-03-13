@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
 
@@ -69,6 +70,19 @@ class ApiExceptionHandler {
         ErrorResponse(
           status = FORBIDDEN,
           userMessage = "Access is denied",
+        )
+      )
+  }
+
+  @ExceptionHandler(ForbiddenException::class)
+  fun handleAccessDenied(e: ForbiddenException): ResponseEntity<ErrorResponse?>? {
+    log.error("ForbiddenException", e)
+    return ResponseEntity
+      .status(FORBIDDEN)
+      .body(
+        ErrorResponse(
+          status = FORBIDDEN,
+          userMessage = "Operation forbidden: ${e.message}",
         )
       )
   }

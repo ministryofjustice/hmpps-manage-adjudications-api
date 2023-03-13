@@ -11,6 +11,7 @@ import org.springframework.data.web.PageableDefault
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
+import java.security.Principal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.validation.Valid
@@ -310,4 +312,14 @@ class DraftAdjudicationController(
   @DeleteMapping(value = ["/orphaned"])
   fun deleteOrphanedDraftAdjudications(): Unit =
     draftAdjudicationService.deleteOrphanedDraftAdjudications()
+
+  @DeleteMapping(value = ["/{id}"])
+  @Operation(summary = "Delete by Id. Only owner can delete.")
+  fun deleteDraftAdjudication(
+    @PathVariable(name = "id") id: Long,
+    principal: Principal,
+  ) {
+    val userDetails = principal as UserDetails
+    draftAdjudicationService.deleteDraftAdjudications(id, userDetails.username)
+  }
 }
