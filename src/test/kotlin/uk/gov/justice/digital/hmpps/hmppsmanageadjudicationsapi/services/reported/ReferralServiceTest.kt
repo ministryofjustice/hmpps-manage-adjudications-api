@@ -83,7 +83,7 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
   }
 
   @Test
-  fun `remove referral should remove outcome and hearing outcome and referral outcome`() {
+  fun `remove referral should remove referral outcome`() {
     whenever(outcomeService.getOutcomes(1)).thenReturn(
       listOf(
         CombinedOutcomeDto(
@@ -111,9 +111,9 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
 
     referralService.removeReferral(1,)
 
-    verify(outcomeService, atLeast(1)).deleteOutcome(1, 1)
+    verify(outcomeService, never()).deleteOutcome(1, 1)
     verify(outcomeService, atLeast(1)).deleteOutcome(1, 2)
-    verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(1,)
+    verify(hearingOutcomeService, never()).deleteHearingOutcome(1,)
   }
 
   @Test
