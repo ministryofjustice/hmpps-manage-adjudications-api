@@ -76,8 +76,9 @@ class AmendHearingOutcomeService(
     latestHearingOutcome: HearingOutcome,
     amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
   ): ReportedAdjudicationDto {
-    toStatus.validateCanAmend(false)
+    // note: this wil validate both actions, and therefore when - else branches will never be called
     currentStatus.validateCanAmend(true)
+    toStatus.validateCanAmend(false)
 
     when (currentStatus) {
       ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
@@ -92,7 +93,7 @@ class AmendHearingOutcomeService(
         hearingOutcomeService.removeAdjourn(
           adjudicationNumber = adjudicationNumber
         )
-      else -> {}
+      else -> throw RuntimeException("should not of made it to this point - fatal")
     }
 
     return when (toStatus) {
@@ -164,7 +165,12 @@ class AmendHearingOutcomeService(
     fun ReportedAdjudicationStatus.validateCanAmend(from: Boolean) {
       val direction = if (from) "from" else "to"
       when (this) {
-        ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.DISMISSED, ReportedAdjudicationStatus.NOT_PROCEED, ReportedAdjudicationStatus.ADJOURNED, ReportedAdjudicationStatus.CHARGE_PROVED -> {}
+        ReportedAdjudicationStatus.REFER_POLICE,
+        ReportedAdjudicationStatus.REFER_INAD,
+        ReportedAdjudicationStatus.DISMISSED,
+        ReportedAdjudicationStatus.NOT_PROCEED,
+        ReportedAdjudicationStatus.ADJOURNED,
+        ReportedAdjudicationStatus.CHARGE_PROVED -> {}
         else -> throw ValidationException("unable to amend $direction $this")
       }
     }
