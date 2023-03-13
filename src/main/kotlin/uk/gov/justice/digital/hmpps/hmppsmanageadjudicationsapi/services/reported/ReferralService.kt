@@ -39,9 +39,8 @@ class ReferralService(
     val outcomeToRemove = outcomes.last()
     val outcomeIndex = outcomes.filter { it.outcome.code == outcomeToRemove.outcome.code }.indexOf(outcomeToRemove)
 
-    outcomeToRemove.referralOutcome?.let {
-      outcomeService.deleteOutcome(adjudicationNumber = adjudicationNumber, id = it.id!!)
-    }
+    if (outcomeToRemove.referralOutcome != null)
+      return outcomeService.deleteOutcome(adjudicationNumber = adjudicationNumber, id = outcomeToRemove.referralOutcome.id!!)
 
     hearingOutcomeService.getHearingOutcomeForReferral(
       adjudicationNumber = adjudicationNumber, code = outcomeToRemove.outcome.code, outcomeIndex = outcomeIndex

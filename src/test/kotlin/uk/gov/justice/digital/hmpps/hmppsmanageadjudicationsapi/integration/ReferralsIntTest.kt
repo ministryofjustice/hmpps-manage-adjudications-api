@@ -47,8 +47,9 @@ class ReferralsIntTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome").exists()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome").exists()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.referralOutcome").doesNotExist()
   }
 
   @Test
@@ -83,7 +84,10 @@ class ReferralsIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(0)
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome").exists()
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing").doesNotExist()
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.referralOutcome").doesNotExist()
   }
 
   @Test
@@ -144,8 +148,8 @@ class ReferralsIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
-      .jsonPath("$.reportedAdjudication.hearings[1].outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.hearings[1].outcome").exists()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(3)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].hearing").doesNotExist()
@@ -153,7 +157,9 @@ class ReferralsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
       .jsonPath("$.reportedAdjudication.outcomes[2].hearing.oicHearingType").isEqualTo(OicHearingType.INAD_ADULT.name)
-      .jsonPath("$.reportedAdjudication.outcomes[2].outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[2].hearing.outcome").exists()
+      .jsonPath("$.reportedAdjudication.outcomes[2].outcome").exists()
+      .jsonPath("$.reportedAdjudication.outcomes[2].outcome.referralOutcome").doesNotExist()
   }
 
   @Test
@@ -184,8 +190,9 @@ class ReferralsIntTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
-      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome").exists()
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_INAD.name)
   }
 
   @Test
@@ -286,7 +293,8 @@ class ReferralsIntTest : IntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
-      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome").exists()
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_POLICE.name)
   }
 }
