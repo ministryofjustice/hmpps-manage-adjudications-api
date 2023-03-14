@@ -1,28 +1,5 @@
 version: "3"
 services:
-  hmpps-manage-adjudications-api:
-    build: .
-    container_name: hmpps-manage-adjudications-api
-    networks:
-      - hmpps
-    ports:
-      - "8080:8080"
-    depends_on:
-      - hmpps-auth
-      - hmpps-manage-adjudications-api-db
-      - prison-api
-      - prisoner-search
-    healthcheck:
-      test: ["CMD", "wget", "--tries=1", "--spider", "http://localhost:8080/health"]
-    environment:
-      - SERVER_PORT=8080
-      - PRISON_API_ENDPOINT_URL=http://prison-api:8080
-      - OAUTH_ENDPOINT_URL=http://hmpps-auth:8080/auth
-      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://hmpps-auth:8080/auth/.well-known/jwks.json
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://hmpps-manage-adjudications-api-db:5432/manage-adjudications
-      - SPRING_DATASOURCE_USERNAME=adjudications
-      - SPRING_DATASOURCE_PASSWORD=adjudications
-
   hmpps-auth:
     image: quay.io/hmpps/hmpps-auth:latest
     networks:

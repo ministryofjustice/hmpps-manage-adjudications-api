@@ -13,12 +13,13 @@ spring:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
 
-
-
   profiles:
     group:
       test:
         - "stdout"
+      dev-local:
+        - "stdout"
+
   jpa:
     open-in-view: false
     show-sql: false
@@ -32,7 +33,6 @@ spring:
 
   datasource:
     url: 'jdbc:h2:mem:restricted-patients-api-db;MODE=PostgreSQL'
-    continue-on-error: true
 
   security:
     oauth2:
@@ -47,6 +47,9 @@ spring:
         provider:
           hmpps-auth:
             token-uri: ${oauth.endpoint.url}/oauth/token
+  sql:
+    init:
+      continue-on-error: true
 
 server:
   port: 8080
