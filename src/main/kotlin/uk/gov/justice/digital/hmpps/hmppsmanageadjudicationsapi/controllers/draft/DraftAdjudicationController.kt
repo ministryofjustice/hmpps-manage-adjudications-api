@@ -313,6 +313,7 @@ class DraftAdjudicationController(
 
   @DeleteMapping(value = ["/{id}"])
   @Operation(summary = "Delete by Id. Only owner can delete.")
+  @PreAuthorize("hasAuthority('SCOPE_write')")
   fun deleteDraftAdjudication(
     @PathVariable(name = "id") id: Long,
   ) {

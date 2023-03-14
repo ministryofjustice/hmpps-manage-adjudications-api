@@ -855,7 +855,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     }
 
     @Test
-    fun `trow exception if not owner trying to delete draft adjudication`() {
+    fun `throw exception if not owner trying to delete draft adjudication`() {
       whenever(authenticationFacade.currentUsername).thenReturn("not_owner")
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
 

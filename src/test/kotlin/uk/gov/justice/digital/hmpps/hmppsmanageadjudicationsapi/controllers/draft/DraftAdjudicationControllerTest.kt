@@ -7,6 +7,8 @@ import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -16,6 +18,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.ResultActions
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
@@ -25,7 +28,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -129,6 +134,65 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           post("/draft-adjudications")
+            .header("Content-Type", "application/json")
+            .content(jsonBody)
+        )
+    }
+  }
+
+  @Nested
+  inner class DeleteDraftAdjudication {
+    @BeforeEach
+    fun beforeEach() {
+      doNothing().`when`(draftAdjudicationService).deleteDraftAdjudications(any())
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER")
+    fun `responds with a unauthorised status code if authorities missing`() {
+      deleteDraftAdjudication().andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "not_owner", authorities = ["SCOPE_write"])
+    fun `returns status Forbidden if ForbiddenException is thrown`() {
+      doThrow(ForbiddenException("Only owner can delete draft adjudication.")).`when`(draftAdjudicationService)
+        .deleteDraftAdjudications(any())
+
+      deleteDraftAdjudication()
+        .andExpect(status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `returns status 404 Not Found if EntityNotFoundException is thrown`() {
+      doThrow(EntityNotFoundException("Entity not found.")).`when`(draftAdjudicationService)
+        .deleteDraftAdjudications(any())
+
+      deleteDraftAdjudication().andExpect(status().isNotFound)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `calls the service to delete draft adjudication`() {
+      deleteDraftAdjudication()
+        .andExpect(status().isOk)
+    }
+
+    private fun deleteDraftAdjudication(
+      id: Long = 1,
+      reportByUserId: String? = "ITAG_USER",
+    ): ResultActions {
+      val jsonBody = objectMapper.writeValueAsString(
+        mapOf(
+          "id" to id,
+          "reportByUserId" to reportByUserId,
+        )
+      )
+
+      return mockMvc
+        .perform(
+          delete("/draft-adjudications/1")
             .header("Content-Type", "application/json")
             .content(jsonBody)
         )
