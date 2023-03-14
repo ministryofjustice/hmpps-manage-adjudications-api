@@ -1,0 +1,32 @@
+server:
+  shutdown: immediate
+
+management.endpoint:
+  health.cache.time-to-live: 0
+  info.cache.time-to-live: 0
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: classpath:local-public-key.pub
+
+  flyway:
+    url: jdbc:postgresql://localhost:5432/manage-adjudications?sslmode=prefer
+    user: adjudications
+    password: adjudications
+
+  datasource:
+    username: adjudications
+    password: adjudications
+    url: jdbc:postgresql://localhost:5432/manage-adjudications?sslmode=prefer
+
+prison:
+  api:
+    endpoint:
+      url: http://localhost:8082
+
+oauth:
+  endpoint:
+    url: http://localhost:9090/auth
