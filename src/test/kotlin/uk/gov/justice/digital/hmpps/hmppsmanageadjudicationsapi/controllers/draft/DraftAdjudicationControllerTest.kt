@@ -28,7 +28,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
@@ -142,10 +141,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
   @Nested
   inner class DeleteDraftAdjudication {
-    @BeforeEach
-    fun beforeEach() {
-      doNothing().`when`(draftAdjudicationService).deleteDraftAdjudications(any())
-    }
 
     @Test
     @WithMockUser(username = "ITAG_USER")
@@ -175,6 +170,8 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `calls the service to delete draft adjudication`() {
+      doNothing().`when`(draftAdjudicationService).deleteDraftAdjudications(any())
+
       deleteDraftAdjudication()
         .andExpect(status().isOk)
     }
