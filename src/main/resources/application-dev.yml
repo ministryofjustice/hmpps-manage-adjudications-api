@@ -3,6 +3,6 @@ oauth.endpoint.url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 spring:
   security:
     oauth2:
-      resourceserver:
+      resource-server:
         jwt:
           jwk-set-uri: https://sign-in-dev.hmpps.service.justice.gov.uk/auth/.well-known/jwks.json
