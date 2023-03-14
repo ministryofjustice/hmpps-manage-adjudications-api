@@ -13,6 +13,9 @@ Accepted
 
 This document will cover the approach for the adjudication service to master adjudication data and synchronisation this information back into NOMIS
 
+### Adjudication Schema
+Current entity schema![](er.png)
+
 
 
 ### NOMIS synchronisation sequence
