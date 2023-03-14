@@ -93,9 +93,21 @@ In all instances the domain event will contain the unique reference to the adjud
 ### Sync endpoint 
 This endpoint will return all the adjudication information needed to populate NOMIS
 
+`GET /an-adjudication/{id}`
+```json
+[
+  "API HERE"
+]
+```
 ### Migration endpoint
 This endpoint will contain all the information need to populate the adjudication system with an adjudication decision and outcome
 
+`POST /migrate`
+```json
+[
+  "API HERE"
+]
+```
 
 
 ## Migration steps
