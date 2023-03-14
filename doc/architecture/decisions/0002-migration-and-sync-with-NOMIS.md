@@ -11,7 +11,7 @@ Accepted
 
 ## Context
 
-This document will cover the approach for the incentive service to master incentive reference data and synchronisation this information back into NOMIS
+This document will cover the approach for the adjudication service to master adjudication data and synchronisation this information back into NOMIS
 
 
 
