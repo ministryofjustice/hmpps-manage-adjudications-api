@@ -11,7 +11,6 @@ services:
       - hmpps-auth
       - hmpps-manage-adjudications-api-db
       - prison-api
-      - prisoner-search
     healthcheck:
       test: ["CMD", "wget", "--tries=1", "--spider", "http://localhost:8080/health"]
     environment:
