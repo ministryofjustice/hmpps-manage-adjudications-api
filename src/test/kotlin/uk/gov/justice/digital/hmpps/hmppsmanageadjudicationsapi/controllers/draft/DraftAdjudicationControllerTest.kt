@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.kotlin.any
@@ -160,30 +162,22 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `returns status 404 Not Found if EntityNotFoundException is thrown`() {
-      doThrow(EntityNotFoundException("Entity not found.")).`when`(draftAdjudicationService)
-        .deleteDraftAdjudications(any())
-
-      deleteDraftAdjudication().andExpect(status().isNotFound)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `calls the service to delete draft adjudication`() {
-      doNothing().`when`(draftAdjudicationService).deleteDraftAdjudications(any())
+      val argumentCaptor = ArgumentCaptor.forClass(Long::class.java)
+      doNothing().`when`(draftAdjudicationService).deleteDraftAdjudications(argumentCaptor.capture())
 
       deleteDraftAdjudication()
         .andExpect(status().isOk)
+
+      assertThat(argumentCaptor.value).isEqualTo(1)
     }
 
     private fun deleteDraftAdjudication(
       id: Long = 1,
-      reportByUserId: String? = "ITAG_USER",
     ): ResultActions {
       val jsonBody = objectMapper.writeValueAsString(
         mapOf(
           "id" to id,
-          "reportByUserId" to reportByUserId,
         )
       )
 

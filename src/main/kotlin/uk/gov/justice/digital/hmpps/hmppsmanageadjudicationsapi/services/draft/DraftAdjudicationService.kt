@@ -89,10 +89,10 @@ class DraftAdjudicationService(
   fun deleteDraftAdjudications(id: Long) {
     val draftAdjudication = find(id)
     val username = authenticationFacade.currentUsername
-    if (draftAdjudication.reportByUserId == username) {
+    if (draftAdjudication.createdByUserId == username) {
       delete(draftAdjudication)
     } else {
-      throw ForbiddenException("Only creator(owner) of draft adjudication can delete draft adjudication report. Owner username: ${draftAdjudication.reportByUserId}, deletion attempt by username: $username.")
+      throw ForbiddenException("Only creator(owner) of draft adjudication can delete draft adjudication report. Owner username: ${draftAdjudication.createdByUserId}, deletion attempt by username: $username.")
     }
   }
 

@@ -825,7 +825,6 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     private val draftAdjudication =
       DraftAdjudication(
         id = 1,
-        reportByUserId = "ITAG_USER",
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         agencyId = "MDI",
@@ -854,29 +853,49 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
 
-    @Test
-    fun `throw exception if not owner trying to delete draft adjudication`() {
-      whenever(authenticationFacade.currentUsername).thenReturn("not_owner")
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+    @Nested
+    inner class DeleteDraftAdjudication {
 
-      assertThatThrownBy {
+      private val draftAdjudication0 =
+        DraftAdjudication(
+          id = 1,
+          prisonerNumber = "A12345",
+          gender = Gender.MALE,
+          agencyId = "MDI",
+          incidentDetails = incidentDetails(2L, now),
+          incidentRole = incidentRoleWithAllValuesSet(),
+          incidentStatement = IncidentStatement(
+            statement = "Example statement",
+            completed = false
+          ),
+          offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY),
+          isYouthOffender = true,
+        ).apply { createdByUserId = "ITAG_USER" }
+
+      @Test
+      fun `throw exception if not owner trying to delete draft adjudication`() {
+        whenever(authenticationFacade.currentUsername).thenReturn("not_owner")
+        whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication0))
+
+        assertThatThrownBy {
+          draftAdjudicationService.deleteDraftAdjudications(1)
+        }.isInstanceOf(ForbiddenException::class.java)
+          .hasMessageContaining("Only creator(owner) of draft adjudication can delete draft adjudication report. Owner username: ITAG_USER, deletion attempt by username: not_owner.")
+      }
+
+      @Test
+      fun `delete draft adjudication by owner`() {
+        whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
+        whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication0))
+
         draftAdjudicationService.deleteDraftAdjudications(1)
-      }.isInstanceOf(ForbiddenException::class.java)
-        .hasMessageContaining("Only creator(owner) of draft adjudication can delete draft adjudication report. Owner username: ITAG_USER, deletion attempt by username: not_owner.")
-    }
 
-    @Test
-    fun `delete draft adjudication by owner`() {
-      whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
-      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+        val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
 
-      draftAdjudicationService.deleteDraftAdjudications(1)
-
-      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
-
-      verify(draftAdjudicationRepository, times(1)).delete(draftAdjudication)
-      verify(draftAdjudicationRepository).delete(argumentCaptor.capture())
-      assertThat(argumentCaptor.value.id).isEqualTo(1)
+        verify(draftAdjudicationRepository, times(1)).delete(draftAdjudication0)
+        verify(draftAdjudicationRepository).delete(argumentCaptor.capture())
+        assertThat(argumentCaptor.value.id).isEqualTo(1)
+      }
     }
   }
 
@@ -990,6 +1009,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       .contains("Example statement", false)
   }
 
+  @Test
   override fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {
     whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.empty())
 
@@ -1035,6 +1055,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
 
     assertThatThrownBy {
       draftAdjudicationService.setGender(1, Gender.MALE)
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("DraftAdjudication not found for 1")
+
+    assertThatThrownBy {
+      draftAdjudicationService.deleteDraftAdjudications(1)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("DraftAdjudication not found for 1")
   }

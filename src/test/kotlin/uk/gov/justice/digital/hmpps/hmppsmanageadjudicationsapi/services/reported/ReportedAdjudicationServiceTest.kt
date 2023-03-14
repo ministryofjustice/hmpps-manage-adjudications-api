@@ -1229,6 +1229,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
   }
 
+  @Test
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
 

@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -11,7 +10,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuil
 import java.time.LocalDateTime
 
 interface TestsToImplement {
-  @Test
   fun `throws an entity not found if the reported adjudication for the supplied id does not exists`()
 }
 abstract class ReportedAdjudicationTestBase : TestsToImplement {

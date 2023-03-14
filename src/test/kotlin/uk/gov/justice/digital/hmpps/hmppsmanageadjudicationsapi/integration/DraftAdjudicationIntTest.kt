@@ -642,6 +642,29 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .jsonPath("$.draftAdjudication.gender").isEqualTo(Gender.FEMALE.name)
   }
 
+  @Test
+  fun `delete draft adjudication`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+    val userHeaders = setHeaders(username = testAdjudication.createdByUserId)
+    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, userHeaders)
+
+    val intTestScenario = intTestBuilder
+      .startDraft(testAdjudication)
+
+    val draftId = intTestScenario.getDraftId()
+
+    assertThat(draftAdjudicationRepository.findAll()).hasSize(1)
+
+    webTestClient.delete()
+      .uri("/draft-adjudications/$draftId")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+
+    assertThat(draftAdjudicationRepository.findAll()).hasSize(0)
+  }
+
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
   }
