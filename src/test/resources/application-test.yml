@@ -5,12 +5,16 @@ management.endpoint:
   health.cache.time-to-live: 0
   info.cache.time-to-live: 0
 
-prison.api.endpoint.url: http://localhost:8979
-oauth.endpoint.url: http://localhost:8070/auth
+prison:
+  api:
+    endpoint:
+      url: http://localhost:8979
+oauth:
+  endpoint:
+    url: http://localhost:8070/auth
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/hmpps-manage-adjudications-api-db
-    username: test
-    password: test
-    continueOnError: true
+    url: jdbc:postgresql://localhost:5432/manage-adjudications
+    username: adjudications
+    password: adjudications

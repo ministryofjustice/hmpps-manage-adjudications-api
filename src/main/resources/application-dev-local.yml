@@ -8,7 +8,7 @@ management.endpoint:
 spring:
   security:
     oauth2:
-      resourceserver:
+      resource-server:
         jwt:
           public-key-location: classpath:local-public-key.pub
 

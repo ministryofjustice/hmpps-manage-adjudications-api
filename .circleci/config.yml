@@ -15,11 +15,11 @@ jobs:
   validate:
     executor:
       name: hmpps/java_postgres
-      jdk_tag: "18.0"
+      jdk_tag: "19.0"
       postgres_tag: "14"
-      postgres_username: "test"
-      postgres_password: "test"
-      postgres_db: "hmpps-manage-adjudications-api-db"
+      postgres_username: "adjudications"
+      postgres_password: "adjudications"
+      postgres_db: "manage-adjudications"
     steps:
       - checkout
       - hmpps/wait_till_ready_postgres
