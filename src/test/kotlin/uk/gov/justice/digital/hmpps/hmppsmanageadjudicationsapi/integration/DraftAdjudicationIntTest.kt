@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageC
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import java.time.LocalDateTime
 
@@ -22,9 +21,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun setUp() {
     setAuditTime(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME)
   }
-
-  @Autowired
-  lateinit var draftAdjudicationRepository: DraftAdjudicationRepository
 
   @Autowired
   lateinit var reportedAdjudicationRepository: ReportedAdjudicationRepository
@@ -483,8 +479,13 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .setOffenceData()
 
     val draftId = intTestScenario.getDraftId()
-    val initialDraft = draftAdjudicationRepository.findById(draftId)
-    assertThat(initialDraft.get().isYouthOffender).isEqualTo(false)
+
+    webTestClient.get()
+      .uri("/draft-adjudications/$draftId")
+      .headers(setHeaders())
+      .exchange()
+      .expectBody()
+      .jsonPath("$.draftAdjudication.isYouthOffender").isEqualTo(false)
 
     webTestClient.put()
       .uri("/draft-adjudications/$draftId/applicable-rules")
