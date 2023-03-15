@@ -645,14 +645,12 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   @Test
   fun `delete draft adjudication`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
-    val username = testAdjudication.createdByUserId
     val intTestData = integrationTestData()
+    val username = testAdjudication.createdByUserId
     val userHeaders = setHeaders(username = username)
     val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication, userHeaders)
 
     val draftId = draftAdjudicationResponse.draftAdjudication.id
-
-    assertThat(draftAdjudicationRepository.findAll()).hasSize(1)
 
     webTestClient.delete()
       .uri("/draft-adjudications/$draftId")
@@ -660,19 +658,22 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    assertThat(draftAdjudicationRepository.findAll()).hasSize(0)
+    webTestClient.get()
+      .uri("/draft-adjudications/$draftId")
+      .headers(setHeaders(username = username))
+      .exchange()
+      .expectStatus().isNotFound
   }
 
   @Test
   fun `not owner cannot delete draft adjudication`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
-    val userHeaders = setHeaders(username = testAdjudication.createdByUserId)
+    val username = testAdjudication.createdByUserId
+    val userHeaders = setHeaders(username = username)
     val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication, userHeaders)
 
     val draftId = draftAdjudicationResponse.draftAdjudication.id
-
-    assertThat(draftAdjudicationRepository.findAll()).hasSize(1)
 
     webTestClient.delete()
       .uri("/draft-adjudications/$draftId")
@@ -680,7 +681,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isForbidden
 
-    assertThat(draftAdjudicationRepository.findAll()).hasSize(1)
+    webTestClient.get()
+      .uri("/draft-adjudications/$draftId")
+      .headers(setHeaders(username = username))
+      .exchange()
+      .expectStatus().isOk
   }
 
   companion object {
