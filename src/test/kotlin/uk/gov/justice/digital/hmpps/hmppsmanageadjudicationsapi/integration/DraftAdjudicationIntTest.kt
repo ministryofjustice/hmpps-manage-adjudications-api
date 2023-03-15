@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleRequest
@@ -12,7 +10,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageC
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import java.time.LocalDateTime
 
 class DraftAdjudicationIntTest : IntegrationTestBase() {
@@ -21,9 +18,6 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun setUp() {
     setAuditTime(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME)
   }
-
-  @Autowired
-  lateinit var reportedAdjudicationRepository: ReportedAdjudicationRepository
 
   @Test
   fun `makes a request to start a new draft adjudication`() {
@@ -331,9 +325,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().is5xxServerError
 
-    val savedAdjudication =
-      reportedAdjudicationRepository.findByReportNumber(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    assertThat(savedAdjudication).isNull()
+    getReportedAdjudicationRequestStatus().isNotFound
   }
 
   @Test
@@ -351,10 +343,10 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .addDamages()
       .addIncidentStatement()
 
-    assertThat(reportedAdjudicationRepository.findAll()).hasSize(0)
+    getReportedAdjudicationRequestStatus().isNotFound
 
     intTestScenario.completeDraft()
-    assertThat(reportedAdjudicationRepository.findAll()).hasSize(1)
+    getReportedAdjudicationRequestStatus().isOk
 
     val draftAdjudicationResponse =
       intTestData.recallCompletedDraftAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -385,7 +377,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .isEqualTo("ITAG_USER")
 
     intTestData.getDraftAdjudicationDetails(draftAdjudicationResponse).expectStatus().isNotFound
-    assertThat(reportedAdjudicationRepository.findAll()).hasSize(1)
+    getReportedAdjudicationRequestStatus().isOk
   }
 
   @Test
@@ -688,6 +680,13 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
   }
+
+  private fun getReportedAdjudicationRequestStatus() =
+    webTestClient.get()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus()
 
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
