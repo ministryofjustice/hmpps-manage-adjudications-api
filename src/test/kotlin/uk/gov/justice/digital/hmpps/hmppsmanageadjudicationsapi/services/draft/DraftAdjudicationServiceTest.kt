@@ -856,7 +856,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     @Nested
     inner class DeleteDraftAdjudication {
 
-      private val draftAdjudication0 =
+      private val draftAdjudication =
         DraftAdjudication(
           id = 1,
           prisonerNumber = "A12345",
@@ -875,7 +875,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       @Test
       fun `throw exception if not owner trying to delete draft adjudication`() {
         whenever(authenticationFacade.currentUsername).thenReturn("not_owner")
-        whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication0))
+        whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
 
         assertThatThrownBy {
           draftAdjudicationService.deleteDraftAdjudications(1)
@@ -886,13 +886,13 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       @Test
       fun `delete draft adjudication by owner`() {
         whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
-        whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication0))
+        whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
 
         draftAdjudicationService.deleteDraftAdjudications(1)
 
         val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
 
-        verify(draftAdjudicationRepository, times(1)).delete(draftAdjudication0)
+        verify(draftAdjudicationRepository, times(1)).delete(draftAdjudication)
         verify(draftAdjudicationRepository).delete(argumentCaptor.capture())
         assertThat(argumentCaptor.value.id).isEqualTo(1)
       }
