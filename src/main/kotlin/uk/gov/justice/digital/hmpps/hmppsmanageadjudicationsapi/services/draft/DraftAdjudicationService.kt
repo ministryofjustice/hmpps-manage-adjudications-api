@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup.Companion.associatedPrisonerInformationRequired
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDate
@@ -83,6 +84,16 @@ class DraftAdjudicationService(
 
   fun deleteOrphanedDraftAdjudications() {
     delete()
+  }
+
+  fun deleteDraftAdjudications(id: Long) {
+    val draftAdjudication = find(id)
+    val username = authenticationFacade.currentUsername
+    if (draftAdjudication.createdByUserId == username) {
+      delete(draftAdjudication)
+    } else {
+      throw ForbiddenException("Only creator(owner) of draft adjudication can delete draft adjudication report. Owner username: ${draftAdjudication.createdByUserId}, deletion attempt by username: $username.")
+    }
   }
 
   fun startNewAdjudication(

@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft
 
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
@@ -17,7 +16,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 interface TestsToImplement {
-  @Test
   fun `throws an entity not found if the draft adjudication for the supplied id does not exists`()
 }
 
