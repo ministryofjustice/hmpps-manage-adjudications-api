@@ -645,24 +645,42 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   @Test
   fun `delete draft adjudication`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val username = testAdjudication.createdByUserId
     val intTestData = integrationTestData()
-    val userHeaders = setHeaders(username = testAdjudication.createdByUserId)
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, userHeaders)
+    val userHeaders = setHeaders(username = username)
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication, userHeaders)
 
-    val intTestScenario = intTestBuilder
-      .startDraft(testAdjudication)
-
-    val draftId = intTestScenario.getDraftId()
+    val draftId = draftAdjudicationResponse.draftAdjudication.id
 
     assertThat(draftAdjudicationRepository.findAll()).hasSize(1)
 
     webTestClient.delete()
       .uri("/draft-adjudications/$draftId")
-      .headers(setHeaders())
+      .headers(setHeaders(username = username))
       .exchange()
       .expectStatus().isOk
 
     assertThat(draftAdjudicationRepository.findAll()).hasSize(0)
+  }
+
+  @Test
+  fun `not owner cannot delete draft adjudication`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+    val userHeaders = setHeaders(username = testAdjudication.createdByUserId)
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication, userHeaders)
+
+    val draftId = draftAdjudicationResponse.draftAdjudication.id
+
+    assertThat(draftAdjudicationRepository.findAll()).hasSize(1)
+
+    webTestClient.delete()
+      .uri("/draft-adjudications/$draftId")
+      .headers(setHeaders(username = "not_owner"))
+      .exchange()
+      .expectStatus().isForbidden
+
+    assertThat(draftAdjudicationRepository.findAll()).hasSize(1)
   }
 
   companion object {
