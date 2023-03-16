@@ -118,6 +118,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
           "adjudicator" to "updated adjudicator",
           "plea" to HearingOutcomePlea.NOT_ASKED,
           "amount" to 100.99,
+          "damagesOwed" to true,
           "caution" to false,
         )
       )
@@ -244,7 +245,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       )
       ReportedAdjudicationStatus.CHARGE_PROVED -> amendOutcomeRequest(
         AmendHearingOutcomeRequest(
-          adjudicator = "updated", plea = HearingOutcomePlea.GUILTY, amount = 999.99, caution = false
+          adjudicator = "updated", plea = HearingOutcomePlea.GUILTY, amount = 999.99, caution = false, damagesOwed = true,
         ),
         to
       )
@@ -304,6 +305,30 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       )
       .exchange()
       .expectStatus().isBadRequest
+  }
+
+  @Test
+  fun `amend hearing outcome - charge proved where the amount is no longer required `() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForHearings().createHearing().createChargeProved()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/${ReportedAdjudicationStatus.CHARGE_PROVED.name}")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "updated adjudicator",
+          "caution" to false,
+          "damagesOwed" to false,
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.amount").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.caution").isEqualTo(false)
   }
 
   private fun amendOutcomeRequest(request: AmendHearingOutcomeRequest, to: ReportedAdjudicationStatus): WebTestClient.ResponseSpec =

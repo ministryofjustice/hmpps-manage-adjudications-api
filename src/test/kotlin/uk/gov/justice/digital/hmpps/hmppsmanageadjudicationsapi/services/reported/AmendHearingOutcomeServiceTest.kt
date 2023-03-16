@@ -62,6 +62,7 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcomeCodeToAmend = status.mapStatusToOutcomeCode()!!,
         details = request.details,
         amount = request.amount,
+        damagesOwed = request.damagesOwed,
         caution = request.caution,
         notProceedReason = request.notProceedReason,
       )

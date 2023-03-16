@@ -770,7 +770,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       val response = outcomeService.amendOutcomeViaService(
         adjudicationNumber = 1L,
         outcomeCodeToAmend = OutcomeCode.CHARGE_PROVED,
-        amount = 200.0,
+        damagesOwed = false,
         caution = true,
       )
 
@@ -780,7 +780,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.outcomes.first().details).isNull()
       assertThat(argumentCaptor.value.outcomes.first().reason).isNull()
-      assertThat(argumentCaptor.value.outcomes.first().amount).isEqualTo(200.0)
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
       assertThat(argumentCaptor.value.outcomes.first().caution).isEqualTo(true)
       assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
 

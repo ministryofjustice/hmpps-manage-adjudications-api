@@ -81,6 +81,8 @@ data class AmendHearingOutcomeRequest(
   val plea: HearingOutcomePlea? = null,
   @Schema(description = "caution")
   val caution: Boolean? = null,
+  @Schema(description = "damages owed - set this if the user has made an edit action on this field")
+  val damagesOwed: Boolean? = null,
   @Schema(description = "amount of damages")
   val amount: Double? = null,
 )

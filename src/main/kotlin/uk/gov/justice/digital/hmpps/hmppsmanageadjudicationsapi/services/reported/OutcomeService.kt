@@ -115,6 +115,7 @@ class OutcomeService(
     details: String? = null,
     notProceedReason: NotProceedReason? = null,
     amount: Double? = null,
+    damagesOwed: Boolean? = null,
     caution: Boolean? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
@@ -128,6 +129,7 @@ class OutcomeService(
       details = details,
       reason = notProceedReason,
       amount = amount,
+      damagesOwed = damagesOwed,
       caution = caution,
     )
   }
@@ -169,6 +171,7 @@ class OutcomeService(
     reason: NotProceedReason? = null,
     quashedReason: QuashedReason? = null,
     amount: Double? = null,
+    damagesOwed: Boolean? = null,
     caution: Boolean? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
@@ -185,7 +188,7 @@ class OutcomeService(
           quashedReason?.let { updated -> it.quashedReason = updated }
         }
         OutcomeCode.CHARGE_PROVED -> {
-          amount?.let { updated -> it.amount = updated }
+          damagesOwed?.let { _ -> it.amount = amount }
           caution?.let { updated -> it.caution = updated }
         }
         OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD, OutcomeCode.DISMISSED -> details?.let { updated -> it.details = updated }
