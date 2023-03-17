@@ -65,6 +65,7 @@ class AmendHearingOutcomeService(
       details = amendHearingOutcomeRequest.details,
       notProceedReason = amendHearingOutcomeRequest.notProceedReason,
       amount = amendHearingOutcomeRequest.amount,
+      damagesOwed = amendHearingOutcomeRequest.damagesOwed,
       caution = amendHearingOutcomeRequest.caution,
     )
   }
