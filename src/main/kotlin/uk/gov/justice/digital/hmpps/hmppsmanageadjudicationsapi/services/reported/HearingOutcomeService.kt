@@ -99,11 +99,10 @@ class HearingOutcomeService(
 
   fun deleteHearingOutcome(adjudicationNumber: Long): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val outcomeToRemove = reportedAdjudication.getHearing()
+    val hearingToRemoveOutcome = reportedAdjudication.getHearing()
 
-    outcomeToRemove.hearingOutcome.hearingOutcomeExists()
-    val code = outcomeToRemove.hearingOutcome!!.code
-    outcomeToRemove.hearingOutcome = null
+    val code = hearingToRemoveOutcome.hearingOutcome.hearingOutcomeExists().code
+    hearingToRemoveOutcome.hearingOutcome = null
 
     return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus()) it.calculateStatus() })
   }
