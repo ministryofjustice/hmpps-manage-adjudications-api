@@ -261,7 +261,5 @@ class HearingService(
     }
 
     private fun throwHearingNotFoundException(): Nothing = throw EntityNotFoundException("Hearing not found")
-
-    private fun ReportedAdjudication.getLatestHearing(): Hearing? = this.hearings.maxByOrNull { it.dateTimeOfHearing }
   }
 }

@@ -86,11 +86,21 @@ data class ReportedAdjudication(
       true ->
         when (this.hearings.isEmpty()) {
           true -> ReportedAdjudicationStatus.UNSCHEDULED
-          false -> ReportedAdjudicationStatus.SCHEDULED
+          false -> {
+            if (this.getLatestHearing().isAdjourn()) ReportedAdjudicationStatus.ADJOURNED
+            else ReportedAdjudicationStatus.SCHEDULED
+          }
         }
-      false -> this.outcomes.sortedByDescending { it.createDateTime }.first().code.status
+      false -> {
+        if (this.getLatestHearing().isAdjourn()) ReportedAdjudicationStatus.ADJOURNED
+        else this.outcomes.sortedByDescending { it.createDateTime }.first().code.status
+      }
     }
   }
+
+  fun ReportedAdjudication.getLatestHearing(): Hearing? = this.hearings.maxByOrNull { it.dateTimeOfHearing }
+
+  private fun Hearing?.isAdjourn() = this?.hearingOutcome?.code == HearingOutcomeCode.ADJOURN
 }
 
 enum class ReportedAdjudicationStatus {
