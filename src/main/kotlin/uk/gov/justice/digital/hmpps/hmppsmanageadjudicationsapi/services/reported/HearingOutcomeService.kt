@@ -69,11 +69,12 @@ class HearingOutcomeService(
   )
 
   fun removeAdjourn(
-    adjudicationNumber: Long
+    adjudicationNumber: Long,
+    recalculateStatus: Boolean = true,
   ): ReportedAdjudicationDto {
     findByAdjudicationNumber(adjudicationNumber).latestOutcomeIsAdjourn()
 
-    return deleteHearingOutcome(adjudicationNumber = adjudicationNumber)
+    return deleteHearingOutcome(adjudicationNumber = adjudicationNumber, recalculateStatus = recalculateStatus)
   }
 
   private fun createHearingOutcome(
@@ -97,14 +98,14 @@ class HearingOutcomeService(
     return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus()) it.calculateStatus() })
   }
 
-  fun deleteHearingOutcome(adjudicationNumber: Long): ReportedAdjudicationDto {
+  fun deleteHearingOutcome(adjudicationNumber: Long, recalculateStatus: Boolean = true): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val hearingToRemoveOutcome = reportedAdjudication.getHearing()
 
     val code = hearingToRemoveOutcome.hearingOutcome.hearingOutcomeExists().code
     hearingToRemoveOutcome.hearingOutcome = null
 
-    return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus()) it.calculateStatus() })
+    return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus() && recalculateStatus) it.calculateStatus() })
   }
 
   fun getCurrentStatusAndLatestOutcome(

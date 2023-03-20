@@ -331,6 +331,27 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.caution").isEqualTo(false)
   }
 
+  @Test
+  fun `amend outcome - police refer without hearing, schedule hearing, adjourn then amend to dismissed `() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForHearings().createOutcomeReferPolice().createHearing().createAdjourn()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/${ReportedAdjudicationStatus.DISMISSED.name}")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "details" to "its now dismissed",
+          "plea" to HearingOutcomePlea.GUILTY,
+        )
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.DISMISSED.name)
+  }
+
   private fun amendOutcomeRequest(request: AmendHearingOutcomeRequest, to: ReportedAdjudicationStatus): WebTestClient.ResponseSpec =
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/$to")

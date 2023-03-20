@@ -20,6 +20,7 @@ class ReferralService(
     code: HearingOutcomeCode,
     adjudicator: String,
     details: String,
+    validate: Boolean = true,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.createReferral(
       adjudicationNumber = adjudicationNumber,
@@ -30,7 +31,8 @@ class ReferralService(
     return outcomeService.createReferral(
       adjudicationNumber = adjudicationNumber,
       code = code.outcomeCode!!,
-      details = details
+      details = details,
+      validate = validate,
     )
   }
 

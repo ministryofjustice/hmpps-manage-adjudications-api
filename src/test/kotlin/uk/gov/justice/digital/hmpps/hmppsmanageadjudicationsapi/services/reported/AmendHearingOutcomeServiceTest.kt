@@ -112,21 +112,21 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         ReportedAdjudicationStatus.DISMISSED, ReportedAdjudicationStatus.CHARGE_PROVED, ReportedAdjudicationStatus.NOT_PROCEED ->
           verify(completedHearingService, atLeastOnce()).removeOutcome(1L)
         ReportedAdjudicationStatus.ADJOURNED ->
-          verify(hearingOutcomeService, atLeastOnce()).removeAdjourn(1L)
+          verify(hearingOutcomeService, atLeastOnce()).removeAdjourn(1L, false)
         else -> {}
       }
 
       when (to) {
         ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
-          verify(referralService, atLeastOnce()).createReferral(1L, HearingOutcomeCode.valueOf(to.name), request.adjudicator!!, request.details!!)
+          verify(referralService, atLeastOnce()).createReferral(1L, HearingOutcomeCode.valueOf(to.name), request.adjudicator!!, request.details!!, false)
         ReportedAdjudicationStatus.DISMISSED ->
-          verify(completedHearingService, atLeastOnce()).createDismissed(1L, request.adjudicator!!, request.plea!!, request.details!!)
+          verify(completedHearingService, atLeastOnce()).createDismissed(1L, request.adjudicator!!, request.plea!!, request.details!!, false)
         ReportedAdjudicationStatus.NOT_PROCEED ->
-          verify(completedHearingService, atLeastOnce()).createNotProceed(1L, request.adjudicator!!, request.plea!!, request.notProceedReason!!, request.details!!)
+          verify(completedHearingService, atLeastOnce()).createNotProceed(1L, request.adjudicator!!, request.plea!!, request.notProceedReason!!, request.details!!, false)
         ReportedAdjudicationStatus.ADJOURNED ->
           verify(hearingOutcomeService, atLeastOnce()).createAdjourn(1L, request.adjudicator!!, request.adjournReason!!, request.details!!, request.plea!!)
         ReportedAdjudicationStatus.CHARGE_PROVED ->
-          verify(completedHearingService, atLeastOnce()).createChargeProved(1L, request.adjudicator!!, request.plea!!, request.amount!!, request.caution!!)
+          verify(completedHearingService, atLeastOnce()).createChargeProved(1L, request.adjudicator!!, request.plea!!, request.amount!!, request.caution!!, false)
 
         else -> {}
       }
