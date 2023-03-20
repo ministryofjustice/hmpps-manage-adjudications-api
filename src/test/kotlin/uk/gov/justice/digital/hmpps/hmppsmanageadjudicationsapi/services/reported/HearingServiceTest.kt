@@ -460,7 +460,9 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
               Hearing(agencyId = "", locationId = 1L, oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(5), oicHearingId = 1L, reportNumber = 1L)
             )
             it.outcomes.add(Outcome(code = OutcomeCode.REFER_INAD).also { o -> o.createDateTime = LocalDateTime.now() })
-            it.outcomes.add(Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) })
+            it.outcomes.add(Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1).minusHours(1) })
+            it.outcomes.add(Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(2) })
+            it.outcomes.add(Outcome(code = OutcomeCode.REFER_POLICE).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) })
           }
       )
 
@@ -472,8 +474,8 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       verify(prisonApiGateway, atLeastOnce()).deleteHearing(1235L, 1)
 
-      assertThat(argumentCaptor.value.outcomes.size).isEqualTo(1)
-      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.REFER_INAD)
+      assertThat(argumentCaptor.value.outcomes.size).isEqualTo(3)
+      assertThat(argumentCaptor.value.outcomes.last().code).isEqualTo(OutcomeCode.REFER_POLICE)
     }
 
     @CsvSource("COMPLETE", "REFER_POLICE", "REFER_INAD")
