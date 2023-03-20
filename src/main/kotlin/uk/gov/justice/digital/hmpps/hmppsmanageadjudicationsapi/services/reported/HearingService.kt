@@ -194,7 +194,7 @@ class HearingService(
     val hearingToRemove = reportedAdjudication.getHearing().canDelete()
 
     if (reportedAdjudication.lastOutcomeIsScheduleHearing())
-      reportedAdjudication.outcomes.removeLast()
+      reportedAdjudication.outcomes.remove(reportedAdjudication.outcomes.maxBy { it.createDateTime!! })
 
     prisonApiGateway.deleteHearing(
       adjudicationNumber = adjudicationNumber,
