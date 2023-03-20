@@ -38,42 +38,50 @@ class OutcomeService(
   fun createDismissed(
     adjudicationNumber: Long,
     details: String,
+    validate: Boolean = true,
   ): ReportedAdjudicationDto = createOutcome(
     adjudicationNumber = adjudicationNumber,
     code = OutcomeCode.DISMISSED,
     details = details,
+    validate = validate,
   )
 
   fun createNotProceed(
     adjudicationNumber: Long,
     reason: NotProceedReason,
     details: String,
+    validate: Boolean = true,
   ): ReportedAdjudicationDto = createOutcome(
     adjudicationNumber = adjudicationNumber,
     code = OutcomeCode.NOT_PROCEED,
     reason = reason,
     details = details,
+    validate = validate,
   )
 
   fun createReferral(
     adjudicationNumber: Long,
     code: OutcomeCode,
     details: String,
+    validate: Boolean = true,
   ): ReportedAdjudicationDto = createOutcome(
     adjudicationNumber = adjudicationNumber,
     code = code.validateReferral(),
     details = details,
+    validate = validate,
   )
 
   fun createChargeProved(
     adjudicationNumber: Long,
     amount: Double? = null,
     caution: Boolean,
+    validate: Boolean = true,
   ): ReportedAdjudicationDto = createOutcome(
     adjudicationNumber = adjudicationNumber,
     code = OutcomeCode.CHARGE_PROVED,
     amount = amount,
-    caution = caution
+    caution = caution,
+    validate = validate,
   )
 
   fun createQuashed(
@@ -142,13 +150,14 @@ class OutcomeService(
     amount: Double? = null,
     caution: Boolean? = null,
     quashedReason: QuashedReason? = null,
+    validate: Boolean = true,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
-      it.status.validateTransition(code.status)
+      if (validate) it.status.validateTransition(code.status)
       it.status = code.status
     }
 
-    if (reportedAdjudication.lastOutcomeIsRefer())
+    if (validate && reportedAdjudication.lastOutcomeIsRefer())
       reportedAdjudication.latestOutcome()!!.code.validateReferralTransition(code)
 
     reportedAdjudication.outcomes.add(

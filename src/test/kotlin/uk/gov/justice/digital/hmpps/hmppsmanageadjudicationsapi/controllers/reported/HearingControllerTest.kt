@@ -273,6 +273,7 @@ class HearingControllerTest : TestControllerBase() {
           any(),
           any(),
           any(),
+          any(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -398,7 +399,9 @@ class HearingControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         hearingOutcomeService.removeAdjourn(
-          ArgumentMatchers.anyLong(),
+          adjudicationNumber = ArgumentMatchers.anyLong(),
+          recalculateStatus = any()
+
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }

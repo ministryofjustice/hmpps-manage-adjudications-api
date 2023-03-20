@@ -101,6 +101,7 @@ class OutcomeControllerTest : TestControllerBase() {
           anyLong(),
           any(),
           any(),
+          any(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -160,6 +161,7 @@ class OutcomeControllerTest : TestControllerBase() {
       whenever(
         outcomeService.createReferral(
           anyLong(),
+          any(),
           any(),
           any(),
         )
@@ -224,12 +226,14 @@ class OutcomeControllerTest : TestControllerBase() {
           any(),
           any(),
           any(),
+          any(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
 
       whenever(
         completedHearingService.createDismissed(
           anyLong(),
+          any(),
           any(),
           any(),
           any(),
@@ -429,6 +433,7 @@ class OutcomeControllerTest : TestControllerBase() {
           any(),
           any(),
           anyOrNull(),
+          any(),
           any(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)

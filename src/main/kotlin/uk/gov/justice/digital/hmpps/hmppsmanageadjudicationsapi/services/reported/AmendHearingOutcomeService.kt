@@ -92,7 +92,8 @@ class AmendHearingOutcomeService(
         )
       ReportedAdjudicationStatus.ADJOURNED ->
         hearingOutcomeService.removeAdjourn(
-          adjudicationNumber = adjudicationNumber
+          adjudicationNumber = adjudicationNumber,
+          recalculateStatus = false,
         )
       else -> throw RuntimeException("should not of made it to this point - fatal")
     }
@@ -104,6 +105,7 @@ class AmendHearingOutcomeService(
           code = HearingOutcomeCode.valueOf(toStatus.name),
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
+          validate = false,
         )
       ReportedAdjudicationStatus.DISMISSED ->
         completedHearingService.createDismissed(
@@ -111,6 +113,7 @@ class AmendHearingOutcomeService(
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
+          validate = false,
         )
       ReportedAdjudicationStatus.NOT_PROCEED ->
         completedHearingService.createNotProceed(
@@ -119,6 +122,7 @@ class AmendHearingOutcomeService(
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
           reason = amendHearingOutcomeRequest.notProceedReason ?: throw ValidationException("missing reason"),
+          validate = false,
         )
       ReportedAdjudicationStatus.ADJOURNED ->
         hearingOutcomeService.createAdjourn(
@@ -134,7 +138,8 @@ class AmendHearingOutcomeService(
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
           amount = amendHearingOutcomeRequest.amount,
-          caution = amendHearingOutcomeRequest.caution ?: throw ValidationException("missing caution")
+          caution = amendHearingOutcomeRequest.caution ?: throw ValidationException("missing caution"),
+          validate = false,
         )
       else -> throw RuntimeException("should not of made it to this point - fatal")
     }

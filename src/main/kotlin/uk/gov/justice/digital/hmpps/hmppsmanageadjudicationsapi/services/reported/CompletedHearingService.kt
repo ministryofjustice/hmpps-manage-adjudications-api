@@ -21,13 +21,14 @@ class CompletedHearingService(
     adjudicator: String,
     plea: HearingOutcomePlea,
     details: String,
+    validate: Boolean = true,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.createCompletedHearing(
       adjudicationNumber = adjudicationNumber, adjudicator = adjudicator, plea = plea
     )
 
     return outcomeService.createDismissed(
-      adjudicationNumber = adjudicationNumber, details = details
+      adjudicationNumber = adjudicationNumber, details = details, validate = validate
     )
   }
 
@@ -37,13 +38,14 @@ class CompletedHearingService(
     plea: HearingOutcomePlea,
     reason: NotProceedReason,
     details: String,
+    validate: Boolean = true,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.createCompletedHearing(
       adjudicationNumber = adjudicationNumber, adjudicator = adjudicator, plea = plea
     )
 
     return outcomeService.createNotProceed(
-      adjudicationNumber = adjudicationNumber, reason = reason, details = details
+      adjudicationNumber = adjudicationNumber, reason = reason, details = details, validate = validate
     )
   }
 
@@ -53,13 +55,14 @@ class CompletedHearingService(
     plea: HearingOutcomePlea,
     amount: Double? = null,
     caution: Boolean,
+    validate: Boolean = true,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.createCompletedHearing(
-      adjudicationNumber = adjudicationNumber, adjudicator = adjudicator, plea = plea
+      adjudicationNumber = adjudicationNumber, adjudicator = adjudicator, plea = plea,
     )
 
     return outcomeService.createChargeProved(
-      adjudicationNumber = adjudicationNumber, amount = amount, caution = caution
+      adjudicationNumber = adjudicationNumber, amount = amount, caution = caution, validate = validate
     )
   }
 
