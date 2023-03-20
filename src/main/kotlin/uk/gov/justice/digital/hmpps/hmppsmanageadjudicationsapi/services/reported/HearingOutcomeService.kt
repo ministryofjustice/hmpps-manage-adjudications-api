@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingOutcomeService.Companion.latestOutcomeIsAdjourn
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getHearing
 import javax.persistence.EntityNotFoundException
 import javax.validation.ValidationException
@@ -85,9 +84,7 @@ class HearingOutcomeService(
     details: String? = null,
     plea: HearingOutcomePlea? = null
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
-      if (code == HearingOutcomeCode.ADJOURN) it.status = ReportedAdjudicationStatus.ADJOURNED
-    }
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
     reportedAdjudication.getHearing().hearingOutcome = HearingOutcome(
       code = code,
@@ -97,19 +94,17 @@ class HearingOutcomeService(
       plea = plea,
     )
 
-    return saveToDto(reportedAdjudication)
+    return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus()) it.calculateStatus() })
   }
 
   fun deleteHearingOutcome(adjudicationNumber: Long): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
-      if (it.status == ReportedAdjudicationStatus.ADJOURNED) it.calculateStatus()
-    }
-    val outcomeToRemove = reportedAdjudication.getHearing()
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val hearingToRemoveOutcome = reportedAdjudication.getHearing()
 
-    outcomeToRemove.hearingOutcome.hearingOutcomeExists()
-    outcomeToRemove.hearingOutcome = null
+    val code = hearingToRemoveOutcome.hearingOutcome.hearingOutcomeExists().code
+    hearingToRemoveOutcome.hearingOutcome = null
 
-    return saveToDto(reportedAdjudication)
+    return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus()) it.calculateStatus() })
   }
 
   fun getCurrentStatusAndLatestOutcome(
@@ -173,4 +168,6 @@ class HearingOutcomeService(
     if (this.code != outcomeCodeToAmend) throw ValidationException("latest outcome is not of same type")
     return this
   }
+
+  fun HearingOutcomeCode.shouldRecalculateStatus() = this == HearingOutcomeCode.ADJOURN
 }

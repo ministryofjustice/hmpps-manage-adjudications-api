@@ -5,6 +5,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import java.time.LocalDateTime
 
 class IntegrationTestScenarioBuilder(
   private val intTestData: IntegrationTestData,
@@ -79,9 +80,12 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun createHearing(): IntegrationTestScenario {
+  fun createHearing(
+    dateTimeOfHearing: LocalDateTime? = null
+  ): IntegrationTestScenario {
     intTestData.createHearing(
       testAdjudicationDataSet,
+      dateTimeOfHearing
     )
     return this
   }
@@ -131,8 +135,9 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun createOutcomeReferPolice(): WebTestClient.ResponseSpec {
-    return intTestData.createOutcomeReferPolice(testAdjudicationDataSet)
+  fun createOutcomeReferPolice(): IntegrationTestScenario {
+    intTestData.createOutcomeReferPolice(testAdjudicationDataSet)
+    return this
   }
 
   fun createOutcomeProsecution(): WebTestClient.ResponseSpec {
