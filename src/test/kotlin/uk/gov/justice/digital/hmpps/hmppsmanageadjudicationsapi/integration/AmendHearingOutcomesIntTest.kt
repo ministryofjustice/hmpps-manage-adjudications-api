@@ -17,7 +17,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {
-    setAuditTime(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME)
+    setAuditTime()
   }
 
   @Test
@@ -350,6 +350,31 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.status")
       .isEqualTo(ReportedAdjudicationStatus.DISMISSED.name)
+  }
+
+  @Test
+  fun `attempt to amend referral when it has an outcome throws exception ` () {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForHearings().createHearing().createReferral(code = HearingOutcomeCode.REFER_INAD).createOutcomeNotProceed()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.NOT_PROCEED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome").exists()
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
+
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/${ReportedAdjudicationStatus.REFER_INAD.name}")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "details" to "something else",
+        )
+      )
+      .exchange()
+      .expectStatus().isBadRequest
   }
 
   private fun amendOutcomeRequest(request: AmendHearingOutcomeRequest, to: ReportedAdjudicationStatus): WebTestClient.ResponseSpec =
