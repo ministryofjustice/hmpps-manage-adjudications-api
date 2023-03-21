@@ -5,16 +5,20 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.AmendHearingOutcomeRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.AmendHearingOutcomeService.Companion.mapStatusToOutcomeCode
 import javax.validation.ValidationException
@@ -98,6 +102,14 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `amending hearing outcome to a new type calls correct services`(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
       whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)).thenReturn(
         Pair(from, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""))
+      )
+
+      whenever(outcomeService.getOutcomes(any())).thenReturn(
+        listOf(
+          CombinedOutcomeDto(
+            outcome = OutcomeDto(id = 1, code = OutcomeCode.PROSECUTION)
+          )
+        )
       )
 
       val request = createRequest(to)

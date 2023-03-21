@@ -81,6 +81,10 @@ class AmendHearingOutcomeService(
     currentStatus.validateCanAmend(true)
     toStatus.validateCanAmend(false)
 
+    if (listOf(ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_POLICE).contains(toStatus))
+      if (outcomeService.getOutcomes(adjudicationNumber = adjudicationNumber).lastOrNull()?.referralOutcome != null)
+        throw ValidationException("referral has outcome - unable to amend")
+
     when (currentStatus) {
       ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
         referralService.removeReferral(
