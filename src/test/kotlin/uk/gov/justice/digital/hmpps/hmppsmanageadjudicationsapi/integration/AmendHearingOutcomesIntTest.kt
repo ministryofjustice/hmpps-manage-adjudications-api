@@ -353,7 +353,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `attempt to amend referral when it has an outcome throws exception ` () {
+  fun `attempt to amend referral when it has an outcome throws exception `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     initDataForHearings().createHearing().createReferral(code = HearingOutcomeCode.REFER_INAD).createOutcomeNotProceed()
       .expectStatus().isCreated
@@ -363,7 +363,6 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome").exists()
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
-
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/${ReportedAdjudicationStatus.REFER_INAD.name}")
