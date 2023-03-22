@@ -238,6 +238,6 @@ data class PunishmentScheduleDto(
   val startDate: LocalDate? = null,
   @Schema(description = "optional end date of punishment")
   val endDate: LocalDate? = null,
-  @Schema(description = "optional punishment suspended until data")
+  @Schema(description = "optional punishment suspended until date")
   val suspendedUntil: LocalDate? = null,
 )
