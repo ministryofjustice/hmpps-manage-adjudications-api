@@ -18,6 +18,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -462,5 +465,24 @@ class ReportedAdjudicationRepositoryTest {
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity.outcomes.first().code).isEqualTo(OutcomeCode.REFER_POLICE)
+  }
+
+  @Test
+  fun `punishment and schedule `() {
+    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    adjudication!!.punishments.add(
+      Punishment(
+        type = PunishmentType.ADDITIONAL_DAYS,
+        schedule = mutableListOf(
+          PunishmentSchedule(days = 10, startDate = LocalDate.now())
+        )
+      )
+    )
+
+    val savedEntity = reportedAdjudicationRepository.save(adjudication)
+
+    assertThat(savedEntity.punishments.first().type).isEqualTo(PunishmentType.ADDITIONAL_DAYS)
+    assertThat(savedEntity.punishments.first().schedule.first().startDate).isEqualTo(LocalDate.now())
+    assertThat(savedEntity.punishments.first().schedule.first().days).isEqualTo(10)
   }
 }
