@@ -9,10 +9,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Schema(description = "Reported adjudication details")
@@ -65,6 +68,8 @@ data class ReportedAdjudicationDto(
   val dateTimeOfFirstHearing: LocalDateTime? = null,
   @Schema(description = "Hearings, hearing outcomes, referrals and outcomes in chronological order")
   val outcomes: List<OutcomeHistoryDto>,
+  @Schema(description = "punishments")
+  val punishments: List<PunishmentDto>,
 )
 
 @Schema(description = "Details of an offence")
@@ -206,7 +211,33 @@ data class CombinedOutcomeDto(
 @Schema(description = "Previous DIS1/2 issues")
 data class DisIssueHistoryDto(
   @Schema(description = "Previous issuing officer")
-  var issuingOfficer: String,
+  val issuingOfficer: String,
   @Schema(description = "Previous date time of form issued")
-  var dateTimeOfIssue: LocalDateTime,
+  val dateTimeOfIssue: LocalDateTime,
+)
+
+@Schema(description = "punishment")
+data class PunishmentDto(
+  @Schema(description = "punishment type")
+  val type: PunishmentType,
+  @Schema(description = "optional privilege type")
+  val privilegeType: PrivilegeType? = null,
+  @Schema(description = "optional other privilege type")
+  val otherPrivilege: String? = null,
+  @Schema(description = "optional stoppage of earnings percentage")
+  val stoppagePercentage: Int? = null,
+  @Schema(description = "latest punishment schedule")
+  val schedule: PunishmentScheduleDto,
+)
+
+@Schema(description = "punishment schedule")
+data class PunishmentScheduleDto(
+  @Schema(description = "days punishment will last")
+  val days: Int,
+  @Schema(description = "optional start date of punishment")
+  val startDate: LocalDate? = null,
+  @Schema(description = "optional end date of punishment")
+  val endDate: LocalDate? = null,
+  @Schema(description = "optional punishment suspended until date")
+  val suspendedUntil: LocalDate? = null,
 )

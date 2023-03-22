@@ -169,6 +169,7 @@ class AdjudicationWorkflowService(
         hearings = mutableListOf(),
         outcomes = mutableListOf(),
         disIssueHistory = mutableListOf(),
+        punishments = mutableListOf(),
       )
     )
   }

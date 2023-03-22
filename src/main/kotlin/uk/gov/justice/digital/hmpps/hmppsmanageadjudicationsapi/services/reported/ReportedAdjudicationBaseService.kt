@@ -11,6 +11,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHistoryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedDamageDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedEvidenceDto
@@ -22,6 +24,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
@@ -76,7 +80,8 @@ open class ReportedDtoService(
       disIssueHistory = this.disIssueHistory.toDisIssueHistory(),
       gender = gender,
       dateTimeOfFirstHearing = dateTimeOfFirstHearing,
-      outcomes = createHistory(hearings.toMutableList(), outcomes.toMutableList())
+      outcomes = createHistory(hearings.toMutableList(), outcomes.toMutableList()),
+      punishments = this.punishments.toPunishments(),
     )
   }
 
@@ -228,6 +233,25 @@ open class ReportedDtoService(
         dateTimeOfIssue = it.dateTimeOfIssue,
       )
     }.sortedBy { it.dateTimeOfIssue }.toList()
+
+  private fun List<Punishment>.toPunishments(): List<PunishmentDto> =
+    this.map {
+      PunishmentDto(
+        type = it.type,
+        privilegeType = it.privilegeType,
+        otherPrivilege = it.otherPrivilege,
+        stoppagePercentage = it.stoppagePercentage,
+        schedule = it.schedule.maxBy { latest -> latest.createDateTime!! }.toPunishmentScheduleDto()
+      )
+    }
+
+  private fun PunishmentSchedule.toPunishmentScheduleDto(): PunishmentScheduleDto =
+    PunishmentScheduleDto(
+      days = this.days,
+      startDate = this.startDate,
+      endDate = this.endDate,
+      suspendedUntil = this.suspendedUntil,
+    )
 
   companion object {
     fun HearingDto.hearingHasNoAssociatedOutcome() =
