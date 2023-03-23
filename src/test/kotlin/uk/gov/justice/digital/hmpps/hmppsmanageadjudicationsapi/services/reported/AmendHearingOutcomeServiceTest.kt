@@ -29,7 +29,14 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   private val outcomeService: OutcomeService = mock()
   private val referralService: ReferralService = mock()
   private val completedHearingService: CompletedHearingService = mock()
-  private val amendHearingOutcomeService = AmendHearingOutcomeService(hearingOutcomeService, outcomeService, referralService, completedHearingService)
+  private val reportedAdjudicationService: ReportedAdjudicationService = mock()
+  private val amendHearingOutcomeService = AmendHearingOutcomeService(
+    hearingOutcomeService,
+    outcomeService,
+    referralService,
+    completedHearingService,
+    reportedAdjudicationService
+  )
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // not applicable
@@ -249,6 +256,26 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("missing caution")
+  }
+
+  @CsvSource("REFER_INAD, ADJOURNED", "REFER_POLICE, ADJOURNED", "ADJOURNED, REFER_INAD", "ADJOURNED, REFER_POLICE")
+  @ParameterizedTest
+  fun `throws validation exception if referral has outcome `(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
+    whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)).thenReturn(
+      Pair(from, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""))
+    )
+
+    whenever(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1L)).thenReturn(true)
+
+    Assertions.assertThatThrownBy {
+      amendHearingOutcomeService.amendHearingOutcome(
+        adjudicationNumber = 1, status = to,
+        amendHearingOutcomeRequest = AmendHearingOutcomeRequest(
+          details = "", plea = HearingOutcomePlea.GUILTY,
+        )
+      )
+    }.isInstanceOf(ValidationException::class.java)
+      .hasMessageContaining("referral has outcome - unable to amend")
   }
 
   companion object {

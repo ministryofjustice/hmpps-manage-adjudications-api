@@ -17,6 +17,7 @@ class AmendHearingOutcomeService(
   private val outcomeService: OutcomeService,
   private val referralService: ReferralService,
   private val completedHearingService: CompletedHearingService,
+  private val reportedAdjudicationService: ReportedAdjudicationService,
 ) {
 
   fun amendHearingOutcome(
@@ -80,6 +81,11 @@ class AmendHearingOutcomeService(
     // note: this wil validate both actions, and therefore when - else branches will never be called
     currentStatus.validateCanAmend(true)
     toStatus.validateCanAmend(false)
+
+    if ((referrals.contains(toStatus) || referrals.contains(currentStatus)) &&
+      reportedAdjudicationService.lastOutcomeHasReferralOutcome(adjudicationNumber)
+    )
+      throw ValidationException("referral has outcome - unable to amend")
 
     when (currentStatus) {
       ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
@@ -146,6 +152,8 @@ class AmendHearingOutcomeService(
   }
 
   companion object {
+
+    val referrals = listOf(ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD)
 
     fun ReportedAdjudicationStatus.mapStatusToHearingOutcomeCode() =
       when (this) {

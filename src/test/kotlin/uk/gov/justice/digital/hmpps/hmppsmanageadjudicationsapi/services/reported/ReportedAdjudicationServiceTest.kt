@@ -1207,6 +1207,68 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class HasReferralOutcome {
+
+    @Test
+    fun `returns true when last item is referral outcome `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.hearings.first().hearingOutcome = HearingOutcome(
+            code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""
+          )
+          it.outcomes.add(
+            Outcome(code = OutcomeCode.REFER_POLICE).also { o -> o.createDateTime = LocalDateTime.now() }
+          )
+          it.outcomes.add(
+            Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) }
+          )
+        }
+      )
+
+      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(true)
+    }
+
+    @Test
+    fun `returns false when no history `() {
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.hearings.clear()
+          it.outcomes.clear()
+        }
+      )
+
+      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(false)
+    }
+
+    @Test
+    fun `returns false when no last item has no outcome `() {
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.outcomes.clear()
+        }
+      )
+
+      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(false)
+    }
+
+    @Test
+    fun `returns false when no last item has no referral outcome `() {
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.outcomes.add(
+            Outcome(code = OutcomeCode.REFER_POLICE)
+          )
+        }
+      )
+
+      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(false)
+    }
+  }
+
   companion object {
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
@@ -1240,6 +1302,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     assertThatThrownBy {
       reportedAdjudicationService.setIssued(1, LocalDateTime.now())
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    assertThatThrownBy {
+      reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }
