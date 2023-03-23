@@ -38,6 +38,9 @@ class ReportedAdjudicationService(
     return reportedAdjudication.toDto()
   }
 
+  fun lastOutcomeHasReferralOutcome(adjudicationNumber: Long): Boolean =
+    findByAdjudicationNumber(adjudicationNumber).getHistory().lastOrNull()?.outcome?.referralOutcome != null
+
   fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
     if (status == ReportedAdjudicationStatus.ACCEPTED) throw ValidationException("ACCEPTED is deprecated use UNSCHEDULED")
 

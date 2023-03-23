@@ -395,4 +395,29 @@ class HearingsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.status")
       .isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
   }
+
+  @Test
+  fun `should only create one schedule hearing - refer police, adjourn, adjourn `() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    initDataForOutcome()
+      .createOutcomeReferPolice()
+      .createHearing(dateTimeOfHearing = LocalDateTime.now())
+      .createAdjourn()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "locationId" to 1,
+          "dateTimeOfHearing" to LocalDateTime.now().plusDays(3),
+          "oicHearingType" to OicHearingType.GOV.name,
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.outcomes[1].outcome.referralOutcome").doesNotExist()
+  }
 }

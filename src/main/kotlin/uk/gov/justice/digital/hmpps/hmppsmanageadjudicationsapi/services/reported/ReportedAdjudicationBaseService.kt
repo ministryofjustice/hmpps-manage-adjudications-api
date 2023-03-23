@@ -85,6 +85,9 @@ open class ReportedDtoService(
     )
   }
 
+  protected fun ReportedAdjudication.getHistory(): List<OutcomeHistoryDto> =
+    createHistory(this.hearings.toHearings().toMutableList(), this.outcomes.createCombinedOutcomes().toMutableList())
+
   private fun createHistory(hearings: MutableList<HearingDto>, outcomes: MutableList<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
     if (hearings.isEmpty() && outcomes.isEmpty()) return listOf()
     if (outcomes.isEmpty()) return hearings.map { OutcomeHistoryDto(hearing = it) }

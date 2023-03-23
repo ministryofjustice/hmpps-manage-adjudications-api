@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -202,7 +203,7 @@ class HearingService(
       it.hearings.remove(hearingToRemove)
       it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
 
-      it.lastOutcomeIsScheduleHearing()?.let { outcome -> it.outcomes.remove(outcome) }
+      if (it.getHistory().shouldRemoveLastScheduleHearing()) it.outcomes.remove(it.outcomes.getOutcomeToRemove())
     }.calculateStatus()
 
     return saveToDto(reportedAdjudication)
@@ -246,11 +247,13 @@ class HearingService(
         throw ValidationException("A hearing can not be before the previous hearing")
     }
 
-    fun ReportedAdjudication.lastOutcomeIsScheduleHearing(): Outcome? {
-      val last = this.outcomes.maxByOrNull { it.createDateTime!! } ?: return null
-
-      return if (last.code == OutcomeCode.SCHEDULE_HEARING) last else null
+    fun List<OutcomeHistoryDto>.shouldRemoveLastScheduleHearing(): Boolean {
+      val lastItem = this.lastOrNull() ?: return false
+      val referralOutcome = lastItem.outcome?.referralOutcome ?: return false
+      return referralOutcome.code == OutcomeCode.SCHEDULE_HEARING
     }
+
+    fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.createDateTime!! }
 
     fun ReportedAdjudication.getHearing(): Hearing = this.getLatestHearing() ?: throwHearingNotFoundException()
 

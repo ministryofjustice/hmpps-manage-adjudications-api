@@ -290,24 +290,6 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `attempt to edit referral when an outcome is present - expected to fail currently`() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    initDataForHearings().createHearing().createReferral(HearingOutcomeCode.REFER_POLICE).createOutcomeNotProceed()
-
-    webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/${ReportedAdjudicationStatus.REFER_POLICE.name}")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .bodyValue(
-        mapOf(
-          "adjudicator" to "updated adjudicator",
-          "details" to "updated details"
-        )
-      )
-      .exchange()
-      .expectStatus().isBadRequest
-  }
-
-  @Test
   fun `amend hearing outcome - charge proved where the amount is no longer required `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     initDataForHearings().createHearing().createChargeProved()
@@ -353,23 +335,17 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `attempt to amend referral when it has an outcome throws exception `() {
+  fun `attempt to edit referral when an outcome is present - expected to fail currently`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    initDataForHearings().createHearing().createReferral(code = HearingOutcomeCode.REFER_INAD).createOutcomeNotProceed()
-      .expectStatus().isCreated
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.status")
-      .isEqualTo(ReportedAdjudicationStatus.NOT_PROCEED.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome").exists()
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
+    initDataForHearings().createHearing().createReferral(HearingOutcomeCode.REFER_POLICE).createOutcomeNotProceed()
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/${ReportedAdjudicationStatus.REFER_INAD.name}")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/${ReportedAdjudicationStatus.REFER_POLICE.name}")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
-          "details" to "something else",
+          "adjudicator" to "updated adjudicator",
+          "details" to "updated details"
         )
       )
       .exchange()
