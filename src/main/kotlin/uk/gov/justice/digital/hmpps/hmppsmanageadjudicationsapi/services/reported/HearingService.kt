@@ -39,6 +39,7 @@ class HearingService(
   authenticationFacade,
 ) {
 
+  @Deprecated(message = "to be removed when outcomes goes live")
   fun createHearingV1(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
@@ -73,6 +74,7 @@ class HearingService(
     return saveToDto(reportedAdjudication)
   }
 
+  @Deprecated(message = "to be removed when outcomes goes live")
   fun amendHearingV1(adjudicationNumber: Long, hearingId: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
@@ -101,6 +103,7 @@ class HearingService(
     return saveToDto(reportedAdjudication)
   }
 
+  @Deprecated(message = "to be removed when outcomes goes live")
   fun deleteHearingV1(adjudicationNumber: Long, hearingId: Long): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val hearingToRemove = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException()
