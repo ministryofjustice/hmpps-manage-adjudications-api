@@ -1,0 +1,30 @@
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
+
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+class PunishmentsIntTest : IntegrationTestBase() {
+
+  @BeforeEach
+  fun setUp() {
+    setAuditTime(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME)
+  }
+
+  @Test
+  fun `create punishments `() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForOutcome().createHearing().createChargeProved()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "TODO" to "TODO"
+        )
+      )
+      .exchange()
+      .expectStatus().isCreated
+    // plus match other fields at some point from the dto
+  }
+}
