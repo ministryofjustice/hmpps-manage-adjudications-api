@@ -47,12 +47,27 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `validation tests to think about `() {
-      /*
-         review tickets.  certain sets of data must have certain values set around schedule and so on.
-         and if X type, needs sub type and so on.
-       */
+    fun `validation error - privilege missing sub type `() {
+      TODO("implement me")
+    }
 
+    @Test
+    fun `validation error - other privilege missing description `() {
+      TODO("implement me")
+    }
+
+    @Test
+    fun `validation error - earnings missing stoppage percentage `() {
+      TODO("implement me")
+    }
+
+    @Test
+    fun `validation error - not suspended missing start date `() {
+      TODO("implement me")
+    }
+
+    @Test
+    fun `validation error - not suspended missing end date `() {
       TODO("implement me")
     }
 

@@ -206,7 +206,7 @@ class HearingService(
       it.hearings.remove(hearingToRemove)
       it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
 
-      if (it.getHistory().shouldRemoveLastScheduleHearing()) it.outcomes.remove(it.outcomes.getOutcomeToRemove())
+      if (it.getOutcomeHistory().shouldRemoveLastScheduleHearing()) it.outcomes.remove(it.outcomes.getOutcomeToRemove())
     }.calculateStatus()
 
     return saveToDto(reportedAdjudication)

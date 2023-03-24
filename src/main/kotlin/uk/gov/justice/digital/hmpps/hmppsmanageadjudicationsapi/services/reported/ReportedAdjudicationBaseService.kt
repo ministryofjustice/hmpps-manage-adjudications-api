@@ -80,15 +80,15 @@ open class ReportedDtoService(
       disIssueHistory = this.disIssueHistory.toDisIssueHistory(),
       gender = gender,
       dateTimeOfFirstHearing = dateTimeOfFirstHearing,
-      outcomes = createHistory(hearings.toMutableList(), outcomes.toMutableList()),
+      outcomes = createOutcomeHistory(hearings.toMutableList(), outcomes.toMutableList()),
       punishments = this.punishments.toPunishments(),
     )
   }
 
-  protected fun ReportedAdjudication.getHistory(): List<OutcomeHistoryDto> =
-    createHistory(this.hearings.toHearings().toMutableList(), this.outcomes.createCombinedOutcomes().toMutableList())
+  protected fun ReportedAdjudication.getOutcomeHistory(): List<OutcomeHistoryDto> =
+    createOutcomeHistory(this.hearings.toHearings().toMutableList(), this.outcomes.createCombinedOutcomes().toMutableList())
 
-  private fun createHistory(hearings: MutableList<HearingDto>, outcomes: MutableList<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
+  private fun createOutcomeHistory(hearings: MutableList<HearingDto>, outcomes: MutableList<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
     if (hearings.isEmpty() && outcomes.isEmpty()) return listOf()
     if (outcomes.isEmpty()) return hearings.map { OutcomeHistoryDto(hearing = it) }
     if (hearings.isEmpty()) return outcomes.map { OutcomeHistoryDto(outcome = it) }
