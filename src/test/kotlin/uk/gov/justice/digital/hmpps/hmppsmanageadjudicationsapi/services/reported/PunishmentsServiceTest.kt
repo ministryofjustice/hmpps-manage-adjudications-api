@@ -72,6 +72,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `validation error - suspended missing all data `() {
+      TODO("implement me")
+    }
+
+    @Test
     fun `creates a set of punishments `() {
       TODO("implement me")
     }
