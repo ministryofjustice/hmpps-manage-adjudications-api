@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import java.time.LocalDate
 
@@ -24,9 +25,14 @@ class PunishmentsIntTest : IntegrationTestBase() {
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
-          "type" to PunishmentType.CONFINEMENT,
-          "days" to 10,
-          "suspendedUntil" to suspendedUntil
+          "punishments" to
+            listOf(
+              PunishmentRequest(
+                type = PunishmentType.CONFINEMENT,
+                days = 10,
+                suspendedUntil = suspendedUntil
+              )
+            )
         )
       )
       .exchange()

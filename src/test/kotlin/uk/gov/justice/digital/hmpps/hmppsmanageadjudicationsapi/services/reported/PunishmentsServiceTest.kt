@@ -8,6 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
@@ -67,7 +68,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         punishmentsService.create(adjudicationNumber = 1, listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)))
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("Outcome is not CHARGE_PROVED")
+        .hasMessageContaining("status is not CHARGE_PROVED")
     }
 
     @Test
@@ -134,6 +135,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           )
         )
       )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       Assertions.assertThat(argumentCaptor.value.punishments.first()).isNotNull
       Assertions.assertThat(argumentCaptor.value.punishments.first().type).isEqualTo(PunishmentType.PRIVILEGE)
