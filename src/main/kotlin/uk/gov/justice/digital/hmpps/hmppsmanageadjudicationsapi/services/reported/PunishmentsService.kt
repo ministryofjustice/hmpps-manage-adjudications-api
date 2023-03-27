@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -21,6 +22,7 @@ class PunishmentsService(
 
   fun create(
     adjudicationNumber: Long,
+    punishments: List<PunishmentRequest>
   ): ReportedAdjudicationDto {
     TODO("implement me")
   }

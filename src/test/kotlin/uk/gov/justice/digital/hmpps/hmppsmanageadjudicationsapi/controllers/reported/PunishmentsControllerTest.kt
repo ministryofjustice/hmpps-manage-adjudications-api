@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
+import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -31,6 +32,7 @@ class PunishmentsControllerTest : TestControllerBase() {
       whenever(
         punishmentsService.create(
           ArgumentMatchers.anyLong(),
+          any(),
         )
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -64,14 +66,21 @@ class PunishmentsControllerTest : TestControllerBase() {
       createPunishmentsRequest(1, PUNISHMENT_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(punishmentsService).create(1,)
+      verify(punishmentsService).create(
+        adjudicationNumber = 1,
+        listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days))
+      )
     }
 
     private fun createPunishmentsRequest(
       id: Long,
       punishmentRequest: PunishmentRequest,
     ): ResultActions {
-      val body = objectMapper.writeValueAsString(punishmentRequest)
+      val body = objectMapper.writeValueAsString(
+        PunishmentsRequest(
+          punishments = listOf(punishmentRequest)
+        )
+      )
       return mockMvc
         .perform(
           MockMvcRequestBuilders.post("/reported-adjudications/$id/punishments")

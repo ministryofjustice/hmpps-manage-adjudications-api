@@ -8,6 +8,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService
 import java.time.LocalDate
 
+@Schema(description = "punishments request")
+data class PunishmentsRequest(
+  @Schema(description = "list of punishments")
+  val punishments: List<PunishmentRequest>,
+)
+
 @Schema(description = "punishment request")
 data class PunishmentRequest(
   @Schema(description = "punishment type")
