@@ -36,10 +36,8 @@ class PunishmentsService(
       when (it.type) {
         PunishmentType.PRIVILEGE -> {
           it.privilegeType ?: throw ValidationException("subtype missing for type PRIVILEGE")
-          when (it.privilegeType) {
-            PrivilegeType.OTHER -> it.otherPrivilege ?: throw ValidationException("description missing for type PRIVILEGE - sub type OTHER")
-            else -> {}
-          }
+          if (it.privilegeType == PrivilegeType.OTHER)
+            it.otherPrivilege ?: throw ValidationException("description missing for type PRIVILEGE - sub type OTHER")
         }
         PunishmentType.EARNINGS -> it.stoppagePercentage ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
         else -> {}
