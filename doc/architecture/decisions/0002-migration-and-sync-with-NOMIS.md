@@ -98,9 +98,150 @@ This endpoint will return all the adjudication information needed to populate NO
 
 `GET /an-adjudication/{id}`
 ```json
-[
-  "API HERE"
-]
+{
+  "reportedAdjudication": {
+    "adjudicationNumber": 0,
+    "prisonerNumber": "G2996UX",
+    "gender": "MALE",
+    "bookingId": 1234,
+    "incidentDetails": {
+      "locationId": 0,
+      "dateTimeOfIncident": "2023-03-28T12:29:35.791Z",
+      "dateTimeOfDiscovery": "2023-03-28T12:29:35.791Z",
+      "handoverDeadline": "2023-03-28T12:29:35.791Z"
+    },
+    "isYouthOffender": true,
+    "incidentRole": {
+      "roleCode": "25a",
+      "offenceRule": {
+        "paragraphNumber": "25(a)",
+        "paragraphDescription": "Committed an assault"
+      },
+      "associatedPrisonersNumber": "G2996UX",
+      "associatedPrisonersName": "G2996UX"
+    },
+    "offenceDetails": {
+      "offenceCode": 3,
+      "offenceRule": {
+        "paragraphNumber": "25(a)",
+        "paragraphDescription": "Committed an assault"
+      },
+      "victimPrisonersNumber": "G2996UX",
+      "victimStaffUsername": "ABC12D",
+      "victimOtherPersonsName": "Bob Hope"
+    },
+    "incidentStatement": {
+      "statement": "string",
+      "completed": true
+    },
+    "createdByUserId": "string",
+    "createdDateTime": "2023-03-28T12:29:35.791Z",
+    "status": "ACCEPTED",
+    "reviewedByUserId": "string",
+    "statusReason": "string",
+    "statusDetails": "string",
+    "damages": [
+      {
+        "code": "CLEANING",
+        "details": "the kettle was broken",
+        "reporter": "ABC12D"
+      }
+    ],
+    "evidence": [
+      {
+        "code": "PHOTO",
+        "identifier": "Tag number or Camera number",
+        "details": "ie what does the photo describe",
+        "reporter": "ABC12D"
+      }
+    ],
+    "witnesses": [
+      {
+        "code": "PRISON_OFFICER",
+        "firstName": "Fred",
+        "lastName": "Kruger",
+        "reporter": "ABC12D"
+      }
+    ],
+    "hearings": [
+      {
+        "id": 0,
+        "locationId": 0,
+        "dateTimeOfHearing": "2023-03-28T12:29:35.791Z",
+        "oicHearingType": "GOV_ADULT",
+        "outcome": {
+          "id": 0,
+          "adjudicator": "string",
+          "code": "COMPLETE",
+          "reason": "LEGAL_ADVICE",
+          "details": "string",
+          "plea": "UNFIT"
+        }
+      }
+    ],
+    "issuingOfficer": "string",
+    "dateTimeOfIssue": "2023-03-28T12:29:35.791Z",
+    "disIssueHistory": [
+      {
+        "issuingOfficer": "string",
+        "dateTimeOfIssue": "2023-03-28T12:29:35.791Z"
+      }
+    ],
+    "dateTimeOfFirstHearing": "2023-03-28T12:29:35.791Z",
+    "outcomes": [
+      {
+        "hearing": {
+          "id": 0,
+          "locationId": 0,
+          "dateTimeOfHearing": "2023-03-28T12:29:35.791Z",
+          "oicHearingType": "GOV_ADULT",
+          "outcome": {
+            "id": 0,
+            "adjudicator": "string",
+            "code": "COMPLETE",
+            "reason": "LEGAL_ADVICE",
+            "details": "string",
+            "plea": "UNFIT"
+          }
+        },
+        "outcome": {
+          "outcome": {
+            "id": 0,
+            "code": "REFER_POLICE",
+            "details": "string",
+            "reason": "ANOTHER_WAY",
+            "amount": 0,
+            "caution": true,
+            "quashedReason": "FLAWED_CASE"
+          },
+          "referralOutcome": {
+            "id": 0,
+            "code": "REFER_POLICE",
+            "details": "string",
+            "reason": "ANOTHER_WAY",
+            "amount": 0,
+            "caution": true,
+            "quashedReason": "FLAWED_CASE"
+          }
+        }
+      }
+    ],
+    "punishments": [
+      {
+        "type": "PRIVILEGE",
+        "privilegeType": "CANTEEN",
+        "otherPrivilege": "string",
+        "stoppagePercentage": 0,
+        "schedule": {
+          "days": 0,
+          "startDate": "2023-03-28",
+          "endDate": "2023-03-28",
+          "suspendedUntil": "2023-03-28"
+        }
+      }
+    ]
+  }
+}
 ```
 ### Migration endpoint
 This endpoint will contain all the information need to populate the adjudication system with an adjudication decision and outcome
@@ -108,7 +249,7 @@ This endpoint will contain all the information need to populate the adjudication
 `POST /migrate`
 ```json
 [
-  "API HERE"
+  *** see JSON in GET endpoint above ***
 ]
 ```
 
