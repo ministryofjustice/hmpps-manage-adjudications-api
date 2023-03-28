@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDateTime
 
+@Deprecated(message = "to be removed when outcomes goes live")
 class HearingsV1IntTest : IntegrationTestBase() {
 
   @BeforeEach

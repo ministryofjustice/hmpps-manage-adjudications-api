@@ -96,6 +96,7 @@ class HearingController(
   private val amendHearingOutcomeService: AmendHearingOutcomeService,
 ) : ReportedAdjudicationBaseController() {
 
+  @Deprecated(message = "to be removed when outcomes goes live")
   @PostMapping(value = ["/{adjudicationNumber}/hearing"])
   @Operation(summary = "Create a new hearing")
   @ResponseStatus(HttpStatus.CREATED)
@@ -110,6 +111,7 @@ class HearingController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
+  @Deprecated(message = "to be removed when outcomes goes live")
   @PutMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}"])
   @Operation(summary = "Amend an existing hearing")
   @ResponseStatus(HttpStatus.OK)
@@ -125,6 +127,7 @@ class HearingController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
+  @Deprecated(message = "to be removed when outcomes goes live")
   @DeleteMapping(value = ["/{adjudicationNumber}/hearing/{hearingId}"])
   @Operation(summary = "deletes a hearing")
   @ResponseStatus(HttpStatus.OK)
