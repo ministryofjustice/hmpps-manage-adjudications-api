@@ -16,7 +16,8 @@ class DraftDamagesService(
   offenceCodeLookupService: OffenceCodeLookupService,
   private val authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
-  draftAdjudicationRepository, offenceCodeLookupService
+  draftAdjudicationRepository,
+  offenceCodeLookupService,
 ) {
 
   fun setDamages(id: Long, damages: List<DamageRequestItem>): DraftAdjudicationDto {
@@ -29,9 +30,9 @@ class DraftDamagesService(
         Damage(
           code = it.code,
           details = it.details,
-          reporter = reporter
+          reporter = reporter,
         )
-      }
+      },
     )
     draftAdjudication.damagesSaved = true
 

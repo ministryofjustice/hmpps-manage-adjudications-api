@@ -95,7 +95,7 @@ class OutcomeService(
       adjudicationNumber = adjudicationNumber,
       code = OutcomeCode.QUASHED,
       details = details,
-      quashedReason = reason
+      quashedReason = reason,
     )
   }
 
@@ -157,8 +157,9 @@ class OutcomeService(
       it.status = code.status
     }
 
-    if (validate && reportedAdjudication.lastOutcomeIsRefer())
+    if (validate && reportedAdjudication.lastOutcomeIsRefer()) {
       reportedAdjudication.latestOutcome()!!.code.validateReferralTransition(code)
+    }
 
     reportedAdjudication.outcomes.add(
       Outcome(
@@ -168,7 +169,7 @@ class OutcomeService(
         amount = amount,
         caution = caution,
         quashedReason = quashedReason,
-      )
+      ),
     )
 
     return saveToDto(reportedAdjudication)
@@ -186,7 +187,6 @@ class OutcomeService(
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
     reportedAdjudication.latestOutcome()!!.let {
-
       when (it.code) {
         OutcomeCode.NOT_PROCEED -> {
           details?.let { updated -> it.details = updated }
@@ -234,8 +234,9 @@ class OutcomeService(
       this.outcomes.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Outcome not found for $id")
 
     fun OutcomeCode.validateReferralTransition(to: OutcomeCode) {
-      if (!this.canTransitionTo(to))
+      if (!this.canTransitionTo(to)) {
         throw ValidationException("Invalid referral transition")
+      }
     }
 
     fun Outcome.canDelete(hasHearings: Boolean): Outcome {
@@ -249,16 +250,18 @@ class OutcomeService(
       OutcomeCode.referrals().contains(this.outcomes.maxByOrNull { it.createDateTime!! }?.code)
 
     fun Outcome?.canQuash() {
-      if (this?.code != OutcomeCode.CHARGE_PROVED)
+      if (this?.code != OutcomeCode.CHARGE_PROVED) {
         throw ValidationException("unable to quash this outcome")
+      }
     }
 
     fun Outcome?.canAmendViaApi(hasHearings: Boolean, isReferralOutcome: Boolean) {
       if ((hasHearings && !isReferralOutcome && this?.code != OutcomeCode.QUASHED) ||
         (hasHearings && isReferralOutcome && this?.code != OutcomeCode.NOT_PROCEED) ||
         (!hasHearings && !listOf(OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED).contains(this?.code))
-      )
+      ) {
         throw ValidationException("unable to amend this outcome")
+      }
     }
 
     fun Outcome?.canAmendViaService(hasHearings: Boolean): Outcome {
@@ -266,8 +269,9 @@ class OutcomeService(
 
       if (listOf(OutcomeCode.QUASHED, OutcomeCode.SCHEDULE_HEARING).any { it == this.code } ||
         (!hasHearings && listOf(OutcomeCode.NOT_PROCEED, OutcomeCode.REFER_POLICE).any { it == this.code })
-      )
+      ) {
         throw ValidationException("unable to amend via this function")
+      }
 
       return this
     }

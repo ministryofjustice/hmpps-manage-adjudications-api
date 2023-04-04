@@ -243,8 +243,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "status" to ReportedAdjudicationStatus.RETURNED,
           "statusReason" to "status reason",
-          "statusDetails" to "status details"
-        )
+          "statusDetails" to "status details",
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -280,7 +280,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "status" to ReportedAdjudicationStatus.UNSCHEDULED,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -330,7 +330,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "status" to ReportedAdjudicationStatus.UNSCHEDULED,
-        )
+        ),
       )
       .exchange()
       .expectStatus().is5xxServerError
@@ -360,7 +360,7 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "status" to ReportedAdjudicationStatus.UNSCHEDULED,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isBadRequest
@@ -393,13 +393,17 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "damages" to listOf(
             DamageRequestItem(
-              code = DamageCode.ELECTRICAL_REPAIR, details = "details 2", reporter = "ITAG_ALO"
+              code = DamageCode.ELECTRICAL_REPAIR,
+              details = "details 2",
+              reporter = "ITAG_ALO",
             ),
             DamageRequestItem(
-              code = DamageCode.CLEANING, details = "details", reporter = "B_MILLS"
-            )
+              code = DamageCode.CLEANING,
+              details = "details",
+              reporter = "B_MILLS",
+            ),
           ),
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -443,13 +447,17 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "evidence" to listOf(
             EvidenceRequestItem(
-              code = EvidenceCode.BODY_WORN_CAMERA, details = "details 2", reporter = "ITAG_ALO"
+              code = EvidenceCode.BODY_WORN_CAMERA,
+              details = "details 2",
+              reporter = "ITAG_ALO",
             ),
             EvidenceRequestItem(
-              code = EvidenceCode.PHOTO, details = "details", reporter = "B_MILLS"
-            )
+              code = EvidenceCode.PHOTO,
+              details = "details",
+              reporter = "B_MILLS",
+            ),
           ),
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -493,13 +501,19 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "witnesses" to listOf(
             WitnessRequestItem(
-              code = WitnessCode.STAFF, firstName = "first", lastName = "last", reporter = "ITAG_ALO"
+              code = WitnessCode.STAFF,
+              firstName = "first",
+              lastName = "last",
+              reporter = "ITAG_ALO",
             ),
             WitnessRequestItem(
-              code = WitnessCode.OFFICER, firstName = "first", lastName = "last", reporter = "B_MILLS"
-            )
+              code = WitnessCode.OFFICER,
+              firstName = "first",
+              lastName = "last",
+              reporter = "B_MILLS",
+            ),
           ),
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -546,8 +560,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders())
       .bodyValue(
         mapOf(
-          "dateTimeOfIssue" to dateTimeOfIssue
-        )
+          "dateTimeOfIssue" to dateTimeOfIssue,
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -563,8 +577,8 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
       .headers(setHeaders(username = IntegrationTestData.DEFAULT_CREATED_USER_ID))
       .bodyValue(
         mapOf(
-          "dateTimeOfIssue" to dateTimeOfIssue.plusHours(1)
-        )
+          "dateTimeOfIssue" to dateTimeOfIssue.plusHours(1),
+        ),
       )
       .exchange()
       .expectStatus().isOk

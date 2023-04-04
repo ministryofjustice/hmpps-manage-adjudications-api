@@ -31,7 +31,7 @@ data class DamageRequestItem(
 
 @RestController
 class DraftDamagesController(
-  private val damagesService: DraftDamagesService
+  private val damagesService: DraftDamagesService,
 ) : DraftAdjudicationBaseController() {
 
   @PutMapping(value = ["/{id}/damages"])
@@ -40,11 +40,12 @@ class DraftDamagesController(
   @ResponseStatus(HttpStatus.CREATED)
   fun setDamages(
     @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid damagesRequest: DamagesRequest
+    @RequestBody @Valid
+    damagesRequest: DamagesRequest,
   ): DraftAdjudicationResponse {
     val draftAdjudication = damagesService.setDamages(
       id,
-      damagesRequest.damages
+      damagesRequest.damages,
     )
 
     return DraftAdjudicationResponse(draftAdjudication)

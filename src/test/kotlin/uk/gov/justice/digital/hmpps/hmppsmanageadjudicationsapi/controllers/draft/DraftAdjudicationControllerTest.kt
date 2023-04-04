@@ -39,8 +39,8 @@ import javax.persistence.EntityNotFoundException
 
 @WebMvcTest(
   value = [
-    DraftAdjudicationController::class
-  ]
+    DraftAdjudicationController::class,
+  ],
 )
 class DraftAdjudicationControllerTest : TestControllerBase() {
 
@@ -59,9 +59,9 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           any(),
           any(),
           anyOrNull(),
-        )
+        ),
       ).thenReturn(
-        draftAdjudicationDto()
+        draftAdjudicationDto(),
       )
     }
 
@@ -82,7 +82,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         "MDI",
         1,
         DATE_TIME_OF_INCIDENT,
-        null
+        null,
       )
     }
 
@@ -120,23 +120,27 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       incidentRole: IncidentRoleRequest? = null,
     ): ResultActions {
       val jsonBody =
-        if (locationId == null && dateTimeOfIncident == null && prisonerNumber == null) "" else objectMapper.writeValueAsString(
-          mapOf(
-            "prisonerNumber" to prisonerNumber,
-            "gender" to Gender.MALE.name,
-            "agencyId" to agencyId,
-            "locationId" to locationId,
-            "dateTimeOfIncident" to dateTimeOfIncident,
-            "incidentRole" to incidentRole,
-            "dateTimeOfDiscovery" to dateTimeOfDiscovery,
+        if (locationId == null && dateTimeOfIncident == null && prisonerNumber == null) {
+          ""
+        } else {
+          objectMapper.writeValueAsString(
+            mapOf(
+              "prisonerNumber" to prisonerNumber,
+              "gender" to Gender.MALE.name,
+              "agencyId" to agencyId,
+              "locationId" to locationId,
+              "dateTimeOfIncident" to dateTimeOfIncident,
+              "incidentRole" to incidentRole,
+              "dateTimeOfDiscovery" to dateTimeOfDiscovery,
+            ),
           )
-        )
+        }
 
       return mockMvc
         .perform(
           post("/draft-adjudications")
             .header("Content-Type", "application/json")
-            .content(jsonBody)
+            .content(jsonBody),
         )
     }
   }
@@ -178,14 +182,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       val jsonBody = objectMapper.writeValueAsString(
         mapOf(
           "id" to id,
-        )
+        ),
       )
 
       return mockMvc
         .perform(
           delete("/draft-adjudications/1")
             .header("Content-Type", "application/json")
-            .content(jsonBody)
+            .content(jsonBody),
         )
     }
   }
@@ -211,11 +215,11 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             locationId = 1L,
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
           ),
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
-          isYouthOffender = true
-        )
+          isYouthOffender = true,
+        ),
       )
       makeGetDraftAdjudicationRequest(1)
         .andExpect(status().isOk)
@@ -226,13 +230,13 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.locationId").value(1))
         .andExpect(
           jsonPath("$.draftAdjudication.incidentRole.roleCode").value(
-            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode
-          )
+            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode,
+          ),
         )
         .andExpect(
           jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").value(
-            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber
-          )
+            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber,
+          ),
         )
     }
 
@@ -249,11 +253,11 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             locationId = 1L,
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
-            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+            handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
           ),
           incidentRole = INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO,
-          isYouthOffender = true
-        )
+          isYouthOffender = true,
+        ),
       )
       makeGetDraftAdjudicationRequest(1)
         .andExpect(status().isOk)
@@ -274,7 +278,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           get("/draft-adjudications/$id")
-            .header("Content-Type", "application/json")
+            .header("Content-Type", "application/json"),
         )
     }
   }
@@ -329,7 +333,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .perform(
           post("/draft-adjudications/$id/incident-statement")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -344,7 +348,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           any(),
           anyOrNull(),
-        )
+        ),
       ).thenReturn(draftAdjudicationDto())
     }
 
@@ -355,7 +359,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         1,
         DATE_TIME_OF_INCIDENT,
         DATE_TIME_OF_INCIDENT.plusDays(1),
-        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST
+        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
       )
         .andExpect(status().isUnauthorized)
     }
@@ -368,7 +372,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         2,
         DATE_TIME_OF_INCIDENT,
         DATE_TIME_OF_INCIDENT.plusDays(1),
-        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST
+        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
       )
         .andExpect(status().isOk)
 
@@ -376,7 +380,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         1,
         2,
         DATE_TIME_OF_INCIDENT,
-        DATE_TIME_OF_INCIDENT.plusDays(1)
+        DATE_TIME_OF_INCIDENT.plusDays(1),
       )
     }
 
@@ -388,7 +392,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         2,
         DATE_TIME_OF_INCIDENT,
         DATE_TIME_OF_INCIDENT.plusDays(1),
-        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST
+        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
       )
         .andExpect(status().isOk)
         .andExpect(jsonPath("$.draftAdjudication.id").isNumber)
@@ -399,13 +403,13 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
         .andExpect(
           jsonPath("$.draftAdjudication.incidentRole.roleCode").value(
-            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode
-          )
+            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode,
+          ),
         )
         .andExpect(
           jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").value(
-            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber
-          )
+            INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.associatedPrisonersNumber,
+          ),
         )
     }
 
@@ -418,9 +422,9 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           any(),
           anyOrNull(),
-        )
+        ),
       ).thenThrow(
-        IllegalStateException::class.java
+        IllegalStateException::class.java,
       )
       editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, null, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isBadRequest)
@@ -431,7 +435,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       locationId: Long,
       dateTimeOfIncident: LocalDateTime?,
       dateTimeOfDiscovery: LocalDateTime?,
-      incidentRole: IncidentRoleRequest?
+      incidentRole: IncidentRoleRequest?,
     ): ResultActions {
       val body =
         objectMapper.writeValueAsString(
@@ -440,13 +444,13 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             "dateTimeOfIncident" to dateTimeOfIncident,
             "incidentRole" to incidentRole,
             "dateTimeOfDiscovery" to dateTimeOfDiscovery,
-          )
+          ),
         )
       return mockMvc
         .perform(
           put("/draft-adjudications/$id/incident-details")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -491,7 +495,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .perform(
           put("/draft-adjudications/$id/incident-statement")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -512,10 +516,10 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
                 locationId = 1,
                 dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
                 dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
-                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
               ),
               incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
-              isYouthOffender = true
+              isYouthOffender = true,
             ),
             DraftAdjudicationDto(
               id = 2,
@@ -526,13 +530,13 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
                 locationId = 2,
                 dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1),
                 dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusMonths(1),
-                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE.plusMonths(1)
+                handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE.plusMonths(1),
               ),
               incidentRole = INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO,
-              isYouthOffender = true
-            )
-          )
-        )
+              isYouthOffender = true,
+            ),
+          ),
+        ),
       )
     }
 
@@ -559,7 +563,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     private fun getInProgressDraftAdjudications(): ResultActions = mockMvc
       .perform(
         get("/draft-adjudications/my/agency/MDI?")
-          .header("Content-Type", "application/json")
+          .header("Content-Type", "application/json"),
       )
   }
 
@@ -593,7 +597,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .perform(
           put("/draft-adjudications/$id/applicable-rules")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -607,7 +611,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           any(),
           anyBoolean(),
-        )
+        ),
       ).thenReturn(draftAdjudicationDto())
     }
 
@@ -632,20 +636,20 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     private fun editIncidentRoleRequest(
       id: Long,
-      incidentRole: IncidentRoleRequest?
+      incidentRole: IncidentRoleRequest?,
     ): ResultActions {
       val body =
         objectMapper.writeValueAsString(
           mapOf(
             "incidentRole" to incidentRole,
-            "removeExistingOffences" to false
-          )
+            "removeExistingOffences" to false,
+          ),
         )
       return mockMvc
         .perform(
           put("/draft-adjudications/$id/incident-role")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -658,7 +662,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         draftAdjudicationService.setIncidentRoleAssociatedPrisoner(
           anyLong(),
           any(),
-        )
+        ),
       ).thenReturn(draftAdjudicationDto())
     }
 
@@ -682,14 +686,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     private fun setAssociatedPrisonerRequest(
       id: Long,
-      associatedPrisoner: IncidentRoleAssociatedPrisonerRequest?
+      associatedPrisoner: IncidentRoleAssociatedPrisonerRequest?,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(associatedPrisoner)
       return mockMvc
         .perform(
           put("/draft-adjudications/$id/associated-prisoner")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -703,7 +707,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         draftAdjudicationService.setGender(
           anyLong(),
           any(),
-        )
+        ),
       ).thenReturn(draftAdjudicationDto())
     }
 
@@ -727,14 +731,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     private fun setGenderRequest(
       id: Long,
-      genderRequest: GenderRequest
+      genderRequest: GenderRequest,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(genderRequest)
       return mockMvc
         .perform(
           put("/draft-adjudications/$id/gender")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }

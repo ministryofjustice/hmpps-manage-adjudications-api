@@ -52,7 +52,7 @@ class DraftAdjudicationRepositoryTest {
       .contains(
         draft.incidentDetails.locationId,
         draft.incidentDetails.dateTimeOfIncident,
-        draft.incidentDetails.handoverDeadline
+        draft.incidentDetails.handoverDeadline,
       )
 
     assertThat(savedEntity.incidentRole)
@@ -79,7 +79,7 @@ class DraftAdjudicationRepositoryTest {
         draft.incidentDetails.locationId,
         draft.incidentDetails.dateTimeOfIncident,
         draft.incidentDetails.dateTimeOfIncident.plusDays(1),
-        draft.incidentDetails.handoverDeadline
+        draft.incidentDetails.handoverDeadline,
       )
 
     assertThat(savedEntity.incidentRole)
@@ -95,20 +95,20 @@ class DraftAdjudicationRepositoryTest {
         "offenceCode",
         "victimPrisonersNumber",
         "victimStaffUsername",
-        "victimOtherPersonsName"
+        "victimOtherPersonsName",
       )
       .contains(
         Tuple(
           draft.offenceDetails!!.first().offenceCode,
           draft.offenceDetails!!.first().victimPrisonersNumber,
           draft.offenceDetails!!.first().victimStaffUsername,
-          draft.offenceDetails!!.first().victimOtherPersonsName
+          draft.offenceDetails!!.first().victimOtherPersonsName,
         ),
         Tuple(
           draft.offenceDetails!!.last().offenceCode,
           draft.offenceDetails!!.last().victimPrisonersNumber,
           draft.offenceDetails!!.last().victimStaffUsername,
-          draft.offenceDetails!!.last().victimOtherPersonsName
+          draft.offenceDetails!!.last().victimOtherPersonsName,
         ),
       )
 
@@ -123,7 +123,7 @@ class DraftAdjudicationRepositoryTest {
         Tuple(
           draft.damages!!.first().code,
           draft.damages!!.first().details,
-        )
+        ),
       )
 
     assertThat(savedEntity.evidenceSaved).isEqualTo(true)
@@ -137,7 +137,7 @@ class DraftAdjudicationRepositoryTest {
         Tuple(
           draft.evidence!!.first().code,
           draft.evidence!!.first().details,
-        )
+        ),
       )
 
     assertThat(savedEntity.witnessesSaved).isEqualTo(true)
@@ -146,14 +146,14 @@ class DraftAdjudicationRepositoryTest {
       .extracting(
         "code",
         "firstName",
-        "lastName"
+        "lastName",
       )
       .contains(
         Tuple(
           draft.witnesses!!.first().code,
           draft.witnesses!!.first().firstName,
           draft.witnesses!!.first().lastName,
-        )
+        ),
       )
 
     assertThat(savedEntity.incidentStatement)
@@ -170,7 +170,7 @@ class DraftAdjudicationRepositoryTest {
           offenceCode = 4,
           victimPrisonersNumber = "B2345BB",
           victimStaffUsername = "ABC12D",
-          victimOtherPersonsName = "Someones Name Here"
+          victimOtherPersonsName = "Someones Name Here",
         ),
       ),
     )
@@ -181,13 +181,14 @@ class DraftAdjudicationRepositoryTest {
         "offenceCode",
         "victimPrisonersNumber",
         "victimStaffUsername",
-        "victimOtherPersonsName"
+        "victimOtherPersonsName",
       )
       .contains(
         Tuple(
           updatedDraft.offenceDetails!!.first().offenceCode,
-          updatedDraft.offenceDetails!!.first().victimPrisonersNumber, updatedDraft.offenceDetails!!.first().victimStaffUsername,
-          updatedDraft.offenceDetails!!.first().victimOtherPersonsName
+          updatedDraft.offenceDetails!!.first().victimPrisonersNumber,
+          updatedDraft.offenceDetails!!.first().victimStaffUsername,
+          updatedDraft.offenceDetails!!.first().victimOtherPersonsName,
         ),
       )
   }
@@ -205,15 +206,15 @@ class DraftAdjudicationRepositoryTest {
           locationId = 2,
           dateTimeOfIncident = dateTimeOfIncident,
           dateTimeOfDiscovery = dateTimeOfIncident.plusDays(1),
-          handoverDeadline = dateTimeOfIncident.plusDays(2)
+          handoverDeadline = dateTimeOfIncident.plusDays(2),
         ),
         incidentRole = IncidentRole(
           roleCode = "25a",
           associatedPrisonersNumber = "B23456",
           associatedPrisonersName = "Associated Prisoner",
         ),
-        isYouthOffender = true
-      )
+        isYouthOffender = true,
+      ),
     )
     entityManager.persistAndFlush(
       DraftAdjudication(
@@ -224,15 +225,15 @@ class DraftAdjudicationRepositoryTest {
           locationId = 2,
           dateTimeOfIncident = dateTimeOfIncident,
           dateTimeOfDiscovery = dateTimeOfIncident,
-          handoverDeadline = dateTimeOfIncident.plusDays(2)
+          handoverDeadline = dateTimeOfIncident.plusDays(2),
         ),
         incidentRole = IncidentRole(
           roleCode = null,
           associatedPrisonersNumber = null,
           associatedPrisonersName = null,
         ),
-        isYouthOffender = true
-      )
+        isYouthOffender = true,
+      ),
     )
     entityManager.persistAndFlush(
       DraftAdjudication(
@@ -245,15 +246,15 @@ class DraftAdjudicationRepositoryTest {
           locationId = 3,
           dateTimeOfIncident = dateTimeOfIncident,
           dateTimeOfDiscovery = dateTimeOfIncident.plusDays(1),
-          handoverDeadline = dateTimeOfIncident.plusDays(3)
+          handoverDeadline = dateTimeOfIncident.plusDays(3),
         ),
         incidentRole = IncidentRole(
           roleCode = null,
           associatedPrisonersNumber = null,
           associatedPrisonersName = null,
         ),
-        isYouthOffender = true
-      )
+        isYouthOffender = true,
+      ),
     )
     val foundAdjudications =
       draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndReportNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
@@ -261,13 +262,13 @@ class DraftAdjudicationRepositoryTest {
         "ITAG_USER",
         dateTimeOfIncident.minusDays(1),
         dateTimeOfIncident.plusDays(2),
-        Pageable.unpaged()
+        Pageable.unpaged(),
       )
 
     assertThat(foundAdjudications).hasSize(1)
       .extracting("prisonerNumber")
       .contains(
-        "A12345"
+        "A12345",
       )
   }
 
@@ -308,14 +309,14 @@ class DraftAdjudicationRepositoryTest {
         locationId = 2,
         dateTimeOfIncident = DEFAULT_DATE_TIME,
         dateTimeOfDiscovery = DEFAULT_DATE_TIME,
-        handoverDeadline = DEFAULT_DATE_TIME.plusDays(2)
+        handoverDeadline = DEFAULT_DATE_TIME.plusDays(2),
       ),
       incidentRole = IncidentRole(
         roleCode = "25a",
         associatedPrisonersNumber = "B23456",
         associatedPrisonersName = "Associated Prisoner",
       ),
-      isYouthOffender = true
+      isYouthOffender = true,
     )
   }
 
@@ -329,7 +330,7 @@ class DraftAdjudicationRepositoryTest {
         locationId = 2,
         dateTimeOfIncident = DEFAULT_DATE_TIME,
         dateTimeOfDiscovery = DEFAULT_DATE_TIME.plusDays(1),
-        handoverDeadline = DEFAULT_DATE_TIME.plusDays(2)
+        handoverDeadline = DEFAULT_DATE_TIME.plusDays(2),
       ),
       incidentRole = IncidentRole(
         roleCode = "25a",
@@ -345,7 +346,7 @@ class DraftAdjudicationRepositoryTest {
           offenceCode = 3,
           victimPrisonersNumber = "A1234AA",
           victimStaffUsername = "ABC12D",
-          victimOtherPersonsName = "Someones Name Here"
+          victimOtherPersonsName = "Someones Name Here",
         ),
       ),
       incidentStatement = IncidentStatement(
@@ -357,14 +358,14 @@ class DraftAdjudicationRepositoryTest {
         Damage(
           code = DamageCode.CLEANING,
           details = "details",
-          reporter = "Fred"
+          reporter = "Fred",
         ),
       ),
       evidence = mutableListOf(
         Evidence(
           code = EvidenceCode.PHOTO,
           details = "details",
-          reporter = "Fred"
+          reporter = "Fred",
         ),
       ),
       witnesses = mutableListOf(
@@ -372,12 +373,12 @@ class DraftAdjudicationRepositoryTest {
           code = WitnessCode.OFFICER,
           firstName = "prison",
           lastName = "officer",
-          reporter = "Fred"
+          reporter = "Fred",
         ),
       ),
       witnessesSaved = true,
       damagesSaved = true,
-      evidenceSaved = true
+      evidenceSaved = true,
     )
   }
 

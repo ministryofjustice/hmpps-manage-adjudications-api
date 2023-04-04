@@ -11,7 +11,7 @@ enum class EvidenceCode {
   PHOTO,
   BODY_WORN_CAMERA,
   CCTV,
-  BAGGED_AND_TAGGED
+  BAGGED_AND_TAGGED,
 }
 
 @Entity
@@ -26,7 +26,7 @@ data class Evidence(
   @field:Length(max = 4000)
   var details: String,
   @field:Length(max = 32)
-  var reporter: String
+  var reporter: String,
 ) : BaseEntity()
 
 @Entity
@@ -41,5 +41,5 @@ data class ReportedEvidence(
   @field:Length(max = 4000)
   var details: String,
   @field:Length(max = 32)
-  var reporter: String
+  var reporter: String,
 ) : BaseEntity()

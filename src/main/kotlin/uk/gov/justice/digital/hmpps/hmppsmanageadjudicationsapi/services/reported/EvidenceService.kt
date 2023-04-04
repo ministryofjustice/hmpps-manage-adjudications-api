@@ -16,7 +16,9 @@ class EvidenceService(
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
 ) : ReportedAdjudicationBaseService(
-  reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
+  reportedAdjudicationRepository,
+  offenceCodeLookupService,
+  authenticationFacade,
 ) {
 
   fun updateEvidence(adjudicationNumber: Long, evidence: List<EvidenceRequestItem>): ReportedAdjudicationDto {
@@ -32,9 +34,9 @@ class EvidenceService(
           code = it.code,
           identifier = it.identifier,
           details = it.details,
-          reporter = reporter
+          reporter = reporter,
         )
-      }
+      },
     )
 
     return saveToDto(reportedAdjudication)

@@ -17,14 +17,16 @@ import javax.persistence.EntityNotFoundException
 
 class DraftWitnessesServiceTest : ReportedAdjudicationTestBase() {
   private val witnessesService = WitnessesService(
-    reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
+    reportedAdjudicationRepository,
+    offenceCodeLookupService,
+    authenticationFacade,
   )
 
   private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
     .also {
       it.witnesses = mutableListOf(
         ReportedWitness(code = WitnessCode.STAFF, firstName = "first", lastName = "last", reporter = "Rod"),
-        ReportedWitness(code = WitnessCode.OFFICER, firstName = "first", lastName = "last", reporter = "Fred")
+        ReportedWitness(code = WitnessCode.OFFICER, firstName = "first", lastName = "last", reporter = "Fred"),
       )
     }
 
@@ -46,10 +48,10 @@ class DraftWitnessesServiceTest : ReportedAdjudicationTestBase() {
           reportedAdjudication.witnesses.first().code,
           reportedAdjudication.witnesses.first().firstName,
           reportedAdjudication.witnesses.first().lastName,
-          reportedAdjudication.witnesses.first().reporter
+          reportedAdjudication.witnesses.first().reporter,
         ),
-        WitnessRequestItem(WitnessCode.OTHER_PERSON, "first", "last", "Fred")
-      )
+        WitnessRequestItem(WitnessCode.OTHER_PERSON, "first", "last", "Fred"),
+      ),
     )
 
     val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)

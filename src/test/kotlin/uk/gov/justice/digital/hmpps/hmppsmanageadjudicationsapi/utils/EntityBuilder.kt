@@ -52,23 +52,23 @@ class EntityBuilder {
         ReportedDamage(
           code = DamageCode.CLEANING,
           details = "details",
-          reporter = "Fred"
-        )
+          reporter = "Fred",
+        ),
       ),
       evidence = mutableListOf(
         ReportedEvidence(
           code = EvidenceCode.PHOTO,
           details = "details",
           reporter = "Fred",
-          identifier = "identifier"
-        )
+          identifier = "identifier",
+        ),
       ),
       witnesses = mutableListOf(
         ReportedWitness(
           code = WitnessCode.OFFICER,
           firstName = "prison",
           lastName = "officer",
-          reporter = "Fred"
+          reporter = "Fred",
         ),
       ),
       draftCreatedOn = dateTime,
@@ -81,7 +81,7 @@ class EntityBuilder {
           reportNumber = reportNumber,
           oicHearingId = 3L,
           oicHearingType = OicHearingType.GOV,
-        )
+        ),
       ),
       outcomes = mutableListOf(),
       disIssueHistory = mutableListOf(),

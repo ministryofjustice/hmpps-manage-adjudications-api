@@ -30,10 +30,10 @@ class PunishmentsIntTest : IntegrationTestBase() {
               PunishmentRequest(
                 type = PunishmentType.CONFINEMENT,
                 days = 10,
-                suspendedUntil = suspendedUntil
-              )
-            )
-        )
+                suspendedUntil = suspendedUntil,
+              ),
+            ),
+        ),
       )
       .exchange()
       .expectStatus().isCreated

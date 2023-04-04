@@ -33,7 +33,7 @@ data class WitnessRequestItem(
 
 @RestController
 class DraftWitnessesController(
-  private val witnessesService: DraftWitnessesService
+  private val witnessesService: DraftWitnessesService,
 ) : DraftAdjudicationBaseController() {
 
   @PutMapping(value = ["/{id}/witnesses"])
@@ -42,11 +42,12 @@ class DraftWitnessesController(
   @ResponseStatus(HttpStatus.CREATED)
   fun setWitnesses(
     @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid witnessesRequest: WitnessesRequest
+    @RequestBody @Valid
+    witnessesRequest: WitnessesRequest,
   ): DraftAdjudicationResponse {
     val draftAdjudication = witnessesService.setWitnesses(
       id,
-      witnessesRequest.witnesses
+      witnessesRequest.witnesses,
     )
 
     return DraftAdjudicationResponse(draftAdjudication)

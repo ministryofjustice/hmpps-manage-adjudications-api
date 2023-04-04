@@ -23,14 +23,14 @@ import java.time.LocalDateTime
 class IntegrationTestData(
   private val webTestClient: WebTestClient,
   private val jwtAuthHelper: JwtAuthHelper,
-  private val prisonApiMockServer: PrisonApiMockServer
+  private val prisonApiMockServer: PrisonApiMockServer,
 ) {
 
   companion object {
     val BASIC_OFFENCE = OffenceTestDataSet(
       offenceCode = 1003,
       paragraphNumber = "1(a)",
-      paragraphDescription = "Commits any racially aggravated assault"
+      paragraphDescription = "Commits any racially aggravated assault",
     )
     val FULL_OFFENCE = OffenceTestDataSet(
       offenceCode = 4001,
@@ -134,7 +134,7 @@ class IntegrationTestData(
       createdByUserId = DEFAULT_CREATED_USER_ID,
       damages = UPDATED_DAMAGES,
       evidence = UPDATED_EVIDENCE,
-      witnesses = UPDATED_WITNESSES
+      witnesses = UPDATED_WITNESSES,
     )
 
     val ADJUDICATION_1 = AdjudicationIntTestDataSet(
@@ -158,7 +158,7 @@ class IntegrationTestData(
       createdByUserId = "A_NESS",
       damages = DEFAULT_DAMAGES,
       evidence = DEFAULT_EVIDENCE,
-      witnesses = DEFAULT_WITNESSES
+      witnesses = DEFAULT_WITNESSES,
     )
 
     val ADJUDICATION_2 = AdjudicationIntTestDataSet(
@@ -180,7 +180,7 @@ class IntegrationTestData(
       createdByUserId = "P_NESS",
       damages = DEFAULT_DAMAGES,
       evidence = DEFAULT_EVIDENCE,
-      witnesses = DEFAULT_WITNESSES
+      witnesses = DEFAULT_WITNESSES,
     )
 
     val ADJUDICATION_3 = AdjudicationIntTestDataSet(
@@ -202,7 +202,7 @@ class IntegrationTestData(
       createdByUserId = "L_NESS",
       damages = DEFAULT_DAMAGES,
       evidence = DEFAULT_EVIDENCE,
-      witnesses = DEFAULT_WITNESSES
+      witnesses = DEFAULT_WITNESSES,
     )
 
     val ADJUDICATION_4 = AdjudicationIntTestDataSet(
@@ -224,7 +224,7 @@ class IntegrationTestData(
       createdByUserId = "P_NESS",
       damages = DEFAULT_DAMAGES,
       evidence = DEFAULT_EVIDENCE,
-      witnesses = DEFAULT_WITNESSES
+      witnesses = DEFAULT_WITNESSES,
     )
 
     val ADJUDICATION_5 = AdjudicationIntTestDataSet(
@@ -246,13 +246,13 @@ class IntegrationTestData(
       createdByUserId = "P_NESS",
       damages = DEFAULT_DAMAGES,
       evidence = DEFAULT_EVIDENCE,
-      witnesses = DEFAULT_WITNESSES
+      witnesses = DEFAULT_WITNESSES,
     )
   }
 
   fun getDraftAdjudicationDetails(
     draftCreationData: DraftAdjudicationResponse,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): WebTestClient.ResponseSpec = webTestClient.get()
     .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}")
     .headers(headers)
@@ -260,9 +260,8 @@ class IntegrationTestData(
 
   fun startNewAdjudication(
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): DraftAdjudicationResponse {
-
     return webTestClient.post()
       .uri("/draft-adjudications")
       .headers(headers)
@@ -273,8 +272,8 @@ class IntegrationTestData(
           "agencyId" to testDataSet.agencyId,
           "locationId" to testDataSet.locationId,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,
-          "dateTimeOfDiscovery" to testDataSet.dateTimeOfDiscovery
-        )
+          "dateTimeOfDiscovery" to testDataSet.dateTimeOfDiscovery,
+        ),
       )
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -286,7 +285,7 @@ class IntegrationTestData(
   fun setIncidentRole(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
 
   ): DraftAdjudicationResponse {
     return webTestClient.put()
@@ -298,7 +297,7 @@ class IntegrationTestData(
             testDataSet.incidentRoleCode,
           ),
           "removeExistingOffences" to true,
-        )
+        ),
       ).exchange()
       .expectStatus().is2xxSuccessful
       .returnResult(DraftAdjudicationResponse::class.java)
@@ -309,9 +308,8 @@ class IntegrationTestData(
   fun setAssociatedPrisoner(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): DraftAdjudicationResponse {
-
     return webTestClient.put()
       .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/associated-prisoner")
       .headers(headers)
@@ -329,7 +327,7 @@ class IntegrationTestData(
   fun setApplicableRules(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): DraftAdjudicationResponse {
     return webTestClient.put()
       .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/applicable-rules")
@@ -337,7 +335,7 @@ class IntegrationTestData(
       .bodyValue(
         mapOf(
           "isYouthOffenderRule" to testDataSet.isYouthOffender,
-        )
+        ),
       )
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -349,7 +347,7 @@ class IntegrationTestData(
   fun setOffenceDetails(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): DraftAdjudicationResponse {
     return webTestClient.put()
       .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/offence-details")
@@ -357,7 +355,7 @@ class IntegrationTestData(
       .bodyValue(
         mapOf(
           "offenceDetails" to testDataSet.offence,
-        )
+        ),
       )
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -369,15 +367,15 @@ class IntegrationTestData(
   fun addIncidentStatement(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): DraftAdjudicationResponse {
     return webTestClient.post()
       .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/incident-statement")
       .headers(headers)
       .bodyValue(
         mapOf(
-          "statement" to testDataSet.statement
-        )
+          "statement" to testDataSet.statement,
+        ),
       )
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -389,7 +387,7 @@ class IntegrationTestData(
   fun addDamages(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): DraftAdjudicationResponse {
     return webTestClient.put()
       .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/damages")
@@ -397,7 +395,7 @@ class IntegrationTestData(
       .bodyValue(
         mapOf(
           "damages" to testDataSet.damages,
-        )
+        ),
       )
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -409,7 +407,7 @@ class IntegrationTestData(
   fun addEvidence(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): DraftAdjudicationResponse {
     return webTestClient.put()
       .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/evidence")
@@ -417,7 +415,7 @@ class IntegrationTestData(
       .bodyValue(
         mapOf(
           "evidence" to testDataSet.evidence,
-        )
+        ),
       )
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -429,7 +427,7 @@ class IntegrationTestData(
   fun addWitnesses(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): DraftAdjudicationResponse {
     return webTestClient.put()
       .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/witnesses")
@@ -437,7 +435,7 @@ class IntegrationTestData(
       .bodyValue(
         mapOf(
           "witnesses" to testDataSet.witnesses,
-        )
+        ),
       )
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -449,7 +447,7 @@ class IntegrationTestData(
   fun editIncidentDetails(
     draftAdjudicationResponse: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ) {
     webTestClient.put()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-details")
@@ -459,7 +457,7 @@ class IntegrationTestData(
           "locationId" to testDataSet.locationId,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncidentISOString,
           "incidentRole" to IncidentRoleRequest("25b"),
-        )
+        ),
       )
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -471,15 +469,15 @@ class IntegrationTestData(
   fun editIncidentStatement(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): DraftAdjudicationResponse {
     return webTestClient.put()
       .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/incident-statement")
       .headers(headers)
       .bodyValue(
         mapOf(
-          "statement" to testDataSet.statement
-        )
+          "statement" to testDataSet.statement,
+        ),
       )
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -491,7 +489,7 @@ class IntegrationTestData(
   fun completeDraftAdjudication(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): WebTestClient.ResponseSpec {
     prisonApiMockServer.stubPostAdjudicationCreationRequestData(testDataSet)
 
@@ -511,8 +509,8 @@ class IntegrationTestData(
         mapOf(
           "status" to ReportedAdjudicationStatus.UNSCHEDULED.name,
           "statusReason" to "status reason",
-          "statusDetails" to "status details"
-        )
+          "statusDetails" to "status details",
+        ),
       )
       .exchange()
   }
@@ -520,15 +518,15 @@ class IntegrationTestData(
   fun issueReport(
     draftCreationData: DraftAdjudicationResponse,
     reportNumber: String,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): WebTestClient.ResponseSpec {
     return webTestClient.put()
       .uri("/reported-adjudications/$reportNumber/issue")
       .headers(headers)
       .bodyValue(
         mapOf(
-          "dateTimeOfIssue" to draftCreationData.draftAdjudication.incidentDetails.dateTimeOfDiscovery.plusDays(1)
-        )
+          "dateTimeOfIssue" to draftCreationData.draftAdjudication.incidentDetails.dateTimeOfDiscovery.plusDays(1),
+        ),
       )
       .exchange()
   }
@@ -542,7 +540,7 @@ class IntegrationTestData(
       .bodyValue(
         mapOf(
           "details" to "details",
-        )
+        ),
       )
       .exchange()
   }
@@ -566,7 +564,7 @@ class IntegrationTestData(
         mapOf(
           "details" to "details",
           "reason" to NotProceedReason.NOT_FAIR,
-        )
+        ),
       )
       .exchange()
   }
@@ -574,7 +572,7 @@ class IntegrationTestData(
   fun createHearing(
     testDataSet: AdjudicationIntTestDataSet,
     dateTimeOfHearing: LocalDateTime? = null,
-    oicHearingType: OicHearingType? = OicHearingType.GOV
+    oicHearingType: OicHearingType? = OicHearingType.GOV,
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/hearing/v2")
@@ -584,7 +582,7 @@ class IntegrationTestData(
           "locationId" to testDataSet.locationId,
           "dateTimeOfHearing" to (dateTimeOfHearing ?: testDataSet.dateTimeOfHearing!!),
           "oicHearingType" to oicHearingType!!.name,
-        )
+        ),
       )
       .exchange()
   }
@@ -601,7 +599,7 @@ class IntegrationTestData(
           "adjudicator" to "testing",
           "reason" to HearingOutcomeAdjournReason.LEGAL_ADVICE,
           "plea" to HearingOutcomePlea.UNFIT,
-        )
+        ),
       )
       .exchange()
       .returnResult(ReportedAdjudicationResponse::class.java)
@@ -610,7 +608,7 @@ class IntegrationTestData(
   }
 
   fun createQuashed(
-    testDataSet: AdjudicationIntTestDataSet
+    testDataSet: AdjudicationIntTestDataSet,
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/outcome/quashed")
@@ -619,7 +617,7 @@ class IntegrationTestData(
         mapOf(
           "reason" to QuashedReason.APPEAL_UPHELD,
           "details" to "details",
-        )
+        ),
       )
       .exchange()
       .returnResult(ReportedAdjudicationResponse::class.java)
@@ -639,7 +637,7 @@ class IntegrationTestData(
           "plea" to HearingOutcomePlea.NOT_GUILTY,
           "amount" to 100.50,
           "caution" to true,
-        )
+        ),
       )
       .exchange()
       .returnResult(ReportedAdjudicationResponse::class.java)
@@ -658,8 +656,8 @@ class IntegrationTestData(
           "adjudicator" to "test",
           "plea" to HearingOutcomePlea.NOT_GUILTY,
           "reason" to NotProceedReason.NOT_FAIR,
-          "details" to "details"
-        )
+          "details" to "details",
+        ),
       )
       .exchange()
       .returnResult(ReportedAdjudicationResponse::class.java)
@@ -677,8 +675,8 @@ class IntegrationTestData(
         mapOf(
           "adjudicator" to "test",
           "plea" to HearingOutcomePlea.NOT_GUILTY,
-          "details" to "details"
-        )
+          "details" to "details",
+        ),
       )
       .exchange()
       .returnResult(ReportedAdjudicationResponse::class.java)
@@ -698,7 +696,7 @@ class IntegrationTestData(
           "code" to code,
           "details" to "details",
           "adjudicator" to "testing",
-        )
+        ),
       )
       .exchange()
       .returnResult(ReportedAdjudicationResponse::class.java)
@@ -709,7 +707,7 @@ class IntegrationTestData(
   fun reportedAdjudicationStatus(
     reportedAdjudicationStatus: ReportedAdjudicationStatus,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): WebTestClient.ResponseSpec {
     return webTestClient.put()
       .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/status")
@@ -720,7 +718,7 @@ class IntegrationTestData(
 
   fun recallCompletedDraftAdjudication(
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): DraftAdjudicationResponse {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/create-draft-adjudication")
@@ -735,7 +733,7 @@ class IntegrationTestData(
   fun setHeaders(
     contentType: MediaType = MediaType.APPLICATION_JSON,
     username: String? = "ITAG_USER",
-    roles: List<String> = emptyList()
+    roles: List<String> = emptyList(),
   ): (HttpHeaders) -> Unit = {
     it.setBearerAuth(jwtAuthHelper.createJwt(subject = username, roles = roles, scope = listOf("write")))
     it.contentType = contentType

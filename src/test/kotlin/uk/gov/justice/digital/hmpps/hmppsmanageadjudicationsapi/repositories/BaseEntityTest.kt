@@ -49,14 +49,14 @@ class BaseEntityTest {
         locationId = 2,
         dateTimeOfIncident = DEFAULT_DATE_TIME,
         dateTimeOfDiscovery = DEFAULT_DATE_TIME,
-        handoverDeadline = DEFAULT_DATE_TIME.plusDays(2)
+        handoverDeadline = DEFAULT_DATE_TIME.plusDays(2),
       ),
       incidentRole = IncidentRole(
         roleCode = "25a",
         associatedPrisonersNumber = "B23456",
         associatedPrisonersName = "Associated Prisoner",
       ),
-      isYouthOffender = true
+      isYouthOffender = true,
     )
   }
 

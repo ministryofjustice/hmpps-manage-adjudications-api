@@ -28,13 +28,18 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
 
   @Test
   fun `create outcome and hearing outcome for referral`() {
-
     referralService.createReferral(
-      1, HearingOutcomeCode.REFER_POLICE, "test", "details",
+      1,
+      HearingOutcomeCode.REFER_POLICE,
+      "test",
+      "details",
     )
 
     verify(hearingOutcomeService, atLeastOnce()).createReferral(
-      adjudicationNumber = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = "test", details = "details",
+      adjudicationNumber = 1,
+      code = HearingOutcomeCode.REFER_POLICE,
+      adjudicator = "test",
+      details = "details",
     )
 
     verify(outcomeService, atLeastOnce()).createReferral(adjudicationNumber = 1, code = OutcomeCode.REFER_POLICE, details = "details")
@@ -47,16 +52,16 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
         CombinedOutcomeDto(
           outcome = OutcomeDto(
             id = 1,
-            code = OutcomeCode.REFER_POLICE
-          )
-        )
-      )
+            code = OutcomeCode.REFER_POLICE,
+          ),
+        ),
+      ),
     )
 
-    referralService.removeReferral(1,)
+    referralService.removeReferral(1)
 
     verify(outcomeService, atLeastOnce()).deleteOutcome(1, 1)
-    verify(hearingOutcomeService, never()).deleteHearingOutcome(1,)
+    verify(hearingOutcomeService, never()).deleteHearingOutcome(1)
   }
 
   @Test
@@ -66,20 +71,20 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
         CombinedOutcomeDto(
           outcome = OutcomeDto(
             id = 1,
-            code = OutcomeCode.REFER_POLICE
+            code = OutcomeCode.REFER_POLICE,
           ),
-        )
-      )
+        ),
+      ),
     )
 
     whenever(hearingOutcomeService.getHearingOutcomeForReferral(1, OutcomeCode.REFER_POLICE, 0)).thenReturn(
-      HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+      HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
     )
 
-    referralService.removeReferral(1,)
+    referralService.removeReferral(1)
 
     verify(outcomeService, atLeastOnce()).deleteOutcome(1, 1)
-    verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(1,)
+    verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(1)
   }
 
   @Test
@@ -89,31 +94,31 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
         CombinedOutcomeDto(
           outcome = OutcomeDto(
             id = 3,
-            code = OutcomeCode.REFER_INAD
+            code = OutcomeCode.REFER_INAD,
           ),
         ),
         CombinedOutcomeDto(
           outcome = OutcomeDto(
             id = 1,
-            code = OutcomeCode.REFER_POLICE
+            code = OutcomeCode.REFER_POLICE,
           ),
           referralOutcome = OutcomeDto(
             id = 2,
-            code = OutcomeCode.NOT_PROCEED
-          )
-        )
-      )
+            code = OutcomeCode.NOT_PROCEED,
+          ),
+        ),
+      ),
     )
 
     whenever(hearingOutcomeService.getHearingOutcomeForReferral(1, OutcomeCode.REFER_POLICE, 0)).thenReturn(
-      HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+      HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
     )
 
-    referralService.removeReferral(1,)
+    referralService.removeReferral(1)
 
     verify(outcomeService, never()).deleteOutcome(1, 1)
     verify(outcomeService, atLeast(1)).deleteOutcome(1, 2)
-    verify(hearingOutcomeService, never()).deleteHearingOutcome(1,)
+    verify(hearingOutcomeService, never()).deleteHearingOutcome(1)
   }
 
   @Test
@@ -122,14 +127,14 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
       listOf(
         CombinedOutcomeDto(
           outcome = OutcomeDto(
-            code = OutcomeCode.NOT_PROCEED
-          )
-        )
-      )
+            code = OutcomeCode.NOT_PROCEED,
+          ),
+        ),
+      ),
     )
 
     Assertions.assertThatThrownBy {
-      referralService.removeReferral(1,)
+      referralService.removeReferral(1)
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("No referral for adjudication")
   }
@@ -141,30 +146,30 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
         CombinedOutcomeDto(
           outcome = OutcomeDto(
             id = 3,
-            code = OutcomeCode.REFER_INAD
+            code = OutcomeCode.REFER_INAD,
           ),
         ),
         CombinedOutcomeDto(
           outcome = OutcomeDto(
             id = 1,
-            code = OutcomeCode.REFER_POLICE
+            code = OutcomeCode.REFER_POLICE,
           ),
           referralOutcome = OutcomeDto(
             id = 2,
-            code = OutcomeCode.SCHEDULE_HEARING
-          )
+            code = OutcomeCode.SCHEDULE_HEARING,
+          ),
         ),
         CombinedOutcomeDto(
           outcome = OutcomeDto(
             id = 3,
-            code = OutcomeCode.NOT_PROCEED
-          )
-        )
-      )
+            code = OutcomeCode.NOT_PROCEED,
+          ),
+        ),
+      ),
     )
 
     Assertions.assertThatThrownBy {
-      referralService.removeReferral(1,)
+      referralService.removeReferral(1)
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("Referral can not be removed as its not the latest outcome")
   }

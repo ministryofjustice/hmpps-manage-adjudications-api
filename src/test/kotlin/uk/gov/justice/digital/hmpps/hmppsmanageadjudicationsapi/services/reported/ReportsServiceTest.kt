@@ -18,7 +18,9 @@ import java.time.LocalTime
 class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
   private val reportsService = ReportsService(
-    reportedAdjudicationRepository, authenticationFacade, offenceCodeLookupService
+    reportedAdjudicationRepository,
+    authenticationFacade,
+    offenceCodeLookupService,
   )
 
   @Nested
@@ -39,12 +41,12 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           any(),
           any(),
           any(),
-          any()
-        )
+          any(),
+        ),
       ).thenReturn(
         PageImpl(
-          listOf(reportedAdjudication1, reportedAdjudication2)
-        )
+          listOf(reportedAdjudication1, reportedAdjudication2),
+        ),
       )
     }
 
@@ -55,7 +57,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         LocalDate.now(),
         LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
-        Pageable.ofSize(20).withPage(0)
+        Pageable.ofSize(20).withPage(0),
       )
 
       verify(reportedAdjudicationRepository).findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
@@ -63,7 +65,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         LocalDate.now().atStartOfDay(),
         LocalDate.now().atTime(LocalTime.MAX),
         ReportedAdjudicationStatus.values().toList(),
-        Pageable.ofSize(20).withPage(0)
+        Pageable.ofSize(20).withPage(0),
       )
     }
 
@@ -74,14 +76,14 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         LocalDate.now(),
         LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
-        Pageable.ofSize(20).withPage(0)
+        Pageable.ofSize(20).withPage(0),
       )
 
       assertThat(myReportedAdjudications.content)
         .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
         .contains(
           Tuple.tuple(1L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME),
-          Tuple.tuple(2L, "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2))
+          Tuple.tuple(2L, "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
         )
     }
   }
@@ -105,12 +107,12 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           any(),
           any(),
           any(),
-          any()
-        )
+          any(),
+        ),
       ).thenReturn(
         PageImpl(
-          listOf(reportedAdjudication1, reportedAdjudication2)
-        )
+          listOf(reportedAdjudication1, reportedAdjudication2),
+        ),
       )
     }
 
@@ -121,14 +123,14 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         LocalDate.now(),
         LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
-        Pageable.ofSize(20).withPage(0)
+        Pageable.ofSize(20).withPage(0),
       )
 
       assertThat(myReportedAdjudications.content)
         .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
         .contains(
           Tuple.tuple(1L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME),
-          Tuple.tuple(2L, "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2))
+          Tuple.tuple(2L, "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
         )
     }
   }
@@ -141,10 +143,11 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       whenever(
         reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetween(
           "MDI",
-          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
-        )
+          LocalDate.now().atStartOfDay().minusDays(2),
+          LocalDate.now().atTime(LocalTime.MAX),
+        ),
       ).thenReturn(
-        listOf(first, second)
+        listOf(first, second),
       )
     }
 
@@ -177,31 +180,34 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       whenever(
         reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusIn(
           "MDI",
-          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
+          LocalDate.now().atStartOfDay().minusDays(2),
+          LocalDate.now().atTime(LocalTime.MAX),
           listOf(ReportedAdjudicationStatus.SCHEDULED),
-        )
+        ),
       ).thenReturn(
-        listOf(first)
+        listOf(first),
       )
 
       whenever(
         reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNull(
           "MDI",
-          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
+          LocalDate.now().atStartOfDay().minusDays(2),
+          LocalDate.now().atTime(LocalTime.MAX),
           listOf(ReportedAdjudicationStatus.SCHEDULED),
-        )
+        ),
       ).thenReturn(
-        listOf(second)
+        listOf(second),
       )
 
       whenever(
         reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
           "MDI",
-          LocalDate.now().atStartOfDay().minusDays(2), LocalDate.now().atTime(LocalTime.MAX),
+          LocalDate.now().atStartOfDay().minusDays(2),
+          LocalDate.now().atTime(LocalTime.MAX),
           listOf(ReportedAdjudicationStatus.SCHEDULED),
-        )
+        ),
       ).thenReturn(
-        listOf(third)
+        listOf(third),
       )
     }
 
@@ -289,7 +295,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
     private val second = entityBuilder.reportedAdjudication(
       reportNumber = 2L,
-      dateTime = now.minusDays(2)
+      dateTime = now.minusDays(2),
     ).also {
       it.status = ReportedAdjudicationStatus.UNSCHEDULED
       it.locationId = 3

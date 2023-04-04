@@ -30,7 +30,7 @@ class WitnessesControllerTest : TestControllerBase() {
       witnessesService.updateWitnesses(
         ArgumentMatchers.anyLong(),
         any(),
-      )
+      ),
     ).thenReturn(REPORTED_ADJUDICATION_DTO)
   }
 
@@ -38,7 +38,7 @@ class WitnessesControllerTest : TestControllerBase() {
   fun `responds with a unauthorised status code`() {
     setWitnessesRequest(
       1,
-      WITNESSES_REQUEST
+      WITNESSES_REQUEST,
     ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
   }
 
@@ -53,14 +53,14 @@ class WitnessesControllerTest : TestControllerBase() {
 
   private fun setWitnessesRequest(
     id: Long,
-    witnesses: WitnessesRequest?
+    witnesses: WitnessesRequest?,
   ): ResultActions {
     val body = objectMapper.writeValueAsString(witnesses)
     return mockMvc
       .perform(
         MockMvcRequestBuilders.put("/reported-adjudications/$id/witnesses/edit")
           .header("Content-Type", "application/json")
-          .content(body)
+          .content(body),
       )
   }
 

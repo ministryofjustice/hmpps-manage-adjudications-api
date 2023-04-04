@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 @Schema(description = "Reported adjudication response")
 data class ReportedAdjudicationResponse(
   @Schema(description = "The reported adjudication")
-  val reportedAdjudication: ReportedAdjudicationDto
+  val reportedAdjudication: ReportedAdjudicationDto,
 )
 
 @RestController

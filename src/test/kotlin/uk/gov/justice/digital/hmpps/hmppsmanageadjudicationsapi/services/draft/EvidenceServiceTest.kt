@@ -20,7 +20,9 @@ import javax.persistence.EntityNotFoundException
 class EvidenceServiceTest : DraftAdjudicationTestBase() {
 
   private val evidenceService = DraftEvidenceService(
-    draftAdjudicationRepository, offenceCodeLookupService, authenticationFacade
+    draftAdjudicationRepository,
+    offenceCodeLookupService,
+    authenticationFacade,
   )
 
   private val draftAdjudication =
@@ -33,13 +35,13 @@ class EvidenceServiceTest : DraftAdjudicationTestBase() {
       incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
       incidentStatement = IncidentStatement(
         statement = "Example statement",
-        completed = false
+        completed = false,
       ),
       offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
       isYouthOffender = true,
       evidence = mutableListOf(
-        Evidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Fred")
-      )
+        Evidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Fred"),
+      ),
     )
 
   @BeforeEach
@@ -54,8 +56,8 @@ class EvidenceServiceTest : DraftAdjudicationTestBase() {
     val response = evidenceService.setEvidence(
       1,
       listOf(
-        EvidenceRequestItem(code = EvidenceCode.PHOTO, details = "details")
-      )
+        EvidenceRequestItem(code = EvidenceCode.PHOTO, details = "details"),
+      ),
     )
 
     val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
@@ -77,7 +79,7 @@ class EvidenceServiceTest : DraftAdjudicationTestBase() {
     Assertions.assertThatThrownBy {
       evidenceService.setEvidence(
         1,
-        listOf(EvidenceRequestItem(code = EvidenceCode.PHOTO, details = "details"))
+        listOf(EvidenceRequestItem(code = EvidenceCode.PHOTO, details = "details")),
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("DraftAdjudication not found for 1")

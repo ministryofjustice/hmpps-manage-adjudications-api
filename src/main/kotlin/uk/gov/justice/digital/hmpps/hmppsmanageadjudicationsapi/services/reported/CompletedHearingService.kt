@@ -24,11 +24,15 @@ class CompletedHearingService(
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.createCompletedHearing(
-      adjudicationNumber = adjudicationNumber, adjudicator = adjudicator, plea = plea
+      adjudicationNumber = adjudicationNumber,
+      adjudicator = adjudicator,
+      plea = plea,
     )
 
     return outcomeService.createDismissed(
-      adjudicationNumber = adjudicationNumber, details = details, validate = validate
+      adjudicationNumber = adjudicationNumber,
+      details = details,
+      validate = validate,
     )
   }
 
@@ -41,11 +45,16 @@ class CompletedHearingService(
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.createCompletedHearing(
-      adjudicationNumber = adjudicationNumber, adjudicator = adjudicator, plea = plea
+      adjudicationNumber = adjudicationNumber,
+      adjudicator = adjudicator,
+      plea = plea,
     )
 
     return outcomeService.createNotProceed(
-      adjudicationNumber = adjudicationNumber, reason = reason, details = details, validate = validate
+      adjudicationNumber = adjudicationNumber,
+      reason = reason,
+      details = details,
+      validate = validate,
     )
   }
 
@@ -58,33 +67,40 @@ class CompletedHearingService(
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.createCompletedHearing(
-      adjudicationNumber = adjudicationNumber, adjudicator = adjudicator, plea = plea,
+      adjudicationNumber = adjudicationNumber,
+      adjudicator = adjudicator,
+      plea = plea,
     )
 
     return outcomeService.createChargeProved(
-      adjudicationNumber = adjudicationNumber, amount = amount, caution = caution, validate = validate
+      adjudicationNumber = adjudicationNumber,
+      amount = amount,
+      caution = caution,
+      validate = validate,
     )
   }
 
   fun removeOutcome(
-    adjudicationNumber: Long
+    adjudicationNumber: Long,
   ): ReportedAdjudicationDto {
     val idToRemove = outcomeService.getLatestOutcome(adjudicationNumber = adjudicationNumber).validateCanRemove().id!!
 
     outcomeService.deleteOutcome(
-      adjudicationNumber = adjudicationNumber, id = idToRemove
+      adjudicationNumber = adjudicationNumber,
+      id = idToRemove,
     )
 
     return hearingOutcomeService.deleteHearingOutcome(
-      adjudicationNumber = adjudicationNumber
+      adjudicationNumber = adjudicationNumber,
     )
   }
 
   companion object {
     fun Outcome?.validateCanRemove(): Outcome {
       this ?: throw ValidationException("No completed hearing outcome to remove")
-      if (OutcomeCode.completedHearings().none { it == this.code })
+      if (OutcomeCode.completedHearings().none { it == this.code }) {
         throw ValidationException("No completed hearing outcome to remove")
+      }
 
       return this
     }

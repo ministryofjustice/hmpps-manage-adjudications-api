@@ -27,7 +27,9 @@ import javax.validation.ValidationException
 class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
   private val punishmentsService = PunishmentsService(
-    reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
+    reportedAdjudicationRepository,
+    offenceCodeLookupService,
+    authenticationFacade,
   )
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
@@ -51,19 +53,19 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
           it.createdByUserId = "test"
           it.createDateTime = LocalDateTime.now()
-        }
+        },
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
     }
 
     @CsvSource(
       "ADJOURNED", "REFER_POLICE", "REFER_INAD", "SCHEDULED", "UNSCHEDULED", "AWAITING_REVIEW", "PROSECUTION",
-      "NOT_PROCEED", "DISMISSED", "REJECTED", "RETURNED"
+      "NOT_PROCEED", "DISMISSED", "REJECTED", "RETURNED",
     )
     @ParameterizedTest
     fun `validation error - wrong status code - must be CHARGE_PROVED `(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        reportedAdjudication.also { it.status = status }
+        reportedAdjudication.also { it.status = status },
       )
       Assertions.assertThatThrownBy {
         punishmentsService.create(adjudicationNumber = 1, listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)))
@@ -131,9 +133,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             otherPrivilege = "other",
             days = 1,
             startDate = LocalDate.now(),
-            endDate = LocalDate.now().plusDays(1)
-          )
-        )
+            endDate = LocalDate.now().plusDays(1),
+          ),
+        ),
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())

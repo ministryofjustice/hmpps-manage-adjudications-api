@@ -30,7 +30,7 @@ class DamagesControllerTest : TestControllerBase() {
       damagesService.updateDamages(
         ArgumentMatchers.anyLong(),
         any(),
-      )
+      ),
     ).thenReturn(REPORTED_ADJUDICATION_DTO)
   }
 
@@ -50,14 +50,14 @@ class DamagesControllerTest : TestControllerBase() {
 
   private fun setDamagesRequest(
     id: Long,
-    damages: DamagesRequest?
+    damages: DamagesRequest?,
   ): ResultActions {
     val body = objectMapper.writeValueAsString(damages)
     return mockMvc
       .perform(
         MockMvcRequestBuilders.put("/reported-adjudications/$id/damages/edit")
           .header("Content-Type", "application/json")
-          .content(body)
+          .content(body),
       )
   }
 

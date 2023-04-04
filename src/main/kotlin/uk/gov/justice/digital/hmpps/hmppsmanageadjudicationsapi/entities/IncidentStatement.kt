@@ -10,5 +10,5 @@ data class IncidentStatement(
   override val id: Long? = null,
   @field:Length(max = 4000)
   var statement: String? = null,
-  var completed: Boolean? = false
+  var completed: Boolean? = false,
 ) : BaseEntity()

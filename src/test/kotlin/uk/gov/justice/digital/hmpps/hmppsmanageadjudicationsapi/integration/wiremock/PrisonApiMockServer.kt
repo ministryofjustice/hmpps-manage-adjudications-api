@@ -25,7 +25,7 @@ class PrisonApiMockServer : WireMockServer {
 
   private fun requestReceived(
     inRequest: Request,
-    inResponse: Response
+    inResponse: Response,
   ) {
     System.out.println("BODY: ${inResponse.bodyAsString}")
   }
@@ -42,9 +42,9 @@ class PrisonApiMockServer : WireMockServer {
                {
                  "status": "UP"
                }
-              """.trimIndent()
-            )
-        )
+              """.trimIndent(),
+            ),
+        ),
     )
   }
 
@@ -53,8 +53,8 @@ class PrisonApiMockServer : WireMockServer {
       get(urlEqualTo("/health/ping"))
         .willReturn(
           aResponse()
-            .withFault(Fault.CONNECTION_RESET_BY_PEER)
-        )
+            .withFault(Fault.CONNECTION_RESET_BY_PEER),
+        ),
     )
   }
 
@@ -72,9 +72,9 @@ class PrisonApiMockServer : WireMockServer {
                   "adjudicationNumber": ${testDataSet.adjudicationNumber},
                   "bookingId": ${testDataSet.bookingId}
                 }
-              """.trimIndent()
-            )
-        )
+              """.trimIndent(),
+            ),
+        ),
     )
   }
 
@@ -84,15 +84,15 @@ class PrisonApiMockServer : WireMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(500)
-        )
+            .withStatus(500),
+        ),
     )
   }
 
   fun verifyPostAdjudicationCreationRequestData(bodyAsJson: String) {
     verify(
       postRequestedFor(urlEqualTo("/api/adjudications/adjudication/request-creation-data"))
-        .withRequestBody(equalTo(bodyAsJson))
+        .withRequestBody(equalTo(bodyAsJson)),
     )
   }
 
@@ -117,9 +117,9 @@ class PrisonApiMockServer : WireMockServer {
                   "statement": "${testDataSet.statement}",
                   "createdByUserId": "${testDataSet.createdByUserId}"
                 }
-              """.trimIndent()
-            )
-        )
+              """.trimIndent(),
+            ),
+        ),
     )
   }
 
@@ -129,15 +129,15 @@ class PrisonApiMockServer : WireMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(500)
-        )
+            .withStatus(500),
+        ),
     )
   }
 
   fun verifyPostAdjudication(bodyAsJson: String) {
     verify(
       postRequestedFor(urlEqualTo("/api/adjudications/adjudication"))
-        .withRequestBody(equalTo(bodyAsJson))
+        .withRequestBody(equalTo(bodyAsJson)),
     )
   }
 
@@ -153,9 +153,9 @@ class PrisonApiMockServer : WireMockServer {
                 .put("oicHearingId", "100")
                 .put("dateTimeOfHearing", "2022-10-24T10:10:10")
                 .put("hearingLocationId", "100")
-                .toString()
-            )
-        )
+                .toString(),
+            ),
+        ),
     )
   }
 
@@ -165,8 +165,8 @@ class PrisonApiMockServer : WireMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(500)
-        )
+            .withStatus(500),
+        ),
     )
   }
 
@@ -176,8 +176,8 @@ class PrisonApiMockServer : WireMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(200)
-        )
+            .withStatus(200),
+        ),
     )
   }
 
@@ -187,8 +187,8 @@ class PrisonApiMockServer : WireMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(500)
-        )
+            .withStatus(500),
+        ),
     )
   }
 
@@ -198,8 +198,8 @@ class PrisonApiMockServer : WireMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(200)
-        )
+            .withStatus(200),
+        ),
     )
   }
 
@@ -209,8 +209,8 @@ class PrisonApiMockServer : WireMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
-            .withStatus(500)
-        )
+            .withStatus(500),
+        ),
     )
   }
 }

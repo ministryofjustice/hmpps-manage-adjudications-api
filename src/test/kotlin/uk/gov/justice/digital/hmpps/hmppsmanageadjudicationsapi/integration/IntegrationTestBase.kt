@@ -78,15 +78,16 @@ abstract class IntegrationTestBase {
   fun setHeaders(
     contentType: MediaType = MediaType.APPLICATION_JSON,
     username: String? = "ITAG_USER",
-    roles: List<String> = emptyList()
+    roles: List<String> = emptyList(),
   ): (HttpHeaders) -> Unit = {
     it.setBearerAuth(jwtAuthHelper.createJwt(subject = username, roles = roles, scope = listOf("write")))
     it.contentType = contentType
   }
 
   fun setAuditTime(auditDateTime: LocalDateTime? = null) {
-    if (auditDateTime == null) auditingHandler.setDateTimeProvider(null)
-    else {
+    if (auditDateTime == null) {
+      auditingHandler.setDateTimeProvider(null)
+    } else {
       auditingHandler.setDateTimeProvider(dateTimeProvider)
       whenever(dateTimeProvider.now).thenReturn(Optional.of(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME))
     }

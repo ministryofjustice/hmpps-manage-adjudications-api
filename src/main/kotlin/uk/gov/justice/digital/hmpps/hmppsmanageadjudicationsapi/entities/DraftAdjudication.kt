@@ -51,8 +51,9 @@ data class DraftAdjudication(
 ) : BaseEntity()
 
 enum class Gender(
-  val pronouns: List<Pronouns>
+  val pronouns: List<Pronouns>,
 ) {
   MALE(Pronouns.male()),
-  FEMALE(Pronouns.female());
+  FEMALE(Pronouns.female()),
+  ;
 }

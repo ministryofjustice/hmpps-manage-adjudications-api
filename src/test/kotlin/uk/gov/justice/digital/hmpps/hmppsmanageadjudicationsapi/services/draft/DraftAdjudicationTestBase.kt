@@ -28,43 +28,43 @@ abstract class DraftAdjudicationTestBase : TestsToImplement {
   fun beforeEach() {
     // Set up offence code mocks
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(
-      OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
+      OFFENCE_CODE_2_NOMIS_CODE_ON_OWN,
     )
     whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(
-      OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
+      OFFENCE_CODE_2_NOMIS_CODE_ASSISTED,
     )
     whenever(offenceCodeLookupService.getParagraphNumber(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
 
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(
-      OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
+      OFFENCE_CODE_3_NOMIS_CODE_ON_OWN,
     )
     whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(
-      OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
+      OFFENCE_CODE_3_NOMIS_CODE_ASSISTED,
     )
     whenever(offenceCodeLookupService.getParagraphNumber(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
 
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
+      YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN,
     )
     whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
+      YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED,
     )
     whenever(offenceCodeLookupService.getParagraphNumber(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(BASIC_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION
+      YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
     )
 
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
+      YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN,
     )
     whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
+      YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ASSISTED,
     )
     whenever(offenceCodeLookupService.getParagraphNumber(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(YOUTH_OFFENCE_CODE_3_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION
+      YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
     )
   }
 
@@ -106,7 +106,7 @@ abstract class DraftAdjudicationTestBase : TestsToImplement {
       offenceRule = OffenceRuleDetailsDto(
         paragraphNumber = YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER,
         paragraphDescription = YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
-      )
+      ),
     )
 
     val YOUTH_OFFENCE_DETAILS_DB_ENTITY = Offence(
@@ -120,7 +120,7 @@ abstract class DraftAdjudicationTestBase : TestsToImplement {
       offenceRule = OffenceRuleDetailsDto(
         paragraphNumber = OFFENCE_CODE_2_PARAGRAPH_NUMBER,
         paragraphDescription = OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
-      )
+      ),
     )
     val BASIC_OFFENCE_DETAILS_DB_ENTITY = Offence(
       offenceCode = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,

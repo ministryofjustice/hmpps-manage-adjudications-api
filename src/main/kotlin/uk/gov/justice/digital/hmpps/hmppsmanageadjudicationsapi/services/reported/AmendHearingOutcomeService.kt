@@ -26,22 +26,26 @@ class AmendHearingOutcomeService(
     amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
   ): ReportedAdjudicationDto {
     val currentInfo = hearingOutcomeService.getCurrentStatusAndLatestOutcome(
-      adjudicationNumber = adjudicationNumber
+      adjudicationNumber = adjudicationNumber,
     )
     val currentStatus = currentInfo.first
     val latestHearingOutcome = currentInfo.second
 
-    return if (currentStatus == status) amend(
-      adjudicationNumber = adjudicationNumber,
-      currentStatus = currentStatus,
-      amendHearingOutcomeRequest = amendHearingOutcomeRequest,
-    ) else removeAndCreate(
-      adjudicationNumber = adjudicationNumber,
-      toStatus = status,
-      currentStatus = currentStatus,
-      latestHearingOutcome = latestHearingOutcome,
-      amendHearingOutcomeRequest = amendHearingOutcomeRequest,
-    )
+    return if (currentStatus == status) {
+      amend(
+        adjudicationNumber = adjudicationNumber,
+        currentStatus = currentStatus,
+        amendHearingOutcomeRequest = amendHearingOutcomeRequest,
+      )
+    } else {
+      removeAndCreate(
+        adjudicationNumber = adjudicationNumber,
+        toStatus = status,
+        currentStatus = currentStatus,
+        latestHearingOutcome = latestHearingOutcome,
+        amendHearingOutcomeRequest = amendHearingOutcomeRequest,
+      )
+    }
   }
 
   private fun amend(
@@ -84,17 +88,18 @@ class AmendHearingOutcomeService(
 
     if ((referrals.contains(toStatus) || referrals.contains(currentStatus)) &&
       reportedAdjudicationService.lastOutcomeHasReferralOutcome(adjudicationNumber)
-    )
+    ) {
       throw ValidationException("referral has outcome - unable to amend")
+    }
 
     when (currentStatus) {
       ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
         referralService.removeReferral(
-          adjudicationNumber = adjudicationNumber
+          adjudicationNumber = adjudicationNumber,
         )
       ReportedAdjudicationStatus.DISMISSED, ReportedAdjudicationStatus.NOT_PROCEED, ReportedAdjudicationStatus.CHARGE_PROVED ->
         completedHearingService.removeOutcome(
-          adjudicationNumber = adjudicationNumber
+          adjudicationNumber = adjudicationNumber,
         )
       ReportedAdjudicationStatus.ADJOURNED ->
         hearingOutcomeService.removeAdjourn(
@@ -184,7 +189,8 @@ class AmendHearingOutcomeService(
         ReportedAdjudicationStatus.DISMISSED,
         ReportedAdjudicationStatus.NOT_PROCEED,
         ReportedAdjudicationStatus.ADJOURNED,
-        ReportedAdjudicationStatus.CHARGE_PROVED -> {}
+        ReportedAdjudicationStatus.CHARGE_PROVED,
+        -> {}
         else -> throw ValidationException("unable to amend $direction $this")
       }
     }

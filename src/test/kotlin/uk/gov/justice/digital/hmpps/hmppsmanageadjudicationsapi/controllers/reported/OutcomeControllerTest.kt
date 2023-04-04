@@ -41,11 +41,10 @@ class OutcomeControllerTest : TestControllerBase() {
   inner class CreateProsecution {
     @BeforeEach
     fun beforeEach() {
-
       whenever(
         outcomeService.createProsecution(
           anyLong(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
@@ -75,10 +74,10 @@ class OutcomeControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create an outcome`() {
-      createOutcomeRequest(1,)
+      createOutcomeRequest(1)
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(outcomeService).createProsecution(1,)
+      verify(outcomeService).createProsecution(1)
     }
 
     private fun createOutcomeRequest(
@@ -87,7 +86,7 @@ class OutcomeControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.post("/reported-adjudications/$id/outcome/prosecution")
-            .header("Content-Type", "application/json")
+            .header("Content-Type", "application/json"),
         )
     }
   }
@@ -102,14 +101,15 @@ class OutcomeControllerTest : TestControllerBase() {
           any(),
           any(),
           any(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
       createOutcomeRequest(
-        1, NOT_PROCEED_REQUEST
+        1,
+        NOT_PROCEED_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -117,7 +117,8 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
       createOutcomeRequest(
-        1, NOT_PROCEED_REQUEST
+        1,
+        NOT_PROCEED_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -125,7 +126,8 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
       createOutcomeRequest(
-        1, NOT_PROCEED_REQUEST
+        1,
+        NOT_PROCEED_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -133,7 +135,8 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create an outcome`() {
       createOutcomeRequest(
-        1, NOT_PROCEED_REQUEST,
+        1,
+        NOT_PROCEED_REQUEST,
       )
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
@@ -149,7 +152,7 @@ class OutcomeControllerTest : TestControllerBase() {
         .perform(
           MockMvcRequestBuilders.post("/reported-adjudications/$id/outcome/not-proceed")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -164,14 +167,15 @@ class OutcomeControllerTest : TestControllerBase() {
           any(),
           any(),
           any(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
       createOutcomeRequest(
-        1, POLICE_REFER_REQUEST,
+        1,
+        POLICE_REFER_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -179,7 +183,8 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
       createOutcomeRequest(
-        1, POLICE_REFER_REQUEST
+        1,
+        POLICE_REFER_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -187,7 +192,8 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
       createOutcomeRequest(
-        1, POLICE_REFER_REQUEST
+        1,
+        POLICE_REFER_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -195,7 +201,8 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create an outcome`() {
       createOutcomeRequest(
-        1, POLICE_REFER_REQUEST
+        1,
+        POLICE_REFER_REQUEST,
       )
         .andExpect(MockMvcResultMatchers.status().isCreated)
       verify(outcomeService).createReferral(1, OutcomeCode.REFER_POLICE, "details")
@@ -203,14 +210,14 @@ class OutcomeControllerTest : TestControllerBase() {
 
     private fun createOutcomeRequest(
       id: Long,
-      policeReferralRequest: PoliceReferralRequest
+      policeReferralRequest: PoliceReferralRequest,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(policeReferralRequest)
       return mockMvc
         .perform(
           MockMvcRequestBuilders.post("/reported-adjudications/$id/outcome/refer-police")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -227,7 +234,7 @@ class OutcomeControllerTest : TestControllerBase() {
           any(),
           any(),
           any(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
 
       whenever(
@@ -237,7 +244,7 @@ class OutcomeControllerTest : TestControllerBase() {
           any(),
           any(),
           any(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
@@ -248,7 +255,7 @@ class OutcomeControllerTest : TestControllerBase() {
         1,
         code,
         if (code != OutcomeCode.NOT_PROCEED) COMPLETED_DISMISSED_REQUEST else null,
-        if (code == OutcomeCode.NOT_PROCEED) COMPLETED_NOT_PROCEED_REQUEST else null
+        if (code == OutcomeCode.NOT_PROCEED) COMPLETED_NOT_PROCEED_REQUEST else null,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -260,7 +267,7 @@ class OutcomeControllerTest : TestControllerBase() {
         1,
         code,
         if (code != OutcomeCode.NOT_PROCEED) COMPLETED_DISMISSED_REQUEST else null,
-        if (code == OutcomeCode.NOT_PROCEED) COMPLETED_NOT_PROCEED_REQUEST else null
+        if (code == OutcomeCode.NOT_PROCEED) COMPLETED_NOT_PROCEED_REQUEST else null,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -272,7 +279,7 @@ class OutcomeControllerTest : TestControllerBase() {
         1,
         code,
         if (code != OutcomeCode.NOT_PROCEED) COMPLETED_DISMISSED_REQUEST else null,
-        if (code == OutcomeCode.NOT_PROCEED) COMPLETED_NOT_PROCEED_REQUEST else null
+        if (code == OutcomeCode.NOT_PROCEED) COMPLETED_NOT_PROCEED_REQUEST else null,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -281,18 +288,26 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create an outcome`(code: OutcomeCode) {
       createOutcomeRequest(
-        1, code,
+        1,
+        code,
         if (code != OutcomeCode.NOT_PROCEED) COMPLETED_DISMISSED_REQUEST else null,
-        if (code == OutcomeCode.NOT_PROCEED) COMPLETED_NOT_PROCEED_REQUEST else null
+        if (code == OutcomeCode.NOT_PROCEED) COMPLETED_NOT_PROCEED_REQUEST else null,
       )
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       when (code) {
         OutcomeCode.DISMISSED -> verify(completedHearingService).createDismissed(
-          1, "test", HearingOutcomePlea.UNFIT, "details"
+          1,
+          "test",
+          HearingOutcomePlea.UNFIT,
+          "details",
         )
         OutcomeCode.NOT_PROCEED -> verify(completedHearingService).createNotProceed(
-          1, "test", HearingOutcomePlea.UNFIT, NotProceedReason.NOT_FAIR, "details"
+          1,
+          "test",
+          HearingOutcomePlea.UNFIT,
+          NotProceedReason.NOT_FAIR,
+          "details",
         )
 
         else -> {}
@@ -315,7 +330,7 @@ class OutcomeControllerTest : TestControllerBase() {
         .perform(
           MockMvcRequestBuilders.post("/reported-adjudications/$id/complete-hearing/$path")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -327,33 +342,33 @@ class OutcomeControllerTest : TestControllerBase() {
       whenever(
         referralService.removeReferral(
           anyLong(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
-      removeReferralRequest(1,).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+      removeReferralRequest(1).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
-      removeReferralRequest(1,).andExpect(MockMvcResultMatchers.status().isForbidden)
+      removeReferralRequest(1).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
-      removeReferralRequest(1,).andExpect(MockMvcResultMatchers.status().isForbidden)
+      removeReferralRequest(1).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to remove a referral`() {
-      removeReferralRequest(1,)
+      removeReferralRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(referralService).removeReferral(1,)
+      verify(referralService).removeReferral(1)
     }
 
     private fun removeReferralRequest(
@@ -362,7 +377,7 @@ class OutcomeControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.delete("/reported-adjudications/$id/remove-referral")
-            .header("Content-Type", "application/json")
+            .header("Content-Type", "application/json"),
         )
     }
   }
@@ -375,14 +390,14 @@ class OutcomeControllerTest : TestControllerBase() {
         outcomeService.deleteOutcome(
           anyLong(),
           anyOrNull(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
       deleteOutcomeRequest(
-        1
+        1,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -390,7 +405,7 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
       deleteOutcomeRequest(
-        1
+        1,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -418,7 +433,7 @@ class OutcomeControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.delete("/reported-adjudications/$id/outcome")
-            .header("Content-Type", "application/json")
+            .header("Content-Type", "application/json"),
         )
     }
   }
@@ -435,7 +450,7 @@ class OutcomeControllerTest : TestControllerBase() {
           anyOrNull(),
           any(),
           any(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
@@ -472,7 +487,10 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isCreated)
       verify(completedHearingService).createChargeProved(
         1,
-        CHARGE_PROVED_REQUEST.adjudicator, CHARGE_PROVED_REQUEST.plea, CHARGE_PROVED_REQUEST.amount, CHARGE_PROVED_REQUEST.caution
+        CHARGE_PROVED_REQUEST.adjudicator,
+        CHARGE_PROVED_REQUEST.plea,
+        CHARGE_PROVED_REQUEST.amount,
+        CHARGE_PROVED_REQUEST.caution,
       )
     }
 
@@ -486,7 +504,7 @@ class OutcomeControllerTest : TestControllerBase() {
         .perform(
           MockMvcRequestBuilders.post("/reported-adjudications/$id/complete-hearing/charge-proved")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -498,33 +516,33 @@ class OutcomeControllerTest : TestControllerBase() {
       whenever(
         completedHearingService.removeOutcome(
           anyLong(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
-      removeCompletedHearingOutcomeRequest(1,).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+      removeCompletedHearingOutcomeRequest(1).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
-      removeCompletedHearingOutcomeRequest(1,).andExpect(MockMvcResultMatchers.status().isForbidden)
+      removeCompletedHearingOutcomeRequest(1).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
-      removeCompletedHearingOutcomeRequest(1,).andExpect(MockMvcResultMatchers.status().isForbidden)
+      removeCompletedHearingOutcomeRequest(1).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to remove a completed hearing`() {
-      removeCompletedHearingOutcomeRequest(1,)
+      removeCompletedHearingOutcomeRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(completedHearingService).removeOutcome(1,)
+      verify(completedHearingService).removeOutcome(1)
     }
 
     private fun removeCompletedHearingOutcomeRequest(
@@ -533,7 +551,7 @@ class OutcomeControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.delete("/reported-adjudications/$id/remove-completed-hearing")
-            .header("Content-Type", "application/json")
+            .header("Content-Type", "application/json"),
         )
     }
   }
@@ -542,20 +560,20 @@ class OutcomeControllerTest : TestControllerBase() {
   inner class CreateQuashed {
     @BeforeEach
     fun beforeEach() {
-
       whenever(
         outcomeService.createQuashed(
           anyLong(),
           any(),
           any(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
       createQuashedRequest(
-        1, QUASHED_REQUEST
+        1,
+        QUASHED_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -563,7 +581,8 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
       createQuashedRequest(
-        1, QUASHED_REQUEST
+        1,
+        QUASHED_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -571,7 +590,8 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
       createQuashedRequest(
-        1, QUASHED_REQUEST
+        1,
+        QUASHED_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -593,7 +613,7 @@ class OutcomeControllerTest : TestControllerBase() {
         .perform(
           MockMvcRequestBuilders.post("/reported-adjudications/$id/outcome/quashed")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -602,21 +622,21 @@ class OutcomeControllerTest : TestControllerBase() {
   inner class AmendOutcome {
     @BeforeEach
     fun beforeEach() {
-
       whenever(
         outcomeService.amendOutcomeViaApi(
           anyLong(),
           any(),
           anyOrNull(),
           anyOrNull(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
       amendOutcomeRequest(
-        1, AMEND_REFER_POLICE_REQUEST
+        1,
+        AMEND_REFER_POLICE_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -624,7 +644,8 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
       amendOutcomeRequest(
-        1, AMEND_REFER_POLICE_REQUEST
+        1,
+        AMEND_REFER_POLICE_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -632,7 +653,8 @@ class OutcomeControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
       amendOutcomeRequest(
-        1, AMEND_REFER_POLICE_REQUEST
+        1,
+        AMEND_REFER_POLICE_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -643,7 +665,9 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(outcomeService).amendOutcomeViaApi(
-        adjudicationNumber = 1, details = "details", reason = AMEND_NOT_PROCEED_REQUEST.reason
+        adjudicationNumber = 1,
+        details = "details",
+        reason = AMEND_NOT_PROCEED_REQUEST.reason,
       )
     }
 
@@ -654,7 +678,8 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(outcomeService).amendOutcomeViaApi(
-        adjudicationNumber = 1, details = "details"
+        adjudicationNumber = 1,
+        details = "details",
       )
     }
 
@@ -665,7 +690,9 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(outcomeService).amendOutcomeViaApi(
-        adjudicationNumber = 1, details = "details", quashedReason = AMEND_QUASHED_REQUEST.quashedReason
+        adjudicationNumber = 1,
+        details = "details",
+        quashedReason = AMEND_QUASHED_REQUEST.quashedReason,
       )
     }
 
@@ -678,7 +705,7 @@ class OutcomeControllerTest : TestControllerBase() {
         .perform(
           MockMvcRequestBuilders.put("/reported-adjudications/$id/outcome")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }

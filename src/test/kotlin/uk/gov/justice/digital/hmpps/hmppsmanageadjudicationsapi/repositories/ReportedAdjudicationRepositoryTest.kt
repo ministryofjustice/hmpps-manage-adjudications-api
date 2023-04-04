@@ -51,63 +51,62 @@ class ReportedAdjudicationRepositoryTest {
 
   @BeforeEach
   fun setUp() {
-
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
         reportNumber = 1234L,
         dateTime = dateTimeOfIncident,
-        hearingId = null
-      )
+        hearingId = null,
+      ),
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
         reportNumber = 1235L,
         dateTime = dateTimeOfIncident.plusHours(1),
-        hearingId = null
-      )
+        hearingId = null,
+      ),
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
         reportNumber = 1236L,
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "LEI",
-        hearingId = null
-      )
+        hearingId = null,
+      ),
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
         reportNumber = 9999L,
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "TJW",
-        hearingId = null
+        hearingId = null,
       ).also {
         it.status = ReportedAdjudicationStatus.UNSCHEDULED
         it.dateTimeOfFirstHearing = dateTimeOfIncident.plusHours(2)
-      }
+      },
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
         reportNumber = 9998L,
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "XXX",
-        hearingId = null
+        hearingId = null,
       ).also {
         it.status = ReportedAdjudicationStatus.SCHEDULED
         it.dateTimeOfIssue = LocalDateTime.now()
         it.dateTimeOfFirstHearing = LocalDateTime.now()
-      }
+      },
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
         reportNumber = 9997L,
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "LEI",
-        hearingId = null
+        hearingId = null,
       ).also {
         it.status = ReportedAdjudicationStatus.UNSCHEDULED
         it.dateTimeOfIssue = LocalDateTime.now()
         it.dateTimeOfFirstHearing = LocalDateTime.now()
-      }
+      },
     )
   }
 
@@ -135,7 +134,7 @@ class ReportedAdjudicationRepositoryTest {
         adjudication.dateTimeOfIncident,
         adjudication.dateTimeOfIncident.plusDays(1),
         adjudication.handoverDeadline,
-        adjudication.statement
+        adjudication.statement,
       )
 
     assertThat(savedEntity)
@@ -143,7 +142,7 @@ class ReportedAdjudicationRepositoryTest {
         "isYouthOffender",
         "incidentRoleCode",
         "incidentRoleAssociatedPrisonersNumber",
-        "incidentRoleAssociatedPrisonersName"
+        "incidentRoleAssociatedPrisonersName",
       )
       .contains(
         adjudication.isYouthOffender,
@@ -157,13 +156,14 @@ class ReportedAdjudicationRepositoryTest {
         "offenceCode",
         "victimPrisonersNumber",
         "victimStaffUsername",
-        "victimOtherPersonsName"
+        "victimOtherPersonsName",
       )
       .contains(
         Tuple(
           adjudication.offenceDetails[0].offenceCode,
-          adjudication.offenceDetails[0].victimPrisonersNumber, adjudication.offenceDetails[0].victimStaffUsername,
-          adjudication.offenceDetails[0].victimOtherPersonsName
+          adjudication.offenceDetails[0].victimPrisonersNumber,
+          adjudication.offenceDetails[0].victimStaffUsername,
+          adjudication.offenceDetails[0].victimOtherPersonsName,
         ),
       )
 
@@ -195,7 +195,7 @@ class ReportedAdjudicationRepositoryTest {
       .extracting(
         "code",
         "firstName",
-        "lastName"
+        "lastName",
       )
       .contains(
         Tuple(
@@ -211,7 +211,7 @@ class ReportedAdjudicationRepositoryTest {
         "dateTimeOfHearing",
         "agencyId",
         "reportNumber",
-        "oicHearingId"
+        "oicHearingId",
       )
       .contains(
         Tuple(
@@ -246,7 +246,7 @@ class ReportedAdjudicationRepositoryTest {
         adjudication.prisonerNumber,
         adjudication.reportNumber,
         adjudication.bookingId,
-        adjudication.createdByUserId
+        adjudication.createdByUserId,
       )
 
     assertThat(savedEntity.offenceDetails).hasSize(1)
@@ -254,13 +254,14 @@ class ReportedAdjudicationRepositoryTest {
         "offenceCode",
         "victimPrisonersNumber",
         "victimStaffUsername",
-        "victimOtherPersonsName"
+        "victimOtherPersonsName",
       )
       .contains(
         Tuple(
           adjudication.offenceDetails!![0].offenceCode,
-          adjudication.offenceDetails!![0].victimPrisonersNumber, adjudication.offenceDetails!![0].victimStaffUsername,
-          adjudication.offenceDetails!![0].victimOtherPersonsName
+          adjudication.offenceDetails!![0].victimPrisonersNumber,
+          adjudication.offenceDetails!![0].victimStaffUsername,
+          adjudication.offenceDetails!![0].victimOtherPersonsName,
         ),
       )
   }
@@ -282,7 +283,7 @@ class ReportedAdjudicationRepositoryTest {
       .contains(
         adjudication.status,
         adjudication.statusReason,
-        adjudication.statusDetails
+        adjudication.statusDetails,
       )
   }
 
@@ -293,7 +294,8 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(foundAdjudication)
       .extracting("reportNumber", "statement")
       .contains(
-        1234L, "Example statement"
+        1234L,
+        "Example statement",
       )
   }
 
@@ -303,16 +305,16 @@ class ReportedAdjudicationRepositoryTest {
       "LEI",
       LocalDate.now().plusDays(1).atStartOfDay(),
       LocalDate.now().plusDays(1).atTime(
-        LocalTime.MAX
+        LocalTime.MAX,
       ),
       ReportedAdjudicationStatus.values().toList().filter { it != ReportedAdjudicationStatus.UNSCHEDULED },
-      Pageable.ofSize(10)
+      Pageable.ofSize(10),
     )
 
     assertThat(foundAdjudications.content).hasSize(1)
       .extracting("reportNumber")
       .contains(
-        1236L
+        1236L,
       )
   }
 
@@ -322,7 +324,7 @@ class ReportedAdjudicationRepositoryTest {
       "XXX",
       LocalDate.now().minusDays(1).atStartOfDay(),
       LocalDate.now().plusDays(1).atTime(
-        LocalTime.MAX
+        LocalTime.MAX,
       ),
       ReportedAdjudicationStatus.issuableStatusesForPrint(),
     )
@@ -330,7 +332,7 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(foundAdjudications).hasSize(1)
       .extracting("reportNumber")
       .contains(
-        9998L
+        9998L,
       )
   }
 
@@ -341,7 +343,7 @@ class ReportedAdjudicationRepositoryTest {
         "LEI",
         LocalDate.now().minusDays(1).atStartOfDay(),
         LocalDate.now().plusDays(1).atTime(
-          LocalTime.MAX
+          LocalTime.MAX,
         ),
         ReportedAdjudicationStatus.values().toList(),
       )
@@ -349,7 +351,7 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(foundAdjudications).hasSize(1)
       .extracting("reportNumber")
       .contains(
-        9997L
+        9997L,
       )
   }
 
@@ -360,7 +362,7 @@ class ReportedAdjudicationRepositoryTest {
         "TJW",
         LocalDate.now().minusDays(1).atStartOfDay(),
         LocalDate.now().plusDays(1).atTime(
-          LocalTime.MAX
+          LocalTime.MAX,
         ),
         ReportedAdjudicationStatus.issuableStatuses(),
       )
@@ -368,7 +370,7 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(foundAdjudications).hasSize(1)
       .extracting("reportNumber")
       .contains(
-        9999L
+        9999L,
       )
   }
 
@@ -376,19 +378,21 @@ class ReportedAdjudicationRepositoryTest {
   fun `find reported adjudications by created user and agency id`() {
     val foundAdjudications =
       reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
-        "ITAG_USER", "MDI",
+        "ITAG_USER",
+        "MDI",
         LocalDate.now().plusDays(1).atStartOfDay(),
         LocalDate.now().plusDays(1).atTime(
-          LocalTime.MAX
+          LocalTime.MAX,
         ),
         ReportedAdjudicationStatus.values().toList(),
-        Pageable.ofSize(10)
+        Pageable.ofSize(10),
       )
 
     assertThat(foundAdjudications.content).hasSize(2)
       .extracting("reportNumber")
       .contains(
-        1234L, 1235L
+        1234L,
+        1235L,
       )
   }
 
@@ -401,10 +405,10 @@ class ReportedAdjudicationRepositoryTest {
             ReportedDamage(
               code = DamageCode.REDECORATION,
               details = "",
-              reporter = "11111111111111111111111111111111111111111111111111111"
-            )
+              reporter = "11111111111111111111111111111111111111111111111111111",
+            ),
           )
-        }
+        },
       )
     }.isInstanceOf(ConstraintViolationException::class.java)
   }
@@ -412,7 +416,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `get adjudications by report number in `() {
     val adjudications = reportedAdjudicationRepository.findByReportNumberIn(
-      listOf(1234L, 1235L, 1236L)
+      listOf(1234L, 1235L, 1236L),
     )
 
     assertThat(adjudications.size).isEqualTo(3)
@@ -422,8 +426,9 @@ class ReportedAdjudicationRepositoryTest {
   fun `get hearings from hearing repository `() {
     val dod = dateTimeOfIncident.plusWeeks(1)
     val hearings = hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
-      "MDI", dod.toLocalDate().atStartOfDay(),
-      dod.toLocalDate().plusDays(1).atStartOfDay()
+      "MDI",
+      dod.toLocalDate().atStartOfDay(),
+      dod.toLocalDate().plusDays(1).atStartOfDay(),
     )
 
     assertThat(hearings.size).isEqualTo(2)
@@ -447,7 +452,8 @@ class ReportedAdjudicationRepositoryTest {
   fun `hearing outcome`() {
     val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
     adjudication!!.hearings.first().hearingOutcome = HearingOutcome(
-      adjudicator = "test", code = HearingOutcomeCode.REFER_POLICE,
+      adjudicator = "test",
+      code = HearingOutcomeCode.REFER_POLICE,
     )
 
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
@@ -474,9 +480,9 @@ class ReportedAdjudicationRepositoryTest {
       Punishment(
         type = PunishmentType.ADDITIONAL_DAYS,
         schedule = mutableListOf(
-          PunishmentSchedule(days = 10, startDate = LocalDate.now())
-        )
-      )
+          PunishmentSchedule(days = 10, startDate = LocalDate.now()),
+        ),
+      ),
     )
 
     val savedEntity = reportedAdjudicationRepository.save(adjudication)

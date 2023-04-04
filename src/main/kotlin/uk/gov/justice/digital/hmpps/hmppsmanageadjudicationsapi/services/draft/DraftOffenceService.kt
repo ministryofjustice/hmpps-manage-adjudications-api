@@ -17,7 +17,8 @@ class DraftOffenceService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
 ) : DraftAdjudicationBaseService(
-  draftAdjudicationRepository, offenceCodeLookupService
+  draftAdjudicationRepository,
+  offenceCodeLookupService,
 ) {
 
   fun lookupRuleDetails(offenceCode: Int, isYouthOffender: Boolean, gender: Gender): OffenceRuleDetailsDto {

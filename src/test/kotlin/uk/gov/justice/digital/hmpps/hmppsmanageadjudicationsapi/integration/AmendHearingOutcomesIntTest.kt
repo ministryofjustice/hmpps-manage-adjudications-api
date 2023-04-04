@@ -31,8 +31,8 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "adjudicator" to "updated adjudicator",
-          "details" to "updated details"
-        )
+          "details" to "updated details",
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -58,8 +58,8 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "adjudicator" to "updated adjudicator",
-          "details" to "updated details"
-        )
+          "details" to "updated details",
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -88,7 +88,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
           "plea" to HearingOutcomePlea.NOT_ASKED,
           "adjournReason" to HearingOutcomeAdjournReason.LEGAL_REPRESENTATION,
           "details" to "updated details",
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -120,7 +120,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
           "amount" to 100.99,
           "damagesOwed" to true,
           "caution" to false,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -150,8 +150,8 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
           "adjudicator" to "updated adjudicator",
           "plea" to HearingOutcomePlea.NOT_ASKED,
           "notProceedReason" to NotProceedReason.ANOTHER_WAY,
-          "details" to "updated details"
-        )
+          "details" to "updated details",
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -180,8 +180,8 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
         mapOf(
           "adjudicator" to "updated adjudicator",
           "plea" to HearingOutcomePlea.NOT_ASKED,
-          "details" to "updated details"
-        )
+          "details" to "updated details",
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -202,7 +202,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
     "ADJOURNED, REFER_POLICE", "ADJOURNED, REFER_INAD", "ADJOURNED, DISMISSED", "ADJOURNED, NOT_PROCEED", "ADJOURNED, CHARGE_PROVED",
     "DISMISSED, REFER_POLICE", "DISMISSED, REFER_INAD", "DISMISSED, ADJOURNED", "DISMISSED, NOT_PROCEED", "DISMISSED, CHARGE_PROVED",
     "NOT_PROCEED, REFER_POLICE", "NOT_PROCEED, REFER_INAD", "NOT_PROCEED, ADJOURNED", "NOT_PROCEED, DISMISSED", "NOT_PROCEED, CHARGE_PROVED",
-    "CHARGE_PROVED, REFER_POLICE", "CHARGE_PROVED, REFER_INAD", "CHARGE_PROVED, ADJOURNED", "CHARGE_PROVED, DISMISSED", "CHARGE_PROVED, NOT_PROCEED"
+    "CHARGE_PROVED, REFER_POLICE", "CHARGE_PROVED, REFER_INAD", "CHARGE_PROVED, ADJOURNED", "CHARGE_PROVED, DISMISSED", "CHARGE_PROVED, NOT_PROCEED",
   )
   @ParameterizedTest
   fun `amend hearing outcome from {0} to {1}`(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
@@ -221,33 +221,46 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
     when (to) {
       ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD -> amendOutcomeRequest(
         AmendHearingOutcomeRequest(
-          adjudicator = "updated", details = "updated details"
+          adjudicator = "updated",
+          details = "updated details",
         ),
-        to
+        to,
       )
       ReportedAdjudicationStatus.DISMISSED -> amendOutcomeRequest(
         AmendHearingOutcomeRequest(
-          adjudicator = "updated", details = "updated details", plea = HearingOutcomePlea.GUILTY
+          adjudicator = "updated",
+          details = "updated details",
+          plea = HearingOutcomePlea.GUILTY,
         ),
-        to
+        to,
       )
       ReportedAdjudicationStatus.NOT_PROCEED -> amendOutcomeRequest(
         AmendHearingOutcomeRequest(
-          adjudicator = "updated", details = "updated details", plea = HearingOutcomePlea.GUILTY, notProceedReason = NotProceedReason.EXPIRED_NOTICE
+          adjudicator = "updated",
+          details = "updated details",
+          plea = HearingOutcomePlea.GUILTY,
+          notProceedReason = NotProceedReason.EXPIRED_NOTICE,
         ),
-        to
+        to,
       )
       ReportedAdjudicationStatus.ADJOURNED -> amendOutcomeRequest(
         AmendHearingOutcomeRequest(
-          adjudicator = "updated", details = "updated details", plea = HearingOutcomePlea.GUILTY, adjournReason = HearingOutcomeAdjournReason.MCKENZIE
+          adjudicator = "updated",
+          details = "updated details",
+          plea = HearingOutcomePlea.GUILTY,
+          adjournReason = HearingOutcomeAdjournReason.MCKENZIE,
         ),
-        to
+        to,
       )
       ReportedAdjudicationStatus.CHARGE_PROVED -> amendOutcomeRequest(
         AmendHearingOutcomeRequest(
-          adjudicator = "updated", plea = HearingOutcomePlea.GUILTY, amount = 999.99, caution = false, damagesOwed = true,
+          adjudicator = "updated",
+          plea = HearingOutcomePlea.GUILTY,
+          amount = 999.99,
+          caution = false,
+          damagesOwed = true,
         ),
-        to
+        to,
       )
       else -> throw RuntimeException("invalid")
     }.expectStatus().isOk
@@ -302,7 +315,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
           "adjudicator" to "updated adjudicator",
           "caution" to false,
           "damagesOwed" to false,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -325,7 +338,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
         mapOf(
           "details" to "its now dismissed",
           "plea" to HearingOutcomePlea.GUILTY,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -345,8 +358,8 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "adjudicator" to "updated adjudicator",
-          "details" to "updated details"
-        )
+          "details" to "updated details",
+        ),
       )
       .exchange()
       .expectStatus().isBadRequest
@@ -357,7 +370,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/$to")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
-        objectMapper.writeValueAsString(request)
+        objectMapper.writeValueAsString(request),
       )
       .exchange()
 }

@@ -66,10 +66,10 @@ data class IncidentStatementRequest(
   @Schema(description = "The statement regarding the incident")
   @get:Size(
     max = 4000,
-    message = "The incident statement exceeds the maximum character limit of {max}"
+    message = "The incident statement exceeds the maximum character limit of {max}",
   )
   val statement: String? = null,
-  val completed: Boolean? = false
+  val completed: Boolean? = false,
 )
 
 @Schema(description = "Request to edit the incident details")
@@ -109,47 +109,51 @@ data class GenderRequest(
 @RestController
 @Validated
 class DraftAdjudicationController(
-  private val draftAdjudicationService: DraftAdjudicationService
+  private val draftAdjudicationService: DraftAdjudicationService,
 ) : DraftAdjudicationBaseController() {
 
   @Parameters(
     Parameter(
       name = "page",
       description = "Results page you want to retrieve (0..N). Default 0, e.g. the first page",
-      example = "0"
+      example = "0",
     ),
     Parameter(
       name = "size",
-      description = "Number of records per page. Default 20"
+      description = "Number of records per page. Default 20",
     ),
     Parameter(
       name = "sort",
-      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery,DESC"
+      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery,DESC",
     ),
     Parameter(
       name = "startDate",
       required = false,
-      description = "optional inclusive start date for results, default is today - 3 days"
+      description = "optional inclusive start date for results, default is today - 3 days",
     ),
     Parameter(
       name = "endDate",
       required = false,
-      description = "optional inclusive end date for results, default is today"
+      description = "optional inclusive end date for results, default is today",
     ),
   )
   @GetMapping("/my/agency/{agencyId}")
   @Operation(summary = "Returns all the in progress draft adjudications created by the current user")
   fun getCurrentUsersInProgressDraftAdjudications(
     @PathVariable(name = "agencyId") agencyId: String,
-    @RequestParam(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate?,
-    @RequestParam(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate?,
-    @PageableDefault(sort = ["IncidentDetailsDateTimeOfDiscovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable
+    @RequestParam(name = "startDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    startDate: LocalDate?,
+    @RequestParam(name = "endDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    endDate: LocalDate?,
+    @PageableDefault(sort = ["IncidentDetailsDateTimeOfDiscovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
   ): Page<DraftAdjudicationDto> =
     draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(
       agencyId = agencyId,
       startDate = startDate ?: LocalDate.now().minusWeeks(1),
       endDate = endDate ?: LocalDate.now(),
-      pageable = pageable
+      pageable = pageable,
     )
 
   @PostMapping
@@ -168,7 +172,7 @@ class DraftAdjudicationController(
       )
 
     return DraftAdjudicationResponse(
-      draftAdjudication
+      draftAdjudication,
     )
   }
 
@@ -178,7 +182,7 @@ class DraftAdjudicationController(
     val draftAdjudication = draftAdjudicationService.getDraftAdjudicationDetails(id)
 
     return DraftAdjudicationResponse(
-      draftAdjudication
+      draftAdjudication,
     )
   }
 
@@ -188,16 +192,17 @@ class DraftAdjudicationController(
   @ResponseStatus(HttpStatus.CREATED)
   fun addIncidentStatement(
     @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid incidentStatementRequest: IncidentStatementRequest
+    @RequestBody @Valid
+    incidentStatementRequest: IncidentStatementRequest,
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.addIncidentStatement(
       id,
       incidentStatementRequest.statement,
-      incidentStatementRequest.completed
+      incidentStatementRequest.completed,
     )
 
     return DraftAdjudicationResponse(
-      draftAdjudication
+      draftAdjudication,
     )
   }
 
@@ -206,7 +211,8 @@ class DraftAdjudicationController(
   @PreAuthorize("hasAuthority('SCOPE_write')")
   fun editIncidentDetails(
     @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid editIncidentDetailsRequest: EditIncidentDetailsRequest
+    @RequestBody @Valid
+    editIncidentDetailsRequest: EditIncidentDetailsRequest,
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.editIncidentDetails(
       id,
@@ -216,7 +222,7 @@ class DraftAdjudicationController(
     )
 
     return DraftAdjudicationResponse(
-      draftAdjudication
+      draftAdjudication,
     )
   }
 
@@ -225,16 +231,17 @@ class DraftAdjudicationController(
   @PreAuthorize("hasAuthority('SCOPE_write')")
   fun editIncidentRole(
     @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid editIncidentRoleRequest: EditIncidentRoleRequest
+    @RequestBody @Valid
+    editIncidentRoleRequest: EditIncidentRoleRequest,
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.editIncidentRole(
       id,
       editIncidentRoleRequest.incidentRole,
-      editIncidentRoleRequest.removeExistingOffences
+      editIncidentRoleRequest.removeExistingOffences,
     )
 
     return DraftAdjudicationResponse(
-      draftAdjudication
+      draftAdjudication,
     )
   }
 
@@ -243,7 +250,8 @@ class DraftAdjudicationController(
   @PreAuthorize("hasAuthority('SCOPE_write')")
   fun setIncidentRoleAssociatedPrisoner(
     @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid associatedPrisonerRequest: IncidentRoleAssociatedPrisonerRequest
+    @RequestBody @Valid
+    associatedPrisonerRequest: IncidentRoleAssociatedPrisonerRequest,
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.setIncidentRoleAssociatedPrisoner(
       id,
@@ -251,7 +259,7 @@ class DraftAdjudicationController(
     )
 
     return DraftAdjudicationResponse(
-      draftAdjudication
+      draftAdjudication,
     )
   }
 
@@ -260,15 +268,16 @@ class DraftAdjudicationController(
   @PreAuthorize("hasAuthority('SCOPE_write')")
   fun editIncidentStatement(
     @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid editIncidentStatementRequest: IncidentStatementRequest
+    @RequestBody @Valid
+    editIncidentStatementRequest: IncidentStatementRequest,
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.editIncidentStatement(
       id,
       statement = editIncidentStatementRequest.statement,
-      completed = editIncidentStatementRequest.completed
+      completed = editIncidentStatementRequest.completed,
     )
     return DraftAdjudicationResponse(
-      draftAdjudication
+      draftAdjudication,
     )
   }
 
@@ -277,7 +286,8 @@ class DraftAdjudicationController(
   @PreAuthorize("hasAuthority('SCOPE_write')")
   fun setApplicableRules(
     @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid applicableRulesRequest: ApplicableRulesRequest
+    @RequestBody @Valid
+    applicableRulesRequest: ApplicableRulesRequest,
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.setIncidentApplicableRule(
       id,
@@ -286,7 +296,7 @@ class DraftAdjudicationController(
     )
 
     return DraftAdjudicationResponse(
-      draftAdjudication
+      draftAdjudication,
     )
   }
 
@@ -295,15 +305,16 @@ class DraftAdjudicationController(
   @PreAuthorize("hasAuthority('SCOPE_write')")
   fun setGender(
     @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid genderRequest: GenderRequest
+    @RequestBody @Valid
+    genderRequest: GenderRequest,
   ): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.setGender(
       id,
-      genderRequest.gender
+      genderRequest.gender,
     )
 
     return DraftAdjudicationResponse(
-      draftAdjudication
+      draftAdjudication,
     )
   }
 

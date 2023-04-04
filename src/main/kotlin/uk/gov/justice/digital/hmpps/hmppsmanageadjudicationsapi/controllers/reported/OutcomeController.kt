@@ -98,7 +98,7 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createNotProceed(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody notProceedRequest: NotProceedRequest
+    @RequestBody notProceedRequest: NotProceedRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.createNotProceed(
       adjudicationNumber = adjudicationNumber,
@@ -127,7 +127,7 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createQuashed(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody quashedRequest: QuashedRequest
+    @RequestBody quashedRequest: QuashedRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.createQuashed(
       adjudicationNumber = adjudicationNumber,
@@ -143,7 +143,7 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createRefPolice(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody policeReferralRequest: PoliceReferralRequest
+    @RequestBody policeReferralRequest: PoliceReferralRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.createReferral(
       adjudicationNumber = adjudicationNumber,
@@ -159,7 +159,7 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createDismissed(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody completedDismissedRequest: HearingCompletedDismissedRequest
+    @RequestBody completedDismissedRequest: HearingCompletedDismissedRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = completedHearingService.createDismissed(
       adjudicationNumber = adjudicationNumber,
@@ -176,7 +176,7 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createNotProceedFromHearing(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody completedNotProceedRequest: HearingCompletedNotProceedRequest
+    @RequestBody completedNotProceedRequest: HearingCompletedNotProceedRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = completedHearingService.createNotProceed(
       adjudicationNumber = adjudicationNumber,

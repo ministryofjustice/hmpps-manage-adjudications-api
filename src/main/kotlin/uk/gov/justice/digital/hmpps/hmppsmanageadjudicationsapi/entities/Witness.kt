@@ -25,7 +25,7 @@ data class Witness(
   @field:Length(max = 32)
   var lastName: String,
   @field:Length(max = 32)
-  var reporter: String
+  var reporter: String,
 ) : BaseEntity()
 
 @Entity
@@ -40,5 +40,5 @@ data class ReportedWitness(
   @field:Length(max = 32)
   var lastName: String,
   @field:Length(max = 32)
-  var reporter: String
+  var reporter: String,
 ) : BaseEntity()

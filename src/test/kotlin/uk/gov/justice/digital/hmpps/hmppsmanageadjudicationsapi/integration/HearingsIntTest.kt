@@ -32,7 +32,7 @@ class HearingsIntTest : IntegrationTestBase() {
           "locationId" to 1,
           "dateTimeOfHearing" to dateTimeOfHearing,
           "oicHearingType" to OicHearingType.GOV.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -62,7 +62,7 @@ class HearingsIntTest : IntegrationTestBase() {
           "locationId" to 1,
           "dateTimeOfHearing" to dateTimeOfHearing,
           "oicHearingType" to OicHearingType.GOV_YOI.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isBadRequest
@@ -84,7 +84,7 @@ class HearingsIntTest : IntegrationTestBase() {
           "locationId" to 1,
           "dateTimeOfHearing" to dateTimeOfHearing,
           "oicHearingType" to OicHearingType.GOV.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().is5xxServerError
@@ -114,7 +114,7 @@ class HearingsIntTest : IntegrationTestBase() {
           "locationId" to 3,
           "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1),
           "oicHearingType" to OicHearingType.GOV_ADULT.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -145,7 +145,7 @@ class HearingsIntTest : IntegrationTestBase() {
           "locationId" to 3,
           "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1),
           "oicHearingType" to OicHearingType.GOV_YOI.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isBadRequest
@@ -167,7 +167,7 @@ class HearingsIntTest : IntegrationTestBase() {
           "locationId" to 3,
           "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1),
           "oicHearingType" to OicHearingType.GOV_ADULT.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().is5xxServerError
@@ -238,7 +238,7 @@ class HearingsIntTest : IntegrationTestBase() {
           "reason" to HearingOutcomeAdjournReason.LEGAL_ADVICE,
           "details" to "details",
           "plea" to HearingOutcomePlea.UNFIT,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -273,7 +273,7 @@ class HearingsIntTest : IntegrationTestBase() {
           "adjudicator" to "test",
           "code" to HearingOutcomeCode.REFER_POLICE,
           "details" to "details",
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -305,8 +305,8 @@ class HearingsIntTest : IntegrationTestBase() {
         mapOf(
           "status" to ReportedAdjudicationStatus.REFER_POLICE,
           "statusReason" to "status reason",
-          "statusDetails" to "status details"
-        )
+          "statusDetails" to "status details",
+        ),
       )
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -319,7 +319,7 @@ class HearingsIntTest : IntegrationTestBase() {
           "adjudicator" to "test",
           "code" to HearingOutcomeCode.REFER_INAD,
           "details" to "details",
-        )
+        ),
       )
       .exchange()
       .expectStatus().isBadRequest
@@ -387,7 +387,7 @@ class HearingsIntTest : IntegrationTestBase() {
           "locationId" to 1,
           "dateTimeOfHearing" to LocalDateTime.now(),
           "oicHearingType" to OicHearingType.GOV.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -413,7 +413,7 @@ class HearingsIntTest : IntegrationTestBase() {
           "locationId" to 1,
           "dateTimeOfHearing" to LocalDateTime.now().plusDays(3),
           "oicHearingType" to OicHearingType.GOV.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated

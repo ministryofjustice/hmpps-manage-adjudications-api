@@ -24,14 +24,16 @@ import javax.transaction.Transactional
 enum class ValidationChecks(val errorMessage: String) {
   APPLICABLE_RULES("No applicable rules set") {
     override fun validate(draftAdjudication: DraftAdjudication) {
-      if (draftAdjudication.isYouthOffender == null)
+      if (draftAdjudication.isYouthOffender == null) {
         throw IllegalStateException(errorMessage)
+      }
     }
   },
   INCIDENT_ROLE("Please supply an incident role") {
     override fun validate(draftAdjudication: DraftAdjudication) {
-      if (draftAdjudication.incidentRole == null)
+      if (draftAdjudication.incidentRole == null) {
         throw IllegalStateException(errorMessage)
+      }
     }
   },
   INCIDENT_ROLE_ASSOCIATED_PRISONER("Please supply the prisoner associated with the incident") {
@@ -39,22 +41,25 @@ enum class ValidationChecks(val errorMessage: String) {
       if (
         associatedPrisonerInformationRequired(draftAdjudication.incidentRole?.roleCode) &&
         draftAdjudication.incidentRole?.associatedPrisonersNumber == null
-      )
+      ) {
         throw IllegalStateException(errorMessage)
+      }
     }
   },
   OFFENCE_DETAILS("Please supply at least one set of offence details") {
     override fun validate(draftAdjudication: DraftAdjudication) {
-      if (draftAdjudication.offenceDetails.isEmpty())
+      if (draftAdjudication.offenceDetails.isEmpty()) {
         throw IllegalStateException(errorMessage)
+      }
     }
   },
   INCIDENT_STATEMENT("Please include an incident statement before completing this draft adjudication") {
     override fun validate(draftAdjudication: DraftAdjudication) {
-      if (draftAdjudication.incidentStatement == null || draftAdjudication.incidentStatement!!.statement == null)
+      if (draftAdjudication.incidentStatement == null || draftAdjudication.incidentStatement!!.statement == null) {
         throw IllegalStateException(errorMessage)
+      }
     }
-  };
+  }, ;
 
   abstract fun validate(draftAdjudication: DraftAdjudication)
 }
@@ -66,7 +71,8 @@ class DraftAdjudicationService(
   offenceCodeLookupService: OffenceCodeLookupService,
   private val authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
-  draftAdjudicationRepository, offenceCodeLookupService
+  draftAdjudicationRepository,
+  offenceCodeLookupService,
 ) {
 
   companion object {
@@ -116,7 +122,7 @@ class DraftAdjudicationService(
         locationId = locationId,
         dateTimeOfIncident = dateTimeOfIncident,
         dateTimeOfDiscovery = actualDateTimeOfDiscovery,
-        handoverDeadline = daysToActionFromIncident(actualDateTimeOfDiscovery)
+        handoverDeadline = daysToActionFromIncident(actualDateTimeOfDiscovery),
       ),
       reportNumber = null,
       reportByUserId = null,
@@ -132,8 +138,9 @@ class DraftAdjudicationService(
 
     val draftAdjudication = find(id)
 
-    if (draftAdjudication.incidentStatement != null)
+    if (draftAdjudication.incidentStatement != null) {
       throw IllegalStateException("DraftAdjudication already includes the incident statement")
+    }
 
     draftAdjudication.incidentStatement = IncidentStatement(statement = statement, completed = completed)
 
@@ -144,7 +151,7 @@ class DraftAdjudicationService(
     id: Long,
     locationId: Long,
     dateTimeOfIncident: LocalDateTime,
-    dateTimeOfDiscovery: LocalDateTime?
+    dateTimeOfDiscovery: LocalDateTime?,
   ): DraftAdjudicationDto {
     dateOfDiscoveryValidation(dateTimeOfDiscovery, dateTimeOfIncident)
 
@@ -211,8 +218,9 @@ class DraftAdjudicationService(
 
     val draftAdjudication = find(id)
 
-    if (draftAdjudication.incidentStatement == null)
+    if (draftAdjudication.incidentStatement == null) {
       throw EntityNotFoundException("DraftAdjudication does not have any incident statement to update")
+    }
 
     statement?.let { draftAdjudication.incidentStatement?.statement = statement }
     completed?.let { draftAdjudication.incidentStatement?.completed = completed }
@@ -250,7 +258,8 @@ class DraftAdjudicationService(
   }
 
   private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {
-    if (statement == null && completed == null)
+    if (statement == null && completed == null) {
       throw IllegalArgumentException("Please supply either a statement or the completed value")
+    }
   }
 }

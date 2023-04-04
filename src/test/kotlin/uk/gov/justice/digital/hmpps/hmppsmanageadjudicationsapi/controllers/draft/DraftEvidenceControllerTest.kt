@@ -27,7 +27,7 @@ class DraftEvidenceControllerTest : TestControllerBase() {
       evidenceService.setEvidence(
         ArgumentMatchers.anyLong(),
         any(),
-      )
+      ),
     ).thenReturn(draftAdjudicationDto())
   }
 
@@ -47,14 +47,14 @@ class DraftEvidenceControllerTest : TestControllerBase() {
 
   private fun setEvidenceRequest(
     id: Long,
-    evidence: EvidenceRequest?
+    evidence: EvidenceRequest?,
   ): ResultActions {
     val body = objectMapper.writeValueAsString(evidence)
     return mockMvc
       .perform(
         MockMvcRequestBuilders.put("/draft-adjudications/$id/evidence")
           .header("Content-Type", "application/json")
-          .content(body)
+          .content(body),
       )
   }
 

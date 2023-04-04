@@ -28,7 +28,7 @@ class PunishmentsService(
 
   fun create(
     adjudicationNumber: Long,
-    punishments: List<PunishmentRequest>
+    punishments: List<PunishmentRequest>,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       it.status.validateCanAddPunishments()
@@ -38,8 +38,9 @@ class PunishmentsService(
       when (it.type) {
         PunishmentType.PRIVILEGE -> {
           it.privilegeType ?: throw ValidationException("subtype missing for type PRIVILEGE")
-          if (it.privilegeType == PrivilegeType.OTHER)
+          if (it.privilegeType == PrivilegeType.OTHER) {
             it.otherPrivilege ?: throw ValidationException("description missing for type PRIVILEGE - sub type OTHER")
+          }
         }
         PunishmentType.EARNINGS -> it.stoppagePercentage ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
         else -> {}
@@ -50,11 +51,14 @@ class PunishmentsService(
 
       reportedAdjudication.punishments.add(
         Punishment(
-          type = it.type, privilegeType = it.privilegeType, otherPrivilege = it.otherPrivilege, stoppagePercentage = it.stoppagePercentage,
+          type = it.type,
+          privilegeType = it.privilegeType,
+          otherPrivilege = it.otherPrivilege,
+          stoppagePercentage = it.stoppagePercentage,
           schedule = mutableListOf(
-            PunishmentSchedule(days = it.days, startDate = it.startDate, endDate = it.endDate, suspendedUntil = it.suspendedUntil)
-          )
-        )
+            PunishmentSchedule(days = it.days, startDate = it.startDate, endDate = it.endDate, suspendedUntil = it.suspendedUntil),
+          ),
+        ),
       )
     }
 
@@ -63,8 +67,9 @@ class PunishmentsService(
 
   companion object {
     fun ReportedAdjudicationStatus.validateCanAddPunishments() {
-      if (this != ReportedAdjudicationStatus.CHARGE_PROVED)
+      if (this != ReportedAdjudicationStatus.CHARGE_PROVED) {
         throw ValidationException("status is not CHARGE_PROVED")
+      }
     }
   }
 }

@@ -35,7 +35,7 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     outcomeService,
     referralService,
     completedHearingService,
-    reportedAdjudicationService
+    reportedAdjudicationService,
   )
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
@@ -49,46 +49,52 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     fun `updating the same type calls correct services for simple updates `(status: ReportedAdjudicationStatus, code: HearingOutcomeCode) {
       whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)).thenReturn(
-        Pair(status, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""))
+        Pair(status, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")),
       )
 
       val request = createRequest(status)
 
       amendHearingOutcomeService.amendHearingOutcome(
-        adjudicationNumber = 1L, status = status, amendHearingOutcomeRequest = request
+        adjudicationNumber = 1L,
+        status = status,
+        amendHearingOutcomeRequest = request,
       )
 
-      verify(hearingOutcomeService, atLeastOnce()).getCurrentStatusAndLatestOutcome(adjudicationNumber = 1L,)
+      verify(hearingOutcomeService, atLeastOnce()).getCurrentStatusAndLatestOutcome(adjudicationNumber = 1L)
       verify(hearingOutcomeService, atLeastOnce()).amendHearingOutcome(
         adjudicationNumber = 1L,
         outcomeCodeToAmend = code,
         adjudicator = request.adjudicator,
         details = request.details,
         plea = request.plea,
-        adjournedReason = request.adjournReason
+        adjournedReason = request.adjournReason,
       )
 
-      if (code != HearingOutcomeCode.ADJOURN) verify(outcomeService, atLeastOnce()).amendOutcomeViaService(
-        adjudicationNumber = 1L,
-        outcomeCodeToAmend = status.mapStatusToOutcomeCode()!!,
-        details = request.details,
-        amount = request.amount,
-        damagesOwed = request.damagesOwed,
-        caution = request.caution,
-        notProceedReason = request.notProceedReason,
-      )
+      if (code != HearingOutcomeCode.ADJOURN) {
+        verify(outcomeService, atLeastOnce()).amendOutcomeViaService(
+          adjudicationNumber = 1L,
+          outcomeCodeToAmend = status.mapStatusToOutcomeCode()!!,
+          details = request.details,
+          amount = request.amount,
+          damagesOwed = request.damagesOwed,
+          caution = request.caution,
+          notProceedReason = request.notProceedReason,
+        )
+      }
     }
 
     @CsvSource("ACCEPTED", "SCHEDULED", "UNSCHEDULED", "REJECTED", "RETURNED", "PROSECUTION", "QUASHED", "AWAITING_REVIEW")
     @ParameterizedTest
     fun `throws validation exception if status is not editable `(status: ReportedAdjudicationStatus) {
       whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)).thenReturn(
-        Pair(status, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""))
+        Pair(status, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")),
       )
 
       Assertions.assertThatThrownBy {
         amendHearingOutcomeService.amendHearingOutcome(
-          adjudicationNumber = 1, status = status, amendHearingOutcomeRequest = AmendHearingOutcomeRequest()
+          adjudicationNumber = 1,
+          status = status,
+          amendHearingOutcomeRequest = AmendHearingOutcomeRequest(),
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("unable to amend from this status")
@@ -104,25 +110,28 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       "ADJOURNED, REFER_POLICE", "ADJOURNED, REFER_INAD", "ADJOURNED, DISMISSED", "ADJOURNED, NOT_PROCEED", "ADJOURNED, CHARGE_PROVED",
       "DISMISSED, REFER_POLICE", "DISMISSED, REFER_INAD", "DISMISSED, ADJOURNED", "DISMISSED, NOT_PROCEED", "DISMISSED, CHARGE_PROVED",
       "NOT_PROCEED, REFER_POLICE", "NOT_PROCEED, REFER_INAD", "NOT_PROCEED, ADJOURNED", "NOT_PROCEED, DISMISSED", "NOT_PROCEED, CHARGE_PROVED",
-      "CHARGE_PROVED, REFER_POLICE", "CHARGE_PROVED, REFER_INAD", "CHARGE_PROVED, ADJOURNED", "CHARGE_PROVED, DISMISSED", "CHARGE_PROVED, NOT_PROCEED"
-    ) @ParameterizedTest
+      "CHARGE_PROVED, REFER_POLICE", "CHARGE_PROVED, REFER_INAD", "CHARGE_PROVED, ADJOURNED", "CHARGE_PROVED, DISMISSED", "CHARGE_PROVED, NOT_PROCEED",
+    )
+    @ParameterizedTest
     fun `amending hearing outcome to a new type calls correct services`(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
       whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)).thenReturn(
-        Pair(from, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""))
+        Pair(from, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")),
       )
 
       whenever(outcomeService.getOutcomes(any())).thenReturn(
         listOf(
           CombinedOutcomeDto(
-            outcome = OutcomeDto(id = 1, code = OutcomeCode.PROSECUTION)
-          )
-        )
+            outcome = OutcomeDto(id = 1, code = OutcomeCode.PROSECUTION),
+          ),
+        ),
       )
 
       val request = createRequest(to)
 
       amendHearingOutcomeService.amendHearingOutcome(
-        adjudicationNumber = 1L, status = to, amendHearingOutcomeRequest = request
+        adjudicationNumber = 1L,
+        status = to,
+        amendHearingOutcomeRequest = request,
       )
 
       when (from) {
@@ -155,19 +164,21 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       "ACCEPTED,CHARGE_PROVED", "RETURNED, CHARGE_PROVED", "REJECTED, CHARGE_PROVED", "SCHEDULED, CHARGE_PROVED",
       "UNSCHEDULED, CHARGE_PROVED", "QUASHED, CHARGE_PROVED", "PROSECUTION, CHARGE_PROVED", "AWAITING_REVIEW, CHARGE_PROVED",
       "CHARGE_PROVED, ACCEPTED", "CHARGE_PROVED, RETURNED", "CHARGE_PROVED, REJECTED", "CHARGE_PROVED, SCHEDULED",
-      "CHARGE_PROVED, UNSCHEDULED", "CHARGE_PROVED, QUASHED", "CHARGE_PROVED, PROSECUTION", "CHARGE_PROVED, AWAITING_REVIEW"
+      "CHARGE_PROVED, UNSCHEDULED", "CHARGE_PROVED, QUASHED", "CHARGE_PROVED, PROSECUTION", "CHARGE_PROVED, AWAITING_REVIEW",
     )
     @ParameterizedTest
     fun `throws validation exception if status is not editable `(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
       whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)).thenReturn(
-        Pair(from, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""))
+        Pair(from, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")),
       )
 
       val direction = if (from == ReportedAdjudicationStatus.CHARGE_PROVED) "to $to" else "from $from"
 
       Assertions.assertThatThrownBy {
         amendHearingOutcomeService.amendHearingOutcome(
-          adjudicationNumber = 1, status = to, amendHearingOutcomeRequest = AmendHearingOutcomeRequest()
+          adjudicationNumber = 1,
+          status = to,
+          amendHearingOutcomeRequest = AmendHearingOutcomeRequest(),
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("unable to amend $direction")
@@ -178,12 +189,14 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   @ParameterizedTest
   fun `throws missing details exception `(to: ReportedAdjudicationStatus) {
     whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)).thenReturn(
-      Pair(ReportedAdjudicationStatus.CHARGE_PROVED, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""))
+      Pair(ReportedAdjudicationStatus.CHARGE_PROVED, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")),
     )
 
     Assertions.assertThatThrownBy {
       amendHearingOutcomeService.amendHearingOutcome(
-        adjudicationNumber = 1, status = to, amendHearingOutcomeRequest = AmendHearingOutcomeRequest()
+        adjudicationNumber = 1,
+        status = to,
+        amendHearingOutcomeRequest = AmendHearingOutcomeRequest(),
       )
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("missing details")
@@ -193,15 +206,16 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   @ParameterizedTest
   fun `throws missing plea exception `(to: ReportedAdjudicationStatus) {
     whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)).thenReturn(
-      Pair(ReportedAdjudicationStatus.REFER_POLICE, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""))
+      Pair(ReportedAdjudicationStatus.REFER_POLICE, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")),
     )
 
     Assertions.assertThatThrownBy {
       amendHearingOutcomeService.amendHearingOutcome(
-        adjudicationNumber = 1, status = to,
+        adjudicationNumber = 1,
+        status = to,
         amendHearingOutcomeRequest = AmendHearingOutcomeRequest(
-          details = ""
-        )
+          details = "",
+        ),
       )
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("missing plea")
@@ -210,15 +224,17 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   @Test
   fun `throws missing adjourn reason `() {
     whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)).thenReturn(
-      Pair(ReportedAdjudicationStatus.CHARGE_PROVED, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""))
+      Pair(ReportedAdjudicationStatus.CHARGE_PROVED, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")),
     )
 
     Assertions.assertThatThrownBy {
       amendHearingOutcomeService.amendHearingOutcome(
-        adjudicationNumber = 1, status = ReportedAdjudicationStatus.ADJOURNED,
+        adjudicationNumber = 1,
+        status = ReportedAdjudicationStatus.ADJOURNED,
         amendHearingOutcomeRequest = AmendHearingOutcomeRequest(
-          details = "", plea = HearingOutcomePlea.GUILTY,
-        )
+          details = "",
+          plea = HearingOutcomePlea.GUILTY,
+        ),
       )
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("missing reason")
@@ -227,15 +243,17 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   @Test
   fun `throws missing not proceed reason `() {
     whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)).thenReturn(
-      Pair(ReportedAdjudicationStatus.CHARGE_PROVED, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""))
+      Pair(ReportedAdjudicationStatus.CHARGE_PROVED, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")),
     )
 
     Assertions.assertThatThrownBy {
       amendHearingOutcomeService.amendHearingOutcome(
-        adjudicationNumber = 1, status = ReportedAdjudicationStatus.NOT_PROCEED,
+        adjudicationNumber = 1,
+        status = ReportedAdjudicationStatus.NOT_PROCEED,
         amendHearingOutcomeRequest = AmendHearingOutcomeRequest(
-          details = "", plea = HearingOutcomePlea.GUILTY,
-        )
+          details = "",
+          plea = HearingOutcomePlea.GUILTY,
+        ),
       )
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("missing reason")
@@ -244,15 +262,17 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   @Test
   fun `throws missing caution exception `() {
     whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)).thenReturn(
-      Pair(ReportedAdjudicationStatus.NOT_PROCEED, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""))
+      Pair(ReportedAdjudicationStatus.NOT_PROCEED, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")),
     )
 
     Assertions.assertThatThrownBy {
       amendHearingOutcomeService.amendHearingOutcome(
-        adjudicationNumber = 1, status = ReportedAdjudicationStatus.CHARGE_PROVED,
+        adjudicationNumber = 1,
+        status = ReportedAdjudicationStatus.CHARGE_PROVED,
         amendHearingOutcomeRequest = AmendHearingOutcomeRequest(
-          details = "", plea = HearingOutcomePlea.GUILTY,
-        )
+          details = "",
+          plea = HearingOutcomePlea.GUILTY,
+        ),
       )
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("missing caution")
@@ -262,17 +282,19 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   @ParameterizedTest
   fun `throws validation exception if referral has outcome `(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
     whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)).thenReturn(
-      Pair(from, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""))
+      Pair(from, HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")),
     )
 
     whenever(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1L)).thenReturn(true)
 
     Assertions.assertThatThrownBy {
       amendHearingOutcomeService.amendHearingOutcome(
-        adjudicationNumber = 1, status = to,
+        adjudicationNumber = 1,
+        status = to,
         amendHearingOutcomeRequest = AmendHearingOutcomeRequest(
-          details = "", plea = HearingOutcomePlea.GUILTY,
-        )
+          details = "",
+          plea = HearingOutcomePlea.GUILTY,
+        ),
       )
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("referral has outcome - unable to amend")

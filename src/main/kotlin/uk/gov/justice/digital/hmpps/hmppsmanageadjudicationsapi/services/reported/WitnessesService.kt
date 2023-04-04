@@ -16,7 +16,9 @@ class WitnessesService(
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
 ) : ReportedAdjudicationBaseService(
-  reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
+  reportedAdjudicationRepository,
+  offenceCodeLookupService,
+  authenticationFacade,
 ) {
 
   fun updateWitnesses(adjudicationNumber: Long, witnesses: List<WitnessRequestItem>): ReportedAdjudicationDto {
@@ -32,9 +34,9 @@ class WitnessesService(
           code = it.code,
           firstName = it.firstName,
           lastName = it.lastName,
-          reporter = reporter
+          reporter = reporter,
         )
-      }
+      },
     )
 
     return saveToDto(reportedAdjudication)

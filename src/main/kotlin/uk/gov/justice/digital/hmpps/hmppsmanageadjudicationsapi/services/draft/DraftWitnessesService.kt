@@ -16,7 +16,8 @@ class DraftWitnessesService(
   offenceCodeLookupService: OffenceCodeLookupService,
   private val authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
-  draftAdjudicationRepository, offenceCodeLookupService
+  draftAdjudicationRepository,
+  offenceCodeLookupService,
 ) {
 
   fun setWitnesses(id: Long, witnesses: List<WitnessRequestItem>): DraftAdjudicationDto {
@@ -30,9 +31,9 @@ class DraftWitnessesService(
           code = it.code,
           firstName = it.firstName,
           lastName = it.lastName,
-          reporter = reporter
+          reporter = reporter,
         )
-      }
+      },
     )
     draftAdjudication.witnessesSaved = true
 

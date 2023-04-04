@@ -16,7 +16,8 @@ class DraftEvidenceService(
   offenceCodeLookupService: OffenceCodeLookupService,
   val authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
-  draftAdjudicationRepository, offenceCodeLookupService
+  draftAdjudicationRepository,
+  offenceCodeLookupService,
 ) {
 
   fun setEvidence(id: Long, evidence: List<EvidenceRequestItem>): DraftAdjudicationDto {
@@ -30,9 +31,9 @@ class DraftEvidenceService(
           code = it.code,
           identifier = it.identifier,
           details = it.details,
-          reporter = reporter
+          reporter = reporter,
         )
-      }
+      },
     )
     draftAdjudication.evidenceSaved = true
 

@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 class IntegrationTestScenarioBuilder(
   private val intTestData: IntegrationTestData,
   private val intTestBase: IntegrationTestBase,
-  private val headers: ((HttpHeaders) -> Unit) = intTestBase.setHeaders()
+  private val headers: ((HttpHeaders) -> Unit) = intTestBase.setHeaders(),
 ) {
   fun startDraft(testAdjudication: AdjudicationIntTestDataSet): IntegrationTestScenario {
     val draftCreationResponse = intTestData.startNewAdjudication(testAdjudication)
@@ -22,7 +22,7 @@ class IntegrationTestScenario(
   private val intTestData: IntegrationTestData,
   private val headers: ((HttpHeaders) -> Unit),
   private val draftCreationResponse: DraftAdjudicationResponse,
-  private val testAdjudicationDataSet: AdjudicationIntTestDataSet
+  private val testAdjudicationDataSet: AdjudicationIntTestDataSet,
 ) {
   fun setApplicableRules(): IntegrationTestScenario {
     intTestData.setApplicableRules(draftCreationResponse, testAdjudicationDataSet, headers)
@@ -68,7 +68,7 @@ class IntegrationTestScenario(
     intTestData.completeDraftAdjudication(
       draftCreationResponse,
       testAdjudicationDataSet,
-      headers
+      headers,
     )
     return this
   }
@@ -81,11 +81,11 @@ class IntegrationTestScenario(
   }
 
   fun createHearing(
-    dateTimeOfHearing: LocalDateTime? = null
+    dateTimeOfHearing: LocalDateTime? = null,
   ): IntegrationTestScenario {
     intTestData.createHearing(
       testAdjudicationDataSet,
-      dateTimeOfHearing
+      dateTimeOfHearing,
     )
     return this
   }
@@ -120,13 +120,13 @@ class IntegrationTestScenario(
 
   fun createQuashed(): IntegrationTestScenario {
     intTestData.createQuashed(
-      testAdjudicationDataSet
+      testAdjudicationDataSet,
     )
     return this
   }
 
   fun createReferral(
-    code: HearingOutcomeCode
+    code: HearingOutcomeCode,
   ): IntegrationTestScenario {
     intTestData.createReferral(
       testAdjudicationDataSet,
@@ -152,7 +152,7 @@ class IntegrationTestScenario(
     intTestData.issueReport(
       draftCreationResponse,
       reportNumber,
-      headers
+      headers,
     )
     return this
   }

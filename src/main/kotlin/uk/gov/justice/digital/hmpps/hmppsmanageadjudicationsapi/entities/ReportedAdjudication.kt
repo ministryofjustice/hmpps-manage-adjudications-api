@@ -73,7 +73,6 @@ data class ReportedAdjudication(
 ) :
   BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reason: String? = null, details: String? = null, reviewUserId: String? = null) {
-
     if (this.status.canTransitionTo(to)) {
       this.status = to
       this.statusReason = reason
@@ -90,13 +89,19 @@ data class ReportedAdjudication(
         when (this.hearings.isEmpty()) {
           true -> ReportedAdjudicationStatus.UNSCHEDULED
           false -> {
-            if (this.getLatestHearing().isAdjourn()) ReportedAdjudicationStatus.ADJOURNED
-            else ReportedAdjudicationStatus.SCHEDULED
+            if (this.getLatestHearing().isAdjourn()) {
+              ReportedAdjudicationStatus.ADJOURNED
+            } else {
+              ReportedAdjudicationStatus.SCHEDULED
+            }
           }
         }
       false -> {
-        if (this.getLatestHearing().isAdjourn()) ReportedAdjudicationStatus.ADJOURNED
-        else this.outcomes.sortedByDescending { it.createDateTime }.first().code.status
+        if (this.getLatestHearing().isAdjourn()) {
+          ReportedAdjudicationStatus.ADJOURNED
+        } else {
+          this.outcomes.sortedByDescending { it.createDateTime }.first().code.status
+        }
       }
     }
   }
@@ -153,7 +158,8 @@ enum class ReportedAdjudicationStatus {
       return listOf(QUASHED)
     }
   },
-  QUASHED;
+  QUASHED,
+  ;
   open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
   fun canTransitionFrom(from: ReportedAdjudicationStatus): Boolean {
     val to = this
