@@ -28,24 +28,27 @@ class ReportsControllerTest : TestControllerBase() {
   private val pageRequest = PageRequest.ofSize(20).withPage(0).withSort(
     Sort.by(
       Sort.Direction.DESC,
-      "dateTimeOfDiscovery"
-    )
+      "dateTimeOfDiscovery",
+    ),
   )
 
   @BeforeEach
   fun beforeEach() {
-
     val pageable = PageRequest.of(0, 20, Sort.by("dateTimeOfDiscovery").descending())
 
     whenever(
       reportsService.getMyReportedAdjudications(
-        any(), any(), any(), any(), any()
-      )
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+      ),
     ).thenReturn(
       PageImpl(
         listOf(REPORTED_ADJUDICATION_DTO),
         pageable,
-        1
+        1,
       ),
     )
   }
@@ -61,7 +64,10 @@ class ReportsControllerTest : TestControllerBase() {
     getMyAdjudications().andExpect(MockMvcResultMatchers.status().isOk)
     verify(reportsService).getMyReportedAdjudications(
       "MDI",
-      LocalDate.now().minusDays(3), LocalDate.now(), listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED), pageRequest
+      LocalDate.now().minusDays(3),
+      LocalDate.now(),
+      listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
+      pageRequest,
     )
   }
 
@@ -71,8 +77,10 @@ class ReportsControllerTest : TestControllerBase() {
     getAllAdjudications().andExpect(MockMvcResultMatchers.status().isOk)
     verify(reportsService).getAllReportedAdjudications(
       "MDI",
-      LocalDate.now().minusDays(3), LocalDate.now(), listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
-      pageRequest
+      LocalDate.now().minusDays(3),
+      LocalDate.now(),
+      listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
+      pageRequest,
     )
   }
 
@@ -102,7 +110,7 @@ class ReportsControllerTest : TestControllerBase() {
       LocalDate.now().plusDays(5),
       LocalDate.now().plusDays(5),
       listOf(ReportedAdjudicationStatus.AWAITING_REVIEW),
-      pageRequest
+      pageRequest,
     )
   }
 
@@ -156,7 +164,7 @@ class ReportsControllerTest : TestControllerBase() {
     return mockMvc
       .perform(
         MockMvcRequestBuilders.get("/reported-adjudications/my/agency/MDI?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=dateTimeOfDiscovery,DESC")
-          .header("Content-Type", "application/json")
+          .header("Content-Type", "application/json"),
       )
   }
 
@@ -164,7 +172,7 @@ class ReportsControllerTest : TestControllerBase() {
     return mockMvc
       .perform(
         MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=dateTimeOfDiscovery,DESC")
-          .header("Content-Type", "application/json")
+          .header("Content-Type", "application/json"),
       )
   }
 
@@ -172,7 +180,7 @@ class ReportsControllerTest : TestControllerBase() {
     return mockMvc
       .perform(
         MockMvcRequestBuilders.get("/reported-adjudications/my/agency/MDI?status=AWAITING_REVIEW&startDate=$date&endDate=$date&page=0&size=20&sort=dateTimeOfDiscovery,DESC")
-          .header("Content-Type", "application/json")
+          .header("Content-Type", "application/json"),
       )
   }
 
@@ -180,7 +188,7 @@ class ReportsControllerTest : TestControllerBase() {
     return mockMvc
       .perform(
         MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI/issue")
-          .header("Content-Type", "application/json")
+          .header("Content-Type", "application/json"),
       )
   }
 
@@ -188,7 +196,7 @@ class ReportsControllerTest : TestControllerBase() {
     return mockMvc
       .perform(
         MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI/print?issueStatus=ISSUED,NOT_ISSUED")
-          .header("Content-Type", "application/json")
+          .header("Content-Type", "application/json"),
       )
   }
 }

@@ -33,7 +33,8 @@ private class DraftAdjudicationServiceWrapper(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
 ) : DraftAdjudicationBaseService(
-  draftAdjudicationRepository, offenceCodeLookupService
+  draftAdjudicationRepository,
+  offenceCodeLookupService,
 ) {
   fun get(id: Long) =
     find(id)
@@ -47,7 +48,9 @@ private class ReportedAdjudicationServiceWrapper(
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
 ) : ReportedAdjudicationBaseService(
-  reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
+  reportedAdjudicationRepository,
+  offenceCodeLookupService,
+  authenticationFacade,
 ) {
   fun get(adjudicationNumber: Long) =
     findByAdjudicationNumber(adjudicationNumber)
@@ -98,7 +101,7 @@ class AdjudicationWorkflowService(
         locationId = reportedAdjudication.locationId,
         dateTimeOfIncident = reportedAdjudication.dateTimeOfIncident,
         dateTimeOfDiscovery = reportedAdjudication.dateTimeOfDiscovery,
-        handoverDeadline = reportedAdjudication.handoverDeadline
+        handoverDeadline = reportedAdjudication.handoverDeadline,
       ),
       incidentRole = IncidentRole(
         roleCode = reportedAdjudication.incidentRoleCode,
@@ -108,7 +111,7 @@ class AdjudicationWorkflowService(
       offenceDetails = toDraftOffence(reportedAdjudication.offenceDetails),
       incidentStatement = IncidentStatement(
         statement = reportedAdjudication.statement,
-        completed = true
+        completed = true,
       ),
       isYouthOffender = reportedAdjudication.isYouthOffender,
       damages = toDraftDamages(reportedAdjudication.damages),
@@ -170,7 +173,7 @@ class AdjudicationWorkflowService(
         outcomes = mutableListOf(),
         disIssueHistory = mutableListOf(),
         punishments = mutableListOf(),
-      )
+      ),
     )
   }
 
@@ -236,7 +239,7 @@ class AdjudicationWorkflowService(
       Damage(
         code = it.code,
         details = it.details,
-        reporter = it.reporter
+        reporter = it.reporter,
       )
     }.toMutableList()
 
@@ -246,7 +249,7 @@ class AdjudicationWorkflowService(
         code = it.code,
         details = it.details,
         reporter = it.reporter,
-        identifier = it.identifier
+        identifier = it.identifier,
       )
     }.toMutableList()
 
@@ -256,7 +259,7 @@ class AdjudicationWorkflowService(
         code = it.code,
         firstName = it.firstName,
         lastName = it.lastName,
-        reporter = it.reporter
+        reporter = it.reporter,
       )
     }.toMutableList()
 
@@ -276,7 +279,7 @@ class AdjudicationWorkflowService(
       ReportedDamage(
         code = it.code,
         details = it.details,
-        reporter = it.reporter
+        reporter = it.reporter,
       )
     }.toMutableList()
   }
@@ -287,7 +290,7 @@ class AdjudicationWorkflowService(
         code = it.code,
         identifier = it.identifier,
         details = it.details,
-        reporter = it.reporter
+        reporter = it.reporter,
       )
     }.toMutableList()
   }
@@ -298,7 +301,7 @@ class AdjudicationWorkflowService(
         code = it.code,
         firstName = it.firstName,
         lastName = it.lastName,
-        reporter = it.reporter
+        reporter = it.reporter,
       )
     }.toMutableList()
   }
@@ -309,9 +312,9 @@ class AdjudicationWorkflowService(
       mapOf(
         "adjudicationNumber" to draftAdjudication.id.toString(),
         "agencyId" to draftAdjudication.agencyId,
-        "reportNumber" to reportNumber.toString()
+        "reportNumber" to reportNumber.toString(),
       ),
-      null
+      null,
     )
   }
 }

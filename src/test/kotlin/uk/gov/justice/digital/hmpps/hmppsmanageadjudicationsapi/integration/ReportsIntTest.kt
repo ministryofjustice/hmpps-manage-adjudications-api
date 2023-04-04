@@ -17,16 +17,15 @@ class ReportsIntTest : IntegrationTestBase() {
   @ParameterizedTest
   @CsvSource(
     "2020-12-14, 2020-12-17, AWAITING_REVIEW, 3, 1234",
-    "2020-12-15, 2020-12-15, AWAITING_REVIEW, 1, 789"
+    "2020-12-15, 2020-12-15, AWAITING_REVIEW, 1, 789",
   )
   fun `return a page of reported adjudications for agency with filters`(
     startDate: String,
     endDate: String,
     reportedAdjudicationStatus: ReportedAdjudicationStatus,
     expectedCount: Int,
-    adjudicationNumber: Long
+    adjudicationNumber: Long,
   ) {
-
     initMyReportData()
 
     webTestClient.get()
@@ -42,16 +41,15 @@ class ReportsIntTest : IntegrationTestBase() {
   @ParameterizedTest
   @CsvSource(
     "2020-12-14, 2020-12-16, AWAITING_REVIEW, 2, 1234",
-    "2020-12-14, 2020-12-14, AWAITING_REVIEW, 1, 567"
+    "2020-12-14, 2020-12-14, AWAITING_REVIEW, 1, 567",
   )
   fun `return a page of reported adjudications completed by the current user with filters`(
     startDate: String,
     endDate: String,
     reportedAdjudicationStatus: ReportedAdjudicationStatus,
     expectedCount: Int,
-    adjudicationNumber: Long
+    adjudicationNumber: Long,
   ) {
-
     initMyReportData()
 
     webTestClient.get()

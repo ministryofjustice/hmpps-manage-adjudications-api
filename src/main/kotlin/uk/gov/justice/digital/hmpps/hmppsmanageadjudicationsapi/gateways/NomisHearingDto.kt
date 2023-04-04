@@ -7,7 +7,8 @@ enum class OicHearingType {
   GOV_YOI,
   INAD_YOI,
   GOV,
-  INAD_ADULT;
+  INAD_ADULT,
+  ;
 
   fun isValidState(isYoungOffender: Boolean) {
     when (isYoungOffender) {

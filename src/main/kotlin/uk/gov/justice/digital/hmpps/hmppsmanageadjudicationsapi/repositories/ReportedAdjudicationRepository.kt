@@ -14,14 +14,14 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     startDate: LocalDateTime,
     endDate: LocalDateTime,
     statuses: List<ReportedAdjudicationStatus>,
-    pageable: Pageable
+    pageable: Pageable,
   ): Page<ReportedAdjudication>
   fun findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
     agencyId: String,
     startDate: LocalDateTime,
     endDate: LocalDateTime,
     statuses: List<ReportedAdjudicationStatus>,
-    pageable: Pageable
+    pageable: Pageable,
   ): Page<ReportedAdjudication>
   fun findByAgencyIdAndDateTimeOfDiscoveryBetween(
     agencyId: String,

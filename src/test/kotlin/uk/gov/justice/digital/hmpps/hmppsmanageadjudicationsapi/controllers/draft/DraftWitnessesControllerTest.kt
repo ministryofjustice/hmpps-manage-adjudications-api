@@ -28,7 +28,7 @@ class DraftWitnessesControllerTest : TestControllerBase() {
       witnessesService.setWitnesses(
         ArgumentMatchers.anyLong(),
         any(),
-      )
+      ),
     ).thenReturn(draftAdjudicationDto())
   }
 
@@ -48,14 +48,14 @@ class DraftWitnessesControllerTest : TestControllerBase() {
 
   private fun setWitnessesRequest(
     id: Long,
-    witnesses: WitnessesRequest?
+    witnesses: WitnessesRequest?,
   ): ResultActions {
     val body = objectMapper.writeValueAsString(witnesses)
     return mockMvc
       .perform(
         MockMvcRequestBuilders.put("/draft-adjudications/$id/witnesses")
           .header("Content-Type", "application/json")
-          .content(body)
+          .content(body),
       )
   }
 

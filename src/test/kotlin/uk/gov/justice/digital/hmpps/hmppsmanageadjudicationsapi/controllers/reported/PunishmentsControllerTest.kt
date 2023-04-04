@@ -28,19 +28,19 @@ class PunishmentsControllerTest : TestControllerBase() {
 
     @BeforeEach
     fun beforeEach() {
-
       whenever(
         punishmentsService.create(
           ArgumentMatchers.anyLong(),
           any(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
       createPunishmentsRequest(
-        1, PUNISHMENT_REQUEST
+        1,
+        PUNISHMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -48,7 +48,8 @@ class PunishmentsControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
       createPunishmentsRequest(
-        1, PUNISHMENT_REQUEST,
+        1,
+        PUNISHMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -56,7 +57,8 @@ class PunishmentsControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
       createPunishmentsRequest(
-        1, PUNISHMENT_REQUEST,
+        1,
+        PUNISHMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -68,7 +70,7 @@ class PunishmentsControllerTest : TestControllerBase() {
 
       verify(punishmentsService).create(
         adjudicationNumber = 1,
-        listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days))
+        listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
       )
     }
 
@@ -78,19 +80,19 @@ class PunishmentsControllerTest : TestControllerBase() {
     ): ResultActions {
       val body = objectMapper.writeValueAsString(
         PunishmentsRequest(
-          punishments = listOf(punishmentRequest)
-        )
+          punishments = listOf(punishmentRequest),
+        ),
       )
       return mockMvc
         .perform(
           MockMvcRequestBuilders.post("/reported-adjudications/$id/punishments")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
 
   companion object {
-    val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 10,)
+    val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 10)
   }
 }

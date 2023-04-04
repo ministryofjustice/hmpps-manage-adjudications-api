@@ -11,5 +11,5 @@ data class NomisAdjudication(
   val incidentTime: LocalDateTime,
   val incidentLocationId: Long,
   val statement: String,
-  val createdByUserId: String
+  val createdByUserId: String,
 )

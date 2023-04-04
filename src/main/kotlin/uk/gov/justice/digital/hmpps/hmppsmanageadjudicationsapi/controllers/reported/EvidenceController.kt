@@ -15,7 +15,7 @@ import javax.validation.Valid
 @PreAuthorize("hasAuthority('SCOPE_write')")
 @RestController
 class EvidenceController(
-  private val evidenceService: EvidenceService
+  private val evidenceService: EvidenceService,
 ) : ReportedAdjudicationBaseController() {
 
   @PutMapping(value = ["/{adjudicationNumber}/evidence/edit"])
@@ -23,11 +23,12 @@ class EvidenceController(
   @ResponseStatus(HttpStatus.OK)
   fun updateEvidence(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody @Valid evidenceRequest: EvidenceRequest
+    @RequestBody @Valid
+    evidenceRequest: EvidenceRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = evidenceService.updateEvidence(
       adjudicationNumber,
-      evidenceRequest.evidence
+      evidenceRequest.evidence,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)

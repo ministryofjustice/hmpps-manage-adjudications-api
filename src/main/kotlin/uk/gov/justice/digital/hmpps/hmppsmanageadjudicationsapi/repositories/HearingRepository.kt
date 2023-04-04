@@ -8,6 +8,6 @@ interface HearingRepository : CrudRepository<Hearing, Long> {
   fun findByAgencyIdAndDateTimeOfHearingBetween(
     agencyId: String,
     start: LocalDateTime,
-    end: LocalDateTime
+    end: LocalDateTime,
   ): List<Hearing>
 }

@@ -55,7 +55,7 @@ class HearingControllerTest : TestControllerBase() {
           ArgumentMatchers.anyLong(),
           any(),
           any(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
@@ -63,7 +63,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a unauthorised status code`() {
       createHearingRequest(
         1,
-        HEARING_REQUEST
+        HEARING_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -72,7 +72,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for non ALO`() {
       createHearingRequest(
         1,
-        HEARING_REQUEST
+        HEARING_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -81,7 +81,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for ALO without write scope`() {
       createHearingRequest(
         1,
-        HEARING_REQUEST
+        HEARING_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -95,14 +95,14 @@ class HearingControllerTest : TestControllerBase() {
 
     private fun createHearingRequest(
       id: Long,
-      hearing: HearingRequest?
+      hearing: HearingRequest?,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(hearing)
       return mockMvc
         .perform(
           MockMvcRequestBuilders.post("/reported-adjudications/$id/hearing/v2")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -115,33 +115,33 @@ class HearingControllerTest : TestControllerBase() {
       whenever(
         hearingService.deleteHearing(
           ArgumentMatchers.anyLong(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
-      deleteHearingRequest(1,).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+      deleteHearingRequest(1).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
-      deleteHearingRequest(1,).andExpect(MockMvcResultMatchers.status().isForbidden)
+      deleteHearingRequest(1).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
-      deleteHearingRequest(1,).andExpect(MockMvcResultMatchers.status().isForbidden)
+      deleteHearingRequest(1).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to delete a hearing`() {
-      deleteHearingRequest(1,)
+      deleteHearingRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingService).deleteHearing(1,)
+      verify(hearingService).deleteHearing(1)
     }
 
     private fun deleteHearingRequest(
@@ -150,7 +150,7 @@ class HearingControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing/v2")
-            .header("Content-Type", "application/json")
+            .header("Content-Type", "application/json"),
         )
     }
   }
@@ -165,7 +165,7 @@ class HearingControllerTest : TestControllerBase() {
           ArgumentMatchers.anyLong(),
           any(),
           any(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
@@ -173,7 +173,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a unauthorised status code`() {
       amendHearingRequest(
         1,
-        HEARING_REQUEST
+        HEARING_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -182,7 +182,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for non ALO`() {
       amendHearingRequest(
         1,
-        HEARING_REQUEST
+        HEARING_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -191,7 +191,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for ALO without write scope`() {
       amendHearingRequest(
         1,
-        HEARING_REQUEST
+        HEARING_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -205,14 +205,14 @@ class HearingControllerTest : TestControllerBase() {
 
     private fun amendHearingRequest(
       id: Long,
-      hearing: HearingRequest?
+      hearing: HearingRequest?,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(hearing)
       return mockMvc
         .perform(
           MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing/v2")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -226,7 +226,7 @@ class HearingControllerTest : TestControllerBase() {
         hearingService.getAllHearingsByAgencyIdAndDate(
           ArgumentMatchers.anyString(),
           any(),
-        )
+        ),
       ).thenReturn(ALL_HEARINGS_DTO)
     }
 
@@ -257,7 +257,7 @@ class HearingControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.get("/reported-adjudications/hearings/agency/$agency?hearingDate=$date")
-            .header("Content-Type", "application/json")
+            .header("Content-Type", "application/json"),
         )
     }
   }
@@ -274,7 +274,7 @@ class HearingControllerTest : TestControllerBase() {
           any(),
           any(),
           any(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
@@ -282,7 +282,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a unauthorised status code`() {
       createReferralRequest(
         1,
-        referralRequest()
+        referralRequest(),
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -291,7 +291,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for non ALO`() {
       createReferralRequest(
         1,
-        referralRequest()
+        referralRequest(),
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -301,7 +301,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `returns bad request if not a referral `(code: HearingOutcomeCode) {
       createReferralRequest(
         1,
-        referralRequest(code)
+        referralRequest(code),
       ).andExpect(MockMvcResultMatchers.status().isBadRequest)
     }
 
@@ -315,20 +315,20 @@ class HearingControllerTest : TestControllerBase() {
         adjudicationNumber = 1,
         code = code,
         adjudicator = "test",
-        details = "details"
+        details = "details",
       )
     }
 
     private fun createReferralRequest(
       id: Long,
-      referralRequest: ReferralRequest
+      referralRequest: ReferralRequest,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(referralRequest)
       return mockMvc
         .perform(
           MockMvcRequestBuilders.post("/reported-adjudications/$id/hearing/outcome/referral")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -344,7 +344,7 @@ class HearingControllerTest : TestControllerBase() {
           anyOrNull(),
           anyOrNull(),
           anyOrNull(),
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
@@ -352,7 +352,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a unauthorised status code`() {
       createAdjournRequest(
         1,
-        adjournRequest
+        adjournRequest,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -361,7 +361,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for non ALO`() {
       createAdjournRequest(
         1,
-        adjournRequest
+        adjournRequest,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -375,7 +375,7 @@ class HearingControllerTest : TestControllerBase() {
         adjudicator = "test",
         reason = HearingOutcomeAdjournReason.HELP,
         plea = HearingOutcomePlea.ABSTAIN,
-        details = "details"
+        details = "details",
       )
     }
 
@@ -388,7 +388,7 @@ class HearingControllerTest : TestControllerBase() {
         .perform(
           MockMvcRequestBuilders.post("/reported-adjudications/$id/hearing/outcome/adjourn")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -400,9 +400,9 @@ class HearingControllerTest : TestControllerBase() {
       whenever(
         hearingOutcomeService.removeAdjourn(
           adjudicationNumber = ArgumentMatchers.anyLong(),
-          recalculateStatus = any()
+          recalculateStatus = any(),
 
-        )
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
@@ -424,7 +424,7 @@ class HearingControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to delete an adjourn`() {
-      deleteAdjournRequest(1,)
+      deleteAdjournRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(hearingOutcomeService).removeAdjourn(
         adjudicationNumber = 1,
@@ -437,7 +437,7 @@ class HearingControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing/outcome/adjourn")
-            .header("Content-Type", "application/json")
+            .header("Content-Type", "application/json"),
         )
     }
   }
@@ -448,15 +448,19 @@ class HearingControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         amendHearingOutcomeService.amendHearingOutcome(
-          ArgumentMatchers.anyLong(), any(), any(),
-        )
+          ArgumentMatchers.anyLong(),
+          any(),
+          any(),
+        ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
       amendHearingOutcomeRequest(
-        1, AMEND_OUTCOME_REQUEST, ReportedAdjudicationStatus.REFER_POLICE,
+        1,
+        AMEND_OUTCOME_REQUEST,
+        ReportedAdjudicationStatus.REFER_POLICE,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -464,7 +468,9 @@ class HearingControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
       amendHearingOutcomeRequest(
-        1, AMEND_OUTCOME_REQUEST, ReportedAdjudicationStatus.REFER_POLICE,
+        1,
+        AMEND_OUTCOME_REQUEST,
+        ReportedAdjudicationStatus.REFER_POLICE,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -474,7 +480,9 @@ class HearingControllerTest : TestControllerBase() {
       amendHearingOutcomeRequest(1, AMEND_OUTCOME_REQUEST, ReportedAdjudicationStatus.REFER_POLICE)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(amendHearingOutcomeService).amendHearingOutcome(
-        adjudicationNumber = 1, status = ReportedAdjudicationStatus.REFER_POLICE, AMEND_OUTCOME_REQUEST,
+        adjudicationNumber = 1,
+        status = ReportedAdjudicationStatus.REFER_POLICE,
+        AMEND_OUTCOME_REQUEST,
       )
     }
 
@@ -488,7 +496,7 @@ class HearingControllerTest : TestControllerBase() {
         .perform(
           MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing/outcome/$status")
             .header("Content-Type", "application/json")
-            .content(body)
+            .content(body),
         )
     }
   }
@@ -507,7 +515,7 @@ class HearingControllerTest : TestControllerBase() {
           adjudicationNumber = 123,
           prisonerNumber = "123",
           oicHearingType = OicHearingType.GOV,
-        )
+        ),
       )
 
     private val AMEND_OUTCOME_REQUEST = AmendHearingOutcomeRequest()

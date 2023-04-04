@@ -31,7 +31,7 @@ class HearingsV1IntTest : IntegrationTestBase() {
           "locationId" to 1,
           "dateTimeOfHearing" to dateTimeOfHearing,
           "oicHearingType" to OicHearingType.GOV.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -61,7 +61,7 @@ class HearingsV1IntTest : IntegrationTestBase() {
           "locationId" to 1,
           "dateTimeOfHearing" to dateTimeOfHearing,
           "oicHearingType" to OicHearingType.GOV_YOI.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isBadRequest
@@ -83,7 +83,7 @@ class HearingsV1IntTest : IntegrationTestBase() {
           "locationId" to 1,
           "dateTimeOfHearing" to dateTimeOfHearing,
           "oicHearingType" to OicHearingType.GOV.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().is5xxServerError
@@ -113,7 +113,7 @@ class HearingsV1IntTest : IntegrationTestBase() {
           "locationId" to 3,
           "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1),
           "oicHearingType" to OicHearingType.GOV_ADULT.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -144,7 +144,7 @@ class HearingsV1IntTest : IntegrationTestBase() {
           "locationId" to 3,
           "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1),
           "oicHearingType" to OicHearingType.GOV_YOI.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isBadRequest
@@ -166,7 +166,7 @@ class HearingsV1IntTest : IntegrationTestBase() {
           "locationId" to 3,
           "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1),
           "oicHearingType" to OicHearingType.GOV_ADULT.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().is5xxServerError
@@ -254,14 +254,14 @@ class HearingsV1IntTest : IntegrationTestBase() {
     return createHearing(
       IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
       IntegrationTestData.DEFAULT_ADJUDICATION,
-      setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"))
+      setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")),
     )
   }
 
   fun createHearing(
     adjudicationNumber: Long,
     testDataSet: AdjudicationIntTestDataSet,
-    headers: (HttpHeaders) -> Unit = setHeaders()
+    headers: (HttpHeaders) -> Unit = setHeaders(),
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
       .uri("/reported-adjudications/$adjudicationNumber/hearing")
@@ -271,7 +271,7 @@ class HearingsV1IntTest : IntegrationTestBase() {
           "locationId" to testDataSet.locationId,
           "dateTimeOfHearing" to testDataSet.dateTimeOfHearing!!,
           "oicHearingType" to OicHearingType.GOV.name,
-        )
+        ),
       )
       .exchange()
       .returnResult(ReportedAdjudicationResponse::class.java)

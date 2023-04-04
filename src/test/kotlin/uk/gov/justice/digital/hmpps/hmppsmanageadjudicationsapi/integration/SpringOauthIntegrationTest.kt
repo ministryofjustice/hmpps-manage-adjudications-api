@@ -41,23 +41,23 @@ class SpringOauthIntegrationTest : IntegrationTestBase() {
     intTestData.completeDraftAdjudication(
       draftCreationResponseForAdjudication1,
       IntegrationTestData.ADJUDICATION_1,
-      setHeaders(username = "USER1")
+      setHeaders(username = "USER1"),
     )
 
     intTestData.completeDraftAdjudication(
       draftCreationResponseForAdjudication2,
       IntegrationTestData.ADJUDICATION_2,
-      setHeaders(username = "USER2")
+      setHeaders(username = "USER2"),
     )
 
     oAuthMockServer.verify(
       WireMock.postRequestedFor(WireMock.urlEqualTo("/auth/oauth/token"))
-        .withRequestBody(WireMock.equalTo("grant_type=client_credentials&scope=write&username=USER1"))
+        .withRequestBody(WireMock.equalTo("grant_type=client_credentials&scope=write&username=USER1")),
     )
 
     oAuthMockServer.verify(
       WireMock.postRequestedFor(WireMock.urlEqualTo("/auth/oauth/token"))
-        .withRequestBody(WireMock.equalTo("grant_type=client_credentials&scope=write&username=USER2"))
+        .withRequestBody(WireMock.equalTo("grant_type=client_credentials&scope=write&username=USER2")),
     )
   }
 }

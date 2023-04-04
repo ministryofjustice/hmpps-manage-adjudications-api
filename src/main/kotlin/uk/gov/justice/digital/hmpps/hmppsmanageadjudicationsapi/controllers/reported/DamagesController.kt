@@ -15,7 +15,7 @@ import javax.validation.Valid
 @PreAuthorize("hasAuthority('SCOPE_write')")
 @RestController
 class DamagesController(
-  private val damagesService: DamagesService
+  private val damagesService: DamagesService,
 ) : ReportedAdjudicationBaseController() {
 
   @PutMapping(value = ["/{adjudicationNumber}/damages/edit"])
@@ -23,11 +23,12 @@ class DamagesController(
   @ResponseStatus(HttpStatus.OK)
   fun updateDamages(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody @Valid damagesRequest: DamagesRequest
+    @RequestBody @Valid
+    damagesRequest: DamagesRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = damagesService.updateDamages(
       adjudicationNumber,
-      damagesRequest.damages
+      damagesRequest.damages,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)

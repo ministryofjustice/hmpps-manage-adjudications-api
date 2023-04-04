@@ -24,13 +24,13 @@ data class ReportedAdjudicationStatusRequest(
   @Schema(description = "The reason the status has been set")
   @get:Size(
     max = 128,
-    message = "The reason the status has been set exceeds the maximum character limit of {max}"
+    message = "The reason the status has been set exceeds the maximum character limit of {max}",
   )
   val statusReason: String? = null,
   @Schema(description = "Details of why the status has been set")
   @get:Size(
     max = 4000,
-    message = "The details of why the status has been set exceeds the maximum character limit of {max}"
+    message = "The details of why the status has been set exceeds the maximum character limit of {max}",
   )
   val statusDetails: String? = null,
 )
@@ -44,7 +44,7 @@ data class IssueRequest(
 
 @RestController
 class ReportedAdjudicationController(
-  private val reportedAdjudicationService: ReportedAdjudicationService
+  private val reportedAdjudicationService: ReportedAdjudicationService,
 ) : ReportedAdjudicationBaseController() {
 
   @GetMapping(value = ["/{adjudicationNumber}"])
@@ -52,7 +52,7 @@ class ReportedAdjudicationController(
     val reportedAdjudication = reportedAdjudicationService.getReportedAdjudicationDetails(adjudicationNumber)
 
     return ReportedAdjudicationResponse(
-      reportedAdjudication
+      reportedAdjudication,
     )
   }
 
@@ -62,17 +62,18 @@ class ReportedAdjudicationController(
   @ResponseStatus(HttpStatus.OK)
   fun setStatus(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody @Valid reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest
+    @RequestBody @Valid
+    reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = reportedAdjudicationService.setStatus(
       adjudicationNumber,
       reportedAdjudicationStatusRequest.status,
       reportedAdjudicationStatusRequest.statusReason,
-      reportedAdjudicationStatusRequest.statusDetails
+      reportedAdjudicationStatusRequest.statusDetails,
     )
 
     return ReportedAdjudicationResponse(
-      reportedAdjudication
+      reportedAdjudication,
     )
   }
 
@@ -81,15 +82,16 @@ class ReportedAdjudicationController(
   @PreAuthorize("hasAuthority('SCOPE_write')")
   fun setIssued(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody @Valid issueRequest: IssueRequest
+    @RequestBody @Valid
+    issueRequest: IssueRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = reportedAdjudicationService.setIssued(
       adjudicationNumber,
-      issueRequest.dateTimeOfIssue
+      issueRequest.dateTimeOfIssue,
     )
 
     return ReportedAdjudicationResponse(
-      reportedAdjudication
+      reportedAdjudication,
     )
   }
 }

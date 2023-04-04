@@ -34,6 +34,6 @@ class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
   fun completeDraftAdjudication(id: Long): ResultActions = mockMvc
     .perform(
       MockMvcRequestBuilders.post("/draft-adjudications/$id/complete-draft-adjudication")
-        .header("Content-Type", "application/json")
+        .header("Content-Type", "application/json"),
     )
 }

@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Adjudic
 @RestController
 @Validated
 class DraftAdjudicationWorkflowController(
-  private val adjudicationWorkflowService: AdjudicationWorkflowService
+  private val adjudicationWorkflowService: AdjudicationWorkflowService,
 ) : DraftAdjudicationBaseController() {
 
   @PostMapping(value = ["/{id}/complete-draft-adjudication"])

@@ -44,18 +44,18 @@ data class OffenceTestDataSet(
 
 data class DamagesTestDataSet(
   val code: DamageCode,
-  val details: String
+  val details: String,
 )
 
 data class EvidenceTestDataSet(
   val code: EvidenceCode,
-  val details: String
+  val details: String,
 )
 
 data class WitnessTestDataSet(
   val code: WitnessCode,
   val firstName: String,
-  val lastName: String
+  val lastName: String,
 )
 
 data class NomisOffenceTestDataSet(

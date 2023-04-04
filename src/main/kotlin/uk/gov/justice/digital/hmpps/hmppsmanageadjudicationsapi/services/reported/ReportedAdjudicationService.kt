@@ -26,7 +26,9 @@ class ReportedAdjudicationService(
   authenticationFacade: AuthenticationFacade,
   private val telemetryClient: TelemetryClient,
 ) : ReportedAdjudicationBaseService(
-  reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
+  reportedAdjudicationRepository,
+  offenceCodeLookupService,
+  authenticationFacade,
 ) {
   companion object {
     const val TELEMETRY_EVENT = "ReportedAdjudicationStatusEvent"
@@ -60,9 +62,9 @@ class ReportedAdjudicationService(
         "reportNumber" to reportedAdjudication.reportNumber.toString(),
         "agencyId" to reportedAdjudication.agencyId,
         "status" to status.name,
-        "reason" to statusReason
+        "reason" to statusReason,
       ),
-      null
+      null,
     )
 
     return reportedAdjudicationToReturn
@@ -75,8 +77,8 @@ class ReportedAdjudicationService(
         it.disIssueHistory.add(
           DisIssueHistory(
             issuingOfficer = it.issuingOfficer!!,
-            dateTimeOfIssue = it.dateTimeOfIssue!!
-          )
+            dateTimeOfIssue = it.dateTimeOfIssue!!,
+          ),
         )
       }
       it.issuingOfficer = authenticationFacade.currentUsername
@@ -94,11 +96,11 @@ class ReportedAdjudicationService(
         bookingId = reportedAdjudication.bookingId,
         reporterName = reportedAdjudication.createdByUserId
           ?: throw EntityNotFoundException(
-            "ReportedAdjudication creator name not set for reported adjudication number ${reportedAdjudication.reportNumber}"
+            "ReportedAdjudication creator name not set for reported adjudication number ${reportedAdjudication.reportNumber}",
           ),
         reportedDateTime = reportedAdjudication.createDateTime
           ?: throw EntityNotFoundException(
-            "ReportedAdjudication creation time not set for reported adjudication number ${reportedAdjudication.reportNumber}"
+            "ReportedAdjudication creation time not set for reported adjudication number ${reportedAdjudication.reportNumber}",
           ),
         agencyId = reportedAdjudication.agencyId,
         incidentTime = reportedAdjudication.dateTimeOfDiscovery,
@@ -108,7 +110,7 @@ class ReportedAdjudicationService(
         connectedOffenderIds = getAssociatedOffenders(reportedAdjudication.incidentRoleAssociatedPrisonersNumber),
         victimOffenderIds = getVictimOffenders(reportedAdjudication.offenceDetails),
         victimStaffUsernames = getVictimStaffUsernames(reportedAdjudication.offenceDetails),
-      )
+      ),
     )
   }
 

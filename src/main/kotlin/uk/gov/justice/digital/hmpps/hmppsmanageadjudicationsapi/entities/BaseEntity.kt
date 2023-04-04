@@ -19,7 +19,7 @@ import javax.persistence.MappedSuperclass
 class BaseEntity(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  val id: Long? = null
+  val id: Long? = null,
 ) {
 
   @CreatedDate

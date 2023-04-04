@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudi
 @Schema(description = "Draft adjudication response")
 data class DraftAdjudicationResponse(
   @Schema(description = "The draft adjudication")
-  val draftAdjudication: DraftAdjudicationDto
+  val draftAdjudication: DraftAdjudicationDto,
 )
 
 @RestController

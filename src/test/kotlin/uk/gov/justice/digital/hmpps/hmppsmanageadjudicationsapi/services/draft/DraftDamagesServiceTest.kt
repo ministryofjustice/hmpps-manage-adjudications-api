@@ -34,13 +34,13 @@ class DraftDamagesServiceTest : DraftAdjudicationTestBase() {
       incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
       incidentStatement = IncidentStatement(
         statement = "Example statement",
-        completed = false
+        completed = false,
       ),
       offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
       isYouthOffender = true,
       damages = mutableListOf(
-        Damage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
-      )
+        Damage(code = DamageCode.CLEANING, details = "details", reporter = "Fred"),
+      ),
     )
 
   @BeforeEach
@@ -55,8 +55,8 @@ class DraftDamagesServiceTest : DraftAdjudicationTestBase() {
     val response = damagesService.setDamages(
       1,
       listOf(
-        DamageRequestItem(DamageCode.CLEANING, "details")
-      )
+        DamageRequestItem(DamageCode.CLEANING, "details"),
+      ),
     )
 
     val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)

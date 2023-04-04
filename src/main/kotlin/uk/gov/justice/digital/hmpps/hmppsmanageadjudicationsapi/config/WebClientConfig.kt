@@ -25,7 +25,7 @@ import org.springframework.web.reactive.function.client.WebClient
 @Configuration
 class WebClientConfig(
   @Value("\${prison.api.endpoint.url}") private val prisonApiUrl: String,
-  val objectMapper: ObjectMapper
+  val objectMapper: ObjectMapper,
 ) {
 
   @Bean
@@ -40,12 +40,12 @@ class WebClientConfig(
     authorizedClientRepository: OAuth2AuthorizedClientRepository,
   ): WebClient? = getClientCredsWebClient(
     "$prisonApiUrl/api",
-    authorizedClientManagerRequestScope(clientRegistrationRepository, authorizedClientRepository)
+    authorizedClientManagerRequestScope(clientRegistrationRepository, authorizedClientRepository),
   )
 
   private fun getClientCredsWebClient(
     url: String,
-    authorizedClientManager: OAuth2AuthorizedClientManager?
+    authorizedClientManager: OAuth2AuthorizedClientManager?,
   ): WebClient? {
     val oauth2Client = ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager)
     oauth2Client.setDefaultClientRegistrationId("manage-adjudications-api")
@@ -69,7 +69,7 @@ class WebClientConfig(
 
   private fun authorizedClientManagerRequestScope(
     clientRegistrationRepository: ClientRegistrationRepository,
-    authorizedClientRepository: OAuth2AuthorizedClientRepository
+    authorizedClientRepository: OAuth2AuthorizedClientRepository,
   ): OAuth2AuthorizedClientManager {
     val defaultClientCredentialsTokenResponseClient = DefaultClientCredentialsTokenResponseClient()
     val authentication: Authentication = SecurityContextHolder.getContext().authentication
@@ -82,7 +82,7 @@ class WebClientConfig(
     val authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
       .clientCredentials { clientCredentialsGrantBuilder: OAuth2AuthorizedClientProviderBuilder.ClientCredentialsGrantBuilder ->
         clientCredentialsGrantBuilder.accessTokenResponseClient(
-          defaultClientCredentialsTokenResponseClient
+          defaultClientCredentialsTokenResponseClient,
         )
       }
       .build()

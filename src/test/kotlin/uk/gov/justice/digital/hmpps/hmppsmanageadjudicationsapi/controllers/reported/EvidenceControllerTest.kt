@@ -30,7 +30,7 @@ class EvidenceControllerTest : TestControllerBase() {
       evidenceService.updateEvidence(
         ArgumentMatchers.anyLong(),
         any(),
-      )
+      ),
     ).thenReturn(REPORTED_ADJUDICATION_DTO)
   }
 
@@ -38,7 +38,7 @@ class EvidenceControllerTest : TestControllerBase() {
   fun `responds with a unauthorised status code`() {
     setEvidenceRequest(
       1,
-      EVIDENCE_REQUEST
+      EVIDENCE_REQUEST,
     ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
   }
 
@@ -53,14 +53,14 @@ class EvidenceControllerTest : TestControllerBase() {
 
   private fun setEvidenceRequest(
     id: Long,
-    evidence: EvidenceRequest?
+    evidence: EvidenceRequest?,
   ): ResultActions {
     val body = objectMapper.writeValueAsString(evidence)
     return mockMvc
       .perform(
         MockMvcRequestBuilders.put("/reported-adjudications/$id/evidence/edit")
           .header("Content-Type", "application/json")
-          .content(body)
+          .content(body),
       )
   }
 

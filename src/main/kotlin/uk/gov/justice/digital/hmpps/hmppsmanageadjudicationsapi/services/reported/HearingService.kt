@@ -51,7 +51,7 @@ class HearingService(
         dateTimeOfHearing = dateTimeOfHearing,
         hearingLocationId = locationId,
         oicHearingType = oicHearingType,
-      )
+      ),
     )
 
     reportedAdjudication.let {
@@ -63,10 +63,11 @@ class HearingService(
           dateTimeOfHearing = dateTimeOfHearing,
           oicHearingId = oicHearingId,
           oicHearingType = oicHearingType,
-        )
+        ),
       )
-      if (it.status != ReportedAdjudicationStatus.SCHEDULED)
+      if (it.status != ReportedAdjudicationStatus.SCHEDULED) {
         it.status = ReportedAdjudicationStatus.SCHEDULED
+      }
 
       it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
     }
@@ -88,8 +89,8 @@ class HearingService(
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = dateTimeOfHearing,
         hearingLocationId = locationId,
-        oicHearingType = oicHearingType
-      )
+        oicHearingType = oicHearingType,
+      ),
     )
 
     hearingToEdit.let {
@@ -110,13 +111,14 @@ class HearingService(
 
     prisonApiGateway.deleteHearing(
       adjudicationNumber = adjudicationNumber,
-      oicHearingId = hearingToRemove.oicHearingId
+      oicHearingId = hearingToRemove.oicHearingId,
     )
 
     reportedAdjudication.let {
       it.hearings.remove(hearingToRemove)
-      if (it.hearings.isEmpty())
+      if (it.hearings.isEmpty()) {
         it.status = ReportedAdjudicationStatus.UNSCHEDULED
+      }
 
       it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
     }
@@ -131,8 +133,9 @@ class HearingService(
       it.hearings.validateHearingDate(dateTimeOfHearing)
     }.validateCanCreate()
 
-    if (reportedAdjudication.lastOutcomeIsRefer())
+    if (reportedAdjudication.lastOutcomeIsRefer()) {
       reportedAdjudication.outcomes.add(Outcome(code = OutcomeCode.SCHEDULE_HEARING))
+    }
 
     val oicHearingId = prisonApiGateway.createHearing(
       adjudicationNumber = adjudicationNumber,
@@ -140,7 +143,7 @@ class HearingService(
         dateTimeOfHearing = dateTimeOfHearing,
         hearingLocationId = locationId,
         oicHearingType = oicHearingType,
-      )
+      ),
     )
 
     reportedAdjudication.let {
@@ -152,10 +155,11 @@ class HearingService(
           dateTimeOfHearing = dateTimeOfHearing,
           oicHearingId = oicHearingId,
           oicHearingType = oicHearingType,
-        )
+        ),
       )
-      if (it.status != ReportedAdjudicationStatus.SCHEDULED)
+      if (it.status != ReportedAdjudicationStatus.SCHEDULED) {
         it.status = ReportedAdjudicationStatus.SCHEDULED
+      }
 
       it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
     }
@@ -178,8 +182,8 @@ class HearingService(
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = dateTimeOfHearing,
         hearingLocationId = locationId,
-        oicHearingType = oicHearingType
-      )
+        oicHearingType = oicHearingType,
+      ),
     )
 
     hearingToEdit.let {
@@ -199,7 +203,7 @@ class HearingService(
 
     prisonApiGateway.deleteHearing(
       adjudicationNumber = adjudicationNumber,
-      oicHearingId = hearingToRemove.oicHearingId
+      oicHearingId = hearingToRemove.oicHearingId,
     )
 
     reportedAdjudication.also {
@@ -214,11 +218,13 @@ class HearingService(
 
   fun getAllHearingsByAgencyIdAndDate(agencyId: String, dateOfHearing: LocalDate): List<HearingSummaryDto> {
     val hearings = hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
-      agencyId, dateOfHearing.atStartOfDay(), dateOfHearing.plusDays(1).atStartOfDay()
+      agencyId,
+      dateOfHearing.atStartOfDay(),
+      dateOfHearing.plusDays(1).atStartOfDay(),
     )
 
     val adjudicationsMap = findByReportNumberIn(
-      hearings.map { it.reportNumber }
+      hearings.map { it.reportNumber },
     ).associateBy { it.reportNumber }
 
     return toHearingSummaries(hearings, adjudicationsMap)
@@ -246,8 +252,9 @@ class HearingService(
     }
 
     fun List<Hearing>.validateHearingDate(date: LocalDateTime) {
-      if (this.any { it.dateTimeOfHearing.isAfter(date) })
+      if (this.any { it.dateTimeOfHearing.isAfter(date) }) {
         throw ValidationException("A hearing can not be before the previous hearing")
+      }
     }
 
     fun List<OutcomeHistoryDto>.shouldRemoveLastScheduleHearing(): Boolean {
@@ -263,8 +270,9 @@ class HearingService(
     fun ReportedAdjudication.calcFirstHearingDate(): LocalDateTime? = this.hearings.minOfOrNull { it.dateTimeOfHearing }
 
     fun Hearing.canDelete(): Hearing {
-      if (OutcomeCode.referrals().contains(this.hearingOutcome?.code?.outcomeCode) || this.hearingOutcome?.code == HearingOutcomeCode.COMPLETE)
+      if (OutcomeCode.referrals().contains(this.hearingOutcome?.code?.outcomeCode) || this.hearingOutcome?.code == HearingOutcomeCode.COMPLETE) {
         throw ValidationException("Unable to delete hearing via api DEL/hearing - outcome associated to this hearing")
+      }
       return this
     }
 

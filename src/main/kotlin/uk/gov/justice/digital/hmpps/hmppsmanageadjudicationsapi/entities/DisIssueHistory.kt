@@ -11,5 +11,5 @@ data class DisIssueHistory(
   override val id: Long? = null,
   @field:Length(max = 32)
   var issuingOfficer: String,
-  var dateTimeOfIssue: LocalDateTime
+  var dateTimeOfIssue: LocalDateTime,
 ) : BaseEntity()

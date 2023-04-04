@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Adjudic
 
 @RestController
 class ReportedAdjudicationWorkflowController(
-  private val adjudicationWorkflowService: AdjudicationWorkflowService
+  private val adjudicationWorkflowService: AdjudicationWorkflowService,
 ) : ReportedAdjudicationBaseController() {
 
   @PostMapping(value = ["/{adjudicationNumber}/create-draft-adjudication"])
@@ -22,7 +22,7 @@ class ReportedAdjudicationWorkflowController(
   fun createDraftAdjudication(@PathVariable(name = "adjudicationNumber") adjudicationNumber: Long): DraftAdjudicationResponse {
     val draftAdjudication = adjudicationWorkflowService.createDraftFromReportedAdjudication(adjudicationNumber)
     return DraftAdjudicationResponse(
-      draftAdjudication
+      draftAdjudication,
     )
   }
 }

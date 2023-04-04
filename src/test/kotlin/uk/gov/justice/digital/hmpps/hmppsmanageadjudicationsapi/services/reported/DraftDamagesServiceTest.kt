@@ -18,14 +18,16 @@ import javax.persistence.EntityNotFoundException
 class DraftDamagesServiceTest : ReportedAdjudicationTestBase() {
 
   private val damagesService = DamagesService(
-    reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
+    reportedAdjudicationRepository,
+    offenceCodeLookupService,
+    authenticationFacade,
   )
 
   private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
     .also {
       it.damages = mutableListOf(
         ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod"),
-        ReportedDamage(code = DamageCode.REDECORATION, details = "details 3", reporter = "Fred")
+        ReportedDamage(code = DamageCode.REDECORATION, details = "details 3", reporter = "Fred"),
       )
     }
 
@@ -46,10 +48,10 @@ class DraftDamagesServiceTest : ReportedAdjudicationTestBase() {
         DamageRequestItem(
           reportedAdjudication.damages.first().code,
           reportedAdjudication.damages.first().details,
-          reportedAdjudication.damages.first().reporter
+          reportedAdjudication.damages.first().reporter,
         ),
-        DamageRequestItem(DamageCode.ELECTRICAL_REPAIR, "details 2", "Fred")
-      )
+        DamageRequestItem(DamageCode.ELECTRICAL_REPAIR, "details 2", "Fred"),
+      ),
     )
 
     val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)

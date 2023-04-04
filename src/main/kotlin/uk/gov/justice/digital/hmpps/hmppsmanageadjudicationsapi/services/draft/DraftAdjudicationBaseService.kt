@@ -47,7 +47,7 @@ open class DraftAdjudicationBaseService(
 
   protected fun delete() {
     draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(
-      LocalDateTime.now().minusDays(DraftAdjudicationService.DAYS_TO_DELETE)
+      LocalDateTime.now().minusDays(DraftAdjudicationService.DAYS_TO_DELETE),
     )
   }
   protected fun getInProgress(agencyId: String, username: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DraftAdjudicationDto> =
@@ -56,7 +56,7 @@ open class DraftAdjudicationBaseService(
       username,
       startDate.atStartOfDay(),
       endDate.atTime(LocalTime.MAX),
-      pageable
+      pageable,
     ).map { it.toDto() }
 
   private fun DraftAdjudication.toDto(): DraftAdjudicationDto =
@@ -76,7 +76,7 @@ open class DraftAdjudicationBaseService(
       witnesses = this.witnesses.map { it.toDto() },
       damagesSaved = this.damagesSaved,
       evidenceSaved = this.evidenceSaved,
-      witnessesSaved = this.witnessesSaved
+      witnessesSaved = this.witnessesSaved,
     )
 
   private fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
@@ -112,21 +112,21 @@ open class DraftAdjudicationBaseService(
   private fun Damage.toDto(): DamageDto = DamageDto(
     code = this.code,
     details = this.details,
-    reporter = this.reporter
+    reporter = this.reporter,
   )
 
   private fun Evidence.toDto(): EvidenceDto = EvidenceDto(
     code = this.code,
     identifier = this.identifier,
     details = this.details,
-    reporter = this.reporter
+    reporter = this.reporter,
   )
 
   fun Witness.toDto(): WitnessDto = WitnessDto(
     code = this.code,
     firstName = this.firstName,
     lastName = this.lastName,
-    reporter = this.reporter
+    reporter = this.reporter,
   )
 
   companion object {

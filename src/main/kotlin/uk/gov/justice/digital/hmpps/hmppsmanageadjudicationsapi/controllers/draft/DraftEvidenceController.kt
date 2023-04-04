@@ -33,7 +33,7 @@ data class EvidenceRequestItem(
 
 @RestController
 class DraftEvidenceController(
-  private val evidenceService: DraftEvidenceService
+  private val evidenceService: DraftEvidenceService,
 ) : DraftAdjudicationBaseController() {
 
   @PutMapping(value = ["/{id}/evidence"])
@@ -42,11 +42,12 @@ class DraftEvidenceController(
   @ResponseStatus(HttpStatus.CREATED)
   fun setEvidence(
     @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid evidenceRequest: EvidenceRequest
+    @RequestBody @Valid
+    evidenceRequest: EvidenceRequest,
   ): DraftAdjudicationResponse {
     val draftAdjudication = evidenceService.setEvidence(
       id,
-      evidenceRequest.evidence
+      evidenceRequest.evidence,
     )
 
     return DraftAdjudicationResponse(draftAdjudication)

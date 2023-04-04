@@ -61,7 +61,12 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
 
   private val adjudicationWorkflowService = AdjudicationWorkflowService(
-    draftAdjudicationRepository, reportedAdjudicationRepository, offenceCodeLookupService, prisonApiGateway, authenticationFacade, telemetryClient
+    draftAdjudicationRepository,
+    reportedAdjudicationRepository,
+    offenceCodeLookupService,
+    prisonApiGateway,
+    authenticationFacade,
+    telemetryClient,
   )
 
   @Nested
@@ -78,7 +83,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         locationId = 2L,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
-        handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES
+        handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
       ),
       incidentRole = IncidentRole(
         roleCode = "25a",
@@ -96,17 +101,17 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       ),
       incidentStatement = IncidentStatement(
         completed = true,
-        statement = INCIDENT_STATEMENT
+        statement = INCIDENT_STATEMENT,
       ),
       isYouthOffender = false,
       damages = mutableListOf(
-        Damage(code = DamageCode.CLEANING, details = "details", reporter = "Fred")
+        Damage(code = DamageCode.CLEANING, details = "details", reporter = "Fred"),
       ),
       evidence = mutableListOf(
-        Evidence(code = EvidenceCode.PHOTO, identifier = "identifier", details = "details", reporter = "Fred")
+        Evidence(code = EvidenceCode.PHOTO, identifier = "identifier", details = "details", reporter = "Fred"),
       ),
       witnesses = mutableListOf(
-        Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
+        Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred"),
       ),
       damagesSaved = true,
       evidenceSaved = true,
@@ -143,14 +148,15 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         .extracting("dateTimeOfIncident", "handoverDeadline", "locationId")
         .contains(
           DATE_TIME_OF_INCIDENT,
-          DATE_TIME_REPORTED_ADJUDICATION_EXPIRES, 2L
+          DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
+          2L,
         )
       assertThat(createdDraft.incidentRole)
         .extracting(
           "roleCode",
           "offenceRule.paragraphNumber",
           "offenceRule.paragraphDescription",
-          "associatedPrisonersNumber"
+          "associatedPrisonersNumber",
         )
         .contains("25a", "25(a)", "Attempts to commit any of the foregoing offences:", "B23456")
       assertThat(createdDraft.offenceDetails)
@@ -160,7 +166,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           "offenceRule.paragraphDescription",
           "victimPrisonersNumber",
           "victimStaffUsername",
-          "victimOtherPersonsName"
+          "victimOtherPersonsName",
         )
         .contains(
           3,
@@ -168,7 +174,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
           "A1234AA",
           "ABC12D",
-          "A Person"
+          "A Person",
         )
       assertThat(createdDraft.incidentStatement)
         .extracting("completed", "statement")
@@ -177,22 +183,30 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         .extracting("code", "details", "reporter")
         .contains(
           Tuple(
-            DamageCode.CLEANING, "details", "Fred"
-          )
+            DamageCode.CLEANING,
+            "details",
+            "Fred",
+          ),
         )
       assertThat(createdDraft.evidence)
         .extracting("code", "details", "reporter", "identifier")
         .contains(
           Tuple(
-            EvidenceCode.PHOTO, "details", "Fred", "identifier"
-          )
+            EvidenceCode.PHOTO,
+            "details",
+            "Fred",
+            "identifier",
+          ),
         )
       assertThat(createdDraft.witnesses)
         .extracting("code", "firstName", "lastName", "reporter")
         .contains(
           Tuple(
-            WitnessCode.OFFICER, "prison", "officer", "Fred"
-          )
+            WitnessCode.OFFICER,
+            "prison",
+            "officer",
+            "Fred",
+          ),
         )
     }
   }
@@ -212,22 +226,22 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         incidentRole = incidentRoleWithAllValuesSet(),
         offenceDetails = mutableListOf(
           BASIC_OFFENCE_DETAILS_DB_ENTITY,
-          FULL_OFFENCE_DETAILS_DB_ENTITY
+          FULL_OFFENCE_DETAILS_DB_ENTITY,
         ),
         incidentStatement = IncidentStatement(statement = "test"),
-        isYouthOffender = false
+        isYouthOffender = false,
       )
       draft.createDateTime = now
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(
-        Optional.of(draft)
+        Optional.of(draft),
       )
 
       whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
         NomisAdjudicationCreationRequest(
           adjudicationNumber = 123456L,
           bookingId = 1L,
-        )
+        ),
       )
       whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
         val passedInAdjudication = it.arguments[0] as ReportedAdjudication
@@ -258,7 +272,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           "incidentRoleAssociatedPrisonersNumber",
           "incidentRoleAssociatedPrisonersName",
           "statement",
-          "draftCreatedOn"
+          "draftCreatedOn",
         )
         .contains(
           1L,
@@ -268,7 +282,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
           INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
           "test",
-          now
+          now,
         )
 
       assertThat(reportedAdjudicationArgumentCaptor.value.offenceDetails)
@@ -276,19 +290,20 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           "offenceCode",
           "victimPrisonersNumber",
           "victimStaffUsername",
-          "victimOtherPersonsName"
+          "victimOtherPersonsName",
         )
         .contains(
           Tuple(
             BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
             BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
             BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
-            BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+            BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName,
           ),
           Tuple(
             FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
             FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-            FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+            FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
+            FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName,
           ),
         )
 
@@ -297,9 +312,9 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         mapOf(
           "adjudicationNumber" to "1",
           "agencyId" to "MDI",
-          "reportNumber" to "123456"
+          "reportNumber" to "123456",
         ),
-        null
+        null,
       )
     }
 
@@ -356,7 +371,8 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
                 it.incidentRole = IncidentRole(
                   null,
                   "25b",
-                  null, null
+                  null,
+                  null,
                 )
               }
 
@@ -373,8 +389,8 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
               else -> {}
             }
-          }
-        )
+          },
+        ),
       )
 
       assertThatThrownBy {
@@ -405,15 +421,15 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             incidentRole = incidentRoleWithNoValuesSet(),
             offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
             incidentStatement = IncidentStatement(statement = "test"),
-            isYouthOffender = true
-          )
-        )
+            isYouthOffender = true,
+          ),
+        ),
       )
       whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
         NomisAdjudicationCreationRequest(
           adjudicationNumber = 123,
           bookingId = 33,
-        )
+        ),
       )
       whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
         val passedInAdjudication = it.arguments[0] as ReportedAdjudication
@@ -429,11 +445,11 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     @CsvSource(
       "ACCEPTED",
-      "REJECTED"
+      "REJECTED",
     )
     fun `cannot complete when the reported adjudication is in the wrong state`(from: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        reportedAdjudication.also { it.status = from }
+        reportedAdjudication.also { it.status = from },
       )
       assertThrows(IllegalStateException::class.java) {
         adjudicationWorkflowService.completeDraftAdjudication(1)
@@ -443,13 +459,13 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     @CsvSource(
       "AWAITING_REVIEW",
-      "RETURNED"
+      "RETURNED",
     )
     fun `completes when the reported adjudication is in a correct state`(from: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.status = from
-        }
+        },
       )
       adjudicationWorkflowService.completeDraftAdjudication(1)
       val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -479,40 +495,40 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
             offenceDetails = mutableListOf(
               BASIC_OFFENCE_DETAILS_DB_ENTITY,
-              FULL_OFFENCE_DETAILS_DB_ENTITY
+              FULL_OFFENCE_DETAILS_DB_ENTITY,
             ),
             incidentStatement = IncidentStatement(statement = "test"),
             isYouthOffender = false,
             damages = mutableListOf(
-              Damage(code = DamageCode.REDECORATION, details = "details", reporter = "Fred")
+              Damage(code = DamageCode.REDECORATION, details = "details", reporter = "Fred"),
             ),
             evidence = mutableListOf(
-              Evidence(code = EvidenceCode.BAGGED_AND_TAGGED, details = "details", reporter = "Fred")
+              Evidence(code = EvidenceCode.BAGGED_AND_TAGGED, details = "details", reporter = "Fred"),
             ),
             witnesses = mutableListOf(
-              Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
-            )
-          )
-        )
+              Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred"),
+            ),
+          ),
+        ),
       )
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.damages = mutableListOf(
-            ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod")
+            ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod"),
           )
           it.evidence = mutableListOf(
-            ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Rod")
+            ReportedEvidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Rod"),
           )
           it.witnesses = mutableListOf(
-            ReportedWitness(code = WitnessCode.STAFF, firstName = "staff", lastName = "member", reporter = "Rod")
+            ReportedWitness(code = WitnessCode.STAFF, firstName = "staff", lastName = "member", reporter = "Rod"),
           )
-        }
+        },
       )
       whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
         NomisAdjudicationCreationRequest(
           adjudicationNumber = 123,
           bookingId = 33,
-        )
+        ),
       )
       whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
         val passedInAdjudication = it.arguments[0] as ReportedAdjudication
@@ -555,7 +571,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           "incidentRoleCode",
           "incidentRoleAssociatedPrisonersNumber",
           "incidentRoleAssociatedPrisonersName",
-          "statement"
+          "statement",
         )
         .contains(
           1L,
@@ -564,7 +580,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           INCIDENT_ROLE_CODE,
           INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
           INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
-          "test"
+          "test",
         )
 
       assertThat(reportedAdjudicationArgumentCaptor.value.offenceDetails)
@@ -572,19 +588,20 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           "offenceCode",
           "victimPrisonersNumber",
           "victimStaffUsername",
-          "victimOtherPersonsName"
+          "victimOtherPersonsName",
         )
         .contains(
           Tuple(
             BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
             BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
             BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
-            BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+            BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName,
           ),
           Tuple(
             FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
             FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-            FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername, FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName
+            FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
+            FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName,
           ),
         )
       assertThat(reportedAdjudicationArgumentCaptor.value.damages.size).isEqualTo(2)
@@ -598,12 +615,12 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           Tuple(
             DamageCode.CLEANING,
             "details",
-            "Rod"
+            "Rod",
           ),
           Tuple(
             DamageCode.REDECORATION,
             "details",
-            "Fred"
+            "Fred",
           ),
         )
       assertThat(reportedAdjudicationArgumentCaptor.value.evidence)
@@ -616,12 +633,12 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           Tuple(
             EvidenceCode.BAGGED_AND_TAGGED,
             "details",
-            "Fred"
+            "Fred",
           ),
           Tuple(
             EvidenceCode.PHOTO,
             "details",
-            "Rod"
+            "Rod",
           ),
         )
       assertThat(reportedAdjudicationArgumentCaptor.value.witnesses)
@@ -636,13 +653,13 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             WitnessCode.OFFICER,
             "prison",
             "officer",
-            "Fred"
+            "Fred",
           ),
           Tuple(
             WitnessCode.STAFF,
             "staff",
             "member",
-            "Rod"
+            "Rod",
           ),
         )
     }
@@ -726,7 +743,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       offenceRule = OffenceRuleDetailsDto(
         paragraphNumber = OFFENCE_CODE_2_PARAGRAPH_NUMBER,
         paragraphDescription = OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
-      )
+      ),
     )
     private val BASIC_OFFENCE_DETAILS_DB_ENTITY = Offence(
       offenceCode = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
@@ -748,14 +765,14 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       locationId = locationId,
       dateTimeOfIncident = LocalDateTime.now(clock),
       dateTimeOfDiscovery = LocalDateTime.now(clock).plusDays(1),
-      handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+      handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
     )
 
     fun incidentDetails(locationId: Long, now: LocalDateTime) = IncidentDetails(
       locationId = locationId,
       dateTimeOfIncident = now,
       dateTimeOfDiscovery = now.plusDays(1),
-      handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+      handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
     )
   }
 }

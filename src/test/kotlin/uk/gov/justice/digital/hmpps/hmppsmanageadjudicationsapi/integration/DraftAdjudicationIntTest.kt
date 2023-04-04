@@ -30,8 +30,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
           "agencyId" to "MDI",
           "locationId" to 1,
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT,
-          "dateTimeOfDiscovery" to DATE_TIME_OF_INCIDENT.plusDays(1)
-        )
+          "dateTimeOfDiscovery" to DATE_TIME_OF_INCIDENT.plusDays(1),
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -114,7 +114,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "offenceDetails" to testAdjudication.offence,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -145,7 +145,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "statement" to "test",
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -176,8 +176,8 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "statement" to "new statement",
-          "completed" to true
-        )
+          "completed" to true,
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -203,7 +203,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
           "locationId" to 3,
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT.plusMonths(1),
           "dateTimeOfDiscovery" to DATE_TIME_OF_INCIDENT.plusMonths(1).plusDays(1),
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -236,7 +236,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "incidentRole" to IncidentRoleRequest("25b"),
           "removeExistingOffences" to true,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -265,7 +265,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "associatedPrisonersNumber" to "A1234AA",
           "associatedPrisonersName" to "Associated Prisoner Name",
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -486,7 +486,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "isYouthOffenderRule" to true,
           "removeExistingOffences" to true,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -517,10 +517,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "damages" to listOf(
             DamageRequestItem(
-              code = DamageCode.CLEANING, details = "details"
-            )
+              code = DamageCode.CLEANING,
+              details = "details",
+            ),
           ),
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -556,10 +557,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "evidence" to listOf(
             EvidenceRequestItem(
-              code = EvidenceCode.PHOTO, details = "details"
+              code = EvidenceCode.PHOTO,
+              details = "details",
             ),
           ),
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -595,10 +597,12 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
         mapOf(
           "witnesses" to listOf(
             WitnessRequestItem(
-              code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer"
-            )
+              code = WitnessCode.OFFICER,
+              firstName = "prison",
+              lastName = "officer",
+            ),
           ),
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -626,7 +630,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "gender" to Gender.FEMALE.name,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk

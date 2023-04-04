@@ -10,7 +10,8 @@ enum class Pronouns(val value: String, val type: PronounTypes) {
   HIS("his", PronounTypes.POSSESSIVE),
   POSSESSIVE_HER("her", PronounTypes.POSSESSIVE),
   HIMSELF("himself", PronounTypes.REFLEXIVE),
-  HERSELF("herself", PronounTypes.REFLEXIVE);
+  HERSELF("herself", PronounTypes.REFLEXIVE),
+  ;
 
   companion object {
     fun male() = listOf(HE, HIM, HIMSELF, HIS)
@@ -21,7 +22,8 @@ enum class PronounTypes(val tag: String) {
   OBJECT_PERSONAL("<OBJ>"),
   SUBJECT_PERSONAL("<SUB>"),
   POSSESSIVE("<POS>"),
-  REFLEXIVE("<REF>");
+  REFLEXIVE("<REF>"),
+  ;
 }
 
 enum class Descriptions(val description: String) {
@@ -65,7 +67,7 @@ enum class Descriptions(val description: String) {
       "<br>" +
       "(a) any unauthorised article, or<br>" +
       "<br>" +
-      "(b) a greater quantity of any article than ${PronounTypes.OBJECT_PERSONAL.tag} is authorised to have"
+      "(b) a greater quantity of any article than ${PronounTypes.OBJECT_PERSONAL.tag} is authorised to have",
   ),
   YOI_14_ADULT_13("Sells or delivers to any person any unauthorised article"),
   YOI_15_ADULT_14("Sells or, without permission, delivers to any person any article which ${PronounTypes.OBJECT_PERSONAL.tag} is allowed to have only for ${PronounTypes.POSSESSIVE.tag} own use"),
@@ -74,12 +76,13 @@ enum class Descriptions(val description: String) {
   YOI_24_ADULT_21("Intentionally fails to work properly or, being required to work, refuses to do so"),
   YOI_25_ADULT_22("Disobeys any lawful order"),
   YOI_26_ADULT_23("Disobeys or fails to comply with any rule or regulation applying to ${PronounTypes.SUBJECT_PERSONAL.tag}"),
-  DEFAULT("");
+  DEFAULT(""),
+  ;
 
   fun getParagraphDescription(gender: Gender): String {
     return formatGenderPronouns(
       description = this.description,
-      gender = gender
+      gender = gender,
     )
   }
 

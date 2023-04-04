@@ -88,7 +88,8 @@ enum class OffenceCodes(val paragraph: String, val withOthers: String? = null, v
   YOI_55_20A(paragraph = "20", withOthers = "55:29AB", uniqueOffenceCodes = listOf(18001), paragraphDescription = Descriptions.YOI_20),
   YOI_55_20B(paragraph = "20", withOthers = "55:29AO", uniqueOffenceCodes = listOf(18002), paragraphDescription = Descriptions.YOI_20),
   YOI_55_24(paragraph = "24", withOthers = "55:29AL", uniqueOffenceCodes = listOf(21001), paragraphDescription = Descriptions.YOI_24_ADULT_21),
-  DEFAULT(paragraph = "", uniqueOffenceCodes = emptyList(), paragraphDescription = Descriptions.DEFAULT);
+  DEFAULT(paragraph = "", uniqueOffenceCodes = emptyList(), paragraphDescription = Descriptions.DEFAULT),
+  ;
 
   fun getNomisCode(isYouthOffender: Boolean) = if (isYouthOffender) convertToCode(this.name, "YOI_") else convertToCode(this.name, "ADULT_")
 

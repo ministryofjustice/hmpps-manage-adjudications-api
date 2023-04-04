@@ -51,7 +51,7 @@ open class ReportedDtoService(
         locationId = locationId,
         dateTimeOfIncident = dateTimeOfIncident,
         dateTimeOfDiscovery = dateTimeOfDiscovery,
-        handoverDeadline = handoverDeadline
+        handoverDeadline = handoverDeadline,
       ),
       isYouthOffender = isYouthOffender,
       incidentRole = IncidentRoleDto(
@@ -98,22 +98,23 @@ open class ReportedDtoService(
     val referPoliceHearingOutcomeCount = hearings.count { it.outcome?.code == HearingOutcomeCode.REFER_POLICE }
 
     // special case.  if we have more refer police outcomes than hearing outcomes, it means the first action was to refer to police
-    if (referPoliceOutcomeCount > referPoliceHearingOutcomeCount)
+    if (referPoliceOutcomeCount > referPoliceHearingOutcomeCount) {
       history.add(OutcomeHistoryDto(outcome = outcomes.removeFirst()))
+    }
 
     do {
       val hearing = hearings.removeFirst()
       val outcome = if (hearing.hearingHasNoAssociatedOutcome()) null else outcomes.removeFirstOrNull()
 
       history.add(
-        OutcomeHistoryDto(hearing = hearing, outcome = outcome)
+        OutcomeHistoryDto(hearing = hearing, outcome = outcome),
       )
     } while (hearings.isNotEmpty())
 
     // quashed will be left if it is present
     outcomes.removeFirstOrNull()?.let {
       history.add(
-        OutcomeHistoryDto(outcome = it)
+        OutcomeHistoryDto(outcome = it),
       )
     }
 
@@ -137,13 +138,13 @@ open class ReportedDtoService(
             CombinedOutcomeDto(
               outcome = outcome.toOutcomeDto(),
               referralOutcome = referralOutcome?.toOutcomeDto(),
-            )
+            ),
           )
         }
         else -> combinedOutcomes.add(
           CombinedOutcomeDto(
-            outcome = outcome.toOutcomeDto()
-          )
+            outcome = outcome.toOutcomeDto(),
+          ),
         )
       }
     } while (orderedOutcomes.isNotEmpty())
@@ -155,7 +156,7 @@ open class ReportedDtoService(
     offence: ReportedOffence,
     isYouthOffender: Boolean,
     gender: Gender,
-    offenceCodeLookupService: OffenceCodeLookupService
+    offenceCodeLookupService: OffenceCodeLookupService,
   ): OffenceDto =
     OffenceDto(
       offenceCode = offence.offenceCode,
@@ -173,7 +174,7 @@ open class ReportedDtoService(
       ReportedDamageDto(
         code = it.code,
         details = it.details,
-        reporter = it.reporter
+        reporter = it.reporter,
       )
     }.toList()
 
@@ -183,7 +184,7 @@ open class ReportedDtoService(
         code = it.code,
         identifier = it.identifier,
         details = it.details,
-        reporter = it.reporter
+        reporter = it.reporter,
       )
     }.toList()
 
@@ -193,7 +194,7 @@ open class ReportedDtoService(
         code = it.code,
         firstName = it.firstName,
         lastName = it.lastName,
-        reporter = it.reporter
+        reporter = it.reporter,
       )
     }.toList()
 
@@ -204,7 +205,7 @@ open class ReportedDtoService(
         locationId = it.locationId,
         dateTimeOfHearing = it.dateTimeOfHearing,
         oicHearingType = it.oicHearingType,
-        outcome = it.hearingOutcome?.toHearingOutcomeDto()
+        outcome = it.hearingOutcome?.toHearingOutcomeDto(),
       )
     }.sortedBy { it.dateTimeOfHearing }.toList()
 
@@ -244,7 +245,7 @@ open class ReportedDtoService(
         privilegeType = it.privilegeType,
         otherPrivilege = it.otherPrivilege,
         stoppagePercentage = it.stoppagePercentage,
-        schedule = it.schedule.maxBy { latest -> latest.createDateTime!! }.toPunishmentScheduleDto()
+        schedule = it.schedule.maxBy { latest -> latest.createDateTime!! }.toPunishmentScheduleDto(),
       )
     }
 
@@ -270,7 +271,7 @@ open class ReportedAdjudicationBaseService(
 
   protected fun findByAdjudicationNumber(adjudicationNumber: Long) =
     reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(
-      adjudicationNumber
+      adjudicationNumber,
     )
 
   protected fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =

@@ -14,7 +14,7 @@ enum class DamageCode {
   LOCK_REPAIR,
   REDECORATION,
   CLEANING,
-  REPLACE_AN_ITEM
+  REPLACE_AN_ITEM,
 }
 
 @Entity
@@ -27,7 +27,7 @@ data class Damage(
   @field:Length(max = 4000)
   var details: String,
   @field:Length(max = 32)
-  var reporter: String
+  var reporter: String,
 ) : BaseEntity()
 
 @Entity
@@ -40,5 +40,5 @@ data class ReportedDamage(
   @field:Length(max = 4000)
   var details: String,
   @field:Length(max = 32)
-  var reporter: String
+  var reporter: String,
 ) : BaseEntity()

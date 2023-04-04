@@ -102,8 +102,9 @@ class OffenceCodeParagraphDescriptionsTest {
   @ParameterizedTest
   @EnumSource(Descriptions::class)
   fun `ensure all descriptions have a mapping `(description: Descriptions) {
-    if (description != Descriptions.DEFAULT)
+    if (description != Descriptions.DEFAULT) {
       assert(OffenceCodes.values().map { it.paragraphDescription }.contains(description))
+    }
   }
 
   @ParameterizedTest
@@ -111,23 +112,23 @@ class OffenceCodeParagraphDescriptionsTest {
   fun `pronouns test`(gender: Gender) {
     assert(
       OffenceCodes.ADULT_51_8D.paragraphDescription.getParagraphDescription(gender = gender).contains(
-        gender.pronouns.first { it.type == PronounTypes.OBJECT_PERSONAL }.value
-      )
+        gender.pronouns.first { it.type == PronounTypes.OBJECT_PERSONAL }.value,
+      ),
     )
     assert(
       OffenceCodes.YOI_55_6.paragraphDescription.getParagraphDescription(gender = gender).contains(
-        gender.pronouns.first { it.type == PronounTypes.POSSESSIVE }.value
-      )
+        gender.pronouns.first { it.type == PronounTypes.POSSESSIVE }.value,
+      ),
     )
     assert(
       OffenceCodes.YOI_55_26B.paragraphDescription.getParagraphDescription(gender = gender).contains(
-        gender.pronouns.first { it.type == PronounTypes.SUBJECT_PERSONAL }.value
-      )
+        gender.pronouns.first { it.type == PronounTypes.SUBJECT_PERSONAL }.value,
+      ),
     )
     assert(
       OffenceCodes.ADULT_51_18A.paragraphDescription.getParagraphDescription(gender = gender).contains(
-        gender.pronouns.first { it.type == PronounTypes.REFLEXIVE }.value
-      )
+        gender.pronouns.first { it.type == PronounTypes.REFLEXIVE }.value,
+      ),
     )
   }
 }

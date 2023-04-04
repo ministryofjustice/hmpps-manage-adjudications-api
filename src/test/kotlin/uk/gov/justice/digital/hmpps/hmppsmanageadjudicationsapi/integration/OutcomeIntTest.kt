@@ -16,6 +16,7 @@ class OutcomeIntTest : IntegrationTestBase() {
   fun setUp() {
     setAuditTime()
   }
+
   @Test
   fun `create outcome - not proceed`() {
     initDataForOutcome()
@@ -27,7 +28,7 @@ class OutcomeIntTest : IntegrationTestBase() {
         mapOf(
           "details" to "details",
           "reason" to NotProceedReason.NOT_FAIR,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -87,7 +88,7 @@ class OutcomeIntTest : IntegrationTestBase() {
           "plea" to HearingOutcomePlea.NOT_GUILTY,
           "details" to "details",
           "reason" to NotProceedReason.NOT_FAIR,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -115,7 +116,7 @@ class OutcomeIntTest : IntegrationTestBase() {
           "adjudicator" to "test",
           "plea" to HearingOutcomePlea.NOT_GUILTY,
           "details" to "details",
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -143,7 +144,7 @@ class OutcomeIntTest : IntegrationTestBase() {
           "plea" to HearingOutcomePlea.NOT_GUILTY,
           "amount" to 100.50,
           "caution" to true,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -170,7 +171,7 @@ class OutcomeIntTest : IntegrationTestBase() {
           "adjudicator" to "test",
           "plea" to HearingOutcomePlea.NOT_GUILTY,
           "details" to "details",
-        )
+        ),
       )
       .exchange()
       .expectStatus().isNotFound
@@ -189,7 +190,7 @@ class OutcomeIntTest : IntegrationTestBase() {
           "plea" to HearingOutcomePlea.NOT_GUILTY,
           "reason" to NotProceedReason.NOT_FAIR,
           "details" to "details",
-        )
+        ),
       )
       .exchange()
       .expectStatus().isNotFound
@@ -207,7 +208,7 @@ class OutcomeIntTest : IntegrationTestBase() {
           "adjudicator" to "test",
           "plea" to HearingOutcomePlea.NOT_GUILTY,
           "caution" to false,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isNotFound
@@ -242,7 +243,7 @@ class OutcomeIntTest : IntegrationTestBase() {
         mapOf(
           "reason" to QuashedReason.APPEAL_UPHELD,
           "details" to "details",
-        )
+        ),
       )
       .exchange()
       .expectStatus().isCreated
@@ -284,7 +285,7 @@ class OutcomeIntTest : IntegrationTestBase() {
         mapOf(
           "details" to "updated",
           "reason" to NotProceedReason.WITNESS_NOT_ATTEND,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -307,7 +308,7 @@ class OutcomeIntTest : IntegrationTestBase() {
       .bodyValue(
         mapOf(
           "details" to "updated",
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -330,7 +331,7 @@ class OutcomeIntTest : IntegrationTestBase() {
         mapOf(
           "details" to "updated",
           "quashedReason" to QuashedReason.JUDICIAL_REVIEW,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk
@@ -355,7 +356,7 @@ class OutcomeIntTest : IntegrationTestBase() {
         mapOf(
           "details" to "updated",
           "reason" to NotProceedReason.WITNESS_NOT_ATTEND,
-        )
+        ),
       )
       .exchange()
       .expectStatus().isOk

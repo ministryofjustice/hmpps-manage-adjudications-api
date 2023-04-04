@@ -16,7 +16,9 @@ class DamagesService(
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
 ) : ReportedAdjudicationBaseService(
-  reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade
+  reportedAdjudicationRepository,
+  offenceCodeLookupService,
+  authenticationFacade,
 ) {
   fun updateDamages(adjudicationNumber: Long, damages: List<DamageRequestItem>): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
@@ -30,9 +32,9 @@ class DamagesService(
         ReportedDamage(
           code = it.code,
           details = it.details,
-          reporter = reporter
+          reporter = reporter,
         )
-      }
+      },
     )
 
     return saveToDto(reportedAdjudication)

@@ -13,7 +13,7 @@ interface DraftAdjudicationRepository : CrudRepository<DraftAdjudication, Long> 
     username: String,
     startDate: LocalDateTime,
     endDate: LocalDateTime,
-    pageable: Pageable
+    pageable: Pageable,
   ): Page<DraftAdjudication>
 
   fun deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(createdTime: LocalDateTime): List<DraftAdjudication>

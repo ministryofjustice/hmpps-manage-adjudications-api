@@ -35,20 +35,20 @@ class ReportedAdjudicationWorkflowControllerTest : TestControllerBase() {
           locationId = 2,
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
           dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
         ),
         incidentRole = IncidentRoleDto(
           roleCode = "25a",
           offenceRule = OffenceRuleDetailsDto(
             paragraphNumber = "25(a)",
-            paragraphDescription = "Commits an assault"
+            paragraphDescription = "Commits an assault",
           ),
           associatedPrisonersNumber = "B2345BB",
           associatedPrisonersName = "Associated Prisoner",
         ),
         incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
-        isYouthOffender = true
-      )
+        isYouthOffender = true,
+      ),
     )
   }
 
@@ -58,12 +58,12 @@ class ReportedAdjudicationWorkflowControllerTest : TestControllerBase() {
   }
 
   private fun makeCreateDraftFromReportedAdjudicationRequest(
-    adjudicationNumber: Long
+    adjudicationNumber: Long,
   ): ResultActions {
     return mockMvc
       .perform(
         MockMvcRequestBuilders.get("/reported-adjudications/$adjudicationNumber/create-draft-adjudication")
-          .header("Content-Type", "application/json")
+          .header("Content-Type", "application/json"),
       )
   }
 }

@@ -38,7 +38,7 @@ open class TestControllerBase {
       "25a",
       OffenceRuleDetailsDto(
         "25(a)",
-        "Commits an assault"
+        "Commits an assault",
       ),
       "B23456",
       "Associated Prisoner",
@@ -53,7 +53,7 @@ open class TestControllerBase {
           locationId = 2,
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
           dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
         ),
         isYouthOffender = false,
         incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
@@ -63,7 +63,7 @@ open class TestControllerBase {
           OffenceRuleDto(
             paragraphNumber = "3",
             paragraphDescription = "A paragraph description",
-          )
+          ),
         ),
         incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
         createdByUserId = "A_SMITH",
@@ -89,8 +89,8 @@ open class TestControllerBase {
       offenceCode = 3,
       offenceRule = OffenceRuleDetailsDto(
         paragraphNumber = "3",
-        paragraphDescription = "A description"
-      )
+        paragraphDescription = "A description",
+      ),
     )
     fun draftAdjudicationDto(statement: String = "test") = DraftAdjudicationDto(
       id = 1L,
@@ -101,7 +101,7 @@ open class TestControllerBase {
         locationId = 3,
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
-        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
       ),
       incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
       isYouthOffender = true,

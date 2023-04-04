@@ -31,7 +31,7 @@ import java.time.LocalDateTime
 @Schema(description = "All hearings response")
 data class HearingSummaryResponse(
   @Schema(description = "The hearing summaries response")
-  val hearings: List<HearingSummaryDto>
+  val hearings: List<HearingSummaryDto>,
 )
 
 @Schema(description = "Request to add a hearing")
@@ -102,10 +102,13 @@ class HearingController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createHearingV1(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody hearingRequest: HearingRequest
+    @RequestBody hearingRequest: HearingRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = hearingService.createHearingV1(
-      adjudicationNumber, hearingRequest.locationId, hearingRequest.dateTimeOfHearing, hearingRequest.oicHearingType,
+      adjudicationNumber,
+      hearingRequest.locationId,
+      hearingRequest.dateTimeOfHearing,
+      hearingRequest.oicHearingType,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
@@ -118,10 +121,14 @@ class HearingController(
   fun amendHearingV1(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @PathVariable(name = "hearingId") hearingId: Long,
-    @RequestBody hearingRequest: HearingRequest
+    @RequestBody hearingRequest: HearingRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = hearingService.amendHearingV1(
-      adjudicationNumber, hearingId, hearingRequest.locationId, hearingRequest.dateTimeOfHearing, hearingRequest.oicHearingType,
+      adjudicationNumber,
+      hearingId,
+      hearingRequest.locationId,
+      hearingRequest.dateTimeOfHearing,
+      hearingRequest.oicHearingType,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)
@@ -136,7 +143,8 @@ class HearingController(
     @PathVariable(name = "hearingId") hearingId: Long,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = hearingService.deleteHearingV1(
-      adjudicationNumber, hearingId
+      adjudicationNumber,
+      hearingId,
     )
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
@@ -146,7 +154,7 @@ class HearingController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createHearing(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody hearingRequest: HearingRequest
+    @RequestBody hearingRequest: HearingRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = hearingService.createHearing(
       adjudicationNumber = adjudicationNumber,
@@ -163,7 +171,7 @@ class HearingController(
   @ResponseStatus(HttpStatus.OK)
   fun amendHearing(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody hearingRequest: HearingRequest
+    @RequestBody hearingRequest: HearingRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = hearingService.amendHearing(
       adjudicationNumber = adjudicationNumber,
@@ -189,12 +197,14 @@ class HearingController(
   @GetMapping(value = ["/hearings/agency/{agencyId}"])
   fun getAllHearingsByAgencyAndDate(
     @PathVariable(name = "agencyId") agencyId: String,
-    @RequestParam(name = "hearingDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) hearingDate: LocalDate,
+    @RequestParam(name = "hearingDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    hearingDate: LocalDate,
   ): HearingSummaryResponse {
     val hearings = hearingService.getAllHearingsByAgencyIdAndDate(agencyId = agencyId, dateOfHearing = hearingDate)
 
     return HearingSummaryResponse(
-      hearings
+      hearings,
     )
   }
 
@@ -203,14 +213,14 @@ class HearingController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createReferral(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-    @RequestBody referralRequest: ReferralRequest
+    @RequestBody referralRequest: ReferralRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication =
       referralService.createReferral(
         adjudicationNumber = adjudicationNumber,
         code = referralRequest.code.validateReferral(),
         adjudicator = referralRequest.adjudicator,
-        details = referralRequest.details
+        details = referralRequest.details,
       )
 
     return ReportedAdjudicationResponse(reportedAdjudication)

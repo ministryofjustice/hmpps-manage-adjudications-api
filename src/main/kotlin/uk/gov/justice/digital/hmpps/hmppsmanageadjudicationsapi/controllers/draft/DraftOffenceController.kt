@@ -36,7 +36,7 @@ data class OffenceDetailsRequestItem(
 
 @RestController
 class DraftOffenceController(
-  private val incidentOffenceService: DraftOffenceService
+  private val incidentOffenceService: DraftOffenceService,
 ) : DraftAdjudicationBaseController() {
 
   @PutMapping(value = ["/{id}/offence-details"])
@@ -45,15 +45,16 @@ class DraftOffenceController(
   @ResponseStatus(HttpStatus.CREATED)
   fun setOffenceDetails(
     @PathVariable(name = "id") id: Long,
-    @RequestBody @Valid offenceDetailsRequest: OffenceDetailsRequest
+    @RequestBody @Valid
+    offenceDetailsRequest: OffenceDetailsRequest,
   ): DraftAdjudicationResponse {
     val draftAdjudication = incidentOffenceService.setOffenceDetails(
       id,
-      offenceDetailsRequest.offenceDetails
+      offenceDetailsRequest.offenceDetails,
     )
 
     return DraftAdjudicationResponse(
-      draftAdjudication
+      draftAdjudication,
     )
   }
 
@@ -62,6 +63,6 @@ class DraftOffenceController(
   fun getOffenceRule(
     @PathVariable(name = "offenceCode") offenceCode: Int,
     @RequestParam(value = "youthOffender") isYouthOffender: Boolean,
-    @RequestParam(value = "gender", required = false) gender: Gender?
+    @RequestParam(value = "gender", required = false) gender: Gender?,
   ): OffenceRuleDetailsDto = incidentOffenceService.lookupRuleDetails(offenceCode, isYouthOffender, gender ?: Gender.MALE)
 }

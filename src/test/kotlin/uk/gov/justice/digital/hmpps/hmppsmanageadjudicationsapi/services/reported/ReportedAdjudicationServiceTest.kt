@@ -74,7 +74,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         )
       }
       val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
-
         it.hearings[0].dateTimeOfHearing = LocalDateTime.now().plusWeeks(1)
 
         val newFirstHearing = Hearing(
@@ -109,7 +108,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.statusReason = "Status Reason"
           it.statusDetails = "Status Reason String"
           it.reviewUserId = "A_REVIEWER"
-        }
+        },
       )
 
       val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails(1)
@@ -121,7 +120,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           "bookingId",
           "createdByUserId",
           "createdDateTime",
-          "isYouthOffender"
+          "isYouthOffender",
         )
         .contains(1235L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME, isYouthOffender)
 
@@ -145,7 +144,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             "offenceRule.paragraphDescription",
             "victimPrisonersNumber",
             "victimStaffUsername",
-            "victimOtherPersonsName"
+            "victimOtherPersonsName",
           )
           .contains(
             2,
@@ -153,7 +152,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
             null,
             null,
-            null
+            null,
           )
       } else {
         assertThat(reportedAdjudicationDto.offenceDetails)
@@ -163,10 +162,15 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             "offenceRule.paragraphDescription",
             "victimPrisonersNumber",
             "victimStaffUsername",
-            "victimOtherPersonsName"
+            "victimOtherPersonsName",
           )
           .contains(
-            2, OFFENCE_CODE_2_PARAGRAPH_NUMBER, OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION, null, null, null
+            2,
+            OFFENCE_CODE_2_PARAGRAPH_NUMBER,
+            OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
+            null,
+            null,
+            null,
           )
       }
 
@@ -200,7 +204,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = from
-        }
+        },
       )
       ReportedAdjudicationStatus.values().filter { it != ReportedAdjudicationStatus.ACCEPTED }.filter { !from.nextStates().contains(it) }.forEach {
         Assertions.assertThrows(IllegalStateException::class.java) {
@@ -236,21 +240,21 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.status = from
           it.createdByUserId = "A_SMITH"
           it.createDateTime = REPORTED_DATE_TIME
-        }
+        },
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = to
           it.createdByUserId = "A_SMITH"
           it.createDateTime = REPORTED_DATE_TIME
-        }
+        },
       )
       reportedAdjudicationService.setStatus(1, to)
       verify(reportedAdjudicationRepository).save(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = to
           it.reviewUserId = if (to == ReportedAdjudicationStatus.AWAITING_REVIEW) null else "ITAG_USER"
-        }
+        },
       )
       if (updatesNomis) {
         verify(prisonApiGateway).publishAdjudication(any())
@@ -266,7 +270,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           "status" to to.name,
           "reason" to null,
         ),
-        null
+        null,
       )
     }
 
@@ -274,7 +278,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `returns correct status information`() {
       val existingReportedAdjudication = existingReportedAdjudication(true, true, false)
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        existingReportedAdjudication
+        existingReportedAdjudication,
       )
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
@@ -286,14 +290,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       returnedReportedAdjudication.createdByUserId = "A_USER"
       returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-        returnedReportedAdjudication
+        returnedReportedAdjudication,
       )
 
       val actualReturnedReportedAdjudication = reportedAdjudicationService.setStatus(
         1,
         ReportedAdjudicationStatus.REJECTED,
         "Status Reason",
-        "Status Reason String"
+        "Status Reason String",
       )
 
       verify(reportedAdjudicationRepository).save(returnedReportedAdjudication)
@@ -308,9 +312,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           "reportNumber" to existingReportedAdjudication.reportNumber.toString(),
           "agencyId" to existingReportedAdjudication.agencyId,
           "status" to ReportedAdjudicationStatus.REJECTED.name,
-          "reason" to "Status Reason"
+          "reason" to "Status Reason",
         ),
-        null
+        null,
       )
     }
 
@@ -324,7 +328,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     ) {
       val existingReportedAdjudication = existingReportedAdjudication(committedOnOwn, true, false)
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        existingReportedAdjudication
+        existingReportedAdjudication,
       )
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
@@ -335,7 +339,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         returnedReportedAdjudication.also {
           it.status = ReportedAdjudicationStatus.AWAITING_REVIEW
-        }
+        },
       )
 
       reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.UNSCHEDULED)
@@ -385,7 +389,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       returnedReportedAdjudication.createdByUserId = "A_USER"
       returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-        returnedReportedAdjudication
+        returnedReportedAdjudication,
       )
 
       reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.UNSCHEDULED)
@@ -443,8 +447,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             offenceCode = 3,
             victimPrisonersNumber = "A1234AA",
             victimStaffUsername = "ABC12D",
-            victimOtherPersonsName = "A name"
-          )
+            victimOtherPersonsName = "A name",
+          ),
         )
       }
 
@@ -480,6 +484,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         it.issuingOfficer = "B_JOHNSON"
         it.dateTimeOfIssue = now.minusHours(1)
       }
+
     @ParameterizedTest
     @CsvSource("SCHEDULED", "UNSCHEDULED")
     fun `issue a reported adjudication DIS form with valid status`(status: ReportedAdjudicationStatus) {
@@ -542,9 +547,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.clear()
       it.outcomes.add(
         Outcome(code = OutcomeCode.REFER_POLICE).also {
-          o ->
+            o ->
           o.createDateTime = LocalDateTime.now()
-        }
+        },
       )
     }
 
@@ -554,9 +559,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.clear()
       it.outcomes.add(
         Outcome(code = OutcomeCode.NOT_PROCEED).also {
-          o ->
+            o ->
           o.createDateTime = LocalDateTime.now()
-        }
+        },
       )
     }
 
@@ -569,10 +574,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.outcomes.add(
         Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
           it.createDateTime = LocalDateTime.now().plusDays(1)
-        }
+        },
       )
       it.hearings.add(
-        Hearing(locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = 1L)
+        Hearing(locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = 1L),
       )
     }
 
@@ -586,15 +591,15 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       it.outcomes.add(
         Outcome(code = OutcomeCode.REFER_INAD).also {
-          o ->
+            o ->
           o.createDateTime = LocalDateTime.now().plusDays(2)
-        }
+        },
       )
       it.outcomes.add(
         Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
-          o ->
+            o ->
           o.createDateTime = LocalDateTime.now().plusDays(2).plusHours(1)
-        }
+        },
       )
 
       it.hearings.first().also { h ->
@@ -612,8 +617,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       it.hearings.add(
         Hearing(
-          locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(2), oicHearingId = 1L,
-        )
+          locationId = 1,
+          agencyId = "",
+          reportNumber = 1L,
+          oicHearingType = OicHearingType.INAD_ADULT,
+          dateTimeOfHearing = LocalDateTime.now().plusDays(2),
+          oicHearingId = 1L,
+        ),
       )
     }
 
@@ -627,13 +637,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       it.outcomes.add(
         Outcome(code = OutcomeCode.REFER_POLICE).also {
-          o ->
+            o ->
           o.createDateTime = LocalDateTime.now().plusDays(4)
-        }
+        },
       )
 
       it.hearings.last().also {
-        h ->
+          h ->
         h.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
       }
     }
@@ -648,9 +658,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       it.outcomes.add(
         Outcome(code = OutcomeCode.PROSECUTION).also {
-          o ->
+            o ->
           o.createDateTime = LocalDateTime.now().plusDays(5)
-        }
+        },
       )
     }
 
@@ -661,15 +671,15 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       it.outcomes.add(
         Outcome(code = OutcomeCode.REFER_POLICE).also {
-          o ->
+            o ->
           o.createDateTime = LocalDateTime.now().plusDays(2)
-        }
+        },
       )
       it.outcomes.add(
         Outcome(code = OutcomeCode.NOT_PROCEED).also {
-          o ->
+            o ->
           o.createDateTime = LocalDateTime.now().plusDays(3)
-        }
+        },
       )
     }
 
@@ -679,40 +689,50 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.clear()
       it.outcomes.add(
         Outcome(code = OutcomeCode.REFER_INAD).also {
-          o ->
+            o ->
           o.createDateTime = LocalDateTime.now().plusDays(2)
-        }
+        },
       )
       it.outcomes.add(
         Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
-          o ->
+            o ->
           o.createDateTime = LocalDateTime.now().plusDays(3)
-        }
+        },
       )
       it.outcomes.add(
         Outcome(code = OutcomeCode.REFER_POLICE).also {
-          o ->
+            o ->
           o.createDateTime = LocalDateTime.now().plusDays(4)
-        }
+        },
       )
       it.outcomes.add(
         Outcome(code = OutcomeCode.PROSECUTION).also {
-          o ->
+            o ->
           o.createDateTime = LocalDateTime.now().plusDays(5)
-        }
+        },
       )
 
       it.hearings.add(
         Hearing(
-          locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = 1L,
-          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
-        )
+          locationId = 1,
+          agencyId = "",
+          reportNumber = 1L,
+          oicHearingType = OicHearingType.GOV_ADULT,
+          dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+          oicHearingId = 1L,
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = ""),
+        ),
       )
       it.hearings.add(
         Hearing(
-          locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(2), oicHearingId = 1L,
-          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
-        )
+          locationId = 1,
+          agencyId = "",
+          reportNumber = 1L,
+          oicHearingType = OicHearingType.INAD_ADULT,
+          dateTimeOfHearing = LocalDateTime.now().plusDays(2),
+          oicHearingId = 1L,
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
+        ),
       )
     }
 
@@ -723,20 +743,25 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       it.hearings.add(
         Hearing(
-          locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = 1L,
-          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
-        )
+          locationId = 1,
+          agencyId = "",
+          reportNumber = 1L,
+          oicHearingType = OicHearingType.GOV_ADULT,
+          dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+          oicHearingId = 1L,
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = ""),
+        ),
       )
 
       it.outcomes.add(
         Outcome(code = OutcomeCode.REFER_INAD).also {
           it.createDateTime = LocalDateTime.now().plusDays(1)
-        }
+        },
       )
       it.outcomes.add(
         Outcome(code = OutcomeCode.NOT_PROCEED).also {
           it.createDateTime = LocalDateTime.now().plusDays(2)
-        }
+        },
       )
     }
 
@@ -750,14 +775,19 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.outcomes.add(
         Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
           it.createDateTime = LocalDateTime.now().plusDays(1)
-        }
+        },
       )
 
       it.hearings.add(
         Hearing(
-          locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = 1L,
-          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
-        )
+          locationId = 1,
+          agencyId = "",
+          reportNumber = 1L,
+          oicHearingType = OicHearingType.GOV_ADULT,
+          dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+          oicHearingId = 1L,
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = ""),
+        ),
       )
     }
 
@@ -770,7 +800,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       reportedAdjudicationInadHearing.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
       it.hearings.last().also {
-        h ->
+          h ->
         h.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
       }
     }
@@ -782,9 +812,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       it.hearings.add(
         Hearing(
-          oicHearingId = 1, dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV,
-          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
-        )
+          oicHearingId = 1,
+          dateTimeOfHearing = LocalDateTime.now(),
+          locationId = 1,
+          agencyId = "",
+          reportNumber = 1L,
+          oicHearingType = OicHearingType.GOV,
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
+        ),
       )
     }
 
@@ -796,7 +831,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       reportedAdjudicationCompletedHearing.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
       it.outcomes.add(
-        Outcome(code = OutcomeCode.DISMISSED)
+        Outcome(code = OutcomeCode.DISMISSED),
       )
     }
 
@@ -808,7 +843,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       reportedAdjudicationCompletedHearing.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
       it.outcomes.add(
-        Outcome(code = OutcomeCode.NOT_PROCEED)
+        Outcome(code = OutcomeCode.NOT_PROCEED),
       )
     }
 
@@ -820,7 +855,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       reportedAdjudicationCompletedHearing.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
       it.outcomes.add(
-        Outcome(code = OutcomeCode.CHARGE_PROVED)
+        Outcome(code = OutcomeCode.CHARGE_PROVED),
       )
     }
 
@@ -834,13 +869,18 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       it.hearings.add(
         Hearing(
-          oicHearingId = 1, dateTimeOfHearing = LocalDateTime.now().plusDays(5), locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV,
-          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
-        )
+          oicHearingId = 1,
+          dateTimeOfHearing = LocalDateTime.now().plusDays(5),
+          locationId = 1,
+          agencyId = "",
+          reportNumber = 1L,
+          oicHearingType = OicHearingType.GOV,
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
+        ),
       )
 
       it.outcomes.add(
-        Outcome(code = OutcomeCode.CHARGE_PROVED)
+        Outcome(code = OutcomeCode.CHARGE_PROVED),
       )
     }
 
@@ -853,7 +893,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       reportedAdjudicationCompletedHearingNotProceed.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
 
       it.outcomes.add(
-        Outcome(code = OutcomeCode.QUASHED)
+        Outcome(code = OutcomeCode.QUASHED),
       )
     }
 
@@ -864,7 +904,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
           it.hearings.clear()
-        }
+        },
       )
 
       val result = reportedAdjudicationService.getReportedAdjudicationDetails(0)
@@ -878,7 +918,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
-        }
+        },
       )
 
       val result = reportedAdjudicationService.getReportedAdjudicationDetails(10)
@@ -902,6 +942,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.outcomes.first().outcome!!.outcome).isNotNull
       assertThat(result.outcomes.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
     }
+
     @Test
     fun `outcome history DTO - Not proceed no hearing`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationNotProceed)
@@ -926,6 +967,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.outcomes.last().hearing!!.outcome).isNull()
       assertThat(result.outcomes.last().outcome).isNull()
     }
+
     @Test
     fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationReferInad)
@@ -933,6 +975,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(result.outcomes.size).isEqualTo(2)
     }
+
     @Test
     fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD, hearing scheduled`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationInadHearing)
@@ -944,6 +987,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.outcomes.last().hearing!!.outcome).isNull()
       assertThat(result.outcomes.last().outcome).isNull()
     }
+
     @Test
     fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD, hearing scheduled, refer to police`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationInadReferPolice)
@@ -958,6 +1002,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.outcomes.last().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
       assertThat(result.outcomes.last().outcome!!.referralOutcome).isNull()
     }
+
     @Test
     fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD, hearing scheduled, refer to police, prosecution YES`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationProsecution)
@@ -973,6 +1018,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.outcomes.last().outcome!!.referralOutcome).isNotNull
       assertThat(result.outcomes.last().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.PROSECUTION)
     }
+
     @Test
     fun `outcome history DTO - Schedule hearing, refer to inad, scheduled hearing, refer to police, prosecution yes`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationProsecutionAllHearings)
@@ -1011,7 +1057,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - hearing refers to INAD who chooses NOT_PROCEED `() {
-
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationReferInadNotProceed)
 
       val result = reportedAdjudicationService.getReportedAdjudicationDetails(12)
@@ -1136,29 +1181,29 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               oicHearingType = OicHearingType.GOV,
               dateTimeOfHearing = LocalDateTime.now(),
               hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
-              reportNumber = 1L
-            )
+              reportNumber = 1L,
+            ),
           )
 
           it.outcomes.add(
             Outcome(code = OutcomeCode.REFER_POLICE, details = "refer 2").also {
-              o ->
+                o ->
               o.createDateTime = LocalDateTime.now().plusDays(2)
-            }
+            },
           )
 
           it.outcomes.add(
             Outcome(code = OutcomeCode.REFER_POLICE, details = "refer 1").also {
-              o ->
+                o ->
               o.createDateTime = LocalDateTime.now()
-            }
+            },
           )
 
           it.outcomes.add(
             Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
-              o ->
+                o ->
               o.createDateTime = LocalDateTime.now().plusDays(1)
-            }
+            },
           )
 
           it.hearings.add(
@@ -1169,10 +1214,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               oicHearingType = OicHearingType.GOV,
               dateTimeOfHearing = LocalDateTime.now().plusDays(1),
               hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
-              reportNumber = 1L
-            )
+              reportNumber = 1L,
+            ),
           )
-        }
+        },
       )
 
       val result = reportedAdjudicationService.getReportedAdjudicationDetails(20)
@@ -1215,15 +1260,16 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.hearings.first().hearingOutcome = HearingOutcome(
-            code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""
+            code = HearingOutcomeCode.REFER_POLICE,
+            adjudicator = "",
           )
           it.outcomes.add(
-            Outcome(code = OutcomeCode.REFER_POLICE).also { o -> o.createDateTime = LocalDateTime.now() }
+            Outcome(code = OutcomeCode.REFER_POLICE).also { o -> o.createDateTime = LocalDateTime.now() },
           )
           it.outcomes.add(
-            Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) }
+            Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) },
           )
-        }
+        },
       )
 
       assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(true)
@@ -1231,12 +1277,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `returns false when no history `() {
-
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.hearings.clear()
           it.outcomes.clear()
-        }
+        },
       )
 
       assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(false)
@@ -1244,11 +1289,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `returns false when no last item has no outcome `() {
-
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.outcomes.clear()
-        }
+        },
       )
 
       assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(false)
@@ -1256,13 +1300,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `returns false when no last item has no referral outcome `() {
-
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.outcomes.add(
-            Outcome(code = OutcomeCode.REFER_POLICE)
+            Outcome(code = OutcomeCode.REFER_POLICE),
           )
-        }
+        },
       )
 
       assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(false)

@@ -25,51 +25,51 @@ abstract class ReportedAdjudicationTestBase : TestsToImplement {
     whenever(
       offenceCodeLookupService.getParagraphDescription(
         2,
-        false
-      )
+        false,
+      ),
     ).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2, false)).thenReturn(
-      OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
+      OFFENCE_CODE_2_NOMIS_CODE_ON_OWN,
     )
     whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(2, false)).thenReturn(
-      OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
+      OFFENCE_CODE_2_NOMIS_CODE_ASSISTED,
     )
 
     whenever(offenceCodeLookupService.getParagraphNumber(3, false)).thenReturn(OFFENCE_CODE_3_PARAGRAPH_NUMBER)
     whenever(
       offenceCodeLookupService.getParagraphDescription(
         3,
-        false
-      )
+        false,
+      ),
     ).thenReturn(OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION)
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3, false)).thenReturn(
-      OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
+      OFFENCE_CODE_3_NOMIS_CODE_ON_OWN,
     )
     whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3, false)).thenReturn(
-      OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
+      OFFENCE_CODE_3_NOMIS_CODE_ASSISTED,
     )
 
     whenever(offenceCodeLookupService.getParagraphNumber(2, true)).thenReturn(YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(2, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION
+      YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
     )
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(2, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN
+      YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ON_OWN,
     )
     whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(2, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED
+      YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED,
     )
 
     // TODO - Review whether this is required
     whenever(offenceCodeLookupService.getParagraphNumber(3, true)).thenReturn(YOUTH_OFFENCE_CODE_3_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(3, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION
+      YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
     )
     whenever(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(3, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN
+      YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ON_OWN,
     )
     whenever(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(3, true)).thenReturn(
-      YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ASSISTED
+      YOUTH_OFFENCE_CODE_3_NOMIS_CODE_ASSISTED,
     )
   }
 

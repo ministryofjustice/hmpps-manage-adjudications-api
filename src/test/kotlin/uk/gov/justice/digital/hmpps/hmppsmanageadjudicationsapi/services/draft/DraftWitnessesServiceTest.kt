@@ -20,7 +20,9 @@ import javax.persistence.EntityNotFoundException
 class DraftWitnessesServiceTest : DraftAdjudicationTestBase() {
 
   private val witnessesService = DraftWitnessesService(
-    draftAdjudicationRepository, offenceCodeLookupService, authenticationFacade
+    draftAdjudicationRepository,
+    offenceCodeLookupService,
+    authenticationFacade,
   )
 
   private val draftAdjudication =
@@ -33,13 +35,13 @@ class DraftWitnessesServiceTest : DraftAdjudicationTestBase() {
       incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
       incidentStatement = IncidentStatement(
         statement = "Example statement",
-        completed = false
+        completed = false,
       ),
       offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
       isYouthOffender = true,
       witnesses = mutableListOf(
-        Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred")
-      )
+        Witness(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer", reporter = "Fred"),
+      ),
     )
 
   @BeforeEach
@@ -54,8 +56,8 @@ class DraftWitnessesServiceTest : DraftAdjudicationTestBase() {
     val response = witnessesService.setWitnesses(
       1,
       listOf(
-        WitnessRequestItem(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer")
-      )
+        WitnessRequestItem(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer"),
+      ),
     )
 
     val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
@@ -78,7 +80,7 @@ class DraftWitnessesServiceTest : DraftAdjudicationTestBase() {
     Assertions.assertThatThrownBy {
       witnessesService.setWitnesses(
         1,
-        listOf(WitnessRequestItem(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer"))
+        listOf(WitnessRequestItem(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer")),
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("DraftAdjudication not found for 1")

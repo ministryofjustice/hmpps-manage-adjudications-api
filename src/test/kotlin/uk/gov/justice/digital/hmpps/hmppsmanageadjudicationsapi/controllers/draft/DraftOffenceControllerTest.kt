@@ -23,7 +23,7 @@ class DraftOffenceControllerTest : TestControllerBase() {
   @BeforeEach
   fun beforeEach() {
     whenever(incidentOffenceService.setOffenceDetails(ArgumentMatchers.anyLong(), any())).thenReturn(
-      draftAdjudicationDto()
+      draftAdjudicationDto(),
     )
   }
 
@@ -43,7 +43,7 @@ class DraftOffenceControllerTest : TestControllerBase() {
       1,
       OffenceDetailsRequestItem(
         offenceCode = BASIC_OFFENCE_REQUEST.offenceCode,
-      )
+      ),
     )
   }
 
@@ -64,7 +64,7 @@ class DraftOffenceControllerTest : TestControllerBase() {
       .perform(
         MockMvcRequestBuilders.put("/draft-adjudications/$id/offence-details")
           .header("Content-Type", "application/json")
-          .content(body)
+          .content(body),
       )
   }
 

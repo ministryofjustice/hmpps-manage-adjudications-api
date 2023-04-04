@@ -22,7 +22,7 @@ enum class IssuedStatus {
 class ReportsService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   private val authenticationFacade: AuthenticationFacade,
-  offenceCodeLookupService: OffenceCodeLookupService
+  offenceCodeLookupService: OffenceCodeLookupService,
 ) : ReportedDtoService(offenceCodeLookupService) {
   fun getAllReportedAdjudications(agencyId: String, startDate: LocalDate, endDate: LocalDate, statuses: List<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val reportedAdjudicationsPage =
@@ -30,7 +30,8 @@ class ReportsService(
         agencyId,
         reportsFrom(startDate),
         reportsTo(endDate),
-        statuses, pageable
+        statuses,
+        pageable,
       )
     return reportedAdjudicationsPage.map { it.toDto() }
   }
@@ -40,10 +41,12 @@ class ReportsService(
 
     val reportedAdjudicationsPage =
       reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
-        username!!, agencyId,
+        username!!,
+        agencyId,
         reportsFrom(startDate),
         reportsTo(endDate),
-        statuses, pageable
+        statuses,
+        pageable,
       )
     return reportedAdjudicationsPage.map { it.toDto() }
   }
@@ -58,29 +61,32 @@ class ReportsService(
       .map { it.toDto() }
 
   fun getAdjudicationsForPrint(agencyId: String, startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>): List<ReportedAdjudicationDto> {
-    if (issueStatuses.containsAll(IssuedStatus.values().toList()))
+    if (issueStatuses.containsAll(IssuedStatus.values().toList())) {
       return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusIn(
         agencyId = agencyId,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
         statuses = ReportedAdjudicationStatus.issuableStatusesForPrint(),
       ).sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto() }
+    }
 
-    if (issueStatuses.contains(IssuedStatus.ISSUED))
+    if (issueStatuses.contains(IssuedStatus.ISSUED)) {
       return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
         agencyId = agencyId,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
         statuses = ReportedAdjudicationStatus.issuableStatusesForPrint(),
       ).sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto() }
+    }
 
-    if (issueStatuses.contains(IssuedStatus.NOT_ISSUED))
+    if (issueStatuses.contains(IssuedStatus.NOT_ISSUED)) {
       return reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNull(
         agencyId = agencyId,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
         statuses = ReportedAdjudicationStatus.issuableStatusesForPrint(),
       ).sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto() }
+    }
 
     return emptyList()
   }

@@ -24,7 +24,8 @@ import javax.validation.ValidationException
 class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
 
   private val incidentOffenceService = DraftOffenceService(
-    draftAdjudicationRepository, offenceCodeLookupService,
+    draftAdjudicationRepository,
+    offenceCodeLookupService,
   )
 
   private val draftAdjudicationEntity = DraftAdjudication(
@@ -43,7 +44,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     Assertions.assertThatThrownBy {
       incidentOffenceService.setOffenceDetails(
         1,
-        BASIC_OFFENCE_DETAILS_REQUEST
+        BASIC_OFFENCE_DETAILS_REQUEST,
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("DraftAdjudication not found for 1")
@@ -56,7 +57,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     Assertions.assertThatThrownBy {
       incidentOffenceService.setOffenceDetails(
         1,
-        BASIC_OFFENCE_DETAILS_REQUEST
+        BASIC_OFFENCE_DETAILS_REQUEST,
       )
     }.isInstanceOf(IllegalStateException::class.java)
       .hasMessageContaining(ValidationChecks.APPLICABLE_RULES.errorMessage)
@@ -68,14 +69,14 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
       Optional.of(
         draftAdjudicationEntity.also {
           it.isYouthOffender = false
-        }
-      )
+        },
+      ),
     )
 
     Assertions.assertThatThrownBy {
       incidentOffenceService.setOffenceDetails(
         1,
-        BASIC_OFFENCE_DETAILS_INVALID_REQUEST
+        BASIC_OFFENCE_DETAILS_INVALID_REQUEST,
       )
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("Invalid offence code 2")
@@ -104,14 +105,14 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
       Optional.of(
         draftAdjudicationEntity.also {
           it.isYouthOffender = isYouthOffender
-        }
-      )
+        },
+      ),
     )
 
     whenever(draftAdjudicationRepository.save(any())).thenReturn(
       draftAdjudicationEntity.copy(
-        offenceDetails = offenceDetailsToSave
-      )
+        offenceDetails = offenceDetailsToSave,
+      ),
     )
 
     val draftAdjudication = incidentOffenceService.setOffenceDetails(1, offenceDetailsToAdd)
@@ -147,19 +148,19 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
         locationId = 1,
         dateTimeOfIncident = LocalDateTime.now(clock),
         dateTimeOfDiscovery = LocalDateTime.now(clock).plusDays(1),
-        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE
+        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
       ),
       incidentRole = DraftAdjudicationServiceTest.incidentRoleWithNoValuesSet(),
       offenceDetails = existingOffenceDetails,
-      isYouthOffender = false
+      isYouthOffender = false,
     )
 
     whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(existingDraftAdjudicationEntity))
 
     whenever(draftAdjudicationRepository.save(any())).thenReturn(
       existingDraftAdjudicationEntity.copy(
-        offenceDetails = offenceDetailsToSave
-      )
+        offenceDetails = offenceDetailsToSave,
+      ),
     )
 
     val draftAdjudication = incidentOffenceService.setOffenceDetails(1, offenceDetailsToUse)
@@ -189,7 +190,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     val offenceDetailsToSave = mutableListOf(
       Offence(
         offenceCode = 1001,
-      )
+      ),
     )
     val expectedOffenceDetailsResponse =
       OffenceDetailsDto(
@@ -207,15 +208,15 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
       agencyId = "MDI",
       incidentDetails = DraftAdjudicationServiceTest.incidentDetails(2L, clock),
       incidentRole = DraftAdjudicationServiceTest.incidentRoleWithNoValuesSet(),
-      isYouthOffender = false
+      isYouthOffender = false,
     )
 
     whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
 
     whenever(draftAdjudicationRepository.save(any())).thenReturn(
       draftAdjudicationEntity.copy(
-        offenceDetails = offenceDetailsToSave
-      )
+        offenceDetails = offenceDetailsToSave,
+      ),
     )
 
     val draftAdjudication = incidentOffenceService.setOffenceDetails(1, offenceDetailsToAdd)

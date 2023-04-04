@@ -38,7 +38,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER")
     fun `returns the adjudication for a given id`() {
       whenever(reportedAdjudicationService.getReportedAdjudicationDetails(anyLong())).thenReturn(
-        REPORTED_ADJUDICATION_DTO
+        REPORTED_ADJUDICATION_DTO,
       )
       makeGetAdjudicationRequest(1)
         .andExpect(status().isOk)
@@ -55,12 +55,12 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
 
     private fun makeGetAdjudicationRequest(
-      adjudicationNumber: Long
+      adjudicationNumber: Long,
     ): ResultActions {
       return mockMvc
         .perform(
           get("/reported-adjudications/$adjudicationNumber")
-            .header("Content-Type", "application/json")
+            .header("Content-Type", "application/json"),
         )
     }
   }
@@ -70,13 +70,13 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
 
     private fun makeReportedAdjudicationSetStatusRequest(
       adjudicationNumber: Long,
-      body: Map<String, Any>
+      body: Map<String, Any>,
     ): ResultActions {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.put("/reported-adjudications/$adjudicationNumber/status")
             .header("Content-Type", "application/json")
-            .content(objectMapper.writeValueAsString(body))
+            .content(objectMapper.writeValueAsString(body)),
         )
     }
 
@@ -86,7 +86,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       val largeStatement = IntRange(0, 4001).joinToString("") { "A" }
       makeReportedAdjudicationSetStatusRequest(
         123,
-        mapOf("status" to ReportedAdjudicationStatus.RETURNED, "statusDetails" to largeStatement)
+        mapOf("status" to ReportedAdjudicationStatus.RETURNED, "statusDetails" to largeStatement),
       ).andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.userMessage").value("The details of why the status has been set exceeds the maximum character limit of 4000"))
     }
@@ -99,8 +99,8 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         123,
         mapOf(
           "status" to ReportedAdjudicationStatus.RETURNED,
-          "statusReason" to largeStatement
-        )
+          "statusReason" to largeStatement,
+        ),
       ).andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.userMessage").value("The reason the status has been set exceeds the maximum character limit of 128"))
     }
@@ -110,7 +110,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     fun `makes a call to set the status of the reported adjudication`() {
       makeReportedAdjudicationSetStatusRequest(
         123,
-        mapOf("status" to ReportedAdjudicationStatus.RETURNED, "statusReason" to "reason", "statusDetails" to "details")
+        mapOf("status" to ReportedAdjudicationStatus.RETURNED, "statusReason" to "reason", "statusDetails" to "details"),
       )
       verify(reportedAdjudicationService).setStatus(123, ReportedAdjudicationStatus.RETURNED, "reason", "details")
     }
@@ -118,7 +118,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @Test
     fun `responds with a unauthorised status code`() {
       makeReportedAdjudicationSetStatusRequest(123, mapOf("status" to ReportedAdjudicationStatus.RETURNED)).andExpect(
-        status().isUnauthorized
+        status().isUnauthorized,
       )
     }
   }
@@ -130,13 +130,13 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
 
     private fun makeIssuedRequest(
       adjudicationNumber: Long,
-      issuedRequest: IssueRequest
+      issuedRequest: IssueRequest,
     ): ResultActions {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.put("/reported-adjudications/$adjudicationNumber/issue")
             .header("Content-Type", "application/json")
-            .content(objectMapper.writeValueAsString(issuedRequest))
+            .content(objectMapper.writeValueAsString(issuedRequest)),
         )
     }
 
@@ -150,7 +150,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds successfully from issued details request `() {
       whenever(
-        reportedAdjudicationService.setIssued(anyLong(), any())
+        reportedAdjudicationService.setIssued(anyLong(), any()),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
 
       makeIssuedRequest(1, IssueRequest(now))

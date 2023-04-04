@@ -38,7 +38,7 @@ class HearingOutcomeService(
       adjudicationNumber = adjudicationNumber,
       code = code.validateReferral(),
       adjudicator = adjudicator,
-      details = details
+      details = details,
     )
 
   fun createAdjourn(
@@ -54,7 +54,7 @@ class HearingOutcomeService(
       adjudicator = adjudicator,
       reason = reason,
       plea = plea,
-      details = details
+      details = details,
     )
 
   fun createCompletedHearing(
@@ -65,7 +65,7 @@ class HearingOutcomeService(
     adjudicationNumber = adjudicationNumber,
     code = HearingOutcomeCode.COMPLETE,
     adjudicator = adjudicator,
-    plea = plea
+    plea = plea,
   )
 
   fun removeAdjourn(
@@ -83,7 +83,7 @@ class HearingOutcomeService(
     adjudicator: String,
     reason: HearingOutcomeAdjournReason? = null,
     details: String? = null,
-    plea: HearingOutcomePlea? = null
+    plea: HearingOutcomePlea? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
@@ -109,7 +109,7 @@ class HearingOutcomeService(
   }
 
   fun getCurrentStatusAndLatestOutcome(
-    adjudicationNumber: Long
+    adjudicationNumber: Long,
   ): Pair<ReportedAdjudicationStatus, HearingOutcome> {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
@@ -157,8 +157,9 @@ class HearingOutcomeService(
 
     fun ReportedAdjudication.latestOutcomeIsAdjourn() {
       val latest = this.latestHearingOutcome()
-      if (latest.code != HearingOutcomeCode.ADJOURN)
+      if (latest.code != HearingOutcomeCode.ADJOURN) {
         throw ValidationException("latest outcome is not an adjourn")
+      }
     }
 
     fun ReportedAdjudication.latestHearingOutcome(): HearingOutcome =
