@@ -34,7 +34,13 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       ).put("finding", Finding.REF_POLICE),
     )
 
-    prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearingResult(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      JSONObject().put(
+        "plea",
+        Plea.NOT_GUILTY,
+      ).put("finding", Finding.REF_POLICE),
+    )
 
     initDataForHearings().createHearing().createReferral(code = HearingOutcomeCode.REFER_POLICE)
 
@@ -128,7 +134,13 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
         Plea.GUILTY,
       ).put("finding", Finding.PROVED),
     )
-    prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearingResult(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      JSONObject().put(
+        "plea",
+        Plea.NOT_GUILTY,
+      ).put("finding", Finding.PROVED),
+    )
 
     initDataForHearings().createHearing().createChargeProved()
 
@@ -169,7 +181,13 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
         Plea.GUILTY,
       ).put("finding", Finding.NOT_PROCEED),
     )
-    prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearingResult(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      JSONObject().put(
+        "plea",
+        Plea.NOT_GUILTY,
+      ).put("finding", Finding.PROVED),
+    )
 
     initDataForHearings().createHearing().createNotProceed()
 
@@ -209,7 +227,13 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
         Plea.GUILTY,
       ).put("finding", Finding.REFUSED),
     )
-    prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearingResult(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      JSONObject().put(
+        "plea",
+        Plea.NOT_GUILTY,
+      ).put("finding", Finding.REFUSED),
+    )
 
     initDataForHearings().createHearing().createDismissed()
 

@@ -359,7 +359,13 @@ class OutcomeIntTest : IntegrationTestBase() {
   @Test
   fun `amend outcome - quashed `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearingResult(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      JSONObject().put(
+        "plea",
+        Plea.NOT_GUILTY,
+      ).put("finding", Finding.QUASHED),
+    )
 
     initDataForOutcome().createHearing().createChargeProved().createQuashed()
 

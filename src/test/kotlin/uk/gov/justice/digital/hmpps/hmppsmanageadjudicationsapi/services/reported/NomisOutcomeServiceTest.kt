@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -12,8 +14,12 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisHearingResultRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 
@@ -39,21 +45,31 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       nomisOutcomeService.createHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
       verify(prisonApiGateway, never()).createHearing(any(), any())
-      verify(prisonApiGateway, never()).createHearingResult(any(), any())
+      verify(prisonApiGateway, never()).createHearingResult(anyOrNull(), any(), any())
     }
 
     @Test
     fun `prosecution from hearing creates hearing result and hearing `() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "", plea = HearingOutcomePlea.GUILTY)
         it.outcomes.add(Outcome(code = OutcomeCode.PROSECUTION))
       }
 
       whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(123)
 
-      nomisOutcomeService.createHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
+      val hearingId = nomisOutcomeService.createHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
+
+      assertThat(hearingId).isNotNull
       verify(prisonApiGateway, atLeastOnce()).createHearing(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).createHearingResult(reportedAdjudication.reportNumber, 123)
+      verify(prisonApiGateway, atLeastOnce()).createHearingResult(
+        reportedAdjudication.reportNumber,
+        123,
+        NomisHearingResultRequest(
+          plea = Plea.GUILTY,
+          adjudicator = "",
+          finding = Finding.PROSECUTED,
+        ),
+      )
     }
 
     @CsvSource("REFER_POLICE", "NOT_PROCEED", "CHARGE_PROVED", "DISMISSED")
@@ -67,7 +83,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       nomisOutcomeService.createHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
       verify(prisonApiGateway, never()).createHearing(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).createHearingResult(any(), any())
+      verify(prisonApiGateway, atLeastOnce()).createHearingResult(any(), any(), any())
     }
 
     @Test
@@ -79,7 +95,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       nomisOutcomeService.createHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
       verify(prisonApiGateway, never()).createHearing(any(), any())
-      verify(prisonApiGateway, never()).createHearingResult(any(), any())
+      verify(prisonApiGateway, never()).createHearingResult(anyOrNull(), any(), any())
     }
   }
 
@@ -94,7 +110,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.amendHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
-      verify(prisonApiGateway, never()).amendHearingResult(any(), any())
+      verify(prisonApiGateway, never()).amendHearingResult(any(), any(), any())
     }
 
     @Test
@@ -106,8 +122,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       nomisOutcomeService.amendHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
-      verify(prisonApiGateway, never()).createHearing(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(any(), any())
+      verify(prisonApiGateway, never()).createHearing(anyOrNull(), any())
+      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(any(), any(), any())
     }
 
     @CsvSource("REFER_POLICE", "NOT_PROCEED", "CHARGE_PROVED", "DISMISSED")
@@ -120,7 +136,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       nomisOutcomeService.amendHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
-      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(any(), any())
+      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(anyOrNull(), any(), any())
     }
 
     @Test
@@ -132,7 +148,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       nomisOutcomeService.amendHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
-      verify(prisonApiGateway, never()).amendHearingResult(any(), any())
+      verify(prisonApiGateway, never()).amendHearingResult(anyOrNull(), any(), any())
     }
   }
 

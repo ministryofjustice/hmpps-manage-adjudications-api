@@ -21,6 +21,7 @@ data class Outcome(
   var caution: Boolean? = null,
   @Enumerated(EnumType.STRING)
   var quashedReason: QuashedReason? = null,
+  var oicHearingId: Long? = null,
 ) : BaseEntity()
 
 enum class OutcomeCode(val status: ReportedAdjudicationStatus) {

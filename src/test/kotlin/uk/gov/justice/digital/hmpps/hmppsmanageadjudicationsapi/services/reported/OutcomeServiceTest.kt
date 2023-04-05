@@ -218,6 +218,8 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
+      whenever(nomisOutcomeService.createHearingResultIfApplicable(anyOrNull(), any())).thenReturn(1L)
+
       val response = outcomeService.createProsecution(
         1235L,
       )
@@ -228,6 +230,8 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.PROSECUTION)
       assertThat(argumentCaptor.value.outcomes.first().details).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().oicHearingId).isEqualTo(1)
+
       assertThat(response).isNotNull
     }
 

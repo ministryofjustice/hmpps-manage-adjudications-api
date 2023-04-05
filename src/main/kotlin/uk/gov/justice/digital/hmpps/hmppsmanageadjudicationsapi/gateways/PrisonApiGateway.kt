@@ -51,9 +51,29 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
       .bodyToMono<Void>()
       .block()
 
-  fun createHearingResult(adjudicationNumber: Long, oicHearingId: Long): Void? = TODO("implement me")
+  fun createHearingResult(adjudicationNumber: Long, oicHearingId: Long, nomisHearingResultRequest: NomisHearingResultRequest): Void? =
+    prisonApiClientCreds
+      .post()
+      .uri("/adjudications/adjudication/$adjudicationNumber/hearing/$oicHearingId/result")
+      .bodyValue(nomisHearingResultRequest)
+      .retrieve()
+      .bodyToMono<Void>()
+      .block()!!
 
-  fun amendHearingResult(adjudicationNumber: Long, oicHearingId: Long): Void? = TODO("implement me")
+  fun amendHearingResult(adjudicationNumber: Long, oicHearingId: Long, nomisHearingResultRequest: NomisHearingResultRequest): Void? =
+    prisonApiClientCreds
+      .put()
+      .uri("/adjudications/adjudication/$adjudicationNumber/hearing/$oicHearingId/result")
+      .bodyValue(nomisHearingResultRequest)
+      .retrieve()
+      .bodyToMono<Void>()
+      .block()
 
-  fun deleteHearingResult(adjudicationNumber: Long, oicHearingId: Long): Void? = TODO("implement me")
+  fun deleteHearingResult(adjudicationNumber: Long, oicHearingId: Long): Void? =
+    prisonApiClientCreds
+      .delete()
+      .uri("/adjudications/adjudication/$adjudicationNumber/hearing/$oicHearingId/result")
+      .retrieve()
+      .bodyToMono<Void>()
+      .block()
 }

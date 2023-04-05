@@ -12,7 +12,7 @@ class NomisOutcomeService(
   private val prisonApiGateway: PrisonApiGateway,
 ) {
 
-  fun createHearingResultIfApplicable(hearing: Hearing?, outcome: Outcome) {
+  fun createHearingResultIfApplicable(hearing: Hearing?, outcome: Outcome): Long? {
     TODO("implement me")
   }
 

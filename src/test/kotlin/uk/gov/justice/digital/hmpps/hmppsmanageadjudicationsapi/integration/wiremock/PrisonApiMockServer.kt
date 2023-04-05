@@ -221,7 +221,7 @@ class PrisonApiMockServer : WireMockServer {
       post(
         urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"),
       ).withMultipartRequestBody(
-        aMultipart().withBody(equalToJson(body.toString())),
+        aMultipart().withBody(equalToJson(body.put("adjudicator", "test").toString())),
       ).willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
@@ -236,9 +236,12 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubAmendHearingResult(adjudicationNumber: Long) {
+  fun stubAmendHearingResult(adjudicationNumber: Long, body: JSONObject) {
     stubFor(
       put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"))
+        .withMultipartRequestBody(
+          aMultipart().withBody(equalToJson(body.put("adjudicator", "updated adjudicator").toString())),
+        )
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
