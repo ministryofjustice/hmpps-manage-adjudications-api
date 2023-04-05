@@ -26,7 +26,7 @@ data class Outcome(
 ) : BaseEntity()
 
 enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Finding? = null) { // TODO map these.
-  REFER_POLICE(ReportedAdjudicationStatus.REFER_POLICE) {
+  REFER_POLICE(ReportedAdjudicationStatus.REFER_POLICE, Finding.REF_POLICE) {
     override fun nextStates(): List<OutcomeCode> {
       return listOf(NOT_PROCEED, PROSECUTION, SCHEDULE_HEARING)
     }
@@ -36,12 +36,12 @@ enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Find
       return listOf(NOT_PROCEED, SCHEDULE_HEARING)
     }
   },
-  NOT_PROCEED(ReportedAdjudicationStatus.NOT_PROCEED),
-  DISMISSED(ReportedAdjudicationStatus.DISMISSED),
-  PROSECUTION(ReportedAdjudicationStatus.PROSECUTION),
+  NOT_PROCEED(ReportedAdjudicationStatus.NOT_PROCEED, Finding.NOT_PROCEED),
+  DISMISSED(ReportedAdjudicationStatus.DISMISSED, Finding.REFUSED), // TODO confirm with John
+  PROSECUTION(ReportedAdjudicationStatus.PROSECUTION, Finding.PROSECUTED),
   SCHEDULE_HEARING(ReportedAdjudicationStatus.SCHEDULED),
-  CHARGE_PROVED(ReportedAdjudicationStatus.CHARGE_PROVED),
-  QUASHED(ReportedAdjudicationStatus.QUASHED),
+  CHARGE_PROVED(ReportedAdjudicationStatus.CHARGE_PROVED, Finding.PROVED),
+  QUASHED(ReportedAdjudicationStatus.QUASHED, Finding.QUASHED),
   ;
 
   fun validateReferral(): OutcomeCode {

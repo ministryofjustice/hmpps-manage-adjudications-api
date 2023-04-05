@@ -36,6 +36,6 @@ enum class HearingOutcomeAdjournReason {
   LEGAL_ADVICE, LEGAL_REPRESENTATION, RO_ATTEND, HELP, UNFIT, WITNESS, WITNESS_SUPPORT, MCKENZIE, EVIDENCE, INVESTIGATION, OTHER
 }
 
-enum class HearingOutcomePlea(val plea: Plea? = null) { // TODO map these
-  UNFIT, ABSTAIN, GUILTY, NOT_GUILTY, NOT_ASKED
+enum class HearingOutcomePlea(val plea: Plea) {
+  UNFIT(Plea.UNFIT), ABSTAIN(Plea.REFUSED), GUILTY(Plea.GUILTY), NOT_GUILTY(Plea.NOT_GUILTY), NOT_ASKED(Plea.NOT_ASKED)
 }
