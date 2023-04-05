@@ -97,15 +97,17 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("stoppage percentage missing for type EARNINGS")
     }
 
-    @Test
-    fun `validation error - not suspended missing start date `() {
+    @CsvSource(" PRIVILEGE", "EARNINGS", "CONFINEMENT", "REMOVAL_ACTIVITY", "EXCLUSION_WORK", "EXTRA_WORK", "REMOVAL_WING")
+    @ParameterizedTest
+    fun `validation error - not suspended missing start date `(type: PunishmentType) {
       Assertions.assertThatThrownBy {
         punishmentsService.create(adjudicationNumber = 1, listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1, endDate = LocalDate.now())))
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing start date for schedule")
     }
 
-    @Test
+    @CsvSource(" PRIVILEGE", "EARNINGS", "CONFINEMENT", "REMOVAL_ACTIVITY", "EXCLUSION_WORK", "EXTRA_WORK", "REMOVAL_WING")
+    @ParameterizedTest
     fun `validation error - not suspended missing end date `() {
       Assertions.assertThatThrownBy {
         punishmentsService.create(adjudicationNumber = 1, listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1, startDate = LocalDate.now())))
@@ -113,7 +115,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("missing end date for schedule")
     }
 
-    @Test
+    @CsvSource(" PRIVILEGE", "EARNINGS", "CONFINEMENT", "REMOVAL_ACTIVITY", "EXCLUSION_WORK", "EXTRA_WORK", "REMOVAL_WING")
+    @ParameterizedTest
     fun `validation error - suspended missing all schedule dates `() {
       Assertions.assertThatThrownBy {
         punishmentsService.create(adjudicationNumber = 1, listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)))
@@ -135,11 +138,20 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1),
           ),
+          PunishmentRequest(
+            type = PunishmentType.PROSPECTIVE_DAYS,
+            days = 1,
+          ),
+          PunishmentRequest(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            days = 1,
+          ),
         ),
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
+      Assertions.assertThat(argumentCaptor.value.punishments.size).isEqualTo(3)
       Assertions.assertThat(argumentCaptor.value.punishments.first()).isNotNull
       Assertions.assertThat(argumentCaptor.value.punishments.first().type).isEqualTo(PunishmentType.PRIVILEGE)
       Assertions.assertThat(argumentCaptor.value.punishments.first().privilegeType).isEqualTo(PrivilegeType.OTHER)
