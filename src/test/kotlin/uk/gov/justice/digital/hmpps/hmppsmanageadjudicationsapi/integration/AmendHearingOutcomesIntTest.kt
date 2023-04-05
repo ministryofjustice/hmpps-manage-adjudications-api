@@ -30,7 +30,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
       JSONObject().put(
         "plea",
-        Plea.GUILTY,
+        Plea.NOT_ASKED,
       ).put("finding", Finding.REF_POLICE),
     )
 
@@ -38,7 +38,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
       JSONObject().put(
         "plea",
-        Plea.NOT_GUILTY,
+        Plea.NOT_ASKED,
       ).put("finding", Finding.REF_POLICE),
     )
 

@@ -5,7 +5,7 @@ enum class Finding {
 }
 
 enum class Plea {
-  GUILTY, NOT_GUILTY, REFUSED, UNFIT
+  GUILTY, NOT_GUILTY, REFUSED, UNFIT, NOT_ASKED,
 }
 
 data class NomisHearingResultRequest(

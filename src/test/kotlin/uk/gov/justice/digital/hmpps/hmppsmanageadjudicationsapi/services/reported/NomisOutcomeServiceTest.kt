@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisHe
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
+import java.time.LocalDateTime
 
 class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
@@ -49,10 +50,22 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `prosecution from hearing creates hearing result and hearing `() {
+    fun `quashed creates hearing and result`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "", plea = HearingOutcomePlea.GUILTY)
-        it.outcomes.add(Outcome(code = OutcomeCode.PROSECUTION))
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "", plea = HearingOutcomePlea.GUILTY)
+        it.hearings.first().oicHearingId = 122
+        it.outcomes.add(
+          Outcome(code = OutcomeCode.CHARGE_PROVED).also {
+              o ->
+            o.createDateTime = LocalDateTime.now()
+          },
+        )
+        it.outcomes.add(
+          Outcome(code = OutcomeCode.QUASHED).also {
+              o ->
+            o.createDateTime = LocalDateTime.now().plusDays(1)
+          },
+        )
       }
 
       whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(123)
@@ -67,7 +80,33 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         NomisHearingResultRequest(
           plea = Plea.GUILTY,
           adjudicator = "",
-          finding = Finding.PROSECUTED,
+          finding = Finding.QUASHED,
+        ),
+      )
+    }
+
+    @CsvSource("NOT_PROCEED", "PROSECUTION")
+    @ParameterizedTest
+    fun ` {0} from hearing - POLICE REFER creates hearing and result `(code: OutcomeCode) {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "", plea = HearingOutcomePlea.GUILTY)
+        it.hearings.first().oicHearingId = 122
+        it.outcomes.add(Outcome(code = code))
+      }
+
+      whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(123)
+
+      val hearingId = nomisOutcomeService.createHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
+
+      assertThat(hearingId).isNotNull
+      verify(prisonApiGateway, atLeastOnce()).createHearing(any(), any())
+      verify(prisonApiGateway, atLeastOnce()).createHearingResult(
+        reportedAdjudication.reportNumber,
+        123,
+        NomisHearingResultRequest(
+          plea = Plea.NOT_ASKED,
+          adjudicator = "",
+          finding = code.finding!!,
         ),
       )
     }
@@ -114,16 +153,59 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `prosecution from hearing amends hearing result `() {
+    fun `quashed amend`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
-        it.outcomes.add(Outcome(code = OutcomeCode.PROSECUTION))
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "", plea = HearingOutcomePlea.GUILTY)
+        it.hearings.first().oicHearingId = 122
+        it.outcomes.add(
+          Outcome(code = OutcomeCode.CHARGE_PROVED).also {
+              o ->
+            o.createDateTime = LocalDateTime.now()
+          },
+        )
+        it.outcomes.add(
+          Outcome(code = OutcomeCode.QUASHED, oicHearingId = 123).also {
+              o ->
+            o.createDateTime = LocalDateTime.now().plusDays(1)
+          },
+        )
       }
 
       nomisOutcomeService.amendHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
       verify(prisonApiGateway, never()).createHearing(anyOrNull(), any())
-      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(any(), any(), any())
+      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(
+        reportedAdjudication.reportNumber,
+        123L,
+        NomisHearingResultRequest(
+          finding = Finding.QUASHED,
+          plea = Plea.GUILTY,
+          adjudicator = "",
+        ),
+      )
+    }
+
+    @CsvSource("NOT_PROCEED", "PROSECUTION")
+    @ParameterizedTest
+    fun `{0} from hearing - police refer amends hearing result `(code: OutcomeCode) {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+        it.hearings.first().oicHearingId = 122L
+        it.outcomes.add(Outcome(code = code, oicHearingId = 123L))
+      }
+
+      nomisOutcomeService.amendHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
+
+      verify(prisonApiGateway, never()).createHearing(anyOrNull(), any())
+      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(
+        reportedAdjudication.reportNumber,
+        123L,
+        NomisHearingResultRequest(
+          finding = code.finding!!,
+          adjudicator = "",
+          plea = Plea.NOT_ASKED,
+        ),
+      )
     }
 
     @CsvSource("REFER_POLICE", "NOT_PROCEED", "CHARGE_PROVED", "DISMISSED")
@@ -169,17 +251,43 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `prosecution from hearing deletes hearing result and hearing `() {
+    fun `quashed delete deletes hearing and result`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
-        it.hearings.first().oicHearingId = 100L
-        it.outcomes.add(Outcome(code = OutcomeCode.PROSECUTION))
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "", plea = HearingOutcomePlea.GUILTY)
+        it.hearings.first().oicHearingId = 122
+        it.outcomes.add(
+          Outcome(code = OutcomeCode.CHARGE_PROVED).also {
+              o ->
+            o.createDateTime = LocalDateTime.now()
+          },
+        )
+        it.outcomes.add(
+          Outcome(code = OutcomeCode.QUASHED, oicHearingId = 123L).also {
+              o ->
+            o.createDateTime = LocalDateTime.now().plusDays(1)
+          },
+        )
       }
 
       nomisOutcomeService.deleteHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
-      verify(prisonApiGateway, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, 100L)
-      verify(prisonApiGateway, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 100L)
+      verify(prisonApiGateway, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, 123L)
+      verify(prisonApiGateway, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 123L)
+    }
+
+    @CsvSource("NOT_PROCEED", "PROSECUTION")
+    @ParameterizedTest
+    fun `{0} from hearing deletes hearing result and hearing `(code: OutcomeCode) {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+        it.hearings.first().oicHearingId = 100L
+        it.outcomes.add(Outcome(code = code, oicHearingId = 122L))
+      }
+
+      nomisOutcomeService.deleteHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
+
+      verify(prisonApiGateway, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, 122L)
+      verify(prisonApiGateway, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 122L)
     }
 
     @CsvSource("REFER_POLICE", "NOT_PROCEED", "CHARGE_PROVED", "DISMISSED")
