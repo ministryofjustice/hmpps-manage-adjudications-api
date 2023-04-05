@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
 import org.hibernate.validator.constraints.Length
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
@@ -24,7 +25,7 @@ data class Outcome(
   var oicHearingId: Long? = null,
 ) : BaseEntity()
 
-enum class OutcomeCode(val status: ReportedAdjudicationStatus) {
+enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Finding? = null) { // TODO map these.
   REFER_POLICE(ReportedAdjudicationStatus.REFER_POLICE) {
     override fun nextStates(): List<OutcomeCode> {
       return listOf(NOT_PROCEED, PROSECUTION, SCHEDULE_HEARING)

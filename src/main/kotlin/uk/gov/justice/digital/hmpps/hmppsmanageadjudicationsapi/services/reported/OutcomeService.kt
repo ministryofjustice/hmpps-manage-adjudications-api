@@ -173,7 +173,7 @@ class OutcomeService(
       ),
     )
 
-    nomisOutcomeService.createHearingResultIfApplicable(hearing = null, outcome = reportedAdjudication.latestOutcome()!!)
+    nomisOutcomeService.createHearingResultIfApplicable(hearing = reportedAdjudication.getLatestHearing(), outcome = reportedAdjudication.latestOutcome()!!)
 
     return saveToDto(reportedAdjudication)
   }
@@ -224,7 +224,7 @@ class OutcomeService(
     reportedAdjudication.outcomes.remove(outcomeToDelete)
     reportedAdjudication.calculateStatus()
 
-    nomisOutcomeService.deleteHearingResultIfApplicable(hearing = null, outcome = outcomeToDelete)
+    nomisOutcomeService.deleteHearingResultIfApplicable(hearing = reportedAdjudication.getLatestHearing(), outcome = outcomeToDelete)
 
     return saveToDto(reportedAdjudication)
   }

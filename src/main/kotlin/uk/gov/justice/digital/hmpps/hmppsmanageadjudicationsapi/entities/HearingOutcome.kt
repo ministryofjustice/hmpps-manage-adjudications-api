@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
 import org.hibernate.validator.constraints.Length
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
@@ -35,6 +36,6 @@ enum class HearingOutcomeAdjournReason {
   LEGAL_ADVICE, LEGAL_REPRESENTATION, RO_ATTEND, HELP, UNFIT, WITNESS, WITNESS_SUPPORT, MCKENZIE, EVIDENCE, INVESTIGATION, OTHER
 }
 
-enum class HearingOutcomePlea {
+enum class HearingOutcomePlea(val plea: Plea? = null) { // TODO map these
   UNFIT, ABSTAIN, GUILTY, NOT_GUILTY, NOT_ASKED
 }
