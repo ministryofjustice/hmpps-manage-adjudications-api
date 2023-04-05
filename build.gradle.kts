@@ -21,14 +21,14 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-data-rest:1.7.0")
 
   runtimeOnly("com.h2database:h2:2.1.214")
-  runtimeOnly("org.flywaydb:flyway-core:9.16.1")
+  runtimeOnly("org.flywaydb:flyway-core:9.16.3")
   runtimeOnly("org.postgresql:postgresql:42.6.0")
 
   testImplementation("io.jsonwebtoken:jjwt:0.9.1")
   testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.37.0")
-  testImplementation("org.flywaydb:flyway-core:9.16.1")
+  testImplementation("org.flywaydb:flyway-core:9.16.3")
 }
 
 allOpen {
