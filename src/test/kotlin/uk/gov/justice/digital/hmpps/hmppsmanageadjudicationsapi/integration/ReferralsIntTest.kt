@@ -1,11 +1,14 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import java.time.LocalDateTime
 
 class ReferralsIntTest : IntegrationTestBase() {
@@ -18,6 +21,8 @@ class ReferralsIntTest : IntegrationTestBase() {
   @Test
   fun `remove referral with hearing`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
     initDataForHearings().createHearing().createReferral(HearingOutcomeCode.REFER_POLICE)
 
     webTestClient.delete()
@@ -33,6 +38,8 @@ class ReferralsIntTest : IntegrationTestBase() {
   @Test
   fun `remove referral with hearing and referral outcome`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
     initDataForHearings().createHearing().createReferral(HearingOutcomeCode.REFER_POLICE)
       .createOutcomeProsecution().expectStatus().isCreated
       .expectBody()
@@ -98,7 +105,7 @@ class ReferralsIntTest : IntegrationTestBase() {
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION)
       .expectStatus().isCreated
 
-    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
+    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/v2")
@@ -126,9 +133,25 @@ class ReferralsIntTest : IntegrationTestBase() {
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.plusDays(1), OicHearingType.INAD_ADULT)
 
+    prisonApiMockServer.stubCreateHearingResult(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      JSONObject().put(
+        "plea",
+        Plea.NOT_GUILTY,
+      ).put("finding", Finding.REF_POLICE),
+    )
+
     integrationTestData().createReferral(
       IntegrationTestData.DEFAULT_ADJUDICATION,
       HearingOutcomeCode.REFER_POLICE,
+    )
+
+    prisonApiMockServer.stubCreateHearingResult(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      JSONObject().put(
+        "plea",
+        Plea.NOT_GUILTY,
+      ).put("finding", Finding.PROSECUTED),
     )
 
     integrationTestData().createOutcomeProsecution(
@@ -143,6 +166,8 @@ class ReferralsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[2].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
       .jsonPath("$.reportedAdjudication.outcomes[2].outcome.referralOutcome").exists()
       .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(2)
+
+    prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/remove-referral")
@@ -186,6 +211,8 @@ class ReferralsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.NOT_PROCEED.name)
 
+    prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/remove-referral")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
@@ -219,7 +246,7 @@ class ReferralsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome").doesNotExist()
 
-    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
+    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/v2")
@@ -242,6 +269,14 @@ class ReferralsIntTest : IntegrationTestBase() {
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, LocalDateTime.now())
 
+    prisonApiMockServer.stubCreateHearingResult(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      JSONObject().put(
+        "plea",
+        Plea.NOT_GUILTY,
+      ).put("finding", Finding.REF_POLICE),
+    )
+
     integrationTestData().createReferral(
       IntegrationTestData.DEFAULT_ADJUDICATION,
       HearingOutcomeCode.REFER_POLICE,
@@ -255,7 +290,7 @@ class ReferralsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome").doesNotExist()
 
-    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
+    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/v2")
@@ -278,6 +313,14 @@ class ReferralsIntTest : IntegrationTestBase() {
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, LocalDateTime.now())
 
+    prisonApiMockServer.stubCreateHearingResult(
+      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      JSONObject().put(
+        "plea",
+        Plea.NOT_GUILTY,
+      ).put("finding", Finding.REF_POLICE),
+    )
+
     integrationTestData().createReferral(
       IntegrationTestData.DEFAULT_ADJUDICATION,
       HearingOutcomeCode.REFER_POLICE,
@@ -291,6 +334,8 @@ class ReferralsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.PROSECUTION.name)
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.PROSECUTION.name)
+
+    prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/remove-referral")

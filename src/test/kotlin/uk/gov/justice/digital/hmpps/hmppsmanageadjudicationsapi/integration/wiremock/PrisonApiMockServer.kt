@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock
 
 import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.aMultipart
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.delete
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
@@ -170,9 +172,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubAmendHearing(adjudicationNumber: Long, hearingId: Long) {
+  fun stubAmendHearing(adjudicationNumber: Long) {
     stubFor(
-      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/$hearingId"))
+      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -181,9 +183,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubAmendHearingFailure(adjudicationNumber: Long, hearingId: Long) {
+  fun stubAmendHearingFailure(adjudicationNumber: Long) {
     stubFor(
-      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/$hearingId"))
+      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -192,9 +194,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteHearing(adjudicationNumber: Long, hearingId: Long) {
+  fun stubDeleteHearing(adjudicationNumber: Long) {
     stubFor(
-      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/$hearingId"))
+      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -203,13 +205,55 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteHearingFailure(adjudicationNumber: Long, hearingId: Long) {
+  fun stubDeleteHearingFailure(adjudicationNumber: Long) {
     stubFor(
-      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/$hearingId"))
+      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withStatus(500),
+        ),
+    )
+  }
+
+  fun stubCreateHearingResult(adjudicationNumber: Long, body: JSONObject) {
+    stubFor(
+      post(
+        urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"),
+      ).withMultipartRequestBody(
+        aMultipart().withBody(equalToJson(body.toString())),
+      ).willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(201)
+          .withBody(
+            JSONObject()
+              .put("pleaFindingCode", "")
+              .put("findingCode", "")
+              .toString(),
+          ),
+      ),
+    )
+  }
+
+  fun stubAmendHearingResult(adjudicationNumber: Long) {
+    stubFor(
+      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubDeleteHearingResult(adjudicationNumber: Long) {
+    stubFor(
+      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200),
         ),
     )
   }

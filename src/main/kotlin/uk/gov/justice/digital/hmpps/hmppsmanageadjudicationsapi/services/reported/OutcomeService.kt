@@ -22,6 +22,7 @@ class OutcomeService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
+  private val nomisOutcomeService: NomisOutcomeService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -172,6 +173,8 @@ class OutcomeService(
       ),
     )
 
+    nomisOutcomeService.createHearingResult(reportedAdjudication)
+
     return saveToDto(reportedAdjudication)
   }
 
@@ -204,11 +207,16 @@ class OutcomeService(
         else -> {}
       }
     }
+
+    nomisOutcomeService.amendHearingResult(reportedAdjudication)
+
     return saveToDto(reportedAdjudication)
   }
 
   fun deleteOutcome(adjudicationNumber: Long, id: Long? = null): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    nomisOutcomeService.deleteHearingResult(reportedAdjudication)
+
     val outcomeToDelete = when (id) {
       null -> reportedAdjudication.latestOutcome()?.canDelete(reportedAdjudication.hearings.isNotEmpty()) ?: throw EntityNotFoundException("Outcome not found for $adjudicationNumber")
       else -> reportedAdjudication.getOutcome(id)

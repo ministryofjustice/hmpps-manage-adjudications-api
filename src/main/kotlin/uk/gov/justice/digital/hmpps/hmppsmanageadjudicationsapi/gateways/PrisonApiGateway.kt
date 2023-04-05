@@ -50,4 +50,10 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
       .retrieve()
       .bodyToMono<Void>()
       .block()
+
+  fun createHearingResult(adjudicationNumber: Long, oicHearingId: Long): Void? = TODO("implement me")
+
+  fun amendHearingResult(adjudicationNumber: Long, oicHearingId: Long): Void? = TODO("implement me")
+
+  fun deleteHearingResult(adjudicationNumber: Long, oicHearingId: Long): Void? = TODO("implement me")
 }

@@ -73,19 +73,26 @@ class EntityBuilder {
       ),
       draftCreatedOn = dateTime,
       hearings = mutableListOf(
-        Hearing(
-          id = hearingId,
-          locationId = 1L,
-          dateTimeOfHearing = dateTime.plusWeeks(1),
-          agencyId = agencyId,
-          reportNumber = reportNumber,
-          oicHearingId = 3L,
-          oicHearingType = OicHearingType.GOV,
-        ),
+        createHearing(reportNumber, dateTime, agencyId, hearingId),
       ),
       outcomes = mutableListOf(),
       disIssueHistory = mutableListOf(),
       punishments = mutableListOf(),
     )
   }
+
+  fun createHearing(
+    reportNumber: Long = 1235L,
+    dateTime: LocalDateTime = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
+    agencyId: String = "MDI",
+    hearingId: Long? = 1L,
+  ) = Hearing(
+    id = hearingId,
+    locationId = 1L,
+    dateTimeOfHearing = dateTime.plusWeeks(1),
+    agencyId = agencyId,
+    reportNumber = reportNumber,
+    oicHearingId = 3L,
+    oicHearingType = OicHearingType.GOV,
+  )
 }
