@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 
 class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
@@ -36,7 +37,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.outcomes.add(Outcome(code = code))
       }
 
-      nomisOutcomeService.createHearingResult(reportedAdjudication)
+      nomisOutcomeService.createHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
       verify(prisonApiGateway, never()).createHearing(any(), any())
       verify(prisonApiGateway, never()).createHearingResult(any(), any())
     }
@@ -50,7 +51,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(123)
 
-      nomisOutcomeService.createHearingResult(reportedAdjudication)
+      nomisOutcomeService.createHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
       verify(prisonApiGateway, atLeastOnce()).createHearing(any(), any())
       verify(prisonApiGateway, atLeastOnce()).createHearingResult(reportedAdjudication.reportNumber, 123)
     }
@@ -63,7 +64,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.outcomes.add(Outcome(code = code))
       }
 
-      nomisOutcomeService.createHearingResult(reportedAdjudication)
+      nomisOutcomeService.createHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
       verify(prisonApiGateway, never()).createHearing(any(), any())
       verify(prisonApiGateway, atLeastOnce()).createHearingResult(any(), any())
@@ -76,7 +77,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.outcomes.add(Outcome(code = OutcomeCode.REFER_INAD))
       }
 
-      nomisOutcomeService.createHearingResult(reportedAdjudication)
+      nomisOutcomeService.createHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
       verify(prisonApiGateway, never()).createHearing(any(), any())
       verify(prisonApiGateway, never()).createHearingResult(any(), any())
     }
@@ -92,7 +93,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.outcomes.add(Outcome(code = code))
       }
 
-      nomisOutcomeService.amendHearingResult(reportedAdjudication)
+      nomisOutcomeService.amendHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
       verify(prisonApiGateway, never()).amendHearingResult(any(), any())
     }
 
@@ -103,7 +104,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.outcomes.add(Outcome(code = OutcomeCode.PROSECUTION))
       }
 
-      nomisOutcomeService.amendHearingResult(reportedAdjudication)
+      nomisOutcomeService.amendHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
       verify(prisonApiGateway, never()).createHearing(any(), any())
       verify(prisonApiGateway, atLeastOnce()).amendHearingResult(any(), any())
@@ -117,7 +118,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.outcomes.add(Outcome(code = code))
       }
 
-      nomisOutcomeService.amendHearingResult(reportedAdjudication)
+      nomisOutcomeService.amendHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
       verify(prisonApiGateway, atLeastOnce()).amendHearingResult(any(), any())
     }
@@ -129,7 +130,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.outcomes.add(Outcome(code = OutcomeCode.REFER_INAD))
       }
 
-      nomisOutcomeService.amendHearingResult(reportedAdjudication)
+      nomisOutcomeService.amendHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
       verify(prisonApiGateway, never()).amendHearingResult(any(), any())
     }
@@ -145,7 +146,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.outcomes.add(Outcome(code = code))
       }
 
-      nomisOutcomeService.deleteHearingResult(reportedAdjudication)
+      nomisOutcomeService.deleteHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
       verify(prisonApiGateway, never()).deleteHearing(any(), any())
       verify(prisonApiGateway, never()).deleteHearingResult(any(), any())
@@ -159,7 +160,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.outcomes.add(Outcome(code = OutcomeCode.PROSECUTION))
       }
 
-      nomisOutcomeService.deleteHearingResult(reportedAdjudication)
+      nomisOutcomeService.deleteHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
       verify(prisonApiGateway, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, 100L)
       verify(prisonApiGateway, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 100L)
@@ -174,7 +175,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.outcomes.add(Outcome(code = code))
       }
 
-      nomisOutcomeService.deleteHearingResult(reportedAdjudication)
+      nomisOutcomeService.deleteHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
       verify(prisonApiGateway, never()).deleteHearing(reportedAdjudication.reportNumber, 100L)
       verify(prisonApiGateway, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 100L)
@@ -187,7 +188,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.outcomes.add(Outcome(code = OutcomeCode.REFER_INAD))
       }
 
-      nomisOutcomeService.deleteHearingResult(reportedAdjudication)
+      nomisOutcomeService.deleteHearingResultIfApplicable(reportedAdjudication.getLatestHearing(), reportedAdjudication.latestOutcome()!!)
 
       verify(prisonApiGateway, never()).deleteHearing(any(), any())
       verify(prisonApiGateway, never()).deleteHearingResult(any(), any())

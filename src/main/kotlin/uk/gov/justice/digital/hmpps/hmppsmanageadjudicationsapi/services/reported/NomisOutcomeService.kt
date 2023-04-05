@@ -1,7 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import javax.transaction.Transactional
 
@@ -11,15 +12,15 @@ class NomisOutcomeService(
   private val prisonApiGateway: PrisonApiGateway,
 ) {
 
-  fun createHearingResult(reportedAdjudication: ReportedAdjudication) {
+  fun createHearingResultIfApplicable(hearing: Hearing?, outcome: Outcome) {
     TODO("implement me")
   }
 
-  fun amendHearingResult(reportedAdjudication: ReportedAdjudication) {
+  fun amendHearingResultIfApplicable(hearing: Hearing?, outcome: Outcome) {
     TODO("implement me")
   }
 
-  fun deleteHearingResult(reportedAdjudication: ReportedAdjudication) {
+  fun deleteHearingResultIfApplicable(hearing: Hearing?, outcome: Outcome) {
     TODO("implement me")
   }
 }
