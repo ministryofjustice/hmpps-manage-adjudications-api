@@ -241,6 +241,7 @@ open class ReportedDtoService(
   private fun List<Punishment>.toPunishments(): List<PunishmentDto> =
     this.map {
       PunishmentDto(
+        id = it.id,
         type = it.type,
         privilegeType = it.privilegeType,
         otherPrivilege = it.otherPrivilege,

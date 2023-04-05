@@ -45,9 +45,14 @@ class PunishmentsService(
         PunishmentType.EARNINGS -> it.stoppagePercentage ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
         else -> {}
       }
-      it.suspendedUntil ?: it.startDate ?: it.endDate ?: throw ValidationException("missing all schedule data")
-      it.suspendedUntil ?: it.startDate ?: throw ValidationException("missing start date for schedule")
-      it.suspendedUntil ?: it.endDate ?: throw ValidationException("missing end date for schedule")
+      when (it.type) {
+        PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> {}
+        else -> {
+          it.suspendedUntil ?: it.startDate ?: it.endDate ?: throw ValidationException("missing all schedule data")
+          it.suspendedUntil ?: it.startDate ?: throw ValidationException("missing start date for schedule")
+          it.suspendedUntil ?: it.endDate ?: throw ValidationException("missing end date for schedule")
+        }
+      }
 
       reportedAdjudication.punishments.add(
         Punishment(
