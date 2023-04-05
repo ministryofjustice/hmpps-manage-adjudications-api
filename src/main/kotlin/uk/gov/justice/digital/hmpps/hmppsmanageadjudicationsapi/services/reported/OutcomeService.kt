@@ -162,18 +162,17 @@ class OutcomeService(
       reportedAdjudication.latestOutcome()!!.code.validateReferralTransition(code)
     }
 
-    reportedAdjudication.outcomes.add(
-      Outcome(
-        code = code,
-        details = details,
-        reason = reason,
-        amount = amount,
-        caution = caution,
-        quashedReason = quashedReason,
-      ),
+    val outcomeToCreate = Outcome(
+      code = code,
+      details = details,
+      reason = reason,
+      amount = amount,
+      caution = caution,
+      quashedReason = quashedReason,
     )
+    reportedAdjudication.outcomes.add(outcomeToCreate)
 
-    nomisOutcomeService.createHearingResultIfApplicable(hearing = reportedAdjudication.getLatestHearing(), outcome = reportedAdjudication.latestOutcome()!!)
+    nomisOutcomeService.createHearingResultIfApplicable(hearing = reportedAdjudication.getLatestHearing(), outcome = outcomeToCreate)
 
     return saveToDto(reportedAdjudication)
   }
