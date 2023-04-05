@@ -218,6 +218,8 @@ data class DisIssueHistoryDto(
 
 @Schema(description = "punishment")
 data class PunishmentDto(
+  @Schema(description = "punishment id used for edit and delete")
+  val id: Long? = null,
   @Schema(description = "punishment type")
   val type: PunishmentType,
   @Schema(description = "optional privilege type")
