@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways
 
 enum class Finding {
-  NOT_GUILTY, NOT_PROCEED, NOT_PROVEN, PROSECUTED, PROVED, QUASHED, REFUSED, REF_POLICE, S, UNFIT
+  APPEAL, D, DISMISSED, GUILTY, NOT_GUILTY, NOT_PROCEED, NOT_PROVEN, PROSECUTED, PROVED, QUASHED, REFUSED, REF_POLICE, S, UNFIT,
 }
 
 enum class Plea {
@@ -9,7 +9,7 @@ enum class Plea {
 }
 
 data class NomisHearingResultRequest(
-  val plea: Plea,
-  val finding: Finding,
+  val pleaFindingCode: Plea,
+  val findingCode: Finding,
   val adjudicator: String,
 )

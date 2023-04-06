@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
-import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -84,10 +83,7 @@ class OutcomeIntTest : IntegrationTestBase() {
 
     prisonApiMockServer.stubCreateHearingResult(
       IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      JSONObject().put(
-        "plea",
-        Plea.NOT_GUILTY,
-      ).put("finding", Finding.NOT_PROCEED),
+      prisonApiMockServer.createHearingResultPayload(Plea.NOT_GUILTY, Finding.NOT_PROCEED),
     )
 
     webTestClient.post()
@@ -121,10 +117,7 @@ class OutcomeIntTest : IntegrationTestBase() {
 
     prisonApiMockServer.stubCreateHearingResult(
       IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      JSONObject().put(
-        "plea",
-        Plea.NOT_GUILTY,
-      ).put("finding", Finding.REFUSED),
+      prisonApiMockServer.createHearingResultPayload(Plea.NOT_GUILTY, Finding.D),
     )
 
     webTestClient.post()
@@ -156,10 +149,7 @@ class OutcomeIntTest : IntegrationTestBase() {
 
     prisonApiMockServer.stubCreateHearingResult(
       IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      JSONObject().put(
-        "plea",
-        Plea.NOT_GUILTY,
-      ).put("finding", Finding.PROVED),
+      prisonApiMockServer.createHearingResultPayload(Plea.NOT_GUILTY, Finding.PROVED),
     )
 
     webTestClient.post()
@@ -265,10 +255,7 @@ class OutcomeIntTest : IntegrationTestBase() {
 
     prisonApiMockServer.stubCreateHearingResult(
       IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      JSONObject().put(
-        "plea",
-        Plea.NOT_GUILTY,
-      ).put("finding", Finding.PROVED),
+      prisonApiMockServer.createHearingResultPayload(Plea.NOT_GUILTY, Finding.PROVED),
     )
 
     initDataForOutcome().createHearing().createChargeProved()
@@ -361,10 +348,7 @@ class OutcomeIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubAmendHearingResult(
       IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      JSONObject().put(
-        "plea",
-        Plea.NOT_GUILTY,
-      ).put("finding", Finding.QUASHED),
+      prisonApiMockServer.createHearingResultPayload(Plea.NOT_GUILTY, Finding.QUASHED),
     )
 
     initDataForOutcome().createHearing().createChargeProved().createQuashed()

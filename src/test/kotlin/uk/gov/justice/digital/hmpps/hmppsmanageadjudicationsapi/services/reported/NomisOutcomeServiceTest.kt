@@ -78,9 +78,9 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudication.reportNumber,
         123,
         NomisHearingResultRequest(
-          plea = Plea.GUILTY,
+          pleaFindingCode = Plea.GUILTY,
           adjudicator = "",
-          finding = Finding.QUASHED,
+          findingCode = Finding.QUASHED,
         ),
       )
     }
@@ -104,9 +104,9 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudication.reportNumber,
         123,
         NomisHearingResultRequest(
-          plea = Plea.NOT_ASKED,
+          pleaFindingCode = Plea.NOT_ASKED,
           adjudicator = "",
-          finding = code.finding!!,
+          findingCode = code.finding!!,
         ),
       )
     }
@@ -178,8 +178,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudication.reportNumber,
         123L,
         NomisHearingResultRequest(
-          finding = Finding.QUASHED,
-          plea = Plea.GUILTY,
+          findingCode = Finding.QUASHED,
+          pleaFindingCode = Plea.GUILTY,
           adjudicator = "",
         ),
       )
@@ -201,9 +201,9 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudication.reportNumber,
         123L,
         NomisHearingResultRequest(
-          finding = code.finding!!,
+          findingCode = code.finding!!,
           adjudicator = "",
-          plea = Plea.NOT_ASKED,
+          pleaFindingCode = Plea.NOT_ASKED,
         ),
       )
     }

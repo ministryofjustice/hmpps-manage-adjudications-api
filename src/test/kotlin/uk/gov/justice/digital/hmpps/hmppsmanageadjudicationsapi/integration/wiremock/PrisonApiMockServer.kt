@@ -17,6 +17,8 @@ import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.http.Request
 import com.github.tomakehurst.wiremock.http.Response
 import org.json.JSONObject
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.AdjudicationIntTestDataSet
 
 class PrisonApiMockServer : WireMockServer {
@@ -260,4 +262,11 @@ class PrisonApiMockServer : WireMockServer {
         ),
     )
   }
+
+  fun createHearingResultPayload(plea: Plea, finding: Finding) =
+    JSONObject().put(
+      "pleaFindingCode",
+      plea,
+    )
+      .put("findingCode", finding)
 }

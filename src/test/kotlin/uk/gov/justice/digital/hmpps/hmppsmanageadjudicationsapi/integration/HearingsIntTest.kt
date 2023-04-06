@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
-import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
@@ -270,10 +269,7 @@ class HearingsIntTest : IntegrationTestBase() {
 
     prisonApiMockServer.stubCreateHearingResult(
       IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      JSONObject().put(
-        "plea",
-        Plea.NOT_ASKED,
-      ).put("finding", Finding.REF_POLICE),
+      prisonApiMockServer.createHearingResultPayload(Plea.NOT_ASKED, Finding.REF_POLICE),
     )
 
     webTestClient.post()

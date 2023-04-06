@@ -37,7 +37,7 @@ enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Find
     }
   },
   NOT_PROCEED(ReportedAdjudicationStatus.NOT_PROCEED, Finding.NOT_PROCEED),
-  DISMISSED(ReportedAdjudicationStatus.DISMISSED, Finding.REFUSED), // TODO confirm with John
+  DISMISSED(ReportedAdjudicationStatus.DISMISSED, Finding.D),
   PROSECUTION(ReportedAdjudicationStatus.PROSECUTION, Finding.PROSECUTED),
   SCHEDULE_HEARING(ReportedAdjudicationStatus.SCHEDULED),
   CHARGE_PROVED(ReportedAdjudicationStatus.CHARGE_PROVED, Finding.PROVED),
