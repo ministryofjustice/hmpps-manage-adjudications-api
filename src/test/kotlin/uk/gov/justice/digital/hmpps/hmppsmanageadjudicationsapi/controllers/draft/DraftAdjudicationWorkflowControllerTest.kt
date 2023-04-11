@@ -2,6 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.dra
 
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.verify
+import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
+import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.security.test.context.support.WithMockUser
@@ -11,7 +14,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationWorkflowService
 
-@WebMvcTest(value = [DraftAdjudicationWorkflowController::class])
+@WebMvcTest(
+  DraftAdjudicationWorkflowController::class,
+  excludeAutoConfiguration = [SecurityAutoConfiguration::class, OAuth2ClientAutoConfiguration::class, OAuth2ResourceServerAutoConfiguration::class],
+)
 class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
   @MockBean
   lateinit var adjudicationWorkflowService: AdjudicationWorkflowService

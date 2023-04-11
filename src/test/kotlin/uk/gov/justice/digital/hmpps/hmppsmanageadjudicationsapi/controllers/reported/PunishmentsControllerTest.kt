@@ -7,6 +7,9 @@ import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
+import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.security.test.context.support.WithMockUser
@@ -17,7 +20,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService
 
-@WebMvcTest(value = [PunishmentsController::class])
+@WebMvcTest(
+  PunishmentsController::class,
+  excludeAutoConfiguration = [SecurityAutoConfiguration::class, OAuth2ClientAutoConfiguration::class, OAuth2ResourceServerAutoConfiguration::class],
+)
 class PunishmentsControllerTest : TestControllerBase() {
 
   @MockBean

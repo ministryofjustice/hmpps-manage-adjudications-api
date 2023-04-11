@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ResourceServerConfiguration
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
@@ -20,7 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHel
 import java.time.LocalDateTime
 
 @ActiveProfiles("test")
-@Import(JwtAuthHelper::class)
+@Import(JwtAuthHelper::class, ResourceServerConfiguration::class)
 open class TestControllerBase {
   @Autowired
   internal lateinit var mockMvc: MockMvc
