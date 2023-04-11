@@ -8,7 +8,6 @@ import jakarta.validation.ValidationException
 import org.hibernate.validator.constraints.Length
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 
-
 @Entity
 @Table(name = "outcome")
 data class Outcome(
