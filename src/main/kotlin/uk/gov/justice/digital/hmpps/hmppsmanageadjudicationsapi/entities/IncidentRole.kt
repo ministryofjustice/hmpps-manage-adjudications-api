@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
-import javax.persistence.Entity
-import javax.persistence.Table
+import jakarta.persistence.Entity
+import jakarta.persistence.Table
 
 @Entity
 @Table(name = "incident_role")

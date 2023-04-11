@@ -413,7 +413,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
 
     webTestClient.get()
-      .uri("/draft-adjudications/my/agency/${IntegrationTestData.ADJUDICATION_1.agencyId}/?startDate=2020-12-01")
+      .uri("/draft-adjudications/my/agency/${IntegrationTestData.ADJUDICATION_1.agencyId}?startDate=2020-12-01")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk

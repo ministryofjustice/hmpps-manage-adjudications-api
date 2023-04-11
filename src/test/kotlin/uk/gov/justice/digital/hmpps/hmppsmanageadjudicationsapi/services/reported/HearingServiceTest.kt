@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
+import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -26,8 +28,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonA
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
-import javax.persistence.EntityNotFoundException
-import javax.validation.ValidationException
 
 class HearingServiceTest : ReportedAdjudicationTestBase() {
   private val hearingRepository: HearingRepository = mock()

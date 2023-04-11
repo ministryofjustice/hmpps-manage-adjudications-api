@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
+import jakarta.persistence.Entity
+import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
-import javax.persistence.Entity
-import javax.persistence.Table
 
 @Entity
 @Table(name = "incident_statement")

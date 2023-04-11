@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories
 
+import jakarta.validation.ConstraintViolationException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.groups.Tuple
@@ -29,7 +30,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuil
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import javax.validation.ConstraintViolationException
 
 @DataJpaTest
 @ActiveProfiles("test")

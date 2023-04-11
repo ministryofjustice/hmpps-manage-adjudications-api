@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
+import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -13,7 +14,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidenc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import java.time.LocalDateTime
-import javax.persistence.EntityNotFoundException
 
 class DraftEvidenceServiceTest : ReportedAdjudicationTestBase() {
   private val evidenceService = EvidenceService(

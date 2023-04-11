@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft
 
+import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -32,7 +33,6 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.Optional
 import java.util.function.Supplier
-import javax.persistence.EntityNotFoundException
 
 class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
 

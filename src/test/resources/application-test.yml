@@ -18,3 +18,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/manage-adjudications
     username: adjudications
     password: adjudications
+
+  flyway:
+    enabled: true
+    cleanDisabled: false
