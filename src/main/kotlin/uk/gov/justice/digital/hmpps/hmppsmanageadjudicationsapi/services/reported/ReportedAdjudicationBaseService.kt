@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
+import jakarta.persistence.EntityNotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DisIssueHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
@@ -35,7 +36,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
-import javax.persistence.EntityNotFoundException
+import java.time.LocalDateTime
 
 open class ReportedDtoService(
   protected val offenceCodeLookupService: OffenceCodeLookupService,
@@ -239,14 +240,14 @@ open class ReportedDtoService(
     }.sortedBy { it.dateTimeOfIssue }.toList()
 
   private fun List<Punishment>.toPunishments(): List<PunishmentDto> =
-    this.map {
+    this.sortedBy { it.type }.map {
       PunishmentDto(
         id = it.id,
         type = it.type,
         privilegeType = it.privilegeType,
         otherPrivilege = it.otherPrivilege,
         stoppagePercentage = it.stoppagePercentage,
-        schedule = it.schedule.maxBy { latest -> latest.createDateTime!! }.toPunishmentScheduleDto(),
+        schedule = it.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toPunishmentScheduleDto(),
       )
     }
 

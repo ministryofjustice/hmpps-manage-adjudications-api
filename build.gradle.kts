@@ -1,11 +1,16 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "4.8.5"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.1.3"
   kotlin("plugin.spring") version "1.8.20"
   kotlin("plugin.jpa") version "1.8.20"
 }
 
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
+}
+
+repositories {
+  maven { url = uri("https://repo.spring.io/milestone") }
+  mavenCentral()
 }
 
 dependencies {
@@ -16,26 +21,25 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.apache.commons:commons-text:1.10.0")
   implementation("io.swagger:swagger-annotations:1.6.10")
-  implementation("org.springdoc:springdoc-openapi-ui:1.7.0")
-  implementation("org.springdoc:springdoc-openapi-kotlin:1.7.0")
-  implementation("org.springdoc:springdoc-openapi-data-rest:1.7.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
   runtimeOnly("com.h2database:h2:2.1.214")
-  runtimeOnly("org.flywaydb:flyway-core:9.16.1")
+  runtimeOnly("org.flywaydb:flyway-core:9.16.3")
   runtimeOnly("org.postgresql:postgresql:42.6.0")
 
-  testImplementation("io.jsonwebtoken:jjwt:0.9.1")
-  testImplementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
+  testImplementation("io.jsonwebtoken:jjwt-impl:0.11.5")
+  testImplementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
+  testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.37.0")
-  testImplementation("org.flywaydb:flyway-core:9.16.1")
+  testImplementation("org.flywaydb:flyway-core:9.16.3")
 }
 
 allOpen {
   annotations(
-    "javax.persistence.Entity",
-    "javax.persistence.MappedSuperclass",
-    "javax.persistence.Embeddable"
+    "jakarta.persistence.Entity",
+    "jakarta.persistence.MappedSuperclass",
+    "jakarta.persistence.Embeddable"
   )
 }
 

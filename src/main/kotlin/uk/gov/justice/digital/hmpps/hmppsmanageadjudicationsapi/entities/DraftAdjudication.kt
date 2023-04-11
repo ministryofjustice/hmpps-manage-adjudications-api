@@ -1,16 +1,16 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
+import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Pronouns
-import javax.persistence.CascadeType
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.EnumType
-import javax.persistence.Enumerated
-import javax.persistence.FetchType
-import javax.persistence.JoinColumn
-import javax.persistence.OneToMany
-import javax.persistence.OneToOne
-import javax.persistence.Table
 
 @Entity
 @Table(name = "draft_adjudications")

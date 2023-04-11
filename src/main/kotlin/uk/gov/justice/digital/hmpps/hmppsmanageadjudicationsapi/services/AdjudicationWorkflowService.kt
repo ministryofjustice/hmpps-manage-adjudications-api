@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import com.microsoft.applicationinsights.TelemetryClient
+import jakarta.persistence.EntityNotFoundException
+import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -26,8 +28,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.D
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.ValidationChecks
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationBaseService
-import javax.persistence.EntityNotFoundException
-import javax.transaction.Transactional
 
 private class DraftAdjudicationServiceWrapper(
   draftAdjudicationRepository: DraftAdjudicationRepository,

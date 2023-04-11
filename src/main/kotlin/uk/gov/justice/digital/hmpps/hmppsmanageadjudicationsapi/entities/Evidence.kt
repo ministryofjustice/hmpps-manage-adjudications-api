@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.EnumType
-import javax.persistence.Enumerated
-import javax.persistence.Table
 
 enum class EvidenceCode {
   PHOTO,

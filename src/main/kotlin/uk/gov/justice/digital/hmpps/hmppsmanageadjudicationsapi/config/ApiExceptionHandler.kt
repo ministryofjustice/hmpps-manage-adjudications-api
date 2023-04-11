@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config
 
+import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.BAD_REQUEST
@@ -14,8 +16,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
-import javax.persistence.EntityNotFoundException
-import javax.validation.ValidationException
 
 @RestControllerAdvice
 class ApiExceptionHandler {
@@ -26,10 +26,10 @@ class ApiExceptionHandler {
     log.error(errorMessage, e.responseBodyAsString)
 
     return ResponseEntity
-      .status(e.rawStatusCode)
+      .status(e.statusCode)
       .body(
         ErrorResponse(
-          status = e.rawStatusCode,
+          status = e.statusCode.value(),
           userMessage = "Forwarded HTTP call response error: ${e.message}",
         ),
       )

@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.Table
+import jakarta.validation.ValidationException
 import org.hibernate.validator.constraints.Length
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
-import javax.persistence.Entity
-import javax.persistence.EnumType
-import javax.persistence.Enumerated
-import javax.persistence.Table
-import javax.validation.ValidationException
 
 @Entity
 @Table(name = "hearing_outcome")
