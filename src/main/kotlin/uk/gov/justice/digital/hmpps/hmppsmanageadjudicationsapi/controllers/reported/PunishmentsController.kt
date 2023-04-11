@@ -22,6 +22,8 @@ data class PunishmentsRequest(
 
 @Schema(description = "punishment request")
 data class PunishmentRequest(
+  @Schema(description = "id of punishment")
+  val id: Long? = null,
   @Schema(description = "punishment type")
   val type: PunishmentType,
   @Schema(description = "privilege type - only use if punishment type is PRIVILEGE")

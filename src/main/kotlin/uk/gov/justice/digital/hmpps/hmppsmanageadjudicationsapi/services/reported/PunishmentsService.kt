@@ -70,6 +70,13 @@ class PunishmentsService(
     return saveToDto(reportedAdjudication)
   }
 
+  fun update(
+    adjudicationNumber: Long,
+    punishments: List<PunishmentRequest>,
+  ): ReportedAdjudicationDto {
+    TODO("implement me")
+  }
+
   companion object {
     fun ReportedAdjudicationStatus.validateCanAddPunishments() {
       if (this != ReportedAdjudicationStatus.CHARGE_PROVED) {
