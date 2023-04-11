@@ -1,14 +1,14 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToMany
+import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
-import javax.persistence.CascadeType
-import javax.persistence.Entity
-import javax.persistence.EnumType
-import javax.persistence.Enumerated
-import javax.persistence.FetchType
-import javax.persistence.JoinColumn
-import javax.persistence.OneToMany
-import javax.persistence.Table
 
 @Entity
 @Table(name = "punishment")

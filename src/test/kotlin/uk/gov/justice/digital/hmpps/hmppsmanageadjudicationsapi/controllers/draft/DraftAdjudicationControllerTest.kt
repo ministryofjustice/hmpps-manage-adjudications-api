@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft
 
+import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -35,7 +36,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Forbidd
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import java.time.LocalDate
 import java.time.LocalDateTime
-import javax.persistence.EntityNotFoundException
 
 @WebMvcTest(
   value = [

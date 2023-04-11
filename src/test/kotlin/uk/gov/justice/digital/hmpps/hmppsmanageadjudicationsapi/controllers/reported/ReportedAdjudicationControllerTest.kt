@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported
 
+import jakarta.persistence.EntityNotFoundException
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyLong
@@ -18,7 +19,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
 import java.time.LocalDateTime
-import javax.persistence.EntityNotFoundException
 
 @WebMvcTest(value = [ReportedAdjudicationController::class])
 class ReportedAdjudicationControllerTest : TestControllerBase() {

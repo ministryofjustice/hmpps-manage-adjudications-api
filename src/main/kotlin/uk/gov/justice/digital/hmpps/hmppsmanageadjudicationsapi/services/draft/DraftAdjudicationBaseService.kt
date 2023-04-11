@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft
 
+import jakarta.persistence.EntityNotFoundException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DamageDto
@@ -26,7 +27,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Offence
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import javax.persistence.EntityNotFoundException
 
 open class DraftAdjudicationBaseService(
   private val draftAdjudicationRepository: DraftAdjudicationRepository,

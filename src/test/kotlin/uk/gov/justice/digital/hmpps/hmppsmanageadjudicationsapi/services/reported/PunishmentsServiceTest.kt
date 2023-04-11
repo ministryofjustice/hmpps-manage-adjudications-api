@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
+import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -21,8 +23,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
-import javax.persistence.EntityNotFoundException
-import javax.validation.ValidationException
 
 class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
