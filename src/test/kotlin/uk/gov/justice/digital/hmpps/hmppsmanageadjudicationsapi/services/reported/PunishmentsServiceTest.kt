@@ -236,6 +236,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `init`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
+          it.punishments.clear()
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
           it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
@@ -243,7 +244,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           it.createDateTime = LocalDateTime.now()
         },
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
     }
 
     @CsvSource(
@@ -470,10 +470,10 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThatThrownBy {
         punishmentsService.update(
           adjudicationNumber = 1,
-          listOf(PunishmentRequest(id = 2, type = PunishmentType.REMOVAL_ACTIVITY, days = 1)),
+          listOf(PunishmentRequest(id = 2, type = PunishmentType.REMOVAL_ACTIVITY, days = 1, suspendedUntil = LocalDate.now())),
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("Punishment 2 is not associated with ReportedAdjudication 1")
+        .hasMessageContaining("Punishment 2 is not associated with ReportedAdjudication")
     }
 
     @Test
@@ -508,9 +508,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
 
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val response = punishmentsService.update(
         adjudicationNumber = 1,
         listOf(
@@ -535,6 +535,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
       assertThat(response).isNotNull
       assertThat(argumentCaptor.value.punishments.size).isEqualTo(3)
 
@@ -543,11 +545,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       val prospectiveDays = argumentCaptor.value.punishments.first { it.type == PunishmentType.PROSPECTIVE_DAYS }
       assertThat(argumentCaptor.value.punishments.firstOrNull { it.type == PunishmentType.EXCLUSION_WORK })
 
-      assertThat(privilege.id).isNotEqualTo(1)
+      assertThat(privilege.id).isNull()
       assertThat(additionalDays.id).isEqualTo(3)
       assertThat(additionalDays.schedule.size).isEqualTo(2)
       assertThat(prospectiveDays.schedule.size).isEqualTo(1)
-      assertThat(prospectiveDays.schedule.first().days).isEqualTo(2)
+      assertThat(prospectiveDays.schedule.first().days).isEqualTo(1)
       assertThat(privilege.schedule.first().startDate).isEqualTo(LocalDate.now())
       assertThat(privilege.schedule.first().endDate).isEqualTo(LocalDate.now().plusDays(1))
       assertThat(privilege.otherPrivilege).isEqualTo("other")

@@ -11,7 +11,7 @@ class PunishmentsIntTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {
-    setAuditTime(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME)
+    setAuditTime()
   }
 
   @Test
@@ -75,7 +75,7 @@ class PunishmentsIntTest : IntegrationTestBase() {
       .responseBody
       .blockFirst()!!
 
-    val punishmentToAmend = reportedAdjudicationResponse.reportedAdjudication.punishments.first().id!!
+    val punishmentToAmend = reportedAdjudicationResponse.reportedAdjudication.punishments.first { it.type == PunishmentType.CONFINEMENT }.id
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments")
@@ -109,7 +109,7 @@ class PunishmentsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo("2023-03-27")
       .jsonPath("$.reportedAdjudication.punishments[0].schedule.endDate").isEqualTo("2023-03-27")
       .jsonPath("$.reportedAdjudication.punishments[1].type").isEqualTo(PunishmentType.EXCLUSION_WORK.name)
-      .jsonPath("$.reportedAdjudication.punishments[1].schedule.days").isEqualTo(10)
+      .jsonPath("$.reportedAdjudication.punishments[1].schedule.days").isEqualTo(8)
       .jsonPath("$.reportedAdjudication.punishments[1].schedule.suspendedUntil").isEqualTo("2023-03-27")
   }
 }

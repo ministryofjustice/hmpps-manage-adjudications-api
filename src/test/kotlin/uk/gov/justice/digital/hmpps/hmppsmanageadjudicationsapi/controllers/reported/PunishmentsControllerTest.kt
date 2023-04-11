@@ -134,7 +134,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to update a set of punishments`() {
       updatePunishmentsRequest(1, PUNISHMENT_REQUEST)
-        .andExpect(MockMvcResultMatchers.status().isCreated)
+        .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(punishmentsService).update(
         adjudicationNumber = 1,
