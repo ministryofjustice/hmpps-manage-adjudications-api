@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -16,6 +18,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -33,8 +37,19 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
   )
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-    Assertions.assertThatThrownBy {
-      punishmentsService.create(adjudicationNumber = 1, listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)))
+    assertThatThrownBy {
+      punishmentsService.create(
+        adjudicationNumber = 1,
+        listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)),
+      )
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    assertThatThrownBy {
+      punishmentsService.update(
+        adjudicationNumber = 1,
+        listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)),
+      )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }
@@ -67,8 +82,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also { it.status = status },
       )
-      Assertions.assertThatThrownBy {
-        punishmentsService.create(adjudicationNumber = 1, listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)))
+      assertThatThrownBy {
+        punishmentsService.create(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)),
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("status is not CHARGE_PROVED")
     }
@@ -76,50 +94,92 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `validation error - privilege missing sub type `() {
       Assertions.assertThatThrownBy {
-        punishmentsService.create(adjudicationNumber = 1, listOf(PunishmentRequest(type = PunishmentType.PRIVILEGE, days = 1)))
+        punishmentsService.create(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequest(type = PunishmentType.PRIVILEGE, days = 1)),
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("subtype missing for type PRIVILEGE")
     }
 
     @Test
     fun `validation error - other privilege missing description `() {
-      Assertions.assertThatThrownBy {
-        punishmentsService.create(adjudicationNumber = 1, listOf(PunishmentRequest(type = PunishmentType.PRIVILEGE, privilegeType = PrivilegeType.OTHER, days = 1)))
+      assertThatThrownBy {
+        punishmentsService.create(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequest(type = PunishmentType.PRIVILEGE, privilegeType = PrivilegeType.OTHER, days = 1)),
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("description missing for type PRIVILEGE - sub type OTHER")
     }
 
     @Test
     fun `validation error - earnings missing stoppage percentage `() {
-      Assertions.assertThatThrownBy {
-        punishmentsService.create(adjudicationNumber = 1, listOf(PunishmentRequest(type = PunishmentType.EARNINGS, days = 1)))
+      assertThatThrownBy {
+        punishmentsService.create(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequest(type = PunishmentType.EARNINGS, days = 1)),
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("stoppage percentage missing for type EARNINGS")
     }
 
-    @CsvSource(" PRIVILEGE", "EARNINGS", "CONFINEMENT", "REMOVAL_ACTIVITY", "EXCLUSION_WORK", "EXTRA_WORK", "REMOVAL_WING")
+    @CsvSource(
+      " PRIVILEGE",
+      "EARNINGS",
+      "CONFINEMENT",
+      "REMOVAL_ACTIVITY",
+      "EXCLUSION_WORK",
+      "EXTRA_WORK",
+      "REMOVAL_WING",
+    )
     @ParameterizedTest
     fun `validation error - not suspended missing start date `(type: PunishmentType) {
-      Assertions.assertThatThrownBy {
-        punishmentsService.create(adjudicationNumber = 1, listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1, endDate = LocalDate.now())))
+      assertThatThrownBy {
+        punishmentsService.create(
+          adjudicationNumber = 1,
+          listOf(getRequest(type = type, endDate = LocalDate.now())),
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing start date for schedule")
     }
 
-    @CsvSource(" PRIVILEGE", "EARNINGS", "CONFINEMENT", "REMOVAL_ACTIVITY", "EXCLUSION_WORK", "EXTRA_WORK", "REMOVAL_WING")
+    @CsvSource(
+      " PRIVILEGE",
+      "EARNINGS",
+      "CONFINEMENT",
+      "REMOVAL_ACTIVITY",
+      "EXCLUSION_WORK",
+      "EXTRA_WORK",
+      "REMOVAL_WING",
+    )
     @ParameterizedTest
-    fun `validation error - not suspended missing end date `() {
-      Assertions.assertThatThrownBy {
-        punishmentsService.create(adjudicationNumber = 1, listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1, startDate = LocalDate.now())))
+    fun `validation error - not suspended missing end date `(type: PunishmentType) {
+      assertThatThrownBy {
+        punishmentsService.create(
+          adjudicationNumber = 1,
+          listOf(getRequest(type = type, startDate = LocalDate.now())),
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing end date for schedule")
     }
 
-    @CsvSource(" PRIVILEGE", "EARNINGS", "CONFINEMENT", "REMOVAL_ACTIVITY", "EXCLUSION_WORK", "EXTRA_WORK", "REMOVAL_WING")
+    @CsvSource(
+      " PRIVILEGE",
+      "EARNINGS",
+      "CONFINEMENT",
+      "REMOVAL_ACTIVITY",
+      "EXCLUSION_WORK",
+      "EXTRA_WORK",
+      "REMOVAL_WING",
+    )
     @ParameterizedTest
-    fun `validation error - suspended missing all schedule dates `() {
-      Assertions.assertThatThrownBy {
-        punishmentsService.create(adjudicationNumber = 1, listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)))
+    fun `validation error - suspended missing all schedule dates `(type: PunishmentType) {
+      assertThatThrownBy {
+        punishmentsService.create(
+          adjudicationNumber = 1,
+          listOf(getRequest(type = type)),
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing all schedule data")
     }
@@ -151,17 +211,360 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      Assertions.assertThat(argumentCaptor.value.punishments.size).isEqualTo(3)
-      Assertions.assertThat(argumentCaptor.value.punishments.first()).isNotNull
-      Assertions.assertThat(argumentCaptor.value.punishments.first().type).isEqualTo(PunishmentType.PRIVILEGE)
-      Assertions.assertThat(argumentCaptor.value.punishments.first().privilegeType).isEqualTo(PrivilegeType.OTHER)
-      Assertions.assertThat(argumentCaptor.value.punishments.first().otherPrivilege).isEqualTo("other")
-      Assertions.assertThat(argumentCaptor.value.punishments.first().schedule.first()).isNotNull
-      Assertions.assertThat(argumentCaptor.value.punishments.first().schedule.first().startDate).isEqualTo(LocalDate.now())
-      Assertions.assertThat(argumentCaptor.value.punishments.first().schedule.first().endDate).isEqualTo(LocalDate.now().plusDays(1))
-      Assertions.assertThat(argumentCaptor.value.punishments.first().schedule.first().days).isEqualTo(1)
+      assertThat(argumentCaptor.value.punishments.size).isEqualTo(3)
+      assertThat(argumentCaptor.value.punishments.first()).isNotNull
+      assertThat(argumentCaptor.value.punishments.first().type).isEqualTo(PunishmentType.PRIVILEGE)
+      assertThat(argumentCaptor.value.punishments.first().privilegeType).isEqualTo(PrivilegeType.OTHER)
+      assertThat(argumentCaptor.value.punishments.first().otherPrivilege).isEqualTo("other")
+      assertThat(argumentCaptor.value.punishments.first().schedule.first()).isNotNull
+      assertThat(argumentCaptor.value.punishments.first().schedule.first().startDate)
+        .isEqualTo(LocalDate.now())
+      assertThat(argumentCaptor.value.punishments.first().schedule.first().endDate)
+        .isEqualTo(LocalDate.now().plusDays(1))
+      assertThat(argumentCaptor.value.punishments.first().schedule.first().days).isEqualTo(1)
 
-      Assertions.assertThat(response).isNotNull
+      assertThat(response).isNotNull
     }
+  }
+
+  @Nested
+  inner class UpdatePunishments {
+
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+
+    @BeforeEach
+    fun `init`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.punishments.clear()
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
+          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          it.createdByUserId = "test"
+          it.createDateTime = LocalDateTime.now()
+        },
+      )
+    }
+
+    @CsvSource(
+      "ADJOURNED", "REFER_POLICE", "REFER_INAD", "SCHEDULED", "UNSCHEDULED", "AWAITING_REVIEW", "PROSECUTION",
+      "NOT_PROCEED", "DISMISSED", "REJECTED", "RETURNED",
+    )
+    @ParameterizedTest
+    fun `validation error - wrong status code - must be CHARGE_PROVED `(status: ReportedAdjudicationStatus) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also { it.status = status },
+      )
+      assertThatThrownBy {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("status is not CHARGE_PROVED")
+    }
+
+    @Test
+    fun `validation error - privilege missing sub type `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.punishments.add(
+            Punishment(
+              id = 1,
+              type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.ASSOCIATION,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequest(id = 1, type = PunishmentType.PRIVILEGE, days = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("subtype missing for type PRIVILEGE")
+    }
+
+    @Test
+    fun `validation error - other privilege missing description `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.punishments.add(
+            Punishment(
+              id = 1,
+              type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.OTHER,
+              otherPrivilege = "",
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          listOf(
+            PunishmentRequest(
+              id = 1,
+              type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.OTHER,
+              days = 1,
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("description missing for type PRIVILEGE - sub type OTHER")
+    }
+
+    @Test
+    fun `validation error - earnings missing stoppage percentage `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.punishments.add(
+            Punishment(
+              id = 1,
+              type = PunishmentType.EARNINGS,
+              stoppagePercentage = 10,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+      assertThatThrownBy {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequest(id = 1, type = PunishmentType.EARNINGS, days = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("stoppage percentage missing for type EARNINGS")
+    }
+
+    @CsvSource(
+      " PRIVILEGE",
+      "EARNINGS",
+      "CONFINEMENT",
+      "REMOVAL_ACTIVITY",
+      "EXCLUSION_WORK",
+      "EXTRA_WORK",
+      "REMOVAL_WING",
+    )
+    @ParameterizedTest
+    fun `validation error - not suspended missing start date `(type: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.punishments.add(
+            Punishment(
+              id = 1,
+              type = type,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+      assertThatThrownBy {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          listOf(getRequest(id = 1, type = type, endDate = LocalDate.now())),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("missing start date for schedule")
+    }
+
+    @CsvSource(
+      " PRIVILEGE",
+      "EARNINGS",
+      "CONFINEMENT",
+      "REMOVAL_ACTIVITY",
+      "EXCLUSION_WORK",
+      "EXTRA_WORK",
+      "REMOVAL_WING",
+    )
+    @ParameterizedTest
+    fun `validation error - not suspended missing end date `(type: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.punishments.add(
+            Punishment(
+              id = 1,
+              type = type,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+      assertThatThrownBy {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          listOf(
+            getRequest(id = 1, type = type, startDate = LocalDate.now()),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("missing end date for schedule")
+    }
+
+    @CsvSource(
+      " PRIVILEGE",
+      "EARNINGS",
+      "CONFINEMENT",
+      "REMOVAL_ACTIVITY",
+      "EXCLUSION_WORK",
+      "EXTRA_WORK",
+      "REMOVAL_WING",
+    )
+    @ParameterizedTest
+    fun `validation error - suspended missing all schedule dates `(type: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.punishments.add(
+            Punishment(
+              id = 1,
+              type = type,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          listOf(getRequest(id = 1, type = type)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("missing all schedule data")
+    }
+
+    @Test
+    fun `throws exception if id for punishment is not located `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.punishments.add(
+            Punishment(
+              id = 1,
+              type = PunishmentType.CONFINEMENT,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequest(id = 2, type = PunishmentType.REMOVAL_ACTIVITY, days = 1, suspendedUntil = LocalDate.now())),
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Punishment 2 is not associated with ReportedAdjudication")
+    }
+
+    @Test
+    fun `update punishments `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.punishments.addAll(
+            mutableListOf(
+              Punishment(
+                id = 1,
+                type = PunishmentType.CONFINEMENT,
+                schedule = mutableListOf(
+                  PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+                ),
+              ),
+              Punishment(
+                id = 2,
+                type = PunishmentType.EXCLUSION_WORK,
+                schedule = mutableListOf(
+                  PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+                ),
+              ),
+              Punishment(
+                id = 3,
+                type = PunishmentType.ADDITIONAL_DAYS,
+                schedule = mutableListOf(
+                  PunishmentSchedule(id = 1, days = 1),
+                ),
+              ),
+            ),
+          )
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val response = punishmentsService.update(
+        adjudicationNumber = 1,
+        listOf(
+          PunishmentRequest(
+            id = 1,
+            type = PunishmentType.PRIVILEGE,
+            privilegeType = PrivilegeType.OTHER,
+            otherPrivilege = "other",
+            days = 1,
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(1),
+          ),
+          PunishmentRequest(
+            type = PunishmentType.PROSPECTIVE_DAYS,
+            days = 1,
+          ),
+          PunishmentRequest(
+            id = 3,
+            type = PunishmentType.ADDITIONAL_DAYS,
+            days = 2,
+          ),
+        ),
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(response).isNotNull
+      assertThat(argumentCaptor.value.punishments.size).isEqualTo(3)
+
+      val privilege = argumentCaptor.value.punishments.first { it.type == PunishmentType.PRIVILEGE }
+      val additionalDays = argumentCaptor.value.punishments.first { it.type == PunishmentType.ADDITIONAL_DAYS }
+      val prospectiveDays = argumentCaptor.value.punishments.first { it.type == PunishmentType.PROSPECTIVE_DAYS }
+      assertThat(argumentCaptor.value.punishments.firstOrNull { it.type == PunishmentType.EXCLUSION_WORK })
+
+      assertThat(privilege.id).isNull()
+      assertThat(additionalDays.id).isEqualTo(3)
+      assertThat(additionalDays.schedule.size).isEqualTo(2)
+      assertThat(prospectiveDays.schedule.size).isEqualTo(1)
+      assertThat(prospectiveDays.schedule.first().days).isEqualTo(1)
+      assertThat(privilege.schedule.first().startDate).isEqualTo(LocalDate.now())
+      assertThat(privilege.schedule.first().endDate).isEqualTo(LocalDate.now().plusDays(1))
+      assertThat(privilege.otherPrivilege).isEqualTo("other")
+      assertThat(privilege.privilegeType).isEqualTo(PrivilegeType.OTHER)
+    }
+  }
+
+  companion object {
+
+    fun getRequest(id: Long? = null, type: PunishmentType, startDate: LocalDate? = null, endDate: LocalDate? = null): PunishmentRequest =
+      when (type) {
+        PunishmentType.PRIVILEGE -> PunishmentRequest(id = id, type = type, privilegeType = PrivilegeType.ASSOCIATION, days = 1, startDate = startDate, endDate = endDate)
+        PunishmentType.EARNINGS -> PunishmentRequest(id = id, type = type, stoppagePercentage = 10, days = 1, startDate = startDate, endDate = endDate)
+
+        else -> PunishmentRequest(id = id, type = type, days = 1, startDate = startDate, endDate = endDate)
+      }
   }
 }
