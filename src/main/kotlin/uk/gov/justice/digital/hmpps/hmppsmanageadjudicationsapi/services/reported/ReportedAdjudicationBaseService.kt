@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -82,7 +83,7 @@ open class ReportedDtoService(
       gender = gender,
       dateTimeOfFirstHearing = dateTimeOfFirstHearing,
       outcomes = createOutcomeHistory(hearings.toMutableList(), outcomes.toMutableList()),
-      punishments = this.punishments.toPunishments(),
+      punishments = if (this.status == ReportedAdjudicationStatus.QUASHED) emptyList() else this.punishments.toPunishments(),
     )
   }
 
