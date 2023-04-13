@@ -736,6 +736,7 @@ class IntegrationTestData(
     roles: List<String> = emptyList(),
   ): (HttpHeaders) -> Unit = {
     it.setBearerAuth(jwtAuthHelper.createJwt(subject = username, roles = roles, scope = listOf("write")))
+    it.set("Active-Caseload", "MDI")
     it.contentType = contentType
   }
 }

@@ -14,10 +14,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Offence
 class DraftWitnessesService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
-  private val authenticationFacade: AuthenticationFacade,
+  authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
   draftAdjudicationRepository,
   offenceCodeLookupService,
+  authenticationFacade,
 ) {
 
   fun setWitnesses(id: Long, witnesses: List<WitnessRequestItem>): DraftAdjudicationDto {

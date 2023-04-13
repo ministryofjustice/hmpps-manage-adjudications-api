@@ -32,9 +32,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 private class DraftAdjudicationServiceWrapper(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
+  authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
   draftAdjudicationRepository,
   offenceCodeLookupService,
+  authenticationFacade,
 ) {
   fun get(id: Long) =
     find(id)
@@ -56,6 +58,8 @@ private class ReportedAdjudicationServiceWrapper(
     findByAdjudicationNumber(adjudicationNumber)
 
   fun save(reportedAdjudication: ReportedAdjudication) = saveToDto(reportedAdjudication)
+
+  fun getUsername() = authenticationFacade.currentUsername
 }
 
 @Transactional
@@ -65,11 +69,11 @@ class AdjudicationWorkflowService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   private val prisonApiGateway: PrisonApiGateway,
-  private val authenticationFacade: AuthenticationFacade,
+  authenticationFacade: AuthenticationFacade,
   private val telemetryClient: TelemetryClient,
 ) {
 
-  private val draftAdjudicationService = DraftAdjudicationServiceWrapper(draftAdjudicationRepository, offenceCodeLookupService)
+  private val draftAdjudicationService = DraftAdjudicationServiceWrapper(draftAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
   private val reportedAdjudicationService = ReportedAdjudicationServiceWrapper(reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
 
   fun completeDraftAdjudication(id: Long): ReportedAdjudicationDto {
@@ -184,7 +188,7 @@ class AdjudicationWorkflowService(
       ?: throw EntityNotFoundException("No reported adjudication number set on the draft adjudication")
     val previousReportedAdjudication =
       reportedAdjudicationService.get(reportedAdjudicationNumber)
-    val reporter = authenticationFacade.currentUsername!!
+    val reporter = reportedAdjudicationService.getUsername()!!
     previousReportedAdjudication.let {
       it.bookingId = previousReportedAdjudication.bookingId
       it.reportNumber = previousReportedAdjudication.reportNumber

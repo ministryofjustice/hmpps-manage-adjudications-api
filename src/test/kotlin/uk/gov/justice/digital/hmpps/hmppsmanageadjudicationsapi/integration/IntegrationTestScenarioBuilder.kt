@@ -10,7 +10,8 @@ import java.time.LocalDateTime
 class IntegrationTestScenarioBuilder(
   private val intTestData: IntegrationTestData,
   private val intTestBase: IntegrationTestBase,
-  private val headers: ((HttpHeaders) -> Unit) = intTestBase.setHeaders(),
+  private val activeCaseload: String? = "MDI",
+  private val headers: ((HttpHeaders) -> Unit) = intTestBase.setHeaders(activeCaseload = activeCaseload),
 ) {
   fun startDraft(testAdjudication: AdjudicationIntTestDataSet): IntegrationTestScenario {
     val draftCreationResponse = intTestData.startNewAdjudication(testAdjudication)

@@ -9,15 +9,14 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamageRequestItem
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDateTime
 
-class DraftDamagesServiceTest : ReportedAdjudicationTestBase() {
-
-  private val damagesService = DamagesService(
+class WitnessesServiceTest : ReportedAdjudicationTestBase() {
+  private val witnessesService = WitnessesService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
@@ -25,9 +24,9 @@ class DraftDamagesServiceTest : ReportedAdjudicationTestBase() {
 
   private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
     .also {
-      it.damages = mutableListOf(
-        ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod"),
-        ReportedDamage(code = DamageCode.REDECORATION, details = "details 3", reporter = "Fred"),
+      it.witnesses = mutableListOf(
+        ReportedWitness(code = WitnessCode.STAFF, firstName = "first", lastName = "last", reporter = "Rod"),
+        ReportedWitness(code = WitnessCode.OFFICER, firstName = "first", lastName = "last", reporter = "Fred"),
       )
     }
 
@@ -41,29 +40,30 @@ class DraftDamagesServiceTest : ReportedAdjudicationTestBase() {
   }
 
   @Test
-  fun `update damages for adjudication`() {
-    val response = damagesService.updateDamages(
+  fun `update witnesses for adjudication`() {
+    val response = witnessesService.updateWitnesses(
       1,
       listOf(
-        DamageRequestItem(
-          reportedAdjudication.damages.first().code,
-          reportedAdjudication.damages.first().details,
-          reportedAdjudication.damages.first().reporter,
+        WitnessRequestItem(
+          reportedAdjudication.witnesses.first().code,
+          reportedAdjudication.witnesses.first().firstName,
+          reportedAdjudication.witnesses.first().lastName,
+          reportedAdjudication.witnesses.first().reporter,
         ),
-        DamageRequestItem(DamageCode.ELECTRICAL_REPAIR, "details 2", "Fred"),
+        WitnessRequestItem(WitnessCode.OTHER_PERSON, "first", "last", "Fred"),
       ),
     )
 
     val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
     verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-    assertThat(argumentCaptor.value.damages.size).isEqualTo(2)
-    assertThat(argumentCaptor.value.damages.first().code).isEqualTo(DamageCode.CLEANING)
-    assertThat(argumentCaptor.value.damages.first().details).isEqualTo("details")
-    assertThat(argumentCaptor.value.damages.first().reporter).isEqualTo("Rod")
-    assertThat(argumentCaptor.value.damages.last().code).isEqualTo(DamageCode.ELECTRICAL_REPAIR)
-    assertThat(argumentCaptor.value.damages.last().details).isEqualTo("details 2")
-    assertThat(argumentCaptor.value.damages.last().reporter).isEqualTo("Fred")
+    assertThat(argumentCaptor.value.witnesses.size).isEqualTo(2)
+    assertThat(argumentCaptor.value.witnesses.first().code).isEqualTo(WitnessCode.STAFF)
+    assertThat(argumentCaptor.value.witnesses.first().firstName).isEqualTo("first")
+    assertThat(argumentCaptor.value.witnesses.first().reporter).isEqualTo("Rod")
+    assertThat(argumentCaptor.value.witnesses.last().code).isEqualTo(WitnessCode.OTHER_PERSON)
+    assertThat(argumentCaptor.value.witnesses.last().firstName).isEqualTo("first")
+    assertThat(argumentCaptor.value.witnesses.last().reporter).isEqualTo("Fred")
 
     assertThat(response).isNotNull
   }
@@ -73,7 +73,7 @@ class DraftDamagesServiceTest : ReportedAdjudicationTestBase() {
     whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
 
     Assertions.assertThatThrownBy {
-      damagesService.updateDamages(1, listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
+      witnessesService.updateWitnesses(1, listOf(WitnessRequestItem(WitnessCode.STAFF, "first", "last")))
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }

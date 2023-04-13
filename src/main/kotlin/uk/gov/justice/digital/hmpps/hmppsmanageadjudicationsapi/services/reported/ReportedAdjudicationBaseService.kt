@@ -272,10 +272,16 @@ open class ReportedAdjudicationBaseService(
   protected val authenticationFacade: AuthenticationFacade,
 ) : ReportedDtoService(offenceCodeLookupService) {
 
-  protected fun findByAdjudicationNumber(adjudicationNumber: Long) =
-    reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(
-      adjudicationNumber,
-    )
+  protected fun findByAdjudicationNumber(adjudicationNumber: Long): ReportedAdjudication {
+    val reportedAdjudication =
+      reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(
+        adjudicationNumber,
+      )
+
+    if (reportedAdjudication.agencyId != authenticationFacade.activeCaseload) throwEntityNotFoundException(adjudicationNumber)
+
+    return reportedAdjudication
+  }
 
   protected fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
     reportedAdjudicationRepository.save(reportedAdjudication).toDto()

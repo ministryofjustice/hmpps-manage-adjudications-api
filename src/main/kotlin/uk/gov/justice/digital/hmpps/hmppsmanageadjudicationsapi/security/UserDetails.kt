@@ -14,10 +14,18 @@ class UserDetails : AuthenticationFacade {
       is Map<*, *> -> userPrincipal.get("username").toString()
       else -> null
     }
+  override val activeCaseload: String?
+    get() = getActiveCaseloadFromSecurityContext()
 
   private fun getUserPrincipal(): Any? {
     val authentication = Optional.ofNullable(SecurityContextHolder.getContext().authentication)
 
     return authentication.map { it.principal }.orElse(null)
+  }
+
+  private fun getActiveCaseloadFromSecurityContext(): String? {
+    val details = SecurityContextHolder.getContext().authentication?.details as? Map<*, *>
+
+    return details?.get("Active-Caseload")?.toString()
   }
 }
