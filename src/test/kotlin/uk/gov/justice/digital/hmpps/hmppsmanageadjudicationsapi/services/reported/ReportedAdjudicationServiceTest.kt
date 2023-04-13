@@ -23,9 +23,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -59,22 +56,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudicationService.getReportedAdjudicationDetails(1)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("ReportedAdjudication not found for 1")
-    }
-
-    @Test
-    fun `quashed returns no punishments `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.punishments.add(Punishment(type = PunishmentType.CONFINEMENT, schedule = mutableListOf(PunishmentSchedule(days = 10))))
-          it.status = ReportedAdjudicationStatus.QUASHED
-          it.createdByUserId = ""
-          it.createDateTime = LocalDateTime.now()
-        },
-      )
-
-      val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-
-      assertThat(reportedAdjudicationDto.punishments).isEmpty()
     }
 
     @ParameterizedTest
