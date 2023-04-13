@@ -64,7 +64,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.get()
       .uri("/draft-adjudications/${intTestScenario.getDraftId()}")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
@@ -442,7 +442,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().is5xxServerError
 
-    intTestScenario.getDraftAdjudicationDetails().expectStatus().isOk
+    intTestScenario.getDraftAdjudicationDetails(activeCaseload = testAdjudication.agencyId).expectStatus().isOk
   }
 
   @Test
@@ -736,7 +736,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.get()
       .uri("/draft-adjudications/$draftId")
-      .headers(setHeaders(username = username))
+      .headers(setHeaders(username = username, activeCaseload = testAdjudication.agencyId))
       .exchange()
       .expectStatus().isOk
   }

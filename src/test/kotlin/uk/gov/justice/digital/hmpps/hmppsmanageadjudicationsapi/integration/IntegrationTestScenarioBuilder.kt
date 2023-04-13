@@ -166,7 +166,7 @@ class IntegrationTestScenario(
     return draftCreationResponse.draftAdjudication.id
   }
 
-  fun getDraftAdjudicationDetails(): WebTestClient.ResponseSpec {
-    return intTestData.getDraftAdjudicationDetails(draftCreationResponse)
+  fun getDraftAdjudicationDetails(activeCaseload: String? = "MDI"): WebTestClient.ResponseSpec {
+    return intTestData.getDraftAdjudicationDetails(draftCreationResponse, activeCaseload = activeCaseload)
   }
 }
