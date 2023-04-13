@@ -47,6 +47,17 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class ReportedAdjudicationDetails {
 
+    @Test
+    fun `adjudication is not part of active case load throws exception `() {
+      whenever(authenticationFacade.activeCaseload).thenReturn("OTHER")
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
+
+      assertThatThrownBy {
+        reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("ReportedAdjudication not found for 1")
+    }
+
     @ParameterizedTest
     @CsvSource(
       "true",

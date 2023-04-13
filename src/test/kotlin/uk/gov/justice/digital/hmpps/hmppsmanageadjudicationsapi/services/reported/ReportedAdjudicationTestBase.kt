@@ -20,6 +20,7 @@ abstract class ReportedAdjudicationTestBase : TestsToImplement {
   @BeforeEach
   fun beforeEach() {
     whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
+    whenever(authenticationFacade.activeCaseload).thenReturn("MDI")
 
     whenever(offenceCodeLookupService.getParagraphNumber(2, false)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_NUMBER)
     whenever(

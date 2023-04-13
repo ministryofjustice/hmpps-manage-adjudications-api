@@ -50,8 +50,12 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `get draft adjudication details`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
-    val userHeaders = setHeaders(username = testAdjudication.createdByUserId)
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, userHeaders)
+    val userHeaders = setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = userHeaders,
+    )
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
@@ -60,7 +64,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.get()
       .uri("/draft-adjudications/${intTestScenario.getDraftId()}")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
@@ -72,8 +76,12 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
 
-    val userHeaders = setHeaders(username = testAdjudication.createdByUserId)
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, userHeaders)
+    val userHeaders = setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = userHeaders,
+    )
 
     intTestBuilder
       .startDraft(testAdjudication)
@@ -84,11 +92,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .addIncidentStatement()
       .completeDraft()
 
-    val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(testAdjudication)
+    val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(testAdjudication, headers = setHeaders(activeCaseload = testAdjudication.agencyId))
 
     webTestClient.get()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
@@ -100,8 +108,12 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `add offence details to the draft adjudication`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
-    val userHeaders = setHeaders(username = testAdjudication.createdByUserId)
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, userHeaders)
+    val userHeaders = setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = userHeaders,
+    )
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
@@ -110,7 +122,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.put()
       .uri("/draft-adjudications/${intTestScenario.getDraftId()}/offence-details")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .bodyValue(
         mapOf(
           "offenceDetails" to testAdjudication.offence,
@@ -141,7 +153,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.post()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-statement")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .bodyValue(
         mapOf(
           "statement" to "test",
@@ -164,7 +176,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `edit the incident statement and mark as complete`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      activeCaseload = testAdjudication.agencyId,
+    )
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
@@ -172,7 +188,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.put()
       .uri("/draft-adjudications/${intTestScenario.getDraftId()}/incident-statement")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .bodyValue(
         mapOf(
           "statement" to "new statement",
@@ -197,7 +213,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.put()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-details")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .bodyValue(
         mapOf(
           "locationId" to 3,
@@ -220,7 +236,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `edit the incident role and delete all offences`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      activeCaseload = testAdjudication.agencyId,
+    )
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
@@ -231,7 +251,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.put()
       .uri("/draft-adjudications/$draftId/incident-role")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .bodyValue(
         mapOf(
           "incidentRole" to IncidentRoleRequest("25b"),
@@ -249,7 +269,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `set the associated prisoner`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      activeCaseload = testAdjudication.agencyId,
+    )
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
@@ -260,7 +284,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.put()
       .uri("/draft-adjudications/$draftId/associated-prisoner")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .bodyValue(
         mapOf(
           "associatedPrisonersNumber" to "A1234AA",
@@ -282,7 +306,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val intTestData = integrationTestData()
     val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = firstDraftUserHeaders,
+    )
 
     val intTestScenario = intTestBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -310,7 +338,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val intTestData = integrationTestData()
     val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = firstDraftUserHeaders,
+    )
 
     val intTestScenario = intTestBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -332,7 +364,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `complete draft update of existing adjudication`() {
     val intTestData = integrationTestData()
     val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this, firstDraftUserHeaders)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = firstDraftUserHeaders,
+    )
 
     val intTestScenario = intTestBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -386,7 +422,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      activeCaseload = testAdjudication.agencyId,
+    )
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
@@ -398,11 +438,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.post()
       .uri("/draft-adjudications/${intTestScenario.getDraftId()}/complete-draft-adjudication")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .exchange()
       .expectStatus().is5xxServerError
 
-    intTestScenario.getDraftAdjudicationDetails().expectStatus().isOk
+    intTestScenario.getDraftAdjudicationDetails(activeCaseload = testAdjudication.agencyId).expectStatus().isOk
   }
 
   @Test
@@ -414,7 +454,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.get()
       .uri("/draft-adjudications/my/agency/${IntegrationTestData.ADJUDICATION_1.agencyId}?startDate=2020-12-01")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .exchange()
       .expectStatus().isOk
       .expectBody()
@@ -462,7 +502,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `set the applicable rule and delete all offences`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      activeCaseload = testAdjudication.agencyId,
+    )
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
@@ -474,14 +518,14 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.get()
       .uri("/draft-adjudications/$draftId")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .exchange()
       .expectBody()
       .jsonPath("$.draftAdjudication.isYouthOffender").isEqualTo(false)
 
     webTestClient.put()
       .uri("/draft-adjudications/$draftId/applicable-rules")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .bodyValue(
         mapOf(
           "isYouthOffenderRule" to true,
@@ -500,7 +544,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `add damages to the draft adjudication`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      activeCaseload = testAdjudication.agencyId,
+    )
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
@@ -512,7 +560,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.put()
       .uri("/draft-adjudications/$draftId/damages")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .bodyValue(
         mapOf(
           "damages" to listOf(
@@ -540,7 +588,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `add evidence to the draft adjudication`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      activeCaseload = testAdjudication.agencyId,
+    )
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
@@ -552,7 +604,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.put()
       .uri("/draft-adjudications/$draftId/evidence")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .bodyValue(
         mapOf(
           "evidence" to listOf(
@@ -580,7 +632,11 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
   fun `add witnesses to the draft adjudication`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
-    val intTestBuilder = IntegrationTestScenarioBuilder(intTestData, this)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      activeCaseload = testAdjudication.agencyId,
+    )
 
     val intTestScenario = intTestBuilder
       .startDraft(testAdjudication)
@@ -592,7 +648,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.put()
       .uri("/draft-adjudications/$draftId/witnesses")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .bodyValue(
         mapOf(
           "witnesses" to listOf(
@@ -626,7 +682,7 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.put()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/gender")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
       .bodyValue(
         mapOf(
           "gender" to Gender.FEMALE.name,
@@ -644,20 +700,20 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
     val username = testAdjudication.createdByUserId
-    val userHeaders = setHeaders(username = username)
+    val userHeaders = setHeaders(username = username, activeCaseload = testAdjudication.agencyId)
     val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication, userHeaders)
 
     val draftId = draftAdjudicationResponse.draftAdjudication.id
 
     webTestClient.delete()
       .uri("/draft-adjudications/$draftId")
-      .headers(setHeaders(username = username))
+      .headers(setHeaders(username = username, activeCaseload = testAdjudication.agencyId))
       .exchange()
       .expectStatus().isOk
 
     webTestClient.get()
       .uri("/draft-adjudications/$draftId")
-      .headers(setHeaders(username = username))
+      .headers(setHeaders(username = username, activeCaseload = testAdjudication.agencyId))
       .exchange()
       .expectStatus().isNotFound
   }
@@ -674,13 +730,13 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
 
     webTestClient.delete()
       .uri("/draft-adjudications/$draftId")
-      .headers(setHeaders(username = "not_owner"))
+      .headers(setHeaders(username = "not_owner", activeCaseload = testAdjudication.agencyId))
       .exchange()
       .expectStatus().isForbidden
 
     webTestClient.get()
       .uri("/draft-adjudications/$draftId")
-      .headers(setHeaders(username = username))
+      .headers(setHeaders(username = username, activeCaseload = testAdjudication.agencyId))
       .exchange()
       .expectStatus().isOk
   }

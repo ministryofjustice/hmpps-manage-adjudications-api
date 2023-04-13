@@ -252,7 +252,8 @@ class IntegrationTestData(
 
   fun getDraftAdjudicationDetails(
     draftCreationData: DraftAdjudicationResponse,
-    headers: (HttpHeaders) -> Unit = setHeaders(),
+    activeCaseload: String? = "MDI",
+    headers: (HttpHeaders) -> Unit = setHeaders(activeCaseload = activeCaseload),
   ): WebTestClient.ResponseSpec = webTestClient.get()
     .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}")
     .headers(headers)
@@ -733,9 +734,11 @@ class IntegrationTestData(
   fun setHeaders(
     contentType: MediaType = MediaType.APPLICATION_JSON,
     username: String? = "ITAG_USER",
+    activeCaseload: String? = "MDI",
     roles: List<String> = emptyList(),
   ): (HttpHeaders) -> Unit = {
     it.setBearerAuth(jwtAuthHelper.createJwt(subject = username, roles = roles, scope = listOf("write")))
+    it.set("Active-Caseload", activeCaseload)
     it.contentType = contentType
   }
 }

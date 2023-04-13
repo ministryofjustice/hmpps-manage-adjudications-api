@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import java.time.LocalDateTime
 
-class DraftEvidenceServiceTest : ReportedAdjudicationTestBase() {
+class EvidenceServiceTest : ReportedAdjudicationTestBase() {
   private val evidenceService = EvidenceService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
