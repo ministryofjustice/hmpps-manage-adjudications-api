@@ -79,8 +79,10 @@ abstract class IntegrationTestBase {
     contentType: MediaType = MediaType.APPLICATION_JSON,
     username: String? = "ITAG_USER",
     roles: List<String> = emptyList(),
+    activeCaseload: String? = "MDI",
   ): (HttpHeaders) -> Unit = {
     it.setBearerAuth(jwtAuthHelper.createJwt(subject = username, roles = roles, scope = listOf("write")))
+    it.set("Active-Caseload", activeCaseload)
     it.contentType = contentType
   }
 
@@ -102,7 +104,11 @@ abstract class IntegrationTestBase {
 
     val intTestData = integrationTestData()
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     return draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -122,7 +128,11 @@ abstract class IntegrationTestBase {
 
     val intTestData = integrationTestData()
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     return draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)

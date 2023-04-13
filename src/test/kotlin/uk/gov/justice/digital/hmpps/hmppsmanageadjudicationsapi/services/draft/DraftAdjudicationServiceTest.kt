@@ -103,6 +103,32 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
   inner class DraftAdjudicationDetails {
 
     @Test
+    fun `adjudication is not part of active case load throws exception `() {
+      val draftAdjudication =
+        DraftAdjudication(
+          id = 1,
+          prisonerNumber = "A12345",
+          gender = Gender.MALE,
+          agencyId = "MDI",
+          incidentDetails = incidentDetails(2L, now),
+          incidentRole = incidentRoleWithAllValuesSet(),
+          incidentStatement = IncidentStatement(
+            statement = "Example statement",
+            completed = false,
+          ),
+          isYouthOffender = true,
+        )
+
+      whenever(authenticationFacade.activeCaseload).thenReturn("OTHER")
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+
+      assertThatThrownBy {
+        draftAdjudicationService.getDraftAdjudicationDetails(1)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("DraftAdjudication not found for 1")
+    }
+
+    @Test
     fun `returns the draft adjudication`() {
       testDto { draftAdjudicationService.getDraftAdjudicationDetails(1) }
     }

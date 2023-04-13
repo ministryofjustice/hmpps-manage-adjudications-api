@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDate
@@ -31,14 +32,17 @@ import java.time.LocalTime
 open class DraftAdjudicationBaseService(
   private val draftAdjudicationRepository: DraftAdjudicationRepository,
   protected val offenceCodeLookupService: OffenceCodeLookupService,
+  protected val authenticationFacade: AuthenticationFacade,
 ) {
 
-  protected fun find(id: Long): DraftAdjudication =
-    draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+  protected fun find(id: Long): DraftAdjudication {
+    val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
+    if (draftAdjudication.agencyId != authenticationFacade.activeCaseload) throwEntityNotFoundException(id)
 
-  protected fun findToDto(id: Long): DraftAdjudicationDto =
-    draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
-      .toDto()
+    return draftAdjudication
+  }
+
+  protected fun findToDto(id: Long): DraftAdjudicationDto = find(id).toDto()
 
   protected fun saveToDto(draftAdjudication: DraftAdjudication): DraftAdjudicationDto =
     draftAdjudicationRepository.save(draftAdjudication).toDto()

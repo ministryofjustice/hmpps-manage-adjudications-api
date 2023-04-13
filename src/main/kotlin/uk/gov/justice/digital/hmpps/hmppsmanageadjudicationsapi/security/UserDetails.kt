@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ResourceServerConfiguration.Companion.ACTIVE_CASELOAD
 import java.util.Optional
 
 @Component
@@ -14,10 +15,18 @@ class UserDetails : AuthenticationFacade {
       is Map<*, *> -> userPrincipal.get("username").toString()
       else -> null
     }
+  override val activeCaseload: String?
+    get() = getActiveCaseloadFromSecurityContext()
 
   private fun getUserPrincipal(): Any? {
     val authentication = Optional.ofNullable(SecurityContextHolder.getContext().authentication)
 
     return authentication.map { it.principal }.orElse(null)
+  }
+
+  private fun getActiveCaseloadFromSecurityContext(): String? {
+    val details = SecurityContextHolder.getContext().authentication?.details as? Map<*, *>
+
+    return details?.get(ACTIVE_CASELOAD)?.toString()
   }
 }

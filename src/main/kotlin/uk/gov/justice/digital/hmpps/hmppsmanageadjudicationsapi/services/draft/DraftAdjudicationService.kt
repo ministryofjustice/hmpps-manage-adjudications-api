@@ -69,10 +69,11 @@ enum class ValidationChecks(val errorMessage: String) {
 class DraftAdjudicationService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
-  private val authenticationFacade: AuthenticationFacade,
+  authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
   draftAdjudicationRepository,
   offenceCodeLookupService,
+  authenticationFacade,
 ) {
 
   companion object {

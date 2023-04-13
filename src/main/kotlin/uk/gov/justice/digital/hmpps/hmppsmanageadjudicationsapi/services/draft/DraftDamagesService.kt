@@ -14,10 +14,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Offence
 class DraftDamagesService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
-  private val authenticationFacade: AuthenticationFacade,
+  authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
   draftAdjudicationRepository,
   offenceCodeLookupService,
+  authenticationFacade,
 ) {
 
   fun setDamages(id: Long, damages: List<DamageRequestItem>): DraftAdjudicationDto {

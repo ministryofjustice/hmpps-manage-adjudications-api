@@ -27,7 +27,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = integrationTestData()
 
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -137,7 +141,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = integrationTestData()
 
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -185,7 +193,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = integrationTestData()
 
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -226,7 +238,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = integrationTestData()
 
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -263,7 +279,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = integrationTestData()
 
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -314,7 +334,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = integrationTestData()
 
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -343,7 +367,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = integrationTestData()
 
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -373,7 +401,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = integrationTestData()
 
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -427,7 +459,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = integrationTestData()
 
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -481,7 +517,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = integrationTestData()
 
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
@@ -539,7 +579,11 @@ class ReportedAdjudicationIntTest : IntegrationTestBase() {
     val intTestData = integrationTestData()
 
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)

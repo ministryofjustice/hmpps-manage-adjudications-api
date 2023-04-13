@@ -66,6 +66,8 @@ abstract class DraftAdjudicationTestBase : TestsToImplement {
     whenever(offenceCodeLookupService.getParagraphDescription(FULL_OFFENCE_DETAILS_REQUEST.offenceCode, true)).thenReturn(
       YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
     )
+
+    whenever(authenticationFacade.activeCaseload).thenReturn("MDI")
   }
 
   companion object {

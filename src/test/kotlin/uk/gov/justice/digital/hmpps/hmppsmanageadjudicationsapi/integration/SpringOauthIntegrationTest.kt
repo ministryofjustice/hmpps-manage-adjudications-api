@@ -19,19 +19,23 @@ class SpringOauthIntegrationTest : IntegrationTestBase() {
 
     intTestData = IntegrationTestData(webTestClient, jwtAuthHelper, prisonApiMockServer)
 
-    draftCreationResponseForAdjudication1 = intTestData.startNewAdjudication(IntegrationTestData.ADJUDICATION_1)
-    intTestData.setApplicableRules(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1)
-    intTestData.setIncidentRole(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1)
-    intTestData.setAssociatedPrisoner(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1)
-    intTestData.setOffenceDetails(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1)
-    intTestData.addIncidentStatement(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1)
+    val headers = setHeaders(activeCaseload = IntegrationTestData.ADJUDICATION_1.agencyId)
 
-    draftCreationResponseForAdjudication2 = intTestData.startNewAdjudication(IntegrationTestData.ADJUDICATION_2)
-    intTestData.setApplicableRules(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2)
-    intTestData.setIncidentRole(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2)
-    intTestData.setAssociatedPrisoner(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2)
-    intTestData.setOffenceDetails(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2)
-    intTestData.addIncidentStatement(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2)
+    draftCreationResponseForAdjudication1 = intTestData.startNewAdjudication(IntegrationTestData.ADJUDICATION_1, headers)
+    intTestData.setApplicableRules(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1, headers)
+    intTestData.setIncidentRole(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1, headers)
+    intTestData.setAssociatedPrisoner(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1, headers)
+    intTestData.setOffenceDetails(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1, headers)
+    intTestData.addIncidentStatement(draftCreationResponseForAdjudication1, IntegrationTestData.ADJUDICATION_1, headers)
+
+    val headers2 = setHeaders(activeCaseload = IntegrationTestData.ADJUDICATION_2.agencyId)
+
+    draftCreationResponseForAdjudication2 = intTestData.startNewAdjudication(IntegrationTestData.ADJUDICATION_2, headers2)
+    intTestData.setApplicableRules(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2, headers2)
+    intTestData.setIncidentRole(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2, headers2)
+    intTestData.setAssociatedPrisoner(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2, headers2)
+    intTestData.setOffenceDetails(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2, headers2)
+    intTestData.addIncidentStatement(draftCreationResponseForAdjudication2, IntegrationTestData.ADJUDICATION_2, headers2)
   }
 
   @Test
@@ -41,13 +45,13 @@ class SpringOauthIntegrationTest : IntegrationTestBase() {
     intTestData.completeDraftAdjudication(
       draftCreationResponseForAdjudication1,
       IntegrationTestData.ADJUDICATION_1,
-      setHeaders(username = "USER1"),
+      setHeaders(username = "USER1", activeCaseload = IntegrationTestData.ADJUDICATION_1.agencyId),
     )
 
     intTestData.completeDraftAdjudication(
       draftCreationResponseForAdjudication2,
       IntegrationTestData.ADJUDICATION_2,
-      setHeaders(username = "USER2"),
+      setHeaders(username = "USER2", activeCaseload = IntegrationTestData.ADJUDICATION_2.agencyId),
     )
 
     oAuthMockServer.verify(

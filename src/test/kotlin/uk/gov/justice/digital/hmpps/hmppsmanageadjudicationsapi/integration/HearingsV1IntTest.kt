@@ -231,7 +231,11 @@ class HearingsV1IntTest : IntegrationTestBase() {
   private fun initDataForHearingsV1(): IntegrationTestData {
     val intTestData = integrationTestData()
     val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(intTestData, this, draftUserHeaders)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
 
     draftIntTestScenarioBuilder
       .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
