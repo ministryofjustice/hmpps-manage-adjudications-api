@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ResourceServerConfiguration.Companion.ACTIVE_CASELOAD
 import java.util.Optional
 
 @Component
@@ -26,6 +27,6 @@ class UserDetails : AuthenticationFacade {
   private fun getActiveCaseloadFromSecurityContext(): String? {
     val details = SecurityContextHolder.getContext().authentication?.details as? Map<*, *>
 
-    return details?.get("Active-Caseload")?.toString()
+    return details?.get(ACTIVE_CASELOAD)?.toString()
   }
 }

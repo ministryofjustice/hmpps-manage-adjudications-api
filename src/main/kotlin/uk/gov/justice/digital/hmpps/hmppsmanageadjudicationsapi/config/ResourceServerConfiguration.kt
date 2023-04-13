@@ -24,10 +24,12 @@ class ResourceServerConfiguration {
   private class ActiveCaseLoadFilter : Filter {
     override fun doFilter(request: ServletRequest?, response: ServletResponse?, chain: FilterChain?) {
       val httpRequest = request as? HttpServletRequest
+      val activeCaseload = httpRequest?.getHeader(ACTIVE_CASELOAD)
 
-      val activeCaseload = httpRequest?.getHeader("Active-Caseload")
-      val sec = SecurityContextHolder.getContext().authentication as? AbstractAuthenticationToken
-      sec?.details = mapOf("Active-Caseload" to activeCaseload)
+      activeCaseload?.run {
+        val sec = SecurityContextHolder.getContext().authentication as? AbstractAuthenticationToken
+        sec?.details = mapOf(ACTIVE_CASELOAD to activeCaseload)
+      }
 
       chain?.doFilter(request, response)
     }
@@ -52,5 +54,9 @@ class ResourceServerConfiguration {
           .authenticated()
       }.oauth2ResourceServer().jwt().jwtAuthenticationConverter(AuthAwareTokenConverter())
     return http.addFilterAfter(ActiveCaseLoadFilter(), BasicAuthenticationFilter::class.java).build()
+  }
+
+  companion object {
+    const val ACTIVE_CASELOAD = "Active-Caseload"
   }
 }
