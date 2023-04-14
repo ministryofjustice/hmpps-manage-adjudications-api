@@ -254,17 +254,23 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             endDate = LocalDate.now().plusDays(1),
             activatedFrom = 2,
           ),
-        )
+        ),
       )
 
       whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(
         entityBuilder.reportedAdjudication(reportNumber = 2).also {
           it.punishments.add(
-            Punishment(id = 1, type = PunishmentType.PRIVILEGE, privilegeType = PrivilegeType.OTHER, otherPrivilege = "other",
-            schedule = mutableListOf(PunishmentSchedule(days = 1, suspendedUntil = LocalDate.now())
-            ))
+            Punishment(
+              id = 1,
+              type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.OTHER,
+              otherPrivilege = "other",
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
           )
-        }
+        },
       )
 
       verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumber(2)
@@ -628,15 +634,18 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `clone suspended punishment `() {
-
       whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(
         entityBuilder.reportedAdjudication(reportNumber = 2).also {
           it.punishments.add(
-            Punishment(id = 1, type = PunishmentType.CONFINEMENT,
-              schedule = mutableListOf(PunishmentSchedule(days = 1, suspendedUntil = LocalDate.now())
-              ))
+            Punishment(
+              id = 1,
+              type = PunishmentType.CONFINEMENT,
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
           )
-        }
+        },
       )
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -651,7 +660,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             endDate = LocalDate.now().plusDays(1),
             activatedFrom = 2,
           ),
-        )
+        ),
       )
 
       verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumber(2)

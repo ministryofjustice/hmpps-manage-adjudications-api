@@ -99,7 +99,7 @@ class PunishmentsIntTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `activate suspended punishment ` () {
+  fun `activate suspended punishment `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
     initDataForOutcome().createHearing().createChargeProved()
@@ -118,7 +118,7 @@ class PunishmentsIntTest : IntegrationTestBase() {
               PunishmentRequest(
                 type = PunishmentType.PROSPECTIVE_DAYS,
                 days = 10,
-                activatedFrom = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber
+                activatedFrom = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
               ),
             ),
         ),
@@ -127,7 +127,7 @@ class PunishmentsIntTest : IntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.PROSPECTIVE_DAYS.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].activatedFrom").isEqualTo( IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.reportedAdjudication.punishments[0].activatedFrom").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     webTestClient.get()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
@@ -160,12 +160,14 @@ class PunishmentsIntTest : IntegrationTestBase() {
       .jsonPath("$.[0].punishment.schedule.suspendedUntil").isEqualTo("2023-03-27")
   }
 
-  private fun createPunishments(adjudicationNumber: Long = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-  type: PunishmentType = PunishmentType.CONFINEMENT): WebTestClient.ResponseSpec {
+  private fun createPunishments(
+    adjudicationNumber: Long = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+    type: PunishmentType = PunishmentType.CONFINEMENT,
+  ): WebTestClient.ResponseSpec {
     val suspendedUntil = LocalDate.of(2023, 3, 27)
 
     return webTestClient.post()
-      .uri("/reported-adjudications/${adjudicationNumber}/punishments")
+      .uri("/reported-adjudications/$adjudicationNumber/punishments")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
