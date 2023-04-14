@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 open class ReportedDtoService(
@@ -247,6 +248,8 @@ open class ReportedDtoService(
         privilegeType = it.privilegeType,
         otherPrivilege = it.otherPrivilege,
         stoppagePercentage = it.stoppagePercentage,
+        activatedFrom = it.activatedFrom,
+        activatedBy = it.activatedBy,
         schedule = it.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toPunishmentScheduleDto(),
       )
     }
@@ -287,6 +290,10 @@ open class ReportedAdjudicationBaseService(
 
   protected fun findByReportNumberIn(adjudicationNumbers: List<Long>) = reportedAdjudicationRepository.findByReportNumberIn(adjudicationNumbers)
 
+  protected fun getReportsWithSuspendedPunishments(prisonerNumber: String) = reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(
+    prisonerNumber = prisonerNumber,
+    date = LocalDate.now().minusDays(1),
+  )
   companion object {
     fun throwEntityNotFoundException(id: Long): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")

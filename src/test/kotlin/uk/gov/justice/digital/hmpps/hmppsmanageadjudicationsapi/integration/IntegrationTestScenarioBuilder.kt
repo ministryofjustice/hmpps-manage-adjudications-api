@@ -92,9 +92,11 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun createChargeProved(): IntegrationTestScenario {
+  fun createChargeProved(
+    overrideTestDataSet: AdjudicationIntTestDataSet = testAdjudicationDataSet,
+  ): IntegrationTestScenario {
     intTestData.createChargeProved(
-      testAdjudicationDataSet,
+      overrideTestDataSet,
     )
     return this
   }

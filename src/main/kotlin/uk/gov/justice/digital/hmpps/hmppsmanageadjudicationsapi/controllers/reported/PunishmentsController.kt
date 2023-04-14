@@ -4,12 +4,14 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService
@@ -80,4 +82,11 @@ class PunishmentsController(
 
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
+
+  @Operation(summary = "get a list of suspended punishments by prisoner")
+  @GetMapping(value = ["/punishments/{prisonerNumber}/suspended"])
+  @ResponseStatus(HttpStatus.OK)
+  fun getSuspendedPunishments(
+    @PathVariable(name = "prisonerNumber") prisonerNumber: String,
+  ): List<SuspendedPunishmentDto> = punishmentsService.getSuspendedPunishments(prisonerNumber = prisonerNumber)
 }
