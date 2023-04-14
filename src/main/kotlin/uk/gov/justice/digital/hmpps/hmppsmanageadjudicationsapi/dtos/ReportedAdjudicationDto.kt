@@ -228,6 +228,10 @@ data class PunishmentDto(
   val otherPrivilege: String? = null,
   @Schema(description = "optional stoppage of earnings percentage")
   val stoppagePercentage: Int? = null,
+  @Schema(description = "optional activated by report number")
+  val activatedBy: Long? = null,
+  @Schema(description = "optional activated from report number")
+  val activatedFrom: Long? = null,
   @Schema(description = "latest punishment schedule")
   val schedule: PunishmentScheduleDto,
 )
@@ -242,4 +246,12 @@ data class PunishmentScheduleDto(
   val endDate: LocalDate? = null,
   @Schema(description = "optional punishment suspended until date")
   val suspendedUntil: LocalDate? = null,
+)
+
+@Schema(description = "suspended punishment dto")
+data class SuspendedPunishmentDto(
+  @Schema(description = "report number punishment from")
+  val reportNumber: Long,
+  @Schema(description = "punishment dto")
+  val punishment: PunishmentDto,
 )

@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.CrudRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, Long> {
@@ -48,4 +49,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   ): List<ReportedAdjudication>
   fun findByReportNumber(adjudicationNumber: Long): ReportedAdjudication?
   fun findByReportNumberIn(adjudicationNumbers: List<Long>): List<ReportedAdjudication>
+
+  fun findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(prisonerNumber: String, date: LocalDate): List<ReportedAdjudication>
 }

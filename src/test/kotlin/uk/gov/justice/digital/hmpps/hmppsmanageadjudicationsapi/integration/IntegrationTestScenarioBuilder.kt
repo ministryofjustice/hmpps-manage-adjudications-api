@@ -82,18 +82,21 @@ class IntegrationTestScenario(
   }
 
   fun createHearing(
+    overrideTestDataSet: AdjudicationIntTestDataSet = testAdjudicationDataSet,
     dateTimeOfHearing: LocalDateTime? = null,
   ): IntegrationTestScenario {
     intTestData.createHearing(
-      testAdjudicationDataSet,
+      overrideTestDataSet,
       dateTimeOfHearing,
     )
     return this
   }
 
-  fun createChargeProved(): IntegrationTestScenario {
+  fun createChargeProved(
+    overrideTestDataSet: AdjudicationIntTestDataSet = testAdjudicationDataSet,
+  ): IntegrationTestScenario {
     intTestData.createChargeProved(
-      testAdjudicationDataSet,
+      overrideTestDataSet,
     )
     return this
   }
