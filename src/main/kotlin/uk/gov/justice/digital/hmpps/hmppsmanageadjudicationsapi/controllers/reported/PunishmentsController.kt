@@ -41,6 +41,8 @@ data class PunishmentRequest(
   val endDate: LocalDate? = null,
   @Schema(description = "punishment suspended until date, required if punishment is suspended")
   val suspendedUntil: LocalDate? = null,
+  @Schema(description = "optional activated from report number")
+  val activatedFrom: Long? = null,
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")

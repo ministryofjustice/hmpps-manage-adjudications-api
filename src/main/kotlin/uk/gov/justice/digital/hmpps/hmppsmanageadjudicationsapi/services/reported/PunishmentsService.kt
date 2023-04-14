@@ -6,6 +6,7 @@ import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
@@ -37,7 +38,7 @@ class PunishmentsService(
 
     punishments.forEach {
       it.validateRequest()
-      reportedAdjudication.punishments.add(createNewPunishment(it))
+      reportedAdjudication.punishments.add(createNewPunishment(punishmentRequest = it))
     }
 
     return saveToDto(reportedAdjudication)
@@ -59,14 +60,14 @@ class PunishmentsService(
       it.validateRequest()
 
       when (it.id) {
-        null -> reportedAdjudication.punishments.add(createNewPunishment(it))
+        null -> reportedAdjudication.punishments.add(createNewPunishment(punishmentRequest = it))
         else -> {
           val punishmentToAmend = reportedAdjudication.punishments.getPunishmentToAmend(it.id)
           when (punishmentToAmend.type) {
             it.type -> updatePunishment(punishmentToAmend, it)
             else -> {
               reportedAdjudication.punishments.remove(punishmentToAmend)
-              reportedAdjudication.punishments.add(createNewPunishment(it))
+              reportedAdjudication.punishments.add(createNewPunishment(punishmentRequest = it))
             }
           }
         }
@@ -75,12 +76,18 @@ class PunishmentsService(
 
     return saveToDto(reportedAdjudication)
   }
+
+  fun getSuspendedPunishments(prisonerNumber: String): List<SuspendedPunishmentDto> {
+    TODO("implement me")
+  }
+
   private fun createNewPunishment(punishmentRequest: PunishmentRequest): Punishment =
     Punishment(
       type = punishmentRequest.type,
       privilegeType = punishmentRequest.privilegeType,
       otherPrivilege = punishmentRequest.otherPrivilege,
       stoppagePercentage = punishmentRequest.stoppagePercentage,
+      suspendedUntil = punishmentRequest.suspendedUntil,
       schedule = mutableListOf(
         PunishmentSchedule(days = punishmentRequest.days, startDate = punishmentRequest.startDate, endDate = punishmentRequest.endDate, suspendedUntil = punishmentRequest.suspendedUntil),
       ),
@@ -91,12 +98,23 @@ class PunishmentsService(
       it.privilegeType = punishmentRequest.privilegeType
       it.otherPrivilege = punishmentRequest.otherPrivilege
       it.stoppagePercentage = punishmentRequest.stoppagePercentage
-      it.schedule.add(
-        PunishmentSchedule(days = punishmentRequest.days, startDate = punishmentRequest.startDate, endDate = punishmentRequest.endDate, suspendedUntil = punishmentRequest.suspendedUntil),
-      )
+      it.suspendedUntil = punishmentRequest.suspendedUntil
+      if (it.schedule.maxBy { ps -> ps.createDateTime!! }.hasScheduleBeenUpdated(punishmentRequest)) {
+        it.schedule.add(
+          PunishmentSchedule(days = punishmentRequest.days, startDate = punishmentRequest.startDate, endDate = punishmentRequest.endDate, suspendedUntil = punishmentRequest.suspendedUntil),
+        )
+      }
     }
 
+  private fun activateSuspendedPunishment(punishment: Punishment): Punishment {
+    TODO("implement me")
+  }
+
   companion object {
+
+    fun PunishmentSchedule.hasScheduleBeenUpdated(punishmentRequest: PunishmentRequest): Boolean =
+      this.days != punishmentRequest.days || this.endDate != punishmentRequest.endDate || this.startDate != punishmentRequest.startDate ||
+        this.suspendedUntil != punishmentRequest.suspendedUntil
 
     fun List<Punishment>.getPunishmentToAmend(id: Long) =
       this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Punishment $id is not associated with ReportedAdjudication")
