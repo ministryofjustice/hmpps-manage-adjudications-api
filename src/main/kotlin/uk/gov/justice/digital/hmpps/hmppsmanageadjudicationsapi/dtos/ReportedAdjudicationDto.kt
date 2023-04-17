@@ -172,6 +172,8 @@ data class HearingSummaryDto(
   val prisonerNumber: String,
   @Schema(description = "type of hearing")
   val oicHearingType: OicHearingType,
+  @Schema(description = "reported adjudication status")
+  val status: ReportedAdjudicationStatus,
 )
 
 @Schema(description = "item for hearings and referrals table")
