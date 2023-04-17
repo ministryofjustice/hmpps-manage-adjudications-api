@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
@@ -49,11 +51,30 @@ data class PunishmentRequest(
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
+@Tag(name = "30. Punishments")
 class PunishmentsController(
   private val punishmentsService: PunishmentsService,
 ) : ReportedAdjudicationBaseController() {
 
-  @Operation(summary = "create a set of punishments")
+  @Operation(
+    summary = "create a set of punishments",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "201",
+        description = "Punishment created",
+      ),
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "415",
+        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
+        content = [
+          io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
   @PostMapping(value = ["/{adjudicationNumber}/punishments"])
   @ResponseStatus(HttpStatus.CREATED)
   fun create(
