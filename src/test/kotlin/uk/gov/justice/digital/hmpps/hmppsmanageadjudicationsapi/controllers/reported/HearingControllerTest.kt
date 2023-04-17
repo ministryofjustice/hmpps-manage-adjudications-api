@@ -521,6 +521,7 @@ class HearingControllerTest : TestControllerBase() {
           adjudicationNumber = 123,
           prisonerNumber = "123",
           oicHearingType = OicHearingType.GOV,
+          status = ReportedAdjudicationStatus.SCHEDULED,
         ),
       )
 
