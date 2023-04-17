@@ -21,7 +21,8 @@ class DraftAdjudicationWorkflowController(
 ) : DraftAdjudicationBaseController() {
 
   @PostMapping(value = ["/{id}/complete-draft-adjudication"])
-  @Operation(summary = "Submits the draft adjudication to Prison-API, creates a submitted adjudication record and removes the draft adjudication.",
+  @Operation(
+    summary = "Submits the draft adjudication to Prison-API, creates a submitted adjudication record and removes the draft adjudication.",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -37,7 +38,8 @@ class DraftAdjudicationWorkflowController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun completeDraftAdjudication(@PathVariable(name = "id") id: Long): ReportedAdjudicationDto =

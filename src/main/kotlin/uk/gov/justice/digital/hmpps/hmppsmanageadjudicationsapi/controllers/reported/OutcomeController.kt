@@ -96,7 +96,8 @@ class OutcomeController(
   private val completedHearingService: CompletedHearingService,
 ) : ReportedAdjudicationBaseController() {
 
-  @Operation(summary = "create a not proceed outcome - via referral or without hearing",
+  @Operation(
+    summary = "create a not proceed outcome - via referral or without hearing",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -112,7 +113,8 @@ class OutcomeController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @PostMapping(value = ["/{adjudicationNumber}/outcome/not-proceed"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createNotProceed(
@@ -128,7 +130,8 @@ class OutcomeController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "create a prosecution outcome",
+  @Operation(
+    summary = "create a prosecution outcome",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -144,7 +147,8 @@ class OutcomeController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @PostMapping(value = ["/{adjudicationNumber}/outcome/prosecution"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createProsecution(
@@ -157,7 +161,8 @@ class OutcomeController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "quash an outcome",
+  @Operation(
+    summary = "quash an outcome",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -173,7 +178,8 @@ class OutcomeController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @PostMapping(value = ["/{adjudicationNumber}/outcome/quashed"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createQuashed(
@@ -189,7 +195,8 @@ class OutcomeController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "create a police refer outcome",
+  @Operation(
+    summary = "create a police refer outcome",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -205,7 +212,8 @@ class OutcomeController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @PostMapping(value = ["/{adjudicationNumber}/outcome/refer-police"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createRefPolice(
@@ -221,7 +229,8 @@ class OutcomeController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "create a dismissed from hearing outcome",
+  @Operation(
+    summary = "create a dismissed from hearing outcome",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -237,7 +246,8 @@ class OutcomeController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @PostMapping(value = ["/{adjudicationNumber}/complete-hearing/dismissed"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createDismissed(
@@ -254,7 +264,8 @@ class OutcomeController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "create a not proceed from hearing outcome",
+  @Operation(
+    summary = "create a not proceed from hearing outcome",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -270,7 +281,8 @@ class OutcomeController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @PostMapping(value = ["/{adjudicationNumber}/complete-hearing/not-proceed"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createNotProceedFromHearing(
@@ -288,7 +300,8 @@ class OutcomeController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "create a charge proved from hearing outcome",
+  @Operation(
+    summary = "create a charge proved from hearing outcome",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -304,7 +317,8 @@ class OutcomeController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @PostMapping(value = ["/{adjudicationNumber}/complete-hearing/charge-proved"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createChargeProvedFromHearing(

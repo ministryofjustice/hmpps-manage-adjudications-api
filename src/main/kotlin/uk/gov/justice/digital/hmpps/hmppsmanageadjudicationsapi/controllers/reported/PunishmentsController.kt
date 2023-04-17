@@ -56,7 +56,8 @@ class PunishmentsController(
   private val punishmentsService: PunishmentsService,
 ) : ReportedAdjudicationBaseController() {
 
-  @Operation(summary = "create a set of punishments",
+  @Operation(
+    summary = "create a set of punishments",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -72,7 +73,8 @@ class PunishmentsController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @PostMapping(value = ["/{adjudicationNumber}/punishments"])
   @ResponseStatus(HttpStatus.CREATED)
   fun create(

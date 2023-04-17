@@ -16,7 +16,6 @@ import io.swagger.v3.oas.models.security.SecurityScheme
 import io.swagger.v3.oas.models.servers.Server
 import io.swagger.v3.oas.models.tags.Tag
 import org.springdoc.core.customizers.OpenApiCustomizer
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.info.BuildProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -56,7 +55,6 @@ class OpenApiConfiguration(
 
         Tag().name("40. Reports").description("Reports - Adjudications"),
 
-
       ),
     )
     .info(
@@ -80,7 +78,7 @@ class OpenApiConfiguration(
           .bearerFormat("JWT")
           .`in`(SecurityScheme.In.HEADER)
           .name("Authorization"),
-      )
+      ),
     )
     .addSecurityItem(SecurityRequirement().addList("bearer-jwt"))
 

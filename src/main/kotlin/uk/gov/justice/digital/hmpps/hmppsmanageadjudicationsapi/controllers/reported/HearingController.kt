@@ -101,7 +101,8 @@ class HearingController(
 
   @Deprecated(message = "to be removed when outcomes goes live")
   @PostMapping(value = ["/{adjudicationNumber}/hearing"])
-  @Operation(summary = "Create a new hearing",
+  @Operation(
+    summary = "Create a new hearing",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -117,7 +118,8 @@ class HearingController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @ResponseStatus(HttpStatus.CREATED)
   fun createHearingV1(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
@@ -169,7 +171,8 @@ class HearingController(
   }
 
   @PostMapping(value = ["/{adjudicationNumber}/hearing/v2"])
-  @Operation(summary = "Create a new hearing",
+  @Operation(
+    summary = "Create a new hearing",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -185,7 +188,8 @@ class HearingController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @ResponseStatus(HttpStatus.CREATED)
   fun createHearing(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
@@ -243,7 +247,8 @@ class HearingController(
     )
   }
 
-  @Operation(summary = "create a referral for latest hearing",
+  @Operation(
+    summary = "create a referral for latest hearing",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -259,7 +264,8 @@ class HearingController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @PostMapping(value = ["/{adjudicationNumber}/hearing/outcome/referral"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createReferral(
@@ -277,7 +283,8 @@ class HearingController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "create a adjourn for latest hearing",
+  @Operation(
+    summary = "create a adjourn for latest hearing",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -293,7 +300,8 @@ class HearingController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @PostMapping(value = ["/{adjudicationNumber}/hearing/outcome/adjourn"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createAdjourn(

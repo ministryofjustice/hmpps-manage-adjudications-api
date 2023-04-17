@@ -161,7 +161,8 @@ class DraftAdjudicationController(
 
   @PostMapping
   @PreAuthorize("hasAuthority('SCOPE_write')")
-  @Operation(summary = "Starts a new draft adjudication.",
+  @Operation(
+    summary = "Starts a new draft adjudication.",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "201",
@@ -177,7 +178,8 @@ class DraftAdjudicationController(
           ),
         ],
       ),
-    ])
+    ],
+  )
   @ResponseStatus(HttpStatus.CREATED)
   fun startNewAdjudication(@RequestBody newAdjudicationRequest: NewAdjudicationRequest): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService
@@ -206,23 +208,25 @@ class DraftAdjudicationController(
   }
 
   @PostMapping(value = ["/{id}/incident-statement"])
-  @Operation(summary = "Add the incident statement to the draft adjudication.",
-  responses = [
-    io.swagger.v3.oas.annotations.responses.ApiResponse(
-      responseCode = "201",
-      description = "Incident Statement Added",
-    ),
-    io.swagger.v3.oas.annotations.responses.ApiResponse(
-      responseCode = "415",
-      description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
-      content = [
-        io.swagger.v3.oas.annotations.media.Content(
-          mediaType = "application/json",
-          schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
-        ),
-      ],
-    ),
-  ])
+  @Operation(
+    summary = "Add the incident statement to the draft adjudication.",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "201",
+        description = "Incident Statement Added",
+      ),
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "415",
+        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
+        content = [
+          io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun addIncidentStatement(
