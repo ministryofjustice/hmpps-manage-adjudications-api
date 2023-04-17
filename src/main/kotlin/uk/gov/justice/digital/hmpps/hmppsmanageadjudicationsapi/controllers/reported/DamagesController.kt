@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -14,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 
 @PreAuthorize("hasAuthority('SCOPE_write')")
 @RestController
+@Tag(name = "22. Damages")
 class DamagesController(
   private val damagesService: DamagesService,
 ) : ReportedAdjudicationBaseController() {

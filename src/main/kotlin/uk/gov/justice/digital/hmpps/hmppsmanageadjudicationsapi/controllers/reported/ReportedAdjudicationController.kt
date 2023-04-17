@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Size
 import org.springframework.format.annotation.DateTimeFormat
@@ -43,6 +44,7 @@ data class IssueRequest(
 )
 
 @RestController
+@Tag(name = "20. Adjudication Management")
 class ReportedAdjudicationController(
   private val reportedAdjudicationService: ReportedAdjudicationService,
 ) : ReportedAdjudicationBaseController() {

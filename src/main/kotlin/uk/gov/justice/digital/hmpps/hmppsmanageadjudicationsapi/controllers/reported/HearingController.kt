@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -89,6 +91,7 @@ data class AmendHearingOutcomeRequest(
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
+@Tag(name = "24. Hearings")
 class HearingController(
   private val hearingService: HearingService,
   private val hearingOutcomeService: HearingOutcomeService,
@@ -98,7 +101,23 @@ class HearingController(
 
   @Deprecated(message = "to be removed when outcomes goes live")
   @PostMapping(value = ["/{adjudicationNumber}/hearing"])
-  @Operation(summary = "Create a new hearing")
+  @Operation(summary = "Create a new hearing",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "201",
+        description = "Hearing Added",
+      ),
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "415",
+        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
+        content = [
+          io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ])
   @ResponseStatus(HttpStatus.CREATED)
   fun createHearingV1(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
@@ -150,7 +169,23 @@ class HearingController(
   }
 
   @PostMapping(value = ["/{adjudicationNumber}/hearing/v2"])
-  @Operation(summary = "Create a new hearing")
+  @Operation(summary = "Create a new hearing",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "201",
+        description = "Hearing created",
+      ),
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "415",
+        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
+        content = [
+          io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ])
   @ResponseStatus(HttpStatus.CREATED)
   fun createHearing(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
@@ -208,7 +243,23 @@ class HearingController(
     )
   }
 
-  @Operation(summary = "create a referral for latest hearing")
+  @Operation(summary = "create a referral for latest hearing",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "201",
+        description = "Referral Created",
+      ),
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "415",
+        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
+        content = [
+          io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ])
   @PostMapping(value = ["/{adjudicationNumber}/hearing/outcome/referral"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createReferral(
@@ -226,7 +277,23 @@ class HearingController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
-  @Operation(summary = "create a adjourn for latest hearing")
+  @Operation(summary = "create a adjourn for latest hearing",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "201",
+        description = "Adjourn Created",
+      ),
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "415",
+        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
+        content = [
+          io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ])
   @PostMapping(value = ["/{adjudicationNumber}/hearing/outcome/adjourn"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createAdjourn(
