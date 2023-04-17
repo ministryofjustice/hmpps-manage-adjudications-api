@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 @PreAuthorize("hasAuthority('SCOPE_write')")
 @RestController
 @Tag(name = "23. Evidence")
-@RequestMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
 class EvidenceController(
   private val evidenceService: EvidenceService,
 ) : ReportedAdjudicationBaseController() {
