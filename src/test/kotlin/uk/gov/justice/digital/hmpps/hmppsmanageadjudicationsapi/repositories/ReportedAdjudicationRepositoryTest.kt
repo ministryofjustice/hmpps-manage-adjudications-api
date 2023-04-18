@@ -491,4 +491,27 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(savedEntity.punishments.first().schedule.first().startDate).isEqualTo(LocalDate.now())
     assertThat(savedEntity.punishments.first().schedule.first().days).isEqualTo(10)
   }
+
+  @Test
+  fun `suspended search `() {
+    for (i in 1..10) {
+      reportedAdjudicationRepository.save(
+        entityBuilder.reportedAdjudication(reportNumber = i.toLong()).also {
+          it.prisonerNumber = "TEST"
+          it.hearings.clear()
+          it.punishments.add(
+            Punishment(
+              type = PunishmentType.CONFINEMENT,
+              suspendedUntil = LocalDate.now().minusDays(2).plusDays(i.toLong()),
+              schedule = mutableListOf(PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now().minusDays(2).plusDays(i.toLong()))),
+            ),
+          )
+        },
+      )
+    }
+
+    val suspendedResult = reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter("TEST", LocalDate.now())
+
+    assertThat(suspendedResult.size).isEqualTo(8)
+  }
 }

@@ -405,9 +405,9 @@ class OutcomeIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForOutcome().createOutcomeReferPolice()
-      .createHearing(LocalDateTime.now())
+      .createHearing(dateTimeOfHearing = LocalDateTime.now())
       .createAdjourn()
-      .createHearing(LocalDateTime.now().plusDays(1))
+      .createHearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1))
       .createReferral(code = HearingOutcomeCode.REFER_INAD)
 
     webTestClient.delete()

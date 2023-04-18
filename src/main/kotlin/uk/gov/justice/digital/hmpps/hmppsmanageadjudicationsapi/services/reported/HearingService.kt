@@ -240,6 +240,7 @@ class HearingService(
         prisonerNumber = adjudication.prisonerNumber,
         adjudicationNumber = it.reportNumber,
         oicHearingType = it.oicHearingType,
+        status = adjudication.status,
       )
     }.sortedBy { it.dateTimeOfHearing }
 

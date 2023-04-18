@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.dra
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -32,6 +33,7 @@ data class EvidenceRequestItem(
 )
 
 @RestController
+@Tag(name = "13. Draft Evidence")
 class DraftEvidenceController(
   private val evidenceService: DraftEvidenceService,
 ) : DraftAdjudicationBaseController() {

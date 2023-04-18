@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
@@ -149,11 +151,18 @@ class ApiExceptionHandler {
   }
 }
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(description = "Error Response")
 data class ErrorResponse(
+  @Schema(description = "Status of Error", example = "500", required = true)
   val status: Int,
+  @Schema(description = "Error Code", example = "500", required = false)
   val errorCode: Int? = null,
+  @Schema(description = "User Message of error", example = "Bad Data", required = false, maxLength = 200, pattern = "^[a-zA-Z\\d. _-]{1,200}\$")
   val userMessage: String? = null,
+  @Schema(description = "More detailed error message", example = "This is a stack trace", required = false, maxLength = 4000, pattern = "^[a-zA-Z\\d. _-]*\$")
   val developerMessage: String? = null,
+  @Schema(description = "More information about the error", example = "More info", required = false, maxLength = 4000, pattern = "^[a-zA-Z\\d. _-]*\$")
   val moreInfo: String? = null,
 ) {
   constructor(

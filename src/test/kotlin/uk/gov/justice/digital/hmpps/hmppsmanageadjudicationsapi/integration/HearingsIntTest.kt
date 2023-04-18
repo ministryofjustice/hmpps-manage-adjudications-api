@@ -356,6 +356,8 @@ class HearingsIntTest : IntegrationTestBase() {
       .jsonPath("$.hearings.size()").isEqualTo(1)
       .jsonPath("$.hearings[0].prisonerNumber")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber)
+      .jsonPath("$.hearings[0].status")
+      .isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
       .jsonPath("$.hearings[0].adjudicationNumber")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
       .jsonPath("$.hearings[0].dateTimeOfDiscovery")

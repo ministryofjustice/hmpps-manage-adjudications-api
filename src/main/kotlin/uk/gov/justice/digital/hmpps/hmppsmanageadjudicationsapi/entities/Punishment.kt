@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
+import java.time.LocalDate
 
 @Entity
 @Table(name = "punishment")
@@ -21,6 +22,9 @@ data class Punishment(
   @field:Length(max = 32)
   var otherPrivilege: String? = null,
   var stoppagePercentage: Int? = null,
+  var activatedBy: Long? = null,
+  var activatedFrom: Long? = null,
+  var suspendedUntil: LocalDate? = null,
   @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "punishment_fk_id")
   var schedule: MutableList<PunishmentSchedule>,

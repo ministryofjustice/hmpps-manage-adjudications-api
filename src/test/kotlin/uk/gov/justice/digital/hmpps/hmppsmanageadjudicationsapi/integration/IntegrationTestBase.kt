@@ -123,11 +123,11 @@ abstract class IntegrationTestBase {
       .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
   }
 
-  protected fun initDataForOutcome(): IntegrationTestScenario {
-    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+  protected fun initDataForOutcome(adjudication: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION): IntegrationTestScenario {
+    prisonApiMockServer.stubPostAdjudication(adjudication)
 
     val intTestData = integrationTestData()
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftUserHeaders = setHeaders(username = adjudication.createdByUserId)
     val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
@@ -135,7 +135,7 @@ abstract class IntegrationTestBase {
     )
 
     return draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .startDraft(adjudication)
       .setApplicableRules()
       .setIncidentRole()
       .setOffenceData()
@@ -144,6 +144,6 @@ abstract class IntegrationTestBase {
       .addEvidence()
       .addWitnesses()
       .completeDraft()
-      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
+      .acceptReport(adjudication.adjudicationNumber.toString())
   }
 }

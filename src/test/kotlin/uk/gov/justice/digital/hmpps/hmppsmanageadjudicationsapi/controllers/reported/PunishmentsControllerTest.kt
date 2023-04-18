@@ -17,8 +17,12 @@ import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService
+import java.time.LocalDate
 
 @WebMvcTest(
   PunishmentsController::class,
@@ -166,7 +170,66 @@ class PunishmentsControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class GetSuspendedPunishments {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        punishmentsService.getSuspendedPunishments(
+          any(),
+        ),
+      ).thenReturn(SUSPENDED_PUNISHMENTS_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      getSuspendedPunishmentsRequest().andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      getSuspendedPunishmentsRequest().andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      getSuspendedPunishmentsRequest().andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to get a set of suspended punishments`() {
+      getSuspendedPunishmentsRequest()
+        .andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(punishmentsService).getSuspendedPunishments("AE1234")
+    }
+
+    private fun getSuspendedPunishmentsRequest(): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.get("/reported-adjudications/punishments/AE1234/suspended")
+            .header("Content-Type", "application/json"),
+        )
+    }
+  }
+
   companion object {
     val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 10)
+    val SUSPENDED_PUNISHMENTS_DTO = listOf(
+      SuspendedPunishmentDto(
+        reportNumber = 1,
+        punishment =
+        PunishmentDto(
+          type = PunishmentType.REMOVAL_WING,
+          schedule = PunishmentScheduleDto(
+            days = 10,
+            suspendedUntil = LocalDate.now(),
+          ),
+        ),
+      ),
+    )
   }
 }

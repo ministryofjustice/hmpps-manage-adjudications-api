@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.Parameters
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Size
 import org.springframework.data.domain.Page
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
@@ -108,6 +110,7 @@ data class GenderRequest(
 
 @RestController
 @Validated
+@Tag(name = "10. Draft Adjudication Management")
 class DraftAdjudicationController(
   private val draftAdjudicationService: DraftAdjudicationService,
 ) : DraftAdjudicationBaseController() {
@@ -158,7 +161,25 @@ class DraftAdjudicationController(
 
   @PostMapping
   @PreAuthorize("hasAuthority('SCOPE_write')")
-  @Operation(summary = "Starts a new draft adjudication.")
+  @Operation(
+    summary = "Starts a new draft adjudication.",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "201",
+        description = "New Adjudication Started",
+      ),
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "415",
+        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
+        content = [
+          io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
   @ResponseStatus(HttpStatus.CREATED)
   fun startNewAdjudication(@RequestBody newAdjudicationRequest: NewAdjudicationRequest): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService
@@ -187,7 +208,25 @@ class DraftAdjudicationController(
   }
 
   @PostMapping(value = ["/{id}/incident-statement"])
-  @Operation(summary = "Add the incident statement to the draft adjudication.")
+  @Operation(
+    summary = "Add the incident statement to the draft adjudication.",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "201",
+        description = "Incident Statement Added",
+      ),
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "415",
+        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
+        content = [
+          io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun addIncidentStatement(
