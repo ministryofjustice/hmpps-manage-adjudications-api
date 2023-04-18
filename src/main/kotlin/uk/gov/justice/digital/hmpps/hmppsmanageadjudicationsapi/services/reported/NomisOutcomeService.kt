@@ -21,11 +21,7 @@ class NomisOutcomeService(
 ) {
 
   fun createHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome): Long? {
-    if (hearing == null && outcome.doNotCallApi() ||
-      outcome.code == OutcomeCode.REFER_INAD
-    ) {
-      return null
-    }
+    if (hearing == null && outcome.doNotCallApi() || outcome.ignore()) return null
 
     hearing?.let {
       if (outcome.createHearingAndOutcome() || isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)) {
@@ -48,17 +44,14 @@ class NomisOutcomeService(
   }
 
   fun amendHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome) {
-    if (hearing == null && outcome.doNotCallApi() ||
-      outcome.code == OutcomeCode.REFER_INAD
-    ) {
-      return
-    }
+    if (hearing == null && outcome.doNotCallApi() || outcome.ignore()) return
 
     hearing?.let {
-      if (outcome.canAmendOutcome() || isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)) {
+      val isPoliceReferralOutcome = isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)
+      if (outcome.canAmendOutcome() || isPoliceReferralOutcome) {
         prisonApiGateway.amendHearingResult(
           adjudicationNumber = adjudicationNumber,
-          oicHearingId = outcome.oicHearingId ?: it.oicHearingId,
+          oicHearingId = if (outcome.forceValidationOfOicHearingId(isPoliceReferralOutcome)) outcome.validateOicHearingId() else it.oicHearingId,
           oicHearingResultRequest = OicHearingResultRequest(
             pleaFindingCode = it.validateHearingOutcome().validatePlea().plea,
             findingCode = outcome.code.validateFinding(),
@@ -69,11 +62,7 @@ class NomisOutcomeService(
   }
 
   fun deleteHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome) {
-    if (hearing == null && outcome.doNotCallApi() ||
-      outcome.code == OutcomeCode.REFER_INAD
-    ) {
-      return
-    }
+    if (hearing == null && outcome.doNotCallApi() || outcome.ignore()) return
 
     hearing?.let {
       if (outcome.canDeleteOutcome() || isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)) {
@@ -106,7 +95,14 @@ class NomisOutcomeService(
     private val CREATE_HEARING_AND_OUTCOME = listOf(OutcomeCode.QUASHED)
     private val CREATE_OUTCOME = listOf(OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED, OutcomeCode.CHARGE_PROVED, OutcomeCode.DISMISSED)
     private val POLICE_REFERRAL_OUTCOMES = listOf(OutcomeCode.PROSECUTION, OutcomeCode.NOT_PROCEED)
+
+    fun Outcome.ignore(): Boolean = this.code == OutcomeCode.REFER_INAD
+
+    fun Outcome.forceValidationOfOicHearingId(policeReferralOutcome: Boolean): Boolean = CREATE_HEARING_AND_OUTCOME.contains(this.code) ||
+      policeReferralOutcome && POLICE_REFERRAL_OUTCOMES.contains(this.code)
+
     fun Outcome.doNotCallApi(): Boolean = NO_OUTCOME_WITHOUT_HEARING.contains(this.code)
+
     fun Outcome.createHearingAndOutcome(): Boolean = CREATE_HEARING_AND_OUTCOME.contains(this.code)
 
     fun Outcome.createOutcome(): Boolean = CREATE_OUTCOME.contains(this.code)

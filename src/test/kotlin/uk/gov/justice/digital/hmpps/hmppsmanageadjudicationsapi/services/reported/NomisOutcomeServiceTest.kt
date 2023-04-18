@@ -177,10 +177,28 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class AmendHearingResult {
 
+    @CsvSource("QUASHED", "NOT_PROCEED", "PROSECUTION")
+    @ParameterizedTest
+    fun `oic hearing id not present on outcome exception `(code: OutcomeCode) {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+        it.outcomes.add(Outcome(code = code))
+      }
+
+      Assertions.assertThatThrownBy {
+        nomisOutcomeService.amendHearingResultIfApplicable(
+          adjudicationNumber = reportedAdjudication.reportNumber,
+          hearing = reportedAdjudication.getLatestHearing(),
+          outcome = reportedAdjudication.latestOutcome()!!,
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("oic hearing id not linked to outcome")
+    }
+
     @Test
     fun `hearing without outcome throws exception `() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.outcomes.add(Outcome(code = OutcomeCode.QUASHED))
+        it.outcomes.add(Outcome(code = OutcomeCode.QUASHED, oicHearingId = 1))
       }
 
       Assertions.assertThatThrownBy {
@@ -276,7 +294,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `hearing with outcome {0} amends hearing result `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = if (code == OutcomeCode.REFER_POLICE) HearingOutcomeCode.REFER_POLICE else HearingOutcomeCode.COMPLETE, adjudicator = "")
-        it.outcomes.add(Outcome(code = code))
+        it.outcomes.add(Outcome(code = code, oicHearingId = 1))
       }
 
       nomisOutcomeService.amendHearingResultIfApplicable(
@@ -307,6 +325,25 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
   @Nested
   inner class DeleteHearingResult {
+
+    @CsvSource("QUASHED", "NOT_PROCEED", "PROSECUTION")
+    @ParameterizedTest
+    fun `oic hearing id not present on outcome exception `(code: OutcomeCode) {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+        it.outcomes.add(Outcome(code = code))
+      }
+
+      Assertions.assertThatThrownBy {
+        nomisOutcomeService.deleteHearingResultIfApplicable(
+          adjudicationNumber = reportedAdjudication.reportNumber,
+          hearing = reportedAdjudication.getLatestHearing(),
+          outcome = reportedAdjudication.latestOutcome()!!,
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("oic hearing id not linked to outcome")
+    }
+
     @CsvSource("PROSECUTION", "REFER_POLICE", "NOT_PROCEED")
     @ParameterizedTest
     fun `no hearing and outcome {0} does not call prison api `(code: OutcomeCode) {
