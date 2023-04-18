@@ -5,9 +5,7 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import java.time.LocalDateTime
 
 class ReferralsIntTest : IntegrationTestBase() {
@@ -20,6 +18,8 @@ class ReferralsIntTest : IntegrationTestBase() {
   @Test
   fun `remove referral with hearing`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForHearings().createHearing().createReferral(HearingOutcomeCode.REFER_POLICE)
@@ -122,6 +122,8 @@ class ReferralsIntTest : IntegrationTestBase() {
     initDataForOutcome().createOutcomeReferPolice()
 
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION)
 
@@ -132,19 +134,9 @@ class ReferralsIntTest : IntegrationTestBase() {
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.plusDays(1), OicHearingType.INAD_ADULT)
 
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_ASKED, Finding.REF_POLICE),
-    )
-
     integrationTestData().createReferral(
       IntegrationTestData.DEFAULT_ADJUDICATION,
       HearingOutcomeCode.REFER_POLICE,
-    )
-
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_ASKED, Finding.PROSECUTED),
     )
 
     integrationTestData().createOutcomeProsecution(
@@ -262,10 +254,7 @@ class ReferralsIntTest : IntegrationTestBase() {
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, LocalDateTime.now())
 
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_ASKED, Finding.REF_POLICE),
-    )
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     integrationTestData().createReferral(
       IntegrationTestData.DEFAULT_ADJUDICATION,
@@ -303,10 +292,7 @@ class ReferralsIntTest : IntegrationTestBase() {
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, LocalDateTime.now())
 
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_ASKED, Finding.REF_POLICE),
-    )
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     integrationTestData().createReferral(
       IntegrationTestData.DEFAULT_ADJUDICATION,

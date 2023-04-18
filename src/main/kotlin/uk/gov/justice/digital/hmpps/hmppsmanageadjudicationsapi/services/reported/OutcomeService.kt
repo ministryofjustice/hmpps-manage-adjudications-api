@@ -169,10 +169,15 @@ class OutcomeService(
       amount = amount,
       caution = caution,
       quashedReason = quashedReason,
-    )
-    reportedAdjudication.outcomes.add(outcomeToCreate)
+    ).also {
+      it.oicHearingId = nomisOutcomeService.createHearingResultIfApplicable(
+        adjudicationNumber = adjudicationNumber,
+        hearing = reportedAdjudication.getLatestHearing(),
+        outcome = it,
+      )
+    }
 
-    nomisOutcomeService.createHearingResultIfApplicable(hearing = reportedAdjudication.getLatestHearing(), outcome = outcomeToCreate)
+    reportedAdjudication.outcomes.add(outcomeToCreate)
 
     return saveToDto(reportedAdjudication)
   }
@@ -207,7 +212,11 @@ class OutcomeService(
       }
     }
 
-    nomisOutcomeService.amendHearingResultIfApplicable(hearing = reportedAdjudication.getLatestHearing(), outcome = reportedAdjudication.latestOutcome()!!)
+    nomisOutcomeService.amendHearingResultIfApplicable(
+      adjudicationNumber = adjudicationNumber,
+      hearing = reportedAdjudication.getLatestHearing(),
+      outcome = reportedAdjudication.latestOutcome()!!,
+    )
 
     return saveToDto(reportedAdjudication)
   }
@@ -223,7 +232,11 @@ class OutcomeService(
     reportedAdjudication.outcomes.remove(outcomeToDelete)
     reportedAdjudication.calculateStatus()
 
-    nomisOutcomeService.deleteHearingResultIfApplicable(hearing = reportedAdjudication.getLatestHearing(), outcome = outcomeToDelete)
+    nomisOutcomeService.deleteHearingResultIfApplicable(
+      adjudicationNumber = adjudicationNumber,
+      hearing = reportedAdjudication.getLatestHearing(),
+      outcome = outcomeToDelete,
+    )
 
     return saveToDto(reportedAdjudication)
   }

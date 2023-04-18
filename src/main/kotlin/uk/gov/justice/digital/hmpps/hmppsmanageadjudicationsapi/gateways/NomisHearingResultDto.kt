@@ -8,8 +8,8 @@ enum class Plea {
   GUILTY, NOT_GUILTY, REFUSED, UNFIT, NOT_ASKED,
 }
 
-data class NomisHearingResultRequest(
+data class OicHearingResultRequest(
   val pleaFindingCode: Plea,
   val findingCode: Finding,
-  val adjudicator: String,
+  val adjudicator: String? = null,
 )

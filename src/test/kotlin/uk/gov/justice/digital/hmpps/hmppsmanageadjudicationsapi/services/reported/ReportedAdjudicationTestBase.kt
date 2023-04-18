@@ -61,7 +61,6 @@ abstract class ReportedAdjudicationTestBase : TestsToImplement {
       YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED,
     )
 
-    // TODO - Review whether this is required
     whenever(offenceCodeLookupService.getParagraphNumber(3, true)).thenReturn(YOUTH_OFFENCE_CODE_3_PARAGRAPH_NUMBER)
     whenever(offenceCodeLookupService.getParagraphDescription(3, true)).thenReturn(
       YOUTH_OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,

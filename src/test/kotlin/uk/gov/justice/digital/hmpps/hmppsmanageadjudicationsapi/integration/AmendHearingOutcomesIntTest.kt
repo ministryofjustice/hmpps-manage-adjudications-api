@@ -12,8 +12,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 
 class AmendHearingOutcomesIntTest : IntegrationTestBase() {
 
@@ -25,15 +23,8 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   @Test
   fun `amend hearing outcome test - before - refer police, after - refer police`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_ASKED, Finding.REF_POLICE),
-    )
-
-    prisonApiMockServer.stubAmendHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_ASKED, Finding.REF_POLICE),
-    )
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForHearings().createHearing().createReferral(code = HearingOutcomeCode.REFER_POLICE)
 
@@ -120,14 +111,8 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   @Test
   fun `amend hearing outcome test - before - charge proved, after - charge proved`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.GUILTY, Finding.PROVED),
-    )
-    prisonApiMockServer.stubAmendHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_GUILTY, Finding.PROVED),
-    )
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForHearings().createHearing().createChargeProved()
 
@@ -161,14 +146,8 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   @Test
   fun `amend hearing outcome test - before - not proceed, after - not proceed`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.GUILTY, Finding.NOT_PROCEED),
-    )
-    prisonApiMockServer.stubAmendHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_GUILTY, Finding.PROVED),
-    )
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForHearings().createHearing().createNotProceed()
 
@@ -201,14 +180,8 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   @Test
   fun `amend hearing outcome test - before - dismissed, after - dismissed`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.GUILTY, Finding.D),
-    )
-    prisonApiMockServer.stubAmendHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_GUILTY, Finding.D),
-    )
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForHearings().createHearing().createDismissed()
 
@@ -246,14 +219,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   @ParameterizedTest
   fun `amend hearing outcome from {0} to {1}`(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-
-    /*  // TODO need to map these...
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(null, Finding.REFUSED),
-    )
-    */
-
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForHearings().createHearing().also {
@@ -354,6 +320,9 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   @Test
   fun `amend hearing outcome - charge proved where the amount is no longer required `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
     initDataForHearings().createHearing().createChargeProved()
 
     webTestClient.put()
@@ -399,6 +368,8 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   @Test
   fun `attempt to edit referral when an outcome is present - expected to fail currently`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
     initDataForHearings().createHearing().createReferral(HearingOutcomeCode.REFER_POLICE).createOutcomeNotProceed()
 
     webTestClient.put()

@@ -8,8 +8,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import java.time.LocalDateTime
 
 class OutcomeIntTest : IntegrationTestBase() {
@@ -81,10 +79,7 @@ class OutcomeIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     initDataForOutcome().createHearing()
 
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_GUILTY, Finding.NOT_PROCEED),
-    )
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     webTestClient.post()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/complete-hearing/not-proceed")
@@ -115,10 +110,7 @@ class OutcomeIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     initDataForOutcome().createHearing()
 
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_GUILTY, Finding.D),
-    )
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     webTestClient.post()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/complete-hearing/dismissed")
@@ -147,10 +139,7 @@ class OutcomeIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     initDataForOutcome().createHearing()
 
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_GUILTY, Finding.PROVED),
-    )
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     webTestClient.post()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/complete-hearing/charge-proved")
@@ -253,10 +242,7 @@ class OutcomeIntTest : IntegrationTestBase() {
   fun `quash completed hearing outcome `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_GUILTY, Finding.PROVED),
-    )
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForOutcome().createHearing().createChargeProved()
 
@@ -346,10 +332,7 @@ class OutcomeIntTest : IntegrationTestBase() {
   @Test
   fun `amend outcome - quashed `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubAmendHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_GUILTY, Finding.QUASHED),
-    )
+    prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForOutcome().createHearing().createChargeProved().createQuashed()
 

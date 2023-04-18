@@ -7,9 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import java.time.LocalDateTime
 
 class HearingsIntTest : IntegrationTestBase() {
@@ -267,10 +265,7 @@ class HearingsIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     initDataForHearings().createHearing()
 
-    prisonApiMockServer.stubCreateHearingResult(
-      IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      prisonApiMockServer.createHearingResultPayload(Plea.NOT_ASKED, Finding.REF_POLICE),
-    )
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     webTestClient.post()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/referral")

@@ -1,11 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.aMultipart
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.delete
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
-import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
@@ -17,8 +15,6 @@ import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.http.Request
 import com.github.tomakehurst.wiremock.http.Response
 import org.json.JSONObject
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.AdjudicationIntTestDataSet
 
 class PrisonApiMockServer : WireMockServer {
@@ -31,7 +27,7 @@ class PrisonApiMockServer : WireMockServer {
     inRequest: Request,
     inResponse: Response,
   ) {
-    System.out.println("BODY: ${inResponse.bodyAsString}")
+    System.out.println("${inRequest.url} BODY: ${inResponse.bodyAsString}")
   }
 
   fun stubHealth() {
@@ -218,32 +214,22 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubCreateHearingResult(adjudicationNumber: Long, body: JSONObject) {
+  fun stubCreateHearingResult(adjudicationNumber: Long) {
     stubFor(
       post(
         urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"),
-      ).withMultipartRequestBody(
-        aMultipart().withBody(equalToJson(body.put("adjudicator", "test").toString())),
-      ).willReturn(
-        aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withStatus(201)
-          .withBody(
-            JSONObject()
-              .put("pleaFindingCode", "")
-              .put("findingCode", "")
-              .toString(),
-          ),
-      ),
+      )
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(201),
+        ),
     )
   }
 
-  fun stubAmendHearingResult(adjudicationNumber: Long, body: JSONObject) {
+  fun stubAmendHearingResult(adjudicationNumber: Long) {
     stubFor(
       put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"))
-        .withMultipartRequestBody(
-          aMultipart().withBody(equalToJson(body.put("adjudicator", "updated adjudicator").toString())),
-        )
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -262,11 +248,4 @@ class PrisonApiMockServer : WireMockServer {
         ),
     )
   }
-
-  fun createHearingResultPayload(plea: Plea, finding: Finding) =
-    JSONObject().put(
-      "pleaFindingCode",
-      plea,
-    )
-      .put("findingCode", finding)
 }
