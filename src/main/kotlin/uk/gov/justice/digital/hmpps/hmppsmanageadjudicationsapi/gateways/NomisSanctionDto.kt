@@ -25,9 +25,32 @@ data class OffenderOicSanctionRequest(
 ) {
   companion object {
 
-    private fun oicSanctionCodeMapper(punishmentType: PunishmentType, privilegeType: PrivilegeType?): OicSanctionCode = TODO()
+    private fun oicSanctionCodeMapper(punishmentType: PunishmentType, privilegeType: PrivilegeType?): OicSanctionCode =
+      when (punishmentType) {
+        PunishmentType.PRIVILEGE -> when (privilegeType) {
+          PrivilegeType.CANTEEN -> OicSanctionCode.CANTEEN
+          PrivilegeType.FACILITIES -> TODO()
+          PrivilegeType.MONEY -> TODO()
+          PrivilegeType.TV -> TODO()
+          PrivilegeType.ASSOCIATION -> OicSanctionCode.ASSO
+          PrivilegeType.OTHER -> OicSanctionCode.OTHER
+          null -> throw RuntimeException("fatal - no privilege type specified")
+        }
+        PunishmentType.EARNINGS -> OicSanctionCode.STOP_PCT
+        PunishmentType.CONFINEMENT -> OicSanctionCode.CC
+        PunishmentType.REMOVAL_ACTIVITY -> OicSanctionCode.REMACT
+        PunishmentType.EXCLUSION_WORK -> TODO()
+        PunishmentType.EXTRA_WORK -> TODO()
+        PunishmentType.REMOVAL_WING -> OicSanctionCode.REMACT
+        PunishmentType.ADDITIONAL_DAYS -> TODO()
+        PunishmentType.PROSPECTIVE_DAYS -> TODO()
+      }
 
-    private fun PunishmentSchedule.statusMapper(): Status = TODO()
+    private fun PunishmentSchedule.statusMapper(): Status =
+      when (this.startDate) {
+        null -> TODO()
+        else -> Status.AS_AWARDED
+      }
 
     fun Punishment.mapPunishmentToSanction(damagesOwed: Double?): OffenderOicSanctionRequest {
       val latestSchedule = this.schedule.maxBy { it.createDateTime!! }

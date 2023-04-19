@@ -13,11 +13,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Privile
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 import java.time.LocalDate
 
 @Transactional
@@ -51,6 +55,11 @@ class PunishmentsService(
         reportedAdjudication.punishments.add(createNewPunishment(punishmentRequest = it))
       }
     }
+
+    prisonApiGateway.createSanctions(
+      adjudicationNumber = adjudicationNumber,
+      sanctions = reportedAdjudication.mapToSanctions(),
+    )
 
     return saveToDto(reportedAdjudication)
   }
@@ -91,6 +100,11 @@ class PunishmentsService(
         }
       }
     }
+
+    prisonApiGateway.updateSanctions(
+      adjudicationNumber = adjudicationNumber,
+      sanctions = reportedAdjudication.mapToSanctions(),
+    )
 
     return saveToDto(reportedAdjudication)
   }
@@ -178,6 +192,9 @@ class PunishmentsService(
   )
 
   companion object {
+
+    fun ReportedAdjudication.mapToSanctions(): List<OffenderOicSanctionRequest> =
+      this.punishments.map { it.mapPunishmentToSanction(this.latestOutcome()?.amount) }
 
     fun List<PunishmentSchedule>.latestSchedule() = this.maxBy { it.createDateTime!! }
     fun List<Punishment>.suspendedPunishmentsToActivate() =

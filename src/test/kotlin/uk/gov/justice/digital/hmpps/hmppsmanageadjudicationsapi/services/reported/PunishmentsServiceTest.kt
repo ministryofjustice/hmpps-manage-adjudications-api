@@ -29,7 +29,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -272,6 +274,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             Punishment(
               id = 1,
               type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.CANTEEN,
               schedule = mutableListOf(
                 PunishmentSchedule(days = 10),
               ),
@@ -812,7 +815,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val oicSanctionRequest = punishment.mapPunishmentToSanction(10.0)
-      TODO("implement me")
     }
 
     @EnumSource(PunishmentType::class)
@@ -828,7 +830,21 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val oicSanctionRequest = punishment.mapPunishmentToSanction(10.0)
-      TODO("implement me")
+
+      assertThat(oicSanctionRequest.compensationAmount).isEqualTo(10.0)
+      assertThat(oicSanctionRequest.effectiveDate).isEqualTo(LocalDate.now())
+      assertThat(oicSanctionRequest.sanctionDays).isEqualTo(10)
+      assertThat(oicSanctionRequest.status).isEqualTo(Status.AS_AWARDED) // TODO confirm with nomis / John
+
+      when (punishmentType) {
+        PunishmentType.EARNINGS -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.STOP_PCT)
+        PunishmentType.CONFINEMENT -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.CC)
+        PunishmentType.REMOVAL_ACTIVITY -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.REMACT)
+        PunishmentType.EXCLUSION_WORK -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(null)
+        PunishmentType.EXTRA_WORK -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.EXTRA_WORK)
+        PunishmentType.REMOVAL_WING -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.REMWIN)
+        else -> {}
+      }
     }
 
     @EnumSource(PrivilegeType::class)
@@ -843,7 +859,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val oicSanctionRequest = punishment.mapPunishmentToSanction(10.0)
-      TODO("implement me")
     }
 
     @EnumSource(PrivilegeType::class)
@@ -858,7 +873,20 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val oicSanctionRequest = punishment.mapPunishmentToSanction(10.0)
-      TODO("implement me")
+
+      assertThat(oicSanctionRequest.compensationAmount).isEqualTo(10.0)
+      assertThat(oicSanctionRequest.effectiveDate).isEqualTo(LocalDate.now())
+      assertThat(oicSanctionRequest.sanctionDays).isEqualTo(10)
+      assertThat(oicSanctionRequest.status).isEqualTo(Status.AS_AWARDED) // TODO confirm with nomis / John
+
+      when (privilegeType) {
+        PrivilegeType.CANTEEN -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.CANTEEN)
+        PrivilegeType.FACILITIES -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(null)
+        PrivilegeType.MONEY -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(null)
+        PrivilegeType.TV -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(null)
+        PrivilegeType.ASSOCIATION -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.ASSO)
+        PrivilegeType.OTHER -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.OTHER)
+      }
     }
 
     @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
