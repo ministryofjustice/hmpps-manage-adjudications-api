@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingResultRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
+import java.time.LocalDateTime
 
 @Transactional
 @Service
@@ -28,7 +29,7 @@ class NomisOutcomeService(
         val oicHearingId = prisonApiGateway.createHearing(
           adjudicationNumber = adjudicationNumber,
           oicHearingRequest = OicHearingRequest(
-            dateTimeOfHearing = it.dateTimeOfHearing,
+            dateTimeOfHearing = LocalDateTime.now(),
             oicHearingType = it.oicHearingType,
             hearingLocationId = it.locationId,
           ),
