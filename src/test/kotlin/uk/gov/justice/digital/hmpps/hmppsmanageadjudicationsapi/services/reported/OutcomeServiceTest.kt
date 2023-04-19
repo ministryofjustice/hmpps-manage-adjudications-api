@@ -11,6 +11,9 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
@@ -26,11 +29,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHear
 import java.time.LocalDateTime
 
 class OutcomeServiceTest : ReportedAdjudicationTestBase() {
-
+  private val nomisOutcomeService: NomisOutcomeService = mock()
   private val outcomeService = OutcomeService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
+    nomisOutcomeService,
   )
 
   @Test
@@ -88,7 +92,9 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
   @Nested
   inner class CreateOutcome {
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+      it.hearings.add(entityBuilder.createHearing())
+    }
 
     @BeforeEach
     fun init() {
@@ -177,6 +183,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(nomisOutcomeService, atLeastOnce()).createHearingResultIfApplicable(any(), anyOrNull(), any())
 
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.NOT_PROCEED)
@@ -189,7 +196,6 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `create dismissed `() {
       reportedAdjudication.status = ReportedAdjudicationStatus.SCHEDULED
-
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.createDismissed(
@@ -198,6 +204,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(nomisOutcomeService, atLeastOnce()).createHearingResultIfApplicable(any(), any(), any())
 
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.DISMISSED)
@@ -211,15 +218,20 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
+      whenever(nomisOutcomeService.createHearingResultIfApplicable(any(), anyOrNull(), any())).thenReturn(1L)
+
       val response = outcomeService.createProsecution(
         1235L,
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(nomisOutcomeService, atLeastOnce()).createHearingResultIfApplicable(any(), any(), any())
 
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.PROSECUTION)
       assertThat(argumentCaptor.value.outcomes.first().details).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().oicHearingId).isEqualTo(1)
+
       assertThat(response).isNotNull
     }
 
@@ -230,6 +242,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.createdByUserId = "test"
           it.createDateTime = LocalDateTime.now()
+          it.hearings.add(entityBuilder.createHearing())
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "test")
           it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
         },
@@ -244,6 +257,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(nomisOutcomeService, atLeastOnce()).createHearingResultIfApplicable(any(), any(), any())
 
       assertThat(argumentCaptor.value.outcomes.size).isEqualTo(2)
       assertThat(argumentCaptor.value.outcomes.last()).isNotNull
@@ -290,6 +304,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(nomisOutcomeService, atLeastOnce()).createHearingResultIfApplicable(any(), anyOrNull(), any())
 
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(code)
@@ -311,6 +326,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(nomisOutcomeService, atLeastOnce()).createHearingResultIfApplicable(any(), any(), any())
 
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
@@ -325,11 +341,6 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class DeleteOutcome {
     private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
-    private val reportedAdjudicationWithOutcome = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
-      it.outcomes.add(
-        Outcome(id = 1, code = OutcomeCode.REFER_INAD),
-      )
-    }
     private val reportedAdjudicationWithOutcomeAndNoHearings = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
       it.hearings.clear()
       it.outcomes.add(
@@ -340,7 +351,6 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @BeforeEach
     fun init() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(reportedAdjudicationWithOutcome)
       whenever(reportedAdjudicationRepository.findByReportNumber(3)).thenReturn(reportedAdjudicationWithOutcomeAndNoHearings)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         reportedAdjudication.also {
@@ -350,8 +360,17 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
-    @Test
-    fun `delete outcome when we have hearings `() {
+    @CsvSource("REFER_POLICE", "PROSECUTION", "CHARGE_PROVED", "NOT_PROCEED", "DISMISSED")
+    @ParameterizedTest
+    fun `delete outcome when we have hearings `(code: OutcomeCode) {
+      val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+        it.outcomes.add(
+          Outcome(id = 1, code = code),
+        )
+      }
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.deleteOutcome(
@@ -359,6 +378,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         1,
       )
 
+      verify(nomisOutcomeService, atLeastOnce()).deleteHearingResultIfApplicable(any(), any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.outcomes).isEmpty()
@@ -767,6 +787,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(nomisOutcomeService, atLeastOnce()).amendHearingResultIfApplicable(any(), anyOrNull(), any())
 
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(code.outcomeCode!!)
@@ -796,6 +817,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(nomisOutcomeService, atLeastOnce()).amendHearingResultIfApplicable(any(), any(), any())
 
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
@@ -824,6 +846,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(nomisOutcomeService, atLeastOnce()).amendHearingResultIfApplicable(any(), any(), any())
 
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.DISMISSED)
@@ -853,6 +876,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(nomisOutcomeService, atLeastOnce()).amendHearingResultIfApplicable(any(), any(), any())
 
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.NOT_PROCEED)

@@ -6,6 +6,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import jakarta.validation.ValidationException
 import org.hibernate.validator.constraints.Length
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 
 @Entity
 @Table(name = "outcome")
@@ -21,10 +22,11 @@ data class Outcome(
   var caution: Boolean? = null,
   @Enumerated(EnumType.STRING)
   var quashedReason: QuashedReason? = null,
+  var oicHearingId: Long? = null,
 ) : BaseEntity()
 
-enum class OutcomeCode(val status: ReportedAdjudicationStatus) {
-  REFER_POLICE(ReportedAdjudicationStatus.REFER_POLICE) {
+enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Finding? = null) {
+  REFER_POLICE(ReportedAdjudicationStatus.REFER_POLICE, Finding.REF_POLICE) {
     override fun nextStates(): List<OutcomeCode> {
       return listOf(NOT_PROCEED, PROSECUTION, SCHEDULE_HEARING)
     }
@@ -34,12 +36,12 @@ enum class OutcomeCode(val status: ReportedAdjudicationStatus) {
       return listOf(NOT_PROCEED, SCHEDULE_HEARING)
     }
   },
-  NOT_PROCEED(ReportedAdjudicationStatus.NOT_PROCEED),
-  DISMISSED(ReportedAdjudicationStatus.DISMISSED),
-  PROSECUTION(ReportedAdjudicationStatus.PROSECUTION),
+  NOT_PROCEED(ReportedAdjudicationStatus.NOT_PROCEED, Finding.NOT_PROCEED),
+  DISMISSED(ReportedAdjudicationStatus.DISMISSED, Finding.D),
+  PROSECUTION(ReportedAdjudicationStatus.PROSECUTION, Finding.PROSECUTED),
   SCHEDULE_HEARING(ReportedAdjudicationStatus.SCHEDULED),
-  CHARGE_PROVED(ReportedAdjudicationStatus.CHARGE_PROVED),
-  QUASHED(ReportedAdjudicationStatus.QUASHED),
+  CHARGE_PROVED(ReportedAdjudicationStatus.CHARGE_PROVED, Finding.PROVED),
+  QUASHED(ReportedAdjudicationStatus.QUASHED, Finding.QUASHED),
   ;
 
   fun validateReferral(): OutcomeCode {

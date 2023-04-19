@@ -106,7 +106,7 @@ data class ReportedAdjudication(
     }
   }
 
-  fun ReportedAdjudication.getLatestHearing(): Hearing? = this.hearings.maxByOrNull { it.dateTimeOfHearing }
+  fun getLatestHearing(): Hearing? = this.hearings.maxByOrNull { it.dateTimeOfHearing }
 
   private fun Hearing?.isAdjourn() = this?.hearingOutcome?.code == HearingOutcomeCode.ADJOURN
 }

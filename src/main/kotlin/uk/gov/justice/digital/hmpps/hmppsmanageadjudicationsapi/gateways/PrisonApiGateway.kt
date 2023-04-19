@@ -50,4 +50,30 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
       .retrieve()
       .bodyToMono<Void>()
       .block()
+
+  fun createHearingResult(adjudicationNumber: Long, oicHearingId: Long, oicHearingResultRequest: OicHearingResultRequest): Void? =
+    prisonApiClientCreds
+      .post()
+      .uri("/adjudications/adjudication/$adjudicationNumber/hearing/$oicHearingId/result")
+      .bodyValue(oicHearingResultRequest)
+      .retrieve()
+      .bodyToMono<Void>()
+      .block()
+
+  fun amendHearingResult(adjudicationNumber: Long, oicHearingId: Long, oicHearingResultRequest: OicHearingResultRequest): Void? =
+    prisonApiClientCreds
+      .put()
+      .uri("/adjudications/adjudication/$adjudicationNumber/hearing/$oicHearingId/result")
+      .bodyValue(oicHearingResultRequest)
+      .retrieve()
+      .bodyToMono<Void>()
+      .block()
+
+  fun deleteHearingResult(adjudicationNumber: Long, oicHearingId: Long): Void? =
+    prisonApiClientCreds
+      .delete()
+      .uri("/adjudications/adjudication/$adjudicationNumber/hearing/$oicHearingId/result")
+      .retrieve()
+      .bodyToMono<Void>()
+      .block()
 }

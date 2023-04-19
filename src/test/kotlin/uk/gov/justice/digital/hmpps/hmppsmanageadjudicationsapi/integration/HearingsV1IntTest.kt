@@ -102,7 +102,7 @@ class HearingsV1IntTest : IntegrationTestBase() {
     initDataForHearingsV1()
     val reportedAdjudication = createHearing()
 
-    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
 
     webTestClient.put()
@@ -133,7 +133,7 @@ class HearingsV1IntTest : IntegrationTestBase() {
     initDataForHearingsV1()
     val reportedAdjudication = createHearing()
 
-    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
 
     webTestClient.put()
@@ -155,7 +155,7 @@ class HearingsV1IntTest : IntegrationTestBase() {
     initDataForHearingsV1()
     val reportedAdjudication = createHearing()
 
-    prisonApiMockServer.stubAmendHearingFailure(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
+    prisonApiMockServer.stubAmendHearingFailure(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
 
     webTestClient.put()
@@ -189,7 +189,7 @@ class HearingsV1IntTest : IntegrationTestBase() {
     initDataForHearingsV1()
     val reportedAdjudication = createHearing()
 
-    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
+    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     assert(reportedAdjudication.reportedAdjudication.hearings.size == 1)
 
@@ -209,7 +209,7 @@ class HearingsV1IntTest : IntegrationTestBase() {
     initDataForHearingsV1()
     val reportedAdjudication = createHearing()
 
-    prisonApiMockServer.stubDeleteHearingFailure(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber, 100)
+    prisonApiMockServer.stubDeleteHearingFailure(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     assert(reportedAdjudication.reportedAdjudication.hearings.size == 1)
 

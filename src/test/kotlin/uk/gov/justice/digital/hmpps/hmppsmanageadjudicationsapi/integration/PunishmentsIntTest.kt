@@ -108,6 +108,9 @@ class PunishmentsIntTest : IntegrationTestBase() {
   fun `activate suspended punishment on create `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
     initDataForOutcome().createHearing().createChargeProved()
     initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
       .createChargeProved(overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
@@ -153,6 +156,9 @@ class PunishmentsIntTest : IntegrationTestBase() {
   fun `activate suspended punishment on update `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
+
     initDataForOutcome().createHearing().createChargeProved()
     initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
       .createChargeProved(overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)

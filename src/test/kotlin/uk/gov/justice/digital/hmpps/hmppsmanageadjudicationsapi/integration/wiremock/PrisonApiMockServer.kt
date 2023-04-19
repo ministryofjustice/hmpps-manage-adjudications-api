@@ -27,7 +27,7 @@ class PrisonApiMockServer : WireMockServer {
     inRequest: Request,
     inResponse: Response,
   ) {
-    System.out.println("BODY: ${inResponse.bodyAsString}")
+    System.out.println("${inRequest.url} BODY: ${inResponse.bodyAsString}")
   }
 
   fun stubHealth() {
@@ -170,9 +170,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubAmendHearing(adjudicationNumber: Long, hearingId: Long) {
+  fun stubAmendHearing(adjudicationNumber: Long) {
     stubFor(
-      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/$hearingId"))
+      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -181,9 +181,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubAmendHearingFailure(adjudicationNumber: Long, hearingId: Long) {
+  fun stubAmendHearingFailure(adjudicationNumber: Long) {
     stubFor(
-      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/$hearingId"))
+      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -192,9 +192,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteHearing(adjudicationNumber: Long, hearingId: Long) {
+  fun stubDeleteHearing(adjudicationNumber: Long) {
     stubFor(
-      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/$hearingId"))
+      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -203,13 +203,48 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteHearingFailure(adjudicationNumber: Long, hearingId: Long) {
+  fun stubDeleteHearingFailure(adjudicationNumber: Long) {
     stubFor(
-      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/$hearingId"))
+      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withStatus(500),
+        ),
+    )
+  }
+
+  fun stubCreateHearingResult(adjudicationNumber: Long) {
+    stubFor(
+      post(
+        urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"),
+      )
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(201),
+        ),
+    )
+  }
+
+  fun stubAmendHearingResult(adjudicationNumber: Long) {
+    stubFor(
+      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubDeleteHearingResult(adjudicationNumber: Long) {
+    stubFor(
+      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200),
         ),
     )
   }

@@ -22,6 +22,7 @@ class OutcomeService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
+  private val nomisOutcomeService: NomisOutcomeService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -161,16 +162,22 @@ class OutcomeService(
       reportedAdjudication.latestOutcome()!!.code.validateReferralTransition(code)
     }
 
-    reportedAdjudication.outcomes.add(
-      Outcome(
-        code = code,
-        details = details,
-        reason = reason,
-        amount = amount,
-        caution = caution,
-        quashedReason = quashedReason,
-      ),
-    )
+    val outcomeToCreate = Outcome(
+      code = code,
+      details = details,
+      reason = reason,
+      amount = amount,
+      caution = caution,
+      quashedReason = quashedReason,
+    ).also {
+      it.oicHearingId = nomisOutcomeService.createHearingResultIfApplicable(
+        adjudicationNumber = adjudicationNumber,
+        hearing = reportedAdjudication.getLatestHearing(),
+        outcome = it,
+      )
+    }
+
+    reportedAdjudication.outcomes.add(outcomeToCreate)
 
     return saveToDto(reportedAdjudication)
   }
@@ -204,11 +211,19 @@ class OutcomeService(
         else -> {}
       }
     }
+
+    nomisOutcomeService.amendHearingResultIfApplicable(
+      adjudicationNumber = adjudicationNumber,
+      hearing = reportedAdjudication.getLatestHearing(),
+      outcome = reportedAdjudication.latestOutcome()!!,
+    )
+
     return saveToDto(reportedAdjudication)
   }
 
   fun deleteOutcome(adjudicationNumber: Long, id: Long? = null): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+
     val outcomeToDelete = when (id) {
       null -> reportedAdjudication.latestOutcome()?.canDelete(reportedAdjudication.hearings.isNotEmpty()) ?: throw EntityNotFoundException("Outcome not found for $adjudicationNumber")
       else -> reportedAdjudication.getOutcome(id)
@@ -216,6 +231,12 @@ class OutcomeService(
 
     reportedAdjudication.outcomes.remove(outcomeToDelete)
     reportedAdjudication.calculateStatus()
+
+    nomisOutcomeService.deleteHearingResultIfApplicable(
+      adjudicationNumber = adjudicationNumber,
+      hearing = reportedAdjudication.getLatestHearing(),
+      outcome = outcomeToDelete,
+    )
 
     return saveToDto(reportedAdjudication)
   }
