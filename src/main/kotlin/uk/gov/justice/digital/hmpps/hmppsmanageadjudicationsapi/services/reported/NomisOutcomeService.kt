@@ -33,7 +33,12 @@ class NomisOutcomeService(
             hearingLocationId = it.locationId,
           ),
         )
-        createHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome, oicHearingId = oicHearingId)
+        createHearingResult(
+          adjudicationNumber = adjudicationNumber,
+          hearing = it,
+          outcome = outcome,
+          oicHearingId = oicHearingId,
+        )
 
         return oicHearingId
       }
@@ -66,9 +71,12 @@ class NomisOutcomeService(
 
     hearing?.let {
       if (outcome.canDeleteOutcome() || isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)) {
-        prisonApiGateway.deleteHearing(adjudicationNumber = adjudicationNumber, oicHearingId = outcome.validateOicHearingId())
-        deleteHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome)
-      } else if (outcome.createOutcome()) deleteHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome)
+        deleteHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome).run {
+          prisonApiGateway.deleteHearing(adjudicationNumber = adjudicationNumber, oicHearingId = outcome.validateOicHearingId())
+        }
+        return
+      }
+      if (outcome.createOutcome()) deleteHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome)
     }
   }
 
