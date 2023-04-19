@@ -232,6 +232,8 @@ class OutcomeService(
     reportedAdjudication.outcomes.remove(outcomeToDelete)
     reportedAdjudication.calculateStatus()
 
+    if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) reportedAdjudication.punishments.clear()
+
     nomisOutcomeService.deleteHearingResultIfApplicable(
       adjudicationNumber = adjudicationNumber,
       hearing = reportedAdjudication.getLatestHearing(),

@@ -861,13 +861,13 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       TODO("implement me")
     }
 
-    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAY")
+    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
     @ParameterizedTest
     fun `prospective and additional days - suspended `(punishmentType: PunishmentType) {
       TODO()
     }
 
-    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAY")
+    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
     @ParameterizedTest
     fun `prospective and additional days - not suspended `(punishmentType: PunishmentType) {
       TODO()
