@@ -101,6 +101,12 @@ class IntegrationTestScenario(
     return this
   }
 
+  fun createPunishments(): IntegrationTestScenario {
+    intTestData.createPunishments(testAdjudicationDataSet)
+
+    return this
+  }
+
   fun createNotProceed(): IntegrationTestScenario {
     intTestData.createNotProceed(
       testAdjudicationDataSet,

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
@@ -27,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -791,6 +793,84 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(suspended.first().punishment.type).isEqualTo(PunishmentType.REMOVAL_WING)
       assertThat(suspended.first().punishment.schedule.days).isEqualTo(10)
       assertThat(suspended.first().punishment.schedule.suspendedUntil).isEqualTo(LocalDate.now())
+    }
+  }
+
+  @Nested
+  inner class PunishmentSanctionMapper {
+
+    @EnumSource(PunishmentType::class)
+    @ParameterizedTest
+    fun ` map all non privilege punishments to sanctions - suspended`(punishmentType: PunishmentType) {
+      if (punishmentType == PunishmentType.PRIVILEGE) return
+
+      val punishment = Punishment(
+        type = punishmentType,
+        schedule = mutableListOf(
+          PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+        ),
+      )
+
+      val oicSanctionRequest = punishment.mapPunishmentToSanction(10.0)
+      TODO("implement me")
+    }
+
+    @EnumSource(PunishmentType::class)
+    @ParameterizedTest
+    fun ` map all non privilege punishments to sanctions - not suspended`(punishmentType: PunishmentType) {
+      if (punishmentType == PunishmentType.PRIVILEGE) return
+
+      val punishment = Punishment(
+        type = punishmentType,
+        schedule = mutableListOf(
+          PunishmentSchedule(days = 10, startDate = LocalDate.now(), endDate = LocalDate.now()),
+        ),
+      )
+
+      val oicSanctionRequest = punishment.mapPunishmentToSanction(10.0)
+      TODO("implement me")
+    }
+
+    @EnumSource(PrivilegeType::class)
+    @ParameterizedTest
+    fun `map all privilege punishments to sanctions - suspended`(privilegeType: PrivilegeType) {
+      val punishment = Punishment(
+        type = PunishmentType.PRIVILEGE,
+        privilegeType = privilegeType,
+        schedule = mutableListOf(
+          PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+        ),
+      )
+
+      val oicSanctionRequest = punishment.mapPunishmentToSanction(10.0)
+      TODO("implement me")
+    }
+
+    @EnumSource(PrivilegeType::class)
+    @ParameterizedTest
+    fun `map all privilege punishments to sanctions - not suspended`(privilegeType: PrivilegeType) {
+      val punishment = Punishment(
+        type = PunishmentType.PRIVILEGE,
+        privilegeType = privilegeType,
+        schedule = mutableListOf(
+          PunishmentSchedule(days = 10, startDate = LocalDate.now(), endDate = LocalDate.now()),
+        ),
+      )
+
+      val oicSanctionRequest = punishment.mapPunishmentToSanction(10.0)
+      TODO("implement me")
+    }
+
+    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAY")
+    @ParameterizedTest
+    fun `prospective and additional days - suspended `(punishmentType: PunishmentType) {
+      TODO()
+    }
+
+    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAY")
+    @ParameterizedTest
+    fun `prospective and additional days - not suspended `(punishmentType: PunishmentType) {
+      TODO()
     }
   }
 

@@ -385,6 +385,23 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
       .expectStatus().isBadRequest
   }
 
+  @Test
+  fun `amend charge proved with punishments to dismissed removes punishments `() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubDeleteSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    initDataForHearings().createHearing().createChargeProved().createPunishments()
+
+    amendOutcomeRequest(
+      request = AmendHearingOutcomeRequest(adjudicator = "", plea = HearingOutcomePlea.GUILTY, details = ""),
+      to = ReportedAdjudicationStatus.DISMISSED,
+    ).expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(0)
+  }
+
   private fun amendOutcomeRequest(request: AmendHearingOutcomeRequest, to: ReportedAdjudicationStatus): WebTestClient.ResponseSpec =
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/$to")

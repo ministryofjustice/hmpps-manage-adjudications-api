@@ -249,7 +249,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun createSanctions(adjudicationNumber: Long) {
+  fun stubCreateSanctions(adjudicationNumber: Long) {
     stubFor(
       post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
         .willReturn(
@@ -260,7 +260,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun updateSanctions(adjudicationNumber: Long) {
+  fun stubUpdateSanctions(adjudicationNumber: Long) {
     stubFor(
       put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
         .willReturn(
