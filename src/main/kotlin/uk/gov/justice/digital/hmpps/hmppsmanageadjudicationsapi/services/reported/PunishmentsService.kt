@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -25,6 +26,7 @@ class PunishmentsService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
+  private val prisonApiGateway: PrisonApiGateway,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,

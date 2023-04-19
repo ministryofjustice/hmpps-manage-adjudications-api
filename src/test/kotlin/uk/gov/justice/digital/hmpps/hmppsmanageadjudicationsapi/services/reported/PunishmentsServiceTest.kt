@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
@@ -26,15 +27,19 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
+  private val prisonApiGateway: PrisonApiGateway = mock()
+
   private val punishmentsService = PunishmentsService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
+    prisonApiGateway,
   )
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
@@ -216,6 +221,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
 
       val removalWing = argumentCaptor.value.punishments.first { it.type == PunishmentType.REMOVAL_WING }
       assertThat(removalWing.suspendedUntil).isEqualTo(LocalDate.now())
@@ -304,6 +310,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumber(2)
+      verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.punishments.first()).isNotNull
@@ -635,6 +642,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
+      verify(prisonApiGateway, atLeastOnce()).updateSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(response).isNotNull

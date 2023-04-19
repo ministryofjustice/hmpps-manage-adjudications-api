@@ -22,10 +22,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class OutcomeServiceTest : ReportedAdjudicationTestBase() {
@@ -367,6 +371,15 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.outcomes.add(
           Outcome(id = 1, code = code),
         )
+        it.punishments.add(
+          Punishment(
+            type = PunishmentType.CONFINEMENT,
+            suspendedUntil = LocalDate.now(),
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10),
+            ),
+          ),
+        )
       }
 
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
@@ -383,6 +396,10 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.outcomes).isEmpty()
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
+
+      if (code == OutcomeCode.CHARGE_PROVED) {
+        assertThat(argumentCaptor.value.punishments).isEmpty()
+      }
 
       assertThat(response).isNotNull
     }

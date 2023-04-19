@@ -248,4 +248,48 @@ class PrisonApiMockServer : WireMockServer {
         ),
     )
   }
+
+  fun createSanctions(adjudicationNumber: Long) {
+    stubFor(
+      post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun updateSanctions(adjudicationNumber: Long) {
+    stubFor(
+      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubQuashSanctions(adjudicationNumber: Long) {
+    stubFor(
+      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions/quash"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubDeleteSanctions(adjudicationNumber: Long) {
+    stubFor(
+      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200),
+        ),
+    )
+  }
 }
