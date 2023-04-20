@@ -14,8 +14,6 @@ class OutcomeIntTest : IntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {
-    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-
     setAuditTime()
   }
 
