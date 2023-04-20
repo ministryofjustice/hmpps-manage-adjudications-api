@@ -59,13 +59,9 @@ class PunishmentsService(
       }
     }
 
-    val sanctionsToCreate = reportedAdjudication.mapToSanctions().toMutableList()
-
-    sanctionsToCreate.addAll(
-      createSanctionsFromOutcome(
-        reportedAdjudication.latestOutcome(),
-      ),
-    )
+    val sanctionsToCreate = reportedAdjudication.mapToSanctions().toMutableList().also {
+      it.addAll(createSanctionsFromOutcome(reportedAdjudication.latestOutcome()))
+    }
 
     prisonApiGateway.createSanctions(
       adjudicationNumber = adjudicationNumber,
@@ -112,9 +108,13 @@ class PunishmentsService(
       }
     }
 
+    val sanctionsToUpdate = reportedAdjudication.mapToSanctions().toMutableList().also {
+      it.addAll(createSanctionsFromOutcome(reportedAdjudication.latestOutcome()))
+    }
+
     prisonApiGateway.updateSanctions(
       adjudicationNumber = adjudicationNumber,
-      sanctions = reportedAdjudication.mapToSanctions(),
+      sanctions = sanctionsToUpdate,
     )
 
     return saveToDto(reportedAdjudication)
@@ -186,7 +186,7 @@ class PunishmentsService(
             oicSanctionCode = OicSanctionCode.CAUTION,
             effectiveDate = LocalDate.now(),
             status = Status.IMMEDIATE,
-            sanctionDays = 0, // TO REVIEW
+            sanctionDays = 0,
           ),
         )
       }
@@ -198,7 +198,7 @@ class PunishmentsService(
           oicSanctionCode = OicSanctionCode.OTHER,
           effectiveDate = LocalDate.now(),
           status = Status.IMMEDIATE,
-          sanctionDays = 0, // TO REVIEW
+          sanctionDays = 0,
           compensationAmount = it,
         ),
       )

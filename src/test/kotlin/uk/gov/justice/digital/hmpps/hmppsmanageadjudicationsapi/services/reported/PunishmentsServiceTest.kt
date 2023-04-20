@@ -68,6 +68,13 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       return caution != null && damagesOwed != null
     }
 
+    fun verifyUpdateCautionAndOtherAmountOwed(amount: Double, shouldExist: Boolean = true): Boolean {
+      val caution = updated.firstOrNull { it.oicSanctionCode == OicSanctionCode.CAUTION }
+      val damagesOwed = updated.firstOrNull { it.oicSanctionCode == OicSanctionCode.OTHER && it.compensationAmount == amount }
+
+      return if (shouldExist) caution != null && damagesOwed != null else caution == null && damagesOwed == null
+    }
+
     fun verifyUpdate(): Boolean = updated.isNotEmpty()
   }
 
@@ -191,7 +198,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @CsvSource(
-      " PRIVILEGE",
+      "PRIVILEGE",
       "EARNINGS",
       "CONFINEMENT",
       "REMOVAL_ACTIVITY",
@@ -363,6 +370,25 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response).isNotNull
     }
+
+    @Test
+    fun `verify does not create amount owed or caution `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.outcomes.last().also {
+            it.amount = null
+            it.caution = false
+          }
+        },
+      )
+
+      punishmentsService.create(
+        adjudicationNumber = 1,
+        punishments = emptyList(),
+      )
+
+      assertThat(prisonApiGateway.verifyUpdateCautionAndOtherAmountOwed(10.0, false)).isTrue
+    }
   }
 
   @Nested
@@ -378,11 +404,13 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           it.punishments.clear()
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
-          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED, caution = true, amount = 10.0))
           it.createdByUserId = "test"
           it.createDateTime = LocalDateTime.now()
         },
       )
+
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
     }
 
     @CsvSource(
@@ -489,7 +517,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @CsvSource(
-      " PRIVILEGE",
+      "PRIVILEGE",
       "EARNINGS",
       "CONFINEMENT",
       "REMOVAL_ACTIVITY",
@@ -522,7 +550,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @CsvSource(
-      " PRIVILEGE",
+      "PRIVILEGE",
       "EARNINGS",
       "CONFINEMENT",
       "REMOVAL_ACTIVITY",
@@ -557,7 +585,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @CsvSource(
-      " PRIVILEGE",
+      "PRIVILEGE",
       "EARNINGS",
       "CONFINEMENT",
       "REMOVAL_ACTIVITY",
@@ -662,8 +690,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val response = punishmentsService.update(
         adjudicationNumber = 1,
@@ -696,6 +722,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(prisonApiGateway.verifyUpdate()).isTrue
+      assertThat(prisonApiGateway.verifyUpdateCautionAndOtherAmountOwed(10.0)).isTrue
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(response).isNotNull
@@ -750,8 +777,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `clone suspended punishment `() {
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-
       whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(
         entityBuilder.reportedAdjudication(reportNumber = 2).also {
           it.punishments.add(
@@ -790,6 +815,25 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.punishments.first().activatedFrom).isEqualTo(2)
 
       assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `verify does not create amount owed or caution `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.outcomes.last().also {
+            it.amount = null
+            it.caution = false
+          }
+        },
+      )
+
+      punishmentsService.update(
+        adjudicationNumber = 1,
+        punishments = emptyList(),
+      )
+
+      assertThat(prisonApiGateway.verifyUpdateCautionAndOtherAmountOwed(10.0, false)).isTrue
     }
   }
 
