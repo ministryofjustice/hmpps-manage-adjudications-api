@@ -186,7 +186,7 @@ class PunishmentsService(
             oicSanctionCode = OicSanctionCode.CAUTION,
             effectiveDate = LocalDate.now(),
             status = Status.IMMEDIATE,
-            sanctionDays = 0, //TO REVIEW
+            sanctionDays = 0, // TO REVIEW
           ),
         )
       }
@@ -198,7 +198,7 @@ class PunishmentsService(
           oicSanctionCode = OicSanctionCode.OTHER,
           effectiveDate = LocalDate.now(),
           status = Status.IMMEDIATE,
-          sanctionDays = 0, //TO REVIEW
+          sanctionDays = 0, // TO REVIEW
           compensationAmount = it,
         ),
       )
