@@ -930,8 +930,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(oicSanctionRequest.sanctionDays).isEqualTo(10)
       assertThat(oicSanctionRequest.status).isEqualTo(Status.IMMEDIATE)
       assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.FORFEIT)
-      if (privilegeType != PrivilegeType.OTHER) assertThat(oicSanctionRequest.comment).isEqualTo("Loss of $privilegeType")
-      if (privilegeType == PrivilegeType.OTHER) assertThat(oicSanctionRequest.comment).isEqualTo("Loss of nintendo switch")
+      if (privilegeType != PrivilegeType.OTHER) assertThat(oicSanctionRequest.commentText).isEqualTo("Loss of $privilegeType")
+      if (privilegeType == PrivilegeType.OTHER) assertThat(oicSanctionRequest.commentText).isEqualTo("Loss of nintendo switch")
     }
 
     @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")

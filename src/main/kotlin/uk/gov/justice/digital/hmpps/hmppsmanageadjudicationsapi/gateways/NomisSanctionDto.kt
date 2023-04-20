@@ -21,12 +21,12 @@ data class OffenderOicSanctionRequest(
   val effectiveDate: LocalDate,
   val compensationAmount: Double? = null,
   val sanctionDays: Long,
-  val comment: String? = null,
+  val commentText: String? = null,
 ) {
   companion object {
 
-    private fun oicSanctionCodeMapper(punishmentType: PunishmentType): OicSanctionCode =
-      when (punishmentType) {
+    private fun PunishmentType.oicSanctionCodeMapper(): OicSanctionCode =
+      when (this) {
         PunishmentType.PRIVILEGE -> OicSanctionCode.FORFEIT
         PunishmentType.EARNINGS -> OicSanctionCode.STOP_PCT
         PunishmentType.CONFINEMENT -> OicSanctionCode.CC
@@ -60,12 +60,12 @@ data class OffenderOicSanctionRequest(
       val latestSchedule = this.schedule.maxBy { it.createDateTime ?: LocalDateTime.now() }
 
       return OffenderOicSanctionRequest(
-        oicSanctionCode = oicSanctionCodeMapper(punishmentType = this.type),
+        oicSanctionCode = this.type.oicSanctionCodeMapper(),
         status = latestSchedule.statusMapper(this.type == PunishmentType.PROSPECTIVE_DAYS),
         effectiveDate = latestSchedule.suspendedUntil ?: latestSchedule.startDate ?: LocalDate.now(),
         sanctionDays = latestSchedule.days.toLong(),
         compensationAmount = this.stoppagePercentage?.toDouble(),
-        comment = this.commentMapper(),
+        commentText = this.commentMapper(),
       )
     }
   }
