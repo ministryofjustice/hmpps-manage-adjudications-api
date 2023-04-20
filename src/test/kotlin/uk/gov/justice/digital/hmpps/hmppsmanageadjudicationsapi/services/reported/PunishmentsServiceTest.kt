@@ -333,6 +333,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
+    @Test
+    fun ` what to do about updating caution and damages outside of table - speak to John and Simon `() {
+      TODO("need to fix this once clear how it works")
+    }
+
     @CsvSource(
       "ADJOURNED", "REFER_POLICE", "REFER_INAD", "SCHEDULED", "UNSCHEDULED", "AWAITING_REVIEW", "PROSECUTION",
       "NOT_PROCEED", "DISMISSED", "REJECTED", "RETURNED",
