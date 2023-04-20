@@ -79,8 +79,8 @@ class NomisOutcomeService(
         }
         return
       }
-      if (outcome.createOutcome()) deleteHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome)
       if (outcome.code == OutcomeCode.CHARGE_PROVED) prisonApiGateway.deleteSanctions(adjudicationNumber = adjudicationNumber)
+      if (outcome.createOutcome()) deleteHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome)
     }
   }
 
