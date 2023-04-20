@@ -5,8 +5,14 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 
+interface ISanctions {
+  fun createSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void?
+
+  fun updateSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void?
+}
+
 @Service
-class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
+class PrisonApiGateway(private val prisonApiClientCreds: WebClient) : ISanctions {
   fun requestAdjudicationCreationData(offenderNo: String): NomisAdjudicationCreationRequest =
     prisonApiClientCreds
       .post()
@@ -77,7 +83,7 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
       .bodyToMono<Void>()
       .block()
 
-  fun createSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void? =
+  override fun createSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void? =
     prisonApiClientCreds
       .post()
       .uri("/adjudications/adjudication/$adjudicationNumber/sanctions")
@@ -86,7 +92,7 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
       .bodyToMono<Void>()
       .block()
 
-  fun updateSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void? =
+  override fun updateSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void? =
     prisonApiClientCreds
       .put()
       .uri("/adjudications/adjudication/$adjudicationNumber/sanctions")

@@ -14,7 +14,6 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
@@ -28,16 +27,51 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ISanctions
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
-  private val prisonApiGateway: PrisonApiGateway = mock()
+  private class MockSanctionsGateway : ISanctions {
+
+    private val created = mutableListOf<OffenderOicSanctionRequest>()
+    private val updated = mutableListOf<OffenderOicSanctionRequest>()
+
+    override fun createSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void? {
+      created.addAll(sanctions)
+
+      return null
+    }
+
+    override fun updateSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void? {
+      updated.addAll(sanctions)
+
+      return null
+    }
+
+    fun reset() {
+      created.clear()
+      updated.clear()
+    }
+
+    fun verifyCreate(): Boolean = created.isNotEmpty()
+
+    fun verifyCreatedCautionAndOtherAmountOwed(amount: Double): Boolean {
+      val caution = created.firstOrNull { it.oicSanctionCode == OicSanctionCode.CAUTION }
+      val damagesOwed = created.firstOrNull { it.oicSanctionCode == OicSanctionCode.OTHER && it.compensationAmount == amount }
+
+      return caution != null && damagesOwed != null
+    }
+
+    fun verifyUpdate(): Boolean = updated.isNotEmpty()
+  }
+
+  private val prisonApiGateway: MockSanctionsGateway = MockSanctionsGateway()
 
   private val punishmentsService = PunishmentsService(
     reportedAdjudicationRepository,
@@ -71,11 +105,13 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @BeforeEach
     fun `init`() {
+      prisonApiGateway.reset()
+
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
-          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED, caution = true, amount = 10.0))
           it.createdByUserId = "test"
           it.createDateTime = LocalDateTime.now()
         },
@@ -135,7 +171,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @CsvSource(
-      " PRIVILEGE",
+      "PRIVILEGE",
       "EARNINGS",
       "CONFINEMENT",
       "REMOVAL_ACTIVITY",
@@ -175,7 +211,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @CsvSource(
-      " PRIVILEGE",
+      "PRIVILEGE",
       "EARNINGS",
       "CONFINEMENT",
       "REMOVAL_ACTIVITY",
@@ -197,6 +233,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `creates a set of punishments `() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
       val response = punishmentsService.create(
         adjudicationNumber = 1,
         listOf(
@@ -225,9 +262,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
+      assertThat(prisonApiGateway.verifyCreate()).isTrue
+      assertThat(prisonApiGateway.verifyCreatedCautionAndOtherAmountOwed(10.0)).isTrue
 
       val removalWing = argumentCaptor.value.punishments.first { it.type == PunishmentType.REMOVAL_WING }
+
       assertThat(removalWing.suspendedUntil).isEqualTo(LocalDate.now())
 
       assertThat(argumentCaptor.value.punishments.size).isEqualTo(4)
@@ -315,7 +354,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumber(2)
-      verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
+      assertThat(prisonApiGateway.verifyCreate()).isTrue
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.punishments.first()).isNotNull
@@ -333,6 +372,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @BeforeEach
     fun `init`() {
+      prisonApiGateway.reset()
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.punishments.clear()
@@ -585,28 +625,36 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
                 id = 1,
                 type = PunishmentType.CONFINEMENT,
                 schedule = mutableListOf(
-                  PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+                  PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()).also {
+                    it.createDateTime = LocalDateTime.now()
+                  },
                 ),
               ),
               Punishment(
                 id = 2,
                 type = PunishmentType.EXCLUSION_WORK,
                 schedule = mutableListOf(
-                  PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+                  PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()).also {
+                    it.createDateTime = LocalDateTime.now()
+                  },
                 ),
               ),
               Punishment(
                 id = 3,
                 type = PunishmentType.ADDITIONAL_DAYS,
                 schedule = mutableListOf(
-                  PunishmentSchedule(id = 1, days = 1),
+                  PunishmentSchedule(id = 1, days = 1).also {
+                    it.createDateTime = LocalDateTime.now()
+                  },
                 ),
               ),
               Punishment(
                 id = 4,
                 type = PunishmentType.REMOVAL_WING,
                 schedule = mutableListOf(
-                  PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+                  PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()).also {
+                    it.createDateTime = LocalDateTime.now()
+                  },
                 ),
               ),
             ),
@@ -647,7 +695,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
-      verify(prisonApiGateway, atLeastOnce()).updateSanctions(any(), any())
+      assertThat(prisonApiGateway.verifyUpdate()).isTrue
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(response).isNotNull
@@ -814,7 +862,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
-      val oicSanctionRequest = punishment.mapPunishmentToSanction(10.0)
+      val oicSanctionRequest = punishment.mapPunishmentToSanction()
+
+      assertThat(oicSanctionRequest.status).isEqualTo(Status.SUSPENDED)
     }
 
     @EnumSource(PunishmentType::class)
@@ -829,19 +879,18 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
-      val oicSanctionRequest = punishment.mapPunishmentToSanction(10.0)
+      val oicSanctionRequest = punishment.mapPunishmentToSanction()
 
-      assertThat(oicSanctionRequest.compensationAmount).isEqualTo(10.0)
       assertThat(oicSanctionRequest.effectiveDate).isEqualTo(LocalDate.now())
       assertThat(oicSanctionRequest.sanctionDays).isEqualTo(10)
-      assertThat(oicSanctionRequest.status).isEqualTo(Status.AS_AWARDED) // TODO confirm with nomis / John
+      assertThat(oicSanctionRequest.status).isEqualTo(Status.IMMEDIATE)
 
       when (punishmentType) {
         PunishmentType.EARNINGS -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.STOP_PCT)
         PunishmentType.CONFINEMENT -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.CC)
         PunishmentType.REMOVAL_ACTIVITY -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.REMACT)
-        PunishmentType.EXCLUSION_WORK -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(null)
-        PunishmentType.EXTRA_WORK -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.EXTRA_WORK)
+        PunishmentType.EXCLUSION_WORK -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.EXTRA_WORK)
+        PunishmentType.EXTRA_WORK -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.EXTW)
         PunishmentType.REMOVAL_WING -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.REMWIN)
         else -> {}
       }
@@ -858,7 +907,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
-      val oicSanctionRequest = punishment.mapPunishmentToSanction(10.0)
+      val oicSanctionRequest = punishment.mapPunishmentToSanction()
+
+      assertThat(oicSanctionRequest.status).isEqualTo(Status.SUSPENDED)
     }
 
     @EnumSource(PrivilegeType::class)
@@ -867,38 +918,60 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       val punishment = Punishment(
         type = PunishmentType.PRIVILEGE,
         privilegeType = privilegeType,
+        otherPrivilege = "nintendo switch",
         schedule = mutableListOf(
           PunishmentSchedule(days = 10, startDate = LocalDate.now(), endDate = LocalDate.now()),
         ),
       )
 
-      val oicSanctionRequest = punishment.mapPunishmentToSanction(10.0)
+      val oicSanctionRequest = punishment.mapPunishmentToSanction()
 
-      assertThat(oicSanctionRequest.compensationAmount).isEqualTo(10.0)
       assertThat(oicSanctionRequest.effectiveDate).isEqualTo(LocalDate.now())
       assertThat(oicSanctionRequest.sanctionDays).isEqualTo(10)
-      assertThat(oicSanctionRequest.status).isEqualTo(Status.AS_AWARDED) // TODO confirm with nomis / John
-
-      when (privilegeType) {
-        PrivilegeType.CANTEEN -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.CANTEEN)
-        PrivilegeType.FACILITIES -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(null)
-        PrivilegeType.MONEY -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(null)
-        PrivilegeType.TV -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(null)
-        PrivilegeType.ASSOCIATION -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.ASSO)
-        PrivilegeType.OTHER -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.OTHER)
-      }
+      assertThat(oicSanctionRequest.status).isEqualTo(Status.IMMEDIATE)
+      assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.FORFEIT)
+      if (privilegeType != PrivilegeType.OTHER) assertThat(oicSanctionRequest.comment).isEqualTo("Loss of $privilegeType")
+      if (privilegeType == PrivilegeType.OTHER) assertThat(oicSanctionRequest.comment).isEqualTo("Loss of nintendo switch")
     }
 
     @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
     @ParameterizedTest
     fun `prospective and additional days - suspended `(punishmentType: PunishmentType) {
-      TODO()
+      val punishment = Punishment(
+        type = punishmentType,
+        schedule = mutableListOf(
+          PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+        ),
+      )
+
+      val oicSanctionRequest = punishment.mapPunishmentToSanction()
+
+      assertThat(oicSanctionRequest.effectiveDate).isEqualTo(LocalDate.now())
+      assertThat(oicSanctionRequest.sanctionDays).isEqualTo(10)
+      assertThat(oicSanctionRequest.status).isEqualTo(Status.SUSPENDED)
+      assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.ADA)
     }
 
     @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
     @ParameterizedTest
     fun `prospective and additional days - not suspended `(punishmentType: PunishmentType) {
-      TODO()
+      val punishment = Punishment(
+        type = punishmentType,
+        schedule = mutableListOf(
+          PunishmentSchedule(days = 10),
+        ),
+      )
+
+      val oicSanctionRequest = punishment.mapPunishmentToSanction()
+
+      assertThat(oicSanctionRequest.effectiveDate).isEqualTo(LocalDate.now())
+      assertThat(oicSanctionRequest.sanctionDays).isEqualTo(10)
+      if (punishmentType == PunishmentType.PROSPECTIVE_DAYS) {
+        assertThat(oicSanctionRequest.status).isEqualTo(Status.PROSPECTIVE)
+      } else {
+        assertThat(oicSanctionRequest.status).isEqualTo(Status.IMMEDIATE)
+      }
+      assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.ADA)
     }
   }
 

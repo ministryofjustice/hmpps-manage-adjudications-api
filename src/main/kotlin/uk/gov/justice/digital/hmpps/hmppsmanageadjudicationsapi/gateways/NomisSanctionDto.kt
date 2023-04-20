@@ -5,15 +5,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 enum class OicSanctionCode {
-  ADA, ASSO, ASS_DINING, ASS_NEWS, ASS_SNACKS, BEDDG_OWN, BEST_JOBS, BONUS_PNTS, CANTEEN, CAUTION, CC, CELL_ELEC, CELL_FURN, COOK_FAC, EXTRA_WORK,
-  EXTW, FOOD_CHOIC, FORFEIT, GAMES_ELEC, INCOM_TEL, MAIL_ORDER, MEAL_TIMES, OIC, OTHER, PADA, PIC, POSSESSION, PUBL, REMACT, REMWIN, STOP_EARN,
-  STOP_PCT, TOBA, USE_FRIDGE, USE_GYM, USE_LAUNDRY, USE_LIBRARY, VISIT_HRS,
+  ADA, CAUTION, CC, EXTRA_WORK, EXTW, FORFEIT, OTHER, REMACT, REMWIN, STOP_PCT
 }
 
 enum class Status {
-  AS_AWARDED, AWARD_RED, IMMEDIATE, PROSPECTIVE, QUASHED, REDAPP, SUSPENDED, SUSPEN_EXT, SUSPEN_RED, SUSP_PROSP,
+  IMMEDIATE, PROSPECTIVE, QUASHED, SUSPENDED
 }
 
 data class OffenderOicSanctionRequest(
@@ -22,48 +21,51 @@ data class OffenderOicSanctionRequest(
   val effectiveDate: LocalDate,
   val compensationAmount: Double? = null,
   val sanctionDays: Long,
+  val comment: String? = null,
 ) {
   companion object {
 
-    private fun oicSanctionCodeMapper(punishmentType: PunishmentType, privilegeType: PrivilegeType?): OicSanctionCode =
+    private fun oicSanctionCodeMapper(punishmentType: PunishmentType): OicSanctionCode =
       when (punishmentType) {
-        PunishmentType.PRIVILEGE -> when (privilegeType) {
-          PrivilegeType.CANTEEN -> OicSanctionCode.CANTEEN
-          PrivilegeType.FACILITIES -> TODO()
-          PrivilegeType.MONEY -> TODO()
-          PrivilegeType.TV -> TODO()
-          PrivilegeType.ASSOCIATION -> OicSanctionCode.ASSO
-          PrivilegeType.OTHER -> OicSanctionCode.OTHER
-          null -> throw RuntimeException("fatal - no privilege type specified")
-        }
+        PunishmentType.PRIVILEGE -> OicSanctionCode.FORFEIT
         PunishmentType.EARNINGS -> OicSanctionCode.STOP_PCT
         PunishmentType.CONFINEMENT -> OicSanctionCode.CC
         PunishmentType.REMOVAL_ACTIVITY -> OicSanctionCode.REMACT
-        PunishmentType.EXCLUSION_WORK -> TODO()
-        PunishmentType.EXTRA_WORK -> TODO()
-        PunishmentType.REMOVAL_WING -> OicSanctionCode.REMACT
-        PunishmentType.ADDITIONAL_DAYS -> TODO()
-        PunishmentType.PROSPECTIVE_DAYS -> TODO()
+        PunishmentType.EXCLUSION_WORK -> OicSanctionCode.EXTRA_WORK
+        PunishmentType.EXTRA_WORK -> OicSanctionCode.EXTW
+        PunishmentType.REMOVAL_WING -> OicSanctionCode.REMWIN
+        PunishmentType.ADDITIONAL_DAYS, PunishmentType.PROSPECTIVE_DAYS -> OicSanctionCode.ADA
       }
 
-    private fun PunishmentSchedule.statusMapper(): Status =
+    private fun PunishmentSchedule.statusMapper(prospectiveDays: Boolean): Status =
       when (this.startDate) {
-        null -> TODO()
-        else -> Status.AS_AWARDED
+        null -> when (this.suspendedUntil) {
+          null -> if (prospectiveDays) Status.PROSPECTIVE else Status.IMMEDIATE
+          else -> Status.SUSPENDED
+        }
+        else -> Status.IMMEDIATE
       }
 
-    fun Punishment.mapPunishmentToSanction(damagesOwed: Double?): OffenderOicSanctionRequest {
-      val latestSchedule = this.schedule.maxBy { it.createDateTime!! }
+    private fun Punishment.commentMapper(): String? =
+      when (this.type) {
+        PunishmentType.PRIVILEGE ->
+          when (this.privilegeType) {
+            PrivilegeType.OTHER -> "Loss of ${this.otherPrivilege}"
+            else -> "Loss of ${this.privilegeType}"
+          }
+        else -> null
+      }
+
+    fun Punishment.mapPunishmentToSanction(): OffenderOicSanctionRequest {
+      val latestSchedule = this.schedule.maxBy { it.createDateTime ?: LocalDateTime.now() }
 
       return OffenderOicSanctionRequest(
-        oicSanctionCode = oicSanctionCodeMapper(
-          punishmentType = this.type,
-          privilegeType = this.privilegeType,
-        ),
-        status = latestSchedule.statusMapper(),
-        effectiveDate = latestSchedule.suspendedUntil ?: latestSchedule.startDate!!,
+        oicSanctionCode = oicSanctionCodeMapper(punishmentType = this.type),
+        status = latestSchedule.statusMapper(this.type == PunishmentType.PROSPECTIVE_DAYS),
+        effectiveDate = latestSchedule.suspendedUntil ?: latestSchedule.startDate ?: LocalDate.now(),
         sanctionDays = latestSchedule.days.toLong(),
-        compensationAmount = damagesOwed,
+        compensationAmount = this.stoppagePercentage?.toDouble(),
+        comment = this.commentMapper(),
       )
     }
   }
