@@ -16,10 +16,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ISanctions
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -32,18 +32,14 @@ class PunishmentsService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
-  private val prisonApiGateway: ISanctions,
+  private val prisonApiGateway: PrisonApiGateway,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
   authenticationFacade,
 ) {
 
-  fun createCaution(adjudicationNumber: Long) {
-    TODO("implement me")
-  }
-
-  fun createDamagesOwed(adjudicationNumber: Long) {
+  fun createCaution(adjudicationNumber: Long): Long {
     TODO("implement me")
   }
 
@@ -51,11 +47,15 @@ class PunishmentsService(
     TODO("implement me")
   }
 
-  fun deleteDamagesOwed(adjudicationNumber: Long) {
+  fun createDamagesOwed(adjudicationNumber: Long): Long {
     TODO("implement me")
   }
 
-  fun amendDamagesOwed(adjudicationNumber: Long) {
+  fun amendDamagesOwed(adjudicationNumber: Long): Long {
+    TODO("implement me")
+  }
+
+  fun deleteDamagesOwed(adjudicationNumber: Long) {
     TODO("implement me")
   }
 

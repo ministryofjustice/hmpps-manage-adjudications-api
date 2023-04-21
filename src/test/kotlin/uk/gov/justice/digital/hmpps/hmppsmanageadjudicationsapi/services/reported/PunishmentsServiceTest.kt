@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
@@ -26,69 +27,16 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.ISanctions
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
-  private class MockSanctionsGateway : ISanctions {
-
-    private val created = mutableListOf<OffenderOicSanctionRequest>()
-    private val updated = mutableListOf<OffenderOicSanctionRequest>()
-    override fun createSanction(adjudicationNumber: Long, sanction: OffenderOicSanctionRequest): Long {
-      TODO("Not yet implemented")
-    }
-
-    override fun deleteSanction(adjudicationNumber: Long, sanctionSeq: Long): Void? {
-      TODO("Not yet implemented")
-    }
-
-    override fun createSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void? {
-      created.addAll(sanctions)
-
-      return null
-    }
-
-    override fun updateSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void? {
-      updated.addAll(sanctions)
-
-      return null
-    }
-
-    override fun deleteSanctions(adjudicationNumber: Long): Void? {
-      TODO("Not yet implemented")
-    }
-
-    fun reset() {
-      created.clear()
-      updated.clear()
-    }
-
-    fun verifyCreate(): Boolean = created.isNotEmpty()
-
-    fun verifyCreatedCautionAndOtherAmountOwed(amount: Double): Boolean {
-      val caution = created.firstOrNull { it.oicSanctionCode == OicSanctionCode.CAUTION }
-      val damagesOwed = created.firstOrNull { it.oicSanctionCode == OicSanctionCode.OTHER && it.compensationAmount == amount }
-
-      return caution != null && damagesOwed != null
-    }
-
-    fun verifyUpdateCautionAndOtherAmountOwed(amount: Double, shouldExist: Boolean = true): Boolean {
-      val caution = updated.firstOrNull { it.oicSanctionCode == OicSanctionCode.CAUTION }
-      val damagesOwed = updated.firstOrNull { it.oicSanctionCode == OicSanctionCode.OTHER && it.compensationAmount == amount }
-
-      return if (shouldExist) caution != null && damagesOwed != null else caution == null && damagesOwed == null
-    }
-
-    fun verifyUpdate(): Boolean = updated.isNotEmpty()
-  }
-
-  private val prisonApiGateway: MockSanctionsGateway = MockSanctionsGateway()
+  private val prisonApiGateway: PrisonApiGateway = mock()
 
   private val punishmentsService = PunishmentsService(
     reportedAdjudicationRepository,
@@ -152,8 +100,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @BeforeEach
     fun `init`() {
-      prisonApiGateway.reset()
-
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
@@ -327,7 +273,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      assertThat(prisonApiGateway.verifyCreate()).isTrue
+      verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
 
       val removalWing = argumentCaptor.value.punishments.first { it.type == PunishmentType.REMOVAL_WING }
 
@@ -418,7 +364,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumber(2)
-      assertThat(prisonApiGateway.verifyCreate()).isTrue
+      verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.punishments.first()).isNotNull
@@ -436,7 +382,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @BeforeEach
     fun `init`() {
-      prisonApiGateway.reset()
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.punishments.clear()
@@ -777,7 +722,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
-      assertThat(prisonApiGateway.verifyUpdate()).isTrue
+      verify(prisonApiGateway, atLeastOnce()).updateSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(response).isNotNull
