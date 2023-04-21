@@ -36,38 +36,21 @@ class PunishmentsService(
   authenticationFacade,
 ) {
 
-  fun createPunishmentsFromChargeProvedIfApplicable(adjudicationNumber: Long, caution: Boolean, amount: Double?) {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-
-    if (caution) {
-      reportedAdjudication.punishments.add(
-        createPunishmentFromChargeProved(
-          adjudicationNumber = adjudicationNumber,
-          type = PunishmentType.CAUTION,
-        ),
-      )
-    }
+  fun createPunishmentsFromChargeProvedIfApplicable(reportedAdjudication: ReportedAdjudication, caution: Boolean, amount: Double?) {
+    if (caution) createCaution(reportedAdjudication = reportedAdjudication)
 
     amount?.run {
-      reportedAdjudication.punishments.add(
-        createPunishmentFromChargeProved(
-          adjudicationNumber = adjudicationNumber,
-          type = PunishmentType.DAMAGES_OWED,
-          amount = amount,
-        ),
-      )
+      createDamagesOwed(reportedAdjudication = reportedAdjudication, amount = amount)
     }
-
-    if (caution || amount != null) saveToDto(reportedAdjudication)
   }
 
   fun amendPunishmentsFromChargeProvedIfApplicable(adjudicationNumber: Long, caution: Boolean, damagesOwed: Boolean?, amount: Double?): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
-    handleCautionChange(reportedAdjudication = reportedAdjudication, caution = caution)
-
-    damagesOwed?.run {
-      handleDamagesOwedChange(reportedAdjudication = reportedAdjudication, amount = amount)
+    handleCautionChange(reportedAdjudication = reportedAdjudication, caution = caution).run {
+      damagesOwed?.run {
+        handleDamagesOwedChange(reportedAdjudication = reportedAdjudication, amount = amount)
+      }
     }
 
     return saveToDto(reportedAdjudication)
@@ -177,60 +160,74 @@ class PunishmentsService(
 
   private fun handleDamagesOwedChange(reportedAdjudication: ReportedAdjudication, amount: Double?) {
     when (val damagesOwedPunishment = reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }) {
-      null -> if (amount != null) {
-        reportedAdjudication.punishments.add(
-          createPunishmentFromChargeProved(
-            adjudicationNumber = reportedAdjudication.reportNumber,
-            type = PunishmentType.DAMAGES_OWED,
-            amount = amount,
-          ),
-        )
-      }
+      null -> if (amount != null) createDamagesOwed(reportedAdjudication = reportedAdjudication, amount = amount)
       else -> if (damagesOwedPunishment.amount != amount) {
         when (amount) {
-          null -> {
-            prisonApiGateway.deleteSanction(
-              adjudicationNumber = reportedAdjudication.reportNumber,
-              sanctionSeq = damagesOwedPunishment.sanctionSeq!!,
-            ).run {
-              reportedAdjudication.punishments.remove(damagesOwedPunishment)
-            }
-          }
-          else -> {
-            prisonApiGateway.deleteSanction(adjudicationNumber = reportedAdjudication.reportNumber, sanctionSeq = damagesOwedPunishment.sanctionSeq!!).run {
-              damagesOwedPunishment.amount = amount
-              damagesOwedPunishment.sanctionSeq = prisonApiGateway.createSanction(
-                adjudicationNumber = reportedAdjudication.reportNumber,
-                sanction = damagesOwedPunishment.mapPunishmentToSanction(),
-              )
-            }
-          }
+          null -> deleteDamagesOwed(reportedAdjudication = reportedAdjudication, punishment = damagesOwedPunishment)
+          else -> amendDamagesOwed(reportedAdjudication = reportedAdjudication, punishment = damagesOwedPunishment, amount = amount)
         }
       }
     }
   }
 
+  private fun createDamagesOwed(reportedAdjudication: ReportedAdjudication, amount: Double) {
+    reportedAdjudication.punishments.add(
+      createPunishmentFromChargeProved(
+        adjudicationNumber = reportedAdjudication.reportNumber,
+        type = PunishmentType.DAMAGES_OWED,
+        amount = amount,
+      ),
+    )
+  }
+
+  private fun deleteDamagesOwed(reportedAdjudication: ReportedAdjudication, punishment: Punishment) {
+    prisonApiGateway.deleteSanction(
+      adjudicationNumber = reportedAdjudication.reportNumber,
+      sanctionSeq = punishment.sanctionSeq!!,
+    ).run {
+      reportedAdjudication.punishments.remove(punishment)
+    }
+  }
+
+  private fun amendDamagesOwed(reportedAdjudication: ReportedAdjudication, punishment: Punishment, amount: Double) {
+    prisonApiGateway.deleteSanction(adjudicationNumber = reportedAdjudication.reportNumber, sanctionSeq = punishment.sanctionSeq!!).run {
+      punishment.amount = amount
+      punishment.sanctionSeq = prisonApiGateway.createSanction(
+        adjudicationNumber = reportedAdjudication.reportNumber,
+        sanction = punishment.mapPunishmentToSanction(),
+      )
+    }
+  }
+
   private fun handleCautionChange(reportedAdjudication: ReportedAdjudication, caution: Boolean) {
     when (val cautionPunishment = reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.CAUTION }) {
-      null -> if (caution) {
-        prisonApiGateway.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber).run {
-          reportedAdjudication.punishments.clear()
-          reportedAdjudication.punishments.add(
-            createPunishmentFromChargeProved(
-              adjudicationNumber = reportedAdjudication.reportNumber,
-              type = PunishmentType.CAUTION,
-            ),
-          )
-        }
-      }
-      else -> if (!caution) {
-        prisonApiGateway.deleteSanction(
-          adjudicationNumber = reportedAdjudication.reportNumber,
-          sanctionSeq = cautionPunishment.sanctionSeq!!,
-        ).run {
-          reportedAdjudication.punishments.remove(cautionPunishment)
-        }
-      }
+      null -> if (caution) amendToCaution(reportedAdjudication = reportedAdjudication)
+      else -> if (!caution) removeCaution(reportedAdjudication = reportedAdjudication, punishment = cautionPunishment)
+    }
+  }
+
+  private fun createCaution(reportedAdjudication: ReportedAdjudication) {
+    reportedAdjudication.punishments.add(
+      createPunishmentFromChargeProved(
+        adjudicationNumber = reportedAdjudication.reportNumber,
+        type = PunishmentType.CAUTION,
+      ),
+    )
+  }
+
+  private fun amendToCaution(reportedAdjudication: ReportedAdjudication) {
+    prisonApiGateway.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber).run {
+      reportedAdjudication.punishments.clear()
+      createCaution(reportedAdjudication = reportedAdjudication)
+    }
+  }
+
+  private fun removeCaution(reportedAdjudication: ReportedAdjudication, punishment: Punishment) {
+    prisonApiGateway.deleteSanction(
+      adjudicationNumber = reportedAdjudication.reportNumber,
+      sanctionSeq = punishment.sanctionSeq!!,
+    ).run {
+      reportedAdjudication.punishments.remove(punishment)
     }
   }
 

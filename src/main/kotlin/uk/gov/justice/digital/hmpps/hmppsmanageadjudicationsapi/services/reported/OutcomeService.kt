@@ -174,7 +174,7 @@ class OutcomeService(
 
     if (outcomeToCreate.code == OutcomeCode.CHARGE_PROVED) {
       punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
-        adjudicationNumber = adjudicationNumber,
+        reportedAdjudication = reportedAdjudication,
         caution = caution!!,
         amount = amount,
       )

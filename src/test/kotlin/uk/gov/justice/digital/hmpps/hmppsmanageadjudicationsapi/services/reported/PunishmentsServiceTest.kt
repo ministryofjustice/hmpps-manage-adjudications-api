@@ -67,7 +67,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     assertThatThrownBy {
       punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
-        adjudicationNumber = 1,
+        reportedAdjudication = entityBuilder.reportedAdjudication(),
         caution = true,
         amount = null,
       )
@@ -96,27 +96,19 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         it.createdByUserId = ""
       }
 
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
       whenever(prisonApiGateway.createSanction(any(), any())).thenReturn(1)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
 
       punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
-        adjudicationNumber = 1,
+        reportedAdjudication = reportedAdjudication,
         caution = caution,
         amount = amount,
       )
 
-      if (!caution && amount == null) {
-        verify(reportedAdjudicationRepository, never()).save(any())
-      } else {
-        verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      }
-
       when (caution) {
         true -> {
           verify(prisonApiGateway, atLeastOnce()).createSanction(
-            1,
+            reportedAdjudication.reportNumber,
             OffenderOicSanctionRequest(
               oicSanctionCode = OicSanctionCode.CAUTION,
               status = Status.IMMEDIATE,
@@ -124,8 +116,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               effectiveDate = LocalDate.now(),
             ),
           )
-          assertThat(argumentCaptor.value.punishments.firstOrNull { it.type == PunishmentType.CAUTION }).isNotNull
-          assertThat(argumentCaptor.value.punishments.first { it.type == PunishmentType.CAUTION }.sanctionSeq).isEqualTo(1)
+          assertThat(reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.CAUTION }).isNotNull
+          assertThat(reportedAdjudication.punishments.first { it.type == PunishmentType.CAUTION }.sanctionSeq).isEqualTo(1)
         }
         false -> {
           verify(prisonApiGateway, never()).createSanction(
@@ -137,7 +129,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               effectiveDate = LocalDate.now(),
             ),
           )
-          if (amount != null) assertThat(argumentCaptor.value.punishments.firstOrNull { it.type == PunishmentType.CAUTION }).isNull()
+          if (amount != null) assertThat(reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.CAUTION }).isNull()
         }
       }
 
@@ -153,11 +145,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               compensationAmount = 10.0,
             ),
           )
-          if (caution) assertThat(argumentCaptor.value.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNull()
+          if (caution) assertThat(reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNull()
         }
         else -> {
           verify(prisonApiGateway, atLeastOnce()).createSanction(
-            1,
+            reportedAdjudication.reportNumber,
             OffenderOicSanctionRequest(
               oicSanctionCode = OicSanctionCode.OTHER,
               status = Status.IMMEDIATE,
@@ -166,8 +158,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               compensationAmount = 10.0,
             ),
           )
-          assertThat(argumentCaptor.value.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
-          assertThat(argumentCaptor.value.punishments.first { it.type == PunishmentType.DAMAGES_OWED }.sanctionSeq).isEqualTo(1)
+          assertThat(reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
+          assertThat(reportedAdjudication.punishments.first { it.type == PunishmentType.DAMAGES_OWED }.sanctionSeq).isEqualTo(1)
         }
       }
     }
