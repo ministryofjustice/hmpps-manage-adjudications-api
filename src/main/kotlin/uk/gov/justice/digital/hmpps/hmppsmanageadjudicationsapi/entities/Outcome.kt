@@ -18,13 +18,9 @@ data class Outcome(
   var reason: NotProceedReason? = null,
   @Enumerated(EnumType.STRING)
   var code: OutcomeCode,
-  var amount: Double? = null,
-  var caution: Boolean? = null,
   @Enumerated(EnumType.STRING)
   var quashedReason: QuashedReason? = null,
   var oicHearingId: Long? = null,
-  var damagesOwedSanctionSeq: Long? = null,
-  var cautionSanctionSeq: Long? = null,
 ) : BaseEntity()
 
 enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Finding? = null) {

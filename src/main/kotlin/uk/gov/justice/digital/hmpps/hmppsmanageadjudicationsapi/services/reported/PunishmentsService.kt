@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentD
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
@@ -18,9 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -39,24 +36,41 @@ class PunishmentsService(
   authenticationFacade,
 ) {
 
-  fun createCaution(adjudicationNumber: Long): Long {
-    TODO("implement me")
+  fun createPunishmentsFromChargeProvedIfApplicable(adjudicationNumber: Long, caution: Boolean, amount: Double?) {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+
+    if (caution) {
+      reportedAdjudication.punishments.add(
+        createPunishmentFromChargeProved(
+          adjudicationNumber = adjudicationNumber,
+          type = PunishmentType.CAUTION,
+        ),
+      )
+    }
+
+    amount?.run {
+      reportedAdjudication.punishments.add(
+        createPunishmentFromChargeProved(
+          adjudicationNumber = adjudicationNumber,
+          type = PunishmentType.DAMAGES_OWED,
+          amount = amount,
+        ),
+      )
+    }
+
+    if (caution || amount != null) saveToDto(reportedAdjudication)
   }
 
-  fun deleteCaution(adjudicationNumber: Long) {
-    TODO("implement me")
-  }
+  fun amendPunishmentsFromChargeProvedIfApplicable(adjudicationNumber: Long, caution: Boolean, damagesOwed: Boolean?, amount: Double?): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
-  fun createDamagesOwed(adjudicationNumber: Long): Long {
-    TODO("implement me")
-  }
+    handleCautionChange(reportedAdjudication = reportedAdjudication, caution = caution)
 
-  fun amendDamagesOwed(adjudicationNumber: Long): Long {
-    TODO("implement me")
-  }
+    damagesOwed?.run {
+      handleDamagesOwedChange(reportedAdjudication = reportedAdjudication, amount = amount)
+    }
 
-  fun deleteDamagesOwed(adjudicationNumber: Long) {
-    TODO("implement me")
+    return saveToDto(reportedAdjudication)
   }
 
   fun create(
@@ -64,7 +78,7 @@ class PunishmentsService(
     punishments: List<PunishmentRequest>,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
-      it.status.validateCanAddPunishments()
+      it.validateCanAddPunishments()
     }
 
     punishments.forEach {
@@ -91,11 +105,11 @@ class PunishmentsService(
     punishments: List<PunishmentRequest>,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
-      it.status.validateCanAddPunishments()
+      it.validateCanAddPunishments()
     }
 
     val ids = punishments.filter { it.id != null }.map { it.id }
-    val toRemove = reportedAdjudication.punishments.filter { !ids.contains(it.id) }
+    val toRemove = reportedAdjudication.punishments.filterOutChargeProvedPunishments().filter { !ids.contains(it.id) }
     reportedAdjudication.punishments.removeAll(toRemove)
 
     punishments.forEach {
@@ -128,7 +142,13 @@ class PunishmentsService(
       sanctions = reportedAdjudication.mapToSanctions(),
     )
 
-    // TODO potentially need to maintain damages owed at this point as it will be removed via update.
+    reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }?.let {
+      it.sanctionSeq = createPunishmentFromChargeProved(
+        adjudicationNumber = adjudicationNumber,
+        type = PunishmentType.DAMAGES_OWED,
+        amount = it.amount!!,
+      ).sanctionSeq
+    }
 
     return saveToDto(reportedAdjudication)
   }
@@ -154,6 +174,76 @@ class PunishmentsService(
       }
     }.flatten()
   }
+
+  private fun handleDamagesOwedChange(reportedAdjudication: ReportedAdjudication, amount: Double?) {
+    when (val damagesOwedPunishment = reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }) {
+      null -> if (amount != null) {
+        reportedAdjudication.punishments.add(
+          createPunishmentFromChargeProved(
+            adjudicationNumber = reportedAdjudication.reportNumber,
+            type = PunishmentType.DAMAGES_OWED,
+            amount = amount,
+          ),
+        )
+      }
+      else -> if (damagesOwedPunishment.amount != amount) {
+        when (amount) {
+          null -> {
+            reportedAdjudication.punishments.remove(damagesOwedPunishment)
+
+            prisonApiGateway.deleteSanction(
+              adjudicationNumber = reportedAdjudication.reportNumber,
+              sanctionSeq = damagesOwedPunishment.sanctionSeq!!,
+            )
+          }
+          else -> {
+            prisonApiGateway.deleteSanction(adjudicationNumber = reportedAdjudication.reportNumber, sanctionSeq = damagesOwedPunishment.sanctionSeq!!)
+
+            damagesOwedPunishment.amount = amount
+            damagesOwedPunishment.sanctionSeq = prisonApiGateway.createSanction(
+              adjudicationNumber = reportedAdjudication.reportNumber,
+              sanction = damagesOwedPunishment.mapPunishmentToSanction(),
+            )
+          }
+        }
+      }
+    }
+  }
+
+  private fun handleCautionChange(reportedAdjudication: ReportedAdjudication, caution: Boolean) {
+    when (val cautionPunishment = reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.CAUTION }) {
+      null -> if (caution) {
+        prisonApiGateway.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber)
+
+        reportedAdjudication.punishments.clear()
+        reportedAdjudication.punishments.add(
+          createPunishmentFromChargeProved(
+            adjudicationNumber = reportedAdjudication.reportNumber,
+            type = PunishmentType.CAUTION,
+          ),
+        )
+      }
+      else -> if (!caution) {
+        prisonApiGateway.deleteSanction(adjudicationNumber = reportedAdjudication.reportNumber, sanctionSeq = cautionPunishment.sanctionSeq!!)
+
+        reportedAdjudication.punishments.remove(cautionPunishment)
+      }
+    }
+  }
+
+  private fun createPunishmentFromChargeProved(adjudicationNumber: Long, type: PunishmentType, amount: Double? = null): Punishment =
+    Punishment(
+      type = type,
+      amount = amount,
+      schedule = mutableListOf(
+        PunishmentSchedule(days = 0),
+      ),
+    ).also {
+      it.sanctionSeq = prisonApiGateway.createSanction(
+        adjudicationNumber = adjudicationNumber,
+        sanction = it.mapPunishmentToSanction(),
+      )
+    }
 
   private fun createNewPunishment(punishmentRequest: PunishmentRequest): Punishment =
     Punishment(
@@ -189,36 +279,6 @@ class PunishmentsService(
         )
       }
     }
-
-  private fun createSanctionsFromOutcome(outcome: Outcome?): List<OffenderOicSanctionRequest> {
-    val sanctionsToCreate = mutableListOf<OffenderOicSanctionRequest>()
-    outcome?.caution?.let {
-      if (it) {
-        sanctionsToCreate.add(
-          OffenderOicSanctionRequest(
-            oicSanctionCode = OicSanctionCode.CAUTION,
-            effectiveDate = LocalDate.now(),
-            status = Status.IMMEDIATE,
-            sanctionDays = 0,
-          ),
-        )
-      }
-    }
-
-    outcome?.amount?.let {
-      sanctionsToCreate.add(
-        OffenderOicSanctionRequest(
-          oicSanctionCode = OicSanctionCode.OTHER,
-          effectiveDate = LocalDate.now(),
-          status = Status.IMMEDIATE,
-          sanctionDays = 0,
-          compensationAmount = it,
-        ),
-      )
-    }
-
-    return sanctionsToCreate
-  }
 
   private fun activateSuspendedPunishment(adjudicationNumber: Long, punishmentRequest: PunishmentRequest): Punishment {
     val activatedFromReport = findByAdjudicationNumber(punishmentRequest.activatedFrom!!)
@@ -285,9 +345,12 @@ class PunishmentsService(
       }
     }
 
-    fun ReportedAdjudicationStatus.validateCanAddPunishments() {
-      if (this != ReportedAdjudicationStatus.CHARGE_PROVED) {
+    fun ReportedAdjudication.validateCanAddPunishments() {
+      if (this.status != ReportedAdjudicationStatus.CHARGE_PROVED) {
         throw ValidationException("status is not CHARGE_PROVED")
+      }
+      if (this.punishments.any { it.type == PunishmentType.CAUTION }) {
+        throw ValidationException("outcome is a caution - no further punishments can be added")
       }
     }
   }

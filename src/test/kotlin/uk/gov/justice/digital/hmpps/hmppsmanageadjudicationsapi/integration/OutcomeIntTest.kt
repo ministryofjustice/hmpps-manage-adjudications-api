@@ -225,6 +225,7 @@ class OutcomeIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubDeleteSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForOutcome().createHearing().createChargeProved()
@@ -276,6 +277,7 @@ class OutcomeIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubQuashSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubDeleteSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
@@ -344,6 +346,7 @@ class OutcomeIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubQuashSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForOutcome().createHearing().createChargeProved().createQuashed()
 
@@ -465,6 +468,7 @@ class OutcomeIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubDeleteSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForOutcome()
       .createHearing(dateTimeOfHearing = LocalDateTime.now())

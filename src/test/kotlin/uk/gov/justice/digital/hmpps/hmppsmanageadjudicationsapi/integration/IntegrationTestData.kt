@@ -631,6 +631,7 @@ class IntegrationTestData(
 
   fun createChargeProved(
     testDataSet: AdjudicationIntTestDataSet,
+    caution: Boolean? = true,
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/complete-hearing/charge-proved")
@@ -640,7 +641,7 @@ class IntegrationTestData(
           "adjudicator" to "test",
           "plea" to HearingOutcomePlea.NOT_GUILTY,
           "amount" to 100.50,
-          "caution" to true,
+          "caution" to caution,
         ),
       )
       .exchange()

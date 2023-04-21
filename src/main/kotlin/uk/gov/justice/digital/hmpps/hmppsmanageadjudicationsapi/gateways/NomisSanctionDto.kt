@@ -35,6 +35,8 @@ data class OffenderOicSanctionRequest(
         PunishmentType.EXTRA_WORK -> OicSanctionCode.EXTW
         PunishmentType.REMOVAL_WING -> OicSanctionCode.REMWIN
         PunishmentType.ADDITIONAL_DAYS, PunishmentType.PROSPECTIVE_DAYS -> OicSanctionCode.ADA
+        PunishmentType.CAUTION -> OicSanctionCode.CAUTION
+        PunishmentType.DAMAGES_OWED -> OicSanctionCode.OTHER
       }
 
     private fun PunishmentSchedule.statusMapper(prospectiveDays: Boolean): Status =
@@ -64,7 +66,7 @@ data class OffenderOicSanctionRequest(
         status = latestSchedule.statusMapper(this.type == PunishmentType.PROSPECTIVE_DAYS),
         effectiveDate = latestSchedule.suspendedUntil ?: latestSchedule.startDate ?: LocalDate.now(),
         sanctionDays = latestSchedule.days.toLong(),
-        compensationAmount = this.stoppagePercentage?.toDouble(),
+        compensationAmount = this.amount ?: this.stoppagePercentage?.toDouble(),
         commentText = this.commentMapper(),
       )
     }

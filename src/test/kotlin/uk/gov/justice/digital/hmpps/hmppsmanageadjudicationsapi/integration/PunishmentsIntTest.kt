@@ -20,8 +20,9 @@ class PunishmentsIntTest : IntegrationTestBase() {
   @Test
   fun `create punishments `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    initDataForOutcome().createHearing().createChargeProved()
+    initDataForOutcome().createHearing().createChargeProved(caution = false)
 
     createPunishments()
       .expectStatus().isCreated
@@ -38,9 +39,10 @@ class PunishmentsIntTest : IntegrationTestBase() {
   @Test
   fun `update punishments - amends one record, removes a record, and creates a record`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubUpdateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    initDataForOutcome().createHearing().createChargeProved()
+    initDataForOutcome().createHearing().createChargeProved(caution = false)
 
     val suspendedUntil = LocalDate.now().plusMonths(1)
     val formattedDate = suspendedUntil.format(DateTimeFormatter.ISO_DATE)
@@ -115,10 +117,12 @@ class PunishmentsIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
 
-    initDataForOutcome().createHearing().createChargeProved()
+    initDataForOutcome().createHearing().createChargeProved(caution = false)
     initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
-      .createChargeProved(overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
+      .createChargeProved(overrideTestDataSet = IntegrationTestData.ADJUDICATION_2, caution = false)
 
     val result = createPunishments(type = PunishmentType.PROSPECTIVE_DAYS)
       .returnResult(ReportedAdjudicationResponse::class.java)
@@ -166,10 +170,12 @@ class PunishmentsIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
     prisonApiMockServer.stubUpdateSanctions(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
 
-    initDataForOutcome().createHearing().createChargeProved()
+    initDataForOutcome().createHearing().createChargeProved(caution = false)
     initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
-      .createChargeProved(overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
+      .createChargeProved(overrideTestDataSet = IntegrationTestData.ADJUDICATION_2, caution = false)
 
     val result = createPunishments(type = PunishmentType.PROSPECTIVE_DAYS)
       .returnResult(ReportedAdjudicationResponse::class.java)
@@ -214,7 +220,11 @@ class PunishmentsIntTest : IntegrationTestBase() {
   @Test
   fun `get suspended punishments `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    initDataForOutcome().createHearing().createChargeProved()
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    initDataForOutcome().createHearing().createChargeProved(caution = false)
 
     createPunishments()
       .expectStatus().isCreated
