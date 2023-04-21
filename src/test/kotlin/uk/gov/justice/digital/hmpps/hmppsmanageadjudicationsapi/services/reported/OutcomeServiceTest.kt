@@ -34,11 +34,13 @@ import java.time.LocalDateTime
 
 class OutcomeServiceTest : ReportedAdjudicationTestBase() {
   private val nomisOutcomeService: NomisOutcomeService = mock()
+  private val punishmentsService: PunishmentsService = mock()
   private val outcomeService = OutcomeService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
     nomisOutcomeService,
+    punishmentsService,
   )
 
   @Test
@@ -317,8 +319,9 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
 
-    @Test
-    fun `create charge proved `() {
+    @CsvSource("true", "false")
+    @ParameterizedTest
+    fun `create charge proved `(caution: Boolean) {
       reportedAdjudication.status = ReportedAdjudicationStatus.SCHEDULED
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -326,7 +329,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       val response = outcomeService.createChargeProved(
         1235L,
         100.0,
-        true,
+        caution,
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -339,6 +342,12 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first().caution).isEqualTo(true)
 
       assertThat(response).isNotNull
+
+      TODO(
+        "  CREATE \n" +
+          "   - if caution = yes : create caution + capture seq\n" +
+          "   - if damages owed = create caution + capture seq",
+      )
     }
   }
 
@@ -506,6 +515,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
 
       assertThat(response).isNotNull
+
+      TODO(
+        "  DELETE\n" +
+          "    - no issue, removes punishments",
+      )
     }
   }
 
@@ -817,12 +831,23 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
 
-    @Test
-    fun `amends charge proved successfully `() {
+    @CsvSource("true", "false")
+    @ParameterizedTest
+    fun `amends charge proved successfully `(caution: Boolean) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "adjudicator")
-          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED, amount = 100.0, caution = false))
+          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED, amount = 100.0, caution = !caution))
+          if (!caution) {
+            it.punishments.add(
+              Punishment(
+                type = PunishmentType.CONFINEMENT,
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+                ),
+              ),
+            )
+          }
         },
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -830,7 +855,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         adjudicationNumber = 1L,
         outcomeCodeToAmend = OutcomeCode.CHARGE_PROVED,
         damagesOwed = false,
-        caution = true,
+        caution = caution,
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -843,8 +868,16 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
       assertThat(argumentCaptor.value.outcomes.first().caution).isEqualTo(true)
       assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
+      if (!caution) assertThat(argumentCaptor.value.punishments).isEmpty() else assertThat(argumentCaptor.value.punishments).isNotEmpty
 
       assertThat(response).isNotNull
+
+      TODO(
+        "" +
+          "  AMEND\n" +
+          "   - if caution = no, delete caution\n" +
+          "   - if damages owed changes - amend damages owed (and do this after caution delete)",
+      )
     }
 
     @Test

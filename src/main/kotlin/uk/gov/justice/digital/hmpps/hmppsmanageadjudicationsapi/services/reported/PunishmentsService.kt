@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 import java.time.LocalDate
 
 @Transactional
@@ -39,6 +38,26 @@ class PunishmentsService(
   offenceCodeLookupService,
   authenticationFacade,
 ) {
+
+  fun createCaution(adjudicationNumber: Long) {
+    TODO("implement me")
+  }
+
+  fun createDamagesOwed(adjudicationNumber: Long) {
+    TODO("implement me")
+  }
+
+  fun deleteCaution(adjudicationNumber: Long) {
+    TODO("implement me")
+  }
+
+  fun deleteDamagesOwed(adjudicationNumber: Long) {
+    TODO("implement me")
+  }
+
+  fun amendDamagesOwed(adjudicationNumber: Long) {
+    TODO("implement me")
+  }
 
   fun create(
     adjudicationNumber: Long,
@@ -61,9 +80,7 @@ class PunishmentsService(
 
     prisonApiGateway.createSanctions(
       adjudicationNumber = adjudicationNumber,
-      sanctions = reportedAdjudication.mapToSanctions().toMutableList().also {
-        it.addAll(createSanctionsFromOutcome(reportedAdjudication.latestOutcome()))
-      },
+      sanctions = reportedAdjudication.mapToSanctions(),
     )
 
     return saveToDto(reportedAdjudication)
@@ -108,10 +125,10 @@ class PunishmentsService(
 
     prisonApiGateway.updateSanctions(
       adjudicationNumber = adjudicationNumber,
-      sanctions = reportedAdjudication.mapToSanctions().toMutableList().also {
-        it.addAll(createSanctionsFromOutcome(reportedAdjudication.latestOutcome()))
-      },
+      sanctions = reportedAdjudication.mapToSanctions(),
     )
+
+    // TODO potentially need to maintain damages owed at this point as it will be removed via update.
 
     return saveToDto(reportedAdjudication)
   }

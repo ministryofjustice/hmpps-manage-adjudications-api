@@ -23,6 +23,7 @@ class OutcomeService(
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   private val nomisOutcomeService: NomisOutcomeService,
+  private val punishmentsService: PunishmentsService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,

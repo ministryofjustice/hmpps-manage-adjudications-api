@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.validation.ValidationException
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -41,6 +40,13 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     private val created = mutableListOf<OffenderOicSanctionRequest>()
     private val updated = mutableListOf<OffenderOicSanctionRequest>()
+    override fun createSanction(adjudicationNumber: Long, sanction: OffenderOicSanctionRequest): Long {
+      TODO("Not yet implemented")
+    }
+
+    override fun deleteSanction(adjudicationNumber: Long, sanctionSeq: Long): Void? {
+      TODO("Not yet implemented")
+    }
 
     override fun createSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void? {
       created.addAll(sanctions)
@@ -52,6 +58,10 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       updated.addAll(sanctions)
 
       return null
+    }
+
+    override fun deleteSanctions(adjudicationNumber: Long): Void? {
+      TODO("Not yet implemented")
     }
 
     fun reset() {
@@ -106,6 +116,36 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
   }
 
   @Nested
+  inner class Caution {
+
+    @Test
+    fun `creates caution sanction`() {
+    }
+
+    @Test
+    fun `deletes caution sanction`() {
+      TODO("DELETE caution - also calls delete punishments")
+    }
+  }
+
+  @Nested
+  inner class DamagesOwed {
+
+    @Test
+    fun `create damages owed sanction`() {
+    }
+
+    @Test
+    fun `deletes damages owed sanction `() {
+    }
+
+    @Test
+    fun `amends damages owed sanction `() {
+      TODO(" AMEND damages owed -  deletes and creates damages owed, captures new seq")
+    }
+  }
+
+  @Nested
   inner class CreatePunishments {
 
     private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
@@ -118,7 +158,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudication.also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
-          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED, caution = true, amount = 10.0))
+          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
           it.createdByUserId = "test"
           it.createDateTime = LocalDateTime.now()
         },
@@ -145,8 +185,26 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `validation error - caution is true `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.outcomes.clear()
+          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED, caution = true))
+        },
+      )
+      assertThatThrownBy {
+        punishmentsService.create(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("outcome is a caution - no further punishments can be added")
+    }
+
+    @Test
     fun `validation error - privilege missing sub type `() {
-      Assertions.assertThatThrownBy {
+      assertThatThrownBy {
         punishmentsService.create(
           adjudicationNumber = 1,
           listOf(PunishmentRequest(type = PunishmentType.PRIVILEGE, days = 1)),
@@ -270,7 +328,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       assertThat(prisonApiGateway.verifyCreate()).isTrue
-      assertThat(prisonApiGateway.verifyCreatedCautionAndOtherAmountOwed(10.0)).isTrue
 
       val removalWing = argumentCaptor.value.punishments.first { it.type == PunishmentType.REMOVAL_WING }
 
@@ -370,25 +427,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response).isNotNull
     }
-
-    @Test
-    fun `verify does not create amount owed or caution `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        reportedAdjudication.also {
-          it.outcomes.last().also {
-            it.amount = null
-            it.caution = false
-          }
-        },
-      )
-
-      punishmentsService.create(
-        adjudicationNumber = 1,
-        punishments = emptyList(),
-      )
-
-      assertThat(prisonApiGateway.verifyUpdateCautionAndOtherAmountOwed(10.0, false)).isTrue
-    }
   }
 
   @Nested
@@ -404,7 +442,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           it.punishments.clear()
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
-          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED, caution = true, amount = 10.0))
+          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
           it.createdByUserId = "test"
           it.createDateTime = LocalDateTime.now()
         },
@@ -429,6 +467,24 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("status is not CHARGE_PROVED")
+    }
+
+    @Test
+    fun `validation error - caution is true `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.outcomes.clear()
+          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED, caution = true))
+        },
+      )
+      assertThatThrownBy {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("outcome is a caution - no further punishments can be added")
     }
 
     @Test
@@ -722,7 +778,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(prisonApiGateway.verifyUpdate()).isTrue
-      assertThat(prisonApiGateway.verifyUpdateCautionAndOtherAmountOwed(10.0)).isTrue
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(response).isNotNull
@@ -745,6 +800,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(privilege.schedule.first().endDate).isEqualTo(LocalDate.now().plusDays(1))
       assertThat(privilege.otherPrivilege).isEqualTo("other")
       assertThat(privilege.privilegeType).isEqualTo(PrivilegeType.OTHER)
+
+      TODO(
+        "" +
+          "AMEND ALL - if damages owed seq exists, create a new one and capture seq",
+      )
     }
 
     @Test
@@ -815,25 +875,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.punishments.first().activatedFrom).isEqualTo(2)
 
       assertThat(response).isNotNull
-    }
-
-    @Test
-    fun `verify does not create amount owed or caution `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        reportedAdjudication.also {
-          it.outcomes.last().also {
-            it.amount = null
-            it.caution = false
-          }
-        },
-      )
-
-      punishmentsService.update(
-        adjudicationNumber = 1,
-        punishments = emptyList(),
-      )
-
-      assertThat(prisonApiGateway.verifyUpdateCautionAndOtherAmountOwed(10.0, false)).isTrue
     }
   }
 

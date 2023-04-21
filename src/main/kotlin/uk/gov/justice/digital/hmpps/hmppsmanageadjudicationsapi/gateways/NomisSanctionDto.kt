@@ -70,3 +70,5 @@ data class OffenderOicSanctionRequest(
     }
   }
 }
+
+data class OffenderOicSanctionResponse(val sanctionSeq: Long)
