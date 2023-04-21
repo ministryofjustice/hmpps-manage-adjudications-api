@@ -189,21 +189,21 @@ class PunishmentsService(
       else -> if (damagesOwedPunishment.amount != amount) {
         when (amount) {
           null -> {
-            reportedAdjudication.punishments.remove(damagesOwedPunishment)
-
             prisonApiGateway.deleteSanction(
               adjudicationNumber = reportedAdjudication.reportNumber,
               sanctionSeq = damagesOwedPunishment.sanctionSeq!!,
-            )
+            ).run {
+              reportedAdjudication.punishments.remove(damagesOwedPunishment)
+            }
           }
           else -> {
-            prisonApiGateway.deleteSanction(adjudicationNumber = reportedAdjudication.reportNumber, sanctionSeq = damagesOwedPunishment.sanctionSeq!!)
-
-            damagesOwedPunishment.amount = amount
-            damagesOwedPunishment.sanctionSeq = prisonApiGateway.createSanction(
-              adjudicationNumber = reportedAdjudication.reportNumber,
-              sanction = damagesOwedPunishment.mapPunishmentToSanction(),
-            )
+            prisonApiGateway.deleteSanction(adjudicationNumber = reportedAdjudication.reportNumber, sanctionSeq = damagesOwedPunishment.sanctionSeq!!).run {
+              damagesOwedPunishment.amount = amount
+              damagesOwedPunishment.sanctionSeq = prisonApiGateway.createSanction(
+                adjudicationNumber = reportedAdjudication.reportNumber,
+                sanction = damagesOwedPunishment.mapPunishmentToSanction(),
+              )
+            }
           }
         }
       }
@@ -213,20 +213,23 @@ class PunishmentsService(
   private fun handleCautionChange(reportedAdjudication: ReportedAdjudication, caution: Boolean) {
     when (val cautionPunishment = reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.CAUTION }) {
       null -> if (caution) {
-        prisonApiGateway.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber)
-
-        reportedAdjudication.punishments.clear()
-        reportedAdjudication.punishments.add(
-          createPunishmentFromChargeProved(
-            adjudicationNumber = reportedAdjudication.reportNumber,
-            type = PunishmentType.CAUTION,
-          ),
-        )
+        prisonApiGateway.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber).run {
+          reportedAdjudication.punishments.clear()
+          reportedAdjudication.punishments.add(
+            createPunishmentFromChargeProved(
+              adjudicationNumber = reportedAdjudication.reportNumber,
+              type = PunishmentType.CAUTION,
+            ),
+          )
+        }
       }
       else -> if (!caution) {
-        prisonApiGateway.deleteSanction(adjudicationNumber = reportedAdjudication.reportNumber, sanctionSeq = cautionPunishment.sanctionSeq!!)
-
-        reportedAdjudication.punishments.remove(cautionPunishment)
+        prisonApiGateway.deleteSanction(
+          adjudicationNumber = reportedAdjudication.reportNumber,
+          sanctionSeq = cautionPunishment.sanctionSeq!!,
+        ).run {
+          reportedAdjudication.punishments.remove(cautionPunishment)
+        }
       }
     }
   }
