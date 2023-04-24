@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config
 
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.PathItem
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.models.media.Content
 import io.swagger.v3.oas.models.media.DateTimeSchema
 import io.swagger.v3.oas.models.media.Schema
 import io.swagger.v3.oas.models.media.StringSchema
+import io.swagger.v3.oas.models.parameters.Parameter
 import io.swagger.v3.oas.models.responses.ApiResponse
 import io.swagger.v3.oas.models.security.SecurityRequirement
 import io.swagger.v3.oas.models.security.SecurityScheme
@@ -20,6 +22,7 @@ import org.springframework.boot.info.BuildProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
+
 
 @Configuration
 class OpenApiConfiguration(
@@ -55,7 +58,7 @@ class OpenApiConfiguration(
 
         Tag().name("40. Reports").description("Reports - Adjudications"),
 
-      ),
+        ),
     )
     .info(
       Info().title("HMPPS Manage Adjudications API")
@@ -85,6 +88,8 @@ class OpenApiConfiguration(
   @Bean
   fun openAPICustomiser(): OpenApiCustomizer = OpenApiCustomizer {
     it.paths.forEach { (_, path: PathItem) ->
+      path.addParametersItem(Parameter().`in`(ParameterIn.HEADER.toString()).name("Active-Caseload").description("Current Caseload for request").schema(StringSchema()).example("MDI").required(true))
+
       path.readOperations().forEach { operation ->
         operation.responses.default = createErrorApiResponse("Unexpected error")
         operation.responses.addApiResponse("401", createErrorApiResponse("Unauthorized"))
