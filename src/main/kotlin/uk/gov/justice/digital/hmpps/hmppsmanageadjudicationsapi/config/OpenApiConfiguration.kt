@@ -23,7 +23,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
 
-
 @Configuration
 class OpenApiConfiguration(
   buildProperties: BuildProperties,
@@ -58,7 +57,7 @@ class OpenApiConfiguration(
 
         Tag().name("40. Reports").description("Reports - Adjudications"),
 
-        ),
+      ),
     )
     .info(
       Info().title("HMPPS Manage Adjudications API")
