@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
@@ -14,13 +15,16 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingResultRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
@@ -139,7 +143,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
-    @CsvSource("REFER_POLICE", "NOT_PROCEED", "CHARGE_PROVED", "DISMISSED")
+    @CsvSource("REFER_POLICE", "NOT_PROCEED, GOV", "CHARGE_PROVED", "DISMISSED")
     @ParameterizedTest
     fun `hearing with outcome {0} creates hearing result `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
@@ -155,6 +159,32 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(prisonApiGateway, never()).createHearing(any(), any())
       verify(prisonApiGateway, atLeastOnce()).createHearingResult(any(), any(), any())
+    }
+
+    @EnumSource(OicHearingType::class)
+    @ParameterizedTest
+    fun `adjudicator should only be sent if GOV_UK, GOV_ADULT, GOV_YOI`(oicHearingType: OicHearingType) {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.hearings.first().oicHearingType = oicHearingType
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "testing", plea = HearingOutcomePlea.GUILTY)
+        it.outcomes.add(Outcome(code = OutcomeCode.NOT_PROCEED))
+      }
+
+      nomisOutcomeService.createHearingResultIfApplicable(
+        adjudicationNumber = reportedAdjudication.reportNumber,
+        hearing = reportedAdjudication.getLatestHearing(),
+        outcome = reportedAdjudication.latestOutcome()!!,
+      )
+
+      val hearing = reportedAdjudication.hearings.first()
+      val request = createHearingResultRequestForVerify(reportedAdjudication, hearing)
+
+      verify(prisonApiGateway, never()).createHearing(any(), any())
+      verify(prisonApiGateway, atLeastOnce()).createHearingResult(
+        adjudicationNumber = reportedAdjudication.reportNumber,
+        oicHearingId = hearing.oicHearingId,
+        oicHearingResultRequest = request,
+      )
     }
 
     @Test
@@ -306,6 +336,31 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(prisonApiGateway, atLeastOnce()).amendHearingResult(anyOrNull(), any(), any())
     }
 
+    @EnumSource(OicHearingType::class)
+    @ParameterizedTest
+    fun `adjudicator should only be sent if GOV_UK, GOV_ADULT, GOV_YOI`(oicHearingType: OicHearingType) {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.hearings.first().oicHearingType = oicHearingType
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "testing", plea = HearingOutcomePlea.GUILTY)
+        it.outcomes.add(Outcome(code = OutcomeCode.NOT_PROCEED))
+      }
+
+      nomisOutcomeService.amendHearingResultIfApplicable(
+        adjudicationNumber = reportedAdjudication.reportNumber,
+        hearing = reportedAdjudication.getLatestHearing(),
+        outcome = reportedAdjudication.latestOutcome()!!,
+      )
+
+      val hearing = reportedAdjudication.hearings.first()
+      val request = createHearingResultRequestForVerify(reportedAdjudication, hearing)
+
+      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(
+        adjudicationNumber = reportedAdjudication.reportNumber,
+        oicHearingId = hearing.oicHearingId,
+        oicHearingResultRequest = request,
+      )
+    }
+
     @Test
     fun `REFER_INAD does not call prison api`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
@@ -445,5 +500,22 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(prisonApiGateway, never()).deleteHearing(any(), any())
       verify(prisonApiGateway, never()).deleteHearingResult(any(), any())
     }
+  }
+
+  companion object {
+    fun createHearingResultRequestForVerify(reportedAdjudication: ReportedAdjudication, hearing: Hearing): OicHearingResultRequest =
+      when (hearing.oicHearingType) {
+        OicHearingType.GOV_ADULT, OicHearingType.GOV_YOI, OicHearingType.GOV ->
+          OicHearingResultRequest(
+            pleaFindingCode = hearing.hearingOutcome!!.plea!!.plea,
+            findingCode = reportedAdjudication.outcomes.first().code.finding!!,
+            adjudicator = hearing.hearingOutcome!!.adjudicator,
+          )
+        OicHearingType.INAD_YOI, OicHearingType.INAD_ADULT ->
+          OicHearingResultRequest(
+            pleaFindingCode = hearing.hearingOutcome!!.plea!!.plea,
+            findingCode = reportedAdjudication.outcomes.first().code.finding!!,
+          )
+      }
   }
 }
