@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingResultRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import java.time.LocalDateTime
 
@@ -61,6 +62,7 @@ class NomisOutcomeService(
           oicHearingResultRequest = OicHearingResultRequest(
             pleaFindingCode = it.validateHearingOutcome().validatePlea().plea,
             findingCode = outcome.code.validateFinding(),
+            adjudicator = hearing.getAdjudicator(),
           ),
         )
       }
@@ -88,6 +90,7 @@ class NomisOutcomeService(
       oicHearingResultRequest = OicHearingResultRequest(
         pleaFindingCode = hearing.validateHearingOutcome().validatePlea().plea,
         findingCode = outcome.code.validateFinding(),
+        adjudicator = hearing.getAdjudicator(),
       ),
     )
   }
@@ -131,4 +134,10 @@ class NomisOutcomeService(
     fun isPoliceReferralOutcomeFromHearing(hearing: Hearing, outcome: Outcome): Boolean =
       hearing.hearingOutcome?.code == HearingOutcomeCode.REFER_POLICE && POLICE_REFERRAL_OUTCOMES.contains(outcome.code)
   }
+
+  fun Hearing.getAdjudicator(): String? =
+    when (this.oicHearingType) {
+      OicHearingType.GOV_ADULT, OicHearingType.GOV_YOI, OicHearingType.GOV -> this.hearingOutcome?.adjudicator
+      OicHearingType.INAD_YOI, OicHearingType.INAD_ADULT -> null
+    }
 }
