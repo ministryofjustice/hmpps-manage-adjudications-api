@@ -501,7 +501,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
                 dateTimeOfHearing = LocalDateTime.now().plusDays(5),
                 oicHearingId = 1L,
                 reportNumber = 1L,
-                hearingOutcome = HearingOutcome(code = code, adjudicator = ""),
+                hearingOutcome = HearingOutcome(code = code, adjudicator = "testing"),
               ),
             )
           },

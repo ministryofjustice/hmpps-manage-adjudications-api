@@ -614,7 +614,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       it.hearings.first().also { h ->
-        h.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
+        h.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing")
       }
     }
 
@@ -655,7 +655,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       it.hearings.last().also {
           h ->
-        h.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+        h.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing")
       }
     }
 
@@ -731,7 +731,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           oicHearingType = OicHearingType.GOV_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(1),
           oicHearingId = 1L,
-          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = ""),
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing"),
         ),
       )
       it.hearings.add(
@@ -742,7 +742,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           oicHearingType = OicHearingType.INAD_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(2),
           oicHearingId = 1L,
-          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing"),
         ),
       )
     }
@@ -760,7 +760,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           oicHearingType = OicHearingType.GOV_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(1),
           oicHearingId = 1L,
-          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = ""),
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing"),
         ),
       )
 
@@ -797,7 +797,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           oicHearingType = OicHearingType.GOV_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(1),
           oicHearingId = 1L,
-          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = ""),
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "testing"),
         ),
       )
     }
@@ -812,7 +812,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       it.hearings.last().also {
           h ->
-        h.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
+        h.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "testing")
       }
     }
 
@@ -829,7 +829,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           agencyId = "",
           reportNumber = 1L,
           oicHearingType = OicHearingType.GOV,
-          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "testing"),
         ),
       )
     }
@@ -886,7 +886,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           agencyId = "",
           reportNumber = 1L,
           oicHearingType = OicHearingType.GOV,
-          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "testing"),
         ),
       )
 
@@ -1191,7 +1191,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               oicHearingId = 1L,
               oicHearingType = OicHearingType.GOV,
               dateTimeOfHearing = LocalDateTime.now(),
-              hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
+              hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing"),
               reportNumber = 1L,
             ),
           )
@@ -1224,7 +1224,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               oicHearingId = 1L,
               oicHearingType = OicHearingType.GOV,
               dateTimeOfHearing = LocalDateTime.now().plusDays(1),
-              hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
+              hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing"),
               reportNumber = 1L,
             ),
           )
@@ -1272,7 +1272,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         entityBuilder.reportedAdjudication().also {
           it.hearings.first().hearingOutcome = HearingOutcome(
             code = HearingOutcomeCode.REFER_POLICE,
-            adjudicator = "",
+            adjudicator = "testing",
           )
           it.outcomes.add(
             Outcome(code = OutcomeCode.REFER_POLICE).also { o -> o.createDateTime = LocalDateTime.now() },

@@ -65,7 +65,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
-          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "testing")
           it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
           it.createdByUserId = "test"
           it.createDateTime = LocalDateTime.now()
@@ -325,7 +325,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudication.also {
           it.punishments.clear()
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
-          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "testing")
           it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
           it.createdByUserId = "test"
           it.createDateTime = LocalDateTime.now()

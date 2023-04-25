@@ -78,7 +78,7 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
     )
 
     whenever(hearingOutcomeService.getHearingOutcomeForReferral(1, OutcomeCode.REFER_POLICE, 0)).thenReturn(
-      HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
+      HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing"),
     )
 
     referralService.removeReferral(1)
@@ -111,7 +111,7 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
     )
 
     whenever(hearingOutcomeService.getHearingOutcomeForReferral(1, OutcomeCode.REFER_POLICE, 0)).thenReturn(
-      HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
+      HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing"),
     )
 
     referralService.removeReferral(1)

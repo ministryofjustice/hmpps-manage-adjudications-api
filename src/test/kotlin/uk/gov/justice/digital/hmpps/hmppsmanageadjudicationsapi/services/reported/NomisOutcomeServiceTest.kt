@@ -78,7 +78,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `quashed creates hearing and result`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "", plea = HearingOutcomePlea.GUILTY)
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "testing", plea = HearingOutcomePlea.GUILTY)
         it.hearings.first().oicHearingId = 122
         it.outcomes.add(
           Outcome(code = OutcomeCode.CHARGE_PROVED).also {
@@ -110,6 +110,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         OicHearingResultRequest(
           pleaFindingCode = Plea.GUILTY,
           findingCode = Finding.QUASHED,
+          adjudicator = "testing",
         ),
       )
     }
@@ -118,7 +119,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     fun ` {0} from hearing - POLICE REFER creates hearing and result `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing")
         it.hearings.first().oicHearingId = 122
         it.outcomes.add(Outcome(code = code))
       }
@@ -139,6 +140,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         OicHearingResultRequest(
           pleaFindingCode = Plea.NOT_ASKED,
           findingCode = code.finding!!,
+          adjudicator = "testing",
         ),
       )
     }
@@ -147,7 +149,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     fun `hearing with outcome {0} creates hearing result `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = if (code == OutcomeCode.REFER_POLICE) HearingOutcomeCode.REFER_POLICE else HearingOutcomeCode.COMPLETE, adjudicator = "")
+        it.hearings.first().hearingOutcome = HearingOutcome(code = if (code == OutcomeCode.REFER_POLICE) HearingOutcomeCode.REFER_POLICE else HearingOutcomeCode.COMPLETE, adjudicator = "testing")
         it.outcomes.add(Outcome(code = code))
       }
 
@@ -190,7 +192,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `REFER_INAD does not call prison api`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing")
         it.outcomes.add(Outcome(code = OutcomeCode.REFER_INAD))
       }
 
@@ -211,7 +213,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     fun `oic hearing id not present on outcome exception `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing")
         it.outcomes.add(Outcome(code = code))
       }
 
@@ -260,7 +262,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `quashed amend`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "", plea = HearingOutcomePlea.GUILTY)
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "testing", plea = HearingOutcomePlea.GUILTY)
         it.hearings.first().oicHearingId = 122
         it.outcomes.add(
           Outcome(code = OutcomeCode.CHARGE_PROVED).also {
@@ -289,6 +291,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         OicHearingResultRequest(
           findingCode = Finding.QUASHED,
           pleaFindingCode = Plea.GUILTY,
+          adjudicator = "testing",
         ),
       )
     }
@@ -297,7 +300,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     fun `{0} from hearing - police refer amends hearing result `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing")
         it.hearings.first().oicHearingId = 122L
         it.outcomes.add(Outcome(code = code, oicHearingId = 123L))
       }
@@ -313,8 +316,9 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudication.reportNumber,
         123L,
         OicHearingResultRequest(
-          findingCode = code.finding!!,
           pleaFindingCode = Plea.NOT_ASKED,
+          findingCode = code.finding!!,
+          adjudicator = "testing",
         ),
       )
     }
@@ -323,7 +327,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     fun `hearing with outcome {0} amends hearing result `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = if (code == OutcomeCode.REFER_POLICE) HearingOutcomeCode.REFER_POLICE else HearingOutcomeCode.COMPLETE, adjudicator = "")
+        it.hearings.first().hearingOutcome = HearingOutcome(code = if (code == OutcomeCode.REFER_POLICE) HearingOutcomeCode.REFER_POLICE else HearingOutcomeCode.COMPLETE, adjudicator = "testing")
         it.outcomes.add(Outcome(code = code, oicHearingId = 1))
       }
 
@@ -364,7 +368,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `REFER_INAD does not call prison api`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing")
         it.outcomes.add(Outcome(code = OutcomeCode.REFER_INAD))
       }
 
@@ -385,7 +389,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     fun `oic hearing id not present on outcome exception `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing")
         it.outcomes.add(Outcome(code = code))
       }
 
@@ -420,7 +424,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `quashed delete deletes hearing and result`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "", plea = HearingOutcomePlea.GUILTY)
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "testing", plea = HearingOutcomePlea.GUILTY)
         it.hearings.first().oicHearingId = 122
         it.outcomes.add(
           Outcome(code = OutcomeCode.CHARGE_PROVED).also {
@@ -450,7 +454,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     fun `{0} from hearing deletes hearing result and hearing `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing")
         it.hearings.first().oicHearingId = 100L
         it.outcomes.add(Outcome(code = code, oicHearingId = 122L))
       }
@@ -469,7 +473,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     fun `hearing with outcome {0} deletes hearing result `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = if (code == OutcomeCode.REFER_POLICE) HearingOutcomeCode.REFER_POLICE else HearingOutcomeCode.COMPLETE, adjudicator = "")
+        it.hearings.first().hearingOutcome = HearingOutcome(code = if (code == OutcomeCode.REFER_POLICE) HearingOutcomeCode.REFER_POLICE else HearingOutcomeCode.COMPLETE, adjudicator = "testing")
         it.hearings.first().oicHearingId = 100L
         it.outcomes.add(Outcome(code = code))
       }
@@ -487,7 +491,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `REFER_INAD does not call prison api`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing")
         it.outcomes.add(Outcome(code = OutcomeCode.REFER_INAD))
       }
 
