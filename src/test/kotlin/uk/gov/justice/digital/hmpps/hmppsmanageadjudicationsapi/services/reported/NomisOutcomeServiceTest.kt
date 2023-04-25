@@ -145,7 +145,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
-    @CsvSource("REFER_POLICE", "NOT_PROCEED, GOV", "CHARGE_PROVED", "DISMISSED")
+    @CsvSource("REFER_POLICE", "NOT_PROCEED", "CHARGE_PROVED", "DISMISSED")
     @ParameterizedTest
     fun `hearing with outcome {0} creates hearing result `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {

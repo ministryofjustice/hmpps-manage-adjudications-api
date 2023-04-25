@@ -235,7 +235,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `delete adjourn outcome`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         reportedAdjudication.also {
-          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "testing")
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
         },
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -261,7 +261,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `remove adjourn throws exception if latest outcome is not an adjourn `(code: HearingOutcomeCode) {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         reportedAdjudication.also {
-          it.hearings.first().hearingOutcome = HearingOutcome(code = code, adjudicator = "testing")
+          it.hearings.first().hearingOutcome = HearingOutcome(code = code, adjudicator = "")
         },
       )
 
@@ -464,7 +464,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `throws validation exception if the latest outcome is not of the correct type `(code: HearingOutcomeCode) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.hearings.first().hearingOutcome = HearingOutcome(adjudicator = "testing", code = HearingOutcomeCode.values().first { hoc -> hoc != code })
+          it.hearings.first().hearingOutcome = HearingOutcome(adjudicator = "", code = HearingOutcomeCode.values().first { hoc -> hoc != code })
         },
       )
       Assertions.assertThatThrownBy {
