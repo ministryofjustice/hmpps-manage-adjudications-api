@@ -1,8 +1,8 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.1.3"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.1.4"
   id("jacoco")
-  kotlin("plugin.spring") version "1.8.20"
-  kotlin("plugin.jpa") version "1.8.20"
+  kotlin("plugin.spring") version "1.8.21"
+  kotlin("plugin.jpa") version "1.8.21"
 }
 
 configurations {
@@ -25,7 +25,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
   runtimeOnly("com.h2database:h2:2.1.214")
-  runtimeOnly("org.flywaydb:flyway-core:9.16.3")
+  runtimeOnly("org.flywaydb:flyway-core:9.17.0")
   runtimeOnly("org.postgresql:postgresql:42.6.0")
 
   testImplementation("io.jsonwebtoken:jjwt-impl:0.11.5")
@@ -33,7 +33,7 @@ dependencies {
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.37.0")
-  testImplementation("org.flywaydb:flyway-core:9.16.3")
+  testImplementation("org.flywaydb:flyway-core:9.17.0")
 }
 
 allOpen {
