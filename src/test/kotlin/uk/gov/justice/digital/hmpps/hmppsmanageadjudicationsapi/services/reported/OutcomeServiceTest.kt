@@ -22,25 +22,19 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 class OutcomeServiceTest : ReportedAdjudicationTestBase() {
   private val nomisOutcomeService: NomisOutcomeService = mock()
-  private val punishmentsService: PunishmentsService = mock()
   private val outcomeService = OutcomeService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
     nomisOutcomeService,
-    punishmentsService,
   )
 
   @Test
@@ -333,11 +327,13 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       verify(nomisOutcomeService, atLeastOnce()).createHearingResultIfApplicable(any(), any(), any())
-      verify(punishmentsService, atLeastOnce()).createPunishmentsFromChargeProvedIfApplicable(any(), any(), any())
 
       assertThat(argumentCaptor.value.outcomes.first()).isNotNull
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.outcomes.first().details).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().amount).isEqualTo(100.0)
+      assertThat(argumentCaptor.value.outcomes.first().caution).isEqualTo(true)
+
       assertThat(response).isNotNull
     }
   }
@@ -371,15 +367,6 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.outcomes.add(
           Outcome(id = 1, code = code),
         )
-        it.punishments.add(
-          Punishment(
-            type = PunishmentType.CONFINEMENT,
-            suspendedUntil = LocalDate.now(),
-            schedule = mutableListOf(
-              PunishmentSchedule(days = 10),
-            ),
-          ),
-        )
       }
 
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
@@ -396,10 +383,6 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.outcomes).isEmpty()
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
-
-      if (code == OutcomeCode.CHARGE_PROVED) {
-        assertThat(argumentCaptor.value.punishments).isEmpty()
-      }
 
       assertThat(response).isNotNull
     }
@@ -638,6 +621,8 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.REFER_POLICE)
       assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("updated")
       assertThat(argumentCaptor.value.outcomes.first().reason).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isNull()
       assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
 
       assertThat(response).isNotNull
@@ -665,6 +650,8 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.QUASHED)
       assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("updated")
       assertThat(argumentCaptor.value.outcomes.first().reason).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isNull()
       assertThat(argumentCaptor.value.outcomes.first().quashedReason).isEqualTo(QuashedReason.FLAWED_CASE)
 
       assertThat(response).isNotNull
@@ -689,6 +676,8 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.NOT_PROCEED)
       assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("updated")
       assertThat(argumentCaptor.value.outcomes.first().reason).isEqualTo(NotProceedReason.WITNESS_NOT_ATTEND)
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isNull()
       assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
 
       assertThat(response).isNotNull
@@ -764,7 +753,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("latest outcome is not of same type")
     }
 
-    @CsvSource("QUASHED", "SCHEDULE_HEARING", "REFER_POLICE", "NOT_PROCEED, CHARGE_PROVED")
+    @CsvSource("QUASHED", "SCHEDULE_HEARING", "REFER_POLICE", "NOT_PROCEED")
     @ParameterizedTest
     fun `throws validation exception if outcome code not supported by this function `(code: OutcomeCode) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
@@ -804,6 +793,38 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(code.outcomeCode!!)
       assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("updated")
       assertThat(argumentCaptor.value.outcomes.first().reason).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `amends charge proved successfully `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "adjudicator")
+          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED, amount = 100.0, caution = false))
+        },
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val response = outcomeService.amendOutcomeViaService(
+        adjudicationNumber = 1L,
+        outcomeCodeToAmend = OutcomeCode.CHARGE_PROVED,
+        damagesOwed = false,
+        caution = true,
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(nomisOutcomeService, atLeastOnce()).amendHearingResultIfApplicable(any(), any(), any())
+
+      assertThat(argumentCaptor.value.outcomes.first()).isNotNull
+      assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.outcomes.first().details).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().reason).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isEqualTo(true)
       assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
 
       assertThat(response).isNotNull
@@ -831,6 +852,8 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.DISMISSED)
       assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("updated")
       assertThat(argumentCaptor.value.outcomes.first().reason).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isNull()
       assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
 
       assertThat(response).isNotNull
@@ -859,6 +882,8 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.outcomes.first().code).isEqualTo(OutcomeCode.NOT_PROCEED)
       assertThat(argumentCaptor.value.outcomes.first().details).isEqualTo("updated")
       assertThat(argumentCaptor.value.outcomes.first().reason).isEqualTo(NotProceedReason.WITNESS_NOT_ATTEND)
+      assertThat(argumentCaptor.value.outcomes.first().amount).isNull()
+      assertThat(argumentCaptor.value.outcomes.first().caution).isNull()
       assertThat(argumentCaptor.value.outcomes.first().quashedReason).isNull()
 
       assertThat(response).isNotNull

@@ -5,7 +5,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
@@ -13,14 +12,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 class IntegrationTestData(
@@ -631,7 +628,6 @@ class IntegrationTestData(
 
   fun createChargeProved(
     testDataSet: AdjudicationIntTestDataSet,
-    caution: Boolean? = true,
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/complete-hearing/charge-proved")
@@ -641,34 +637,13 @@ class IntegrationTestData(
           "adjudicator" to "test",
           "plea" to HearingOutcomePlea.NOT_GUILTY,
           "amount" to 100.50,
-          "caution" to caution,
+          "caution" to true,
         ),
       )
       .exchange()
       .returnResult(ReportedAdjudicationResponse::class.java)
       .responseBody
       .blockFirst()!!
-  }
-
-  fun createPunishments(
-    testDataSet: AdjudicationIntTestDataSet,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/punishments")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .bodyValue(
-        mapOf(
-          "punishments" to
-            listOf(
-              PunishmentRequest(
-                type = PunishmentType.CONFINEMENT,
-                days = 10,
-                suspendedUntil = LocalDate.now(),
-              ),
-            ),
-        ),
-      )
-      .exchange()
   }
 
   fun createNotProceed(
