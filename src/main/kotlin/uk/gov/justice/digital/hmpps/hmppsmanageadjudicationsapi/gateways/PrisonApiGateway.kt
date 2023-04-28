@@ -93,29 +93,29 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
     .bodyToMono<Void>()
     .block()
 
-  fun createSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): List<OffenderOicSanctionResponse>? =
+  fun createSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void? =
     prisonApiClientCreds
       .post()
       .uri("/adjudications/adjudication/$adjudicationNumber/sanctions")
       .bodyValue(sanctions)
       .retrieve()
-      .bodyToMono(object : ParameterizedTypeReference<List<OffenderOicSanctionResponse>>() {})
+      .bodyToMono<Void>()
       .block()
 
-  fun updateSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): List<OffenderOicSanctionResponse>? =
+  fun updateSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void? =
     prisonApiClientCreds
       .put()
       .uri("/adjudications/adjudication/$adjudicationNumber/sanctions")
       .bodyValue(sanctions)
       .retrieve()
-      .bodyToMono(object : ParameterizedTypeReference<List<OffenderOicSanctionResponse>>() {})
+      .bodyToMono<Void>()
       .block()
 
-  fun quashSanctions(adjudicationNumber: Long): List<OffenderOicSanctionResponse>? = prisonApiClientCreds
+  fun quashSanctions(adjudicationNumber: Long): Void? = prisonApiClientCreds
     .put()
     .uri("/adjudications/adjudication/$adjudicationNumber/sanctions/quash")
     .retrieve()
-    .bodyToMono(object : ParameterizedTypeReference<List<OffenderOicSanctionResponse>>() {})
+    .bodyToMono<Void>()
     .block()
 
   fun deleteSanctions(adjudicationNumber: Long): Void? = prisonApiClientCreds
