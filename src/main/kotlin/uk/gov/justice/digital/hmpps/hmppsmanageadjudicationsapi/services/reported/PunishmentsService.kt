@@ -308,7 +308,7 @@ class PunishmentsService(
   companion object {
 
     fun ReportedAdjudication.mapToSanctions(): List<OffenderOicSanctionRequest> =
-      this.punishments.map { it.mapPunishmentToSanction() }
+      this.punishments.filterOutChargeProvedPunishments().map { it.mapPunishmentToSanction() }
 
     fun List<PunishmentSchedule>.latestSchedule() = this.maxBy { it.createDateTime!! }
 
