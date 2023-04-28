@@ -248,4 +248,75 @@ class PrisonApiMockServer : WireMockServer {
         ),
     )
   }
+
+  fun stubCreateSanctions(adjudicationNumber: Long) {
+    stubFor(
+      post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubCreateSanction(adjudicationNumber: Long) {
+    stubFor(
+      post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanction"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+            .withBody(
+              JSONObject()
+                .put("sanctionSeq", "1")
+                .toString(),
+            ),
+        ),
+    )
+  }
+
+  fun stubUpdateSanctions(adjudicationNumber: Long) {
+    stubFor(
+      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubQuashSanctions(adjudicationNumber: Long) {
+    stubFor(
+      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions/quash"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubDeleteSanctions(adjudicationNumber: Long) {
+    stubFor(
+      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubDeleteSanction(adjudicationNumber: Long) {
+    stubFor(
+      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanction/1"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200),
+        ),
+    )
+  }
 }

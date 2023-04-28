@@ -23,6 +23,7 @@ class OutcomeService(
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   private val nomisOutcomeService: NomisOutcomeService,
+  private val punishmentsService: PunishmentsService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -123,9 +124,6 @@ class OutcomeService(
     outcomeCodeToAmend: OutcomeCode,
     details: String? = null,
     notProceedReason: NotProceedReason? = null,
-    amount: Double? = null,
-    damagesOwed: Boolean? = null,
-    caution: Boolean? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
@@ -137,9 +135,6 @@ class OutcomeService(
       adjudicationNumber = adjudicationNumber,
       details = details,
       reason = notProceedReason,
-      amount = amount,
-      damagesOwed = damagesOwed,
-      caution = caution,
     )
   }
 
@@ -166,8 +161,6 @@ class OutcomeService(
       code = code,
       details = details,
       reason = reason,
-      amount = amount,
-      caution = caution,
       quashedReason = quashedReason,
     ).also {
       it.oicHearingId = nomisOutcomeService.createHearingResultIfApplicable(
@@ -179,6 +172,14 @@ class OutcomeService(
 
     reportedAdjudication.outcomes.add(outcomeToCreate)
 
+    if (outcomeToCreate.code == OutcomeCode.CHARGE_PROVED) {
+      punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
+        reportedAdjudication = reportedAdjudication,
+        caution = caution!!,
+        amount = amount,
+      )
+    }
+
     return saveToDto(reportedAdjudication)
   }
 
@@ -187,9 +188,6 @@ class OutcomeService(
     details: String? = null,
     reason: NotProceedReason? = null,
     quashedReason: QuashedReason? = null,
-    amount: Double? = null,
-    damagesOwed: Boolean? = null,
-    caution: Boolean? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
@@ -199,14 +197,12 @@ class OutcomeService(
           details?.let { updated -> it.details = updated }
           reason?.let { updated -> it.reason = updated }
         }
+
         OutcomeCode.QUASHED -> {
           details?.let { updated -> it.details = updated }
           quashedReason?.let { updated -> it.quashedReason = updated }
         }
-        OutcomeCode.CHARGE_PROVED -> {
-          damagesOwed?.let { _ -> it.amount = amount }
-          caution?.let { updated -> it.caution = updated }
-        }
+
         OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD, OutcomeCode.DISMISSED -> details?.let { updated -> it.details = updated }
         else -> {}
       }
@@ -232,6 +228,8 @@ class OutcomeService(
     reportedAdjudication.outcomes.remove(outcomeToDelete)
     reportedAdjudication.calculateStatus()
 
+    if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) reportedAdjudication.punishments.clear()
+
     nomisOutcomeService.deleteHearingResultIfApplicable(
       adjudicationNumber = adjudicationNumber,
       hearing = reportedAdjudication.getLatestHearing(),
@@ -243,7 +241,7 @@ class OutcomeService(
 
   fun getOutcomes(adjudicationNumber: Long): List<CombinedOutcomeDto> {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    return reportedAdjudication.outcomes.createCombinedOutcomes()
+    return reportedAdjudication.outcomes.createCombinedOutcomes(reportedAdjudication.punishments)
   }
 
   fun getLatestOutcome(adjudicationNumber: Long): Outcome? = findByAdjudicationNumber(adjudicationNumber).latestOutcome()
@@ -288,7 +286,7 @@ class OutcomeService(
     fun Outcome?.canAmendViaService(hasHearings: Boolean): Outcome {
       this ?: throw EntityNotFoundException("no latest outcome to amend")
 
-      if (listOf(OutcomeCode.QUASHED, OutcomeCode.SCHEDULE_HEARING).any { it == this.code } ||
+      if (listOf(OutcomeCode.QUASHED, OutcomeCode.SCHEDULE_HEARING, OutcomeCode.CHARGE_PROVED).any { it == this.code } ||
         (!hasHearings && listOf(OutcomeCode.NOT_PROCEED, OutcomeCode.REFER_POLICE).any { it == this.code })
       ) {
         throw ValidationException("unable to amend via this function")

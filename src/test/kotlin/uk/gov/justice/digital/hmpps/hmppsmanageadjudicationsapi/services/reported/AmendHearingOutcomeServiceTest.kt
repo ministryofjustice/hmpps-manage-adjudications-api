@@ -30,12 +30,14 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   private val referralService: ReferralService = mock()
   private val completedHearingService: CompletedHearingService = mock()
   private val reportedAdjudicationService: ReportedAdjudicationService = mock()
+  private val punishmentsService: PunishmentsService = mock()
   private val amendHearingOutcomeService = AmendHearingOutcomeService(
     hearingOutcomeService,
     outcomeService,
     referralService,
     completedHearingService,
     reportedAdjudicationService,
+    punishmentsService,
   )
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
@@ -71,15 +73,21 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       if (code != HearingOutcomeCode.ADJOURN) {
-        verify(outcomeService, atLeastOnce()).amendOutcomeViaService(
-          adjudicationNumber = 1L,
-          outcomeCodeToAmend = status.mapStatusToOutcomeCode()!!,
-          details = request.details,
-          amount = request.amount,
-          damagesOwed = request.damagesOwed,
-          caution = request.caution,
-          notProceedReason = request.notProceedReason,
-        )
+        if (status == ReportedAdjudicationStatus.CHARGE_PROVED) {
+          verify(punishmentsService, atLeastOnce()).amendPunishmentsFromChargeProvedIfApplicable(
+            adjudicationNumber = 1L,
+            damagesOwed = null,
+            amount = request.amount,
+            caution = request.caution!!,
+          )
+        } else {
+          verify(outcomeService, atLeastOnce()).amendOutcomeViaService(
+            adjudicationNumber = 1L,
+            outcomeCodeToAmend = status.mapStatusToOutcomeCode()!!,
+            details = request.details,
+            notProceedReason = request.notProceedReason,
+          )
+        }
       }
     }
 
