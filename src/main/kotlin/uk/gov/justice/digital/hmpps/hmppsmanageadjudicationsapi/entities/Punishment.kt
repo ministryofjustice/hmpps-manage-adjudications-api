@@ -25,15 +25,13 @@ data class Punishment(
   var activatedBy: Long? = null,
   var activatedFrom: Long? = null,
   var suspendedUntil: LocalDate? = null,
-  var amount: Double? = null,
-  var sanctionSeq: Long? = null,
   @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "punishment_fk_id")
   var schedule: MutableList<PunishmentSchedule>,
 ) : BaseEntity()
 
 enum class PunishmentType {
-  PRIVILEGE, EARNINGS, CONFINEMENT, REMOVAL_ACTIVITY, EXCLUSION_WORK, EXTRA_WORK, REMOVAL_WING, ADDITIONAL_DAYS, PROSPECTIVE_DAYS, CAUTION, DAMAGES_OWED,
+  PRIVILEGE, EARNINGS, CONFINEMENT, REMOVAL_ACTIVITY, EXCLUSION_WORK, EXTRA_WORK, REMOVAL_WING, ADDITIONAL_DAYS, PROSPECTIVE_DAYS
 }
 enum class PrivilegeType {
   CANTEEN, FACILITIES, MONEY, TV, ASSOCIATION, OTHER

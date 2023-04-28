@@ -27,7 +27,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
@@ -45,7 +44,7 @@ open class ReportedDtoService(
 ) {
   protected fun ReportedAdjudication.toDto(): ReportedAdjudicationDto {
     val hearings = this.hearings.toHearings()
-    val outcomes = this.outcomes.createCombinedOutcomes(this.punishments)
+    val outcomes = this.outcomes.createCombinedOutcomes()
     return ReportedAdjudicationDto(
       adjudicationNumber = reportNumber,
       prisonerNumber = prisonerNumber,
@@ -84,12 +83,12 @@ open class ReportedDtoService(
       gender = gender,
       dateTimeOfFirstHearing = dateTimeOfFirstHearing,
       outcomes = createOutcomeHistory(hearings.toMutableList(), outcomes.toMutableList()),
-      punishments = this.punishments.filterOutChargeProvedPunishments().toPunishments(),
+      punishments = this.punishments.toPunishments(),
     )
   }
 
   protected fun ReportedAdjudication.getOutcomeHistory(): List<OutcomeHistoryDto> =
-    createOutcomeHistory(this.hearings.toHearings().toMutableList(), this.outcomes.createCombinedOutcomes(this.punishments).toMutableList())
+    createOutcomeHistory(this.hearings.toHearings().toMutableList(), this.outcomes.createCombinedOutcomes().toMutableList())
 
   private fun createOutcomeHistory(hearings: MutableList<HearingDto>, outcomes: MutableList<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
     if (hearings.isEmpty() && outcomes.isEmpty()) return listOf()
@@ -124,7 +123,7 @@ open class ReportedDtoService(
     return history.toList()
   }
 
-  protected fun List<Outcome>.createCombinedOutcomes(punishments: List<Punishment>): List<CombinedOutcomeDto> {
+  protected fun List<Outcome>.createCombinedOutcomes(): List<CombinedOutcomeDto> {
     if (this.isEmpty()) return emptyList()
 
     val combinedOutcomes = mutableListOf<CombinedOutcomeDto>()
@@ -139,14 +138,14 @@ open class ReportedDtoService(
 
           combinedOutcomes.add(
             CombinedOutcomeDto(
-              outcome = outcome.toOutcomeDto(punishments),
-              referralOutcome = referralOutcome?.toOutcomeDto(punishments),
+              outcome = outcome.toOutcomeDto(),
+              referralOutcome = referralOutcome?.toOutcomeDto(),
             ),
           )
         }
         else -> combinedOutcomes.add(
           CombinedOutcomeDto(
-            outcome = outcome.toOutcomeDto(punishments),
+            outcome = outcome.toOutcomeDto(),
           ),
         )
       }
@@ -222,14 +221,14 @@ open class ReportedDtoService(
       plea = this.plea,
     )
 
-  private fun Outcome.toOutcomeDto(punishments: List<Punishment>): OutcomeDto =
+  private fun Outcome.toOutcomeDto(): OutcomeDto =
     OutcomeDto(
       id = this.id,
       code = this.code,
       details = this.details,
       reason = this.reason,
-      amount = if (this.code == OutcomeCode.CHARGE_PROVED) punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }?.amount else null,
-      caution = if (this.code == OutcomeCode.CHARGE_PROVED) punishments.any { it.type == PunishmentType.CAUTION } else null,
+      amount = this.amount,
+      caution = this.caution,
       quashedReason = this.quashedReason,
     )
 
@@ -266,9 +265,6 @@ open class ReportedDtoService(
   companion object {
     fun HearingDto.hearingHasNoAssociatedOutcome() =
       this.outcome == null || this.outcome.code == HearingOutcomeCode.ADJOURN
-
-    fun List<Punishment>.filterOutChargeProvedPunishments() =
-      this.filter { !listOf(PunishmentType.CAUTION, PunishmentType.DAMAGES_OWED).contains(it.type) }
   }
 }
 

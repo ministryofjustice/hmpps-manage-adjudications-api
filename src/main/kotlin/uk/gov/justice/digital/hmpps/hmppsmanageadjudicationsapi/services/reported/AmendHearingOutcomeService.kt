@@ -18,7 +18,6 @@ class AmendHearingOutcomeService(
   private val referralService: ReferralService,
   private val completedHearingService: CompletedHearingService,
   private val reportedAdjudicationService: ReportedAdjudicationService,
-  private val punishmentsService: PunishmentsService,
 ) {
 
   fun amendHearingOutcome(
@@ -65,21 +64,15 @@ class AmendHearingOutcomeService(
 
     val outcomeCodeToAmend = currentStatus.mapStatusToOutcomeCode() ?: return updated
 
-    return if (outcomeCodeToAmend == OutcomeCode.CHARGE_PROVED) {
-      punishmentsService.amendPunishmentsFromChargeProvedIfApplicable(
-        adjudicationNumber = adjudicationNumber,
-        caution = amendHearingOutcomeRequest.caution!!,
-        damagesOwed = amendHearingOutcomeRequest.damagesOwed,
-        amount = amendHearingOutcomeRequest.amount,
-      )
-    } else {
-      outcomeService.amendOutcomeViaService(
-        adjudicationNumber = adjudicationNumber,
-        outcomeCodeToAmend = outcomeCodeToAmend,
-        details = amendHearingOutcomeRequest.details,
-        notProceedReason = amendHearingOutcomeRequest.notProceedReason,
-      )
-    }
+    return outcomeService.amendOutcomeViaService(
+      adjudicationNumber = adjudicationNumber,
+      outcomeCodeToAmend = outcomeCodeToAmend,
+      details = amendHearingOutcomeRequest.details,
+      notProceedReason = amendHearingOutcomeRequest.notProceedReason,
+      amount = amendHearingOutcomeRequest.amount,
+      damagesOwed = amendHearingOutcomeRequest.damagesOwed,
+      caution = amendHearingOutcomeRequest.caution,
+    )
   }
 
   private fun removeAndCreate(

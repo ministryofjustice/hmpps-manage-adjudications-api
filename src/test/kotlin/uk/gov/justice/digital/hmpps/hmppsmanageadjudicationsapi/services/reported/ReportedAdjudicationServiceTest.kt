@@ -23,9 +23,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -49,33 +46,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
   @Nested
   inner class ReportedAdjudicationDetails {
-
-    @Test
-    fun `filter out caution and damages owed from dto if present in punishments `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.createDateTime = LocalDateTime.now()
-          it.createdByUserId = ""
-          it.punishments.add(
-            Punishment(
-              type = PunishmentType.DAMAGES_OWED,
-              schedule = mutableListOf(
-                PunishmentSchedule(days = 0),
-              ),
-            ),
-          )
-          it.punishments.add(
-            Punishment(
-              type = PunishmentType.CAUTION,
-              schedule = mutableListOf(
-                PunishmentSchedule(days = 0),
-              ),
-            ),
-          )
-        },
-      )
-      assertThat(reportedAdjudicationService.getReportedAdjudicationDetails(1L).punishments).isEmpty()
-    }
 
     @Test
     fun `adjudication is not part of active case load throws exception `() {

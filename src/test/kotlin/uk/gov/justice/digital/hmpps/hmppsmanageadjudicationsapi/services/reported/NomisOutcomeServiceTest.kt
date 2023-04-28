@@ -103,7 +103,6 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(hearingId).isNotNull
-      verify(prisonApiGateway, atLeastOnce()).quashSanctions(any())
       verify(prisonApiGateway, atLeastOnce()).createHearing(any(), any())
       verify(prisonApiGateway, atLeastOnce()).createHearingResult(
         reportedAdjudication.reportNumber,
@@ -484,10 +483,6 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
-
-      if (code == OutcomeCode.CHARGE_PROVED) {
-        verify(prisonApiGateway, atLeastOnce()).deleteSanctions(any())
-      }
 
       verify(prisonApiGateway, never()).deleteHearing(reportedAdjudication.reportNumber, 100L)
       verify(prisonApiGateway, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 100L)
