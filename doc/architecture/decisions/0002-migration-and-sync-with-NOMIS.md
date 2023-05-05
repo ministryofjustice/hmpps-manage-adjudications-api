@@ -13,10 +13,38 @@ Accepted
 
 This document will cover the approach for the adjudication service to master adjudication data and synchronisation this information back into NOMIS
 
-### Adjudication Schema
-Current entity schema![](er.png)
+### Moving data off NOMIS approach
+Due to the rollout plan for adjudications a two-way sync and migration pattern is to be adopted.
 
+This is because:-
+- Adjudication data is prisoner centric so it cannot be sliced up into prisons
+- Lower risk than big bang of turning screens off
+- Data can be viewed in both systems
+- We'll learn about the mapping between systems in more detail and will aid migration
 
+Therefore, the approach will be to :-
+- Keep NOMIS up to date with changes made in adjudication service
+- Provide a two-way sync and keep both systems in synchronisation so that turning off access to old NOMIS screens can be done prison by prison
+- Migrate all the data from NOMIS
+- Once all prisons had been switched over - turn off NOMIS -> DPS sync (now 1 way only)
+- All access to screen removed
+
+Steps taken:
+The Adjudication Team.
+- Model the adjudication data in a new database (Done)
+- Build API functionality for managing the data (Done)
+- Build screens to make use of the new API (Done)
+- Raise events on creation or amendments of adjudications
+- Build a "sync" and "migrate" endpoints to allow NOMIS to send adjudication data
+
+On NOMIS (syscon)
+- Call adjudication "sync" endpoint when any updates where made to adjudication data in NOMIS
+- Listen to events when adjudication where created in DPS and store them in NOMIS
+- Migrate all the data held on adjudication in NOMIS by calling adjudication "migrate" endpoint
+- Reconcile mismatches with weekly checks
+- Remove all adjudication endpoints in prison-api once all services are using new adjudication API
+
+Data is still held in NOMIS and will be maintained for reporting purposes.
 
 ### NOMIS synchronisation sequence
 When a change is made to adjudication either a creation or update, events are be fired. The sequence of events for syncing back to NOMIS is shown below:
@@ -39,7 +67,7 @@ sequenceDiagram
     activate Manage Adjudication API
     Manage Adjudication API->>Adjudication Database: update DB
     Manage Adjudication API->>Domain Events: domain event raised
-    Note over Manage Adjudication API,Domain Events: prisoner.adjudication.[inserted/updated]
+    Note over Manage Adjudication API,Domain Events: prisoner.adjudication.[created/updated]
     Manage Adjudication API-->>Adjudication UI: Saved Adjudication returned
     deactivate Manage Adjudication API
     
@@ -71,16 +99,14 @@ graph TB
 
 
 #### Domain Event Types:
-In all instances the domain event will contain the unique reference to the adjudication or outcome.
-- prisoner.adjudication.inserted 
+In all instances the domain event will contain the unique reference to the adjudication.
+- prisoner.adjudication.created 
 - prisoner.adjudication.updated
-- prisoner.adjudication.outcome.inserted
-- prisoner.adjudication.outcome.updated
 
 **Example:**
 ```json
 {
-  "eventType": "prisoner.adjudication.outcome.inserted",
+  "eventType": "prisoner.adjudication.updated",
   "occurredAt": "2023-03-14T10:00:00",
   "version": "1.0",
   "description": "Adjudication Outcome added",
@@ -243,6 +269,17 @@ This endpoint will return all the adjudication information needed to populate NO
   }
 }
 ```
+
+### Sync endpoint
+This endpoint will contain all the information need to populate the adjudication system with an adjudication decision and outcome
+
+`POST /sync`
+```json
+[
+  *** see JSON in GET endpoint above ***
+]
+```
+
 ### Migration endpoint
 This endpoint will contain all the information need to populate the adjudication system with an adjudication decision and outcome
 
@@ -254,21 +291,11 @@ This endpoint will contain all the information need to populate the adjudication
 ```
 
 
-## Migration steps
-
-1. Build API endpoints to read and write adjudication data
-2. SYSCON to build one way sync service to react to adjudication data changes
-3. Turn off NOMIS screens (after warning period)
-4. Migrate data
-
 
 ## Decision
 - Migration process will be trialed in pre-prod and UAT testing will be needed to check mappings have accurately represented historical data
 - NOMIS screens can be turned off once all adjudications screens are complete and staff are informed to switch over.
-- 
 
-
-## Consequences
 
 
 [Next >>](9999-end.md)
