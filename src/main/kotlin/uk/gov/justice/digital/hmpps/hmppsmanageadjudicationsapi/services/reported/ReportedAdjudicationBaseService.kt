@@ -228,8 +228,8 @@ open class ReportedDtoService(
       code = this.code,
       details = this.details,
       reason = this.reason,
-      amount = if (this.code == OutcomeCode.CHARGE_PROVED) punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }?.amount else null,
-      caution = if (this.code == OutcomeCode.CHARGE_PROVED) punishments.any { it.type == PunishmentType.CAUTION } else null,
+      amount = if (outcomesToDisplayPunishments.contains(this.code)) punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }?.amount else null,
+      caution = if (outcomesToDisplayPunishments.contains(this.code)) punishments.any { it.type == PunishmentType.CAUTION } else null,
       quashedReason = this.quashedReason,
     )
 
@@ -264,6 +264,7 @@ open class ReportedDtoService(
     )
 
   companion object {
+    val outcomesToDisplayPunishments = listOf(OutcomeCode.CHARGE_PROVED, OutcomeCode.QUASHED)
     fun HearingDto.hearingHasNoAssociatedOutcome() =
       this.outcome == null || this.outcome.code == HearingOutcomeCode.ADJOURN
 

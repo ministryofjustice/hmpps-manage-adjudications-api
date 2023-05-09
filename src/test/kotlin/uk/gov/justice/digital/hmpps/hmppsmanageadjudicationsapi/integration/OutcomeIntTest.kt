@@ -269,6 +269,8 @@ class OutcomeIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.quashedReason").isEqualTo(QuashedReason.APPEAL_UPHELD.name)
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.details").isEqualTo("details")
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.code").isEqualTo(OutcomeCode.QUASHED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.amount").isEqualTo(100.50)
+      .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.caution").isEqualTo(true)
   }
 
   @Test
