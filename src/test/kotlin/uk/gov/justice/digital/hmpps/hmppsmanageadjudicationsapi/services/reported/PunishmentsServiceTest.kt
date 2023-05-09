@@ -7,6 +7,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
@@ -1027,7 +1028,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           adjudicationNumber = 1,
           listOf(
             PunishmentRequest(
-              id = 1,
+              id = 10,
               type = PunishmentType.PROSPECTIVE_DAYS,
               days = 1,
               activatedFrom = 2,
@@ -1036,6 +1037,39 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("suspended punishment not found")
+    }
+
+    @Test
+    fun `activated from punishment has already been activated `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+        reportedAdjudication.also {
+          it.punishments.add(
+            Punishment(id = 1, activatedFrom = 2, type = PunishmentType.PROSPECTIVE_DAYS, schedule = mutableListOf(PunishmentSchedule(days = 1))),
+          )
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.punishments.add(
+            Punishment(id = 3, type = PunishmentType.PROSPECTIVE_DAYS, activatedBy = 1, schedule = mutableListOf(PunishmentSchedule(days = 1))),
+          )
+        },
+      )
+
+      assertDoesNotThrow {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          listOf(
+            PunishmentRequest(
+              id = 1,
+              type = PunishmentType.PROSPECTIVE_DAYS,
+              days = 1,
+              activatedFrom = 2,
+            ),
+          ),
+        )
+      }
     }
 
     @Test
