@@ -315,6 +315,48 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         }
       }
     }
+
+    @Test
+    fun `set to caution, and preserve damages owed`() {
+      val reportedAdjudication = entityBuilder.reportedAdjudication()
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        reportedAdjudication.also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+        },
+      )
+      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(
+        reportedAdjudication.also {
+          it.punishments.add(
+            Punishment(
+              id = 1,
+              type = PunishmentType.DAMAGES_OWED,
+              amount = 10.0,
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 10),
+              ),
+            ),
+          )
+        },
+      )
+      punishmentsService.amendPunishmentsFromChargeProvedIfApplicable(
+        adjudicationNumber = 1L,
+        caution = true,
+        damagesOwed = null,
+        amount = null,
+      )
+
+      verify(prisonApiGateway, atLeast(2)).createSanction(any(), any())
+      verify(prisonApiGateway, atLeastOnce()).deleteSanctions(any())
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.punishments.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.punishments.first().type).isEqualTo(PunishmentType.CAUTION)
+      assertThat(argumentCaptor.value.punishments.last().type).isEqualTo(PunishmentType.DAMAGES_OWED)
+      assertThat(argumentCaptor.value.punishments.last().amount).isEqualTo(10.0)
+    }
   }
 
   @Nested
