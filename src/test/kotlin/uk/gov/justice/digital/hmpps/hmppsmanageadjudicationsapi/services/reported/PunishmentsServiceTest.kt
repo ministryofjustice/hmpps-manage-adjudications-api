@@ -89,8 +89,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class PunishmentsFromChargeProved {
 
-    private val reportedAdjudication = entityBuilder.reportedAdjudication()
-
     @CsvSource("true, 10.0", "false, 10.0", "true,", "false,")
     @ParameterizedTest
     fun `create punishments `(caution: Boolean, amount: Double?) {
@@ -320,6 +318,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `set to caution, and preserve damages owed`() {
+      val reportedAdjudication = entityBuilder.reportedAdjudication()
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
