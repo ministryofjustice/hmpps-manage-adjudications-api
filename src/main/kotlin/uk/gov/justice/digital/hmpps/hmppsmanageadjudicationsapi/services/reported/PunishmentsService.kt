@@ -112,9 +112,15 @@ class PunishmentsService(
                 }
               }
             }
-            else -> reportedAdjudication.punishments.add(
-              activateSuspendedPunishment(adjudicationNumber = adjudicationNumber, punishmentRequest = it),
-            )
+            else ->
+              if (reportedAdjudication.punishments.getPunishment(it.id) == null) {
+                reportedAdjudication.punishments.add(
+                  activateSuspendedPunishment(
+                    adjudicationNumber = adjudicationNumber,
+                    punishmentRequest = it,
+                  ),
+                )
+              }
           }
         }
       }
@@ -321,8 +327,10 @@ class PunishmentsService(
       this.days != punishmentRequest.days || this.endDate != punishmentRequest.endDate || this.startDate != punishmentRequest.startDate ||
         this.suspendedUntil != punishmentRequest.suspendedUntil
 
-    fun List<Punishment>.getPunishmentToAmend(id: Long) =
-      this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Punishment $id is not associated with ReportedAdjudication")
+    fun List<Punishment>.getPunishment(id: Long): Punishment? =
+      this.firstOrNull { it.id == id }
+    fun List<Punishment>.getPunishmentToAmend(id: Long): Punishment =
+      this.getPunishment(id) ?: throw EntityNotFoundException("Punishment $id is not associated with ReportedAdjudication")
 
     fun PunishmentRequest.validateRequest() {
       when (this.type) {
