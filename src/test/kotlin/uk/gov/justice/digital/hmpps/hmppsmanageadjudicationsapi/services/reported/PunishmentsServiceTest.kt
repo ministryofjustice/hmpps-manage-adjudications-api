@@ -15,7 +15,6 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeast
 import org.mockito.kotlin.atLeastOnce
-import org.mockito.kotlin.atMost
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -89,6 +88,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
   @Nested
   inner class PunishmentsFromChargeProved {
+
+    private val reportedAdjudication = entityBuilder.reportedAdjudication()
 
     @CsvSource("true, 10.0", "false, 10.0", "true,", "false,")
     @ParameterizedTest
@@ -315,6 +316,47 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           verify(prisonApiGateway, never()).createSanction(any(), any())
         }
       }
+    }
+
+    @Test
+    fun `set to caution, and preserve damages owed`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        reportedAdjudication.also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+        },
+      )
+      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(
+        reportedAdjudication.also {
+          it.punishments.add(
+            Punishment(
+              id = 1,
+              type = PunishmentType.DAMAGES_OWED,
+              amount = 10.0,
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 10),
+              ),
+            ),
+          )
+        },
+      )
+      punishmentsService.amendPunishmentsFromChargeProvedIfApplicable(
+        adjudicationNumber = 1L,
+        caution = true,
+        damagesOwed = null,
+        amount = null,
+      )
+
+      verify(prisonApiGateway, atLeast(2)).createSanction(any(), any())
+      verify(prisonApiGateway, atLeastOnce()).deleteSanctions(any())
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.punishments.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.punishments.first().type).isEqualTo(PunishmentType.CAUTION)
+      assertThat(argumentCaptor.value.punishments.last().type).isEqualTo(PunishmentType.DAMAGES_OWED)
+      assertThat(argumentCaptor.value.punishments.last().amount).isEqualTo(10.0)
     }
   }
 
@@ -1295,268 +1337,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         assertThat(oicSanctionRequest.status).isEqualTo(Status.IMMEDIATE)
       }
       assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.ADA)
-    }
-  }
-
-  @Nested
-  inner class CreatePunishmentsFromChargeProvedIfApplicable {
-
-    private val reportedAdjudication = entityBuilder.reportedAdjudication()
-
-    @Test
-    fun `do not create any punishments`() {
-      punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
-        reportedAdjudication = reportedAdjudication,
-        caution = false,
-        amount = null,
-      )
-
-      verify(prisonApiGateway, never()).createSanction(any(), any())
-      assertThat(reportedAdjudication.punishments).isEmpty()
-    }
-
-    @Test
-    fun `create damages owed only`() {
-      punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
-        reportedAdjudication = reportedAdjudication,
-        caution = false,
-        amount = 10.0,
-      )
-
-      verify(prisonApiGateway, atMost(1)).createSanction(any(), any())
-      assertThat(reportedAdjudication.punishments.size).isEqualTo(1)
-      assertThat(reportedAdjudication.punishments.first().type).isEqualTo(PunishmentType.DAMAGES_OWED)
-      assertThat(reportedAdjudication.punishments.first().amount).isEqualTo(10.0)
-    }
-
-    @Test
-    fun `create caution only`() {
-      punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
-        reportedAdjudication = reportedAdjudication,
-        caution = true,
-        amount = null,
-      )
-
-      verify(prisonApiGateway, atMost(1)).createSanction(any(), any())
-      assertThat(reportedAdjudication.punishments.size).isEqualTo(1)
-      assertThat(reportedAdjudication.punishments.first().type).isEqualTo(PunishmentType.CAUTION)
-    }
-
-    @Test
-    fun `create caution and damages owed`() {
-      punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
-        reportedAdjudication = reportedAdjudication,
-        caution = true,
-        amount = 10.0,
-      )
-
-      verify(prisonApiGateway, atLeast(2)).createSanction(any(), any())
-      assertThat(reportedAdjudication.punishments.size).isEqualTo(2)
-      assertThat(reportedAdjudication.punishments.first().type).isEqualTo(PunishmentType.CAUTION)
-      assertThat(reportedAdjudication.punishments.last().type).isEqualTo(PunishmentType.DAMAGES_OWED)
-      assertThat(reportedAdjudication.punishments.last().amount).isEqualTo(10.0)
-    }
-  }
-
-  @Nested
-  inner class AmendPunishmentsFromChargeProvedIfApplicable {
-    private val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-      it.createDateTime = LocalDateTime.now()
-      it.createdByUserId = ""
-    }
-
-    @BeforeEach
-    fun `init`() {
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-    }
-
-    @Test
-    fun `do not update any punishments`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
-
-      punishmentsService.amendPunishmentsFromChargeProvedIfApplicable(
-        adjudicationNumber = 1L,
-        caution = false,
-        damagesOwed = null,
-        amount = null,
-      )
-
-      verify(prisonApiGateway, never()).createSanction(any(), any())
-      verify(prisonApiGateway, never()).deleteSanctions(any())
-
-      assertThat(reportedAdjudication.punishments).isEmpty()
-    }
-
-    @Test
-    fun `remove damages owed only`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(
-        reportedAdjudication.also {
-          it.punishments.add(
-            Punishment(
-              id = 1,
-              type = PunishmentType.DAMAGES_OWED,
-              amount = 10.0,
-              sanctionSeq = 1,
-              schedule = mutableListOf(
-                PunishmentSchedule(days = 10),
-              ),
-            ),
-          )
-        },
-      )
-
-      punishmentsService.amendPunishmentsFromChargeProvedIfApplicable(
-        adjudicationNumber = 1L,
-        caution = false,
-        damagesOwed = false,
-        amount = null,
-      )
-
-      verify(prisonApiGateway, never()).createSanction(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).deleteSanction(any(), any())
-
-      assertThat(reportedAdjudication.punishments).isEmpty()
-    }
-
-    @Test
-    fun `add damages owed only`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
-
-      punishmentsService.amendPunishmentsFromChargeProvedIfApplicable(
-        adjudicationNumber = 1L,
-        caution = false,
-        damagesOwed = true,
-        amount = 10.0,
-      )
-
-      verify(prisonApiGateway, atLeastOnce()).createSanction(any(), any())
-      verify(prisonApiGateway, never()).deleteSanction(any(), any())
-
-      assertThat(reportedAdjudication.punishments.size).isEqualTo(1)
-      assertThat(reportedAdjudication.punishments.first().type).isEqualTo(PunishmentType.DAMAGES_OWED)
-      assertThat(reportedAdjudication.punishments.first().amount).isEqualTo(10.0)
-    }
-
-    @Test
-    fun `set caution to true only`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
-
-      punishmentsService.amendPunishmentsFromChargeProvedIfApplicable(
-        adjudicationNumber = 1L,
-        caution = true,
-        damagesOwed = null,
-        amount = null,
-      )
-
-      verify(prisonApiGateway, atLeastOnce()).createSanction(any(), any())
-      verify(prisonApiGateway, never()).deleteSanction(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).deleteSanctions(any())
-
-      assertThat(reportedAdjudication.punishments.size).isEqualTo(1)
-      assertThat(reportedAdjudication.punishments.first().type).isEqualTo(PunishmentType.CAUTION)
-    }
-
-    @Test
-    fun `set caution to false only`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(
-        reportedAdjudication.also {
-          it.punishments.add(
-            Punishment(
-              id = 1,
-              type = PunishmentType.CAUTION,
-              sanctionSeq = 1,
-              schedule = mutableListOf(
-                PunishmentSchedule(days = 10),
-              ),
-            ),
-          )
-        },
-      )
-      punishmentsService.amendPunishmentsFromChargeProvedIfApplicable(
-        adjudicationNumber = 1L,
-        caution = false,
-        damagesOwed = null,
-        amount = null,
-      )
-
-      verify(prisonApiGateway, never()).createSanction(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).deleteSanction(any(), any())
-      assertThat(reportedAdjudication.punishments).isEmpty()
-    }
-
-    @Test
-    fun `remove caution and set damages owed`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(
-        reportedAdjudication.also {
-          it.punishments.addAll(
-            listOf(
-              Punishment(
-                id = 1,
-                type = PunishmentType.CAUTION,
-                sanctionSeq = 1,
-                schedule = mutableListOf(
-                  PunishmentSchedule(days = 10),
-                ),
-              ),
-              Punishment(
-                id = 1,
-                type = PunishmentType.DAMAGES_OWED,
-                amount = 10.0,
-                sanctionSeq = 2,
-                schedule = mutableListOf(
-                  PunishmentSchedule(days = 10),
-                ),
-              ),
-            ),
-          )
-        },
-      )
-      punishmentsService.amendPunishmentsFromChargeProvedIfApplicable(
-        adjudicationNumber = 1L,
-        caution = false,
-        damagesOwed = true,
-        amount = 10.0,
-      )
-
-      verify(prisonApiGateway, atMost(1)).createSanction(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).deleteSanction(any(), any())
-      assertThat(reportedAdjudication.punishments.size).isEqualTo(1)
-      assertThat(reportedAdjudication.punishments.first().type).isEqualTo(PunishmentType.DAMAGES_OWED)
-      assertThat(reportedAdjudication.punishments.first().amount).isEqualTo(10.0)
-    }
-
-    @Test
-    fun `set to caution, and preserve damages owed`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(
-        reportedAdjudication.also {
-          it.createDateTime = LocalDateTime.now()
-          it.createdByUserId = ""
-          it.punishments.add(
-            Punishment(
-              id = 1,
-              type = PunishmentType.DAMAGES_OWED,
-              amount = 10.0,
-              schedule = mutableListOf(
-                PunishmentSchedule(days = 10),
-              ),
-            ),
-          )
-        },
-      )
-      punishmentsService.amendPunishmentsFromChargeProvedIfApplicable(
-        adjudicationNumber = 1L,
-        caution = true,
-        damagesOwed = null,
-        amount = null,
-      )
-
-      verify(prisonApiGateway, atLeast(2)).createSanction(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).deleteSanction(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).deleteSanctions(any())
-      assertThat(reportedAdjudication.punishments.size).isEqualTo(2)
-      assertThat(reportedAdjudication.punishments.first().type).isEqualTo(PunishmentType.CAUTION)
-      assertThat(reportedAdjudication.punishments.last().type).isEqualTo(PunishmentType.DAMAGES_OWED)
-      assertThat(reportedAdjudication.punishments.last().amount).isEqualTo(10.0)
     }
   }
 

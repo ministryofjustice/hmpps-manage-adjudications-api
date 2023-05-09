@@ -129,14 +129,14 @@ class PunishmentsService(
     prisonApiGateway.updateSanctions(
       adjudicationNumber = adjudicationNumber,
       sanctions = reportedAdjudication.mapToSanctions(),
-    )
-
-    reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }?.let {
-      it.sanctionSeq = createPunishmentFromChargeProved(
-        adjudicationNumber = adjudicationNumber,
-        type = PunishmentType.DAMAGES_OWED,
-        amount = it.amount!!,
-      ).sanctionSeq
+    ).run {
+      reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }?.let {
+        it.sanctionSeq = createPunishmentFromChargeProved(
+          adjudicationNumber = reportedAdjudication.reportNumber,
+          type = PunishmentType.DAMAGES_OWED,
+          amount = it.amount!!,
+        ).sanctionSeq
+      }
     }
 
     return saveToDto(reportedAdjudication)
@@ -222,9 +222,21 @@ class PunishmentsService(
   }
 
   private fun amendToCaution(reportedAdjudication: ReportedAdjudication) {
+    val preserveDamagesOwed = reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }
+
     prisonApiGateway.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber).run {
       reportedAdjudication.punishments.clear()
       createCaution(reportedAdjudication = reportedAdjudication)
+    }.run {
+      preserveDamagesOwed?.run {
+        reportedAdjudication.punishments.add(
+          createPunishmentFromChargeProved(
+            adjudicationNumber = reportedAdjudication.reportNumber,
+            type = PunishmentType.DAMAGES_OWED,
+            amount = preserveDamagesOwed.amount,
+          ),
+        )
+      }
     }
   }
 
