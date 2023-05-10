@@ -111,14 +111,14 @@ data class ReportedAdjudication(
 
   fun addOutcome(outcome: Outcome) = this.outcomes.add(outcome)
 
-  fun getOutcomes(): MutableList<Outcome> = this.outcomes.filter { it.deleted != true }.toMutableList()
+  fun getOutcomes() = this.outcomes.filter { it.deleted != true }
 
   fun getOutcomeToRemove() = this.getOutcomes().getOutcomeToRemove()
 
   @TestOnly
   fun clearOutcomes() = this.outcomes.clear()
 
-  fun getPunishments(): MutableList<Punishment> = this.punishments.filter { it.deleted != true }.toMutableList()
+  fun getPunishments() = this.punishments.filter { it.deleted != true }
 
   fun addPunishment(punishment: Punishment) = this.punishments.add(punishment)
 
