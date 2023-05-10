@@ -229,7 +229,7 @@ class OutcomeService(
 
     reportedAdjudication.calculateStatus()
 
-    if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) reportedAdjudication.getPunishments().forEach { it.deleted = true }
+    if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) reportedAdjudication.clearPunishments()
 
     nomisOutcomeService.deleteHearingResultIfApplicable(
       adjudicationNumber = adjudicationNumber,
