@@ -370,7 +370,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudication.also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
-          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
           it.createdByUserId = "test"
           it.createDateTime = LocalDateTime.now()
         },
@@ -401,8 +401,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
-          it.outcomes.clear()
-          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          it.clearOutcomes()
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
           it.punishments.add(
             Punishment(
               type = PunishmentType.CAUTION,
@@ -675,7 +675,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           it.punishments.clear()
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
-          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
           it.createdByUserId = "test"
           it.createDateTime = LocalDateTime.now()
         },
@@ -707,8 +707,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
-          it.outcomes.clear()
-          it.outcomes.add(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          it.clearOutcomes()
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
           it.punishments.add(
             Punishment(
               type = PunishmentType.CAUTION,
