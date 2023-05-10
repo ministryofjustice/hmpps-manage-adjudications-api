@@ -27,7 +27,7 @@ data class Punishment(
   var suspendedUntil: LocalDate? = null,
   var amount: Double? = null,
   var sanctionSeq: Long? = null,
-  @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+  @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "punishment_fk_id")
   var schedule: MutableList<PunishmentSchedule>,
 ) : BaseEntity()
