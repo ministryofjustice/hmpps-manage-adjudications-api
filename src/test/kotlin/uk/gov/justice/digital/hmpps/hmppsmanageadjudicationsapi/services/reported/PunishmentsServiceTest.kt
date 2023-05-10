@@ -621,23 +621,37 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
-      whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(
-        entityBuilder.reportedAdjudication(reportNumber = 2).also {
-          it.punishments.add(
-            Punishment(
-              id = 1,
-              type = PunishmentType.PRIVILEGE,
-              privilegeType = PrivilegeType.OTHER,
-              otherPrivilege = "other",
-              schedule = mutableListOf(
-                PunishmentSchedule(days = 1, suspendedUntil = LocalDate.now()),
-              ),
-            ),
-          )
-        },
+      verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumber(2)
+      verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.punishments.first()).isNotNull
+      assertThat(argumentCaptor.value.punishments.first().id).isNull()
+      assertThat(argumentCaptor.value.punishments.first().activatedFrom).isEqualTo(2)
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `activate manual suspended punishment`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = punishmentsService.create(
+        adjudicationNumber = 1,
+        listOf(
+          PunishmentRequest(
+            type = PunishmentType.PRIVILEGE,
+            privilegeType = PrivilegeType.OTHER,
+            otherPrivilege = "other",
+            days = 1,
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(1),
+            activatedFrom = 2,
+          ),
+        ),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumber(2)
+      verify(reportedAdjudicationRepository, never()).findByReportNumber(2)
       verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
@@ -1148,6 +1162,36 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumber(2)
+
+      assertThat(argumentCaptor.value.punishments.first()).isNotNull
+      assertThat(argumentCaptor.value.punishments.first().id).isNull()
+      assertThat(argumentCaptor.value.punishments.first().activatedFrom).isEqualTo(2)
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `activate manual suspended punishment`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = punishmentsService.update(
+        adjudicationNumber = 1,
+        listOf(
+          PunishmentRequest(
+            type = PunishmentType.PRIVILEGE,
+            privilegeType = PrivilegeType.OTHER,
+            otherPrivilege = "other",
+            days = 1,
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(1),
+            activatedFrom = 2,
+          ),
+        ),
+      )
+
+      verify(reportedAdjudicationRepository, never()).findByReportNumber(2)
+      verify(prisonApiGateway, atLeastOnce()).updateSanctions(any(), any())
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.punishments.first()).isNotNull
       assertThat(argumentCaptor.value.punishments.first().id).isNull()

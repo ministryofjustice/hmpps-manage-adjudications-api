@@ -99,7 +99,10 @@ class PunishmentsService(
       it.validateRequest()
 
       when (it.id) {
-        null -> reportedAdjudication.punishments.add(createNewPunishment(punishmentRequest = it))
+        null -> when (it.activatedFrom) {
+          null -> reportedAdjudication.punishments.add(createNewPunishment(punishmentRequest = it))
+          else -> reportedAdjudication.punishments.add(activateSuspendedPunishment(adjudicationNumber = adjudicationNumber, punishmentRequest = it))
+        }
         else -> {
           when (it.activatedFrom) {
             null -> {
@@ -299,13 +302,16 @@ class PunishmentsService(
     }
 
   private fun activateSuspendedPunishment(adjudicationNumber: Long, punishmentRequest: PunishmentRequest): Punishment {
-    val activatedFromReport = findByAdjudicationNumber(punishmentRequest.activatedFrom!!)
-    val suspendedPunishment = activatedFromReport.punishments.getSuspendedPunishment(punishmentRequest.id!!)
-
-    suspendedPunishment.activatedBy = adjudicationNumber
+    var suspendedPunishment: Punishment? = null
+    punishmentRequest.id?.run {
+      val activatedFromReport = findByAdjudicationNumber(punishmentRequest.activatedFrom!!)
+      suspendedPunishment = activatedFromReport.punishments.getSuspendedPunishment(punishmentRequest.id).also {
+        it.activatedBy = adjudicationNumber
+      }
+    }
 
     return cloneSuspendedPunishment(
-      punishment = suspendedPunishment,
+      punishment = suspendedPunishment ?: createNewPunishment(punishmentRequest = punishmentRequest),
       days = punishmentRequest.days,
       startDate = punishmentRequest.startDate,
       endDate = punishmentRequest.endDate,
