@@ -170,7 +170,7 @@ class OutcomeService(
       )
     }
 
-    reportedAdjudication.outcomes.add(outcomeToCreate)
+    reportedAdjudication.addOutcome(outcomeToCreate)
 
     if (outcomeToCreate.code == OutcomeCode.CHARGE_PROVED) {
       punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
@@ -223,9 +223,10 @@ class OutcomeService(
     val outcomeToDelete = when (id) {
       null -> reportedAdjudication.latestOutcome()?.canDelete(reportedAdjudication.hearings.isNotEmpty()) ?: throw EntityNotFoundException("Outcome not found for $adjudicationNumber")
       else -> reportedAdjudication.getOutcome(id)
+    }.also {
+      it.deleted = true
     }
 
-    reportedAdjudication.outcomes.remove(outcomeToDelete)
     reportedAdjudication.calculateStatus()
 
     if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) reportedAdjudication.punishments.clear()
@@ -241,16 +242,16 @@ class OutcomeService(
 
   fun getOutcomes(adjudicationNumber: Long): List<CombinedOutcomeDto> {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    return reportedAdjudication.outcomes.createCombinedOutcomes(reportedAdjudication.punishments)
+    return reportedAdjudication.getOutcomes().createCombinedOutcomes(reportedAdjudication.punishments)
   }
 
   fun getLatestOutcome(adjudicationNumber: Long): Outcome? = findByAdjudicationNumber(adjudicationNumber).latestOutcome()
 
   companion object {
-    fun ReportedAdjudication.latestOutcome(): Outcome? = this.outcomes.maxByOrNull { it.createDateTime!! }
+    fun ReportedAdjudication.latestOutcome(): Outcome? = this.getOutcomes().maxByOrNull { it.createDateTime!! }
 
     fun ReportedAdjudication.getOutcome(id: Long) =
-      this.outcomes.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Outcome not found for $id")
+      this.getOutcomes().firstOrNull { it.id == id } ?: throw EntityNotFoundException("Outcome not found for $id")
 
     fun OutcomeCode.validateReferralTransition(to: OutcomeCode) {
       if (!this.canTransitionTo(to)) {
@@ -266,7 +267,7 @@ class OutcomeService(
     }
 
     fun ReportedAdjudication.lastOutcomeIsRefer() =
-      OutcomeCode.referrals().contains(this.outcomes.maxByOrNull { it.createDateTime!! }?.code)
+      OutcomeCode.referrals().contains(this.getOutcomes().maxByOrNull { it.createDateTime!! }?.code)
 
     fun Outcome?.canQuash() {
       if (this?.code != OutcomeCode.CHARGE_PROVED) {

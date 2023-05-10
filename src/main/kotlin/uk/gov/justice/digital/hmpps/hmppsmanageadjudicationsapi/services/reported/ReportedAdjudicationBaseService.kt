@@ -45,7 +45,7 @@ open class ReportedDtoService(
 ) {
   protected fun ReportedAdjudication.toDto(): ReportedAdjudicationDto {
     val hearings = this.hearings.toHearings()
-    val outcomes = this.outcomes.createCombinedOutcomes(this.punishments)
+    val outcomes = this.getOutcomes().createCombinedOutcomes(this.punishments)
     return ReportedAdjudicationDto(
       adjudicationNumber = reportNumber,
       prisonerNumber = prisonerNumber,
@@ -89,7 +89,7 @@ open class ReportedDtoService(
   }
 
   protected fun ReportedAdjudication.getOutcomeHistory(): List<OutcomeHistoryDto> =
-    createOutcomeHistory(this.hearings.toHearings().toMutableList(), this.outcomes.createCombinedOutcomes(this.punishments).toMutableList())
+    createOutcomeHistory(this.hearings.toHearings().toMutableList(), this.getOutcomes().createCombinedOutcomes(this.punishments).toMutableList())
 
   private fun createOutcomeHistory(hearings: MutableList<HearingDto>, outcomes: MutableList<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
     if (hearings.isEmpty() && outcomes.isEmpty()) return listOf()

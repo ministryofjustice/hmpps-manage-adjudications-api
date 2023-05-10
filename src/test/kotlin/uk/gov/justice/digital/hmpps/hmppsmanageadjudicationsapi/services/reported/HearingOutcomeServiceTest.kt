@@ -479,7 +479,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.hearings.first().hearingOutcome = HearingOutcome(code = code, adjudicator = "adjudicator", details = "details")
-          it.outcomes.add(Outcome(code = code.outcomeCode!!, details = "details"))
+          it.addOutcome(Outcome(code = code.outcomeCode!!, details = "details"))
         },
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -546,7 +546,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
             adjudicator = "adjudicator",
             plea = HearingOutcomePlea.NOT_GUILTY,
           )
-          it.outcomes.add(Outcome(code = OutcomeCode.NOT_PROCEED, details = "details"))
+          it.addOutcome(Outcome(code = OutcomeCode.NOT_PROCEED, details = "details"))
         },
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)

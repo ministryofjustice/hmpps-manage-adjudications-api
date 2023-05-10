@@ -134,7 +134,7 @@ class HearingService(
     }.validateCanCreate()
 
     if (reportedAdjudication.lastOutcomeIsRefer()) {
-      reportedAdjudication.outcomes.add(Outcome(code = OutcomeCode.SCHEDULE_HEARING))
+      reportedAdjudication.addOutcome(Outcome(code = OutcomeCode.SCHEDULE_HEARING))
     }
 
     val oicHearingId = prisonApiGateway.createHearing(
@@ -210,7 +210,7 @@ class HearingService(
       it.hearings.remove(hearingToRemove)
       it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
 
-      if (it.getOutcomeHistory().shouldRemoveLastScheduleHearing()) it.outcomes.remove(it.outcomes.getOutcomeToRemove())
+      if (it.getOutcomeHistory().shouldRemoveLastScheduleHearing()) it.getOutcomeToRemove().deleted = true
     }.calculateStatus()
 
     return saveToDto(reportedAdjudication)
@@ -263,8 +263,6 @@ class HearingService(
       val referralOutcome = lastItem.outcome?.referralOutcome ?: return false
       return referralOutcome.code == OutcomeCode.SCHEDULE_HEARING
     }
-
-    fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.createDateTime!! }
 
     fun ReportedAdjudication.getHearing(): Hearing = this.getLatestHearing() ?: throwHearingNotFoundException()
 

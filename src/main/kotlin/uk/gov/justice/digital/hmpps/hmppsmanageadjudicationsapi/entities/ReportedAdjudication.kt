@@ -11,6 +11,7 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import jakarta.validation.ValidationException
 import org.hibernate.validator.constraints.Length
+import org.jetbrains.annotations.TestOnly
 import java.lang.IllegalStateException
 import java.time.LocalDateTime
 
@@ -66,7 +67,7 @@ data class ReportedAdjudication(
   var dateTimeOfFirstHearing: LocalDateTime? = null,
   @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")
-  var outcomes: MutableList<Outcome>,
+  private var outcomes: MutableList<Outcome>,
   @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")
   var punishments: MutableList<Punishment>,
@@ -84,7 +85,7 @@ data class ReportedAdjudication(
   }
 
   fun calculateStatus() {
-    this.status = when (this.outcomes.isEmpty()) {
+    this.status = when (this.getOutcomes().isEmpty()) {
       true ->
         when (this.hearings.isEmpty()) {
           true -> ReportedAdjudicationStatus.UNSCHEDULED
@@ -100,7 +101,7 @@ data class ReportedAdjudication(
         if (this.getLatestHearing().isAdjourn()) {
           ReportedAdjudicationStatus.ADJOURNED
         } else {
-          this.outcomes.sortedByDescending { it.createDateTime }.first().code.status
+          this.getOutcomes().sortedByDescending { it.createDateTime }.first().code.status
         }
       }
     }
@@ -108,7 +109,22 @@ data class ReportedAdjudication(
 
   fun getLatestHearing(): Hearing? = this.hearings.maxByOrNull { it.dateTimeOfHearing }
 
+  fun addOutcome(outcome: Outcome) = this.outcomes.add(outcome)
+
+  fun getOutcomes() = this.outcomes.filterOutSoftDeletes()
+
+  fun getOutcomeToRemove() = this.outcomes.getOutcomeToRemove()
+
+  @TestOnly
+  fun clearOutcomes() = this.outcomes.clear()
+
   private fun Hearing?.isAdjourn() = this?.hearingOutcome?.code == HearingOutcomeCode.ADJOURN
+
+  companion object {
+    fun List<Outcome>.filterOutSoftDeletes() = this.filter { it.deleted != true }
+
+    fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.createDateTime!! }
+  }
 }
 
 enum class ReportedAdjudicationStatus {

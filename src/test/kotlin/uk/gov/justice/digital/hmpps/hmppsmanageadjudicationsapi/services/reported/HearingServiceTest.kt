@@ -83,7 +83,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         it.createdByUserId = ""
         it.createDateTime = LocalDateTime.now()
         it.hearings.clear()
-        it.outcomes.clear()
+        it.clearOutcomes()
       }
 
     @BeforeEach
@@ -206,13 +206,13 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
           it.createdByUserId = ""
           it.createDateTime = LocalDateTime.now()
           it.hearings.clear()
-          it.outcomes.add(
+          it.addOutcome(
             Outcome(code = if (code == OutcomeCode.REFER_INAD) OutcomeCode.REFER_POLICE else OutcomeCode.REFER_INAD).also {
                 o ->
               o.createDateTime = LocalDateTime.now()
             },
           )
-          it.outcomes.add(
+          it.addOutcome(
             Outcome(code = code).also {
                 o ->
               o.createDateTime = LocalDateTime.now().plusDays(1)
@@ -236,8 +236,8 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.outcomes.size).isEqualTo(3)
-      assertThat(argumentCaptor.value.outcomes.last().code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(3)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
     }
 
     @Test
@@ -247,7 +247,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
           it.createdByUserId = ""
           it.createDateTime = LocalDateTime.now()
           it.hearings.clear()
-          it.outcomes.add(
+          it.addOutcome(
             Outcome(code = OutcomeCode.NOT_PROCEED).also {
                 o ->
               o.createDateTime = LocalDateTime.now()
@@ -271,7 +271,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.outcomes.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
     }
   }
 
@@ -482,10 +482,10 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
             it.hearings.add(
               Hearing(agencyId = "", locationId = 1L, oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(5), oicHearingId = 1L, reportNumber = 1L),
             )
-            it.outcomes.add(Outcome(code = OutcomeCode.REFER_INAD).also { o -> o.createDateTime = LocalDateTime.now() })
-            it.outcomes.add(Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1).minusHours(1) })
-            it.outcomes.add(Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(2) })
-            it.outcomes.add(Outcome(code = OutcomeCode.REFER_POLICE).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) })
+            it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD).also { o -> o.createDateTime = LocalDateTime.now() })
+            it.addOutcome(Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1).minusHours(1) })
+            it.addOutcome(Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(2) })
+            it.addOutcome(Outcome(code = OutcomeCode.REFER_POLICE).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) })
           },
       )
 
@@ -497,8 +497,8 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       verify(prisonApiGateway, atLeastOnce()).deleteHearing(1235L, 1)
 
-      assertThat(argumentCaptor.value.outcomes.size).isEqualTo(3)
-      assertThat(argumentCaptor.value.outcomes.last().code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(3)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.REFER_POLICE)
     }
 
     @CsvSource("COMPLETE", "REFER_POLICE", "REFER_INAD")

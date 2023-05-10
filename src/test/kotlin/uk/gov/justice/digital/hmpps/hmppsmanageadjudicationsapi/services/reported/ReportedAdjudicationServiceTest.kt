@@ -586,10 +586,16 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
       it.hearings.clear()
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.REFER_POLICE).also {
             o ->
           o.createDateTime = LocalDateTime.now()
+        },
+      )
+      it.addOutcome(
+        Outcome(code = OutcomeCode.REFER_POLICE, deleted = true).also {
+            o ->
+          o.createDateTime = LocalDateTime.now().plusDays(1)
         },
       )
     }
@@ -598,7 +604,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
       it.hearings.clear()
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.NOT_PROCEED).also {
             o ->
           o.createDateTime = LocalDateTime.now()
@@ -611,8 +617,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
 
-      reportedAdjudicationReferPolice.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
-      it.outcomes.add(
+      reportedAdjudicationReferPolice.getOutcomes().forEach { o -> it.addOutcome(o.copy()) }
+      it.addOutcome(
         Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
           it.createDateTime = LocalDateTime.now().plusDays(1)
         },
@@ -627,16 +633,16 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
 
-      reportedAdjudicationNoProsecution.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+      reportedAdjudicationNoProsecution.getOutcomes().forEach { o -> it.addOutcome(o.copy()) }
       reportedAdjudicationNoProsecution.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.REFER_INAD).also {
             o ->
           o.createDateTime = LocalDateTime.now().plusDays(2)
         },
       )
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
             o ->
           o.createDateTime = LocalDateTime.now().plusDays(2).plusHours(1)
@@ -653,7 +659,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
 
-      reportedAdjudicationReferInad.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+      reportedAdjudicationReferInad.getOutcomes().forEach { o -> it.addOutcome(o.copy()) }
       reportedAdjudicationReferInad.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
       it.hearings.add(
@@ -673,10 +679,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
 
-      reportedAdjudicationInadHearing.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+      reportedAdjudicationInadHearing.getOutcomes().forEach { o -> it.addOutcome(o.copy()) }
       reportedAdjudicationInadHearing.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.REFER_POLICE).also {
             o ->
           o.createDateTime = LocalDateTime.now().plusDays(4)
@@ -694,10 +700,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
 
-      reportedAdjudicationInadReferPolice.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+      reportedAdjudicationInadReferPolice.getOutcomes().forEach { o -> it.addOutcome(o.copy()) }
       reportedAdjudicationInadReferPolice.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.PROSECUTION).also {
             o ->
           o.createDateTime = LocalDateTime.now().plusDays(5)
@@ -710,13 +716,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.createdByUserId = ""
       it.hearings.clear()
 
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.REFER_POLICE).also {
             o ->
           o.createDateTime = LocalDateTime.now().plusDays(2)
         },
       )
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.NOT_PROCEED).also {
             o ->
           o.createDateTime = LocalDateTime.now().plusDays(3)
@@ -728,25 +734,25 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
       it.hearings.clear()
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.REFER_INAD).also {
             o ->
           o.createDateTime = LocalDateTime.now().plusDays(2)
         },
       )
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
             o ->
           o.createDateTime = LocalDateTime.now().plusDays(3)
         },
       )
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.REFER_POLICE).also {
             o ->
           o.createDateTime = LocalDateTime.now().plusDays(4)
         },
       )
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.PROSECUTION).also {
             o ->
           o.createDateTime = LocalDateTime.now().plusDays(5)
@@ -794,12 +800,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.REFER_INAD).also {
           it.createDateTime = LocalDateTime.now().plusDays(1)
         },
       )
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.NOT_PROCEED).also {
           it.createDateTime = LocalDateTime.now().plusDays(2)
         },
@@ -811,9 +817,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.createdByUserId = ""
       it.hearings.clear()
 
-      reportedAdjudicationReferPolice.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+      reportedAdjudicationReferPolice.getOutcomes().forEach { o -> it.addOutcome(o.copy()) }
 
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
           it.createDateTime = LocalDateTime.now().plusDays(1)
         },
@@ -837,7 +843,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.createdByUserId = ""
       it.hearings.clear()
 
-      reportedAdjudicationInadHearing.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+      reportedAdjudicationInadHearing.getOutcomes().forEach { o -> it.addOutcome(o.copy()) }
       reportedAdjudicationInadHearing.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
       it.hearings.last().also {
@@ -871,7 +877,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       reportedAdjudicationCompletedHearing.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.DISMISSED),
       )
     }
@@ -883,7 +889,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       reportedAdjudicationCompletedHearing.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.NOT_PROCEED),
       )
     }
@@ -895,7 +901,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       reportedAdjudicationCompletedHearing.hearings.forEach { h -> it.hearings.add(h.copy()) }
 
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.CHARGE_PROVED),
       )
     }
@@ -906,7 +912,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.clear()
 
       reportedAdjudicationReferPoliceReferInadAdjourned.hearings.forEach { h -> it.hearings.add(h.copy()) }
-      reportedAdjudicationReferPoliceReferInadAdjourned.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+      reportedAdjudicationReferPoliceReferInadAdjourned.getOutcomes().forEach { o -> it.addOutcome(o.copy()) }
 
       it.hearings.add(
         Hearing(
@@ -920,7 +926,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.CHARGE_PROVED),
       )
     }
@@ -931,9 +937,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.clear()
 
       reportedAdjudicationCompletedHearingNotProceed.hearings.forEach { h -> it.hearings.add(h.copy()) }
-      reportedAdjudicationCompletedHearingNotProceed.outcomes.forEach { o -> it.outcomes.add(o.copy()) }
+      reportedAdjudicationCompletedHearingNotProceed.getOutcomes().forEach { o -> it.addOutcome(o.copy()) }
 
-      it.outcomes.add(
+      it.addOutcome(
         Outcome(code = OutcomeCode.QUASHED),
       )
     }
@@ -1226,21 +1232,21 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             ),
           )
 
-          it.outcomes.add(
+          it.addOutcome(
             Outcome(code = OutcomeCode.REFER_POLICE, details = "refer 2").also {
                 o ->
               o.createDateTime = LocalDateTime.now().plusDays(2)
             },
           )
 
-          it.outcomes.add(
+          it.addOutcome(
             Outcome(code = OutcomeCode.REFER_POLICE, details = "refer 1").also {
                 o ->
               o.createDateTime = LocalDateTime.now()
             },
           )
 
-          it.outcomes.add(
+          it.addOutcome(
             Outcome(code = OutcomeCode.SCHEDULE_HEARING).also {
                 o ->
               o.createDateTime = LocalDateTime.now().plusDays(1)
@@ -1304,10 +1310,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             code = HearingOutcomeCode.REFER_POLICE,
             adjudicator = "",
           )
-          it.outcomes.add(
+          it.addOutcome(
             Outcome(code = OutcomeCode.REFER_POLICE).also { o -> o.createDateTime = LocalDateTime.now() },
           )
-          it.outcomes.add(
+          it.addOutcome(
             Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) },
           )
         },
@@ -1321,7 +1327,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.hearings.clear()
-          it.outcomes.clear()
+          it.clearOutcomes()
         },
       )
 
@@ -1332,7 +1338,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `returns false when no last item has no outcome `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         entityBuilder.reportedAdjudication().also {
-          it.outcomes.clear()
+          it.clearOutcomes()
         },
       )
 
@@ -1343,7 +1349,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `returns false when no last item has no referral outcome `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         entityBuilder.reportedAdjudication().also {
-          it.outcomes.add(
+          it.addOutcome(
             Outcome(code = OutcomeCode.REFER_POLICE),
           )
         },
