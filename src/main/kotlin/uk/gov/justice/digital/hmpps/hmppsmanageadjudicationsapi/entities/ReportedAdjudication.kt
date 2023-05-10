@@ -111,14 +111,14 @@ data class ReportedAdjudication(
 
   fun addOutcome(outcome: Outcome) = this.outcomes.add(outcome)
 
-  fun getOutcomes(): MutableList<Outcome> = this.outcomes.filterOutSoftDeletes()
+  fun getOutcomes(): MutableList<Outcome> = this.outcomes.filter { it.deleted != true }.toMutableList()
 
   fun getOutcomeToRemove() = this.getOutcomes().getOutcomeToRemove()
 
   @TestOnly
   fun clearOutcomes() = this.outcomes.clear()
 
-  fun getPunishments(): MutableList<Punishment> = this.punishments.filterOutSoftDeletes()
+  fun getPunishments(): MutableList<Punishment> = this.punishments.filter { it.deleted != true }.toMutableList()
 
   fun addPunishment(punishment: Punishment) = this.punishments.add(punishment)
 
@@ -127,7 +127,6 @@ data class ReportedAdjudication(
   private fun Hearing?.isAdjourn() = this?.hearingOutcome?.code == HearingOutcomeCode.ADJOURN
 
   companion object {
-    inline fun<reified A> List<SoftDeleteEntity>.filterOutSoftDeletes() = this.filter { it.deleted != true } as A
     fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.createDateTime!! }
   }
 }

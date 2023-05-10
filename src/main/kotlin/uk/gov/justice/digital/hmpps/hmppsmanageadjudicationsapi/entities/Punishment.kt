@@ -30,7 +30,8 @@ data class Punishment(
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "punishment_fk_id")
   var schedule: MutableList<PunishmentSchedule>,
-) : SoftDeleteEntity()
+  var deleted: Boolean? = null,
+) : BaseEntity()
 
 enum class PunishmentType {
   PRIVILEGE, EARNINGS, CONFINEMENT, REMOVAL_ACTIVITY, EXCLUSION_WORK, EXTRA_WORK, REMOVAL_WING, ADDITIONAL_DAYS, PROSPECTIVE_DAYS, CAUTION, DAMAGES_OWED,
