@@ -117,8 +117,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               effectiveDate = LocalDate.now(),
             ),
           )
-          assertThat(reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.CAUTION }).isNotNull
-          assertThat(reportedAdjudication.punishments.first { it.type == PunishmentType.CAUTION }.sanctionSeq).isEqualTo(1)
+          assertThat(reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.CAUTION }).isNotNull
+          assertThat(reportedAdjudication.getPunishments().first { it.type == PunishmentType.CAUTION }.sanctionSeq).isEqualTo(1)
         }
         false -> {
           verify(prisonApiGateway, never()).createSanction(
@@ -130,7 +130,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               effectiveDate = LocalDate.now(),
             ),
           )
-          if (amount != null) assertThat(reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.CAUTION }).isNull()
+          if (amount != null) assertThat(reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.CAUTION }).isNull()
         }
       }
 
@@ -146,7 +146,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               compensationAmount = 10.0,
             ),
           )
-          if (caution) assertThat(reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNull()
+          if (caution) assertThat(reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNull()
         }
         else -> {
           verify(prisonApiGateway, atLeastOnce()).createSanction(
@@ -159,8 +159,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               compensationAmount = 10.0,
             ),
           )
-          assertThat(reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
-          assertThat(reportedAdjudication.punishments.first { it.type == PunishmentType.DAMAGES_OWED }.sanctionSeq).isEqualTo(1)
+          assertThat(reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
+          assertThat(reportedAdjudication.getPunishments().first { it.type == PunishmentType.DAMAGES_OWED }.sanctionSeq).isEqualTo(1)
         }
       }
     }
@@ -171,7 +171,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.createDateTime = LocalDateTime.now()
         it.createdByUserId = ""
-        it.punishments.add(
+        it.addPunishment(
           Punishment(
             type = PunishmentType.DAMAGES_OWED,
             amount = 10.0,
@@ -180,7 +180,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             ),
           ),
         )
-        it.punishments.add(
+        it.addPunishment(
           Punishment(
             type = PunishmentType.CONFINEMENT,
             schedule = mutableListOf(
@@ -189,7 +189,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           ),
         )
         if (cautionExists) {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               type = PunishmentType.CAUTION,
               sanctionSeq = 1,
@@ -220,22 +220,22 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         if (caution) {
           verify(prisonApiGateway, never()).deleteSanction(any(), any())
           verify(prisonApiGateway, never()).createSanction(any(), any())
-          assertThat(argumentCaptor.value.punishments.first { it.type == PunishmentType.CAUTION }.sanctionSeq).isEqualTo(1)
+          assertThat(argumentCaptor.value.getPunishments().first { it.type == PunishmentType.CAUTION }.sanctionSeq).isEqualTo(1)
         } else {
           verify(prisonApiGateway, atLeastOnce()).deleteSanction(reportedAdjudication.reportNumber, 1)
-          assertThat(argumentCaptor.value.punishments.firstOrNull { it.type == PunishmentType.CAUTION }).isNull()
+          assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.CAUTION }).isNull()
         }
       } else {
         if (caution) {
           verify(prisonApiGateway, atLeast(2)).createSanction(any(), any())
           verify(prisonApiGateway, atLeastOnce()).deleteSanctions(reportedAdjudication.reportNumber)
-          assertThat(argumentCaptor.value.punishments.firstOrNull { it.type == PunishmentType.CAUTION }).isNotNull
-          assertThat(argumentCaptor.value.punishments.first { it.type == PunishmentType.CAUTION }.sanctionSeq).isEqualTo(2)
-          assertThat(argumentCaptor.value.punishments.size).isEqualTo(2)
+          assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.CAUTION }).isNotNull
+          assertThat(argumentCaptor.value.getPunishments().first { it.type == PunishmentType.CAUTION }.sanctionSeq).isEqualTo(2)
+          assertThat(argumentCaptor.value.getPunishments().size).isEqualTo(2)
         } else {
           verify(prisonApiGateway, never()).deleteSanction(any(), any())
           verify(prisonApiGateway, never()).createSanction(any(), any())
-          assertThat(argumentCaptor.value.punishments.firstOrNull { it.type == PunishmentType.CAUTION }).isNull()
+          assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.CAUTION }).isNull()
         }
       }
     }
@@ -247,7 +247,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         it.createDateTime = LocalDateTime.now()
         it.createdByUserId = ""
         if (recordExists) {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               type = PunishmentType.DAMAGES_OWED,
               sanctionSeq = 1,
@@ -286,11 +286,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               compensationAmount = 10.0,
             ),
           )
-          assertThat(argumentCaptor.value.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
-          assertThat(argumentCaptor.value.punishments.first { it.type == PunishmentType.DAMAGES_OWED }.sanctionSeq).isEqualTo(2)
+          assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
+          assertThat(argumentCaptor.value.getPunishments().first { it.type == PunishmentType.DAMAGES_OWED }.sanctionSeq).isEqualTo(2)
         } else if (changeAmount) {
           verify(prisonApiGateway, atLeastOnce()).deleteSanction(reportedAdjudication.reportNumber, 1L)
-          assertThat(argumentCaptor.value.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNull()
+          assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNull()
         } else {
           verify(prisonApiGateway, never()).deleteSanction(reportedAdjudication.reportNumber, 1L)
           verify(prisonApiGateway, never()).createSanction(any(), any())
@@ -307,8 +307,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               compensationAmount = 10.0,
             ),
           )
-          assertThat(argumentCaptor.value.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
-          assertThat(argumentCaptor.value.punishments.first { it.type == PunishmentType.DAMAGES_OWED }.sanctionSeq).isEqualTo(2)
+          assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
+          assertThat(argumentCaptor.value.getPunishments().first { it.type == PunishmentType.DAMAGES_OWED }.sanctionSeq).isEqualTo(2)
         } else {
           verify(prisonApiGateway, never()).deleteSanction(reportedAdjudication.reportNumber, 1L)
           verify(prisonApiGateway, never()).createSanction(any(), any())
@@ -329,7 +329,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
       whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(
         reportedAdjudication.also {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               id = 1,
               type = PunishmentType.DAMAGES_OWED,
@@ -352,10 +352,10 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       verify(prisonApiGateway, atLeastOnce()).deleteSanctions(any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.punishments.size).isEqualTo(2)
-      assertThat(argumentCaptor.value.punishments.first().type).isEqualTo(PunishmentType.CAUTION)
-      assertThat(argumentCaptor.value.punishments.last().type).isEqualTo(PunishmentType.DAMAGES_OWED)
-      assertThat(argumentCaptor.value.punishments.last().amount).isEqualTo(10.0)
+      assertThat(argumentCaptor.value.getPunishments().size).isEqualTo(2)
+      assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.CAUTION)
+      assertThat(argumentCaptor.value.getPunishments().last().type).isEqualTo(PunishmentType.DAMAGES_OWED)
+      assertThat(argumentCaptor.value.getPunishments().last().amount).isEqualTo(10.0)
     }
   }
 
@@ -403,7 +403,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.clearOutcomes()
           it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               type = PunishmentType.CAUTION,
               schedule = mutableListOf(
@@ -549,21 +549,21 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
 
-      val removalWing = argumentCaptor.value.punishments.first { it.type == PunishmentType.REMOVAL_WING }
+      val removalWing = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.REMOVAL_WING }
 
       assertThat(removalWing.suspendedUntil).isEqualTo(LocalDate.now())
 
-      assertThat(argumentCaptor.value.punishments.size).isEqualTo(4)
-      assertThat(argumentCaptor.value.punishments.first()).isNotNull
-      assertThat(argumentCaptor.value.punishments.first().type).isEqualTo(PunishmentType.PRIVILEGE)
-      assertThat(argumentCaptor.value.punishments.first().privilegeType).isEqualTo(PrivilegeType.OTHER)
-      assertThat(argumentCaptor.value.punishments.first().otherPrivilege).isEqualTo("other")
-      assertThat(argumentCaptor.value.punishments.first().schedule.first()).isNotNull
-      assertThat(argumentCaptor.value.punishments.first().schedule.first().startDate)
+      assertThat(argumentCaptor.value.getPunishments().size).isEqualTo(4)
+      assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
+      assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.PRIVILEGE)
+      assertThat(argumentCaptor.value.getPunishments().first().privilegeType).isEqualTo(PrivilegeType.OTHER)
+      assertThat(argumentCaptor.value.getPunishments().first().otherPrivilege).isEqualTo("other")
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first()).isNotNull
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().startDate)
         .isEqualTo(LocalDate.now())
-      assertThat(argumentCaptor.value.punishments.first().schedule.first().endDate)
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().endDate)
         .isEqualTo(LocalDate.now().plusDays(1))
-      assertThat(argumentCaptor.value.punishments.first().schedule.first().days).isEqualTo(1)
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().days).isEqualTo(1)
 
       assertThat(response).isNotNull
     }
@@ -593,7 +593,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(
         entityBuilder.reportedAdjudication(2).also {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               id = 1,
               type = PunishmentType.PRIVILEGE,
@@ -625,9 +625,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.punishments.first()).isNotNull
-      assertThat(argumentCaptor.value.punishments.first().id).isNull()
-      assertThat(argumentCaptor.value.punishments.first().activatedFrom).isEqualTo(2)
+      assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
+      assertThat(argumentCaptor.value.getPunishments().first().id).isNull()
+      assertThat(argumentCaptor.value.getPunishments().first().activatedFrom).isEqualTo(2)
 
       assertThat(response).isNotNull
     }
@@ -655,9 +655,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.punishments.first()).isNotNull
-      assertThat(argumentCaptor.value.punishments.first().id).isNull()
-      assertThat(argumentCaptor.value.punishments.first().activatedFrom).isEqualTo(2)
+      assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
+      assertThat(argumentCaptor.value.getPunishments().first().id).isNull()
+      assertThat(argumentCaptor.value.getPunishments().first().activatedFrom).isEqualTo(2)
 
       assertThat(response).isNotNull
     }
@@ -672,7 +672,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `init`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.punishments.clear()
+          it.clearPunishments()
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
           it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
@@ -709,7 +709,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.clearOutcomes()
           it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               type = PunishmentType.CAUTION,
               schedule = mutableListOf(
@@ -732,7 +732,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `validation error - privilege missing sub type `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               id = 1,
               type = PunishmentType.PRIVILEGE,
@@ -758,7 +758,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `validation error - other privilege missing description `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               id = 1,
               type = PunishmentType.PRIVILEGE,
@@ -792,7 +792,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `validation error - earnings missing stoppage percentage `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               id = 1,
               type = PunishmentType.EARNINGS,
@@ -826,7 +826,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `validation error - not suspended missing start date `(type: PunishmentType) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               id = 1,
               type = type,
@@ -859,7 +859,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `validation error - not suspended missing end date `(type: PunishmentType) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               id = 1,
               type = type,
@@ -894,7 +894,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `validation error - suspended missing all schedule dates `(type: PunishmentType) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               id = 1,
               type = type,
@@ -919,7 +919,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `throws exception if id for punishment is not located `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               id = 1,
               type = PunishmentType.CONFINEMENT,
@@ -947,7 +947,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           if (maintainDamagesOwed) {
-            it.punishments.add(
+            it.addPunishment(
               Punishment(
                 type = PunishmentType.DAMAGES_OWED,
                 amount = 100.0,
@@ -959,46 +959,44 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             )
           }
 
-          it.punishments.addAll(
-            mutableListOf(
-              Punishment(
-                id = 1,
-                type = PunishmentType.CONFINEMENT,
-                schedule = mutableListOf(
-                  PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()).also {
-                    it.createDateTime = LocalDateTime.now()
-                  },
-                ),
-              ),
-              Punishment(
-                id = 2,
-                type = PunishmentType.EXCLUSION_WORK,
-                schedule = mutableListOf(
-                  PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()).also {
-                    it.createDateTime = LocalDateTime.now()
-                  },
-                ),
-              ),
-              Punishment(
-                id = 3,
-                type = PunishmentType.ADDITIONAL_DAYS,
-                schedule = mutableListOf(
-                  PunishmentSchedule(id = 1, days = 1).also {
-                    it.createDateTime = LocalDateTime.now()
-                  },
-                ),
-              ),
-              Punishment(
-                id = 4,
-                type = PunishmentType.REMOVAL_WING,
-                schedule = mutableListOf(
-                  PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()).also {
-                    it.createDateTime = LocalDateTime.now()
-                  },
-                ),
+          mutableListOf(
+            Punishment(
+              id = 1,
+              type = PunishmentType.CONFINEMENT,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()).also {
+                  it.createDateTime = LocalDateTime.now()
+                },
               ),
             ),
-          )
+            Punishment(
+              id = 2,
+              type = PunishmentType.EXCLUSION_WORK,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()).also {
+                  it.createDateTime = LocalDateTime.now()
+                },
+              ),
+            ),
+            Punishment(
+              id = 3,
+              type = PunishmentType.ADDITIONAL_DAYS,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1).also {
+                  it.createDateTime = LocalDateTime.now()
+                },
+              ),
+            ),
+            Punishment(
+              id = 4,
+              type = PunishmentType.REMOVAL_WING,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()).also {
+                  it.createDateTime = LocalDateTime.now()
+                },
+              ),
+            ),
+          ).forEach { p -> it.addPunishment(p) }
         },
       )
 
@@ -1037,14 +1035,14 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(response).isNotNull
-      assertThat(argumentCaptor.value.punishments.size).isEqualTo(if (maintainDamagesOwed) 5 else 4)
+      assertThat(argumentCaptor.value.getPunishments().size).isEqualTo(if (maintainDamagesOwed) 5 else 4)
 
-      val privilege = argumentCaptor.value.punishments.first { it.type == PunishmentType.PRIVILEGE }
-      val additionalDays = argumentCaptor.value.punishments.first { it.type == PunishmentType.ADDITIONAL_DAYS }
-      val prospectiveDays = argumentCaptor.value.punishments.first { it.type == PunishmentType.PROSPECTIVE_DAYS }
-      val removalWing = argumentCaptor.value.punishments.first { it.type == PunishmentType.REMOVAL_WING }
-      if (maintainDamagesOwed) assertThat(argumentCaptor.value.punishments.first { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
-      assertThat(argumentCaptor.value.punishments.firstOrNull { it.type == PunishmentType.EXCLUSION_WORK })
+      val privilege = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.PRIVILEGE }
+      val additionalDays = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.ADDITIONAL_DAYS }
+      val prospectiveDays = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.PROSPECTIVE_DAYS }
+      val removalWing = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.REMOVAL_WING }
+      if (maintainDamagesOwed) assertThat(argumentCaptor.value.getPunishments().first { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
+      assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.EXCLUSION_WORK })
 
       assertThat(privilege.id).isNull()
       assertThat(additionalDays.id).isEqualTo(3)
@@ -1061,7 +1059,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       when (maintainDamagesOwed) {
         true -> {
           verify(prisonApiGateway, atLeastOnce()).createSanction(any(), any())
-          assertThat(argumentCaptor.value.punishments.first { it.type == PunishmentType.DAMAGES_OWED }.sanctionSeq).isEqualTo(22)
+          assertThat(argumentCaptor.value.getPunishments().first { it.type == PunishmentType.DAMAGES_OWED }.sanctionSeq).isEqualTo(22)
         }
         false -> verify(prisonApiGateway, never()).createSanction(any(), any())
       }
@@ -1071,7 +1069,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `activated from punishment not found `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         reportedAdjudication.also {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(id = 1, type = PunishmentType.PROSPECTIVE_DAYS, schedule = mutableListOf(PunishmentSchedule(days = 1))),
           )
         },
@@ -1099,7 +1097,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `activated from punishment has already been activated `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         reportedAdjudication.also {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(id = 1, activatedFrom = 2, type = PunishmentType.PROSPECTIVE_DAYS, schedule = mutableListOf(PunishmentSchedule(days = 1))),
           )
         },
@@ -1107,7 +1105,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(
         entityBuilder.reportedAdjudication().also {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(id = 3, type = PunishmentType.PROSPECTIVE_DAYS, activatedBy = 1, schedule = mutableListOf(PunishmentSchedule(days = 1))),
           )
         },
@@ -1132,7 +1130,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `clone suspended punishment `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(
         entityBuilder.reportedAdjudication(reportNumber = 2).also {
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               id = 1,
               type = PunishmentType.CONFINEMENT,
@@ -1163,9 +1161,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumber(2)
 
-      assertThat(argumentCaptor.value.punishments.first()).isNotNull
-      assertThat(argumentCaptor.value.punishments.first().id).isNull()
-      assertThat(argumentCaptor.value.punishments.first().activatedFrom).isEqualTo(2)
+      assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
+      assertThat(argumentCaptor.value.getPunishments().first().id).isNull()
+      assertThat(argumentCaptor.value.getPunishments().first().activatedFrom).isEqualTo(2)
 
       assertThat(response).isNotNull
     }
@@ -1193,9 +1191,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       verify(prisonApiGateway, atLeastOnce()).updateSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.punishments.first()).isNotNull
-      assertThat(argumentCaptor.value.punishments.first().id).isNull()
-      assertThat(argumentCaptor.value.punishments.first().activatedFrom).isEqualTo(2)
+      assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
+      assertThat(argumentCaptor.value.getPunishments().first().id).isNull()
+      assertThat(argumentCaptor.value.getPunishments().first().activatedFrom).isEqualTo(2)
 
       assertThat(response).isNotNull
     }
@@ -1206,7 +1204,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     private val reportedAdjudications = listOf(
       entityBuilder.reportedAdjudication(reportNumber = 1).also {
-        it.punishments.add(
+        it.addPunishment(
           Punishment(
             type = PunishmentType.REMOVAL_WING,
             suspendedUntil = LocalDate.now(),
@@ -1217,7 +1215,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       },
       entityBuilder.reportedAdjudication(reportNumber = 2).also {
-        it.punishments.add(
+        it.addPunishment(
           Punishment(
             type = PunishmentType.ADDITIONAL_DAYS,
             suspendedUntil = LocalDate.now(),
@@ -1229,7 +1227,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       },
       entityBuilder.reportedAdjudication(reportNumber = 3).also {
-        it.punishments.add(
+        it.addPunishment(
           Punishment(
             type = PunishmentType.PROSPECTIVE_DAYS,
             suspendedUntil = LocalDate.now(),

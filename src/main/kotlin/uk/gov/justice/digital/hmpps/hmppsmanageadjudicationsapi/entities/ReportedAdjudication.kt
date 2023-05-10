@@ -70,7 +70,7 @@ data class ReportedAdjudication(
   private var outcomes: MutableList<Outcome>,
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")
-  var punishments: MutableList<Punishment>,
+  private var punishments: MutableList<Punishment>,
 ) :
   BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reason: String? = null, details: String? = null, reviewUserId: String? = null) {
@@ -111,18 +111,23 @@ data class ReportedAdjudication(
 
   fun addOutcome(outcome: Outcome) = this.outcomes.add(outcome)
 
-  fun getOutcomes() = this.outcomes.filterOutSoftDeletes()
+  fun getOutcomes(): MutableList<Outcome> = this.outcomes.filterOutSoftDeletes()
 
-  fun getOutcomeToRemove() = this.outcomes.getOutcomeToRemove()
+  fun getOutcomeToRemove() = this.getOutcomes().getOutcomeToRemove()
 
   @TestOnly
   fun clearOutcomes() = this.outcomes.clear()
 
+  fun getPunishments(): MutableList<Punishment> = this.punishments.filterOutSoftDeletes()
+
+  fun addPunishment(punishment: Punishment) = this.punishments.add(punishment)
+
+  fun clearPunishments() = this.punishments.clear()
+
   private fun Hearing?.isAdjourn() = this?.hearingOutcome?.code == HearingOutcomeCode.ADJOURN
 
   companion object {
-    fun List<Outcome>.filterOutSoftDeletes() = this.filter { it.deleted != true }
-
+    inline fun<reified A> List<SoftDeleteEntity>.filterOutSoftDeletes() = this.filter { it.deleted != true } as A
     fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.createDateTime!! }
   }
 }

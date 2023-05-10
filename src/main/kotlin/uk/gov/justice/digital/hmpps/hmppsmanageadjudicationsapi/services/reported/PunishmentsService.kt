@@ -67,11 +67,11 @@ class PunishmentsService(
     punishments.forEach {
       it.validateRequest()
       if (it.activatedFrom != null) {
-        reportedAdjudication.punishments.add(
+        reportedAdjudication.addPunishment(
           activateSuspendedPunishment(adjudicationNumber = adjudicationNumber, punishmentRequest = it),
         )
       } else {
-        reportedAdjudication.punishments.add(createNewPunishment(punishmentRequest = it))
+        reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = it))
       }
     }
 
@@ -92,32 +92,33 @@ class PunishmentsService(
     }
 
     val ids = punishments.filter { it.id != null }.map { it.id }
-    val toRemove = reportedAdjudication.punishments.filterOutChargeProvedPunishments().filter { !ids.contains(it.id) }
-    reportedAdjudication.punishments.removeAll(toRemove)
+    reportedAdjudication.getPunishments().filterOutChargeProvedPunishments().filter { !ids.contains(it.id) }.forEach {
+      it.deleted = true
+    }
 
     punishments.forEach {
       it.validateRequest()
 
       when (it.id) {
         null -> when (it.activatedFrom) {
-          null -> reportedAdjudication.punishments.add(createNewPunishment(punishmentRequest = it))
-          else -> reportedAdjudication.punishments.add(activateSuspendedPunishment(adjudicationNumber = adjudicationNumber, punishmentRequest = it))
+          null -> reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = it))
+          else -> reportedAdjudication.addPunishment(activateSuspendedPunishment(adjudicationNumber = adjudicationNumber, punishmentRequest = it))
         }
         else -> {
           when (it.activatedFrom) {
             null -> {
-              val punishmentToAmend = reportedAdjudication.punishments.getPunishmentToAmend(it.id)
+              val punishmentToAmend = reportedAdjudication.getPunishments().getPunishmentToAmend(it.id)
               when (punishmentToAmend.type) {
                 it.type -> updatePunishment(punishmentToAmend, it)
                 else -> {
-                  reportedAdjudication.punishments.remove(punishmentToAmend)
-                  reportedAdjudication.punishments.add(createNewPunishment(punishmentRequest = it))
+                  punishmentToAmend.deleted = true
+                  reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = it))
                 }
               }
             }
             else ->
-              if (reportedAdjudication.punishments.getPunishment(it.id) == null) {
-                reportedAdjudication.punishments.add(
+              if (reportedAdjudication.getPunishments().getPunishment(it.id) == null) {
+                reportedAdjudication.addPunishment(
                   activateSuspendedPunishment(
                     adjudicationNumber = adjudicationNumber,
                     punishmentRequest = it,
@@ -133,7 +134,7 @@ class PunishmentsService(
       adjudicationNumber = adjudicationNumber,
       sanctions = reportedAdjudication.mapToSanctions(),
     ).run {
-      reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }?.let {
+      reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }?.let {
         it.sanctionSeq = createPunishmentFromChargeProved(
           adjudicationNumber = reportedAdjudication.reportNumber,
           type = PunishmentType.DAMAGES_OWED,
@@ -149,7 +150,7 @@ class PunishmentsService(
     val reportsWithSuspendedPunishments = getReportsWithSuspendedPunishments(prisonerNumber = prisonerNumber)
 
     return reportsWithSuspendedPunishments.map {
-      it.punishments.suspendedPunishmentsToActivate().map { p ->
+      it.getPunishments().suspendedPunishmentsToActivate().map { p ->
         val schedule = p.schedule.latestSchedule()
 
         SuspendedPunishmentDto(
@@ -168,7 +169,7 @@ class PunishmentsService(
   }
 
   private fun handleDamagesOwedChange(reportedAdjudication: ReportedAdjudication, amount: Double?) {
-    when (val damagesOwedPunishment = reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }) {
+    when (val damagesOwedPunishment = reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }) {
       null -> if (amount != null) createDamagesOwed(reportedAdjudication = reportedAdjudication, amount = amount)
       else -> if (damagesOwedPunishment.amount != amount) {
         when (amount) {
@@ -180,7 +181,7 @@ class PunishmentsService(
   }
 
   private fun createDamagesOwed(reportedAdjudication: ReportedAdjudication, amount: Double) {
-    reportedAdjudication.punishments.add(
+    reportedAdjudication.addPunishment(
       createPunishmentFromChargeProved(
         adjudicationNumber = reportedAdjudication.reportNumber,
         type = PunishmentType.DAMAGES_OWED,
@@ -194,7 +195,7 @@ class PunishmentsService(
       adjudicationNumber = reportedAdjudication.reportNumber,
       sanctionSeq = punishment.sanctionSeq!!,
     ).run {
-      reportedAdjudication.punishments.remove(punishment)
+      punishment.deleted = true
     }
   }
 
@@ -209,14 +210,14 @@ class PunishmentsService(
   }
 
   private fun handleCautionChange(reportedAdjudication: ReportedAdjudication, caution: Boolean) {
-    when (val cautionPunishment = reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.CAUTION }) {
+    when (val cautionPunishment = reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.CAUTION }) {
       null -> if (caution) amendToCaution(reportedAdjudication = reportedAdjudication)
       else -> if (!caution) removeCaution(reportedAdjudication = reportedAdjudication, punishment = cautionPunishment)
     }
   }
 
   private fun createCaution(reportedAdjudication: ReportedAdjudication) {
-    reportedAdjudication.punishments.add(
+    reportedAdjudication.addPunishment(
       createPunishmentFromChargeProved(
         adjudicationNumber = reportedAdjudication.reportNumber,
         type = PunishmentType.CAUTION,
@@ -225,14 +226,14 @@ class PunishmentsService(
   }
 
   private fun amendToCaution(reportedAdjudication: ReportedAdjudication) {
-    val preserveDamagesOwed = reportedAdjudication.punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }
+    val preserveDamagesOwed = reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }
 
     prisonApiGateway.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber).run {
-      reportedAdjudication.punishments.clear()
+      reportedAdjudication.clearPunishments()
       createCaution(reportedAdjudication = reportedAdjudication)
     }.run {
       preserveDamagesOwed?.run {
-        reportedAdjudication.punishments.add(
+        reportedAdjudication.addPunishment(
           createPunishmentFromChargeProved(
             adjudicationNumber = reportedAdjudication.reportNumber,
             type = PunishmentType.DAMAGES_OWED,
@@ -248,7 +249,7 @@ class PunishmentsService(
       adjudicationNumber = reportedAdjudication.reportNumber,
       sanctionSeq = punishment.sanctionSeq!!,
     ).run {
-      reportedAdjudication.punishments.remove(punishment)
+      punishment.deleted = true
     }
   }
 
@@ -305,7 +306,7 @@ class PunishmentsService(
     var suspendedPunishment: Punishment? = null
     punishmentRequest.id?.run {
       val activatedFromReport = findByAdjudicationNumber(punishmentRequest.activatedFrom!!)
-      suspendedPunishment = activatedFromReport.punishments.getSuspendedPunishment(punishmentRequest.id).also {
+      suspendedPunishment = activatedFromReport.getPunishments().getSuspendedPunishment(punishmentRequest.id).also {
         it.activatedBy = adjudicationNumber
       }
     }
@@ -332,7 +333,7 @@ class PunishmentsService(
   companion object {
 
     fun ReportedAdjudication.mapToSanctions(): List<OffenderOicSanctionRequest> =
-      this.punishments.filterOutChargeProvedPunishments().map { it.mapPunishmentToSanction() }
+      this.getPunishments().filterOutChargeProvedPunishments().map { it.mapPunishmentToSanction() }
 
     fun List<PunishmentSchedule>.latestSchedule() = this.maxBy { it.createDateTime!! }
 
@@ -375,7 +376,7 @@ class PunishmentsService(
       if (this.status != ReportedAdjudicationStatus.CHARGE_PROVED) {
         throw ValidationException("status is not CHARGE_PROVED")
       }
-      if (this.punishments.any { it.type == PunishmentType.CAUTION }) {
+      if (this.getPunishments().any { it.type == PunishmentType.CAUTION }) {
         throw ValidationException("outcome is a caution - no further punishments can be added")
       }
     }

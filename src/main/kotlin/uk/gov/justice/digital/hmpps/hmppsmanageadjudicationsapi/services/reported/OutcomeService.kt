@@ -229,7 +229,7 @@ class OutcomeService(
 
     reportedAdjudication.calculateStatus()
 
-    if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) reportedAdjudication.punishments.clear()
+    if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) reportedAdjudication.getPunishments().forEach { it.deleted = true }
 
     nomisOutcomeService.deleteHearingResultIfApplicable(
       adjudicationNumber = adjudicationNumber,
@@ -242,7 +242,7 @@ class OutcomeService(
 
   fun getOutcomes(adjudicationNumber: Long): List<CombinedOutcomeDto> {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    return reportedAdjudication.getOutcomes().createCombinedOutcomes(reportedAdjudication.punishments)
+    return reportedAdjudication.getOutcomes().createCombinedOutcomes(reportedAdjudication.getPunishments())
   }
 
   fun getLatestOutcome(adjudicationNumber: Long): Outcome? = findByAdjudicationNumber(adjudicationNumber).latestOutcome()

@@ -21,8 +21,7 @@ data class Outcome(
   @Enumerated(EnumType.STRING)
   var quashedReason: QuashedReason? = null,
   var oicHearingId: Long? = null,
-  var deleted: Boolean? = null,
-) : BaseEntity()
+) : SoftDeleteEntity()
 
 enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Finding? = null) {
   REFER_POLICE(ReportedAdjudicationStatus.REFER_POLICE, Finding.REF_POLICE) {
