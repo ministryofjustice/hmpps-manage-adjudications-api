@@ -56,6 +56,18 @@ class PunishmentsService(
     return saveToDto(reportedAdjudication)
   }
 
+  fun removeQuashedFinding(reportedAdjudication: ReportedAdjudication) {
+    prisonApiGateway.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber)
+
+    reportedAdjudication.createSanctionAndAssignSanctionSeq(type = PunishmentType.CAUTION)
+    reportedAdjudication.createSanctionAndAssignSanctionSeq(type = PunishmentType.DAMAGES_OWED)
+
+    prisonApiGateway.createSanctions(
+      adjudicationNumber = reportedAdjudication.reportNumber,
+      sanctions = reportedAdjudication.mapToSanctions(),
+    )
+  }
+
   fun create(
     adjudicationNumber: Long,
     punishments: List<PunishmentRequest>,
@@ -329,6 +341,15 @@ class PunishmentsService(
       PunishmentSchedule(days = days, startDate = startDate, endDate = endDate),
     ),
   )
+
+  private fun ReportedAdjudication.createSanctionAndAssignSanctionSeq(type: PunishmentType) {
+    this.getPunishments().firstOrNull { it.type == type }?.let {
+      it.sanctionSeq = prisonApiGateway.createSanction(
+        adjudicationNumber = this.reportNumber,
+        sanction = it.mapPunishmentToSanction(),
+      )
+    }
+  }
 
   companion object {
 

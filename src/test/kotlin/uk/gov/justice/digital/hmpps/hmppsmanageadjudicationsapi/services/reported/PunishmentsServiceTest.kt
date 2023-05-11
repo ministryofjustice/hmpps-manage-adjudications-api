@@ -15,6 +15,7 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeast
 import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.atMost
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -1378,6 +1379,110 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         assertThat(oicSanctionRequest.status).isEqualTo(Status.IMMEDIATE)
       }
       assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.ADA)
+    }
+  }
+
+  @Nested
+  inner class RemoveQuashedOutcome {
+
+    @CsvSource("true, 0.0", "false, 0.0", "true,", "false,")
+    @ParameterizedTest
+    fun `remove quashed outcome`(caution: Boolean, damagesOwed: Double?) {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        if (caution) {
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.CAUTION,
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 1),
+              ),
+            ),
+          )
+        }
+        if (damagesOwed != null) {
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.DAMAGES_OWED,
+              amount = damagesOwed,
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 1),
+              ),
+            ),
+          )
+        }
+
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+            ),
+          ),
+        )
+      }
+
+      whenever(prisonApiGateway.createSanction(any(), any())).thenReturn(3)
+
+      punishmentsService.removeQuashedFinding(reportedAdjudication)
+
+      verify(prisonApiGateway, atLeastOnce()).deleteSanctions(any())
+
+      if (caution) {
+        verify(prisonApiGateway, atMost(1)).createSanction(
+          reportedAdjudication.reportNumber,
+          OffenderOicSanctionRequest(
+            oicSanctionCode = OicSanctionCode.CAUTION,
+            status = Status.IMMEDIATE,
+            effectiveDate = LocalDate.now(),
+            sanctionDays = 0,
+          ),
+        )
+      } else {
+        verify(prisonApiGateway, never()).createSanction(
+          reportedAdjudication.reportNumber,
+          OffenderOicSanctionRequest(
+            oicSanctionCode = OicSanctionCode.CAUTION,
+            status = Status.IMMEDIATE,
+            effectiveDate = LocalDate.now(),
+            sanctionDays = 0,
+          ),
+        )
+      }
+
+      if (damagesOwed == null) {
+        verify(prisonApiGateway, never()).createSanction(
+          reportedAdjudication.reportNumber,
+          OffenderOicSanctionRequest(
+            oicSanctionCode = OicSanctionCode.OTHER,
+            status = Status.IMMEDIATE,
+            effectiveDate = LocalDate.now(),
+            sanctionDays = 0,
+            compensationAmount = 0.0,
+          ),
+        )
+      } else {
+        verify(prisonApiGateway, atMost(1)).createSanction(
+          reportedAdjudication.reportNumber,
+          OffenderOicSanctionRequest(
+            oicSanctionCode = OicSanctionCode.OTHER,
+            status = Status.IMMEDIATE,
+            effectiveDate = LocalDate.now(),
+            sanctionDays = 0,
+            compensationAmount = 0.0,
+          ),
+        )
+      }
+
+      if (caution) {
+        val data = reportedAdjudication.getPunishments().first { it.type == PunishmentType.CAUTION }
+        assertThat(data.sanctionSeq).isEqualTo(3)
+      }
+      if (damagesOwed != null) {
+        val data = reportedAdjudication.getPunishments().first { it.type == PunishmentType.DAMAGES_OWED }
+        assertThat(data.sanctionSeq).isEqualTo(3)
+      }
+
+      verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
     }
   }
 
