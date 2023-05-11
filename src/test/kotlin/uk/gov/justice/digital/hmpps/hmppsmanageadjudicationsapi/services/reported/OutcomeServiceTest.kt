@@ -371,7 +371,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.addOutcome(
           Outcome(id = 1, code = code),
         )
-        it.punishments.add(
+        it.addPunishment(
           Punishment(
             type = PunishmentType.CONFINEMENT,
             suspendedUntil = LocalDate.now(),
@@ -399,7 +399,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
 
       if (code == OutcomeCode.CHARGE_PROVED) {
-        assertThat(argumentCaptor.value.punishments).isEmpty()
+        assertThat(argumentCaptor.value.getPunishments()).isEmpty()
       }
 
       assertThat(response).isNotNull

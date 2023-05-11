@@ -56,7 +56,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               type = PunishmentType.DAMAGES_OWED,
               schedule = mutableListOf(
@@ -64,7 +64,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               ),
             ),
           )
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               type = PunishmentType.CAUTION,
               schedule = mutableListOf(
@@ -593,8 +593,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       it.addOutcome(
-        Outcome(code = OutcomeCode.REFER_POLICE, deleted = true).also {
+        Outcome(code = OutcomeCode.REFER_POLICE).also {
             o ->
+          o.deleted = true
           o.createDateTime = LocalDateTime.now().plusDays(1)
         },
       )

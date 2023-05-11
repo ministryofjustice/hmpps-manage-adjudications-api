@@ -476,7 +476,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `punishment and schedule `() {
     val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
-    adjudication!!.punishments.add(
+    adjudication!!.addPunishment(
       Punishment(
         type = PunishmentType.ADDITIONAL_DAYS,
         schedule = mutableListOf(
@@ -487,9 +487,9 @@ class ReportedAdjudicationRepositoryTest {
 
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
-    assertThat(savedEntity.punishments.first().type).isEqualTo(PunishmentType.ADDITIONAL_DAYS)
-    assertThat(savedEntity.punishments.first().schedule.first().startDate).isEqualTo(LocalDate.now())
-    assertThat(savedEntity.punishments.first().schedule.first().days).isEqualTo(10)
+    assertThat(savedEntity.getPunishments().first().type).isEqualTo(PunishmentType.ADDITIONAL_DAYS)
+    assertThat(savedEntity.getPunishments().first().schedule.first().startDate).isEqualTo(LocalDate.now())
+    assertThat(savedEntity.getPunishments().first().schedule.first().days).isEqualTo(10)
   }
 
   @Test
@@ -499,7 +499,7 @@ class ReportedAdjudicationRepositoryTest {
         entityBuilder.reportedAdjudication(reportNumber = i.toLong()).also {
           it.prisonerNumber = "TEST"
           it.hearings.clear()
-          it.punishments.add(
+          it.addPunishment(
             Punishment(
               type = PunishmentType.CONFINEMENT,
               suspendedUntil = LocalDate.now().minusDays(2).plusDays(i.toLong()),

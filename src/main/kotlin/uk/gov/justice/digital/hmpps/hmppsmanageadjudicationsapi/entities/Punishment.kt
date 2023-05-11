@@ -30,6 +30,7 @@ data class Punishment(
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "punishment_fk_id")
   var schedule: MutableList<PunishmentSchedule>,
+  var deleted: Boolean? = null,
 ) : BaseEntity()
 
 enum class PunishmentType {

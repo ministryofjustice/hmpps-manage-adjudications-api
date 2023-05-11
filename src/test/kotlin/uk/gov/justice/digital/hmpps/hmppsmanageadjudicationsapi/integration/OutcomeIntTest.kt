@@ -448,6 +448,9 @@ class OutcomeIntTest : IntegrationTestBase() {
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(3)
+      .jsonPath("$.reportedAdjudication.outcomes[2].outcome.outcome").doesNotExist()
 
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/v2")
