@@ -282,6 +282,7 @@ class OutcomeIntTest : IntegrationTestBase() {
     prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubQuashSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubDeleteSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForOutcome().createHearing().createChargeProved().createQuashed()
 

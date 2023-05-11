@@ -477,6 +477,10 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
+      if (code == OutcomeCode.QUASHED) {
+        verify(punishmentsService, atLeastOnce()).removeQuashedFinding(any())
+      }
+
       if (code == OutcomeCode.NOT_PROCEED) assertThat(argumentCaptor.value.getOutcomes()).isEmpty() else assertThat(argumentCaptor.value.getOutcomes()).isNotEmpty
       if (code == OutcomeCode.NOT_PROCEED) {
         assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
