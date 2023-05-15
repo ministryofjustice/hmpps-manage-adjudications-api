@@ -435,6 +435,26 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `throws exception if attempt to edit NOMIS hearing outcome `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().hearingOutcome = HearingOutcome(
+            code = HearingOutcomeCode.NOMIS,
+            adjudicator = "adjudicator",
+          )
+        },
+      )
+
+      Assertions.assertThatThrownBy {
+        hearingOutcomeService.amendHearingOutcome(
+          adjudicationNumber = 1,
+          outcomeCodeToAmend = HearingOutcomeCode.NOMIS,
+        )
+      }.isInstanceOf(RuntimeException::class.java)
+        .hasMessageContaining("unable to amend a NOMIS hearing outcome")
+    }
+
+    @Test
     fun `throws entity not found if no hearing `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also { it.hearings.clear() },
