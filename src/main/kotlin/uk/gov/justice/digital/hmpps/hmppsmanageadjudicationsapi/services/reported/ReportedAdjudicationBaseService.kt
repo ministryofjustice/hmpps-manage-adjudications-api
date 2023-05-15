@@ -85,6 +85,7 @@ open class ReportedDtoService(
       dateTimeOfFirstHearing = dateTimeOfFirstHearing,
       outcomes = createOutcomeHistory(hearings.toMutableList(), outcomes.toMutableList()),
       punishments = this.getPunishments().filterOutChargeProvedPunishments().toPunishments(),
+      outcomeEnteredInNomis = hearings.any { it.outcome?.code == HearingOutcomeCode.NOMIS },
     )
   }
 

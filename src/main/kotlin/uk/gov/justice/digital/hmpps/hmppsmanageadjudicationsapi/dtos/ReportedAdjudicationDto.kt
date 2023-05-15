@@ -70,6 +70,8 @@ data class ReportedAdjudicationDto(
   val outcomes: List<OutcomeHistoryDto>,
   @Schema(description = "punishments")
   val punishments: List<PunishmentDto>,
+  @Schema(description = "flag to indicate a hearing outcome was entered in NOMIS")
+  val outcomeEnteredInNomis: Boolean = false,
 )
 
 @Schema(description = "Details of an offence")

@@ -51,6 +51,21 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   inner class ReportedAdjudicationDetails {
 
     @Test
+    fun `outcome entered in nomis flag is set `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
+        },
+      )
+
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1L)
+
+      assertThat(result.outcomeEnteredInNomis).isTrue
+    }
+
+    @Test
     fun `filter out caution and damages owed from dto if present in punishments `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         entityBuilder.reportedAdjudication().also {
@@ -1296,6 +1311,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(result.outcomes.first().outcome).isNull()
       assertThat(result.outcomes.first().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)
+      assertThat(result.outcomeEnteredInNomis).isTrue
     }
 
     @Test
@@ -1323,6 +1339,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.outcomes.first().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)
       assertThat(result.outcomes.last().outcome).isNull()
       assertThat(result.outcomes.last().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)
+      assertThat(result.outcomeEnteredInNomis).isTrue
     }
 
     @Test
@@ -1355,6 +1372,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.outcomes.first().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
       assertThat(result.outcomes.last().outcome).isNull()
       assertThat(result.outcomes.last().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)
+      assertThat(result.outcomeEnteredInNomis).isTrue
     }
 
     private fun ReportedAdjudicationDto.validateFirstItem(): ReportedAdjudicationDto {
