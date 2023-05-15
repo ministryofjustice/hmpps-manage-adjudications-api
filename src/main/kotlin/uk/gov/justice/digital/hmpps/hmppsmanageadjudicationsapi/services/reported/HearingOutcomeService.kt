@@ -137,6 +137,8 @@ class HearingOutcomeService(
         plea?.let { hearingOutcomeToAmend.plea = it }
         adjournedReason?.let { hearingOutcomeToAmend.reason = it }
       }
+
+      HearingOutcomeCode.NOMIS -> throw RuntimeException("unable to amend a NOMIS hearing outcome")
     }
 
     return saveToDto(reportedAdjudication)

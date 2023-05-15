@@ -124,4 +124,6 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
     .retrieve()
     .bodyToMono<Void>()
     .block()
+
+  fun doesHearingOutcomeExist(adjudicationNumber: Long, oicHearingId: Long): Boolean = TODO("implement me")
 }

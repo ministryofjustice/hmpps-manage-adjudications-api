@@ -51,6 +51,21 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   inner class ReportedAdjudicationDetails {
 
     @Test
+    fun `outcome entered in nomis flag is set `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
+        },
+      )
+
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1L)
+
+      assertThat(result.outcomeEnteredInNomis).isTrue
+    }
+
+    @Test
     fun `filter out caution and damages owed from dto if present in punishments `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         entityBuilder.reportedAdjudication().also {
@@ -1275,6 +1290,89 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.outcomes.first().outcome!!.outcome.details).isEqualTo("refer 1")
       assertThat(result.outcomes.last().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
       assertThat(result.outcomes.last().outcome!!.outcome.details).isEqualTo("refer 2")
+    }
+
+    @Test
+    fun `original nomis hearing outcome status - 1 hearing `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().hearingOutcome = HearingOutcome(
+            code = HearingOutcomeCode.NOMIS,
+            adjudicator = "",
+          )
+        },
+      )
+
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+
+      assertThat(result.outcomes.size).isEqualTo(1)
+
+      assertThat(result.outcomes.first().outcome).isNull()
+      assertThat(result.outcomes.first().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)
+      assertThat(result.outcomeEnteredInNomis).isTrue
+    }
+
+    @Test
+    fun `original nomis hearing outcome status - multiple hearing `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().hearingOutcome = HearingOutcome(
+            code = HearingOutcomeCode.NOMIS,
+            adjudicator = "",
+          )
+          it.hearings.add(
+            Hearing(dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 1, oicHearingType = OicHearingType.GOV, reportNumber = 1),
+          )
+          it.hearings.last().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
+        },
+      )
+
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+
+      assertThat(result.outcomes.size).isEqualTo(2)
+
+      assertThat(result.outcomes.first().outcome).isNull()
+      assertThat(result.outcomes.first().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)
+      assertThat(result.outcomes.last().outcome).isNull()
+      assertThat(result.outcomes.last().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)
+      assertThat(result.outcomeEnteredInNomis).isTrue
+    }
+
+    @Test
+    fun `subsequent nomis hearing outcome status - original outcome created via adjudications`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().hearingOutcome = HearingOutcome(
+            code = HearingOutcomeCode.REFER_POLICE,
+            adjudicator = "",
+          )
+          it.addOutcome(
+            Outcome(code = OutcomeCode.REFER_POLICE).also { o ->
+              o.createDateTime = LocalDateTime.now()
+            },
+          )
+          it.hearings.add(
+            Hearing(dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 1, oicHearingType = OicHearingType.GOV, reportNumber = 1),
+          )
+          it.hearings.last().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
+        },
+      )
+
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+
+      assertThat(result.outcomes.size).isEqualTo(2)
+
+      assertThat(result.outcomes.first().outcome).isNotNull
+      assertThat(result.outcomes.first().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
+      assertThat(result.outcomes.last().outcome).isNull()
+      assertThat(result.outcomes.last().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)
+      assertThat(result.outcomeEnteredInNomis).isTrue
     }
 
     private fun ReportedAdjudicationDto.validateFirstItem(): ReportedAdjudicationDto {

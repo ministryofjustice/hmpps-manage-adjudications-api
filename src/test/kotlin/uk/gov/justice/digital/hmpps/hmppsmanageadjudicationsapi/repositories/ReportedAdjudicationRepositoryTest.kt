@@ -514,4 +514,11 @@ class ReportedAdjudicationRepositoryTest {
 
     assertThat(suspendedResult.size).isEqualTo(8)
   }
+
+  @Test
+  fun `hearing without outcome test`() {
+    val hearings = hearingRepository.findByHearingOutcomeIsNull()
+
+    assertThat(hearings.size).isEqualTo(6)
+  }
 }

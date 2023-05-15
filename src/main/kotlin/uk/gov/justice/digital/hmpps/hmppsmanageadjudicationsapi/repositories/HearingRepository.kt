@@ -10,4 +10,6 @@ interface HearingRepository : CrudRepository<Hearing, Long> {
     start: LocalDateTime,
     end: LocalDateTime,
   ): List<Hearing>
+
+  fun findByHearingOutcomeIsNull(): List<Hearing>
 }
