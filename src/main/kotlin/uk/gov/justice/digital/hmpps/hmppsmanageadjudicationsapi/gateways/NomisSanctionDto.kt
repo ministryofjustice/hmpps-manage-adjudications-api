@@ -55,6 +55,7 @@ data class OffenderOicSanctionRequest(
             PrivilegeType.OTHER -> "Loss of ${this.otherPrivilege}"
             else -> "Loss of ${this.privilegeType}"
           }
+        PunishmentType.DAMAGES_OWED -> "OTHER - Damages owed £${String.format("%.2f", this.amount!!)}"
         else -> null
       }
 

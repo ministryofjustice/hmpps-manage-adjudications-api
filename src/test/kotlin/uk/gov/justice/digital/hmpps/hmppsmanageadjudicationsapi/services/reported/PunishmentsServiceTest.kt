@@ -158,6 +158,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               sanctionDays = 0,
               effectiveDate = LocalDate.now(),
               compensationAmount = 10.0,
+              commentText = "OTHER - Damages owed £10.00",
             ),
           )
           assertThat(reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
@@ -285,6 +286,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               sanctionDays = 0,
               effectiveDate = LocalDate.now(),
               compensationAmount = 10.0,
+              commentText = "OTHER - Damages owed £10.00",
             ),
           )
           assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
@@ -306,6 +308,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               sanctionDays = 0,
               effectiveDate = LocalDate.now(),
               compensationAmount = 10.0,
+              commentText = "OTHER - Damages owed £10.00",
             ),
           )
           assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
@@ -1264,6 +1267,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       val punishment = Punishment(
         type = punishmentType,
+        amount = if (punishmentType == PunishmentType.DAMAGES_OWED) 0.0 else null,
         schedule = mutableListOf(
           PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
         ),
@@ -1281,6 +1285,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       val punishment = Punishment(
         type = punishmentType,
+        amount = if (punishmentType == PunishmentType.DAMAGES_OWED) 10.0 else null,
         schedule = mutableListOf(
           PunishmentSchedule(days = 10, startDate = LocalDate.now(), endDate = LocalDate.now()),
         ),
@@ -1299,6 +1304,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         PunishmentType.EXCLUSION_WORK -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.EXTRA_WORK)
         PunishmentType.EXTRA_WORK -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.EXTW)
         PunishmentType.REMOVAL_WING -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.REMWIN)
+        PunishmentType.DAMAGES_OWED -> {
+          assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.OTHER)
+          assertThat(oicSanctionRequest.commentText).isEqualTo("OTHER - Damages owed £10.00")
+        }
+        PunishmentType.CAUTION -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.CAUTION)
         else -> {}
       }
     }
