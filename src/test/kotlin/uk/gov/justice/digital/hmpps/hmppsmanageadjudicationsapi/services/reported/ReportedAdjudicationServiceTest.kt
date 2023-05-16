@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -476,6 +477,42 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         connectedOffenderIds = expectedConnectedOffenderIds,
       )
       verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
+    }
+
+    @Test
+    fun `create adjudication removes offender from multiple roles for prison api `() {
+      val now = LocalDateTime.now()
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.createdByUserId = ""
+        it.createDateTime = now
+        it.incidentRoleAssociatedPrisonersNumber = "A12345"
+        it.offenceDetails.first().victimPrisonersNumber = "A12345"
+        it.offenceDetails.first().victimStaffUsername = null
+        it.offenceDetails.first().victimOtherPersonsName = null
+      }
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+
+      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.UNSCHEDULED)
+
+      verify(prisonApiGateway, atLeastOnce()).publishAdjudication(
+        adjudicationDetailsToPublish = AdjudicationDetailsToPublish(
+          offenderNo = reportedAdjudication.prisonerNumber,
+          adjudicationNumber = reportedAdjudication.reportNumber,
+          bookingId = 234,
+          reporterName = "",
+          reportedDateTime = now,
+          agencyId = reportedAdjudication.agencyId,
+          incidentLocationId = reportedAdjudication.locationId,
+          incidentTime = reportedAdjudication.dateTimeOfDiscovery,
+          statement = reportedAdjudication.statement,
+          offenceCodes = listOf("25f"),
+          victimStaffUsernames = emptyList(),
+          victimOffenderIds = emptyList(),
+          connectedOffenderIds = emptyList(),
+        ),
+      )
     }
 
     private fun existingReportedAdjudication(
