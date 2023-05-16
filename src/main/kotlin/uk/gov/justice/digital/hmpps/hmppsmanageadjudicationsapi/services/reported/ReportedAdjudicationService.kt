@@ -107,8 +107,14 @@ class ReportedAdjudicationService(
         incidentLocationId = reportedAdjudication.locationId,
         statement = reportedAdjudication.statement,
         offenceCodes = getNomisCodes(reportedAdjudication.incidentRoleCode, reportedAdjudication.offenceDetails, reportedAdjudication.isYouthOffender),
-        connectedOffenderIds = getAssociatedOffenders(reportedAdjudication.incidentRoleAssociatedPrisonersNumber),
-        victimOffenderIds = getVictimOffenders(reportedAdjudication.offenceDetails),
+        connectedOffenderIds = getAssociatedOffenders(
+          prisonerNumber = reportedAdjudication.prisonerNumber,
+          associatedPrisonersNumber = reportedAdjudication.incidentRoleAssociatedPrisonersNumber,
+        ),
+        victimOffenderIds = getVictimOffenders(
+          prisonerNumber = reportedAdjudication.prisonerNumber,
+          offenceDetails = reportedAdjudication.offenceDetails,
+        ),
         victimStaffUsernames = getVictimStaffUsernames(reportedAdjudication.offenceDetails),
       ),
     )
@@ -123,15 +129,15 @@ class ReportedAdjudicationService(
       ?: emptyList()
   }
 
-  private fun getAssociatedOffenders(associatedPrisonersNumber: String?): List<String> {
+  private fun getAssociatedOffenders(prisonerNumber: String, associatedPrisonersNumber: String?): List<String> {
     if (associatedPrisonersNumber == null) {
       return emptyList()
     }
-    return listOf(associatedPrisonersNumber)
+    return listOf(associatedPrisonersNumber).filter { it != prisonerNumber }
   }
 
-  private fun getVictimOffenders(offenceDetails: MutableList<ReportedOffence>?): List<String> {
-    return offenceDetails?.mapNotNull { it.victimPrisonersNumber } ?: emptyList()
+  private fun getVictimOffenders(prisonerNumber: String, offenceDetails: MutableList<ReportedOffence>?): List<String> {
+    return offenceDetails?.filter { it.victimPrisonersNumber != prisonerNumber }?.mapNotNull { it.victimPrisonersNumber } ?: emptyList()
   }
 
   private fun getVictimStaffUsernames(offenceDetails: MutableList<ReportedOffence>?): List<String> {
