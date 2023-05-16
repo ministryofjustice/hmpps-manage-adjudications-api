@@ -81,6 +81,7 @@ open class TestControllerBase {
         gender = Gender.MALE,
         outcomes = listOf(),
         punishments = listOf(),
+        punishmentComments = listOf(),
       )
 
     val INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO =

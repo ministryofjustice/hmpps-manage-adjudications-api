@@ -9,5 +9,5 @@ import org.hibernate.validator.constraints.Length
 data class PunishmentComment(
   override val id: Long? = null,
   @field:Length(max = 4000)
-  var comment: String? = null,
+  var comment: String,
 ) : BaseEntity()

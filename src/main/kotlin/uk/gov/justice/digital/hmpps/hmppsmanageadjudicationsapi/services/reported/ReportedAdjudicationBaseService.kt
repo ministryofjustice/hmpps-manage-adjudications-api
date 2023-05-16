@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentCommentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedDamageDto
@@ -26,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -85,6 +87,7 @@ open class ReportedDtoService(
       dateTimeOfFirstHearing = dateTimeOfFirstHearing,
       outcomes = createOutcomeHistory(hearings.toMutableList(), outcomes.toMutableList()),
       punishments = this.getPunishments().filterOutChargeProvedPunishments().toPunishments(),
+      punishmentComments = this.punishmentComments.toPunishmentComments(),
     )
   }
 
@@ -262,6 +265,16 @@ open class ReportedDtoService(
       endDate = this.endDate,
       suspendedUntil = this.suspendedUntil,
     )
+
+  private fun List<PunishmentComment>.toPunishmentComments(): List<PunishmentCommentDto> =
+    this.map {
+      PunishmentCommentDto(
+        id = it.id,
+        comment = it.comment,
+        author = it.modifiedByUserId ?: it.createdByUserId,  // TODO: find name, surname
+        dateTime = it.modifiedDateTime ?: it.createDateTime,
+      )
+    }.sortedByDescending { it.dateTime }.toList()
 
   companion object {
     val outcomesToDisplayPunishments = listOf(OutcomeCode.CHARGE_PROVED, OutcomeCode.QUASHED)

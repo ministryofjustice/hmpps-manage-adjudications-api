@@ -70,6 +70,8 @@ data class ReportedAdjudicationDto(
   val outcomes: List<OutcomeHistoryDto>,
   @Schema(description = "punishments")
   val punishments: List<PunishmentDto>,
+  @Schema(description = "punishment comments")
+  val punishmentComments: List<PunishmentCommentDto>,
 )
 
 @Schema(description = "Details of an offence")
@@ -256,4 +258,16 @@ data class SuspendedPunishmentDto(
   val reportNumber: Long,
   @Schema(description = "punishment dto")
   val punishment: PunishmentDto,
+)
+
+@Schema(description = "punishment comment")
+data class PunishmentCommentDto(
+  @Schema(description = "punishment comment id used for edit and delete")
+  val id: Long? = null,
+  @Schema(description = "comment on punishment")
+  val comment: String,
+  @Schema(description = "name of the person created or updated the comment")
+  val author: String? = null,
+  @Schema(description = "date and time comment was created or updated")
+  val dateTime: LocalDateTime? = null,
 )
