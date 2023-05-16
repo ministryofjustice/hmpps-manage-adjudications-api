@@ -11,4 +11,4 @@ create table punishment_comments
     modify_datetime                timestamp
 );
 
-create index punishment_reported_adjudication_fk_idx on punishment_comments(reported_adjudication_fk_id);
+create index punishment_comments_reported_adjudication_fk_idx on punishment_comments(reported_adjudication_fk_id);
