@@ -108,7 +108,6 @@ class ReportedAdjudicationService(
         statement = reportedAdjudication.statement,
         offenceCodes = getNomisCodes(reportedAdjudication.incidentRoleCode, reportedAdjudication.offenceDetails, reportedAdjudication.isYouthOffender),
         connectedOffenderIds = getAssociatedOffenders(
-          prisonerNumber = reportedAdjudication.prisonerNumber,
           associatedPrisonersNumber = reportedAdjudication.incidentRoleAssociatedPrisonersNumber,
         ),
         victimOffenderIds = getVictimOffenders(
@@ -129,11 +128,11 @@ class ReportedAdjudicationService(
       ?: emptyList()
   }
 
-  private fun getAssociatedOffenders(prisonerNumber: String, associatedPrisonersNumber: String?): List<String> {
+  private fun getAssociatedOffenders(associatedPrisonersNumber: String?): List<String> {
     if (associatedPrisonersNumber == null) {
       return emptyList()
     }
-    return listOf(associatedPrisonersNumber).filter { it != prisonerNumber }
+    return listOf(associatedPrisonersNumber)
   }
 
   private fun getVictimOffenders(prisonerNumber: String, offenceDetails: MutableList<ReportedOffence>?): List<String> {
