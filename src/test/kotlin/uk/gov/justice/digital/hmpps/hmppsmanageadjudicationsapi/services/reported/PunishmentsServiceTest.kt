@@ -1514,7 +1514,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           adjudicationNumber = 1L,
           punishmentComment = PunishmentCommentRequest(comment = "some text"),
         )
-      }.isInstanceOf(EntityNotFoundException::class.java)
+      }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Punishments not found for adjudication number 1")
     }
 

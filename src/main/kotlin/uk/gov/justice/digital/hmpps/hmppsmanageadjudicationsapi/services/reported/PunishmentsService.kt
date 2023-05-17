@@ -427,7 +427,7 @@ class PunishmentsService(
 
     fun ReportedAdjudication.validateCanAddPunishmentComment() {
       if (this.getPunishments().isEmpty()) {
-        throw EntityNotFoundException("Punishments not found for adjudication number ${this.reportNumber}")
+        throw ValidationException("Punishments not found for adjudication number ${this.reportNumber}")
       }
     }
   }
