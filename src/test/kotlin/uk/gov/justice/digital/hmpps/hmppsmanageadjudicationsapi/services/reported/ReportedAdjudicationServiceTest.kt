@@ -485,7 +485,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.createdByUserId = ""
         it.createDateTime = now
-        it.incidentRoleAssociatedPrisonersNumber = "A12345"
+        it.incidentRoleAssociatedPrisonersNumber = null
         it.offenceDetails.first().victimPrisonersNumber = "A12345"
         it.offenceDetails.first().victimStaffUsername = null
         it.offenceDetails.first().victimOtherPersonsName = null
