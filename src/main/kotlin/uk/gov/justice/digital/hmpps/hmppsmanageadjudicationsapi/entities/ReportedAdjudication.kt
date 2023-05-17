@@ -127,6 +127,8 @@ data class ReportedAdjudication(
 
   fun clearPunishments() = this.punishments.clear()
 
+  fun addPunishmentComment(punishmentComment: PunishmentComment) = this.punishmentComments.add(punishmentComment)
+
   private fun Hearing?.isAdjourn() = this?.hearingOutcome?.code == HearingOutcomeCode.ADJOURN
 
   companion object {

@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -520,5 +521,16 @@ class ReportedAdjudicationRepositoryTest {
     val hearings = hearingRepository.findByHearingOutcomeIsNull()
 
     assertThat(hearings.size).isEqualTo(6)
+  }
+
+  @Test
+  fun `punishment comments`() {
+    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    adjudication!!.addPunishmentComment(PunishmentComment(comment = "some text"))
+
+    val savedEntity = reportedAdjudicationRepository.save(adjudication)
+
+    assertThat(savedEntity.punishmentComments.first().id).isEqualTo(1)
+    assertThat(savedEntity.punishmentComments.first().comment).isEqualTo("some text")
   }
 }
