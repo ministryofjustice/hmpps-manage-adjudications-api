@@ -67,10 +67,10 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
         .get()
         .uri("/adjudications/adjudication/$adjudicationNumber/hearing/$oicHearingId/result")
         .retrieve()
-        .onStatus({ it.is4xxClientError}, { Mono.empty() })
+        .onStatus({ it.is4xxClientError }, { Mono.empty() })
         .bodyToMono(object : ParameterizedTypeReference<List<OicHearingResult>>() {})
         .block()!!.isNotEmpty()
-    } catch(e: Exception) {
+    } catch (e: Exception) {
       false
     }
   }

@@ -6,8 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.*
-
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.NomisHearingOutcomeService
 
 @RestController
 @Hidden
@@ -15,7 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 @RequestMapping("/scheduled-tasks")
 class ScheduleTaskController(
   private val nomisHearingOutcomeService: NomisHearingOutcomeService,
-  private val draftAdjudicationService: DraftAdjudicationService
+  private val draftAdjudicationService: DraftAdjudicationService,
 ) {
 
   @PutMapping("/check-nomis-created-hearing-outcomes-for-locking")
