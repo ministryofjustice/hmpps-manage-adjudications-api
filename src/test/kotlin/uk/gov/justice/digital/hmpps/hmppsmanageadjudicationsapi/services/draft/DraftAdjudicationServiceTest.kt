@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft
 
 import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -389,6 +390,21 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         ),
         isYouthOffender = true,
       )
+
+    @Test
+    fun `throws exception if offender is also associate `() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(draftAdjudication),
+      )
+
+      assertThatThrownBy {
+        draftAdjudicationService.setIncidentRoleAssociatedPrisoner(
+          1,
+          IncidentRoleAssociatedPrisonerRequest(draftAdjudication.prisonerNumber, "A name"),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("offender can not be an associate")
+    }
 
     @Test
     fun `throws state exception if incident role is not set`() {

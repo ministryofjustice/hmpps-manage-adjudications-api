@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
+import jakarta.validation.ValidationException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -205,6 +206,8 @@ class DraftAdjudicationService(
     val draftAdjudication = find(id)
 
     ValidationChecks.INCIDENT_ROLE.validate(draftAdjudication)
+
+    if (draftAdjudication.prisonerNumber == incidentRoleAssociatedPrisoner.associatedPrisonersNumber) throw ValidationException("offender can not be an associate")
 
     incidentRoleAssociatedPrisoner.let {
       draftAdjudication.incidentRole!!.associatedPrisonersNumber = it.associatedPrisonersNumber

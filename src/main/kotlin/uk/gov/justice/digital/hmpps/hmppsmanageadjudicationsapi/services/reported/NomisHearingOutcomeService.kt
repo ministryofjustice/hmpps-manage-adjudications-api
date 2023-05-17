@@ -23,9 +23,10 @@ class NomisHearingOutcomeService(
           oicHearingId = hearing.oicHearingId,
         )
       ) {
-        val reportedAdjudication = reportedAdjudicationRepository.findByReportNumber(hearing.reportNumber)!!
-        reportedAdjudication.hearings.filter { it.hearingOutcome == null }.forEach {
-          it.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
+        reportedAdjudicationRepository.findByReportNumber(hearing.reportNumber)?.let {
+          it.hearings.filter { hearing -> hearing.hearingOutcome == null }.forEach { hearing ->
+            hearing.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
+          }
         }
       }
     }
