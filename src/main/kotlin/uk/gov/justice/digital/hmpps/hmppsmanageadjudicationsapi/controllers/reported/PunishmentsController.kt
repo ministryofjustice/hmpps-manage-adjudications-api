@@ -49,6 +49,14 @@ data class PunishmentRequest(
   val activatedFrom: Long? = null,
 )
 
+@Schema(description = "punishment comment request")
+data class PunishmentCommentRequest(
+  @Schema(description = "id of punishment comment")
+  val id: Long? = null,
+  @Schema(description = "punishment comment")
+  val comment: String,
+)
+
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
 @Tag(name = "30. Punishments")

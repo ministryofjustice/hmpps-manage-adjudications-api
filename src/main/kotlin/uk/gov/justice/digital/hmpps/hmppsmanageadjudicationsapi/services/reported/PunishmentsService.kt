@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentCommentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
@@ -11,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -351,6 +353,27 @@ class PunishmentsService(
     }
   }
 
+  fun createPunishmentComment(
+    adjudicationNumber: Long,
+    punishmentComment: PunishmentCommentRequest,
+  ): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+      it.validateCanAddPunishmentComment()
+    }
+
+    if (punishmentComment.comment.isBlank()) {
+      throw ValidationException("Punishment comment cannot be empty/blank string. Adjudication number $adjudicationNumber.")
+    }
+
+    reportedAdjudication.punishmentComments.add(
+      PunishmentComment(
+        comment = punishmentComment.comment,
+      ),
+    )
+
+    return saveToDto(reportedAdjudication)
+  }
+
   companion object {
 
     fun ReportedAdjudication.mapToSanctions(): List<OffenderOicSanctionRequest> =
@@ -399,6 +422,12 @@ class PunishmentsService(
       }
       if (this.getPunishments().any { it.type == PunishmentType.CAUTION }) {
         throw ValidationException("outcome is a caution - no further punishments can be added")
+      }
+    }
+
+    fun ReportedAdjudication.validateCanAddPunishmentComment() {
+      if (this.getPunishments().isEmpty()) {
+        throw EntityNotFoundException("Punishments not found for adjudication number ${this.reportNumber}")
       }
     }
   }

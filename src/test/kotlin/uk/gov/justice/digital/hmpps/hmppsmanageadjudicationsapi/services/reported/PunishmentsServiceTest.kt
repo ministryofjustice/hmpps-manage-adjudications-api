@@ -20,6 +20,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentCommentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -1493,6 +1494,66 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       }
 
       verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
+    }
+  }
+
+  @Nested
+  inner class CreatePunishmentComment {
+
+    @Test
+    fun `unishment comment - punishments not found`() {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.createDateTime = LocalDateTime.now()
+        it.createdByUserId = ""
+      }
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
+
+      assertThatThrownBy {
+        punishmentsService.createPunishmentComment(
+          adjudicationNumber = 1L,
+          punishmentComment = PunishmentCommentRequest(comment = "some text"),
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Punishments not found for adjudication number 1")
+    }
+
+    @Test
+    fun `punishment comment is blank string`() {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.createDateTime = LocalDateTime.now()
+        it.createdByUserId = ""
+        it.addPunishment(Punishment(type = PunishmentType.CONFINEMENT, schedule = mutableListOf(PunishmentSchedule(days = 10))))
+      }
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
+
+      assertThatThrownBy {
+        punishmentsService.createPunishmentComment(
+          adjudicationNumber = 1L,
+          punishmentComment = PunishmentCommentRequest(comment = " "),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Punishment comment cannot be empty/blank string. Adjudication number 1.")
+    }
+
+    @Test
+    fun `Punishment comment created`() {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.createDateTime = LocalDateTime.now()
+        it.createdByUserId = ""
+        it.addPunishment(Punishment(type = PunishmentType.CONFINEMENT, schedule = mutableListOf(PunishmentSchedule(days = 10))))
+      }
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(reportedAdjudication)).thenReturn(reportedAdjudication)
+
+      val result = punishmentsService.createPunishmentComment(
+        adjudicationNumber = 1,
+        punishmentComment = PunishmentCommentRequest(comment = "some text"),
+      )
+
+      assertThat(result.punishmentComments[0].comment).isEqualTo("some text")
     }
   }
 
