@@ -526,7 +526,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `punishment comments`() {
     val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
-    adjudication!!.addPunishmentComment(PunishmentComment(comment = "some text"))
+    adjudication!!.punishmentComments.add(PunishmentComment(comment = "some text"))
 
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
