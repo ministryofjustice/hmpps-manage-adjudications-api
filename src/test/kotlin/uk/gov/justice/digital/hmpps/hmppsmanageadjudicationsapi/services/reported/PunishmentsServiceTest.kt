@@ -1501,7 +1501,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
   inner class CreatePunishmentComment {
 
     @Test
-    fun `unishment comment - punishments not found`() {
+    fun `punishment comment - punishments not found`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.createDateTime = LocalDateTime.now()
         it.createdByUserId = ""

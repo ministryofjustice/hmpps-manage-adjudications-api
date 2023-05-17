@@ -268,8 +268,8 @@ data class PunishmentCommentDto(
   val id: Long? = null,
   @Schema(description = "comment on punishment")
   val comment: String,
-  @Schema(description = "name of the person created or updated the comment")
-  val author: String? = null,
+  @Schema(description = "username of the person created or updated the comment")
+  val createdByUserId: String? = null,
   @Schema(description = "date and time comment was created or updated")
   val dateTime: LocalDateTime? = null,
 )
