@@ -55,13 +55,13 @@ class NomisHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
 
-    whenever(prisonApiGateway.doesHearingOutcomeExist(1L, 1L)).thenReturn(true)
-    whenever(prisonApiGateway.doesHearingOutcomeExist(2L, 2L)).thenReturn(false)
+    whenever(prisonApiGateway.hearingOutcomesExistInNomis(1L, 1L)).thenReturn(true)
+    whenever(prisonApiGateway.hearingOutcomesExistInNomis(2L, 2L)).thenReturn(false)
 
     nomisHearingOutcomeService.checkForNomisHearingOutcomesAndUpdate()
 
     verify(hearingRepository, atLeastOnce()).findByHearingOutcomeIsNull()
-    verify(prisonApiGateway, atLeastOnce()).doesHearingOutcomeExist(any(), any())
+    verify(prisonApiGateway, atLeastOnce()).hearingOutcomesExistInNomis(any(), any())
 
     val updatedHearing = reportedAdjudication.hearings.first { it.oicHearingId == 1L }
 

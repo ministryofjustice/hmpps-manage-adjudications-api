@@ -57,7 +57,9 @@ class OpenApiConfiguration(
 
         Tag().name("40. Reports").description("Reports - Adjudications"),
 
-      ),
+        Tag().name("50. Schedule Tasks").description("Scheduled Tasks"),
+
+        ),
     )
     .info(
       Info().title("HMPPS Manage Adjudications API")

@@ -18,7 +18,7 @@ class NomisHearingOutcomeService(
 
   fun checkForNomisHearingOutcomesAndUpdate() {
     hearingRepository.findByHearingOutcomeIsNull().forEach { hearing ->
-      if (prisonApiGateway.doesHearingOutcomeExist(
+      if (prisonApiGateway.hearingOutcomesExistInNomis(
           adjudicationNumber = hearing.reportNumber,
           oicHearingId = hearing.oicHearingId,
         )

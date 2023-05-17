@@ -48,7 +48,7 @@ class ResourceServerConfiguration {
           "/health/**", "/info",
           "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
           "/swagger-resources", "/swagger-resources/configuration/ui", "/swagger-resources/configuration/security",
-          "/draft-adjudications/orphaned",
+          "/scheduled-tasks/*"
         ).permitAll()
           .anyRequest()
           .authenticated()
