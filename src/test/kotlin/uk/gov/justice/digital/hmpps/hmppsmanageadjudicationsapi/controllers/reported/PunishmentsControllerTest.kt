@@ -216,8 +216,74 @@ class PunishmentsControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class CreatePunishmentComment {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        punishmentsService.createPunishmentComment(
+          ArgumentMatchers.anyLong(),
+          any(),
+        ),
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      createPunishmentCommentRequest(
+        1,
+        PUNISHMENT_COMMENT_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      createPunishmentCommentRequest(
+        1,
+        PUNISHMENT_COMMENT_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      createPunishmentCommentRequest(
+        1,
+        PUNISHMENT_COMMENT_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to create punishment comment`() {
+      createPunishmentCommentRequest(1, PUNISHMENT_COMMENT_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isCreated)
+
+      verify(punishmentsService).createPunishmentComment(
+        adjudicationNumber = 1,
+        PUNISHMENT_COMMENT_REQUEST,
+      )
+    }
+
+    private fun createPunishmentCommentRequest(
+      adjudicationNumber: Long,
+      punishmentCommentRequest: PunishmentCommentRequest,
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(punishmentCommentRequest)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.post("/reported-adjudications/$adjudicationNumber/punishments/comment")
+            .header("Content-Type", "application/json")
+            .content(body),
+        )
+    }
+  }
+
   companion object {
     val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 10)
+    val PUNISHMENT_COMMENT_REQUEST = PunishmentCommentRequest(comment = "some text")
     val SUSPENDED_PUNISHMENTS_DTO = listOf(
       SuspendedPunishmentDto(
         reportNumber = 1,
