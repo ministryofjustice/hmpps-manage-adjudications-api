@@ -4,6 +4,7 @@ import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
+import reactor.core.publisher.Mono
 
 @Service
 class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
@@ -59,6 +60,20 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
       .retrieve()
       .bodyToMono<Void>()
       .block()
+
+  fun hearingOutcomesExistInNomis(adjudicationNumber: Long, oicHearingId: Long): Boolean {
+    return try {
+      prisonApiClientCreds
+        .get()
+        .uri("/adjudications/adjudication/$adjudicationNumber/hearing/$oicHearingId/result")
+        .retrieve()
+        .onStatus({ it.is4xxClientError }, { Mono.empty() })
+        .bodyToMono(object : ParameterizedTypeReference<List<OicHearingResult>>() {})
+        .block()!!.isNotEmpty()
+    } catch (e: Exception) {
+      false
+    }
+  }
 
   fun amendHearingResult(adjudicationNumber: Long, oicHearingId: Long, oicHearingResultRequest: OicHearingResultRequest): Void? =
     prisonApiClientCreds
@@ -124,6 +139,9 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
     .retrieve()
     .bodyToMono<Void>()
     .block()
-
-  fun doesHearingOutcomeExist(adjudicationNumber: Long, oicHearingId: Long): Boolean = TODO("implement me")
 }
+
+data class OicHearingResult(
+  val pleaFindingCode: String,
+  val findingCode: String,
+)

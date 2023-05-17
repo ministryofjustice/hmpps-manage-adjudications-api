@@ -17,10 +17,10 @@ generic-service:
     tlsSecretName: hmpps-manage-adjudications-api-cert
     contextColour: green
     annotations:
-      # Secure the delete orphaned draft adjudications endpoint from outside the Kubernetes ingress
+      # Secure the all scheduled task endpoints from outside the Kubernetes ingress
       nginx.ingress.kubernetes.io/configuration-snippet: |
         server_tokens off;
-        location /draft-adjudications/orphaned {
+        location /scheduled-tasks/ {
           deny all;
           return 401;
         }

@@ -1,9 +1,9 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: hmppps-manage-adjudications-api-delete-orphaned
+  name: hmppps-manage-adjudications-api-check-and-lock
 spec:
-  schedule: "0 5 * * 1-5"
+  schedule: "0 3 * * 1-5"
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 5
   startingDeadlineSeconds: 600
@@ -18,5 +18,5 @@ spec:
               args:
                 - /bin/sh
                 - -c
-                - curl --retry 2 -XDELETE http://hmpps-manage-adjudications-api/scheduled-tasks/delete-orphaned-draft-adjudications
+                - curl --retry 2 -XPUT http://hmpps-manage-adjudications-api/scheduled-tasks/check-nomis-created-hearing-outcomes-for-locking
           restartPolicy: Never
