@@ -283,9 +283,7 @@ class PunishmentsIntTest : IntegrationTestBase() {
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments/comment")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
-        PunishmentCommentRequest(
-          id = punishmentCommentToAmend, comment = "new text",
-        ),
+        PunishmentCommentRequest(id = punishmentCommentToAmend, comment = "new text"),
       )
       .exchange()
       .expectStatus().isOk
