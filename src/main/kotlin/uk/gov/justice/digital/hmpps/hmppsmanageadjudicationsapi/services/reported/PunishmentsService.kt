@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Offende
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDate
 
@@ -368,6 +369,23 @@ class PunishmentsService(
     return saveToDto(reportedAdjudication)
   }
 
+  fun updatePunishmentComment(
+    adjudicationNumber: Long,
+    request: PunishmentCommentRequest,
+  ): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val punishmentComment = reportedAdjudication.punishmentComments.getPunishmentComment(request.id!!)
+
+    val username = authenticationFacade.currentUsername
+    if (punishmentComment.createdByUserId != username) {
+      throw ForbiddenException("Only creator can delete punishment comment. Creator username: ${punishmentComment.createdByUserId}, deletion attempt by username: $username.")
+    }
+
+    punishmentComment.comment = request.comment
+
+    return saveToDto(reportedAdjudication)
+  }
+
   companion object {
 
     fun ReportedAdjudication.mapToSanctions(): List<OffenderOicSanctionRequest> =
@@ -388,6 +406,9 @@ class PunishmentsService(
       this.firstOrNull { it.id == id }
     fun List<Punishment>.getPunishmentToAmend(id: Long): Punishment =
       this.getPunishment(id) ?: throw EntityNotFoundException("Punishment $id is not associated with ReportedAdjudication")
+
+    fun List<PunishmentComment>.getPunishmentComment(id: Long): PunishmentComment =
+      this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Punishment comment id $id is not found")
 
     fun PunishmentRequest.validateRequest() {
       when (this.type) {

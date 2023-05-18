@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported
 
+import jakarta.persistence.EntityNotFoundException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -21,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentD
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService
 import java.time.LocalDate
 
@@ -275,6 +278,95 @@ class PunishmentsControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.post("/reported-adjudications/$adjudicationNumber/punishments/comment")
+            .header("Content-Type", "application/json")
+            .content(body),
+        )
+    }
+  }
+
+  @Nested
+  inner class UpdatePunishmentComment {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        punishmentsService.updatePunishmentComment(
+          ArgumentMatchers.anyLong(),
+          any(),
+        ),
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      updatePunishmentCommentRequest(
+        1,
+        PUNISHMENT_COMMENT_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      updatePunishmentCommentRequest(
+        1,
+        PUNISHMENT_COMMENT_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      updatePunishmentCommentRequest(
+        1,
+        PUNISHMENT_COMMENT_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `returns status 404 if EntityNotFoundException is thrown`() {
+      doThrow(EntityNotFoundException("")).`when`(punishmentsService)
+        .updatePunishmentComment(any(), any())
+
+      updatePunishmentCommentRequest(
+        1,
+        PUNISHMENT_COMMENT_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isNotFound)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `returns status Forbidden if ForbiddenException is thrown`() {
+      doThrow(ForbiddenException("")).`when`(punishmentsService)
+        .updatePunishmentComment(any(), any())
+
+      updatePunishmentCommentRequest(
+        1,
+        PUNISHMENT_COMMENT_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to update punishment comment`() {
+      updatePunishmentCommentRequest(1, PUNISHMENT_COMMENT_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(punishmentsService).updatePunishmentComment(
+        adjudicationNumber = 1,
+        PUNISHMENT_COMMENT_REQUEST,
+      )
+    }
+
+    private fun updatePunishmentCommentRequest(
+      adjudicationNumber: Long,
+      punishmentCommentRequest: PunishmentCommentRequest,
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(punishmentCommentRequest)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.put("/reported-adjudications/$adjudicationNumber/punishments/comment")
             .header("Content-Type", "application/json")
             .content(body),
         )
