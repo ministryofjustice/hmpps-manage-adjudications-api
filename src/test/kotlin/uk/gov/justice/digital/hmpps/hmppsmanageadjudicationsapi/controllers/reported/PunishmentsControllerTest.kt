@@ -294,7 +294,7 @@ class PunishmentsControllerTest : TestControllerBase() {
           ArgumentMatchers.anyLong(),
           any(),
         ),
-      )
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
     @Test
