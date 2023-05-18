@@ -287,7 +287,6 @@ class PunishmentsIntTest : IntegrationTestBase() {
   private fun createPunishmentComment(
     adjudicationNumber: Long = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
   ): WebTestClient.ResponseSpec {
-
     return webTestClient.post()
       .uri("/reported-adjudications/$adjudicationNumber/punishments/comment")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
