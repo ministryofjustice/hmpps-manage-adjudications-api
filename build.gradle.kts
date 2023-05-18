@@ -21,11 +21,11 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.apache.commons:commons-text:1.10.0")
-  implementation("io.swagger:swagger-annotations:1.6.10")
+  implementation("io.swagger:swagger-annotations:1.6.11")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
   runtimeOnly("com.h2database:h2:2.1.214")
-  runtimeOnly("org.flywaydb:flyway-core:9.17.0")
+  runtimeOnly("org.flywaydb:flyway-core:9.18.0")
   runtimeOnly("org.postgresql:postgresql:42.6.0")
 
   testImplementation("io.jsonwebtoken:jjwt-impl:0.11.5")
@@ -33,7 +33,7 @@ dependencies {
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.37.0")
-  testImplementation("org.flywaydb:flyway-core:9.17.0")
+  testImplementation("org.flywaydb:flyway-core:9.18.0")
 }
 
 allOpen {
