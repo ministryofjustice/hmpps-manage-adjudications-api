@@ -19,7 +19,6 @@ import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentCommentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
@@ -27,7 +26,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @WebMvcTest(
   PunishmentsController::class,
@@ -296,7 +294,7 @@ class PunishmentsControllerTest : TestControllerBase() {
           ArgumentMatchers.anyLong(),
           any(),
         ),
-      ).thenReturn(REPORTED_ADJUDICATION_DTO.copy(punishmentComments = listOf(PunishmentCommentDto(id = 2, comment = "old text", createdByUserId = "author", dateTime = LocalDateTime.now()))))
+      )
     }
 
     @Test
