@@ -272,8 +272,8 @@ open class ReportedDtoService(
       PunishmentCommentDto(
         id = it.id,
         comment = it.comment,
-        createdByUserId = it.createdByUserId!!,
-        dateTime = it.modifiedDateTime ?: it.createDateTime!!,
+        createdByUserId = it.createdByUserId,
+        dateTime = it.modifiedDateTime ?: it.createDateTime,
       )
     }.sortedByDescending { it.dateTime }.toList()
 

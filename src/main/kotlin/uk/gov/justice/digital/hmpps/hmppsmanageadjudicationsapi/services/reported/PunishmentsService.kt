@@ -357,13 +357,7 @@ class PunishmentsService(
     adjudicationNumber: Long,
     punishmentComment: PunishmentCommentRequest,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
-      it.validateCanAddPunishmentComment()
-    }
-
-    if (punishmentComment.comment.isBlank()) {
-      throw ValidationException("Punishment comment cannot be empty/blank string. Adjudication number $adjudicationNumber.")
-    }
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
     reportedAdjudication.punishmentComments.add(
       PunishmentComment(
@@ -422,12 +416,6 @@ class PunishmentsService(
       }
       if (this.getPunishments().any { it.type == PunishmentType.CAUTION }) {
         throw ValidationException("outcome is a caution - no further punishments can be added")
-      }
-    }
-
-    fun ReportedAdjudication.validateCanAddPunishmentComment() {
-      if (this.getPunishments().isEmpty()) {
-        throw ValidationException("Punishments not found for adjudication number ${this.reportNumber}")
       }
     }
   }

@@ -1501,59 +1501,23 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
   inner class CreatePunishmentComment {
 
     @Test
-    fun `punishment comment - punishments not found`() {
-      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.createDateTime = LocalDateTime.now()
-        it.createdByUserId = ""
-      }
-
-      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
-
-      assertThatThrownBy {
-        punishmentsService.createPunishmentComment(
-          adjudicationNumber = 1L,
-          punishmentComment = PunishmentCommentRequest(comment = "some text"),
-        )
-      }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("Punishments not found for adjudication number 1")
-    }
-
-    @Test
-    fun `punishment comment is blank string`() {
-      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.createDateTime = LocalDateTime.now()
-        it.createdByUserId = ""
-        it.addPunishment(Punishment(type = PunishmentType.CONFINEMENT, schedule = mutableListOf(PunishmentSchedule(days = 10))))
-      }
-
-      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
-
-      assertThatThrownBy {
-        punishmentsService.createPunishmentComment(
-          adjudicationNumber = 1L,
-          punishmentComment = PunishmentCommentRequest(comment = " "),
-        )
-      }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("Punishment comment cannot be empty/blank string. Adjudication number 1.")
-    }
-
-    @Test
     fun `Punishment comment created`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.createDateTime = LocalDateTime.now()
         it.createdByUserId = ""
-        it.addPunishment(Punishment(type = PunishmentType.CONFINEMENT, schedule = mutableListOf(PunishmentSchedule(days = 10))))
       }
 
       whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.save(reportedAdjudication)).thenReturn(reportedAdjudication)
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
-      val result = punishmentsService.createPunishmentComment(
+      punishmentsService.createPunishmentComment(
         adjudicationNumber = 1,
         punishmentComment = PunishmentCommentRequest(comment = "some text"),
       )
 
-      assertThat(result.punishmentComments[0].comment).isEqualTo("some text")
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.punishmentComments[0].comment).isEqualTo("some text")
     }
   }
 
