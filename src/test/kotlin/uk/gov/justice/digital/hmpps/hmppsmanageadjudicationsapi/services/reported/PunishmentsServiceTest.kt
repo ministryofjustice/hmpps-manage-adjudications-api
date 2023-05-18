@@ -28,6 +28,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -37,6 +38,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Offende
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -1518,6 +1520,87 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       assertThat(argumentCaptor.value.punishmentComments[0].comment).isEqualTo("some text")
+    }
+  }
+
+
+  @Nested
+  inner class UpdatePunishmentComment {
+
+    @Test
+    fun `Punishment comment not found`() {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.createDateTime = LocalDateTime.now()
+        it.createdByUserId = ""
+        it.punishmentComments.add(
+          PunishmentComment(id = 2, comment = "old text").also { punishmentComment ->
+            punishmentComment.createdByUserId = "author"
+            punishmentComment.createDateTime = LocalDateTime.now()
+          },
+        )
+      }
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
+
+      assertThatThrownBy {
+        punishmentsService.updatePunishmentComment(
+          adjudicationNumber = 1,
+          request = PunishmentCommentRequest(id = -1, comment = "new text"),
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Punishment comment id -1 is not found")
+    }
+
+    @Test
+    fun `Only author can update comment`() {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.createDateTime = LocalDateTime.now()
+        it.createdByUserId = ""
+        it.punishmentComments.add(
+          PunishmentComment(id = 2, comment = "old text").also { punishmentComment ->
+            punishmentComment.createdByUserId = "author"
+            punishmentComment.createDateTime = LocalDateTime.now()
+          },
+        )
+      }
+
+      whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
+      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
+
+      assertThatThrownBy {
+        punishmentsService.updatePunishmentComment(
+          adjudicationNumber = 1,
+          request = PunishmentCommentRequest(id = 2, comment = "new text"),
+        )
+      }.isInstanceOf(ForbiddenException::class.java)
+        .hasMessageContaining("Only creator can delete punishment comment. Creator username: author, deletion attempt by username: ITAG_USER.")
+    }
+
+    @Test
+    fun `Update punishment comment`() {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.createDateTime = LocalDateTime.now()
+        it.createdByUserId = ""
+        it.punishmentComments.add(
+          PunishmentComment(id = 2, comment = "old text").also { punishmentComment ->
+            punishmentComment.createdByUserId = "author"
+            punishmentComment.createDateTime = LocalDateTime.now()
+          },
+        )
+      }
+
+      whenever(authenticationFacade.currentUsername).thenReturn("author")
+      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(reportedAdjudication)).thenReturn(reportedAdjudication)
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      punishmentsService.updatePunishmentComment(
+        adjudicationNumber = 1,
+        request = PunishmentCommentRequest(id = 2, comment = "new text"),
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.punishmentComments[0].comment).isEqualTo("new text")
     }
   }
 
