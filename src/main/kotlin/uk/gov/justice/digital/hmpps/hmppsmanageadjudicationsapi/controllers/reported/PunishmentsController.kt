@@ -49,6 +49,14 @@ data class PunishmentRequest(
   val activatedFrom: Long? = null,
 )
 
+@Schema(description = "punishment comment request")
+data class PunishmentCommentRequest(
+  @Schema(description = "id of punishment comment")
+  val id: Long? = null,
+  @Schema(description = "punishment comment")
+  val comment: String,
+)
+
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
 @Tag(name = "30. Punishments")
@@ -110,4 +118,37 @@ class PunishmentsController(
   fun getSuspendedPunishments(
     @PathVariable(name = "prisonerNumber") prisonerNumber: String,
   ): List<SuspendedPunishmentDto> = punishmentsService.getSuspendedPunishments(prisonerNumber = prisonerNumber)
+
+  @Operation(
+    summary = "create punishment comment",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "201",
+        description = "Punishment comment created",
+      ),
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "415",
+        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
+        content = [
+          io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            schema = Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  @PostMapping(value = ["/{adjudicationNumber}/punishments/comment"])
+  @ResponseStatus(HttpStatus.CREATED)
+  fun create(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody punishmentCommentRequest: PunishmentCommentRequest,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = punishmentsService.createPunishmentComment(
+      adjudicationNumber = adjudicationNumber,
+      punishmentComment = punishmentCommentRequest,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
 }
