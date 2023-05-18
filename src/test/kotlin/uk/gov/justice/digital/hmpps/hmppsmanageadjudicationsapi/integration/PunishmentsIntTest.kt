@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentCommentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
@@ -246,6 +248,18 @@ class PunishmentsIntTest : IntegrationTestBase() {
       )
   }
 
+  @Test
+  fun `create punishment comment `() {
+    initDataForOutcome()
+
+    createPunishmentComment()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishmentComments[0].comment").isEqualTo("some text")
+      .jsonPath("$.reportedAdjudication.punishmentComments[0].createdByUserId").isEqualTo("ITAG_ALO")
+      .jsonPath("$.reportedAdjudication.punishmentComments[0].dateTime").value<String> { assertThat(it).startsWith(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE)) }
+  }
+
   private fun createPunishments(
     adjudicationNumber: Long = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
     type: PunishmentType = PunishmentType.CONFINEMENT,
@@ -265,6 +279,21 @@ class PunishmentsIntTest : IntegrationTestBase() {
                 suspendedUntil = suspendedUntil,
               ),
             ),
+        ),
+      )
+      .exchange()
+  }
+
+  private fun createPunishmentComment(
+    adjudicationNumber: Long = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+  ): WebTestClient.ResponseSpec {
+
+    return webTestClient.post()
+      .uri("/reported-adjudications/$adjudicationNumber/punishments/comment")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        PunishmentCommentRequest(
+          comment = "some text",
         ),
       )
       .exchange()
