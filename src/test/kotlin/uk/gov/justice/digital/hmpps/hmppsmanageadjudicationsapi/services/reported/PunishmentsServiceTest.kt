@@ -1523,7 +1523,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
-
   @Nested
   inner class UpdatePunishmentComment {
 

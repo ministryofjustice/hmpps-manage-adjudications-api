@@ -286,7 +286,6 @@ class PunishmentsControllerTest : TestControllerBase() {
     }
   }
 
-
   @Nested
   inner class UpdatePunishmentComment {
 
