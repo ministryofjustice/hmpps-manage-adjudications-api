@@ -1572,7 +1572,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           request = PunishmentCommentRequest(id = 2, comment = "new text"),
         )
       }.isInstanceOf(ForbiddenException::class.java)
-        .hasMessageContaining("Only creator can delete punishment comment. Creator username: author, deletion attempt by username: ITAG_USER.")
+        .hasMessageContaining("Only creator can update punishment comment. Creator username: author, update attempt by username: ITAG_USER.")
     }
 
     @Test
@@ -1600,6 +1600,86 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       assertThat(argumentCaptor.value.punishmentComments[0].comment).isEqualTo("new text")
+    }
+  }
+
+  @Nested
+  inner class DeletePunishmentComment {
+
+    @Test
+    fun `Punishment comment not found`() {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.createDateTime = LocalDateTime.now()
+        it.createdByUserId = ""
+        it.punishmentComments.add(
+          PunishmentComment(id = 2, comment = "old text").also { punishmentComment ->
+            punishmentComment.createdByUserId = "author"
+            punishmentComment.createDateTime = LocalDateTime.now()
+          },
+        )
+      }
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
+
+      assertThatThrownBy {
+        punishmentsService.deletePunishmentComment(
+          adjudicationNumber = 1,
+          punishmentCommentId = -1,
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Punishment comment id -1 is not found")
+    }
+
+    @Test
+    fun `Only author can delete comment`() {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.createDateTime = LocalDateTime.now()
+        it.createdByUserId = ""
+        it.punishmentComments.add(
+          PunishmentComment(id = 2, comment = "old text").also { punishmentComment ->
+            punishmentComment.createdByUserId = "author"
+            punishmentComment.createDateTime = LocalDateTime.now()
+          },
+        )
+      }
+
+      whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
+      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
+
+      assertThatThrownBy {
+        punishmentsService.deletePunishmentComment(
+          adjudicationNumber = 1,
+          punishmentCommentId = 2,
+        )
+      }.isInstanceOf(ForbiddenException::class.java)
+        .hasMessageContaining("Only creator can delete punishment comment. Creator username: author, deletion attempt by username: ITAG_USER.")
+    }
+
+    @Test
+    fun `Delete punishment comment`() {
+      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+        it.createDateTime = LocalDateTime.now()
+        it.createdByUserId = ""
+        it.punishmentComments.add(
+          PunishmentComment(id = 2, comment = "some text").also { punishmentComment ->
+            punishmentComment.createdByUserId = "author"
+            punishmentComment.createDateTime = LocalDateTime.now()
+          },
+        )
+      }
+
+      whenever(authenticationFacade.currentUsername).thenReturn("author")
+      whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(reportedAdjudication)).thenReturn(reportedAdjudication)
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      punishmentsService.deletePunishmentComment(
+        adjudicationNumber = 1,
+        punishmentCommentId = 2,
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.punishmentComments.size).isEqualTo(0)
     }
   }
 

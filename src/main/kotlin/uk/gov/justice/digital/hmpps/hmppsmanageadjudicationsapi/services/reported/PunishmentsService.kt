@@ -378,10 +378,27 @@ class PunishmentsService(
 
     val username = authenticationFacade.currentUsername
     if (punishmentComment.createdByUserId != username) {
-      throw ForbiddenException("Only creator can delete punishment comment. Creator username: ${punishmentComment.createdByUserId}, deletion attempt by username: $username.")
+      throw ForbiddenException("Only creator can update punishment comment. Creator username: ${punishmentComment.createdByUserId}, update attempt by username: $username.")
     }
 
     punishmentComment.comment = request.comment
+
+    return saveToDto(reportedAdjudication)
+  }
+
+  fun deletePunishmentComment(
+    adjudicationNumber: Long,
+    punishmentCommentId: Long,
+  ): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val punishmentComment = reportedAdjudication.punishmentComments.getPunishmentComment(punishmentCommentId)
+
+    val username = authenticationFacade.currentUsername
+    if (punishmentComment.createdByUserId != username) {
+      throw ForbiddenException("Only creator can delete punishment comment. Creator username: ${punishmentComment.createdByUserId}, deletion attempt by username: $username.")
+    }
+
+    reportedAdjudication.punishmentComments.remove(punishmentComment)
 
     return saveToDto(reportedAdjudication)
   }

@@ -293,6 +293,34 @@ class PunishmentsIntTest : IntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.punishmentComments[0].dateTime").value<String> { assertThat(it).startsWith(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE)) }
   }
 
+  @Test
+  fun `delete punishment comment `() {
+    initDataForOutcome()
+
+    val reportedAdjudicationResponse = webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments/comment")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        PunishmentCommentRequest(
+          comment = "some text",
+        ),
+      )
+      .exchange()
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+
+    val punishmentCommentToAmend = reportedAdjudicationResponse.reportedAdjudication.punishmentComments[0].id
+
+    webTestClient.delete()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments/comment/$punishmentCommentToAmend")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishmentComments.size()").isEqualTo(0)
+  }
+
   private fun createPunishments(
     adjudicationNumber: Long = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
     type: PunishmentType = PunishmentType.CONFINEMENT,
