@@ -455,7 +455,7 @@ class PunishmentsControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.delete("/reported-adjudications/$adjudicationNumber/punishments/comment/$punishmentCommentId")
-            .header("Content-Type", "application/json")
+            .header("Content-Type", "application/json"),
         )
     }
   }
