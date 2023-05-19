@@ -741,6 +741,77 @@ class DraftAdjudicationIntTest : IntegrationTestBase() {
       .expectStatus().isOk
   }
 
+  @Test
+  fun `ALO edits submitted report offence and receives updated reported adjudication`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+
+    val userHeaders = setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = userHeaders,
+    )
+
+    intTestBuilder
+      .startDraft(testAdjudication)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setAssociatedPrisoner()
+      .setOffenceData()
+      .addIncidentStatement()
+      .completeDraft()
+
+    val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(testAdjudication, headers = setHeaders(activeCaseload = testAdjudication.agencyId))
+
+    webTestClient.put()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/applicable-rules")
+      .headers(setHeaders(activeCaseload = IntegrationTestData.ADJUDICATION_1.agencyId))
+      .bodyValue(
+        mapOf(
+          "isYouthOffenderRule" to true,
+          "removeExistingOffences" to true,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+
+    webTestClient.put()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/incident-role")
+      .headers(setHeaders(activeCaseload = IntegrationTestData.ADJUDICATION_1.agencyId))
+      .bodyValue(
+        mapOf(
+          "incidentRole" to IncidentRoleRequest("25b"),
+          "removeExistingOffences" to true,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+
+    webTestClient.post()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/alo-offence-details")
+      .headers(
+        setHeaders(
+          username = "ITAG_ALO",
+          roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+          activeCaseload = IntegrationTestData.ADJUDICATION_1.agencyId,
+        ),
+      )
+      .bodyValue(
+        mapOf(
+          "offenceDetails" to IntegrationTestData.ADJUDICATION_2.offence,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.adjudicationNumber").isEqualTo(testAdjudication.adjudicationNumber)
+      .jsonPath("$.offenceDetails.offenceRule.paragraphNumber")
+      .isEqualTo(IntegrationTestData.ADJUDICATION_2.offence.paragraphNumber)
+      .jsonPath("$.offenceDetails.offenceRule.paragraphDescription")
+      .isEqualTo(IntegrationTestData.ADJUDICATION_2.offence.paragraphDescription)
+  }
+
   private fun getReportedAdjudicationRequestStatus() =
     webTestClient.get()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")

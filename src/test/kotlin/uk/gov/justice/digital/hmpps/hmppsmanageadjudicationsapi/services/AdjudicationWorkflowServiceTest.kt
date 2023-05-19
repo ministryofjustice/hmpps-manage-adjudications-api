@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -45,6 +46,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonA
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationServiceTest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftOffenceService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.ValidationChecks
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
@@ -59,6 +61,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
   private val prisonApiGateway: PrisonApiGateway = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
+  private val draftOffenceService: DraftOffenceService = mock()
 
   private val adjudicationWorkflowService = AdjudicationWorkflowService(
     draftAdjudicationRepository,
@@ -67,6 +70,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     prisonApiGateway,
     authenticationFacade,
     telemetryClient,
+    draftOffenceService,
   )
 
   @Nested
@@ -544,7 +548,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     fun `throws an entity not found exception if the reported adjudication for the supplied id does not exists`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
 
-      org.assertj.core.api.Assertions.assertThatThrownBy {
+      assertThatThrownBy {
         adjudicationWorkflowService.completeDraftAdjudication(1)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("ReportedAdjudication not found for 1")
@@ -681,6 +685,53 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value)
         .extracting("id", "prisonerNumber")
         .contains(1L, "A12345")
+    }
+  }
+
+  @Nested
+  inner class AloSetOffenceAndComplete {
+
+    @Test
+    fun `set offences and complete draft`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(
+        Optional.of(
+          DraftAdjudication(
+            id = 1,
+            prisonerNumber = "A12345",
+            gender = Gender.MALE,
+            reportNumber = 123L,
+            reportByUserId = "A_SMITH",
+            agencyId = "MDI",
+            incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, clock),
+            incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
+            offenceDetails = mutableListOf(
+              BASIC_OFFENCE_DETAILS_DB_ENTITY,
+            ),
+            incidentStatement = IncidentStatement(statement = "test"),
+            isYouthOffender = false,
+          ),
+        ),
+      )
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication(),
+      )
+
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+        },
+      )
+
+      adjudicationWorkflowService.setOffenceDetailsAndCompleteDraft(
+        id = 1,
+        offenceDetails = OffenceDetailsRequestItem(offenceCode = 1),
+      )
+      // note: using existing code for all of this, just test interactions occur
+      verify(draftOffenceService, atLeastOnce()).setOffenceDetails(any(), any())
+      verify(draftAdjudicationRepository, atLeastOnce()).delete(any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).save(any())
     }
   }
 

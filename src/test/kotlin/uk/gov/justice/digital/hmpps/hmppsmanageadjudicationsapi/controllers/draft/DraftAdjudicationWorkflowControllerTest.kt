@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft
 
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.verify
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -22,24 +23,78 @@ class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
   @MockBean
   lateinit var adjudicationWorkflowService: AdjudicationWorkflowService
 
-  @Test
-  fun `responds with a unauthorised status code`() {
-    completeDraftAdjudication(1)
-      .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+  @Nested
+  inner class CompleteDraft {
+    @Test
+    fun `responds with a unauthorised status code`() {
+      completeDraftAdjudication(1)
+        .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `make a call to complete a draft adjudication`() {
+      completeDraftAdjudication(1)
+        .andExpect(MockMvcResultMatchers.status().isCreated)
+
+      verify(adjudicationWorkflowService).completeDraftAdjudication(1)
+    }
+
+    private fun completeDraftAdjudication(id: Long): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.post("/draft-adjudications/$id/complete-draft-adjudication")
+          .header("Content-Type", "application/json"),
+      )
   }
 
-  @Test
-  @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-  fun `make a call to complete a draft adjudication`() {
-    completeDraftAdjudication(1)
-      .andExpect(MockMvcResultMatchers.status().isCreated)
+  @Nested
+  inner class AloOffenceEdit {
+    @Test
+    fun `responds with a unauthorised status code`() {
+      makeAloSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
 
-    verify(adjudicationWorkflowService).completeDraftAdjudication(1)
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a unauthorised status code as missing ALO role`() {
+      makeAloSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a unauthorised status code as missing write role`() {
+      makeAloSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to set the offence details`() {
+      makeAloSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(adjudicationWorkflowService).setOffenceDetailsAndCompleteDraft(
+        1,
+        OffenceDetailsRequestItem(
+          offenceCode = BASIC_OFFENCE_REQUEST.offenceCode,
+        ),
+      )
+    }
+
+    private fun makeAloSetOffenceDetailsRequest(id: Long, offenceDetails: OffenceDetailsRequestItem): ResultActions {
+      val body = objectMapper.writeValueAsString(mapOf("offenceDetails" to offenceDetails))
+
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.post("/draft-adjudications/$id/alo-offence-details")
+            .header("Content-Type", "application/json")
+            .content(body),
+        )
+    }
   }
-
-  fun completeDraftAdjudication(id: Long): ResultActions = mockMvc
-    .perform(
-      MockMvcRequestBuilders.post("/draft-adjudications/$id/complete-draft-adjudication")
-        .header("Content-Type", "application/json"),
-    )
+  companion object {
+    private val BASIC_OFFENCE_REQUEST = OffenceDetailsRequestItem(offenceCode = 3)
+  }
 }

@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
@@ -26,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationBaseService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftOffenceService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.ValidationChecks
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationBaseService
 
@@ -71,6 +73,7 @@ class AdjudicationWorkflowService(
   private val prisonApiGateway: PrisonApiGateway,
   authenticationFacade: AuthenticationFacade,
   private val telemetryClient: TelemetryClient,
+  private val draftOffenceService: DraftOffenceService,
 ) {
 
   private val draftAdjudicationService = DraftAdjudicationServiceWrapper(draftAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
@@ -128,6 +131,11 @@ class AdjudicationWorkflowService(
 
     return draftAdjudicationService
       .save(draftAdjudication)
+  }
+
+  fun setOffenceDetailsAndCompleteDraft(id: Long, offenceDetails: OffenceDetailsRequestItem): ReportedAdjudicationDto {
+    draftOffenceService.setOffenceDetails(id = id, offenceDetails = offenceDetails)
+    return completeDraftAdjudication(id)
   }
 
   private fun saveAdjudication(draftAdjudication: DraftAdjudication, isNew: Boolean): ReportedAdjudicationDto {
