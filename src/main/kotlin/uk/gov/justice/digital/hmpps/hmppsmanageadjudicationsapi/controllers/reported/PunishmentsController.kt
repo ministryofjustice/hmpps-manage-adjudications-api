@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -180,6 +181,29 @@ class PunishmentsController(
     val reportedAdjudication = punishmentsService.updatePunishmentComment(
       adjudicationNumber = adjudicationNumber,
       request = punishmentCommentRequest,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(
+    summary = "delete punishment comment",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Punishment comment deleted",
+      ),
+    ],
+  )
+  @DeleteMapping(value = ["/{adjudicationNumber}/punishments/comment/{punishmentCommentId}"])
+  @ResponseStatus(HttpStatus.OK)
+  fun deletePunishmentComment(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "punishmentCommentId") punishmentCommentId: Long,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = punishmentsService.deletePunishmentComment(
+      adjudicationNumber = adjudicationNumber,
+      punishmentCommentId = punishmentCommentId,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)

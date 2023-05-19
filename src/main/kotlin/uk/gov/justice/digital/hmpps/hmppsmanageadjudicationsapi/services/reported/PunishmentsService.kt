@@ -378,7 +378,7 @@ class PunishmentsService(
 
     val username = authenticationFacade.currentUsername
     if (punishmentComment.createdByUserId != username) {
-      throw ForbiddenException("Only creator can update punishment comment. Creator username: ${punishmentComment.createdByUserId}, deletion attempt by username: $username.")
+      throw ForbiddenException("Only creator can update punishment comment. Creator username: ${punishmentComment.createdByUserId}, update attempt by username: $username.")
     }
 
     punishmentComment.comment = request.comment

@@ -1572,7 +1572,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           request = PunishmentCommentRequest(id = 2, comment = "new text"),
         )
       }.isInstanceOf(ForbiddenException::class.java)
-        .hasMessageContaining("Only creator can update punishment comment. Creator username: author, deletion attempt by username: ITAG_USER.")
+        .hasMessageContaining("Only creator can update punishment comment. Creator username: author, update attempt by username: ITAG_USER.")
     }
 
     @Test

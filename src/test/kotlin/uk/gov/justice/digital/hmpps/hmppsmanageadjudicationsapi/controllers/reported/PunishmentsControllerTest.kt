@@ -373,6 +373,93 @@ class PunishmentsControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class DeletePunishmentComment {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        punishmentsService.deletePunishmentComment(
+          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyLong(),
+        ),
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      deletePunishmentCommentRequest(
+        1,
+        2,
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      deletePunishmentCommentRequest(
+        1,
+        2,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      deletePunishmentCommentRequest(
+        1,
+        2,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `returns status 404 if EntityNotFoundException is thrown`() {
+      doThrow(EntityNotFoundException("")).`when`(punishmentsService)
+        .deletePunishmentComment(any(), any())
+
+      deletePunishmentCommentRequest(
+        1,
+        -1,
+      ).andExpect(MockMvcResultMatchers.status().isNotFound)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `returns status Forbidden if ForbiddenException is thrown`() {
+      doThrow(ForbiddenException("")).`when`(punishmentsService)
+        .deletePunishmentComment(any(), any())
+
+      deletePunishmentCommentRequest(
+        1,
+        2,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to delete punishment comment`() {
+      deletePunishmentCommentRequest(1, 2)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(punishmentsService).deletePunishmentComment(
+        adjudicationNumber = 1,
+        punishmentCommentId = 2,
+      )
+    }
+
+    private fun deletePunishmentCommentRequest(
+      adjudicationNumber: Long,
+      punishmentCommentId: Long,
+    ): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.delete("/reported-adjudications/$adjudicationNumber/punishments/comment/$punishmentCommentId")
+            .header("Content-Type", "application/json")
+        )
+    }
+  }
+
   companion object {
     val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 10)
     val PUNISHMENT_COMMENT_REQUEST = PunishmentCommentRequest(comment = "some text")
