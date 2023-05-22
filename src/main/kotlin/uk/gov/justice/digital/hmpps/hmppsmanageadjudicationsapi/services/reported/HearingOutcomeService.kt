@@ -99,7 +99,7 @@ class HearingOutcomeService(
       plea = plea,
     )
 
-    if (code == HearingOutcomeCode.ADJOURN) updateAdjournOicHearingDetails(reportedAdjudication)
+    if (code == HearingOutcomeCode.ADJOURN) updateOicHearingDetails(reportedAdjudication)
 
     return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus()) it.calculateStatus() })
   }
@@ -111,7 +111,7 @@ class HearingOutcomeService(
     val code = hearingToRemoveOutcome.hearingOutcome.hearingOutcomeExists().code
     hearingToRemoveOutcome.hearingOutcome = null
 
-    if (code == HearingOutcomeCode.ADJOURN) removeAdjournOicHearingDetails(reportedAdjudication)
+    if (code == HearingOutcomeCode.ADJOURN) removeOicHearingDetails(reportedAdjudication)
 
     return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus() && recalculateStatus) it.calculateStatus() })
   }
@@ -149,7 +149,7 @@ class HearingOutcomeService(
       HearingOutcomeCode.NOMIS -> throw RuntimeException("unable to amend a NOMIS hearing outcome")
     }
 
-    if (outcomeCodeToAmend == HearingOutcomeCode.ADJOURN) updateAdjournOicHearingDetails(reportedAdjudication)
+    if (outcomeCodeToAmend == HearingOutcomeCode.ADJOURN) updateOicHearingDetails(reportedAdjudication)
 
     return saveToDto(reportedAdjudication)
   }
@@ -164,7 +164,7 @@ class HearingOutcomeService(
     return matched[actualIndex].hearingOutcome
   }
 
-  private fun updateAdjournOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
+  private fun updateOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
     val hearing = reportedAdjudication.getHearing()
     prisonApiGateway.amendHearing(
       adjudicationNumber = reportedAdjudication.reportNumber,
@@ -179,7 +179,7 @@ class HearingOutcomeService(
     )
   }
 
-  private fun removeAdjournOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
+  private fun removeOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
     val hearing = reportedAdjudication.getHearing()
     prisonApiGateway.amendHearing(
       adjudicationNumber = reportedAdjudication.reportNumber,
