@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDateTime
 
-class ReferralsIntTest : IntegrationTestBase() {
+class ReferralsIntTest : SqsIntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {

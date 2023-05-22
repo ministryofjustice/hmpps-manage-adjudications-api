@@ -3,18 +3,19 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.hea
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.SqsIntegrationTestBase
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.function.Consumer
 
-class HealthCheckTest : IntegrationTestBase() {
+class HealthCheckTest : SqsIntegrationTestBase() {
 
   @BeforeEach
   fun beforeEach() {
     prisonApiMockServer.resetMappings()
     prisonApiMockServer.stubHealth()
     oAuthMockServer.stubGrantToken()
+    oAuthMockServer.stubHealthPing(200)
   }
 
   @Test

@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
 import java.time.LocalDateTime
 
-class ReportedAdjudicationIntTest : IntegrationTestBase() {
+class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {

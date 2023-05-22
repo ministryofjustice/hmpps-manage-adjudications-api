@@ -18,7 +18,7 @@ services:
       - PRISON_API_ENDPOINT_URL=http://prison-api:8080
       - OAUTH_ENDPOINT_URL=http://hmpps-auth:8080/auth
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI=http://hmpps-auth:8080/auth/.well-known/jwks.json
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://hmpps-manage-adjudications-api-db:5432/manage-adjudications
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://hmpps-manage-adjudications-api-db:5432/adjudications
       - SPRING_DATASOURCE_USERNAME=adjudications
       - SPRING_DATASOURCE_PASSWORD=adjudications
 
@@ -77,6 +77,6 @@ services:
     environment:
       - POSTGRES_PASSWORD=adjudications
       - POSTGRES_USER=adjudications
-      - POSTGRES_DB=manage-adjudications
+      - POSTGRES_DB=adjudications
 networks:
   hmpps:

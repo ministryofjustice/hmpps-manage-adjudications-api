@@ -17,8 +17,10 @@ spring:
     group:
       test:
         - "stdout"
+        - "localstack"
       dev-local:
         - "stdout"
+        - "localstack"
 
   jpa:
     open-in-view: false
@@ -64,6 +66,10 @@ server:
   shutdown: graceful
   error:
     include-message: always
+
+hmpps:
+  sqs:
+    queueAdminRole: ROLE_ADJUDICATIONS_API_QUEUE_ADMIN
 
 management:
   endpoints:

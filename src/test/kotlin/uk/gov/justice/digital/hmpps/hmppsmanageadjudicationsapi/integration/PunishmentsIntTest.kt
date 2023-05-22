@@ -12,7 +12,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class PunishmentsIntTest : IntegrationTestBase() {
+class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {

@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Quashed
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDateTime
 
-class OutcomeIntTest : IntegrationTestBase() {
+class OutcomeIntTest : SqsIntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {
