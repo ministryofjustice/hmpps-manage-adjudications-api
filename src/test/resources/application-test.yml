@@ -18,7 +18,7 @@ oauth:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/manage-adjudications
+    url: jdbc:postgresql://localhost:5432/adjudications
     username: adjudications
     password: adjudications
 

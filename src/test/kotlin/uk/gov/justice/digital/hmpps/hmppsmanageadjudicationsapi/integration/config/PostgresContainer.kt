@@ -17,7 +17,7 @@ object PostgresContainer {
     log.info("Creating a Postgres database")
     return PostgreSQLContainer<Nothing>("postgres").apply {
       withEnv("HOSTNAME_EXTERNAL", "localhost")
-      withDatabaseName("manage-adjudications")
+      withDatabaseName("adjudications")
       withUsername("adjudications")
       withPassword("adjudications")
       setWaitStrategy(Wait.forListeningPort())

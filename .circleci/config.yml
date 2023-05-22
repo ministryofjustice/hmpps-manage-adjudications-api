@@ -21,7 +21,6 @@ jobs:
       postgres_tag: "14"
       postgres_username: "adjudications"
       postgres_password: "adjudications"
-      postgres_db: "manage-adjudications"
     steps:
       - checkout
       - restore_cache:

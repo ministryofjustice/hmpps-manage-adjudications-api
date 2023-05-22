@@ -75,6 +75,6 @@ services:
     environment:
       - POSTGRES_PASSWORD=adjudications
       - POSTGRES_USER=adjudications
-      - POSTGRES_DB=manage-adjudications
+      - POSTGRES_DB=adjudications
 networks:
   hmpps:
