@@ -227,6 +227,8 @@ class HearingsIntTest : IntegrationTestBase() {
   @Test
   fun `create hearing outcome - adjourn`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
     initDataForHearings().createHearing()
 
     webTestClient.post()
@@ -364,6 +366,8 @@ class HearingsIntTest : IntegrationTestBase() {
   @Test
   fun `remove adjourn outcome `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
     initDataForHearings().createHearing().createAdjourn()
 
     webTestClient.delete()
@@ -381,6 +385,8 @@ class HearingsIntTest : IntegrationTestBase() {
   @Test
   fun `create hearing outcome - adjourn and then create new hearing`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
     initDataForHearings().createHearing().createAdjourn()
 
     webTestClient.post()
@@ -403,6 +409,7 @@ class HearingsIntTest : IntegrationTestBase() {
   @Test
   fun `should only create one schedule hearing - refer police, adjourn, adjourn `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     initDataForOutcome()
       .createOutcomeReferPolice()

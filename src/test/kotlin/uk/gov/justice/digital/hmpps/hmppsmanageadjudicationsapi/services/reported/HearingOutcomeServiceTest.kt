@@ -11,6 +11,8 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
@@ -22,15 +24,19 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import java.time.LocalDateTime
 
 class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
+  private val prisonApiGateway: PrisonApiGateway = mock()
   private val hearingOutcomeService = HearingOutcomeService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
+    prisonApiGateway,
   )
 
   @Test
@@ -91,6 +97,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       .also {
         it.createdByUserId = ""
         it.createDateTime = LocalDateTime.now()
+        it.hearings.first().oicHearingId = 1
       }
 
     @BeforeEach
@@ -137,6 +144,18 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+        reportedAdjudication.reportNumber,
+        reportedAdjudication.hearings.first().oicHearingId,
+        OicHearingRequest(
+          reportedAdjudication.hearings.first().dateTimeOfHearing,
+          reportedAdjudication.hearings.first().oicHearingType,
+          reportedAdjudication.hearings.first().locationId,
+          "test",
+          "ADJOURN",
+        ),
+      )
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("test")
@@ -232,10 +251,11 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `delete adjourn outcome`() {
+    fun `delete adjourn outcome calls prison api to update hearing`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
         reportedAdjudication.also {
-          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "testing")
+          it.hearings.first().oicHearingId = 1
         },
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -243,6 +263,12 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val response = hearingOutcomeService.removeAdjourn(1)
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+        reportedAdjudication.reportNumber,
+        reportedAdjudication.hearings.first().oicHearingId,
+        OicHearingRequest(reportedAdjudication.hearings.first().dateTimeOfHearing, reportedAdjudication.hearings.first().oicHearingType, reportedAdjudication.hearings.first().locationId),
+      )
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNull()
       assertThat(response).isNotNull
@@ -422,6 +448,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.hearings.add(Hearing(dateTimeOfHearing = LocalDateTime.now(), oicHearingId = 1L, reportNumber = 1L, agencyId = "", oicHearingType = OicHearingType.GOV, locationId = 1L))
         it.createdByUserId = ""
         it.createDateTime = LocalDateTime.now()
+        it.hearings.first().oicHearingId = 1
       }
 
     @BeforeEach
@@ -546,6 +573,18 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+        reportedAdjudication.reportNumber,
+        reportedAdjudication.hearings.first().oicHearingId,
+        OicHearingRequest(
+          reportedAdjudication.hearings.first().dateTimeOfHearing,
+          reportedAdjudication.hearings.first().oicHearingType,
+          reportedAdjudication.hearings.first().locationId,
+          "updated adjudicator",
+          "ADJOURN",
+        ),
+      )
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)

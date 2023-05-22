@@ -12,10 +12,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getHearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.NomisOutcomeService.Companion.getAdjudicator
 
 @Service
 @Transactional
@@ -23,6 +26,7 @@ class HearingOutcomeService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
+  private val prisonApiGateway: PrisonApiGateway,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -95,6 +99,8 @@ class HearingOutcomeService(
       plea = plea,
     )
 
+    if (code == HearingOutcomeCode.ADJOURN) updateAdjournHearingOutcome(reportedAdjudication)
+
     return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus()) it.calculateStatus() })
   }
 
@@ -104,6 +110,8 @@ class HearingOutcomeService(
 
     val code = hearingToRemoveOutcome.hearingOutcome.hearingOutcomeExists().code
     hearingToRemoveOutcome.hearingOutcome = null
+
+    if (code == HearingOutcomeCode.ADJOURN) deleteAdjournHearingOutcome(reportedAdjudication)
 
     return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus() && recalculateStatus) it.calculateStatus() })
   }
@@ -141,6 +149,8 @@ class HearingOutcomeService(
       HearingOutcomeCode.NOMIS -> throw RuntimeException("unable to amend a NOMIS hearing outcome")
     }
 
+    if (outcomeCodeToAmend == HearingOutcomeCode.ADJOURN) updateAdjournHearingOutcome(reportedAdjudication)
+
     return saveToDto(reportedAdjudication)
   }
 
@@ -152,6 +162,34 @@ class HearingOutcomeService(
     val actualIndex = if (matched.size > outcomeIndex) outcomeIndex else outcomeIndex - 1
 
     return matched[actualIndex].hearingOutcome
+  }
+
+  private fun updateAdjournHearingOutcome(reportedAdjudication: ReportedAdjudication) {
+    val hearing = reportedAdjudication.getHearing()
+    prisonApiGateway.amendHearing(
+      adjudicationNumber = reportedAdjudication.reportNumber,
+      oicHearingId = hearing.oicHearingId,
+      oicHearingRequest = OicHearingRequest(
+        dateTimeOfHearing = hearing.dateTimeOfHearing,
+        hearingLocationId = hearing.locationId,
+        oicHearingType = hearing.oicHearingType,
+        adjudicator = hearing.getAdjudicator(),
+        commentText = hearing.hearingOutcome?.code.toString(),
+      ),
+    )
+  }
+
+  private fun deleteAdjournHearingOutcome(reportedAdjudication: ReportedAdjudication) {
+    val hearing = reportedAdjudication.getHearing()
+    prisonApiGateway.amendHearing(
+      adjudicationNumber = reportedAdjudication.reportNumber,
+      oicHearingId = hearing.oicHearingId,
+      oicHearingRequest = OicHearingRequest(
+        dateTimeOfHearing = hearing.dateTimeOfHearing,
+        hearingLocationId = hearing.locationId,
+        oicHearingType = hearing.oicHearingType,
+      ),
+    )
   }
 
   companion object {

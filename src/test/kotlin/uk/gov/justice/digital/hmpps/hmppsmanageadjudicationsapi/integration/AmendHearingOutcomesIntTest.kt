@@ -53,6 +53,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   @Test
   fun `amend hearing outcome test - before - refer inad, after - refer inad`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     initDataForHearings().createHearing().createReferral(code = HearingOutcomeCode.REFER_INAD)
 
     webTestClient.put()
@@ -80,6 +81,8 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   @Test
   fun `amend hearing outcome test - before - adjourn, after - adjourn`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
     initDataForHearings().createHearing().createAdjourn()
 
     webTestClient.put()
@@ -221,6 +224,7 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   @ParameterizedTest
   fun `amend hearing outcome from {0} to {1}`(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
     prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
@@ -353,6 +357,8 @@ class AmendHearingOutcomesIntTest : IntegrationTestBase() {
   @Test
   fun `amend outcome - police refer without hearing, schedule hearing, adjourn then amend to dismissed `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
     initDataForHearings().createOutcomeReferPolice().createHearing().createAdjourn()
 
     webTestClient.put()
