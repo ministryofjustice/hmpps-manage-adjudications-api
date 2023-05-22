@@ -25,6 +25,7 @@ import org.springframework.web.reactive.function.client.WebClient
 @Configuration
 class WebClientConfig(
   @Value("\${prison.api.endpoint.url}") private val prisonApiUrl: String,
+  @Value("\${oauth.endpoint.url}") val authBaseUri: String,
   val objectMapper: ObjectMapper,
 ) {
 
@@ -32,6 +33,13 @@ class WebClientConfig(
   fun prisonApiNoAuthWebClient(builder: WebClient.Builder): WebClient = builder
     .baseUrl(prisonApiUrl)
     .build()
+
+  @Bean
+  fun authWebClient(): WebClient {
+    return WebClient.builder()
+      .baseUrl(authBaseUri)
+      .build()
+  }
 
   @Bean
   @RequestScope

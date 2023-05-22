@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDateTime
 
-class DraftAdjudicationIntTest : IntegrationTestBase() {
+class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {

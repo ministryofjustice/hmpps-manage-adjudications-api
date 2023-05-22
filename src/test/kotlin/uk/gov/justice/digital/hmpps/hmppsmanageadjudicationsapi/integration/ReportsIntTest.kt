@@ -7,7 +7,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.format.DateTimeFormatter
 
-class ReportsIntTest : IntegrationTestBase() {
+class ReportsIntTest : SqsIntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {

@@ -1,31 +1,3 @@
-server:
-  shutdown: immediate
-
-aws:
-  provider: localstack
-
-management.endpoint:
-  health.cache.time-to-live: 0
-  info.cache.time-to-live: 0
-
-prison:
-  api:
-    endpoint:
-      url: http://localhost:8979
-oauth:
-  endpoint:
-    url: http://localhost:8070/auth
-
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/manage-adjudications
-    username: adjudications
-    password: adjudications
-
-  flyway:
-    enabled: true
-    cleanDisabled: false
-
 hmpps.sqs:
   provider: localstack
   queues:

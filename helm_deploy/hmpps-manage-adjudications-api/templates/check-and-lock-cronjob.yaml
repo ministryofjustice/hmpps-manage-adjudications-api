@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: hmppps-manage-adjudications-api-check-and-lock
 spec:
-  schedule: "0 3 * * 1-5"
+  schedule: "0 3 * * 1-6"
   concurrencyPolicy: Forbid
   failedJobsHistoryLimit: 5
   startingDeadlineSeconds: 600

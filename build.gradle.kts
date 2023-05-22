@@ -24,6 +24,10 @@ dependencies {
   implementation("io.swagger:swagger-annotations:1.6.11")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.0")
+  implementation("io.opentelemetry:opentelemetry-api:1.26.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.26.0")
+
   runtimeOnly("com.h2database:h2:2.1.214")
   runtimeOnly("org.flywaydb:flyway-core:9.18.0")
   runtimeOnly("org.postgresql:postgresql:42.6.0")
@@ -34,6 +38,10 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.37.0")
   testImplementation("org.flywaydb:flyway-core:9.18.0")
+  testImplementation("org.mockito:mockito-inline")
+  testImplementation("org.testcontainers:localstack:1.18.1")
+  testImplementation("org.testcontainers:postgresql:1.18.1")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.26.0")
 }
 
 allOpen {
