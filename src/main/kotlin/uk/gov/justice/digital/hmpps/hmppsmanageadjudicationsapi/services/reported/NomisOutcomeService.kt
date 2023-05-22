@@ -48,19 +48,7 @@ class NomisOutcomeService(
       }
 
       if (outcome.createOutcome()) createHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome)
-      if (outcome.updateHearing()) {
-        prisonApiGateway.amendHearing(
-          adjudicationNumber = adjudicationNumber,
-          oicHearingId = it.oicHearingId,
-          oicHearingRequest = OicHearingRequest(
-            dateTimeOfHearing = it.dateTimeOfHearing,
-            hearingLocationId = it.locationId,
-            oicHearingType = it.oicHearingType,
-            adjudicator = it.getAdjudicator(),
-            commentText = outcome.code.toString(),
-          ),
-        )
-      }
+      if (outcome.updateHearing()) updateOicHearingDetails(adjudicationNumber = adjudicationNumber, hearing = it)
     }
     return null
   }
@@ -81,19 +69,7 @@ class NomisOutcomeService(
           ),
         )
       }
-      if (outcome.updateHearing()) {
-        prisonApiGateway.amendHearing(
-          adjudicationNumber = adjudicationNumber,
-          oicHearingId = it.oicHearingId,
-          oicHearingRequest = OicHearingRequest(
-            dateTimeOfHearing = it.dateTimeOfHearing,
-            hearingLocationId = it.locationId,
-            oicHearingType = it.oicHearingType,
-            adjudicator = it.getAdjudicator(),
-            commentText = outcome.code.toString(),
-          ),
-        )
-      }
+      if (outcome.updateHearing()) updateOicHearingDetails(adjudicationNumber = adjudicationNumber, hearing = it)
     }
   }
 
@@ -139,6 +115,20 @@ class NomisOutcomeService(
     prisonApiGateway.deleteHearingResult(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = outcome.oicHearingId ?: hearing.oicHearingId,
+    )
+  }
+
+  private fun updateOicHearingDetails(adjudicationNumber: Long, hearing: Hearing) {
+    prisonApiGateway.amendHearing(
+      adjudicationNumber = adjudicationNumber,
+      oicHearingId = hearing.oicHearingId,
+      oicHearingRequest = OicHearingRequest(
+        dateTimeOfHearing = hearing.dateTimeOfHearing,
+        hearingLocationId = hearing.locationId,
+        oicHearingType = hearing.oicHearingType,
+        adjudicator = hearing.getAdjudicator(),
+        commentText = hearing.hearingOutcome?.code.toString(),
+      ),
     )
   }
 
