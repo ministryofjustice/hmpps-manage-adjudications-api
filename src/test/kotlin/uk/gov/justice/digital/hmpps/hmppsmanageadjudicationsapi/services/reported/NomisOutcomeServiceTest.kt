@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingResultRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
@@ -191,9 +192,10 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `REFER_INAD does not call prison api`() {
+    fun `REFER_INAD calls prison api to update hearing`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing")
+        it.hearings.first().oicHearingId = 1
         it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD))
       }
 
@@ -204,6 +206,17 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       verify(prisonApiGateway, never()).createHearing(any(), any())
       verify(prisonApiGateway, never()).createHearingResult(anyOrNull(), any(), any())
+      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+        reportedAdjudication.reportNumber,
+        1,
+        OicHearingRequest(
+          reportedAdjudication.hearings.first().dateTimeOfHearing,
+          reportedAdjudication.hearings.first().oicHearingType,
+          reportedAdjudication.hearings.first().locationId,
+          "testing",
+          "REFER_INAD",
+        ),
+      )
     }
   }
 
@@ -367,9 +380,10 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `REFER_INAD does not call prison api`() {
+    fun `REFER_INAD calls prison api to update hearing only`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing")
+        it.hearings.first().oicHearingId = 1
         it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD))
       }
 
@@ -380,6 +394,18 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(prisonApiGateway, never()).amendHearingResult(anyOrNull(), any(), any())
+
+      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+        reportedAdjudication.reportNumber,
+        1,
+        OicHearingRequest(
+          reportedAdjudication.hearings.first().dateTimeOfHearing,
+          reportedAdjudication.hearings.first().oicHearingType,
+          reportedAdjudication.hearings.first().locationId,
+          "testing",
+          "REFER_INAD",
+        ),
+      )
     }
   }
 
@@ -494,9 +520,10 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `REFER_INAD does not call prison api`() {
+    fun `REFER_INAD calls prison api to amend hearing`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing")
+        it.hearings.first().oicHearingId = 1
         it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD))
       }
 
@@ -508,6 +535,16 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(prisonApiGateway, never()).deleteHearing(any(), any())
       verify(prisonApiGateway, never()).deleteHearingResult(any(), any())
+
+      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+        reportedAdjudication.reportNumber,
+        1,
+        OicHearingRequest(
+          reportedAdjudication.hearings.first().dateTimeOfHearing,
+          reportedAdjudication.hearings.first().oicHearingType,
+          reportedAdjudication.hearings.first().locationId,
+        ),
+      )
     }
   }
 
