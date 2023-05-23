@@ -520,11 +520,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-<<<<<<< HEAD
     fun `REFER_INAD calls does not call prison api`() {
-=======
-    fun `REFER_INAD calls prison api to amend hearing`() {
->>>>>>> main
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing")
         it.hearings.first().oicHearingId = 1
