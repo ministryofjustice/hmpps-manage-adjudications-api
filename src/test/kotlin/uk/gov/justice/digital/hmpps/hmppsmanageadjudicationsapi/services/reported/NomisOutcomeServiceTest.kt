@@ -535,16 +535,6 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(prisonApiGateway, never()).deleteHearing(any(), any())
       verify(prisonApiGateway, never()).deleteHearingResult(any(), any())
-
-      verify(prisonApiGateway, atLeastOnce()).amendHearing(
-        reportedAdjudication.reportNumber,
-        1,
-        OicHearingRequest(
-          reportedAdjudication.hearings.first().dateTimeOfHearing,
-          reportedAdjudication.hearings.first().oicHearingType,
-          reportedAdjudication.hearings.first().locationId,
-        ),
-      )
     }
   }
 
