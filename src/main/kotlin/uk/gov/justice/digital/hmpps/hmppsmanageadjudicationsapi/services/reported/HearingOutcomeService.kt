@@ -111,7 +111,7 @@ class HearingOutcomeService(
     val code = hearingToRemoveOutcome.hearingOutcome.hearingOutcomeExists().code
     hearingToRemoveOutcome.hearingOutcome = null
 
-    if (code == HearingOutcomeCode.ADJOURN) removeOicHearingDetails(reportedAdjudication)
+    if (listOf(HearingOutcomeCode.ADJOURN, HearingOutcomeCode.REFER_INAD).contains(code)) removeOicHearingDetails(reportedAdjudication)
 
     return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus() && recalculateStatus) it.calculateStatus() })
   }

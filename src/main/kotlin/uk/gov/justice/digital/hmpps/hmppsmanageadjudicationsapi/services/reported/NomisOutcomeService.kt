@@ -74,7 +74,7 @@ class NomisOutcomeService(
   }
 
   fun deleteHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome) {
-    if (hearing == null && outcome.doNotCallApi()) return
+    if (hearing == null && outcome.doNotCallApi() || outcome.code == OutcomeCode.REFER_INAD) return
 
     hearing?.let {
       if (outcome.canDeleteOutcome() || isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)) {
@@ -85,17 +85,6 @@ class NomisOutcomeService(
       }
       if (outcome.code == OutcomeCode.CHARGE_PROVED) prisonApiGateway.deleteSanctions(adjudicationNumber = adjudicationNumber)
       if (outcome.createOutcome()) deleteHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome)
-      if (outcome.updateHearing()) {
-        prisonApiGateway.amendHearing(
-          adjudicationNumber = adjudicationNumber,
-          oicHearingId = it.oicHearingId,
-          oicHearingRequest = OicHearingRequest(
-            dateTimeOfHearing = it.dateTimeOfHearing,
-            hearingLocationId = it.locationId,
-            oicHearingType = it.oicHearingType,
-          ),
-        )
-      }
     }
   }
 

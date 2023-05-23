@@ -221,15 +221,10 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   inner class DeleteHearingOutcome {
 
     private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
-    private val reportedAdjudicationWithOutcome = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
-      it.hearings.first().hearingOutcome =
-        HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_INAD, adjudicator = "test")
-    }
 
     @BeforeEach
     fun init() {
       whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(reportedAdjudicationWithOutcome)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         reportedAdjudication.also {
           it.createdByUserId = "test"
@@ -238,13 +233,29 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
-    @Test
-    fun `delete hearing outcome`() {
+    @CsvSource("REFER_INAD", "REFER_POLICE", "COMPLETE")
+    @ParameterizedTest
+    fun `delete hearing outcome {0}`(hearingOutcomeCode: HearingOutcomeCode) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(
+        entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+          it.hearings.first().hearingOutcome =
+            HearingOutcome(id = 1, code = hearingOutcomeCode, adjudicator = "test")
+        },
+      )
+
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = hearingOutcomeService.deleteHearingOutcome(2)
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      if (hearingOutcomeCode == HearingOutcomeCode.REFER_INAD) {
+        verify(prisonApiGateway, atLeastOnce()).amendHearing(
+          reportedAdjudication.reportNumber,
+          reportedAdjudication.hearings.first().oicHearingId,
+          OicHearingRequest(reportedAdjudication.hearings.first().dateTimeOfHearing, reportedAdjudication.hearings.first().oicHearingType, reportedAdjudication.hearings.first().locationId),
+        )
+      }
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNull()
       assertThat(response).isNotNull
