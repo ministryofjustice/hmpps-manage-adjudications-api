@@ -7,7 +7,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
 
 @ActiveProfiles("test")
-class SpringOauthIntegrationTest : IntegrationTestBase() {
+class SpringOauthIntegrationTest : SqsIntegrationTestBase() {
 
   private lateinit var intTestData: IntegrationTestData
   private lateinit var draftCreationResponseForAdjudication1: DraftAdjudicationResponse

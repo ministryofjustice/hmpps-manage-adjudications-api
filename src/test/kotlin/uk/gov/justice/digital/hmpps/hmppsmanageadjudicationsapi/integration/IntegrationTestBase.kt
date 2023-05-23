@@ -20,12 +20,13 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.OAuthMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.TestBase
 import java.time.LocalDateTime
 import java.util.Optional
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
-abstract class IntegrationTestBase {
+abstract class IntegrationTestBase : TestBase() {
 
   @Suppress("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
@@ -59,6 +60,8 @@ abstract class IntegrationTestBase {
       prisonApiMockServer.start()
       oAuthMockServer.start()
       oAuthMockServer.stubGrantToken()
+      oAuthMockServer.stubHealthPing(200)
+      prisonApiMockServer.stubHealth()
     }
 
     @AfterAll

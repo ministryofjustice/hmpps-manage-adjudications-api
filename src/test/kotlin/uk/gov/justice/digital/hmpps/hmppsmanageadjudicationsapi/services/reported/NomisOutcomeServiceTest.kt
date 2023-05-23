@@ -520,7 +520,11 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+<<<<<<< HEAD
     fun `REFER_INAD calls does not call prison api`() {
+=======
+    fun `REFER_INAD calls prison api to amend hearing`() {
+>>>>>>> main
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing")
         it.hearings.first().oicHearingId = 1
@@ -535,6 +539,16 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(prisonApiGateway, never()).deleteHearing(any(), any())
       verify(prisonApiGateway, never()).deleteHearingResult(any(), any())
+
+      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+        reportedAdjudication.reportNumber,
+        1,
+        OicHearingRequest(
+          reportedAdjudication.hearings.first().dateTimeOfHearing,
+          reportedAdjudication.hearings.first().oicHearingType,
+          reportedAdjudication.hearings.first().locationId,
+        ),
+      )
     }
   }
 

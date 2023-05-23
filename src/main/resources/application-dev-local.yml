@@ -13,14 +13,14 @@ spring:
           public-key-location: classpath:local-public-key.pub
 
   flyway:
-    url: jdbc:postgresql://localhost:5432/manage-adjudications?sslmode=prefer
+    url: jdbc:postgresql://localhost:5432/adjudications?sslmode=prefer
     user: adjudications
     password: adjudications
 
   datasource:
     username: adjudications
     password: adjudications
-    url: jdbc:postgresql://localhost:5432/manage-adjudications?sslmode=prefer
+    url: jdbc:postgresql://localhost:5432/adjudications?sslmode=prefer
 
 prison:
   api:

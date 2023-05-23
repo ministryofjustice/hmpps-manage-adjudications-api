@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDateTime
 
-class HearingsIntTest : IntegrationTestBase() {
+class HearingsIntTest : SqsIntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {

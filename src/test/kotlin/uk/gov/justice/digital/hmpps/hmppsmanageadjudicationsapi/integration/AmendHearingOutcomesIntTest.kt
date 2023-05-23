@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 
-class AmendHearingOutcomesIntTest : IntegrationTestBase() {
+class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {
