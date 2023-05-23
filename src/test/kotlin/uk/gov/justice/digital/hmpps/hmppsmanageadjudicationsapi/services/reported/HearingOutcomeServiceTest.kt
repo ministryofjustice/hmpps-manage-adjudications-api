@@ -140,7 +140,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("test")
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(code)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("details")
 
       assertThat(response).isNotNull
