@@ -110,18 +110,33 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
     }
 
-    @Test
-    fun `create a referral outcome`() {
+    @CsvSource("REFER_POLICE", "REFER_INAD")
+    @ParameterizedTest
+    fun `create a referral outcome {0}`(code: HearingOutcomeCode) {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = hearingOutcomeService.createReferral(
         1,
-        HearingOutcomeCode.REFER_POLICE,
+        code,
         "test",
         "details",
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      if (code == HearingOutcomeCode.REFER_INAD) {
+        verify(prisonApiGateway, atLeastOnce()).amendHearing(
+          reportedAdjudication.reportNumber,
+          reportedAdjudication.hearings.first().oicHearingId,
+          OicHearingRequest(
+            reportedAdjudication.hearings.first().dateTimeOfHearing,
+            reportedAdjudication.hearings.first().oicHearingType,
+            reportedAdjudication.hearings.first().locationId,
+            "test",
+            "REFER_INAD",
+          ),
+        )
+      }
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("test")
@@ -549,6 +564,20 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      if (code == HearingOutcomeCode.REFER_INAD) {
+        verify(prisonApiGateway, atLeastOnce()).amendHearing(
+          reportedAdjudication.reportNumber,
+          reportedAdjudication.hearings.first().oicHearingId,
+          OicHearingRequest(
+            reportedAdjudication.hearings.first().dateTimeOfHearing,
+            reportedAdjudication.hearings.first().oicHearingType,
+            reportedAdjudication.hearings.first().locationId,
+            "updated adjudicator",
+            "REFER_INAD",
+          ),
+        )
+      }
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(code)
