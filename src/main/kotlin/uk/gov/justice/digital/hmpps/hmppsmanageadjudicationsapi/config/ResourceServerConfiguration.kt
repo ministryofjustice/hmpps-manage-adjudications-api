@@ -49,6 +49,7 @@ class ResourceServerConfiguration {
           "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
           "/swagger-resources", "/swagger-resources/configuration/ui", "/swagger-resources/configuration/security",
           "/scheduled-tasks/*",
+          "/queue-admin/retry-all-dlqs",
         ).permitAll()
           .anyRequest()
           .authenticated()
