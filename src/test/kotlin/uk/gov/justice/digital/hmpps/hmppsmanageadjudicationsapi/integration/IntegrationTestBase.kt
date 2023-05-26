@@ -85,7 +85,7 @@ abstract class IntegrationTestBase : TestBase() {
     activeCaseload: String? = "MDI",
   ): (HttpHeaders) -> Unit = {
     it.setBearerAuth(jwtAuthHelper.createJwt(subject = username, roles = roles, scope = listOf("write")))
-    it.set("Active-Caseload", activeCaseload)
+    // it.set("Active-Caseload", activeCaseload)
     it.contentType = contentType
   }
 
