@@ -13,7 +13,6 @@ import java.time.Clock
 import java.time.LocalDateTime
 import java.util.UUID
 
-
 @Service
 class EventWrapperService(
   private val snsService: SnsService,
@@ -182,7 +181,6 @@ class EventWrapperService(
     } else {
       legacyNomisGateway.deleteHearingResult(adjudicationNumber = adjudicationNumber.toLong(), oicHearingId = oicHearingId.toLong())
     }
-
   }
 
   fun createSanction(adjudicationNumber: String, sanction: OffenderOicSanctionRequest): Long? {
