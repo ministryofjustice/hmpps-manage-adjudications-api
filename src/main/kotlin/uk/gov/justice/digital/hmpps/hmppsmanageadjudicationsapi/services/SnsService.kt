@@ -66,6 +66,8 @@ data class AdditionalInformation(
   val reason: String? = null,
   val bookingId: Long? = null,
   val prisonId: String? = null,
+  val hearingNumber: String? = null,
+  val sanctionSequence: Long? = null,
 )
 
 data class HMPPSDomainEvent(
@@ -90,7 +92,18 @@ data class HMPPSDomainEvent(
 }
 
 enum class AdjudicationDomainEventType(val value: String) {
-  ADJUDICATION_CREATED("adjudication.created"),
+  ADJUDICATION_CREATED("adjudication.report.created"),
+  HEARING_CREATED("adjudication.hearing.created"),
+  HEARING_UPDATED("adjudication.hearing.updated"),
+  HEARING_DELETED("adjudication.hearing.deleted"),
+  HEARING_RESULT_CREATED("adjudication.hearing.result.created"),
+  HEARING_RESULT_UPDATED("adjudication.hearing.result.updated"),
+  HEARING_RESULT_DELETED("adjudication.hearing.result.deleted"),
+  SANCTION_CREATED("adjudication.sanction.created"),
+  SANCTION_UDPATED("adjudication.sanction.updated"),
+  SANCTION_DELETED("adjudication.sanction.deleted"),
+  SANCTIONS_DELETED("adjudication.sanctions.deleted"),
+  SANCTIONS_QUASHED("adjudication.sanction.quashed"),
 }
 
 fun Instant.toOffsetDateFormat(): String =

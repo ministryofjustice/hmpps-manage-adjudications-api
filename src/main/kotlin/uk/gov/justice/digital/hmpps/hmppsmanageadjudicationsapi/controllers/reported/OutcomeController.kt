@@ -118,7 +118,7 @@ class OutcomeController(
   @PostMapping(value = ["/{adjudicationNumber}/outcome/not-proceed"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createNotProceed(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody notProceedRequest: NotProceedRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.createNotProceed(
@@ -152,7 +152,7 @@ class OutcomeController(
   @PostMapping(value = ["/{adjudicationNumber}/outcome/prosecution"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createProsecution(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.createProsecution(
       adjudicationNumber = adjudicationNumber,
@@ -183,7 +183,7 @@ class OutcomeController(
   @PostMapping(value = ["/{adjudicationNumber}/outcome/quashed"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createQuashed(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody quashedRequest: QuashedRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.createQuashed(
@@ -217,7 +217,7 @@ class OutcomeController(
   @PostMapping(value = ["/{adjudicationNumber}/outcome/refer-police"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createRefPolice(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody policeReferralRequest: PoliceReferralRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.createReferral(
@@ -251,7 +251,7 @@ class OutcomeController(
   @PostMapping(value = ["/{adjudicationNumber}/complete-hearing/dismissed"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createDismissed(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody completedDismissedRequest: HearingCompletedDismissedRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = completedHearingService.createDismissed(
@@ -286,7 +286,7 @@ class OutcomeController(
   @PostMapping(value = ["/{adjudicationNumber}/complete-hearing/not-proceed"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createNotProceedFromHearing(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody completedNotProceedRequest: HearingCompletedNotProceedRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = completedHearingService.createNotProceed(
@@ -322,7 +322,7 @@ class OutcomeController(
   @PostMapping(value = ["/{adjudicationNumber}/complete-hearing/charge-proved"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createChargeProvedFromHearing(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody chargeProvedRequest: HearingCompletedChargeProvedRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = completedHearingService.createChargeProved(
@@ -340,7 +340,7 @@ class OutcomeController(
   @DeleteMapping(value = ["/{adjudicationNumber}/remove-referral"])
   @ResponseStatus(HttpStatus.OK)
   fun removeReferral(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = referralService.removeReferral(
       adjudicationNumber = adjudicationNumber,
@@ -353,7 +353,7 @@ class OutcomeController(
   @DeleteMapping(value = ["/{adjudicationNumber}/outcome"])
   @ResponseStatus(HttpStatus.OK)
   fun removeNotProceedWithoutReferralOrQuashed(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.deleteOutcome(
       adjudicationNumber = adjudicationNumber,
@@ -366,7 +366,7 @@ class OutcomeController(
   @DeleteMapping(value = ["/{adjudicationNumber}/remove-completed-hearing"])
   @ResponseStatus(HttpStatus.OK)
   fun removeCompletedHearingOutcome(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = completedHearingService.removeOutcome(
       adjudicationNumber = adjudicationNumber,
@@ -379,7 +379,7 @@ class OutcomeController(
   @PutMapping(value = ["/{adjudicationNumber}/outcome"])
   @ResponseStatus(HttpStatus.OK)
   fun amendOutcome(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody amendOutcomeRequest: AmendOutcomeRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = outcomeService.amendOutcomeViaApi(

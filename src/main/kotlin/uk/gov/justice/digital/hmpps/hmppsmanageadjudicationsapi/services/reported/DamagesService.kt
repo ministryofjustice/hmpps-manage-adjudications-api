@@ -20,7 +20,7 @@ class DamagesService(
   offenceCodeLookupService,
   authenticationFacade,
 ) {
-  fun updateDamages(adjudicationNumber: Long, damages: List<DamageRequestItem>): ReportedAdjudicationDto {
+  fun updateDamages(adjudicationNumber: String, damages: List<DamageRequestItem>): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val reporter = authenticationFacade.currentUsername!!
     val toPreserve = reportedAdjudication.damages.filter { it.reporter != reporter }

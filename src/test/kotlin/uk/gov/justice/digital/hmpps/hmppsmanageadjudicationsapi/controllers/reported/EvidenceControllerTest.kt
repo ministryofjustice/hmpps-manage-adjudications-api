@@ -34,7 +34,7 @@ class EvidenceControllerTest : TestControllerBase() {
   fun beforeEach() {
     whenever(
       evidenceService.updateEvidence(
-        ArgumentMatchers.anyLong(),
+        ArgumentMatchers.anyString(),
         any(),
       ),
     ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -54,7 +54,7 @@ class EvidenceControllerTest : TestControllerBase() {
     setEvidenceRequest(1, EVIDENCE_REQUEST)
       .andExpect(MockMvcResultMatchers.status().isOk)
 
-    verify(evidenceService).updateEvidence(1, EVIDENCE_REQUEST.evidence)
+    verify(evidenceService).updateEvidence("1", EVIDENCE_REQUEST.evidence)
   }
 
   private fun setEvidenceRequest(

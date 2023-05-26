@@ -26,24 +26,24 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventWrapperService
 import java.time.LocalDateTime
 
 class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
-  private val prisonApiGateway: PrisonApiGateway = mock()
+  private val eventWrapperService: EventWrapperService = mock()
   private val hearingOutcomeService = HearingOutcomeService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
-    prisonApiGateway,
+    eventWrapperService,
   )
 
   @Test
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     Assertions.assertThatThrownBy {
       hearingOutcomeService.createReferral(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
         adjudicator = "test",
         code = HearingOutcomeCode.REFER_POLICE,
         details = "",
@@ -53,7 +53,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     Assertions.assertThatThrownBy {
       hearingOutcomeService.getHearingOutcomeForReferral(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
         OutcomeCode.REFER_POLICE,
         1,
       )
@@ -62,21 +62,21 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     Assertions.assertThatThrownBy {
       hearingOutcomeService.deleteHearingOutcome(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
       hearingOutcomeService.removeAdjourn(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
       hearingOutcomeService.amendHearingOutcome(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
         outcomeCodeToAmend = HearingOutcomeCode.ADJOURN,
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
@@ -84,7 +84,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     Assertions.assertThatThrownBy {
       hearingOutcomeService.getCurrentStatusAndLatestOutcome(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
@@ -97,7 +97,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       .also {
         it.createdByUserId = ""
         it.createDateTime = LocalDateTime.now()
-        it.hearings.first().oicHearingId = 1
+        it.hearings.first().oicHearingId = "1"
       }
 
     @BeforeEach
@@ -115,7 +115,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = hearingOutcomeService.createReferral(
-        1,
+        "1",
         HearingOutcomeCode.REFER_POLICE,
         "test",
         "details",
@@ -136,7 +136,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = hearingOutcomeService.createAdjourn(
-        1,
+        "1",
         "test",
         HearingOutcomeAdjournReason.LEGAL_ADVICE,
         "details",
@@ -145,10 +145,10 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+      verify(eventWrapperService, atLeastOnce()).amendHearing(
         reportedAdjudication.reportNumber,
-        reportedAdjudication.hearings.first().oicHearingId,
         OicHearingRequest(
+          reportedAdjudication.hearings.first().oicHearingId,
           reportedAdjudication.hearings.first().dateTimeOfHearing,
           reportedAdjudication.hearings.first().oicHearingType,
           reportedAdjudication.hearings.first().locationId,
@@ -174,7 +174,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = hearingOutcomeService.createCompletedHearing(
-        1,
+        "1",
         "test",
         HearingOutcomePlea.UNFIT,
       )
@@ -198,7 +198,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.createReferral(1, HearingOutcomeCode.REFER_POLICE, "testing", "")
+        hearingOutcomeService.createReferral("1", HearingOutcomeCode.REFER_POLICE, "testing", "")
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Hearing not found")
     }
@@ -207,7 +207,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `throws exception if referral validation fails`() {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.createReferral(
-          adjudicationNumber = 1L,
+          adjudicationNumber = "1",
           code = HearingOutcomeCode.ADJOURN,
           adjudicator = "test",
           details = "details",
@@ -228,8 +228,8 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @BeforeEach
     fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(reportedAdjudicationWithOutcome)
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByReportNumber("2")).thenReturn(reportedAdjudicationWithOutcome)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         reportedAdjudication.also {
           it.createdByUserId = "test"
@@ -242,7 +242,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `delete hearing outcome`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
-      val response = hearingOutcomeService.deleteHearingOutcome(2)
+      val response = hearingOutcomeService.deleteHearingOutcome("2")
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
@@ -252,22 +252,21 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `delete adjourn outcome calls prison api to update hearing`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(
         reportedAdjudication.also {
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "testing")
-          it.hearings.first().oicHearingId = 1
+          it.hearings.first().oicHearingId = "1"
         },
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
-      val response = hearingOutcomeService.removeAdjourn(1)
+      val response = hearingOutcomeService.removeAdjourn("1")
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+      verify(eventWrapperService, atLeastOnce()).amendHearing(
         reportedAdjudication.reportNumber,
-        reportedAdjudication.hearings.first().oicHearingId,
-        OicHearingRequest(reportedAdjudication.hearings.first().dateTimeOfHearing, reportedAdjudication.hearings.first().oicHearingType, reportedAdjudication.hearings.first().locationId),
+        OicHearingRequest(reportedAdjudication.hearings.first().oicHearingId, reportedAdjudication.hearings.first().dateTimeOfHearing, reportedAdjudication.hearings.first().oicHearingType, reportedAdjudication.hearings.first().locationId),
       )
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNull()
@@ -277,7 +276,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `delete hearing outcome throws no outcome found for adjudication `() {
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.deleteHearingOutcome(1)
+        hearingOutcomeService.deleteHearingOutcome("1")
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("outcome not found for hearing")
     }
@@ -285,7 +284,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("REFER_POLICE", "REFER_INAD", "COMPLETE")
     @ParameterizedTest
     fun `remove adjourn throws exception if latest outcome is not an adjourn `(code: HearingOutcomeCode) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(
         reportedAdjudication.also {
           it.hearings.first().hearingOutcome = HearingOutcome(code = code, adjudicator = "")
         },
@@ -293,7 +292,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         hearingOutcomeService.removeAdjourn(
-          adjudicationNumber = 1L,
+          adjudicationNumber = "1",
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("latest outcome is not an adjourn")
@@ -301,7 +300,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `remove adjourn throws exception if no hearing `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(
         reportedAdjudication.also {
           it.hearings.clear()
         },
@@ -309,7 +308,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         hearingOutcomeService.removeAdjourn(
-          adjudicationNumber = 1L,
+          adjudicationNumber = "1",
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Hearing not found")
@@ -319,7 +318,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `remove adjourn throws exception if no outcome `() {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.removeAdjourn(
-          adjudicationNumber = 1L,
+          adjudicationNumber = "1",
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("outcome not found for hearing")
@@ -331,20 +330,20 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `no hearing outcomes for referral`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.hearings.forEach { h -> h.hearingOutcome = null }
         },
       )
 
-      val result = hearingOutcomeService.getHearingOutcomeForReferral(1, OutcomeCode.REFER_POLICE, 0)
+      val result = hearingOutcomeService.getHearingOutcomeForReferral("1", OutcomeCode.REFER_POLICE, 0)
 
       assertThat(result).isNull()
     }
 
     @Test
     fun `one hearing outcome for referral`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.hearings.forEach { h ->
             h.hearingOutcome = HearingOutcome(
@@ -355,7 +354,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val result = hearingOutcomeService.getHearingOutcomeForReferral(1, OutcomeCode.REFER_POLICE, 0)
+      val result = hearingOutcomeService.getHearingOutcomeForReferral("1", OutcomeCode.REFER_POLICE, 0)
 
       assertThat(result).isNotNull
       assertThat(result!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
@@ -363,7 +362,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `multiple hearing outcomes for multiple referrals with correct date order`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.hearings.clear()
           it.hearings.add(
@@ -371,9 +370,9 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
               dateTimeOfHearing = LocalDateTime.now().plusDays(1),
               oicHearingType = OicHearingType.GOV,
               agencyId = "1",
-              reportNumber = 2,
+              reportNumber = "2",
               locationId = 1,
-              oicHearingId = 1,
+              oicHearingId = "1",
             ).also { h ->
               h.hearingOutcome = HearingOutcome(
                 code = HearingOutcomeCode.REFER_POLICE,
@@ -387,9 +386,9 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
               dateTimeOfHearing = LocalDateTime.now(),
               oicHearingType = OicHearingType.GOV,
               agencyId = "1",
-              reportNumber = 2,
+              reportNumber = "2",
               locationId = 1,
-              oicHearingId = 1,
+              oicHearingId = "1",
             ).also { h ->
               h.hearingOutcome = HearingOutcome(
                 code = HearingOutcomeCode.REFER_POLICE,
@@ -401,7 +400,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val result = hearingOutcomeService.getHearingOutcomeForReferral(1, OutcomeCode.REFER_POLICE, 1)
+      val result = hearingOutcomeService.getHearingOutcomeForReferral("1", OutcomeCode.REFER_POLICE, 1)
 
       assertThat(result).isNotNull
       assertThat(result!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
@@ -410,7 +409,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `multiple hearing outcomes for multiple referrals where the first REFER_POLICE was without a hearing`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.hearings.clear()
           it.hearings.add(
@@ -418,9 +417,9 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
               dateTimeOfHearing = LocalDateTime.now(),
               oicHearingType = OicHearingType.GOV,
               agencyId = "1",
-              reportNumber = 2,
+              reportNumber = "2",
               locationId = 1,
-              oicHearingId = 1,
+              oicHearingId = "1",
             ).also { h ->
               h.hearingOutcome = HearingOutcome(
                 code = HearingOutcomeCode.REFER_POLICE,
@@ -432,11 +431,11 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val result = hearingOutcomeService.getHearingOutcomeForReferral(1, OutcomeCode.REFER_POLICE, 1)
+      val result = hearingOutcomeService.getHearingOutcomeForReferral("1", OutcomeCode.REFER_POLICE, 1)
 
       assertThat(result).isNotNull
       assertThat(result!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
-      assertThat(result.id).isEqualTo(1)
+      assertThat(result.id).isEqualTo(1L)
     }
   }
 
@@ -445,10 +444,10 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
       .also {
         it.hearings.clear()
-        it.hearings.add(Hearing(dateTimeOfHearing = LocalDateTime.now(), oicHearingId = 1L, reportNumber = 1L, agencyId = "", oicHearingType = OicHearingType.GOV, locationId = 1L))
+        it.hearings.add(Hearing(dateTimeOfHearing = LocalDateTime.now(), oicHearingId = "1", reportNumber = "1", agencyId = "", oicHearingType = OicHearingType.GOV, locationId = 1L))
         it.createdByUserId = ""
         it.createDateTime = LocalDateTime.now()
-        it.hearings.first().oicHearingId = 1
+        it.hearings.first().oicHearingId = "1"
       }
 
     @BeforeEach
@@ -474,7 +473,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         hearingOutcomeService.amendHearingOutcome(
-          adjudicationNumber = 1,
+          adjudicationNumber = "1",
           outcomeCodeToAmend = HearingOutcomeCode.NOMIS,
         )
       }.isInstanceOf(RuntimeException::class.java)
@@ -488,7 +487,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       Assertions.assertThatThrownBy {
         hearingOutcomeService.amendHearingOutcome(
-          adjudicationNumber = 1,
+          adjudicationNumber = "1",
           outcomeCodeToAmend = HearingOutcomeCode.ADJOURN,
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
@@ -499,7 +498,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `throws entity not found if no outcome `() {
       Assertions.assertThatThrownBy {
         hearingOutcomeService.amendHearingOutcome(
-          adjudicationNumber = 1,
+          adjudicationNumber = "1",
           outcomeCodeToAmend = HearingOutcomeCode.ADJOURN,
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
@@ -515,7 +514,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.amendHearingOutcome(1, outcomeCodeToAmend = code)
+        hearingOutcomeService.amendHearingOutcome("1", outcomeCodeToAmend = code)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("latest outcome is not of same type")
     }
@@ -531,7 +530,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val response = hearingOutcomeService.amendHearingOutcome(
-        adjudicationNumber = 1L,
+        adjudicationNumber = "1",
         outcomeCodeToAmend = code,
         adjudicator = "updated adjudicator",
         details = "updated details",
@@ -564,7 +563,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val response = hearingOutcomeService.amendHearingOutcome(
-        adjudicationNumber = 1L,
+        adjudicationNumber = "1",
         adjudicator = "updated adjudicator",
         outcomeCodeToAmend = HearingOutcomeCode.ADJOURN,
         details = "updated details",
@@ -574,10 +573,10 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+      verify(eventWrapperService, atLeastOnce()).amendHearing(
         reportedAdjudication.reportNumber,
-        reportedAdjudication.hearings.first().oicHearingId,
         OicHearingRequest(
+          reportedAdjudication.hearings.first().oicHearingId,
           reportedAdjudication.hearings.first().dateTimeOfHearing,
           reportedAdjudication.hearings.first().oicHearingType,
           reportedAdjudication.hearings.first().locationId,
@@ -610,7 +609,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val response = hearingOutcomeService.amendHearingOutcome(
-        adjudicationNumber = 1L,
+        adjudicationNumber = "1",
         outcomeCodeToAmend = HearingOutcomeCode.COMPLETE,
         adjudicator = "updated adjudicator",
         plea = HearingOutcomePlea.GUILTY,
@@ -642,7 +641,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       Assertions.assertThatThrownBy {
         hearingOutcomeService.getCurrentStatusAndLatestOutcome(
-          adjudicationNumber = 1,
+          adjudicationNumber = "1",
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Hearing not found")
@@ -657,7 +656,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       Assertions.assertThatThrownBy {
         hearingOutcomeService.getCurrentStatusAndLatestOutcome(
-          adjudicationNumber = 1,
+          adjudicationNumber = "1",
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("outcome not found for hearing")
@@ -672,7 +671,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val result = hearingOutcomeService.getCurrentStatusAndLatestOutcome(1L)
+      val result = hearingOutcomeService.getCurrentStatusAndLatestOutcome("1")
 
       assertThat(result.first).isEqualTo(ReportedAdjudicationStatus.DISMISSED)
       assertThat(result.second.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)

@@ -16,7 +16,7 @@ class ReferralService(
 ) {
 
   fun createReferral(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     code: HearingOutcomeCode,
     adjudicator: String,
     details: String,
@@ -36,7 +36,7 @@ class ReferralService(
     )
   }
 
-  fun removeReferral(adjudicationNumber: Long): ReportedAdjudicationDto {
+  fun removeReferral(adjudicationNumber: String): ReportedAdjudicationDto {
     val outcomes = outcomeService.getOutcomes(adjudicationNumber).validateHasReferral().validateReferralIsLatest()
     val outcomeToRemove = outcomes.last()
     val outcomeIndex = outcomes.filter { it.outcome.code == outcomeToRemove.outcome.code }.indexOf(outcomeToRemove)

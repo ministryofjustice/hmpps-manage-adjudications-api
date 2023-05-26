@@ -22,8 +22,8 @@ data class Punishment(
   @field:Length(max = 32)
   var otherPrivilege: String? = null,
   var stoppagePercentage: Int? = null,
-  var activatedBy: Long? = null,
-  var activatedFrom: Long? = null,
+  var activatedBy: String? = null,
+  var activatedFrom: String? = null,
   var suspendedUntil: LocalDate? = null,
   var amount: Double? = null,
   var sanctionSeq: Long? = null,

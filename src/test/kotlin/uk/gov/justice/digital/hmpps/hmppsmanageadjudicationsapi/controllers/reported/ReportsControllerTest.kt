@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.IssuedStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.ADJUDICATION_NUMBER
 import java.time.LocalDate
 
 @WebMvcTest(
@@ -98,7 +99,7 @@ class ReportsControllerTest : TestControllerBase() {
       .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").value(1))
       .andExpect(MockMvcResultMatchers.jsonPath("$.size").value(20))
       .andExpect(MockMvcResultMatchers.jsonPath("$.number").value(0))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].adjudicationNumber").value(1))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].adjudicationNumber").value(ADJUDICATION_NUMBER))
   }
 
   @Test
@@ -109,7 +110,7 @@ class ReportsControllerTest : TestControllerBase() {
       .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").value(1))
       .andExpect(MockMvcResultMatchers.jsonPath("$.size").value(20))
       .andExpect(MockMvcResultMatchers.jsonPath("$.number").value(0))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].adjudicationNumber").value(1))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].adjudicationNumber").value(ADJUDICATION_NUMBER))
 
     verify(reportsService).getMyReportedAdjudications(
       "MDI",

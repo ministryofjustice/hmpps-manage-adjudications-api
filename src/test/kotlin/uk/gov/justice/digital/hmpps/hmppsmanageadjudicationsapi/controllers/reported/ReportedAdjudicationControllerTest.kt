@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import jakarta.persistence.EntityNotFoundException
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.anyLong
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.ADJUDICATION_NUMBER
 import java.time.LocalDateTime
 
 @WebMvcTest(
@@ -36,32 +37,32 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
   inner class ReportedAdjudicationDetails {
     @Test
     fun `responds with a unauthorised status code`() {
-      makeGetAdjudicationRequest(1)
+      makeGetAdjudicationRequest("1")
         .andExpect(status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER")
     fun `returns the adjudication for a given id`() {
-      whenever(reportedAdjudicationService.getReportedAdjudicationDetails(anyLong())).thenReturn(
+      whenever(reportedAdjudicationService.getReportedAdjudicationDetails(anyString())).thenReturn(
         REPORTED_ADJUDICATION_DTO,
       )
-      makeGetAdjudicationRequest(1)
+      makeGetAdjudicationRequest("1")
         .andExpect(status().isOk)
-        .andExpect(jsonPath("$.reportedAdjudication.adjudicationNumber").value(1))
-      verify(reportedAdjudicationService).getReportedAdjudicationDetails(1)
+        .andExpect(jsonPath("$.reportedAdjudication.adjudicationNumber").value(ADJUDICATION_NUMBER))
+      verify(reportedAdjudicationService).getReportedAdjudicationDetails("1")
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER")
     fun `responds with an not found status code`() {
-      whenever(reportedAdjudicationService.getReportedAdjudicationDetails(anyLong())).thenThrow(EntityNotFoundException::class.java)
+      whenever(reportedAdjudicationService.getReportedAdjudicationDetails(anyString())).thenThrow(EntityNotFoundException::class.java)
 
-      makeGetAdjudicationRequest(1).andExpect(status().isNotFound)
+      makeGetAdjudicationRequest("1").andExpect(status().isNotFound)
     }
 
     private fun makeGetAdjudicationRequest(
-      adjudicationNumber: Long,
+      adjudicationNumber: String,
     ): ResultActions {
       return mockMvc
         .perform(
@@ -75,7 +76,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
   inner class ReportedAdjudicationSetReportedAdjudicationStatus {
 
     private fun makeReportedAdjudicationSetStatusRequest(
-      adjudicationNumber: Long,
+      adjudicationNumber: String,
       body: Map<String, Any>,
     ): ResultActions {
       return mockMvc
@@ -91,7 +92,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     fun `returns a bad request when the maximum details length has been exceeded`() {
       val largeStatement = IntRange(0, 4001).joinToString("") { "A" }
       makeReportedAdjudicationSetStatusRequest(
-        123,
+        "123",
         mapOf("status" to ReportedAdjudicationStatus.RETURNED, "statusDetails" to largeStatement),
       ).andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.userMessage").value("The details of why the status has been set exceeds the maximum character limit of 4000"))
@@ -102,7 +103,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     fun `returns a bad request when the maximum reason length has been exceeded`() {
       val largeStatement = IntRange(0, 128).joinToString("") { "A" }
       makeReportedAdjudicationSetStatusRequest(
-        123,
+        "123",
         mapOf(
           "status" to ReportedAdjudicationStatus.RETURNED,
           "statusReason" to largeStatement,
@@ -115,15 +116,15 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `makes a call to set the status of the reported adjudication`() {
       makeReportedAdjudicationSetStatusRequest(
-        123,
+        "123",
         mapOf("status" to ReportedAdjudicationStatus.RETURNED, "statusReason" to "reason", "statusDetails" to "details"),
       )
-      verify(reportedAdjudicationService).setStatus(123, ReportedAdjudicationStatus.RETURNED, "reason", "details")
+      verify(reportedAdjudicationService).setStatus("123", ReportedAdjudicationStatus.RETURNED, "reason", "details")
     }
 
     @Test
     fun `responds with a unauthorised status code`() {
-      makeReportedAdjudicationSetStatusRequest(123, mapOf("status" to ReportedAdjudicationStatus.RETURNED)).andExpect(
+      makeReportedAdjudicationSetStatusRequest("123", mapOf("status" to ReportedAdjudicationStatus.RETURNED)).andExpect(
         status().isUnauthorized,
       )
     }
@@ -135,7 +136,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     private val now = LocalDateTime.now()
 
     private fun makeIssuedRequest(
-      adjudicationNumber: Long,
+      adjudicationNumber: String,
       issuedRequest: IssueRequest,
     ): ResultActions {
       return mockMvc
@@ -148,7 +149,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
 
     @Test
     fun `responds with a unauthorised status code`() {
-      makeIssuedRequest(1, IssueRequest(now))
+      makeIssuedRequest("1", IssueRequest(now))
         .andExpect(status().isUnauthorized)
     }
 
@@ -156,12 +157,12 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds successfully from issued details request `() {
       whenever(
-        reportedAdjudicationService.setIssued(anyLong(), any()),
+        reportedAdjudicationService.setIssued(anyString(), any()),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
 
-      makeIssuedRequest(1, IssueRequest(now))
+      makeIssuedRequest("1", IssueRequest(now))
         .andExpect(status().isOk)
-      verify(reportedAdjudicationService).setIssued(1, now)
+      verify(reportedAdjudicationService).setIssued("1", now)
     }
   }
 }

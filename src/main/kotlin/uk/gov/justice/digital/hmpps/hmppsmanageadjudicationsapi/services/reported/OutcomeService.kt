@@ -31,14 +31,14 @@ class OutcomeService(
 ) {
 
   fun createProsecution(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
   ): ReportedAdjudicationDto = createOutcome(
     adjudicationNumber = adjudicationNumber,
     code = OutcomeCode.PROSECUTION,
   )
 
   fun createDismissed(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     details: String,
     validate: Boolean = true,
   ): ReportedAdjudicationDto = createOutcome(
@@ -49,7 +49,7 @@ class OutcomeService(
   )
 
   fun createNotProceed(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     reason: NotProceedReason,
     details: String,
     validate: Boolean = true,
@@ -62,7 +62,7 @@ class OutcomeService(
   )
 
   fun createReferral(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     code: OutcomeCode,
     details: String,
     validate: Boolean = true,
@@ -74,7 +74,7 @@ class OutcomeService(
   )
 
   fun createChargeProved(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     amount: Double? = null,
     caution: Boolean,
     validate: Boolean = true,
@@ -87,7 +87,7 @@ class OutcomeService(
   )
 
   fun createQuashed(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     reason: QuashedReason,
     details: String,
   ): ReportedAdjudicationDto {
@@ -102,7 +102,7 @@ class OutcomeService(
   }
 
   fun amendOutcomeViaApi(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     details: String,
     reason: NotProceedReason? = null,
     quashedReason: QuashedReason? = null,
@@ -120,7 +120,7 @@ class OutcomeService(
   }
 
   fun amendOutcomeViaService(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     outcomeCodeToAmend: OutcomeCode,
     details: String? = null,
     notProceedReason: NotProceedReason? = null,
@@ -139,7 +139,7 @@ class OutcomeService(
   }
 
   private fun createOutcome(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     code: OutcomeCode,
     details: String? = null,
     reason: NotProceedReason? = null,
@@ -184,7 +184,7 @@ class OutcomeService(
   }
 
   private fun amendOutcome(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     details: String? = null,
     reason: NotProceedReason? = null,
     quashedReason: QuashedReason? = null,
@@ -217,7 +217,7 @@ class OutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun deleteOutcome(adjudicationNumber: Long, id: Long? = null): ReportedAdjudicationDto {
+  fun deleteOutcome(adjudicationNumber: String, id: Long? = null): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
     val outcomeToDelete = when (id) {
@@ -241,12 +241,12 @@ class OutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun getOutcomes(adjudicationNumber: Long): List<CombinedOutcomeDto> {
+  fun getOutcomes(adjudicationNumber: String): List<CombinedOutcomeDto> {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     return reportedAdjudication.getOutcomes().createCombinedOutcomes(reportedAdjudication.getPunishments())
   }
 
-  fun getLatestOutcome(adjudicationNumber: Long): Outcome? = findByAdjudicationNumber(adjudicationNumber).latestOutcome()
+  fun getLatestOutcome(adjudicationNumber: String): Outcome? = findByAdjudicationNumber(adjudicationNumber).latestOutcome()
 
   companion object {
     fun ReportedAdjudication.latestOutcome(): Outcome? = this.getOutcomes().maxByOrNull { it.createDateTime!! }

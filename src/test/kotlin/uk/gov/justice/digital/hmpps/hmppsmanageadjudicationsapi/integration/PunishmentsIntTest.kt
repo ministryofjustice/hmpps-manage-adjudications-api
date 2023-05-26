@@ -322,7 +322,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   }
 
   private fun createPunishments(
-    adjudicationNumber: Long = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+    adjudicationNumber: String = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
     type: PunishmentType = PunishmentType.CONFINEMENT,
   ): WebTestClient.ResponseSpec {
     val suspendedUntil = LocalDate.now().plusMonths(1)
@@ -346,7 +346,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   }
 
   private fun createPunishmentComment(
-    adjudicationNumber: Long = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+    adjudicationNumber: String = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/$adjudicationNumber/punishments/comment")

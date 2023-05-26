@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.ADJUDICATION_NUMBER
 import java.time.LocalDateTime
 
 @DataJpaTest
@@ -239,7 +240,7 @@ class DraftAdjudicationRepositoryTest {
       DraftAdjudication(
         prisonerNumber = "A12347",
         gender = Gender.MALE,
-        reportNumber = 123,
+        reportNumber = "1234",
         reportByUserId = "A_SMITH",
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
@@ -275,7 +276,7 @@ class DraftAdjudicationRepositoryTest {
   @Test
   fun `delete orphaned adjudications should do nothing if they are not old enough`() {
     val deleteBefore = LocalDateTime.now()
-    val draft = draftWithAllData(1L)
+    val draft = draftWithAllData(ADJUDICATION_NUMBER)
     entityManager.persistAndFlush(draft)
     // We should not delete anything because the time we use was at the very beginning of the test, before we created anything.
     val deleted =
@@ -285,7 +286,7 @@ class DraftAdjudicationRepositoryTest {
 
   @Test
   fun `delete orphaned adjudications should completely remove orphaned adjudications if they are old enough`() {
-    val draft = draftWithAllData(1L)
+    val draft = draftWithAllData(ADJUDICATION_NUMBER)
     val saved = entityManager.persistAndFlush(draft)
     val deleteBefore = LocalDateTime.now().plusSeconds(1)
     // We should delete the saved adjudication because the time we use is in the future, after the draft was created.
@@ -320,7 +321,7 @@ class DraftAdjudicationRepositoryTest {
     )
   }
 
-  private fun draftWithAllData(reportNumber: Long? = null): DraftAdjudication {
+  private fun draftWithAllData(reportNumber: String? = null): DraftAdjudication {
     return DraftAdjudication(
       reportNumber = reportNumber,
       prisonerNumber = "A12345",

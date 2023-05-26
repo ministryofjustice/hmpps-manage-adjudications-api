@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 @Schema(description = "Reported adjudication details")
 data class ReportedAdjudicationDto(
   @Schema(description = "The number for the reported adjudication")
-  val adjudicationNumber: Long,
+  val adjudicationNumber: String,
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
   @Schema(description = "Gender applied for adjuducation rules", example = "MALE")
@@ -136,6 +136,8 @@ data class ReportedWitnessDto(
 data class HearingDto(
   @Schema(description = "The id of the hearing")
   val id: Long? = null,
+  @Schema(description = "The OIC hearing ID")
+  val oicHearingId: String? = null,
   @Schema(description = "The id of the location of the hearing")
   val locationId: Long,
   @Schema(description = "Date and time the hearing will take place", example = "2010-10-12T10:00:00")
@@ -171,7 +173,7 @@ data class HearingSummaryDto(
   @Schema(description = "Date and time the incident was discovered", example = "2010-10-12T10:00:00")
   val dateTimeOfDiscovery: LocalDateTime,
   @Schema(description = "The number for the reported adjudication")
-  val adjudicationNumber: Long,
+  val adjudicationNumber: String,
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
   @Schema(description = "type of hearing")
@@ -235,9 +237,9 @@ data class PunishmentDto(
   @Schema(description = "optional stoppage of earnings percentage")
   val stoppagePercentage: Int? = null,
   @Schema(description = "optional activated by report number")
-  val activatedBy: Long? = null,
+  val activatedBy: String? = null,
   @Schema(description = "optional activated from report number")
-  val activatedFrom: Long? = null,
+  val activatedFrom: String? = null,
   @Schema(description = "latest punishment schedule")
   val schedule: PunishmentScheduleDto,
 )
@@ -257,7 +259,7 @@ data class PunishmentScheduleDto(
 @Schema(description = "suspended punishment dto")
 data class SuspendedPunishmentDto(
   @Schema(description = "report number punishment from")
-  val reportNumber: Long,
+  val reportNumber: String,
   @Schema(description = "punishment dto")
   val punishment: PunishmentDto,
 )

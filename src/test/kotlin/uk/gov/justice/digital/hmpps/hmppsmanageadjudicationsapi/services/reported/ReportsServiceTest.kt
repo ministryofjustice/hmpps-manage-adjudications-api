@@ -28,11 +28,11 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @BeforeEach
     fun beforeEach() {
       val reportedAdjudication1 =
-        entityBuilder.reportedAdjudication(reportNumber = 1L, dateTime = DATE_TIME_OF_INCIDENT)
+        entityBuilder.reportedAdjudication(reportNumber = "1", dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
       val reportedAdjudication2 =
-        entityBuilder.reportedAdjudication(reportNumber = 2L, dateTime = DATE_TIME_OF_INCIDENT)
+        entityBuilder.reportedAdjudication(reportNumber = "2", dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
       whenever(
@@ -82,8 +82,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(myReportedAdjudications.content)
         .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
         .contains(
-          Tuple.tuple(1L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME),
-          Tuple.tuple(2L, "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
+          Tuple.tuple("1", "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME),
+          Tuple.tuple("2", "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
         )
     }
   }
@@ -93,11 +93,11 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @BeforeEach
     fun beforeEach() {
       val reportedAdjudication1 =
-        entityBuilder.reportedAdjudication(reportNumber = 1L, dateTime = DATE_TIME_OF_INCIDENT)
+        entityBuilder.reportedAdjudication(reportNumber = "1", dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
       val reportedAdjudication2 =
-        entityBuilder.reportedAdjudication(reportNumber = 2L, dateTime = DATE_TIME_OF_INCIDENT)
+        entityBuilder.reportedAdjudication(reportNumber = "2", dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
       whenever(
@@ -129,8 +129,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(myReportedAdjudications.content)
         .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
         .contains(
-          Tuple.tuple(1L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME),
-          Tuple.tuple(2L, "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
+          Tuple.tuple("1", "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME),
+          Tuple.tuple("2", "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
         )
     }
   }
@@ -162,8 +162,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response)
         .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
         .contains(
-          Tuple.tuple(3L, "A12345", "testing", now),
-          Tuple.tuple(2L, "A12345", null, null),
+          Tuple.tuple("3", "A12345", "testing", now),
+          Tuple.tuple("2", "A12345", null, null),
         )
 
       assertThat(response.first().incidentDetails)
@@ -223,7 +223,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response)
         .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
         .contains(
-          Tuple.tuple(3L, "A12345", "testing", now),
+          Tuple.tuple("3", "A12345", "testing", now),
         )
 
       assertThat(response.first().incidentDetails)
@@ -243,7 +243,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response)
         .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
         .contains(
-          Tuple.tuple(4L, "A12345", "testing", now),
+          Tuple.tuple("4", "A12345", "testing", now),
         )
 
       assertThat(response.first().incidentDetails)
@@ -263,7 +263,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response)
         .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
         .contains(
-          Tuple.tuple(2L, "A12345", null, null),
+          Tuple.tuple("2", "A12345", null, null),
         )
 
       assertThat(response.first().incidentDetails)
@@ -282,7 +282,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     private val now = LocalDateTime.now()
 
     private val third = entityBuilder.reportedAdjudication(
-      reportNumber = 4L,
+      reportNumber = "4",
       dateTime = now.minusDays(3),
     ).also {
       it.status = ReportedAdjudicationStatus.SCHEDULED
@@ -294,7 +294,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     private val second = entityBuilder.reportedAdjudication(
-      reportNumber = 2L,
+      reportNumber = "2",
       dateTime = now.minusDays(2),
     ).also {
       it.status = ReportedAdjudicationStatus.UNSCHEDULED
@@ -304,7 +304,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     private val first = entityBuilder.reportedAdjudication(
-      reportNumber = 3L,
+      reportNumber = "3",
       dateTime = now.minusDays(3),
     ).also {
       it.status = ReportedAdjudicationStatus.SCHEDULED

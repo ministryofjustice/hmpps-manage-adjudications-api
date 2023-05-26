@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.ADJUDICATION_NUMBER
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -54,21 +55,21 @@ class ReportedAdjudicationRepositoryTest {
   fun setUp() {
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 1234L,
+        reportNumber = "1234",
         dateTime = dateTimeOfIncident,
         hearingId = null,
       ),
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 1235L,
+        reportNumber = ADJUDICATION_NUMBER,
         dateTime = dateTimeOfIncident.plusHours(1),
         hearingId = null,
       ),
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 1236L,
+        reportNumber = "1236",
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "LEI",
         hearingId = null,
@@ -76,7 +77,7 @@ class ReportedAdjudicationRepositoryTest {
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 9999L,
+        reportNumber = "9999",
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "TJW",
         hearingId = null,
@@ -87,7 +88,7 @@ class ReportedAdjudicationRepositoryTest {
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 9998L,
+        reportNumber = "9998",
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "XXX",
         hearingId = null,
@@ -99,7 +100,7 @@ class ReportedAdjudicationRepositoryTest {
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 9997L,
+        reportNumber = "9997",
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "LEI",
         hearingId = null,
@@ -113,7 +114,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `save a new reported adjudication`() {
-    val adjudication = entityBuilder.reportedAdjudication(reportNumber = 1238L, hearingId = null)
+    val adjudication = entityBuilder.reportedAdjudication(reportNumber = "1238", hearingId = null)
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity)
@@ -227,7 +228,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `update offence details of an existing reported adjudication`() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByReportNumber("1236")
 
     adjudication!!.offenceDetails =
       mutableListOf(
@@ -259,17 +260,17 @@ class ReportedAdjudicationRepositoryTest {
       )
       .contains(
         Tuple(
-          adjudication.offenceDetails!![0].offenceCode,
-          adjudication.offenceDetails!![0].victimPrisonersNumber,
-          adjudication.offenceDetails!![0].victimStaffUsername,
-          adjudication.offenceDetails!![0].victimOtherPersonsName,
+          adjudication.offenceDetails[0].offenceCode,
+          adjudication.offenceDetails[0].victimPrisonersNumber,
+          adjudication.offenceDetails[0].victimStaffUsername,
+          adjudication.offenceDetails[0].victimOtherPersonsName,
         ),
       )
   }
 
   @Test
   fun `set the status an existing reported adjudication`() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByReportNumber("1236")
 
     adjudication!!.transition(
       to = ReportedAdjudicationStatus.REJECTED,
@@ -290,12 +291,12 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `find reported adjudications by report number`() {
-    val foundAdjudication = reportedAdjudicationRepository.findByReportNumber(1234L)
+    val foundAdjudication = reportedAdjudicationRepository.findByReportNumber("1234")
 
     assertThat(foundAdjudication)
       .extracting("reportNumber", "statement")
       .contains(
-        1234L,
+        "1234",
         "Example statement",
       )
   }
@@ -315,7 +316,7 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(foundAdjudications.content).hasSize(1)
       .extracting("reportNumber")
       .contains(
-        1236L,
+        "1236",
       )
   }
 
@@ -333,7 +334,7 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(foundAdjudications).hasSize(1)
       .extracting("reportNumber")
       .contains(
-        9998L,
+        "9998",
       )
   }
 
@@ -352,7 +353,7 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(foundAdjudications).hasSize(1)
       .extracting("reportNumber")
       .contains(
-        9997L,
+        "9997",
       )
   }
 
@@ -371,7 +372,7 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(foundAdjudications).hasSize(1)
       .extracting("reportNumber")
       .contains(
-        9999L,
+        "9999",
       )
   }
 
@@ -392,8 +393,8 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(foundAdjudications.content).hasSize(2)
       .extracting("reportNumber")
       .contains(
-        1234L,
-        1235L,
+        "1234",
+        ADJUDICATION_NUMBER,
       )
   }
 
@@ -401,7 +402,7 @@ class ReportedAdjudicationRepositoryTest {
   fun `validation error to confirm annotation works`() {
     assertThatThrownBy {
       entityManager.persistAndFlush(
-        entityBuilder.reportedAdjudication(1237L).also {
+        entityBuilder.reportedAdjudication("1237").also {
           it.damages.add(
             ReportedDamage(
               code = DamageCode.REDECORATION,
@@ -417,7 +418,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `get adjudications by report number in `() {
     val adjudications = reportedAdjudicationRepository.findByReportNumberIn(
-      listOf(1234L, 1235L, 1236L),
+      listOf("1234", ADJUDICATION_NUMBER, "1236"),
     )
 
     assertThat(adjudications.size).isEqualTo(3)
@@ -437,7 +438,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `set issue details `() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByReportNumber("1236")
     val now = LocalDateTime.now()
     adjudication!!.issuingOfficer = "testing"
     adjudication.dateTimeOfIssue = now
@@ -451,7 +452,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `hearing outcome`() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByReportNumber("1236")
     adjudication!!.hearings.first().hearingOutcome = HearingOutcome(
       adjudicator = "test",
       code = HearingOutcomeCode.REFER_POLICE,
@@ -466,7 +467,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `adjudication outcome`() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByReportNumber("1236")
     adjudication!!.addOutcome(Outcome(code = OutcomeCode.REFER_POLICE))
 
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
@@ -476,7 +477,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `punishment and schedule `() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByReportNumber("1236")
     adjudication!!.addPunishment(
       Punishment(
         type = PunishmentType.ADDITIONAL_DAYS,
@@ -497,7 +498,7 @@ class ReportedAdjudicationRepositoryTest {
   fun `suspended search `() {
     for (i in 1..10) {
       reportedAdjudicationRepository.save(
-        entityBuilder.reportedAdjudication(reportNumber = i.toLong()).also {
+        entityBuilder.reportedAdjudication(reportNumber = i.toString()).also {
           it.prisonerNumber = "TEST"
           it.hearings.clear()
           it.addPunishment(
@@ -525,7 +526,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `punishment comments`() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByReportNumber("1236")
     adjudication!!.punishmentComments.add(PunishmentComment(comment = "some text"))
 
     val savedEntity = reportedAdjudicationRepository.save(adjudication)

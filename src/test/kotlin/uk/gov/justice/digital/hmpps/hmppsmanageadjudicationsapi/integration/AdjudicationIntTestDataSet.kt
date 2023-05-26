@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import java.time.LocalDateTime
 
 data class AdjudicationIntTestDataSet(
-  val adjudicationNumber: Long,
+  val adjudicationNumber: String,
   val prisonerNumber: String,
   val gender: Gender = Gender.MALE,
   val bookingId: Long,

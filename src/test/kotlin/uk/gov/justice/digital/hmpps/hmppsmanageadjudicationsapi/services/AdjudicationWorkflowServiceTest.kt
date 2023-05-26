@@ -21,7 +21,6 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
@@ -42,13 +41,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudicationCreationRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationServiceTest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftOffenceService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.ValidationChecks
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.ADJUDICATION_NUMBER
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.Clock
 import java.time.Instant
@@ -58,7 +57,7 @@ import java.util.Optional
 
 class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
-  private val prisonApiGateway: PrisonApiGateway = mock()
+  private val eventWrapperService: EventWrapperService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val draftOffenceService: DraftOffenceService = mock()
@@ -67,7 +66,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     draftAdjudicationRepository,
     reportedAdjudicationRepository,
     offenceCodeLookupService,
-    prisonApiGateway,
+    eventWrapperService,
     authenticationFacade,
     telemetryClient,
     draftOffenceService,
@@ -80,7 +79,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     private val expectedSavedDraftAdjudication = DraftAdjudication(
       prisonerNumber = "A12345",
       gender = Gender.MALE,
-      reportNumber = 1235L,
+      reportNumber = ADJUDICATION_NUMBER,
       reportByUserId = "A_SMITH",
       agencyId = "MDI",
       incidentDetails = IncidentDetails(
@@ -136,18 +135,18 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `adds the relevant draft data to the repository`() {
-      adjudicationWorkflowService.createDraftFromReportedAdjudication(123)
+      adjudicationWorkflowService.createDraftFromReportedAdjudication("123")
 
       verify(draftAdjudicationRepository).save(expectedSavedDraftAdjudication)
     }
 
     @Test
     fun `returns the correct data`() {
-      val createdDraft = adjudicationWorkflowService.createDraftFromReportedAdjudication(123)
+      val createdDraft = adjudicationWorkflowService.createDraftFromReportedAdjudication("123")
 
       assertThat(createdDraft)
         .extracting("prisonerNumber", "id", "adjudicationNumber", "startedByUserId", "gender")
-        .contains("A12345", 1L, 1235L, "A_SMITH", Gender.MALE)
+        .contains("A12345", 1L, ADJUDICATION_NUMBER, "A_SMITH", Gender.MALE)
       assertThat(createdDraft.incidentDetails)
         .extracting("dateTimeOfIncident", "handoverDeadline", "locationId")
         .contains(
@@ -241,9 +240,9 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         Optional.of(draft),
       )
 
-      whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
+      whenever(eventWrapperService.requestAdjudicationCreationData(any())).thenReturn(
         NomisAdjudicationCreationRequest(
-          adjudicationNumber = 123456L,
+          adjudicationNumber = "123456",
           bookingId = 1L,
         ),
       )
@@ -265,7 +264,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId", "gender")
-        .contains("A12345", 123456L, 1L, "MDI", Gender.MALE)
+        .contains("A12345", "123456", 1L, "MDI", Gender.MALE)
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting(
@@ -326,7 +325,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     fun `makes a call to prison api to get creation data`() {
       adjudicationWorkflowService.completeDraftAdjudication(1)
 
-      verify(prisonApiGateway).requestAdjudicationCreationData("A12345")
+      verify(eventWrapperService).requestAdjudicationCreationData("A12345")
     }
 
     @Test
@@ -419,7 +418,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             id = 1,
             prisonerNumber = "A12345",
             gender = Gender.MALE,
-            reportNumber = 123,
+            reportNumber = "123",
             agencyId = "MDI",
             incidentDetails = incidentDetails(2L, INCIDENT_TIME),
             incidentRole = incidentRoleWithNoValuesSet(),
@@ -429,9 +428,9 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           ),
         ),
       )
-      whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
+      whenever(eventWrapperService.requestAdjudicationCreationData(any())).thenReturn(
         NomisAdjudicationCreationRequest(
-          adjudicationNumber = 123,
+          adjudicationNumber = "123",
           bookingId = 33,
         ),
       )
@@ -492,7 +491,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             id = 1,
             prisonerNumber = "A12345",
             gender = Gender.MALE,
-            reportNumber = 123L,
+            reportNumber = "123",
             reportByUserId = "A_SMITH",
             agencyId = "MDI",
             incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, clock),
@@ -528,9 +527,9 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           )
         },
       )
-      whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
+      whenever(eventWrapperService.requestAdjudicationCreationData(any())).thenReturn(
         NomisAdjudicationCreationRequest(
-          adjudicationNumber = 123,
+          adjudicationNumber = "123",
           bookingId = 33,
         ),
       )
@@ -558,14 +557,14 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     fun `updates the completed adjudication record`() {
       adjudicationWorkflowService.completeDraftAdjudication(1)
 
-      verify(reportedAdjudicationRepository, times(2)).findByReportNumber(123L)
+      verify(reportedAdjudicationRepository, times(2)).findByReportNumber("123")
 
       val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId")
-        .contains("A12345", 1235L, 234L, "MDI")
+        .contains("A12345", ADJUDICATION_NUMBER, 234L, "MDI")
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting(
@@ -672,7 +671,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     fun `does not call prison api to get creation data`() {
       adjudicationWorkflowService.completeDraftAdjudication(1)
 
-      verify(prisonApiGateway, never()).requestAdjudicationCreationData(any())
+      verify(eventWrapperService, never()).requestAdjudicationCreationData(any())
     }
 
     @Test
@@ -699,7 +698,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             id = 1,
             prisonerNumber = "A12345",
             gender = Gender.MALE,
-            reportNumber = 123L,
+            reportNumber = "123",
             reportByUserId = "A_SMITH",
             agencyId = "MDI",
             incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, clock),
@@ -740,7 +739,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
 
     assertThatThrownBy {
-      adjudicationWorkflowService.createDraftFromReportedAdjudication(1)
+      adjudicationWorkflowService.createDraftFromReportedAdjudication("1")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }
@@ -755,11 +754,9 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     const val OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another paragraph description"
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
-    private val INCIDENT_ROLE_CODE = "25a"
-    private val INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(a)"
-    private val INCIDENT_ROLE_PARAGRAPH_DESCRIPTION = "Attempts to commit any of the foregoing offences:"
-    private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
-    private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
+    private const val INCIDENT_ROLE_CODE = "25a"
+    private const val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
+    private const val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
     private const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"
     private const val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
@@ -800,17 +797,11 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       offenceCode = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
     )
 
-    fun incidentRoleDtoWithNoValuesSet(): IncidentRoleDto =
-      IncidentRoleDto(null, null, null, null)
-
     fun incidentRoleWithAllValuesSet(): IncidentRole =
       IncidentRole(null, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME)
 
     fun incidentRoleWithNoValuesSet(): IncidentRole =
       IncidentRole(null, null, null, null)
-
-    fun incidentRoleWithValuesSetForRoleCode(roleCode: String?): IncidentRole =
-      IncidentRole(null, roleCode, "2", "3")
 
     fun incidentDetails(locationId: Long, clock: Clock) = IncidentDetails(
       locationId = locationId,

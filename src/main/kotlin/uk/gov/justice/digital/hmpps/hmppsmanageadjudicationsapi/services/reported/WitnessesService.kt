@@ -21,7 +21,7 @@ class WitnessesService(
   authenticationFacade,
 ) {
 
-  fun updateWitnesses(adjudicationNumber: Long, witnesses: List<WitnessRequestItem>): ReportedAdjudicationDto {
+  fun updateWitnesses(adjudicationNumber: String, witnesses: List<WitnessRequestItem>): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val reporter = authenticationFacade.currentUsername!!
     val toPreserve = reportedAdjudication.witnesses.filter { it.reporter != reporter }

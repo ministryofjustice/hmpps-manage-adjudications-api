@@ -42,7 +42,7 @@ class EvidenceServiceTest : ReportedAdjudicationTestBase() {
   @Test
   fun `update evidence for adjudication`() {
     val response = evidenceService.updateEvidence(
-      1,
+      "1",
       listOf(
         EvidenceRequestItem(
           reportedAdjudication.evidence.first().code,
@@ -75,7 +75,7 @@ class EvidenceServiceTest : ReportedAdjudicationTestBase() {
     whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
 
     Assertions.assertThatThrownBy {
-      evidenceService.updateEvidence(1, listOf(EvidenceRequestItem(EvidenceCode.PHOTO, "", "details")))
+      evidenceService.updateEvidence("1", listOf(EvidenceRequestItem(EvidenceCode.PHOTO, "", "details")))
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }

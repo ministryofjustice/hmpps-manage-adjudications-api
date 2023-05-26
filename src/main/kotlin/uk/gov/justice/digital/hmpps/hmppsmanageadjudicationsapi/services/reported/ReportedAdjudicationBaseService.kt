@@ -209,6 +209,7 @@ open class ReportedDtoService(
     this.map {
       HearingDto(
         id = it.id,
+        oicHearingId = it.oicHearingId,
         locationId = it.locationId,
         dateTimeOfHearing = it.dateTimeOfHearing,
         oicHearingType = it.oicHearingType,
@@ -293,7 +294,7 @@ open class ReportedAdjudicationBaseService(
   protected val authenticationFacade: AuthenticationFacade,
 ) : ReportedDtoService(offenceCodeLookupService) {
 
-  protected fun findByAdjudicationNumber(adjudicationNumber: Long): ReportedAdjudication {
+  protected fun findByAdjudicationNumber(adjudicationNumber: String): ReportedAdjudication {
     val reportedAdjudication =
       reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(
         adjudicationNumber,
@@ -307,14 +308,14 @@ open class ReportedAdjudicationBaseService(
   protected fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
     reportedAdjudicationRepository.save(reportedAdjudication).toDto()
 
-  protected fun findByReportNumberIn(adjudicationNumbers: List<Long>) = reportedAdjudicationRepository.findByReportNumberIn(adjudicationNumbers)
+  protected fun findByReportNumberIn(adjudicationNumbers: List<String>) = reportedAdjudicationRepository.findByReportNumberIn(adjudicationNumbers)
 
   protected fun getReportsWithSuspendedPunishments(prisonerNumber: String) = reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(
     prisonerNumber = prisonerNumber,
     date = LocalDate.now().minusDays(1),
   )
   companion object {
-    fun throwEntityNotFoundException(id: Long): Nothing =
+    fun throwEntityNotFoundException(id: String): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")
   }
 }

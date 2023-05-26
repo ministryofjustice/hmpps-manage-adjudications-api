@@ -50,7 +50,7 @@ class ReportedAdjudicationController(
 ) : ReportedAdjudicationBaseController() {
 
   @GetMapping(value = ["/{adjudicationNumber}"])
-  fun getReportedAdjudicationDetails(@PathVariable(name = "adjudicationNumber") adjudicationNumber: Long): ReportedAdjudicationResponse {
+  fun getReportedAdjudicationDetails(@PathVariable(name = "adjudicationNumber") adjudicationNumber: String): ReportedAdjudicationResponse {
     val reportedAdjudication = reportedAdjudicationService.getReportedAdjudicationDetails(adjudicationNumber)
 
     return ReportedAdjudicationResponse(
@@ -63,7 +63,7 @@ class ReportedAdjudicationController(
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.OK)
   fun setStatus(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody @Valid
     reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest,
   ): ReportedAdjudicationResponse {
@@ -83,7 +83,7 @@ class ReportedAdjudicationController(
   @Operation(summary = "Issue DIS Form")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   fun setIssued(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody @Valid
     issueRequest: IssueRequest,
   ): ReportedAdjudicationResponse {

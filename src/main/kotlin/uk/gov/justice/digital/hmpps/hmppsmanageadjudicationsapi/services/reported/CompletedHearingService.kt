@@ -17,7 +17,7 @@ class CompletedHearingService(
 ) {
 
   fun createDismissed(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     adjudicator: String,
     plea: HearingOutcomePlea,
     details: String,
@@ -37,7 +37,7 @@ class CompletedHearingService(
   }
 
   fun createNotProceed(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     adjudicator: String,
     plea: HearingOutcomePlea,
     reason: NotProceedReason,
@@ -59,7 +59,7 @@ class CompletedHearingService(
   }
 
   fun createChargeProved(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     adjudicator: String,
     plea: HearingOutcomePlea,
     amount: Double? = null,
@@ -81,7 +81,7 @@ class CompletedHearingService(
   }
 
   fun removeOutcome(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
   ): ReportedAdjudicationDto {
     val idToRemove = outcomeService.getLatestOutcome(adjudicationNumber = adjudicationNumber).validateCanRemove().id!!
 

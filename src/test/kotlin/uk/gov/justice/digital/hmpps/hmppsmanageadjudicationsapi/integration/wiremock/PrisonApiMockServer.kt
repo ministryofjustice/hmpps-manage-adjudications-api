@@ -58,6 +58,29 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
+  fun stubGetPrisonerInfoByNoms(prisonerNumber: String, bookingId: Long) {
+    stubFor(
+      get("/api/bookings/offenderNo/$prisonerNumber").willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          // language=json
+          .withBody(
+            """
+              {
+                "agencyId": "MDI",
+                "assignedLivingUnitId": "1-1-002",
+                "bookingId": $bookingId,
+                "bookingNo": "A12121",
+                "firstName": "JOHN",
+                "lastName": "SMITH",
+                "offenderNo": "$prisonerNumber"
+              }
+            """,
+          ),
+      ),
+    )
+  }
+
   fun stubPostAdjudicationCreationRequestData(testDataSet: AdjudicationIntTestDataSet) {
     stubFor(
       post(urlEqualTo("/api/adjudications/adjudication/request-creation-data"))
@@ -141,7 +164,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubCreateHearing(adjudicationNumber: Long) {
+  fun stubCreateHearing(adjudicationNumber: String) {
     stubFor(
       post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing"))
         .willReturn(
@@ -159,7 +182,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubCreateHearingFailure(adjudicationNumber: Long) {
+  fun stubCreateHearingFailure(adjudicationNumber: String) {
     stubFor(
       post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing"))
         .willReturn(
@@ -170,7 +193,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubAmendHearing(adjudicationNumber: Long) {
+  fun stubAmendHearing(adjudicationNumber: String) {
     stubFor(
       put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
         .willReturn(
@@ -181,7 +204,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubAmendHearingFailure(adjudicationNumber: Long) {
+  fun stubAmendHearingFailure(adjudicationNumber: String) {
     stubFor(
       put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
         .willReturn(
@@ -192,7 +215,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteHearing(adjudicationNumber: Long) {
+  fun stubDeleteHearing(adjudicationNumber: String) {
     stubFor(
       delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
         .willReturn(
@@ -203,7 +226,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteHearingFailure(adjudicationNumber: Long) {
+  fun stubDeleteHearingFailure(adjudicationNumber: String) {
     stubFor(
       delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
         .willReturn(
@@ -214,7 +237,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubCreateHearingResult(adjudicationNumber: Long) {
+  fun stubCreateHearingResult(adjudicationNumber: String) {
     stubFor(
       post(
         urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"),
@@ -227,7 +250,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubAmendHearingResult(adjudicationNumber: Long) {
+  fun stubAmendHearingResult(adjudicationNumber: String) {
     stubFor(
       put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"))
         .willReturn(
@@ -238,7 +261,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteHearingResult(adjudicationNumber: Long) {
+  fun stubDeleteHearingResult(adjudicationNumber: String) {
     stubFor(
       delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"))
         .willReturn(
@@ -249,7 +272,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubCreateSanctions(adjudicationNumber: Long) {
+  fun stubCreateSanctions(adjudicationNumber: String) {
     stubFor(
       post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
         .willReturn(
@@ -260,7 +283,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubCreateSanction(adjudicationNumber: Long) {
+  fun stubCreateSanction(adjudicationNumber: String) {
     stubFor(
       post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanction"))
         .willReturn(
@@ -276,7 +299,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubUpdateSanctions(adjudicationNumber: Long) {
+  fun stubUpdateSanctions(adjudicationNumber: String) {
     stubFor(
       put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
         .willReturn(
@@ -287,7 +310,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubQuashSanctions(adjudicationNumber: Long) {
+  fun stubQuashSanctions(adjudicationNumber: String) {
     stubFor(
       put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions/quash"))
         .willReturn(
@@ -298,7 +321,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteSanctions(adjudicationNumber: Long) {
+  fun stubDeleteSanctions(adjudicationNumber: String) {
     stubFor(
       delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
         .willReturn(
@@ -309,7 +332,7 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteSanction(adjudicationNumber: Long) {
+  fun stubDeleteSanction(adjudicationNumber: String) {
     stubFor(
       delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanction/1"))
         .willReturn(

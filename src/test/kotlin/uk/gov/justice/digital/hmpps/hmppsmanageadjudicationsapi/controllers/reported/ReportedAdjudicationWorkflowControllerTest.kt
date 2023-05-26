@@ -34,7 +34,7 @@ class ReportedAdjudicationWorkflowControllerTest : TestControllerBase() {
     whenever(adjudicationWorkflowService.createDraftFromReportedAdjudication(any())).thenReturn(
       DraftAdjudicationDto(
         id = 1,
-        adjudicationNumber = 123L,
+        adjudicationNumber = "123",
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         incidentDetails = IncidentDetailsDto(
@@ -60,11 +60,11 @@ class ReportedAdjudicationWorkflowControllerTest : TestControllerBase() {
 
   @Test
   fun `responds with a unauthorised status code`() {
-    makeCreateDraftFromReportedAdjudicationRequest(123).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    makeCreateDraftFromReportedAdjudicationRequest("123").andExpect(MockMvcResultMatchers.status().isUnauthorized)
   }
 
   private fun makeCreateDraftFromReportedAdjudicationRequest(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
   ): ResultActions {
     return mockMvc
       .perform(

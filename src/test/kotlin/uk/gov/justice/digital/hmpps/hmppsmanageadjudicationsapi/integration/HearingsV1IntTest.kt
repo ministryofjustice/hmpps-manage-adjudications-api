@@ -263,7 +263,7 @@ class HearingsV1IntTest : SqsIntegrationTestBase() {
   }
 
   fun createHearing(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
   ): ReportedAdjudicationResponse {

@@ -24,7 +24,7 @@ data class ReportedAdjudication(
   @Column(nullable = false)
   var gender: Gender,
   var bookingId: Long,
-  var reportNumber: Long,
+  var reportNumber: String,
   var agencyId: String,
   var locationId: Long,
   var dateTimeOfIncident: LocalDateTime,
@@ -123,7 +123,12 @@ data class ReportedAdjudication(
 
   fun getPunishments() = this.punishments.filter { it.deleted != true }
 
-  fun addPunishment(punishment: Punishment) = this.punishments.add(punishment)
+  fun addPunishment(punishment: Punishment) {
+    if (punishment.sanctionSeq == null) {
+      punishment.sanctionSeq = (this.punishments.maxByOrNull { t -> t.sanctionSeq ?: 0 }?.sanctionSeq ?: 0) + 1
+    }
+    this.punishments.add(punishment)
+  }
 
   fun clearPunishments() = this.punishments.clear()
 

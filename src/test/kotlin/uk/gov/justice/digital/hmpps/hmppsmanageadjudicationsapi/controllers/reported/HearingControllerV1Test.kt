@@ -48,7 +48,7 @@ class HearingControllerV1Test : TestControllerBase() {
     fun beforeEach() {
       whenever(
         hearingService.createHearingV1(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           ArgumentMatchers.anyLong(),
           any(),
           any(),
@@ -87,7 +87,7 @@ class HearingControllerV1Test : TestControllerBase() {
     fun `makes a call to create a hearing`() {
       createHearingRequest(1, HEARING_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(hearingService).createHearingV1(1, HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
+      verify(hearingService).createHearingV1("1", HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
     }
 
     private fun createHearingRequest(
@@ -111,7 +111,7 @@ class HearingControllerV1Test : TestControllerBase() {
     fun beforeEach() {
       whenever(
         hearingService.deleteHearingV1(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           ArgumentMatchers.anyLong(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -139,7 +139,7 @@ class HearingControllerV1Test : TestControllerBase() {
     fun `makes a call to delete a hearing`() {
       deleteHearingRequest(1, 1)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingService).deleteHearingV1(1, 1)
+      verify(hearingService).deleteHearingV1("1", 1)
     }
 
     private fun deleteHearingRequest(
@@ -160,7 +160,7 @@ class HearingControllerV1Test : TestControllerBase() {
     fun beforeEach() {
       whenever(
         hearingService.amendHearingV1(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           ArgumentMatchers.anyLong(),
           ArgumentMatchers.anyLong(),
           any(),
@@ -203,7 +203,7 @@ class HearingControllerV1Test : TestControllerBase() {
     fun `makes a call to amend a hearing`() {
       amendHearingRequest(1, 1, HEARING_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingService).amendHearingV1(1, 1, HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
+      verify(hearingService).amendHearingV1("1", 1, HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
     }
 
     private fun amendHearingRequest(

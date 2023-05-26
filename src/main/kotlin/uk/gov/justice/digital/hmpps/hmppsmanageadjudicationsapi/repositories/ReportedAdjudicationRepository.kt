@@ -47,8 +47,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     endDate: LocalDateTime,
     statuses: List<ReportedAdjudicationStatus>,
   ): List<ReportedAdjudication>
-  fun findByReportNumber(adjudicationNumber: Long): ReportedAdjudication?
-  fun findByReportNumberIn(adjudicationNumbers: List<Long>): List<ReportedAdjudication>
+  fun findByReportNumber(adjudicationNumber: String): ReportedAdjudication?
+  fun findByReportNumberIn(adjudicationNumbers: List<String>): List<ReportedAdjudication>
 
   fun findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(prisonerNumber: String, date: LocalDate): List<ReportedAdjudication>
 }

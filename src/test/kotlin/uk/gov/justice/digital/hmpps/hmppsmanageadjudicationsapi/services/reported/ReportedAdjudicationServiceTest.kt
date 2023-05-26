@@ -32,17 +32,18 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventWrapperService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.ADJUDICATION_NUMBER
 import java.time.LocalDateTime
 
 class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
-  private val prisonApiGateway: PrisonApiGateway = mock()
+  private val eventWrapperService: EventWrapperService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val reportedAdjudicationService =
     ReportedAdjudicationService(
       reportedAdjudicationRepository,
-      prisonApiGateway,
+      eventWrapperService,
       offenceCodeLookupService,
       authenticationFacade,
       telemetryClient,
@@ -61,14 +62,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1L)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
       assertThat(result.outcomeEnteredInNomis).isTrue
     }
 
     @Test
     fun `filter out caution and damages owed from dto if present in punishments `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
@@ -90,7 +91,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           )
         },
       )
-      assertThat(reportedAdjudicationService.getReportedAdjudicationDetails(1L).punishments).isEmpty()
+      assertThat(reportedAdjudicationService.getReportedAdjudicationDetails("1").punishments).isEmpty()
     }
 
     @Test
@@ -99,7 +100,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
 
       assertThatThrownBy {
-        reportedAdjudicationService.getReportedAdjudicationDetails(1)
+        reportedAdjudicationService.getReportedAdjudicationDetails("1")
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("ReportedAdjudication not found for 1")
     }
@@ -138,8 +139,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           oicHearingType = OicHearingType.GOV_ADULT,
           locationId = 1,
           agencyId = "MDI",
-          oicHearingId = 1,
-          reportNumber = 1235L,
+          oicHearingId = "1",
+          reportNumber = ADJUDICATION_NUMBER,
         )
 
         val thirdHearing = Hearing(
@@ -147,8 +148,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           oicHearingType = OicHearingType.INAD_YOI,
           locationId = 1,
           agencyId = "MDI",
-          oicHearingId = 1,
-          reportNumber = 1235L,
+          oicHearingId = "1",
+          reportNumber = ADJUDICATION_NUMBER,
         )
 
         it.hearings.add(newFirstHearing)
@@ -168,7 +169,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
       assertThat(reportedAdjudicationDto)
         .extracting(
@@ -179,7 +180,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           "createdDateTime",
           "isYouthOffender",
         )
-        .contains(1235L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME, isYouthOffender)
+        .contains(ADJUDICATION_NUMBER, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME, isYouthOffender)
 
       assertThat(reportedAdjudicationDto.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
@@ -249,7 +250,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `use of accepted throws validation error `() {
       Assertions.assertThrows(ValidationException::class.java) {
-        reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
+        reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.ACCEPTED)
       }
     }
 
@@ -265,7 +266,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
       ReportedAdjudicationStatus.values().filter { it != ReportedAdjudicationStatus.ACCEPTED }.filter { !from.nextStates().contains(it) }.forEach {
         Assertions.assertThrows(IllegalStateException::class.java) {
-          reportedAdjudicationService.setStatus(1, it)
+          reportedAdjudicationService.setStatus("1", it)
         }
       }
     }
@@ -306,7 +307,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.createDateTime = REPORTED_DATE_TIME
         },
       )
-      reportedAdjudicationService.setStatus(1, to)
+      reportedAdjudicationService.setStatus("1", to)
       verify(reportedAdjudicationRepository).save(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = to
@@ -314,15 +315,15 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       if (updatesNomis) {
-        verify(prisonApiGateway).publishAdjudication(any())
+        verify(eventWrapperService).publishAdjudication(any())
       } else {
-        verify(prisonApiGateway, never()).publishAdjudication(any())
+        verify(eventWrapperService, never()).publishAdjudication(any())
       }
 
       verify(telemetryClient).trackEvent(
         ReportedAdjudicationService.TELEMETRY_EVENT,
         mapOf(
-          "reportNumber" to entityBuilder.reportedAdjudication().reportNumber.toString(),
+          "reportNumber" to entityBuilder.reportedAdjudication().reportNumber,
           "agencyId" to entityBuilder.reportedAdjudication().agencyId,
           "status" to to.name,
           "reason" to null,
@@ -351,7 +352,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val actualReturnedReportedAdjudication = reportedAdjudicationService.setStatus(
-        1,
+        "1",
         ReportedAdjudicationStatus.REJECTED,
         "Status Reason",
         "Status Reason String",
@@ -366,7 +367,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       verify(telemetryClient).trackEvent(
         ReportedAdjudicationService.TELEMETRY_EVENT,
         mapOf(
-          "reportNumber" to existingReportedAdjudication.reportNumber.toString(),
+          "reportNumber" to existingReportedAdjudication.reportNumber,
           "agencyId" to existingReportedAdjudication.agencyId,
           "status" to ReportedAdjudicationStatus.REJECTED.name,
           "reason" to "Status Reason",
@@ -399,7 +400,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.UNSCHEDULED)
+      reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.UNSCHEDULED)
 
       var expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN, OFFENCE_CODE_3_NOMIS_CODE_ON_OWN)
       var expectedConnectedOffenderIds: List<String> = emptyList()
@@ -413,7 +414,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
         offenderNo = "A12345",
-        adjudicationNumber = 1235L,
+        adjudicationNumber = ADJUDICATION_NUMBER,
         bookingId = 234L,
         reporterName = "A_USER",
         reportedDateTime = REPORTED_DATE_TIME,
@@ -426,7 +427,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         victimStaffUsernames = expectedVictimStaffUsernames,
         connectedOffenderIds = expectedConnectedOffenderIds,
       )
-      verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
+      verify(eventWrapperService).publishAdjudication(expectedAdjudicationToPublish)
     }
 
     @ParameterizedTest
@@ -449,7 +450,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         returnedReportedAdjudication,
       )
 
-      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.UNSCHEDULED)
+      reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.UNSCHEDULED)
 
       var expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ASSISTED)
       if (isYouthOffender) {
@@ -463,7 +464,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
         offenderNo = "A12345",
-        adjudicationNumber = 1235L,
+        adjudicationNumber = ADJUDICATION_NUMBER,
         bookingId = 234L,
         reporterName = "A_USER",
         reportedDateTime = REPORTED_DATE_TIME,
@@ -476,7 +477,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         victimStaffUsernames = expectedVictimStaffUsernames,
         connectedOffenderIds = expectedConnectedOffenderIds,
       )
-      verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
+      verify(eventWrapperService).publishAdjudication(expectedAdjudicationToPublish)
     }
 
     @Test
@@ -491,12 +492,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         it.offenceDetails.first().victimOtherPersonsName = null
       }
 
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
 
-      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.UNSCHEDULED)
+      reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.UNSCHEDULED)
 
-      verify(prisonApiGateway, atLeastOnce()).publishAdjudication(
+      verify(eventWrapperService, atLeastOnce()).publishAdjudication(
         adjudicationDetailsToPublish = AdjudicationDetailsToPublish(
           offenderNo = reportedAdjudication.prisonerNumber,
           adjudicationNumber = reportedAdjudication.reportNumber,
@@ -564,13 +565,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   inner class Issued {
 
     private val now = LocalDateTime.now()
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(1)
+    private val reportedAdjudication = entityBuilder.reportedAdjudication("1")
       .also {
         it.createdByUserId = "A_SMITH"
         it.createDateTime = LocalDateTime.now()
       }
 
-    private val reportedAdjudicationDisIssued = entityBuilder.reportedAdjudication(1)
+    private val reportedAdjudicationDisIssued = entityBuilder.reportedAdjudication("1")
       .also {
         it.createdByUserId = "A_SMITH"
         it.createDateTime = now.minusHours(2)
@@ -586,7 +587,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
 
-      val response = reportedAdjudicationService.setIssued(1, now)
+      val response = reportedAdjudicationService.setIssued("1", now)
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -605,7 +606,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationDisIssued)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudicationDisIssued)
 
-      val response = reportedAdjudicationService.setIssued(1, now)
+      val response = reportedAdjudicationService.setIssued("1", now)
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -625,7 +626,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
 
       assertThatThrownBy {
-        reportedAdjudicationService.setIssued(1, now)
+        reportedAdjudicationService.setIssued("1", now)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("$status not valid status for DIS issue")
     }
@@ -677,7 +678,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       it.hearings.add(
-        Hearing(locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = 1L),
+        Hearing(locationId = 1, agencyId = "", reportNumber = "1", oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = "1"),
       )
     }
 
@@ -719,10 +720,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         Hearing(
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          reportNumber = "1",
           oicHearingType = OicHearingType.INAD_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(2),
-          oicHearingId = 1L,
+          oicHearingId = "1",
         ),
       )
     }
@@ -816,10 +817,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         Hearing(
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          reportNumber = "1",
           oicHearingType = OicHearingType.GOV_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(1),
-          oicHearingId = 1L,
+          oicHearingId = "1",
           hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = ""),
         ),
       )
@@ -827,10 +828,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         Hearing(
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          reportNumber = "1",
           oicHearingType = OicHearingType.INAD_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(2),
-          oicHearingId = 1L,
+          oicHearingId = "1",
           hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
         ),
       )
@@ -845,10 +846,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         Hearing(
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          reportNumber = "1",
           oicHearingType = OicHearingType.GOV_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(1),
-          oicHearingId = 1L,
+          oicHearingId = "1",
           hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = ""),
         ),
       )
@@ -882,10 +883,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         Hearing(
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          reportNumber = "1",
           oicHearingType = OicHearingType.GOV_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(1),
-          oicHearingId = 1L,
+          oicHearingId = "1",
           hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = ""),
         ),
       )
@@ -912,11 +913,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       it.hearings.add(
         Hearing(
-          oicHearingId = 1,
+          oicHearingId = "1",
           dateTimeOfHearing = LocalDateTime.now(),
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          reportNumber = "1",
           oicHearingType = OicHearingType.GOV,
           hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
         ),
@@ -969,11 +970,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       it.hearings.add(
         Hearing(
-          oicHearingId = 1,
+          oicHearingId = "1",
           dateTimeOfHearing = LocalDateTime.now().plusDays(5),
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          reportNumber = "1",
           oicHearingType = OicHearingType.GOV,
           hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
         ),
@@ -999,7 +1000,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `no data`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(0)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("0")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
@@ -1007,21 +1008,21 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(0)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("0")
 
       assertThat(result.outcomes.isEmpty()).isTrue
     }
 
     @Test
     fun `single hearing`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(10)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("10")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(10)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("10")
 
       assertThat(result.outcomes.size).isEqualTo(1)
       assertThat(result.outcomes.first().hearing).isNotNull
@@ -1033,7 +1034,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `outcome history DTO - Refer police no hearing`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationReferPolice)
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
       assertThat(result.outcomes.size).isEqualTo(1)
       assertThat(result.outcomes.first().hearing).isNull()
@@ -1046,7 +1047,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - Not proceed no hearing`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationNotProceed)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(2)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("2")
 
       assertThat(result.outcomes.size).isEqualTo(1)
       assertThat(result.outcomes.first().hearing).isNull()
@@ -1059,7 +1060,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - Refer police, No prosecution, hearing scheduled`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationNoProsecution)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(4).validateFirstItem()
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("4").validateFirstItem()
 
       assertThat(result.outcomes.size).isEqualTo(2)
 
@@ -1071,7 +1072,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationReferInad)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(5).validateFirstItem().validateSecondItem()
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("5").validateFirstItem().validateSecondItem()
 
       assertThat(result.outcomes.size).isEqualTo(2)
     }
@@ -1079,7 +1080,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD, hearing scheduled`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationInadHearing)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(6).validateFirstItem().validateSecondItem()
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("6").validateFirstItem().validateSecondItem()
 
       assertThat(result.outcomes.size).isEqualTo(3)
 
@@ -1091,7 +1092,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD, hearing scheduled, refer to police`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationInadReferPolice)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(7).validateFirstItem().validateSecondItem()
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("7").validateFirstItem().validateSecondItem()
 
       assertThat(result.outcomes.size).isEqualTo(3)
 
@@ -1106,7 +1107,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD, hearing scheduled, refer to police, prosecution YES`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationProsecution)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(8).validateFirstItem().validateSecondItem()
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("8").validateFirstItem().validateSecondItem()
 
       assertThat(result.outcomes.size).isEqualTo(3)
 
@@ -1122,7 +1123,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - Schedule hearing, refer to inad, scheduled hearing, refer to police, prosecution yes`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationProsecutionAllHearings)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(9)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("9")
 
       assertThat(result.outcomes.size).isEqualTo(2)
       assertThat(result.outcomes.first().hearing).isNotNull
@@ -1145,7 +1146,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - Refer police no hearing, No prosecution, Not proceed`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationReferPoliceNotProceed)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(11)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("11")
       assertThat(result.outcomes.size).isEqualTo(1)
 
       assertThat(result.outcomes.first().hearing).isNull()
@@ -1159,7 +1160,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `outcome history DTO - hearing refers to INAD who chooses NOT_PROCEED `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationReferInadNotProceed)
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(12)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("12")
       assertThat(result.outcomes.size).isEqualTo(1)
 
       assertThat(result.outcomes.first().hearing).isNotNull
@@ -1174,7 +1175,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - refer to police, no prosecution, hearing scheduled and adjourned`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationAdjourned)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(13).validateFirstItem()
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("13").validateFirstItem()
       assertThat(result.outcomes.size).isEqualTo(2)
 
       assertThat(result.outcomes.last().hearing).isNotNull
@@ -1186,7 +1187,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - refer to police, no prosecution, hearing scheduled, refer to inad, hearing scheduled and adjourned`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationReferPoliceReferInadAdjourned)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(14).validateFirstItem().validateSecondItem()
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("14").validateFirstItem().validateSecondItem()
       assertThat(result.outcomes.size).isEqualTo(3)
 
       assertThat(result.outcomes.last().hearing).isNotNull
@@ -1198,7 +1199,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - hearing completed - dismissed `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationCompletedHearingDismissed)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(15)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("15")
       assertThat(result.outcomes.size).isEqualTo(1)
 
       assertThat(result.outcomes.first().hearing).isNotNull
@@ -1213,7 +1214,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - hearing completed - not proceed `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationCompletedHearingNotProceed)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(16)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("16")
       assertThat(result.outcomes.size).isEqualTo(1)
 
       assertThat(result.outcomes.first().hearing).isNotNull
@@ -1228,7 +1229,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - hearing completed - charge proved `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationCompletedHearingChargeProved)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(17)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("17")
       assertThat(result.outcomes.size).isEqualTo(1)
 
       assertThat(result.outcomes.first().hearing).isNotNull
@@ -1243,7 +1244,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - refer to police, no prosecution, hearing scheduled and adjourned, rescheduled and charge proved `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationCompletedHearingAfterAdjourn)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(18).validateFirstItem().validateSecondItem()
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("18").validateFirstItem().validateSecondItem()
       assertThat(result.outcomes.size).isEqualTo(4)
 
       assertThat(result.outcomes.last().hearing).isNotNull
@@ -1258,7 +1259,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - quashed `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationCompletedHearingNotProceedQuashed)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(19)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("19")
       assertThat(result.outcomes.size).isEqualTo(2)
 
       assertThat(result.outcomes.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.NOT_PROCEED)
@@ -1276,12 +1277,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.hearings.add(
             Hearing(
               agencyId = "",
-              locationId = 1L,
-              oicHearingId = 1L,
+              locationId = 1,
+              oicHearingId = "1",
               oicHearingType = OicHearingType.GOV,
               dateTimeOfHearing = LocalDateTime.now(),
               hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
-              reportNumber = 1L,
+              reportNumber = "1",
             ),
           )
 
@@ -1309,18 +1310,18 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.hearings.add(
             Hearing(
               agencyId = "",
-              locationId = 1L,
-              oicHearingId = 1L,
+              locationId = 1,
+              oicHearingId = "1",
               oicHearingType = OicHearingType.GOV,
               dateTimeOfHearing = LocalDateTime.now().plusDays(1),
               hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
-              reportNumber = 1L,
+              reportNumber = "1",
             ),
           )
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(20)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("20")
       assertThat(result.outcomes.size).isEqualTo(2)
 
       assertThat(result.outcomes.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
@@ -1342,7 +1343,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
       assertThat(result.outcomes.size).isEqualTo(1)
 
@@ -1362,13 +1363,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             adjudicator = "",
           )
           it.hearings.add(
-            Hearing(dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 1, oicHearingType = OicHearingType.GOV, reportNumber = 1),
+            Hearing(dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = "1", oicHearingType = OicHearingType.GOV, reportNumber = "1"),
           )
           it.hearings.last().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
       assertThat(result.outcomes.size).isEqualTo(2)
 
@@ -1395,13 +1396,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             },
           )
           it.hearings.add(
-            Hearing(dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 1, oicHearingType = OicHearingType.GOV, reportNumber = 1),
+            Hearing(dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = "1", oicHearingType = OicHearingType.GOV, reportNumber = "1"),
           )
           it.hearings.last().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
       assertThat(result.outcomes.size).isEqualTo(2)
 
@@ -1440,7 +1441,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `returns true when last item is referral outcome `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.hearings.first().hearingOutcome = HearingOutcome(
             code = HearingOutcomeCode.REFER_POLICE,
@@ -1455,35 +1456,35 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(true)
+      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome("1")).isEqualTo(true)
     }
 
     @Test
     fun `returns false when no history `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.hearings.clear()
           it.clearOutcomes()
         },
       )
 
-      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(false)
+      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome("1")).isEqualTo(false)
     }
 
     @Test
     fun `returns false when no last item has no outcome `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.clearOutcomes()
         },
       )
 
-      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(false)
+      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome("1")).isEqualTo(false)
     }
 
     @Test
     fun `returns false when no last item has no referral outcome `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.addOutcome(
             Outcome(code = OutcomeCode.REFER_POLICE),
@@ -1491,7 +1492,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(false)
+      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome("1")).isEqualTo(false)
     }
   }
 
@@ -1522,17 +1523,17 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
 
     assertThatThrownBy {
-      reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      reportedAdjudicationService.getReportedAdjudicationDetails("1")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     assertThatThrownBy {
-      reportedAdjudicationService.setIssued(1, LocalDateTime.now())
+      reportedAdjudicationService.setIssued("1", LocalDateTime.now())
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     assertThatThrownBy {
-      reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)
+      reportedAdjudicationService.lastOutcomeHasReferralOutcome("1")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }

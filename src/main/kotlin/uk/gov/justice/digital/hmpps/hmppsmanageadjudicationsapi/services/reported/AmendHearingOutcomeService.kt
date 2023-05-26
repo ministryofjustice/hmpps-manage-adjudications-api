@@ -22,7 +22,7 @@ class AmendHearingOutcomeService(
 ) {
 
   fun amendHearingOutcome(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     status: ReportedAdjudicationStatus,
     amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
   ): ReportedAdjudicationDto {
@@ -50,7 +50,7 @@ class AmendHearingOutcomeService(
   }
 
   private fun amend(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     currentStatus: ReportedAdjudicationStatus,
     amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
   ): ReportedAdjudicationDto {
@@ -83,7 +83,7 @@ class AmendHearingOutcomeService(
   }
 
   private fun removeAndCreate(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     toStatus: ReportedAdjudicationStatus,
     currentStatus: ReportedAdjudicationStatus,
     latestHearingOutcome: HearingOutcome,

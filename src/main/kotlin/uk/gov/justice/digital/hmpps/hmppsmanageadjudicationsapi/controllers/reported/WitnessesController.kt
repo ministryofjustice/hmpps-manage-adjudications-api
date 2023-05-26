@@ -24,7 +24,7 @@ class WitnessesController(
   @Operation(summary = "Updates the witnesses for the reported adjudication.", description = "0 or more witnesses to be supplied, only updates records owned by current user")
   @ResponseStatus(HttpStatus.OK)
   fun updateWitnesses(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody @Valid
     witnessesRequest: WitnessesRequest,
   ): ReportedAdjudicationResponse {

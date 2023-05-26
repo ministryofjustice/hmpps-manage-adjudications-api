@@ -57,7 +57,7 @@ class HearingControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         hearingService.createHearing(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           ArgumentMatchers.anyLong(),
           any(),
           any(),
@@ -96,7 +96,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to create a hearing`() {
       createHearingRequest(1, HEARING_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(hearingService).createHearing(1, HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
+      verify(hearingService).createHearing("1", HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
     }
 
     private fun createHearingRequest(
@@ -120,7 +120,7 @@ class HearingControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         hearingService.deleteHearing(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -147,7 +147,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to delete a hearing`() {
       deleteHearingRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingService).deleteHearing(1)
+      verify(hearingService).deleteHearing("1")
     }
 
     private fun deleteHearingRequest(
@@ -167,7 +167,7 @@ class HearingControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         hearingService.amendHearing(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           ArgumentMatchers.anyLong(),
           any(),
           any(),
@@ -206,7 +206,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to amend a hearing`() {
       amendHearingRequest(1, HEARING_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingService).amendHearing(1, HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
+      verify(hearingService).amendHearing("1", HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
     }
 
     private fun amendHearingRequest(
@@ -275,7 +275,7 @@ class HearingControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         referralService.createReferral(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           any(),
           any(),
           any(),
@@ -318,7 +318,7 @@ class HearingControllerTest : TestControllerBase() {
       createReferralRequest(1, referralRequest(code))
         .andExpect(MockMvcResultMatchers.status().isCreated)
       verify(referralService).createReferral(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
         code = code,
         adjudicator = "test",
         details = "details",
@@ -345,7 +345,7 @@ class HearingControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         hearingOutcomeService.createAdjourn(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           any(),
           anyOrNull(),
           anyOrNull(),
@@ -377,7 +377,7 @@ class HearingControllerTest : TestControllerBase() {
       createAdjournRequest(1, adjournRequest)
         .andExpect(MockMvcResultMatchers.status().isCreated)
       verify(hearingOutcomeService).createAdjourn(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
         adjudicator = "test",
         reason = HearingOutcomeAdjournReason.HELP,
         plea = HearingOutcomePlea.ABSTAIN,
@@ -405,7 +405,7 @@ class HearingControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         hearingOutcomeService.removeAdjourn(
-          adjudicationNumber = ArgumentMatchers.anyLong(),
+          adjudicationNumber = ArgumentMatchers.anyString(),
           recalculateStatus = any(),
 
         ),
@@ -433,7 +433,7 @@ class HearingControllerTest : TestControllerBase() {
       deleteAdjournRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(hearingOutcomeService).removeAdjourn(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
       )
     }
 
@@ -454,7 +454,7 @@ class HearingControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         amendHearingOutcomeService.amendHearingOutcome(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           any(),
           any(),
         ),
@@ -486,7 +486,7 @@ class HearingControllerTest : TestControllerBase() {
       amendHearingOutcomeRequest(1, AMEND_OUTCOME_REQUEST, ReportedAdjudicationStatus.REFER_POLICE)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(amendHearingOutcomeService).amendHearingOutcome(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
         status = ReportedAdjudicationStatus.REFER_POLICE,
         AMEND_OUTCOME_REQUEST,
       )
@@ -518,7 +518,7 @@ class HearingControllerTest : TestControllerBase() {
           id = 1,
           dateTimeOfHearing = LocalDateTime.now(),
           dateTimeOfDiscovery = LocalDateTime.now(),
-          adjudicationNumber = 123,
+          adjudicationNumber = "123",
           prisonerNumber = "123",
           oicHearingType = OicHearingType.GOV,
           status = ReportedAdjudicationStatus.SCHEDULED,

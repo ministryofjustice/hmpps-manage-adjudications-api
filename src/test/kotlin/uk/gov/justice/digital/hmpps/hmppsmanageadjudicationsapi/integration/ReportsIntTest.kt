@@ -24,7 +24,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     endDate: String,
     reportedAdjudicationStatus: ReportedAdjudicationStatus,
     expectedCount: Int,
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
   ) {
     initMyReportData()
 
@@ -48,7 +48,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     endDate: String,
     reportedAdjudicationStatus: ReportedAdjudicationStatus,
     expectedCount: Int,
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
   ) {
     initMyReportData()
 

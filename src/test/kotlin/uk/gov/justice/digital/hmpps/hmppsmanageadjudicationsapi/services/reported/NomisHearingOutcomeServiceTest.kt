@@ -10,17 +10,17 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyNomisGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import java.time.LocalDateTime
 
 class NomisHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
-  private val prisonApiGateway: PrisonApiGateway = mock()
+  private val legacyNomisGateway: LegacyNomisGateway = mock()
   private val hearingRepository: HearingRepository = mock()
   private val nomisHearingOutcomeService = NomisHearingOutcomeService(
-    prisonApiGateway,
+    legacyNomisGateway,
     reportedAdjudicationRepository,
     hearingRepository,
   )
@@ -32,14 +32,14 @@ class NomisHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   @Test
   fun `updates hearings where hearing outcome record exists in nomis `() {
     val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-      it.hearings.first().oicHearingId = 1L
+      it.hearings.first().oicHearingId = "1"
       it.hearings.add(
         Hearing(
-          reportNumber = 1L,
+          reportNumber = "1",
           dateTimeOfHearing = LocalDateTime.now(),
           locationId = 1,
           agencyId = "",
-          oicHearingId = 3L,
+          oicHearingId = "3",
           oicHearingType = OicHearingType.GOV,
           hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = ""),
         ),
@@ -48,22 +48,22 @@ class NomisHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     whenever(hearingRepository.findByHearingOutcomeIsNull()).thenReturn(
       listOf(
-        Hearing(reportNumber = 1L, dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 1L, oicHearingType = OicHearingType.GOV),
-        Hearing(reportNumber = 2L, dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 2L, oicHearingType = OicHearingType.GOV),
+        Hearing(reportNumber = "1", dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = "1", oicHearingType = OicHearingType.GOV),
+        Hearing(reportNumber = "2", dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = "2", oicHearingType = OicHearingType.GOV),
       ),
     )
 
-    whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
+    whenever(reportedAdjudicationRepository.findByReportNumber("1")).thenReturn(reportedAdjudication)
 
-    whenever(prisonApiGateway.hearingOutcomesExistInNomis(1L, 1L)).thenReturn(true)
-    whenever(prisonApiGateway.hearingOutcomesExistInNomis(2L, 2L)).thenReturn(false)
+    whenever(legacyNomisGateway.hearingOutcomesExistInNomis(1L, 1L)).thenReturn(true)
+    whenever(legacyNomisGateway.hearingOutcomesExistInNomis(2L, 2L)).thenReturn(false)
 
     nomisHearingOutcomeService.checkForNomisHearingOutcomesAndUpdate()
 
     verify(hearingRepository, atLeastOnce()).findByHearingOutcomeIsNull()
-    verify(prisonApiGateway, atLeastOnce()).hearingOutcomesExistInNomis(any(), any())
+    verify(legacyNomisGateway, atLeastOnce()).hearingOutcomesExistInNomis(any(), any())
 
-    val updatedHearing = reportedAdjudication.hearings.first { it.oicHearingId == 1L }
+    val updatedHearing = reportedAdjudication.hearings.first { it.oicHearingId == "1" }
 
     assertThat(updatedHearing.hearingOutcome).isNotNull
     assertThat(updatedHearing.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)

@@ -13,9 +13,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventWrapperService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getHearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.NomisOutcomeService.Companion.getAdjudicator
@@ -26,14 +26,14 @@ class HearingOutcomeService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
-  private val prisonApiGateway: PrisonApiGateway,
+  private val eventWrapperService: EventWrapperService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
   authenticationFacade,
 ) {
   fun createReferral(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     code: HearingOutcomeCode,
     adjudicator: String,
     details: String,
@@ -46,7 +46,7 @@ class HearingOutcomeService(
     )
 
   fun createAdjourn(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     adjudicator: String,
     reason: HearingOutcomeAdjournReason,
     details: String,
@@ -62,7 +62,7 @@ class HearingOutcomeService(
     )
 
   fun createCompletedHearing(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     adjudicator: String,
     plea: HearingOutcomePlea,
   ): ReportedAdjudicationDto = createHearingOutcome(
@@ -73,7 +73,7 @@ class HearingOutcomeService(
   )
 
   fun removeAdjourn(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     recalculateStatus: Boolean = true,
   ): ReportedAdjudicationDto {
     findByAdjudicationNumber(adjudicationNumber).latestOutcomeIsAdjourn()
@@ -82,7 +82,7 @@ class HearingOutcomeService(
   }
 
   private fun createHearingOutcome(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     code: HearingOutcomeCode,
     adjudicator: String,
     reason: HearingOutcomeAdjournReason? = null,
@@ -104,7 +104,7 @@ class HearingOutcomeService(
     return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus()) it.calculateStatus() })
   }
 
-  fun deleteHearingOutcome(adjudicationNumber: Long, recalculateStatus: Boolean = true): ReportedAdjudicationDto {
+  fun deleteHearingOutcome(adjudicationNumber: String, recalculateStatus: Boolean = true): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val hearingToRemoveOutcome = reportedAdjudication.getHearing()
 
@@ -117,7 +117,7 @@ class HearingOutcomeService(
   }
 
   fun getCurrentStatusAndLatestOutcome(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
   ): Pair<ReportedAdjudicationStatus, HearingOutcome> {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
@@ -125,7 +125,7 @@ class HearingOutcomeService(
   }
 
   fun amendHearingOutcome(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     outcomeCodeToAmend: HearingOutcomeCode,
     adjudicator: String? = null,
     details: String? = null,
@@ -154,7 +154,7 @@ class HearingOutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun getHearingOutcomeForReferral(adjudicationNumber: Long, code: OutcomeCode, outcomeIndex: Int): HearingOutcome? {
+  fun getHearingOutcomeForReferral(adjudicationNumber: String, code: OutcomeCode, outcomeIndex: Int): HearingOutcome? {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     if (reportedAdjudication.hearings.none { it.hearingOutcome?.code?.outcomeCode == code }) return null
     val matched = reportedAdjudication.hearings.filter { it.hearingOutcome?.code?.outcomeCode == code }.sortedBy { it.dateTimeOfHearing }
@@ -166,10 +166,10 @@ class HearingOutcomeService(
 
   private fun updateOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
     val hearing = reportedAdjudication.getHearing()
-    prisonApiGateway.amendHearing(
+    eventWrapperService.amendHearing(
       adjudicationNumber = reportedAdjudication.reportNumber,
-      oicHearingId = hearing.oicHearingId,
       oicHearingRequest = OicHearingRequest(
+        oicHearingId = hearing.oicHearingId,
         dateTimeOfHearing = hearing.dateTimeOfHearing,
         hearingLocationId = hearing.locationId,
         oicHearingType = hearing.oicHearingType,
@@ -181,10 +181,10 @@ class HearingOutcomeService(
 
   private fun removeOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
     val hearing = reportedAdjudication.getHearing()
-    prisonApiGateway.amendHearing(
+    eventWrapperService.amendHearing(
       adjudicationNumber = reportedAdjudication.reportNumber,
-      oicHearingId = hearing.oicHearingId,
       oicHearingRequest = OicHearingRequest(
+        oicHearingId = hearing.oicHearingId,
         dateTimeOfHearing = hearing.dateTimeOfHearing,
         hearingLocationId = hearing.locationId,
         oicHearingType = hearing.oicHearingType,

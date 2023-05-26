@@ -29,25 +29,25 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
   @Test
   fun `create outcome and hearing outcome for referral`() {
     referralService.createReferral(
-      1,
+      "1",
       HearingOutcomeCode.REFER_POLICE,
       "test",
       "details",
     )
 
     verify(hearingOutcomeService, atLeastOnce()).createReferral(
-      adjudicationNumber = 1,
+      adjudicationNumber = "1",
       code = HearingOutcomeCode.REFER_POLICE,
       adjudicator = "test",
       details = "details",
     )
 
-    verify(outcomeService, atLeastOnce()).createReferral(adjudicationNumber = 1, code = OutcomeCode.REFER_POLICE, details = "details")
+    verify(outcomeService, atLeastOnce()).createReferral(adjudicationNumber = "1", code = OutcomeCode.REFER_POLICE, details = "details")
   }
 
   @Test
   fun `remove referral should only remove outcome`() {
-    whenever(outcomeService.getOutcomes(1)).thenReturn(
+    whenever(outcomeService.getOutcomes("1")).thenReturn(
       listOf(
         CombinedOutcomeDto(
           outcome = OutcomeDto(
@@ -58,15 +58,15 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
       ),
     )
 
-    referralService.removeReferral(1)
+    referralService.removeReferral("1")
 
-    verify(outcomeService, atLeastOnce()).deleteOutcome(1, 1)
-    verify(hearingOutcomeService, never()).deleteHearingOutcome(1)
+    verify(outcomeService, atLeastOnce()).deleteOutcome("1", 1)
+    verify(hearingOutcomeService, never()).deleteHearingOutcome("1")
   }
 
   @Test
   fun `remove referral should remove outcome and hearing outcome`() {
-    whenever(outcomeService.getOutcomes(1)).thenReturn(
+    whenever(outcomeService.getOutcomes("1")).thenReturn(
       listOf(
         CombinedOutcomeDto(
           outcome = OutcomeDto(
@@ -77,19 +77,19 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
       ),
     )
 
-    whenever(hearingOutcomeService.getHearingOutcomeForReferral(1, OutcomeCode.REFER_POLICE, 0)).thenReturn(
+    whenever(hearingOutcomeService.getHearingOutcomeForReferral("1", OutcomeCode.REFER_POLICE, 0)).thenReturn(
       HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
     )
 
-    referralService.removeReferral(1)
+    referralService.removeReferral("1")
 
-    verify(outcomeService, atLeastOnce()).deleteOutcome(1, 1)
-    verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(1)
+    verify(outcomeService, atLeastOnce()).deleteOutcome("1", 1)
+    verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome("1")
   }
 
   @Test
   fun `remove referral should remove referral outcome`() {
-    whenever(outcomeService.getOutcomes(1)).thenReturn(
+    whenever(outcomeService.getOutcomes("1")).thenReturn(
       listOf(
         CombinedOutcomeDto(
           outcome = OutcomeDto(
@@ -110,20 +110,20 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
       ),
     )
 
-    whenever(hearingOutcomeService.getHearingOutcomeForReferral(1, OutcomeCode.REFER_POLICE, 0)).thenReturn(
+    whenever(hearingOutcomeService.getHearingOutcomeForReferral("1", OutcomeCode.REFER_POLICE, 0)).thenReturn(
       HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
     )
 
-    referralService.removeReferral(1)
+    referralService.removeReferral("1")
 
-    verify(outcomeService, never()).deleteOutcome(1, 1)
-    verify(outcomeService, atLeast(1)).deleteOutcome(1, 2)
-    verify(hearingOutcomeService, never()).deleteHearingOutcome(1)
+    verify(outcomeService, never()).deleteOutcome("1", 1)
+    verify(outcomeService, atLeast(1)).deleteOutcome("1", 2)
+    verify(hearingOutcomeService, never()).deleteHearingOutcome("1")
   }
 
   @Test
   fun `responds with bad request if no referral on adjudication`() {
-    whenever(outcomeService.getOutcomes(1)).thenReturn(
+    whenever(outcomeService.getOutcomes("1")).thenReturn(
       listOf(
         CombinedOutcomeDto(
           outcome = OutcomeDto(
@@ -134,14 +134,14 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
     )
 
     Assertions.assertThatThrownBy {
-      referralService.removeReferral(1)
+      referralService.removeReferral("1")
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("No referral for adjudication")
   }
 
   @Test
   fun `responds with validation error if adjudication has referrals but its not the last record `() {
-    whenever(outcomeService.getOutcomes(1)).thenReturn(
+    whenever(outcomeService.getOutcomes("1")).thenReturn(
       listOf(
         CombinedOutcomeDto(
           outcome = OutcomeDto(
@@ -169,7 +169,7 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
     )
 
     Assertions.assertThatThrownBy {
-      referralService.removeReferral(1)
+      referralService.removeReferral("1")
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("Referral can not be removed as its not the latest outcome")
   }

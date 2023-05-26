@@ -43,7 +43,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         punishmentsService.create(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           any(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -82,7 +82,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(punishmentsService).create(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
         listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
       )
     }
@@ -111,7 +111,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         punishmentsService.update(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           any(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -150,7 +150,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(punishmentsService).update(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
         listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
       )
     }
@@ -226,7 +226,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         punishmentsService.createPunishmentComment(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           any(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -235,7 +235,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     @Test
     fun `responds with a unauthorised status code`() {
       createPunishmentCommentRequest(
-        1,
+        "1",
         PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -244,7 +244,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
       createPunishmentCommentRequest(
-        1,
+        "1",
         PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -253,7 +253,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
       createPunishmentCommentRequest(
-        1,
+        "1",
         PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -261,17 +261,17 @@ class PunishmentsControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create punishment comment`() {
-      createPunishmentCommentRequest(1, PUNISHMENT_COMMENT_REQUEST)
+      createPunishmentCommentRequest("1", PUNISHMENT_COMMENT_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(punishmentsService).createPunishmentComment(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
         PUNISHMENT_COMMENT_REQUEST,
       )
     }
 
     private fun createPunishmentCommentRequest(
-      adjudicationNumber: Long,
+      adjudicationNumber: String,
       punishmentCommentRequest: PunishmentCommentRequest,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(punishmentCommentRequest)
@@ -291,7 +291,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         punishmentsService.updatePunishmentComment(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           any(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -300,7 +300,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     @Test
     fun `responds with a unauthorised status code`() {
       updatePunishmentCommentRequest(
-        1,
+        "1",
         PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -309,7 +309,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
       updatePunishmentCommentRequest(
-        1,
+        "1",
         PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -318,7 +318,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
       updatePunishmentCommentRequest(
-        1,
+        "1",
         PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -330,7 +330,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         .updatePunishmentComment(any(), any())
 
       updatePunishmentCommentRequest(
-        1,
+        "1",
         PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isNotFound)
     }
@@ -342,7 +342,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         .updatePunishmentComment(any(), any())
 
       updatePunishmentCommentRequest(
-        1,
+        "1",
         PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -350,17 +350,17 @@ class PunishmentsControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to update punishment comment`() {
-      updatePunishmentCommentRequest(1, PUNISHMENT_COMMENT_REQUEST)
+      updatePunishmentCommentRequest("1", PUNISHMENT_COMMENT_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(punishmentsService).updatePunishmentComment(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
         PUNISHMENT_COMMENT_REQUEST,
       )
     }
 
     private fun updatePunishmentCommentRequest(
-      adjudicationNumber: Long,
+      adjudicationNumber: String,
       punishmentCommentRequest: PunishmentCommentRequest,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(punishmentCommentRequest)
@@ -380,7 +380,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         punishmentsService.deletePunishmentComment(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           ArgumentMatchers.anyLong(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -389,7 +389,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     @Test
     fun `responds with a unauthorised status code`() {
       deletePunishmentCommentRequest(
-        1,
+        "1",
         2,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -398,7 +398,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
       deletePunishmentCommentRequest(
-        1,
+        "1",
         2,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -407,7 +407,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
       deletePunishmentCommentRequest(
-        1,
+        "1",
         2,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -419,7 +419,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         .deletePunishmentComment(any(), any())
 
       deletePunishmentCommentRequest(
-        1,
+        "1",
         -1,
       ).andExpect(MockMvcResultMatchers.status().isNotFound)
     }
@@ -431,7 +431,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         .deletePunishmentComment(any(), any())
 
       deletePunishmentCommentRequest(
-        1,
+        "1",
         2,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -439,17 +439,17 @@ class PunishmentsControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to delete punishment comment`() {
-      deletePunishmentCommentRequest(1, 2)
+      deletePunishmentCommentRequest("1", 2)
         .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(punishmentsService).deletePunishmentComment(
-        adjudicationNumber = 1,
+        adjudicationNumber = "1",
         punishmentCommentId = 2,
       )
     }
 
     private fun deletePunishmentCommentRequest(
-      adjudicationNumber: Long,
+      adjudicationNumber: String,
       punishmentCommentId: Long,
     ): ResultActions {
       return mockMvc
@@ -465,7 +465,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     val PUNISHMENT_COMMENT_REQUEST = PunishmentCommentRequest(comment = "some text")
     val SUSPENDED_PUNISHMENTS_DTO = listOf(
       SuspendedPunishmentDto(
-        reportNumber = 1,
+        reportNumber = "1",
         punishment =
         PunishmentDto(
           type = PunishmentType.REMOVAL_WING,

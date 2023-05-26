@@ -24,7 +24,7 @@ class EvidenceController(
   @Operation(summary = "Updates the evidence for the reported adjudication.", description = "0 or more evidence to be supplied, only updates records owned by current user")
   @ResponseStatus(HttpStatus.OK)
   fun updateEvidence(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody @Valid
     evidenceRequest: EvidenceRequest,
   ): ReportedAdjudicationResponse {

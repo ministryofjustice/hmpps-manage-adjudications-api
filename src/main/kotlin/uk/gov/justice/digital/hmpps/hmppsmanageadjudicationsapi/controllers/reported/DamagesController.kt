@@ -24,7 +24,7 @@ class DamagesController(
   @Operation(summary = "Updates the damages for the reported adjudication.", description = "0 or more damages to be supplied, only updates records owned by current user")
   @ResponseStatus(HttpStatus.OK)
   fun updateDamages(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody @Valid
     damagesRequest: DamagesRequest,
   ): ReportedAdjudicationResponse {

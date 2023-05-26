@@ -13,7 +13,7 @@ data class DraftAdjudicationDto(
   @Schema(description = "Draft adjudication id")
   val id: Long,
   @Schema(description = "The number for the reported adjudication, Will only be present if this adjudication has been submitted to Prison-API", example = "4567123")
-  val adjudicationNumber: Long?,
+  val adjudicationNumber: String?,
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
   @Schema(description = "Gender applied for adjuducation rules", example = "MALE")

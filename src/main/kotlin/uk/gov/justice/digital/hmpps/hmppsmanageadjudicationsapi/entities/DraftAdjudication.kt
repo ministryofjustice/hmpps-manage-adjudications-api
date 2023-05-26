@@ -20,7 +20,7 @@ data class DraftAdjudication(
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var gender: Gender,
-  val reportNumber: Long? = null,
+  val reportNumber: String? = null,
   val reportByUserId: String? = null,
   var isYouthOffender: Boolean? = null,
   val agencyId: String,

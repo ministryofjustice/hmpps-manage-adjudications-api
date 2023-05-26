@@ -11,9 +11,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventWrapperService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDateTime
 
@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 @Service
 class ReportedAdjudicationService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
-  private val prisonApiGateway: PrisonApiGateway,
+  private val eventWrapperService: EventWrapperService,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   private val telemetryClient: TelemetryClient,
@@ -34,16 +34,16 @@ class ReportedAdjudicationService(
     const val TELEMETRY_EVENT = "ReportedAdjudicationStatusEvent"
   }
 
-  fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
+  fun getReportedAdjudicationDetails(adjudicationNumber: String): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
     return reportedAdjudication.toDto()
   }
 
-  fun lastOutcomeHasReferralOutcome(adjudicationNumber: Long): Boolean =
+  fun lastOutcomeHasReferralOutcome(adjudicationNumber: String): Boolean =
     findByAdjudicationNumber(adjudicationNumber).getOutcomeHistory().lastOrNull()?.outcome?.referralOutcome != null
 
-  fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
+  fun setStatus(adjudicationNumber: String, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
     if (status == ReportedAdjudicationStatus.ACCEPTED) throw ValidationException("ACCEPTED is deprecated use UNSCHEDULED")
 
     val username = if (status == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername
@@ -59,7 +59,7 @@ class ReportedAdjudicationService(
     telemetryClient.trackEvent(
       TELEMETRY_EVENT,
       mapOf(
-        "reportNumber" to reportedAdjudication.reportNumber.toString(),
+        "reportNumber" to reportedAdjudication.reportNumber,
         "agencyId" to reportedAdjudication.agencyId,
         "status" to status.name,
         "reason" to statusReason,
@@ -70,7 +70,7 @@ class ReportedAdjudicationService(
     return reportedAdjudicationToReturn
   }
 
-  fun setIssued(adjudicationNumber: Long, dateTimeOfIssue: LocalDateTime): ReportedAdjudicationDto {
+  fun setIssued(adjudicationNumber: String, dateTimeOfIssue: LocalDateTime): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       it.status.canBeIssuedValidation()
       if (it.dateTimeOfIssue != null) {
@@ -89,7 +89,7 @@ class ReportedAdjudicationService(
   }
 
   private fun saveToPrisonApi(reportedAdjudication: ReportedAdjudication) {
-    prisonApiGateway.publishAdjudication(
+    eventWrapperService.publishAdjudication(
       AdjudicationDetailsToPublish(
         offenderNo = reportedAdjudication.prisonerNumber,
         adjudicationNumber = reportedAdjudication.reportNumber,

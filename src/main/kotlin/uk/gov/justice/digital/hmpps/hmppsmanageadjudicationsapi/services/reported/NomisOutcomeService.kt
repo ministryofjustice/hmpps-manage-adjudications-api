@@ -13,23 +13,25 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingResultRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventWrapperService
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Transactional
 @Service
 class NomisOutcomeService(
-  private val prisonApiGateway: PrisonApiGateway,
+  private val eventWrapperService: EventWrapperService,
 ) {
 
-  fun createHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome): Long? {
+  fun createHearingResultIfApplicable(adjudicationNumber: String, hearing: Hearing?, outcome: Outcome): String? {
     if (hearing == null && outcome.doNotCallApi()) return null
 
     hearing?.let {
       if (outcome.createHearingAndOutcome() || isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)) {
-        val oicHearingId = prisonApiGateway.createHearing(
+        val oicHearingId = eventWrapperService.createHearing(
           adjudicationNumber = adjudicationNumber,
           oicHearingRequest = OicHearingRequest(
+            oicHearingId = UUID.randomUUID().toString(),
             dateTimeOfHearing = LocalDateTime.now(),
             oicHearingType = it.oicHearingType,
             hearingLocationId = it.locationId,
@@ -42,7 +44,7 @@ class NomisOutcomeService(
           oicHearingId = oicHearingId,
         )
 
-        if (outcome.code == OutcomeCode.QUASHED) prisonApiGateway.quashSanctions(adjudicationNumber = adjudicationNumber)
+        if (outcome.code == OutcomeCode.QUASHED) eventWrapperService.quashSanctions(adjudicationNumber = adjudicationNumber)
 
         return oicHearingId
       }
@@ -53,13 +55,13 @@ class NomisOutcomeService(
     return null
   }
 
-  fun amendHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome) {
+  fun amendHearingResultIfApplicable(adjudicationNumber: String, hearing: Hearing?, outcome: Outcome) {
     if (hearing == null && outcome.doNotCallApi()) return
 
     hearing?.let {
       val isPoliceReferralOutcome = isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)
       if (outcome.canAmendOutcome() || isPoliceReferralOutcome) {
-        prisonApiGateway.amendHearingResult(
+        eventWrapperService.amendHearingResult(
           adjudicationNumber = adjudicationNumber,
           oicHearingId = if (outcome.forceValidationOfOicHearingId(isPoliceReferralOutcome)) outcome.validateOicHearingId() else it.oicHearingId,
           oicHearingResultRequest = OicHearingResultRequest(
@@ -73,23 +75,23 @@ class NomisOutcomeService(
     }
   }
 
-  fun deleteHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome) {
+  fun deleteHearingResultIfApplicable(adjudicationNumber: String, hearing: Hearing?, outcome: Outcome) {
     if (hearing == null && outcome.doNotCallApi()) return
 
     hearing?.let {
       if (outcome.canDeleteOutcome() || isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)) {
         deleteHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome).run {
-          prisonApiGateway.deleteHearing(adjudicationNumber = adjudicationNumber, oicHearingId = outcome.validateOicHearingId())
+          eventWrapperService.deleteHearing(adjudicationNumber = adjudicationNumber, oicHearingId = outcome.validateOicHearingId())
         }
         return
       }
-      if (outcome.code == OutcomeCode.CHARGE_PROVED) prisonApiGateway.deleteSanctions(adjudicationNumber = adjudicationNumber)
+      if (outcome.code == OutcomeCode.CHARGE_PROVED) eventWrapperService.deleteSanctions(adjudicationNumber = adjudicationNumber)
       if (outcome.createOutcome()) deleteHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome)
       if (outcome.updateHearing()) {
-        prisonApiGateway.amendHearing(
+        eventWrapperService.amendHearing(
           adjudicationNumber = adjudicationNumber,
-          oicHearingId = it.oicHearingId,
           oicHearingRequest = OicHearingRequest(
+            oicHearingId = it.oicHearingId,
             dateTimeOfHearing = it.dateTimeOfHearing,
             hearingLocationId = it.locationId,
             oicHearingType = it.oicHearingType,
@@ -99,8 +101,8 @@ class NomisOutcomeService(
     }
   }
 
-  private fun createHearingResult(adjudicationNumber: Long, hearing: Hearing, outcome: Outcome, oicHearingId: Long? = null) {
-    prisonApiGateway.createHearingResult(
+  private fun createHearingResult(adjudicationNumber: String, hearing: Hearing, outcome: Outcome, oicHearingId: String? = null) {
+    eventWrapperService.createHearingResult(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = oicHearingId ?: hearing.oicHearingId,
       oicHearingResultRequest = OicHearingResultRequest(
@@ -111,18 +113,18 @@ class NomisOutcomeService(
     )
   }
 
-  private fun deleteHearingResult(adjudicationNumber: Long, hearing: Hearing, outcome: Outcome) {
-    prisonApiGateway.deleteHearingResult(
+  private fun deleteHearingResult(adjudicationNumber: String, hearing: Hearing, outcome: Outcome) {
+    eventWrapperService.deleteHearingResult(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = outcome.oicHearingId ?: hearing.oicHearingId,
     )
   }
 
-  private fun updateOicHearingDetails(adjudicationNumber: Long, hearing: Hearing) {
-    prisonApiGateway.amendHearing(
+  private fun updateOicHearingDetails(adjudicationNumber: String, hearing: Hearing) {
+    eventWrapperService.amendHearing(
       adjudicationNumber = adjudicationNumber,
-      oicHearingId = hearing.oicHearingId,
       oicHearingRequest = OicHearingRequest(
+        oicHearingId = hearing.oicHearingId,
         dateTimeOfHearing = hearing.dateTimeOfHearing,
         hearingLocationId = hearing.locationId,
         oicHearingType = hearing.oicHearingType,
@@ -158,7 +160,7 @@ class NomisOutcomeService(
 
     fun OutcomeCode.validateFinding(): Finding = this.finding ?: throw ValidationException("invalid call to api")
 
-    fun Outcome.validateOicHearingId(): Long = this.oicHearingId ?: throw ValidationException("oic hearing id not linked to outcome")
+    fun Outcome.validateOicHearingId(): String = this.oicHearingId ?: throw ValidationException("oic hearing id not linked to outcome")
 
     fun isPoliceReferralOutcomeFromHearing(hearing: Hearing, outcome: Outcome): Boolean =
       hearing.hearingOutcome?.code == HearingOutcomeCode.REFER_POLICE && POLICE_REFERRAL_OUTCOMES.contains(outcome.code)

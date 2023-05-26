@@ -47,7 +47,7 @@ data class PunishmentRequest(
   @Schema(description = "punishment suspended until date, required if punishment is suspended")
   val suspendedUntil: LocalDate? = null,
   @Schema(description = "optional activated from report number")
-  val activatedFrom: Long? = null,
+  val activatedFrom: String? = null,
 )
 
 @Schema(description = "punishment comment request")
@@ -87,7 +87,7 @@ class PunishmentsController(
   @PostMapping(value = ["/{adjudicationNumber}/punishments"])
   @ResponseStatus(HttpStatus.CREATED)
   fun create(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody punishmentsRequest: PunishmentsRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = punishmentsService.create(
@@ -102,7 +102,7 @@ class PunishmentsController(
   @PutMapping(value = ["/{adjudicationNumber}/punishments"])
   @ResponseStatus(HttpStatus.OK)
   fun update(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody punishmentsRequest: PunishmentsRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = punishmentsService.update(
@@ -142,7 +142,7 @@ class PunishmentsController(
   @PostMapping(value = ["/{adjudicationNumber}/punishments/comment"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createPunishmentComment(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody punishmentCommentRequest: PunishmentCommentRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = punishmentsService.createPunishmentComment(
@@ -175,7 +175,7 @@ class PunishmentsController(
   @PutMapping(value = ["/{adjudicationNumber}/punishments/comment"])
   @ResponseStatus(HttpStatus.OK)
   fun updatePunishmentComment(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @RequestBody punishmentCommentRequest: PunishmentCommentRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = punishmentsService.updatePunishmentComment(
@@ -198,7 +198,7 @@ class PunishmentsController(
   @DeleteMapping(value = ["/{adjudicationNumber}/punishments/comment/{punishmentCommentId}"])
   @ResponseStatus(HttpStatus.OK)
   fun deletePunishmentComment(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: String,
     @PathVariable(name = "punishmentCommentId") punishmentCommentId: Long,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = punishmentsService.deletePunishmentComment(

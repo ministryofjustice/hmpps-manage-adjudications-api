@@ -7,7 +7,17 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 
 @Service
-class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
+class LegacyNomisGateway(private val prisonApiClientCreds: WebClient) {
+
+  fun getPrisonerInfo(prisonerNumber: String): PrisonerAtLocation? {
+    return prisonApiClientCreds
+      .get()
+      .uri("/api/bookings/offenderNo/$prisonerNumber")
+      .retrieve()
+      .bodyToMono<PrisonerAtLocation>()
+      .block()
+  }
+
   fun requestAdjudicationCreationData(offenderNo: String): NomisAdjudicationCreationRequest =
     prisonApiClientCreds
       .post()
@@ -52,7 +62,11 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
       .bodyToMono<Void>()
       .block()
 
-  fun createHearingResult(adjudicationNumber: Long, oicHearingId: Long, oicHearingResultRequest: OicHearingResultRequest): Void? =
+  fun createHearingResult(
+    adjudicationNumber: Long,
+    oicHearingId: Long,
+    oicHearingResultRequest: OicHearingResultRequest,
+  ): Void? =
     prisonApiClientCreds
       .post()
       .uri("/adjudications/adjudication/$adjudicationNumber/hearing/$oicHearingId/result")
@@ -75,7 +89,11 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
     }
   }
 
-  fun amendHearingResult(adjudicationNumber: Long, oicHearingId: Long, oicHearingResultRequest: OicHearingResultRequest): Void? =
+  fun amendHearingResult(
+    adjudicationNumber: Long,
+    oicHearingId: Long,
+    oicHearingResultRequest: OicHearingResultRequest,
+  ): Void? =
     prisonApiClientCreds
       .put()
       .uri("/adjudications/adjudication/$adjudicationNumber/hearing/$oicHearingId/result")
@@ -144,4 +162,13 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
 data class OicHearingResult(
   val pleaFindingCode: String,
   val findingCode: String,
+)
+
+data class PrisonerAtLocation(
+  val bookingId: Long,
+  val firstName: String,
+  val lastName: String,
+  val offenderNo: String,
+  val agencyId: String,
+  val assignedLivingUnitId: Long,
 )

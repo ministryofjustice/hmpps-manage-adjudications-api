@@ -16,14 +16,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus.Companion.validateTransition
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventWrapperService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.lastOutcomeIsRefer
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Transactional
 @Service
@@ -32,7 +33,7 @@ class HearingService(
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   private val hearingRepository: HearingRepository,
-  private val prisonApiGateway: PrisonApiGateway,
+  private val eventWrapperService: EventWrapperService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -40,76 +41,44 @@ class HearingService(
 ) {
 
   @Deprecated(message = "to be removed when outcomes goes live")
-  fun createHearingV1(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
+  fun createHearingV1(adjudicationNumber: String, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
     }
 
-    val oicHearingId = prisonApiGateway.createHearing(
-      adjudicationNumber = adjudicationNumber,
-      oicHearingRequest = OicHearingRequest(
-        dateTimeOfHearing = dateTimeOfHearing,
-        hearingLocationId = locationId,
-        oicHearingType = oicHearingType,
-      ),
+    return transform(
+      adjudicationNumber,
+      dateTimeOfHearing,
+      locationId,
+      oicHearingType,
+      reportedAdjudication,
     )
-
-    reportedAdjudication.let {
-      it.hearings.add(
-        Hearing(
-          agencyId = reportedAdjudication.agencyId,
-          reportNumber = reportedAdjudication.reportNumber,
-          locationId = locationId,
-          dateTimeOfHearing = dateTimeOfHearing,
-          oicHearingId = oicHearingId,
-          oicHearingType = oicHearingType,
-        ),
-      )
-      if (it.status != ReportedAdjudicationStatus.SCHEDULED) {
-        it.status = ReportedAdjudicationStatus.SCHEDULED
-      }
-
-      it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
-    }
-
-    return saveToDto(reportedAdjudication)
   }
 
   @Deprecated(message = "to be removed when outcomes goes live")
-  fun amendHearingV1(adjudicationNumber: Long, hearingId: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
+  fun amendHearingV1(adjudicationNumber: String, hearingId: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
     }
 
     val hearingToEdit = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException()
 
-    prisonApiGateway.amendHearing(
-      adjudicationNumber = adjudicationNumber,
-      oicHearingId = hearingToEdit.oicHearingId,
-      oicHearingRequest = OicHearingRequest(
-        dateTimeOfHearing = dateTimeOfHearing,
-        hearingLocationId = locationId,
-        oicHearingType = oicHearingType,
-      ),
+    return transform(
+      adjudicationNumber,
+      hearingToEdit,
+      dateTimeOfHearing,
+      locationId,
+      oicHearingType,
+      reportedAdjudication,
     )
-
-    hearingToEdit.let {
-      it.dateTimeOfHearing = dateTimeOfHearing
-      it.locationId = locationId
-      it.oicHearingType = oicHearingType
-    }
-
-    reportedAdjudication.dateTimeOfFirstHearing = reportedAdjudication.calcFirstHearingDate()
-
-    return saveToDto(reportedAdjudication)
   }
 
   @Deprecated(message = "to be removed when outcomes goes live")
-  fun deleteHearingV1(adjudicationNumber: Long, hearingId: Long): ReportedAdjudicationDto {
+  fun deleteHearingV1(adjudicationNumber: String, hearingId: Long): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val hearingToRemove = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException()
 
-    prisonApiGateway.deleteHearing(
+    eventWrapperService.deleteHearing(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = hearingToRemove.oicHearingId,
     )
@@ -126,7 +95,7 @@ class HearingService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun createHearing(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
+  fun createHearing(adjudicationNumber: String, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
       it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED)
@@ -137,37 +106,16 @@ class HearingService(
       reportedAdjudication.addOutcome(Outcome(code = OutcomeCode.SCHEDULE_HEARING))
     }
 
-    val oicHearingId = prisonApiGateway.createHearing(
-      adjudicationNumber = adjudicationNumber,
-      oicHearingRequest = OicHearingRequest(
-        dateTimeOfHearing = dateTimeOfHearing,
-        hearingLocationId = locationId,
-        oicHearingType = oicHearingType,
-      ),
+    return transform(
+      adjudicationNumber,
+      dateTimeOfHearing,
+      locationId,
+      oicHearingType,
+      reportedAdjudication,
     )
-
-    reportedAdjudication.let {
-      it.hearings.add(
-        Hearing(
-          agencyId = reportedAdjudication.agencyId,
-          reportNumber = reportedAdjudication.reportNumber,
-          locationId = locationId,
-          dateTimeOfHearing = dateTimeOfHearing,
-          oicHearingId = oicHearingId,
-          oicHearingType = oicHearingType,
-        ),
-      )
-      if (it.status != ReportedAdjudicationStatus.SCHEDULED) {
-        it.status = ReportedAdjudicationStatus.SCHEDULED
-      }
-
-      it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
-    }
-
-    return saveToDto(reportedAdjudication)
   }
 
-  fun amendHearing(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
+  fun amendHearing(adjudicationNumber: String, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
       it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED)
@@ -176,32 +124,21 @@ class HearingService(
     val hearingToEdit = reportedAdjudication.getHearing()
     reportedAdjudication.hearings.filter { it.id != hearingToEdit.id }.validateHearingDate(dateTimeOfHearing)
 
-    prisonApiGateway.amendHearing(
-      adjudicationNumber = adjudicationNumber,
-      oicHearingId = hearingToEdit.oicHearingId,
-      oicHearingRequest = OicHearingRequest(
-        dateTimeOfHearing = dateTimeOfHearing,
-        hearingLocationId = locationId,
-        oicHearingType = oicHearingType,
-      ),
+    return transform(
+      adjudicationNumber,
+      hearingToEdit,
+      dateTimeOfHearing,
+      locationId,
+      oicHearingType,
+      reportedAdjudication,
     )
-
-    hearingToEdit.let {
-      it.dateTimeOfHearing = dateTimeOfHearing
-      it.locationId = locationId
-      it.oicHearingType = oicHearingType
-    }
-
-    reportedAdjudication.dateTimeOfFirstHearing = reportedAdjudication.calcFirstHearingDate()
-
-    return saveToDto(reportedAdjudication)
   }
 
-  fun deleteHearing(adjudicationNumber: Long): ReportedAdjudicationDto {
+  fun deleteHearing(adjudicationNumber: String): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val hearingToRemove = reportedAdjudication.getHearing().canDelete()
 
-    prisonApiGateway.deleteHearing(
+    eventWrapperService.deleteHearing(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = hearingToRemove.oicHearingId,
     )
@@ -230,7 +167,7 @@ class HearingService(
     return toHearingSummaries(hearings, adjudicationsMap)
   }
 
-  private fun toHearingSummaries(hearings: List<Hearing>, adjudications: Map<Long, ReportedAdjudication>): List<HearingSummaryDto> =
+  private fun toHearingSummaries(hearings: List<Hearing>, adjudications: Map<String, ReportedAdjudication>): List<HearingSummaryDto> =
     hearings.map {
       val adjudication = adjudications[it.reportNumber]!!
       HearingSummaryDto(
@@ -276,5 +213,72 @@ class HearingService(
     }
 
     private fun throwHearingNotFoundException(): Nothing = throw EntityNotFoundException("Hearing not found")
+  }
+
+  private fun transform(
+    adjudicationNumber: String,
+    dateTimeOfHearing: LocalDateTime,
+    locationId: Long,
+    oicHearingType: OicHearingType,
+    reportedAdjudication: ReportedAdjudication,
+  ): ReportedAdjudicationDto {
+    val oicHearingId = eventWrapperService.createHearing(
+      adjudicationNumber = adjudicationNumber,
+      oicHearingRequest = OicHearingRequest(
+        oicHearingId = UUID.randomUUID().toString(),
+        dateTimeOfHearing = dateTimeOfHearing,
+        hearingLocationId = locationId,
+        oicHearingType = oicHearingType,
+      ),
+    )
+
+    reportedAdjudication.let {
+      it.hearings.add(
+        Hearing(
+          agencyId = reportedAdjudication.agencyId,
+          reportNumber = reportedAdjudication.reportNumber,
+          locationId = locationId,
+          dateTimeOfHearing = dateTimeOfHearing,
+          oicHearingId = oicHearingId,
+          oicHearingType = oicHearingType,
+        ),
+      )
+      if (it.status != ReportedAdjudicationStatus.SCHEDULED) {
+        it.status = ReportedAdjudicationStatus.SCHEDULED
+      }
+
+      it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
+    }
+
+    return saveToDto(reportedAdjudication)
+  }
+
+  private fun transform(
+    adjudicationNumber: String,
+    hearingToEdit: Hearing,
+    dateTimeOfHearing: LocalDateTime,
+    locationId: Long,
+    oicHearingType: OicHearingType,
+    reportedAdjudication: ReportedAdjudication,
+  ): ReportedAdjudicationDto {
+    eventWrapperService.amendHearing(
+      adjudicationNumber = adjudicationNumber,
+      oicHearingRequest = OicHearingRequest(
+        oicHearingId = hearingToEdit.oicHearingId,
+        dateTimeOfHearing = dateTimeOfHearing,
+        hearingLocationId = locationId,
+        oicHearingType = oicHearingType,
+      ),
+    )
+
+    hearingToEdit.let {
+      it.dateTimeOfHearing = dateTimeOfHearing
+      it.locationId = locationId
+      it.oicHearingType = oicHearingType
+    }
+
+    reportedAdjudication.dateTimeOfFirstHearing = reportedAdjudication.calcFirstHearingDate()
+
+    return saveToDto(reportedAdjudication)
   }
 }

@@ -49,7 +49,7 @@ class IntegrationTestData(
       paragraphDescription = "Fights with any person",
     )
 
-    const val DEFAULT_ADJUDICATION_NUMBER = 1524242L
+    const val DEFAULT_ADJUDICATION_NUMBER = "1524242"
     const val DEFAULT_PRISONER_NUMBER = "AA1234A"
     const val DEFAULT_PRISONER_BOOKING_ID = 123L
     const val DEFAULT_AGENCY_ID = "MDI"
@@ -141,7 +141,7 @@ class IntegrationTestData(
     )
 
     val ADJUDICATION_1 = AdjudicationIntTestDataSet(
-      adjudicationNumber = 456L,
+      adjudicationNumber = "456",
       prisonerNumber = "BB2345B",
       bookingId = 31L,
       agencyId = "LEI",
@@ -165,7 +165,7 @@ class IntegrationTestData(
     )
 
     val ADJUDICATION_2 = AdjudicationIntTestDataSet(
-      adjudicationNumber = 567L,
+      adjudicationNumber = "567",
       prisonerNumber = "CC2345C",
       bookingId = 32L,
       agencyId = "MDI",
@@ -187,7 +187,7 @@ class IntegrationTestData(
     )
 
     val ADJUDICATION_3 = AdjudicationIntTestDataSet(
-      adjudicationNumber = 789L,
+      adjudicationNumber = "789",
       prisonerNumber = "DD3456D",
       bookingId = 33L,
       agencyId = "MDI",
@@ -209,7 +209,7 @@ class IntegrationTestData(
     )
 
     val ADJUDICATION_4 = AdjudicationIntTestDataSet(
-      adjudicationNumber = 1234L,
+      adjudicationNumber = "1234",
       prisonerNumber = "EE4567E",
       bookingId = 34L,
       agencyId = "MDI",
@@ -231,7 +231,7 @@ class IntegrationTestData(
     )
 
     val ADJUDICATION_5 = AdjudicationIntTestDataSet(
-      adjudicationNumber = 2345L,
+      adjudicationNumber = "2345",
       prisonerNumber = "FF4567F",
       bookingId = 35L,
       agencyId = "LEI",

@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.ADJUDICATION_NUMBER
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import java.time.LocalDateTime
 
@@ -47,7 +48,7 @@ open class TestControllerBase {
 
     val REPORTED_ADJUDICATION_DTO =
       ReportedAdjudicationDto(
-        adjudicationNumber = 1,
+        adjudicationNumber = ADJUDICATION_NUMBER,
         prisonerNumber = "A12345",
         bookingId = 123,
         incidentDetails = IncidentDetailsDto(

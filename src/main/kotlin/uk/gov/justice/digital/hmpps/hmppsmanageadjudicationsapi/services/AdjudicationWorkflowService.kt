@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -56,7 +55,7 @@ private class ReportedAdjudicationServiceWrapper(
   offenceCodeLookupService,
   authenticationFacade,
 ) {
-  fun get(adjudicationNumber: Long) =
+  fun get(adjudicationNumber: String) =
     findByAdjudicationNumber(adjudicationNumber)
 
   fun save(reportedAdjudication: ReportedAdjudication) = saveToDto(reportedAdjudication)
@@ -70,7 +69,7 @@ class AdjudicationWorkflowService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
-  private val prisonApiGateway: PrisonApiGateway,
+  private val eventWrapperService: EventWrapperService,
   authenticationFacade: AuthenticationFacade,
   private val telemetryClient: TelemetryClient,
   private val draftOffenceService: DraftOffenceService,
@@ -94,7 +93,7 @@ class AdjudicationWorkflowService(
     return generatedReportedAdjudication
   }
 
-  fun createDraftFromReportedAdjudication(adjudicationNumber: Long): DraftAdjudicationDto {
+  fun createDraftFromReportedAdjudication(adjudicationNumber: String): DraftAdjudicationDto {
     val reportedAdjudication =
       reportedAdjudicationService.get(adjudicationNumber)
 
@@ -158,7 +157,7 @@ class AdjudicationWorkflowService(
   }
 
   private fun createReportedAdjudication(draftAdjudication: DraftAdjudication): ReportedAdjudicationDto {
-    val nomisAdjudicationCreationRequestData = prisonApiGateway.requestAdjudicationCreationData(draftAdjudication.prisonerNumber)
+    val nomisAdjudicationCreationRequestData = eventWrapperService.requestAdjudicationCreationData(draftAdjudication.prisonerNumber)
     return reportedAdjudicationService.save(
       ReportedAdjudication(
         bookingId = nomisAdjudicationCreationRequestData.bookingId,
@@ -319,13 +318,13 @@ class AdjudicationWorkflowService(
     }.toMutableList()
   }
 
-  private fun telemetryCapture(draftAdjudication: DraftAdjudication, reportNumber: Long?) {
+  private fun telemetryCapture(draftAdjudication: DraftAdjudication, reportNumber: String?) {
     telemetryClient.trackEvent(
       DraftAdjudicationService.TELEMETRY_EVENT,
       mapOf(
         "adjudicationNumber" to draftAdjudication.id.toString(),
         "agencyId" to draftAdjudication.agencyId,
-        "reportNumber" to reportNumber.toString(),
+        "reportNumber" to reportNumber,
       ),
       null,
     )

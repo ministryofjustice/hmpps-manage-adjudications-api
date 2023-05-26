@@ -20,7 +20,7 @@ data class Outcome(
   var code: OutcomeCode,
   @Enumerated(EnumType.STRING)
   var quashedReason: QuashedReason? = null,
-  var oicHearingId: Long? = null,
+  var oicHearingId: String? = null,
   var deleted: Boolean? = null,
 ) : BaseEntity()
 

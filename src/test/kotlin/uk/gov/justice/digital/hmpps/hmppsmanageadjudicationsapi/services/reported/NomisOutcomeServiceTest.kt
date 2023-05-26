@@ -27,14 +27,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHear
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingResultRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventWrapperService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 import java.time.LocalDateTime
 
 class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
-  private val prisonApiGateway: PrisonApiGateway = mock()
-  private val nomisOutcomeService = NomisOutcomeService(prisonApiGateway)
+  private val eventWrapperService: EventWrapperService = mock()
+  private val nomisOutcomeService = NomisOutcomeService(eventWrapperService)
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // not applicable
@@ -72,15 +72,15 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
-      verify(prisonApiGateway, never()).createHearing(any(), any())
-      verify(prisonApiGateway, never()).createHearingResult(anyOrNull(), any(), any())
+      verify(eventWrapperService, never()).createHearing(any(), any())
+      verify(eventWrapperService, never()).createHearingResult(anyOrNull(), any(), any())
     }
 
     @Test
     fun `quashed creates hearing and result`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "testing", plea = HearingOutcomePlea.GUILTY)
-        it.hearings.first().oicHearingId = 122
+        it.hearings.first().oicHearingId = "122"
         it.addOutcome(
           Outcome(code = OutcomeCode.CHARGE_PROVED).also {
               o ->
@@ -95,7 +95,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         )
       }
 
-      whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(123)
+      whenever(eventWrapperService.createHearing(any(), any())).thenReturn("123")
 
       val hearingId = nomisOutcomeService.createHearingResultIfApplicable(
         adjudicationNumber = reportedAdjudication.reportNumber,
@@ -104,11 +104,11 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(hearingId).isNotNull
-      verify(prisonApiGateway, atLeastOnce()).quashSanctions(any())
-      verify(prisonApiGateway, atLeastOnce()).createHearing(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).createHearingResult(
+      verify(eventWrapperService, atLeastOnce()).quashSanctions(any())
+      verify(eventWrapperService, atLeastOnce()).createHearing(any(), any())
+      verify(eventWrapperService, atLeastOnce()).createHearingResult(
         reportedAdjudication.reportNumber,
-        123,
+        "123",
         OicHearingResultRequest(
           pleaFindingCode = Plea.GUILTY,
           findingCode = Finding.QUASHED,
@@ -122,11 +122,11 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun ` {0} from hearing - POLICE REFER creates hearing and result `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing")
-        it.hearings.first().oicHearingId = 122
+        it.hearings.first().oicHearingId = "122"
         it.addOutcome(Outcome(code = code))
       }
 
-      whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(123)
+      whenever(eventWrapperService.createHearing(any(), any())).thenReturn("123")
 
       val hearingId = nomisOutcomeService.createHearingResultIfApplicable(
         adjudicationNumber = reportedAdjudication.reportNumber,
@@ -135,10 +135,10 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(hearingId).isNotNull
-      verify(prisonApiGateway, atLeastOnce()).createHearing(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).createHearingResult(
+      verify(eventWrapperService, atLeastOnce()).createHearing(any(), any())
+      verify(eventWrapperService, atLeastOnce()).createHearingResult(
         reportedAdjudication.reportNumber,
-        123,
+        "123",
         OicHearingResultRequest(
           pleaFindingCode = Plea.NOT_ASKED,
           findingCode = code.finding!!,
@@ -161,8 +161,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, never()).createHearing(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).createHearingResult(any(), any(), any())
+      verify(eventWrapperService, never()).createHearing(any(), any())
+      verify(eventWrapperService, atLeastOnce()).createHearingResult(any(), any(), any())
     }
 
     @EnumSource(OicHearingType::class)
@@ -183,8 +183,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val hearing = reportedAdjudication.hearings.first()
       val request = createHearingResultRequestForVerify(reportedAdjudication, hearing)
 
-      verify(prisonApiGateway, never()).createHearing(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).createHearingResult(
+      verify(eventWrapperService, never()).createHearing(any(), any())
+      verify(eventWrapperService, atLeastOnce()).createHearingResult(
         adjudicationNumber = reportedAdjudication.reportNumber,
         oicHearingId = hearing.oicHearingId,
         oicHearingResultRequest = request,
@@ -195,7 +195,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `REFER_INAD calls prison api to update hearing`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing")
-        it.hearings.first().oicHearingId = 1
+        it.hearings.first().oicHearingId = "1"
         it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD))
       }
 
@@ -204,12 +204,12 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
-      verify(prisonApiGateway, never()).createHearing(any(), any())
-      verify(prisonApiGateway, never()).createHearingResult(anyOrNull(), any(), any())
-      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+      verify(eventWrapperService, never()).createHearing(any(), any())
+      verify(eventWrapperService, never()).createHearingResult(anyOrNull(), any(), any())
+      verify(eventWrapperService, atLeastOnce()).amendHearing(
         reportedAdjudication.reportNumber,
-        1,
         OicHearingRequest(
+          "1",
           reportedAdjudication.hearings.first().dateTimeOfHearing,
           reportedAdjudication.hearings.first().oicHearingType,
           reportedAdjudication.hearings.first().locationId,
@@ -244,7 +244,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `hearing without outcome throws exception `() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.addOutcome(Outcome(code = OutcomeCode.QUASHED, oicHearingId = 1))
+        it.addOutcome(Outcome(code = OutcomeCode.QUASHED, oicHearingId = "1"))
       }
 
       Assertions.assertThatThrownBy {
@@ -270,14 +270,14 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
-      verify(prisonApiGateway, never()).amendHearingResult(any(), any(), any())
+      verify(eventWrapperService, never()).amendHearingResult(any(), any(), any())
     }
 
     @Test
     fun `quashed amend`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "testing", plea = HearingOutcomePlea.GUILTY)
-        it.hearings.first().oicHearingId = 122
+        it.hearings.first().oicHearingId = "122"
         it.addOutcome(
           Outcome(code = OutcomeCode.CHARGE_PROVED).also {
               o ->
@@ -285,7 +285,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
           },
         )
         it.addOutcome(
-          Outcome(code = OutcomeCode.QUASHED, oicHearingId = 123).also {
+          Outcome(code = OutcomeCode.QUASHED, oicHearingId = "123").also {
               o ->
             o.createDateTime = LocalDateTime.now().plusDays(1)
           },
@@ -298,10 +298,10 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, never()).createHearing(anyOrNull(), any())
-      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(
+      verify(eventWrapperService, never()).createHearing(anyOrNull(), any())
+      verify(eventWrapperService, atLeastOnce()).amendHearingResult(
         reportedAdjudication.reportNumber,
-        123L,
+        "123",
         OicHearingResultRequest(
           findingCode = Finding.QUASHED,
           pleaFindingCode = Plea.GUILTY,
@@ -315,8 +315,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `{0} from hearing - police refer amends hearing result `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing")
-        it.hearings.first().oicHearingId = 122L
-        it.addOutcome(Outcome(code = code, oicHearingId = 123L))
+        it.hearings.first().oicHearingId = "122"
+        it.addOutcome(Outcome(code = code, oicHearingId = "123"))
       }
 
       nomisOutcomeService.amendHearingResultIfApplicable(
@@ -325,10 +325,10 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, never()).createHearing(anyOrNull(), any())
-      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(
+      verify(eventWrapperService, never()).createHearing(anyOrNull(), any())
+      verify(eventWrapperService, atLeastOnce()).amendHearingResult(
         reportedAdjudication.reportNumber,
-        123L,
+        "123",
         OicHearingResultRequest(
           pleaFindingCode = Plea.NOT_ASKED,
           findingCode = code.finding!!,
@@ -342,7 +342,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `hearing with outcome {0} amends hearing result `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = if (code == OutcomeCode.REFER_POLICE) HearingOutcomeCode.REFER_POLICE else HearingOutcomeCode.COMPLETE, adjudicator = "testing")
-        it.addOutcome(Outcome(code = code, oicHearingId = 1))
+        it.addOutcome(Outcome(code = code, oicHearingId = "1"))
       }
 
       nomisOutcomeService.amendHearingResultIfApplicable(
@@ -351,7 +351,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(anyOrNull(), any(), any())
+      verify(eventWrapperService, atLeastOnce()).amendHearingResult(anyOrNull(), any(), any())
     }
 
     @EnumSource(OicHearingType::class)
@@ -372,7 +372,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val hearing = reportedAdjudication.hearings.first()
       val request = createHearingResultRequestForVerify(reportedAdjudication, hearing)
 
-      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(
+      verify(eventWrapperService, atLeastOnce()).amendHearingResult(
         adjudicationNumber = reportedAdjudication.reportNumber,
         oicHearingId = hearing.oicHearingId,
         oicHearingResultRequest = request,
@@ -383,7 +383,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `REFER_INAD calls prison api to update hearing only`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing")
-        it.hearings.first().oicHearingId = 1
+        it.hearings.first().oicHearingId = "1"
         it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD))
       }
 
@@ -393,12 +393,12 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, never()).amendHearingResult(anyOrNull(), any(), any())
+      verify(eventWrapperService, never()).amendHearingResult(anyOrNull(), any(), any())
 
-      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+      verify(eventWrapperService, atLeastOnce()).amendHearing(
         reportedAdjudication.reportNumber,
-        1,
         OicHearingRequest(
+          "1",
           reportedAdjudication.hearings.first().dateTimeOfHearing,
           reportedAdjudication.hearings.first().oicHearingType,
           reportedAdjudication.hearings.first().locationId,
@@ -444,15 +444,15 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, never()).deleteHearing(any(), any())
-      verify(prisonApiGateway, never()).deleteHearingResult(any(), any())
+      verify(eventWrapperService, never()).deleteHearing(any(), any())
+      verify(eventWrapperService, never()).deleteHearingResult(any(), any())
     }
 
     @Test
     fun `quashed delete deletes hearing and result`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "testing", plea = HearingOutcomePlea.GUILTY)
-        it.hearings.first().oicHearingId = 122
+        it.hearings.first().oicHearingId = "122"
         it.addOutcome(
           Outcome(code = OutcomeCode.CHARGE_PROVED).also {
               o ->
@@ -460,7 +460,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
           },
         )
         it.addOutcome(
-          Outcome(code = OutcomeCode.QUASHED, oicHearingId = 123L).also {
+          Outcome(code = OutcomeCode.QUASHED, oicHearingId = "123").also {
               o ->
             o.createDateTime = LocalDateTime.now().plusDays(1)
           },
@@ -473,8 +473,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, 123L)
-      verify(prisonApiGateway, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 123L)
+      verify(eventWrapperService, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, "123")
+      verify(eventWrapperService, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, "123")
     }
 
     @CsvSource("NOT_PROCEED", "PROSECUTION")
@@ -482,8 +482,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `{0} from hearing deletes hearing result and hearing `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "testing")
-        it.hearings.first().oicHearingId = 100L
-        it.addOutcome(Outcome(code = code, oicHearingId = 122L))
+        it.hearings.first().oicHearingId = "100"
+        it.addOutcome(Outcome(code = code, oicHearingId = "122"))
       }
 
       nomisOutcomeService.deleteHearingResultIfApplicable(
@@ -492,8 +492,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, 122L)
-      verify(prisonApiGateway, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 122L)
+      verify(eventWrapperService, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, "122")
+      verify(eventWrapperService, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, "122")
     }
 
     @CsvSource("REFER_POLICE", "NOT_PROCEED", "CHARGE_PROVED", "DISMISSED")
@@ -501,7 +501,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `hearing with outcome {0} deletes hearing result `(code: OutcomeCode) {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = if (code == OutcomeCode.REFER_POLICE) HearingOutcomeCode.REFER_POLICE else HearingOutcomeCode.COMPLETE, adjudicator = "testing")
-        it.hearings.first().oicHearingId = 100L
+        it.hearings.first().oicHearingId = "100"
         it.addOutcome(Outcome(code = code))
       }
 
@@ -512,18 +512,18 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       if (code == OutcomeCode.CHARGE_PROVED) {
-        verify(prisonApiGateway, atLeastOnce()).deleteSanctions(any())
+        verify(eventWrapperService, atLeastOnce()).deleteSanctions(any())
       }
 
-      verify(prisonApiGateway, never()).deleteHearing(reportedAdjudication.reportNumber, 100L)
-      verify(prisonApiGateway, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 100L)
+      verify(eventWrapperService, never()).deleteHearing(reportedAdjudication.reportNumber, "100")
+      verify(eventWrapperService, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, "100")
     }
 
     @Test
     fun `REFER_INAD calls prison api to amend hearing`() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "testing")
-        it.hearings.first().oicHearingId = 1
+        it.hearings.first().oicHearingId = "1"
         it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD))
       }
 
@@ -533,13 +533,13 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, never()).deleteHearing(any(), any())
-      verify(prisonApiGateway, never()).deleteHearingResult(any(), any())
+      verify(eventWrapperService, never()).deleteHearing(any(), any())
+      verify(eventWrapperService, never()).deleteHearingResult(any(), any())
 
-      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+      verify(eventWrapperService, atLeastOnce()).amendHearing(
         reportedAdjudication.reportNumber,
-        1,
         OicHearingRequest(
+          "1",
           reportedAdjudication.hearings.first().dateTimeOfHearing,
           reportedAdjudication.hearings.first().oicHearingType,
           reportedAdjudication.hearings.first().locationId,

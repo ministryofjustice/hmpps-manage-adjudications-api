@@ -14,11 +14,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepositoryTest
 import java.time.LocalDateTime
+import java.util.*
+
+const val ADJUDICATION_NUMBER = "abcd"
 
 class EntityBuilder {
 
   fun reportedAdjudication(
-    reportNumber: Long = 1235L,
+    reportNumber: String = ADJUDICATION_NUMBER,
     dateTime: LocalDateTime = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
     agencyId: String = "MDI",
     hearingId: Long? = 1L,
@@ -83,7 +86,7 @@ class EntityBuilder {
   }
 
   fun createHearing(
-    reportNumber: Long = 1235L,
+    reportNumber: String = ADJUDICATION_NUMBER,
     dateTime: LocalDateTime = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
     agencyId: String = "MDI",
     hearingId: Long? = 1L,
@@ -93,7 +96,7 @@ class EntityBuilder {
     dateTimeOfHearing = dateTime.plusWeeks(1),
     agencyId = agencyId,
     reportNumber = reportNumber,
-    oicHearingId = 3L,
+    oicHearingId = "3",
     oicHearingType = OicHearingType.GOV,
   )
 }

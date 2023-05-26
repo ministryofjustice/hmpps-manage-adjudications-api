@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.listener
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.awspring.cloud.sqs.annotation.SqsListener
@@ -7,6 +7,7 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.HMPPSDomainEvent
 
 @Service
 class PrisonOffenderEventListener(

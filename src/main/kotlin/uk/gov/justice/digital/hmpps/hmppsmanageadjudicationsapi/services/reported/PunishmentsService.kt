@@ -19,10 +19,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventWrapperService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDate
 
@@ -32,7 +32,7 @@ class PunishmentsService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
-  private val prisonApiGateway: PrisonApiGateway,
+  private val eventWrapperService: EventWrapperService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -47,7 +47,7 @@ class PunishmentsService(
     }
   }
 
-  fun amendPunishmentsFromChargeProvedIfApplicable(adjudicationNumber: Long, caution: Boolean, damagesOwed: Boolean?, amount: Double?): ReportedAdjudicationDto {
+  fun amendPunishmentsFromChargeProvedIfApplicable(adjudicationNumber: String, caution: Boolean, damagesOwed: Boolean?, amount: Double?): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
     handleCautionChange(reportedAdjudication = reportedAdjudication, caution = caution).run {
@@ -60,19 +60,19 @@ class PunishmentsService(
   }
 
   fun removeQuashedFinding(reportedAdjudication: ReportedAdjudication) {
-    prisonApiGateway.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber)
+    eventWrapperService.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber)
 
     reportedAdjudication.createSanctionAndAssignSanctionSeq(type = PunishmentType.CAUTION)
     reportedAdjudication.createSanctionAndAssignSanctionSeq(type = PunishmentType.DAMAGES_OWED)
 
-    prisonApiGateway.createSanctions(
+    eventWrapperService.createSanctions(
       adjudicationNumber = reportedAdjudication.reportNumber,
       sanctions = reportedAdjudication.mapToSanctions(),
     )
   }
 
   fun create(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     punishments: List<PunishmentRequest>,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
@@ -90,7 +90,7 @@ class PunishmentsService(
       }
     }
 
-    prisonApiGateway.createSanctions(
+    eventWrapperService.createSanctions(
       adjudicationNumber = adjudicationNumber,
       sanctions = reportedAdjudication.mapToSanctions(),
     )
@@ -99,7 +99,7 @@ class PunishmentsService(
   }
 
   fun update(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     punishments: List<PunishmentRequest>,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
@@ -145,7 +145,7 @@ class PunishmentsService(
       }
     }
 
-    prisonApiGateway.updateSanctions(
+    eventWrapperService.updateSanctions(
       adjudicationNumber = adjudicationNumber,
       sanctions = reportedAdjudication.mapToSanctions(),
     ).run {
@@ -206,7 +206,7 @@ class PunishmentsService(
   }
 
   private fun deleteDamagesOwed(reportedAdjudication: ReportedAdjudication, punishment: Punishment) {
-    prisonApiGateway.deleteSanction(
+    eventWrapperService.deleteSanction(
       adjudicationNumber = reportedAdjudication.reportNumber,
       sanctionSeq = punishment.sanctionSeq!!,
     ).run {
@@ -215,9 +215,9 @@ class PunishmentsService(
   }
 
   private fun amendDamagesOwed(reportedAdjudication: ReportedAdjudication, punishment: Punishment, amount: Double) {
-    prisonApiGateway.deleteSanction(adjudicationNumber = reportedAdjudication.reportNumber, sanctionSeq = punishment.sanctionSeq!!).run {
+    eventWrapperService.deleteSanction(adjudicationNumber = reportedAdjudication.reportNumber, sanctionSeq = punishment.sanctionSeq!!).run {
       punishment.amount = amount
-      punishment.sanctionSeq = prisonApiGateway.createSanction(
+      punishment.sanctionSeq = eventWrapperService.createSanction(
         adjudicationNumber = reportedAdjudication.reportNumber,
         sanction = punishment.mapPunishmentToSanction(),
       )
@@ -243,7 +243,7 @@ class PunishmentsService(
   private fun amendToCaution(reportedAdjudication: ReportedAdjudication) {
     val preserveDamagesOwed = reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }
 
-    prisonApiGateway.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber).run {
+    eventWrapperService.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber).run {
       reportedAdjudication.clearPunishments()
       createCaution(reportedAdjudication = reportedAdjudication)
     }.run {
@@ -260,7 +260,7 @@ class PunishmentsService(
   }
 
   private fun removeCaution(reportedAdjudication: ReportedAdjudication, punishment: Punishment) {
-    prisonApiGateway.deleteSanction(
+    eventWrapperService.deleteSanction(
       adjudicationNumber = reportedAdjudication.reportNumber,
       sanctionSeq = punishment.sanctionSeq!!,
     ).run {
@@ -268,7 +268,7 @@ class PunishmentsService(
     }
   }
 
-  private fun createPunishmentFromChargeProved(adjudicationNumber: Long, type: PunishmentType, amount: Double? = null): Punishment =
+  private fun createPunishmentFromChargeProved(adjudicationNumber: String, type: PunishmentType, amount: Double? = null): Punishment =
     Punishment(
       type = type,
       amount = amount,
@@ -276,7 +276,7 @@ class PunishmentsService(
         PunishmentSchedule(days = 0),
       ),
     ).also {
-      it.sanctionSeq = prisonApiGateway.createSanction(
+      it.sanctionSeq = eventWrapperService.createSanction(
         adjudicationNumber = adjudicationNumber,
         sanction = it.mapPunishmentToSanction(),
       )
@@ -317,7 +317,7 @@ class PunishmentsService(
       }
     }
 
-  private fun activateSuspendedPunishment(adjudicationNumber: Long, punishmentRequest: PunishmentRequest): Punishment {
+  private fun activateSuspendedPunishment(adjudicationNumber: String, punishmentRequest: PunishmentRequest): Punishment {
     var suspendedPunishment: Punishment? = null
     punishmentRequest.id?.run {
       val activatedFromReport = findByAdjudicationNumber(punishmentRequest.activatedFrom!!)
@@ -347,7 +347,7 @@ class PunishmentsService(
 
   private fun ReportedAdjudication.createSanctionAndAssignSanctionSeq(type: PunishmentType) {
     this.getPunishments().firstOrNull { it.type == type }?.let {
-      it.sanctionSeq = prisonApiGateway.createSanction(
+      it.sanctionSeq = eventWrapperService.createSanction(
         adjudicationNumber = this.reportNumber,
         sanction = it.mapPunishmentToSanction(),
       )
@@ -355,7 +355,7 @@ class PunishmentsService(
   }
 
   fun createPunishmentComment(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     punishmentComment: PunishmentCommentRequest,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
@@ -370,7 +370,7 @@ class PunishmentsService(
   }
 
   fun updatePunishmentComment(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     request: PunishmentCommentRequest,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
@@ -387,7 +387,7 @@ class PunishmentsService(
   }
 
   fun deletePunishmentComment(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     punishmentCommentId: Long,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)

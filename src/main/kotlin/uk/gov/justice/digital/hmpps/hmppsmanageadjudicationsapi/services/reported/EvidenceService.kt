@@ -21,7 +21,7 @@ class EvidenceService(
   authenticationFacade,
 ) {
 
-  fun updateEvidence(adjudicationNumber: Long, evidence: List<EvidenceRequestItem>): ReportedAdjudicationDto {
+  fun updateEvidence(adjudicationNumber: String, evidence: List<EvidenceRequestItem>): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val reporter = authenticationFacade.currentUsername!!
     val toPreserve = reportedAdjudication.evidence.filter { it.reporter != reporter }
