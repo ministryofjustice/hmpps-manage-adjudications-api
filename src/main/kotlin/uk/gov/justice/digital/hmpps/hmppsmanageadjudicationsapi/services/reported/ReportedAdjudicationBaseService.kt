@@ -299,7 +299,7 @@ open class ReportedAdjudicationBaseService(
         adjudicationNumber,
       )
 
-    // if (reportedAdjudication.agencyId != authenticationFacade.activeCaseload) throwEntityNotFoundException(adjudicationNumber)
+    if (reportedAdjudication.agencyId != authenticationFacade.activeCaseload) throwEntityNotFoundException(adjudicationNumber)
 
     return reportedAdjudication
   }
