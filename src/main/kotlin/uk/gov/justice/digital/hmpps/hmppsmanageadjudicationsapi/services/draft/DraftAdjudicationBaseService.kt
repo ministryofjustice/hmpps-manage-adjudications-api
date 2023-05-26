@@ -37,7 +37,7 @@ open class DraftAdjudicationBaseService(
 
   protected fun find(id: Long): DraftAdjudication {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
-    // if (draftAdjudication.agencyId != authenticationFacade.activeCaseload) throwEntityNotFoundException(id)
+    if (draftAdjudication.agencyId != authenticationFacade.activeCaseload) throwEntityNotFoundException(id)
 
     return draftAdjudication
   }

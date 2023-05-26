@@ -6,7 +6,6 @@ import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -94,7 +93,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(reportedAdjudicationService.getReportedAdjudicationDetails(1L).punishments).isEmpty()
     }
 
-    @Disabled
     @Test
     fun `adjudication is not part of active case load throws exception `() {
       whenever(authenticationFacade.activeCaseload).thenReturn("OTHER")
