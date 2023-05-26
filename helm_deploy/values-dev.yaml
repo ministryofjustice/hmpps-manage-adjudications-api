@@ -20,7 +20,7 @@ generic-prometheus-alerts:
   rdsAlertsDatabases:
     cloud-platform-1ec554469922ee81: "Manage Adjudications API"
   sqsAlertsQueueNames:
-    - "dps-core-dev-prisoner-event"
+    - "dps-core-dev-prisoner-event-queue"
     - "dps-core-dev-prisoner-event-dlq"
 
 environment: dev

@@ -20,7 +20,7 @@ generic-prometheus-alerts:
   rdsAlertsDatabases:
     cloud-platform-6c035586d92ac925: "Manage Adjudications API"
   sqsAlertsQueueNames:
-    - "dps-core-preprod-prisoner-event"
+    - "dps-core-preprod-prisoner-event-queue"
     - "dps-core-preprod-prisoner-event-dlq"
 
 environment: preprod
