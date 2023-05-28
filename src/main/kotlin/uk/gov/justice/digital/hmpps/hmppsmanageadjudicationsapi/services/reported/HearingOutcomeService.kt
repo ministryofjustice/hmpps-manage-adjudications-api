@@ -99,7 +99,7 @@ class HearingOutcomeService(
       plea = plea,
     )
 
-    if (code == HearingOutcomeCode.ADJOURN) updateOicHearingDetails(reportedAdjudication)
+    if (code.updateOicHearingDetails()) updateOicHearingDetails(reportedAdjudication)
 
     return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus()) it.calculateStatus() })
   }
@@ -111,7 +111,7 @@ class HearingOutcomeService(
     val code = hearingToRemoveOutcome.hearingOutcome.hearingOutcomeExists().code
     hearingToRemoveOutcome.hearingOutcome = null
 
-    if (code == HearingOutcomeCode.ADJOURN) removeOicHearingDetails(reportedAdjudication)
+    if (code.updateOicHearingDetails()) removeOicHearingDetails(reportedAdjudication)
 
     return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus() && recalculateStatus) it.calculateStatus() })
   }
@@ -149,7 +149,7 @@ class HearingOutcomeService(
       HearingOutcomeCode.NOMIS -> throw RuntimeException("unable to amend a NOMIS hearing outcome")
     }
 
-    if (outcomeCodeToAmend == HearingOutcomeCode.ADJOURN) updateOicHearingDetails(reportedAdjudication)
+    if (outcomeCodeToAmend.updateOicHearingDetails()) updateOicHearingDetails(reportedAdjudication)
 
     return saveToDto(reportedAdjudication)
   }
@@ -194,6 +194,8 @@ class HearingOutcomeService(
 
   companion object {
     fun HearingOutcome?.hearingOutcomeExists() = this ?: throw EntityNotFoundException("outcome not found for hearing")
+
+    fun HearingOutcomeCode.updateOicHearingDetails(): Boolean = listOf(HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.ADJOURN).contains(this)
 
     fun ReportedAdjudication.latestOutcomeIsAdjourn() {
       val latest = this.latestHearingOutcome()

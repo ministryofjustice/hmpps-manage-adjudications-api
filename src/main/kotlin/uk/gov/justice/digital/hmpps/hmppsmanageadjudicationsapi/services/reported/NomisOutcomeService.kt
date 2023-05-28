@@ -24,7 +24,7 @@ class NomisOutcomeService(
 ) {
 
   fun createHearingResultIfApplicable(adjudicationNumber: String, hearing: Hearing?, outcome: Outcome): String? {
-    if (hearing == null && outcome.doNotCallApi()) return null
+    if (hearing == null && outcome.doNotCallApi() || outcome.ignore()) return null
 
     hearing?.let {
       if (outcome.createHearingAndOutcome() || isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)) {
@@ -50,13 +50,12 @@ class NomisOutcomeService(
       }
 
       if (outcome.createOutcome()) createHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome)
-      if (outcome.updateHearing()) updateOicHearingDetails(adjudicationNumber = adjudicationNumber, hearing = it)
     }
     return null
   }
 
   fun amendHearingResultIfApplicable(adjudicationNumber: String, hearing: Hearing?, outcome: Outcome) {
-    if (hearing == null && outcome.doNotCallApi()) return
+    if (hearing == null && outcome.doNotCallApi() || outcome.ignore()) return
 
     hearing?.let {
       val isPoliceReferralOutcome = isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)
@@ -71,12 +70,11 @@ class NomisOutcomeService(
           ),
         )
       }
-      if (outcome.updateHearing()) updateOicHearingDetails(adjudicationNumber = adjudicationNumber, hearing = it)
     }
   }
 
   fun deleteHearingResultIfApplicable(adjudicationNumber: String, hearing: Hearing?, outcome: Outcome) {
-    if (hearing == null && outcome.doNotCallApi()) return
+    if (hearing == null && outcome.doNotCallApi() || outcome.ignore()) return
 
     hearing?.let {
       if (outcome.canDeleteOutcome() || isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)) {
@@ -87,17 +85,6 @@ class NomisOutcomeService(
       }
       if (outcome.code == OutcomeCode.CHARGE_PROVED) eventWrapperService.deleteSanctions(adjudicationNumber = adjudicationNumber)
       if (outcome.createOutcome()) deleteHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome)
-      if (outcome.updateHearing()) {
-        eventWrapperService.amendHearing(
-          adjudicationNumber = adjudicationNumber,
-          oicHearingRequest = OicHearingRequest(
-            oicHearingId = it.oicHearingId,
-            dateTimeOfHearing = it.dateTimeOfHearing,
-            hearingLocationId = it.locationId,
-            oicHearingType = it.oicHearingType,
-          ),
-        )
-      }
     }
   }
 
@@ -120,20 +107,6 @@ class NomisOutcomeService(
     )
   }
 
-  private fun updateOicHearingDetails(adjudicationNumber: String, hearing: Hearing) {
-    eventWrapperService.amendHearing(
-      adjudicationNumber = adjudicationNumber,
-      oicHearingRequest = OicHearingRequest(
-        oicHearingId = hearing.oicHearingId,
-        dateTimeOfHearing = hearing.dateTimeOfHearing,
-        hearingLocationId = hearing.locationId,
-        oicHearingType = hearing.oicHearingType,
-        adjudicator = hearing.getAdjudicator(),
-        commentText = hearing.hearingOutcome?.code.toString(),
-      ),
-    )
-  }
-
   companion object {
     private val NO_OUTCOME_WITHOUT_HEARING = listOf(OutcomeCode.PROSECUTION, OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED)
     private val CREATE_OUTCOME = listOf(OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED, OutcomeCode.CHARGE_PROVED, OutcomeCode.DISMISSED)
@@ -144,11 +117,11 @@ class NomisOutcomeService(
 
     fun Outcome.doNotCallApi(): Boolean = NO_OUTCOME_WITHOUT_HEARING.contains(this.code)
 
+    fun Outcome.ignore(): Boolean = this.code == OutcomeCode.REFER_INAD
+
     fun Outcome.createHearingAndOutcome(): Boolean = this.code == OutcomeCode.QUASHED
 
     fun Outcome.createOutcome(): Boolean = CREATE_OUTCOME.contains(this.code)
-
-    fun Outcome.updateHearing(): Boolean = this.code == OutcomeCode.REFER_INAD
 
     fun Outcome.canAmendOutcome(): Boolean = this.code == OutcomeCode.QUASHED || CREATE_OUTCOME.contains(this.code)
 

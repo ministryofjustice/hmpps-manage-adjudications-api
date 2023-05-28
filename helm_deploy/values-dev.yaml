@@ -19,8 +19,9 @@ generic-service:
 generic-prometheus-alerts:
   alertSeverity: digital-prison-service-dev
   rdsAlertsDatabases:
-    cloud-platform-1ec554469922ee81: "adjudications api"
+    cloud-platform-1ec554469922ee81: "Manage Adjudications API"
   sqsAlertsQueueNames:
-    - "hmpps-adjudications-development-prisoner-event-queue"
-    - "hmpps-adjudications-development-prisoner-event-dlq"
+    - "dps-core-dev-prisoner-event-queue"
+    - "dps-core-dev-prisoner-event-dlq"
+
 environment: dev
