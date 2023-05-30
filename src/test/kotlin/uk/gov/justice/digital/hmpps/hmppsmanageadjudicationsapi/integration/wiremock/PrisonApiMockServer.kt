@@ -69,7 +69,7 @@ class PrisonApiMockServer : WireMockServer {
             .withBody(
               """
                {
-                  "adjudicationNumber": ${testDataSet.adjudicationNumber},
+                  "adjudicationNumber": ${testDataSet.adjudicationNumber}
                 }
               """.trimIndent(),
             ),

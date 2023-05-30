@@ -8,11 +8,11 @@ import reactor.core.publisher.Mono
 
 @Service
 class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
-  fun requestAdjudicationCreationData(offenderNo: String): NomisAdjudicationCreationRequest =
+  fun requestAdjudicationCreationData(prisonerNumber: String): NomisAdjudicationCreationRequest =
     prisonApiClientCreds
       .post()
       .uri("/adjudications/adjudication/request-creation-data")
-      .bodyValue(offenderNo)
+      .bodyValue(prisonerNumber)
       .retrieve()
       .bodyToMono(object : ParameterizedTypeReference<NomisAdjudicationCreationRequest>() {})
       .block()!!
