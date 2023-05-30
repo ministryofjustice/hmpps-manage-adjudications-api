@@ -264,7 +264,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting("prisonerNumber", "reportNumber", "agencyId", "gender")
-        .contains("A12345", 123456L,  "MDI", Gender.MALE)
+        .contains("A12345", 123456L, "MDI", Gender.MALE)
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting(
