@@ -10,15 +10,26 @@ parameters:
   releases-slack-channel:
     type: string
     default: dps-releases
-
+  java-version:
+    type: string
+    default: "19.0"
+  node-version:
+    type: string
+    default: 18.16-browsers
+  postgres-version:
+    type: string
+    default: "14"
+  localstack-version:
+    type: string
+    default: "2.0"
 jobs:
   validate:
     executor:
       name: hmpps/java_localstack_postgres
-      jdk_tag: "19.0"
-      localstack_tag: "1.2"
+      jdk_tag: << pipeline.parameters.java-version >>
+      localstack_tag: << pipeline.parameters.localstack-version >>
       services: "sns,sqs"
-      postgres_tag: "14"
+      postgres_tag: << pipeline.parameters.postgres-version >>
       postgres_username: "adjudications"
       postgres_password: "adjudications"
     steps:
@@ -116,7 +127,7 @@ workflows:
           context:
             - hmpps-common-vars
           cache_key: "v2_0"
-          jdk_tag: "19.0"
+          jdk_tag: << pipeline.parameters.java-version >>
       - hmpps/trivy_latest_scan:
           slack_channel: << pipeline.parameters.alerts-slack-channel >>
           context:
