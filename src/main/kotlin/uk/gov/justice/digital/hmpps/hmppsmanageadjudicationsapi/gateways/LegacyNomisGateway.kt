@@ -7,15 +7,14 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
 
 @Service
-class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
-  fun requestAdjudicationCreationData(prisonerNumber: String): NomisAdjudicationCreationRequest =
+class LegacyNomisGateway(private val prisonApiClientCreds: WebClient) {
+  fun requestAdjudicationCreationData(): Long =
     prisonApiClientCreds
       .post()
       .uri("/adjudications/adjudication/request-creation-data")
-      .bodyValue(prisonerNumber)
       .retrieve()
-      .bodyToMono(object : ParameterizedTypeReference<NomisAdjudicationCreationRequest>() {})
-      .block()!!
+      .bodyToMono(object : ParameterizedTypeReference<NomisAdjudicationCreationResponse>() {})
+      .block()!!.adjudicationNumber
 
   fun publishAdjudication(adjudicationDetailsToPublish: AdjudicationDetailsToPublish): NomisAdjudication =
     prisonApiClientCreds
@@ -52,7 +51,11 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
       .bodyToMono<Void>()
       .block()
 
-  fun createHearingResult(adjudicationNumber: Long, oicHearingId: Long, oicHearingResultRequest: OicHearingResultRequest): Void? =
+  fun createHearingResult(
+    adjudicationNumber: Long,
+    oicHearingId: Long,
+    oicHearingResultRequest: OicHearingResultRequest,
+  ): Void? =
     prisonApiClientCreds
       .post()
       .uri("/adjudications/adjudication/$adjudicationNumber/hearing/$oicHearingId/result")
@@ -75,7 +78,11 @@ class PrisonApiGateway(private val prisonApiClientCreds: WebClient) {
     }
   }
 
-  fun amendHearingResult(adjudicationNumber: Long, oicHearingId: Long, oicHearingResultRequest: OicHearingResultRequest): Void? =
+  fun amendHearingResult(
+    adjudicationNumber: Long,
+    oicHearingId: Long,
+    oicHearingResultRequest: OicHearingResultRequest,
+  ): Void? =
     prisonApiClientCreds
       .put()
       .uri("/adjudications/adjudication/$adjudicationNumber/hearing/$oicHearingId/result")

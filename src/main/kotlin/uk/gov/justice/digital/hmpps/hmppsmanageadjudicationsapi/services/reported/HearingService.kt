@@ -14,9 +14,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus.Companion.validateTransition
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -32,7 +32,7 @@ class HearingService(
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   private val hearingRepository: HearingRepository,
-  private val prisonApiGateway: PrisonApiGateway,
+  private val legacySyncService: LegacySyncService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -45,7 +45,7 @@ class HearingService(
       oicHearingType.isValidState(it.isYouthOffender)
     }
 
-    val oicHearingId = prisonApiGateway.createHearing(
+    val oicHearingId = legacySyncService.createHearing(
       adjudicationNumber = adjudicationNumber,
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = dateTimeOfHearing,
@@ -83,7 +83,7 @@ class HearingService(
 
     val hearingToEdit = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException()
 
-    prisonApiGateway.amendHearing(
+    legacySyncService.amendHearing(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = hearingToEdit.oicHearingId,
       oicHearingRequest = OicHearingRequest(
@@ -109,7 +109,7 @@ class HearingService(
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val hearingToRemove = reportedAdjudication.hearings.find { it.id!! == hearingId } ?: throwHearingNotFoundException()
 
-    prisonApiGateway.deleteHearing(
+    legacySyncService.deleteHearing(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = hearingToRemove.oicHearingId,
     )
@@ -137,7 +137,7 @@ class HearingService(
       reportedAdjudication.addOutcome(Outcome(code = OutcomeCode.SCHEDULE_HEARING))
     }
 
-    val oicHearingId = prisonApiGateway.createHearing(
+    val oicHearingId = legacySyncService.createHearing(
       adjudicationNumber = adjudicationNumber,
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = dateTimeOfHearing,
@@ -176,7 +176,7 @@ class HearingService(
     val hearingToEdit = reportedAdjudication.getHearing()
     reportedAdjudication.hearings.filter { it.id != hearingToEdit.id }.validateHearingDate(dateTimeOfHearing)
 
-    prisonApiGateway.amendHearing(
+    legacySyncService.amendHearing(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = hearingToEdit.oicHearingId,
       oicHearingRequest = OicHearingRequest(
@@ -201,7 +201,7 @@ class HearingService(
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
     val hearingToRemove = reportedAdjudication.getHearing().canDelete()
 
-    prisonApiGateway.deleteHearing(
+    legacySyncService.deleteHearing(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = hearingToRemove.oicHearingId,
     )

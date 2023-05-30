@@ -24,19 +24,19 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import java.time.LocalDateTime
 
 class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
-  private val prisonApiGateway: PrisonApiGateway = mock()
+  private val legacySyncService: LegacySyncService = mock()
   private val hearingOutcomeService = HearingOutcomeService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
-    prisonApiGateway,
+    legacySyncService,
   )
 
   @Test
@@ -125,7 +125,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       if (code == HearingOutcomeCode.REFER_INAD) {
-        verify(prisonApiGateway, atLeastOnce()).amendHearing(
+        verify(legacySyncService, atLeastOnce()).amendHearing(
           reportedAdjudication.reportNumber,
           reportedAdjudication.hearings.first().oicHearingId,
           OicHearingRequest(
@@ -160,7 +160,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+      verify(legacySyncService, atLeastOnce()).amendHearing(
         reportedAdjudication.reportNumber,
         reportedAdjudication.hearings.first().oicHearingId,
         OicHearingRequest(
@@ -265,7 +265,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       if (code == HearingOutcomeCode.REFER_INAD) {
-        verify(prisonApiGateway, atLeastOnce()).amendHearing(
+        verify(legacySyncService, atLeastOnce()).amendHearing(
           reportedAdjudication.reportNumber,
           reportedAdjudication.hearings.first().oicHearingId,
           OicHearingRequest(
@@ -294,7 +294,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+      verify(legacySyncService, atLeastOnce()).amendHearing(
         reportedAdjudication.reportNumber,
         reportedAdjudication.hearings.first().oicHearingId,
         OicHearingRequest(reportedAdjudication.hearings.first().dateTimeOfHearing, reportedAdjudication.hearings.first().oicHearingType, reportedAdjudication.hearings.first().locationId),
@@ -570,7 +570,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       if (code == HearingOutcomeCode.REFER_INAD) {
-        verify(prisonApiGateway, atLeastOnce()).amendHearing(
+        verify(legacySyncService, atLeastOnce()).amendHearing(
           reportedAdjudication.reportNumber,
           reportedAdjudication.hearings.first().oicHearingId,
           OicHearingRequest(
@@ -618,7 +618,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+      verify(legacySyncService, atLeastOnce()).amendHearing(
         reportedAdjudication.reportNumber,
         reportedAdjudication.hearings.first().oicHearingId,
         OicHearingRequest(

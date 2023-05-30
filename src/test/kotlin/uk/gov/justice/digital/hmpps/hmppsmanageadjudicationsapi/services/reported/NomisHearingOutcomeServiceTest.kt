@@ -10,17 +10,17 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyNomisGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import java.time.LocalDateTime
 
 class NomisHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
-  private val prisonApiGateway: PrisonApiGateway = mock()
+  private val legacyNomisGateway: LegacyNomisGateway = mock()
   private val hearingRepository: HearingRepository = mock()
   private val nomisHearingOutcomeService = NomisHearingOutcomeService(
-    prisonApiGateway,
+    legacyNomisGateway,
     reportedAdjudicationRepository,
     hearingRepository,
   )
@@ -55,13 +55,13 @@ class NomisHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
 
-    whenever(prisonApiGateway.hearingOutcomesExistInNomis(1L, 1L)).thenReturn(true)
-    whenever(prisonApiGateway.hearingOutcomesExistInNomis(2L, 2L)).thenReturn(false)
+    whenever(legacyNomisGateway.hearingOutcomesExistInNomis(1L, 1L)).thenReturn(true)
+    whenever(legacyNomisGateway.hearingOutcomesExistInNomis(2L, 2L)).thenReturn(false)
 
     nomisHearingOutcomeService.checkForNomisHearingOutcomesAndUpdate()
 
     verify(hearingRepository, atLeastOnce()).findByHearingOutcomeIsNull()
-    verify(prisonApiGateway, atLeastOnce()).hearingOutcomesExistInNomis(any(), any())
+    verify(legacyNomisGateway, atLeastOnce()).hearingOutcomesExistInNomis(any(), any())
 
     val updatedHearing = reportedAdjudication.hearings.first { it.oicHearingId == 1L }
 

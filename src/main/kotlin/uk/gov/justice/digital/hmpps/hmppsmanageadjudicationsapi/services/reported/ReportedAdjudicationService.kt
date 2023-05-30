@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 @Service
 class ReportedAdjudicationService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
-  private val prisonApiGateway: PrisonApiGateway,
+  private val legacySyncService: LegacySyncService,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   private val telemetryClient: TelemetryClient,
@@ -89,7 +89,7 @@ class ReportedAdjudicationService(
   }
 
   private fun saveToPrisonApi(reportedAdjudication: ReportedAdjudication) {
-    prisonApiGateway.publishAdjudication(
+    legacySyncService.publishAdjudication(
       AdjudicationDetailsToPublish(
         offenderNo = reportedAdjudication.prisonerNumber,
         adjudicationNumber = reportedAdjudication.reportNumber,

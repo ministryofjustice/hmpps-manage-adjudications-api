@@ -30,3 +30,6 @@ prison:
 oauth:
   endpoint:
     url: http://localhost:9090/auth
+
+feature:
+  async-mode: true

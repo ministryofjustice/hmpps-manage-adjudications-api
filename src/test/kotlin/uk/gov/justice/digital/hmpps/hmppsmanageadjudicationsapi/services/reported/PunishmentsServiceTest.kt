@@ -33,10 +33,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import java.time.LocalDate
@@ -44,13 +44,13 @@ import java.time.LocalDateTime
 
 class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
-  private val prisonApiGateway: PrisonApiGateway = mock()
+  private val legacySyncService: LegacySyncService = mock()
 
   private val punishmentsService = PunishmentsService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
-    prisonApiGateway,
+    legacySyncService,
   )
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
@@ -102,7 +102,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       }
 
       whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
-      whenever(prisonApiGateway.createSanction(any(), any())).thenReturn(1)
+      whenever(legacySyncService.createSanction(any(), any())).thenReturn(1)
 
       punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
         reportedAdjudication = reportedAdjudication,
@@ -112,7 +112,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       when (caution) {
         true -> {
-          verify(prisonApiGateway, atLeastOnce()).createSanction(
+          verify(legacySyncService, atLeastOnce()).createSanction(
             reportedAdjudication.reportNumber,
             OffenderOicSanctionRequest(
               oicSanctionCode = OicSanctionCode.CAUTION,
@@ -125,7 +125,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           assertThat(reportedAdjudication.getPunishments().first { it.type == PunishmentType.CAUTION }.sanctionSeq).isEqualTo(1)
         }
         false -> {
-          verify(prisonApiGateway, never()).createSanction(
+          verify(legacySyncService, never()).createSanction(
             1,
             OffenderOicSanctionRequest(
               oicSanctionCode = OicSanctionCode.CAUTION,
@@ -140,7 +140,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       when (amount) {
         null -> {
-          verify(prisonApiGateway, never()).createSanction(
+          verify(legacySyncService, never()).createSanction(
             1,
             OffenderOicSanctionRequest(
               oicSanctionCode = OicSanctionCode.OTHER,
@@ -153,7 +153,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           if (caution) assertThat(reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNull()
         }
         else -> {
-          verify(prisonApiGateway, atLeastOnce()).createSanction(
+          verify(legacySyncService, atLeastOnce()).createSanction(
             reportedAdjudication.reportNumber,
             OffenderOicSanctionRequest(
               oicSanctionCode = OicSanctionCode.OTHER,
@@ -209,7 +209,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
-      whenever(prisonApiGateway.createSanction(any(), any())).thenReturn(2)
+      whenever(legacySyncService.createSanction(any(), any())).thenReturn(2)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
 
       punishmentsService.amendPunishmentsFromChargeProvedIfApplicable(
@@ -223,23 +223,23 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       if (cautionExists) {
         if (caution) {
-          verify(prisonApiGateway, never()).deleteSanction(any(), any())
-          verify(prisonApiGateway, never()).createSanction(any(), any())
+          verify(legacySyncService, never()).deleteSanction(any(), any())
+          verify(legacySyncService, never()).createSanction(any(), any())
           assertThat(argumentCaptor.value.getPunishments().first { it.type == PunishmentType.CAUTION }.sanctionSeq).isEqualTo(1)
         } else {
-          verify(prisonApiGateway, atLeastOnce()).deleteSanction(reportedAdjudication.reportNumber, 1)
+          verify(legacySyncService, atLeastOnce()).deleteSanction(reportedAdjudication.reportNumber, 1)
           assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.CAUTION }).isNull()
         }
       } else {
         if (caution) {
-          verify(prisonApiGateway, atLeast(2)).createSanction(any(), any())
-          verify(prisonApiGateway, atLeastOnce()).deleteSanctions(reportedAdjudication.reportNumber)
+          verify(legacySyncService, atLeast(2)).createSanction(any(), any())
+          verify(legacySyncService, atLeastOnce()).deleteSanctions(reportedAdjudication.reportNumber)
           assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.CAUTION }).isNotNull
           assertThat(argumentCaptor.value.getPunishments().first { it.type == PunishmentType.CAUTION }.sanctionSeq).isEqualTo(2)
           assertThat(argumentCaptor.value.getPunishments().size).isEqualTo(2)
         } else {
-          verify(prisonApiGateway, never()).deleteSanction(any(), any())
-          verify(prisonApiGateway, never()).createSanction(any(), any())
+          verify(legacySyncService, never()).deleteSanction(any(), any())
+          verify(legacySyncService, never()).createSanction(any(), any())
           assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.CAUTION }).isNull()
         }
       }
@@ -267,7 +267,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
-      whenever(prisonApiGateway.createSanction(any(), any())).thenReturn(2)
+      whenever(legacySyncService.createSanction(any(), any())).thenReturn(2)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
 
       punishmentsService.amendPunishmentsFromChargeProvedIfApplicable(
@@ -280,8 +280,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       if (recordExists) {
         if (changeAmount && amount != null) {
-          verify(prisonApiGateway, atLeastOnce()).deleteSanction(reportedAdjudication.reportNumber, 1L)
-          verify(prisonApiGateway, atLeastOnce()).createSanction(
+          verify(legacySyncService, atLeastOnce()).deleteSanction(reportedAdjudication.reportNumber, 1L)
+          verify(legacySyncService, atLeastOnce()).createSanction(
             reportedAdjudication.reportNumber,
             OffenderOicSanctionRequest(
               oicSanctionCode = OicSanctionCode.OTHER,
@@ -295,15 +295,15 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
           assertThat(argumentCaptor.value.getPunishments().first { it.type == PunishmentType.DAMAGES_OWED }.sanctionSeq).isEqualTo(2)
         } else if (changeAmount) {
-          verify(prisonApiGateway, atLeastOnce()).deleteSanction(reportedAdjudication.reportNumber, 1L)
+          verify(legacySyncService, atLeastOnce()).deleteSanction(reportedAdjudication.reportNumber, 1L)
           assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNull()
         } else {
-          verify(prisonApiGateway, never()).deleteSanction(reportedAdjudication.reportNumber, 1L)
-          verify(prisonApiGateway, never()).createSanction(any(), any())
+          verify(legacySyncService, never()).deleteSanction(reportedAdjudication.reportNumber, 1L)
+          verify(legacySyncService, never()).createSanction(any(), any())
         }
       } else {
         if (amount != null) {
-          verify(prisonApiGateway, atLeastOnce()).createSanction(
+          verify(legacySyncService, atLeastOnce()).createSanction(
             reportedAdjudication.reportNumber,
             OffenderOicSanctionRequest(
               oicSanctionCode = OicSanctionCode.OTHER,
@@ -317,8 +317,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }).isNotNull
           assertThat(argumentCaptor.value.getPunishments().first { it.type == PunishmentType.DAMAGES_OWED }.sanctionSeq).isEqualTo(2)
         } else {
-          verify(prisonApiGateway, never()).deleteSanction(reportedAdjudication.reportNumber, 1L)
-          verify(prisonApiGateway, never()).createSanction(any(), any())
+          verify(legacySyncService, never()).deleteSanction(reportedAdjudication.reportNumber, 1L)
+          verify(legacySyncService, never()).createSanction(any(), any())
         }
       }
     }
@@ -355,8 +355,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         amount = null,
       )
 
-      verify(prisonApiGateway, atLeast(2)).createSanction(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).deleteSanctions(any())
+      verify(legacySyncService, atLeast(2)).createSanction(any(), any())
+      verify(legacySyncService, atLeastOnce()).deleteSanctions(any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.getPunishments().size).isEqualTo(2)
@@ -554,7 +554,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
+      verify(legacySyncService, atLeastOnce()).createSanctions(any(), any())
 
       val removalWing = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.REMOVAL_WING }
 
@@ -629,7 +629,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumber(2)
-      verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
+      verify(legacySyncService, atLeastOnce()).createSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
@@ -659,7 +659,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository, never()).findByReportNumber(2)
-      verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
+      verify(legacySyncService, atLeastOnce()).createSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
@@ -950,7 +950,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("true", "false")
     @ParameterizedTest
     fun `update punishments `(maintainDamagesOwed: Boolean) {
-      whenever(prisonApiGateway.createSanction(any(), any())).thenReturn(22)
+      whenever(legacySyncService.createSanction(any(), any())).thenReturn(22)
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           if (maintainDamagesOwed) {
@@ -1038,7 +1038,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
-      verify(prisonApiGateway, atLeastOnce()).updateSanctions(any(), any())
+      verify(legacySyncService, atLeastOnce()).updateSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(response).isNotNull
@@ -1065,10 +1065,10 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       when (maintainDamagesOwed) {
         true -> {
-          verify(prisonApiGateway, atLeastOnce()).createSanction(any(), any())
+          verify(legacySyncService, atLeastOnce()).createSanction(any(), any())
           assertThat(argumentCaptor.value.getPunishments().first { it.type == PunishmentType.DAMAGES_OWED }.sanctionSeq).isEqualTo(22)
         }
-        false -> verify(prisonApiGateway, never()).createSanction(any(), any())
+        false -> verify(legacySyncService, never()).createSanction(any(), any())
       }
     }
 
@@ -1195,7 +1195,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository, never()).findByReportNumber(2)
-      verify(prisonApiGateway, atLeastOnce()).updateSanctions(any(), any())
+      verify(legacySyncService, atLeastOnce()).updateSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
@@ -1434,14 +1434,14 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       }
 
-      whenever(prisonApiGateway.createSanction(any(), any())).thenReturn(3)
+      whenever(legacySyncService.createSanction(any(), any())).thenReturn(3)
 
       punishmentsService.removeQuashedFinding(reportedAdjudication)
 
-      verify(prisonApiGateway, atLeastOnce()).deleteSanctions(any())
+      verify(legacySyncService, atLeastOnce()).deleteSanctions(any())
 
       if (caution) {
-        verify(prisonApiGateway, atMost(1)).createSanction(
+        verify(legacySyncService, atMost(1)).createSanction(
           reportedAdjudication.reportNumber,
           OffenderOicSanctionRequest(
             oicSanctionCode = OicSanctionCode.CAUTION,
@@ -1451,7 +1451,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           ),
         )
       } else {
-        verify(prisonApiGateway, never()).createSanction(
+        verify(legacySyncService, never()).createSanction(
           reportedAdjudication.reportNumber,
           OffenderOicSanctionRequest(
             oicSanctionCode = OicSanctionCode.CAUTION,
@@ -1463,7 +1463,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       }
 
       if (damagesOwed == null) {
-        verify(prisonApiGateway, never()).createSanction(
+        verify(legacySyncService, never()).createSanction(
           reportedAdjudication.reportNumber,
           OffenderOicSanctionRequest(
             oicSanctionCode = OicSanctionCode.OTHER,
@@ -1474,7 +1474,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           ),
         )
       } else {
-        verify(prisonApiGateway, atMost(1)).createSanction(
+        verify(legacySyncService, atMost(1)).createSanction(
           reportedAdjudication.reportNumber,
           OffenderOicSanctionRequest(
             oicSanctionCode = OicSanctionCode.OTHER,
@@ -1495,7 +1495,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         assertThat(data.sanctionSeq).isEqualTo(3)
       }
 
-      verify(prisonApiGateway, atLeastOnce()).createSanctions(any(), any())
+      verify(legacySyncService, atLeastOnce()).createSanctions(any(), any())
     }
   }
 

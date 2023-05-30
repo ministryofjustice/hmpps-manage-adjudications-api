@@ -31,18 +31,18 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import java.time.LocalDateTime
 
 class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
-  private val prisonApiGateway: PrisonApiGateway = mock()
+  private val legacySyncService: LegacySyncService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val reportedAdjudicationService =
     ReportedAdjudicationService(
       reportedAdjudicationRepository,
-      prisonApiGateway,
+      legacySyncService,
       offenceCodeLookupService,
       authenticationFacade,
       telemetryClient,
@@ -313,9 +313,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       if (updatesNomis) {
-        verify(prisonApiGateway).publishAdjudication(any())
+        verify(legacySyncService).publishAdjudication(any())
       } else {
-        verify(prisonApiGateway, never()).publishAdjudication(any())
+        verify(legacySyncService, never()).publishAdjudication(any())
       }
 
       verify(telemetryClient).trackEvent(
@@ -424,7 +424,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         victimStaffUsernames = expectedVictimStaffUsernames,
         connectedOffenderIds = expectedConnectedOffenderIds,
       )
-      verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
+      verify(legacySyncService).publishAdjudication(expectedAdjudicationToPublish)
     }
 
     @ParameterizedTest
@@ -473,7 +473,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         victimStaffUsernames = expectedVictimStaffUsernames,
         connectedOffenderIds = expectedConnectedOffenderIds,
       )
-      verify(prisonApiGateway).publishAdjudication(expectedAdjudicationToPublish)
+      verify(legacySyncService).publishAdjudication(expectedAdjudicationToPublish)
     }
 
     @Test
@@ -493,7 +493,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.UNSCHEDULED)
 
-      verify(prisonApiGateway, atLeastOnce()).publishAdjudication(
+      verify(legacySyncService, atLeastOnce()).publishAdjudication(
         adjudicationDetailsToPublish = AdjudicationDetailsToPublish(
           offenderNo = reportedAdjudication.prisonerNumber,
           adjudicationNumber = reportedAdjudication.reportNumber,

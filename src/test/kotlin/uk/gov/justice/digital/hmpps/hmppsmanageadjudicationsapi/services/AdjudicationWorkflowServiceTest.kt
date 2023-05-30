@@ -20,6 +20,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
@@ -41,8 +42,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudicationCreationRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationServiceTest
@@ -58,8 +58,10 @@ import java.util.Optional
 
 class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
-  private val prisonApiGateway: PrisonApiGateway = mock()
+  private val legacySyncService: LegacySyncService = mock()
   private val telemetryClient: TelemetryClient = mock()
+  private val featureFlagsService: FeatureFlagsService = mock()
+  private val identityGenerationService: IdentityGenerationService = mock()
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val draftOffenceService: DraftOffenceService = mock()
 
@@ -67,7 +69,9 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     draftAdjudicationRepository,
     reportedAdjudicationRepository,
     offenceCodeLookupService,
-    prisonApiGateway,
+    legacySyncService,
+    featureFlagsService,
+    identityGenerationService,
     authenticationFacade,
     telemetryClient,
     draftOffenceService,
@@ -241,11 +245,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         Optional.of(draft),
       )
 
-      whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
-        NomisAdjudicationCreationRequest(
-          adjudicationNumber = 123456L,
-        ),
-      )
+      whenever(legacySyncService.requestAdjudicationCreationData()).thenReturn(123456L)
       whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
         val passedInAdjudication = it.arguments[0] as ReportedAdjudication
         passedInAdjudication.createdByUserId = "A_SMITH"
@@ -325,7 +325,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     fun `makes a call to prison api to get creation data`() {
       adjudicationWorkflowService.completeDraftAdjudication(1)
 
-      verify(prisonApiGateway).requestAdjudicationCreationData("A12345")
+      verify(legacySyncService).requestAdjudicationCreationData()
     }
 
     @Test
@@ -428,11 +428,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           ),
         ),
       )
-      whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
-        NomisAdjudicationCreationRequest(
-          adjudicationNumber = 123,
-        ),
-      )
+      whenever(legacySyncService.requestAdjudicationCreationData()).thenReturn(123)
       whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
         val passedInAdjudication = it.arguments[0] as ReportedAdjudication
         passedInAdjudication.createdByUserId = "A_SMITH"
@@ -526,11 +522,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           )
         },
       )
-      whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
-        NomisAdjudicationCreationRequest(
-          adjudicationNumber = 123,
-        ),
-      )
+      whenever(legacySyncService.requestAdjudicationCreationData()).thenReturn(123)
       whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
         val passedInAdjudication = it.arguments[0] as ReportedAdjudication
         passedInAdjudication.createdByUserId = "A_SMITH"
@@ -669,7 +661,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     fun `does not call prison api to get creation data`() {
       adjudicationWorkflowService.completeDraftAdjudication(1)
 
-      verify(prisonApiGateway, never()).requestAdjudicationCreationData(any())
+      verify(legacySyncService, never()).requestAdjudicationCreationData()
     }
 
     @Test
