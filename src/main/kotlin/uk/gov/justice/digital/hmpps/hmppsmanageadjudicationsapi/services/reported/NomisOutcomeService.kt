@@ -14,13 +14,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHear
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingResultRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventWrapperService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IdentityGenerationService
 import java.time.LocalDateTime
-import java.util.UUID
 
 @Transactional
 @Service
 class NomisOutcomeService(
   private val eventWrapperService: EventWrapperService,
+  private val identityGenerationService: IdentityGenerationService,
 ) {
 
   fun createHearingResultIfApplicable(adjudicationNumber: String, hearing: Hearing?, outcome: Outcome): String? {
@@ -31,7 +32,7 @@ class NomisOutcomeService(
         val oicHearingId = eventWrapperService.createHearing(
           adjudicationNumber = adjudicationNumber,
           oicHearingRequest = OicHearingRequest(
-            oicHearingId = UUID.randomUUID().toString(),
+            oicHearingId = identityGenerationService.generateHearingId(),
             dateTimeOfHearing = LocalDateTime.now(),
             oicHearingType = it.oicHearingType,
             hearingLocationId = it.locationId,

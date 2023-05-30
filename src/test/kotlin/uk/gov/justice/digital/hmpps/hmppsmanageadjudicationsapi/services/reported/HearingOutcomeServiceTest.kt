@@ -117,7 +117,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       val response = hearingOutcomeService.createReferral(
         "1",
-        HearingOutcomeCode.REFER_POLICE,
+        code,
         "test",
         "details",
       )

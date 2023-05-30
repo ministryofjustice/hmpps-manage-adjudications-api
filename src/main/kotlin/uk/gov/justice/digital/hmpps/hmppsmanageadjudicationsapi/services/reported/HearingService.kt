@@ -20,11 +20,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Hea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventWrapperService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IdentityGenerationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.lastOutcomeIsRefer
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.UUID
 
 @Transactional
 @Service
@@ -34,6 +34,7 @@ class HearingService(
   authenticationFacade: AuthenticationFacade,
   private val hearingRepository: HearingRepository,
   private val eventWrapperService: EventWrapperService,
+  private val identityGenerationService: IdentityGenerationService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -225,7 +226,7 @@ class HearingService(
     val oicHearingId = eventWrapperService.createHearing(
       adjudicationNumber = adjudicationNumber,
       oicHearingRequest = OicHearingRequest(
-        oicHearingId = UUID.randomUUID().toString(),
+        oicHearingId = identityGenerationService.generateHearingId(),
         dateTimeOfHearing = dateTimeOfHearing,
         hearingLocationId = locationId,
         oicHearingType = oicHearingType,

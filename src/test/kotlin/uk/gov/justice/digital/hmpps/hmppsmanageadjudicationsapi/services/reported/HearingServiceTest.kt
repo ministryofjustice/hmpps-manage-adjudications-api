@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHear
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventWrapperService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IdentityGenerationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.ADJUDICATION_NUMBER
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -33,12 +34,14 @@ import java.time.LocalDateTime
 class HearingServiceTest : ReportedAdjudicationTestBase() {
   private val hearingRepository: HearingRepository = mock()
   private val eventWrapperService: EventWrapperService = mock()
+  private val identityGenerationService: IdentityGenerationService = mock()
   private val hearingService = HearingService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
     hearingRepository,
     eventWrapperService,
+    identityGenerationService,
   )
 
   @Test
@@ -168,6 +171,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `create a hearing`() {
       val now = LocalDateTime.now()
+      whenever(identityGenerationService.generateHearingId()).thenReturn("5")
       val response = hearingService.createHearing(
         ADJUDICATION_NUMBER,
         1,
@@ -219,6 +223,8 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
+      whenever(identityGenerationService.generateHearingId()).thenReturn("5")
+
       hearingService.createHearing(
         ADJUDICATION_NUMBER,
         1,
@@ -253,6 +259,8 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
           it.status = ReportedAdjudicationStatus.REFER_INAD
         },
       )
+
+      whenever(identityGenerationService.generateHearingId()).thenReturn("5")
 
       hearingService.createHearing(
         ADJUDICATION_NUMBER,

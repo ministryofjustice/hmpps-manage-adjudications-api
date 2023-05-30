@@ -18,13 +18,13 @@ class LegacyNomisGateway(private val prisonApiClientCreds: WebClient) {
       .block()
   }
 
-  fun requestAdjudicationCreationData(offenderNo: String): NomisAdjudicationCreationRequest =
+  fun requestAdjudicationCreationData(offenderNo: String): AdjudicationCreationRequest =
     prisonApiClientCreds
       .post()
       .uri("/adjudications/adjudication/request-creation-data")
       .bodyValue(offenderNo)
       .retrieve()
-      .bodyToMono(object : ParameterizedTypeReference<NomisAdjudicationCreationRequest>() {})
+      .bodyToMono(object : ParameterizedTypeReference<AdjudicationCreationRequest>() {})
       .block()!!
 
   fun publishAdjudication(adjudicationDetailsToPublish: AdjudicationDetailsToPublish): NomisAdjudication =

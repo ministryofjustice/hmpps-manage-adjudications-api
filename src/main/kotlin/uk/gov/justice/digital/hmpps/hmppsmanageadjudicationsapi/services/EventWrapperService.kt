@@ -3,31 +3,31 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationCreationRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyNomisGateway
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudicationCreationRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingResultRequest
 import java.time.Clock
 import java.time.LocalDateTime
-import java.util.UUID
 
 @Service
 class EventWrapperService(
   private val snsService: SnsService,
   private val clock: Clock,
+  private val identityGenerationService: IdentityGenerationService,
   private val legacyNomisGateway: LegacyNomisGateway,
   private val featureFlagsService: FeatureFlagsService,
   private val auditService: AuditService,
 ) {
 
-  fun requestAdjudicationCreationData(offenderNo: String): NomisAdjudicationCreationRequest {
+  fun requestAdjudicationCreationData(prisonerNumber: String): AdjudicationCreationRequest {
     return if (featureFlagsService.isEmitEventsForAdjudications()) {
-      val bookingId = legacyNomisGateway.getPrisonerInfo(offenderNo)?.bookingId ?: throw EntityNotFoundException(offenderNo)
-      NomisAdjudicationCreationRequest(adjudicationNumber = UUID.randomUUID().toString(), bookingId = bookingId)
+      val bookingId = legacyNomisGateway.getPrisonerInfo(prisonerNumber)?.bookingId ?: throw EntityNotFoundException(prisonerNumber)
+      AdjudicationCreationRequest(adjudicationNumber = identityGenerationService.generateAdjudicationNumber(), bookingId = bookingId)
     } else {
-      legacyNomisGateway.requestAdjudicationCreationData(offenderNo)
+      legacyNomisGateway.requestAdjudicationCreationData(prisonerNumber)
     }
   }
 

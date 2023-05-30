@@ -40,7 +40,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.NomisAdjudicationCreationRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationCreationRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationServiceTest
@@ -241,7 +241,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       )
 
       whenever(eventWrapperService.requestAdjudicationCreationData(any())).thenReturn(
-        NomisAdjudicationCreationRequest(
+        AdjudicationCreationRequest(
           adjudicationNumber = "123456",
           bookingId = 1L,
         ),
@@ -429,7 +429,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
       whenever(eventWrapperService.requestAdjudicationCreationData(any())).thenReturn(
-        NomisAdjudicationCreationRequest(
+        AdjudicationCreationRequest(
           adjudicationNumber = "123",
           bookingId = 33,
         ),
@@ -528,7 +528,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       whenever(eventWrapperService.requestAdjudicationCreationData(any())).thenReturn(
-        NomisAdjudicationCreationRequest(
+        AdjudicationCreationRequest(
           adjudicationNumber = "123",
           bookingId = 33,
         ),

@@ -27,13 +27,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHear
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventWrapperService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IdentityGenerationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 import java.time.LocalDateTime
 
 class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
   private val eventWrapperService: EventWrapperService = mock()
-  private val nomisOutcomeService = NomisOutcomeService(eventWrapperService)
+  private val identityGenerationService: IdentityGenerationService = mock()
+  private val nomisOutcomeService = NomisOutcomeService(eventWrapperService, identityGenerationService)
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // not applicable
@@ -47,6 +49,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val reportedAdjudication = entityBuilder.reportedAdjudication().also {
         it.addOutcome(Outcome(code = OutcomeCode.QUASHED))
       }
+
+      whenever(identityGenerationService.generateHearingId()).thenReturn("5")
 
       Assertions.assertThatThrownBy {
         nomisOutcomeService.createHearingResultIfApplicable(
@@ -94,6 +98,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         )
       }
 
+      whenever(identityGenerationService.generateHearingId()).thenReturn("5")
       whenever(eventWrapperService.createHearing(any(), any())).thenReturn("123")
 
       val hearingId = nomisOutcomeService.createHearingResultIfApplicable(
@@ -126,6 +131,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       whenever(eventWrapperService.createHearing(any(), any())).thenReturn("123")
+      whenever(identityGenerationService.generateHearingId()).thenReturn("5")
 
       val hearingId = nomisOutcomeService.createHearingResultIfApplicable(
         adjudicationNumber = reportedAdjudication.reportNumber,
