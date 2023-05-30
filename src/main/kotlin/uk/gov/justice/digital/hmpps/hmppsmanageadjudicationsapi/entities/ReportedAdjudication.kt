@@ -23,7 +23,6 @@ data class ReportedAdjudication(
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var gender: Gender,
-  var bookingId: Long,
   var reportNumber: Long,
   var agencyId: String,
   var locationId: Long,

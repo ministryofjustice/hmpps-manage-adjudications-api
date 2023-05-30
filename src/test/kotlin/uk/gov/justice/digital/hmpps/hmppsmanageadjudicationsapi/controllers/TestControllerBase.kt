@@ -49,7 +49,6 @@ open class TestControllerBase {
       ReportedAdjudicationDto(
         adjudicationNumber = 1,
         prisonerNumber = "A12345",
-        bookingId = 123,
         incidentDetails = IncidentDetailsDto(
           locationId = 2,
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,

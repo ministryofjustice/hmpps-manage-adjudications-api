@@ -95,7 +95,6 @@ class IntegrationTestData(
     val DEFAULT_ADJUDICATION = AdjudicationIntTestDataSet(
       adjudicationNumber = DEFAULT_ADJUDICATION_NUMBER,
       prisonerNumber = DEFAULT_PRISONER_NUMBER,
-      bookingId = DEFAULT_PRISONER_BOOKING_ID,
       agencyId = DEFAULT_AGENCY_ID,
       locationId = UPDATED_LOCATION_ID,
       dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
@@ -121,7 +120,6 @@ class IntegrationTestData(
     val UPDATED_ADJUDICATION = AdjudicationIntTestDataSet(
       adjudicationNumber = DEFAULT_ADJUDICATION_NUMBER,
       prisonerNumber = DEFAULT_PRISONER_NUMBER,
-      bookingId = DEFAULT_PRISONER_BOOKING_ID,
       agencyId = DEFAULT_AGENCY_ID,
       locationId = UPDATED_LOCATION_ID,
       dateTimeOfIncidentISOString = UPDATED_DATE_TIME_OF_INCIDENT_TEXT,
@@ -143,7 +141,6 @@ class IntegrationTestData(
     val ADJUDICATION_1 = AdjudicationIntTestDataSet(
       adjudicationNumber = 456L,
       prisonerNumber = "BB2345B",
-      bookingId = 31L,
       agencyId = "LEI",
       locationId = 11L,
       dateTimeOfIncidentISOString = "2020-12-13T08:00:00",
@@ -167,7 +164,6 @@ class IntegrationTestData(
     val ADJUDICATION_2 = AdjudicationIntTestDataSet(
       adjudicationNumber = 567L,
       prisonerNumber = "CC2345C",
-      bookingId = 32L,
       agencyId = "MDI",
       locationId = 12L,
       dateTimeOfIncidentISOString = "2020-12-14T09:00:00",
@@ -189,7 +185,6 @@ class IntegrationTestData(
     val ADJUDICATION_3 = AdjudicationIntTestDataSet(
       adjudicationNumber = 789L,
       prisonerNumber = "DD3456D",
-      bookingId = 33L,
       agencyId = "MDI",
       locationId = 13L,
       dateTimeOfIncidentISOString = "2020-12-15T10:00:00",
@@ -211,7 +206,6 @@ class IntegrationTestData(
     val ADJUDICATION_4 = AdjudicationIntTestDataSet(
       adjudicationNumber = 1234L,
       prisonerNumber = "EE4567E",
-      bookingId = 34L,
       agencyId = "MDI",
       locationId = 14L,
       dateTimeOfIncidentISOString = "2020-12-16T10:00:00",
@@ -233,7 +227,6 @@ class IntegrationTestData(
     val ADJUDICATION_5 = AdjudicationIntTestDataSet(
       adjudicationNumber = 2345L,
       prisonerNumber = "FF4567F",
-      bookingId = 35L,
       agencyId = "LEI",
       locationId = 15L,
       dateTimeOfIncidentISOString = "2020-12-17T10:00:00",

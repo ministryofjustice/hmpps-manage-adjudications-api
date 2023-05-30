@@ -161,7 +161,6 @@ class AdjudicationWorkflowService(
     val nomisAdjudicationCreationRequestData = prisonApiGateway.requestAdjudicationCreationData(draftAdjudication.prisonerNumber)
     return reportedAdjudicationService.save(
       ReportedAdjudication(
-        bookingId = nomisAdjudicationCreationRequestData.bookingId,
         reportNumber = nomisAdjudicationCreationRequestData.adjudicationNumber,
         prisonerNumber = draftAdjudication.prisonerNumber,
         gender = draftAdjudication.gender,
@@ -199,7 +198,6 @@ class AdjudicationWorkflowService(
       reportedAdjudicationService.get(reportedAdjudicationNumber)
     val reporter = reportedAdjudicationService.getUsername()!!
     previousReportedAdjudication.let {
-      it.bookingId = previousReportedAdjudication.bookingId
       it.reportNumber = previousReportedAdjudication.reportNumber
       it.prisonerNumber = draftAdjudication.prisonerNumber
       it.gender = draftAdjudication.gender

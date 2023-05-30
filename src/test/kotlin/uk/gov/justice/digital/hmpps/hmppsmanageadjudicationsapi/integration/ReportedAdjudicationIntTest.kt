@@ -52,7 +52,6 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.adjudicationNumber")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-      .jsonPath("$.reportedAdjudication.bookingId").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.bookingId)
       .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString)
       .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfDiscovery")
@@ -310,7 +309,6 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     val expectedBody = mapOf(
       "offenderNo" to IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
       "adjudicationNumber" to IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
-      "bookingId" to IntegrationTestData.DEFAULT_ADJUDICATION.bookingId,
       "reporterName" to IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId,
       "reportedDateTime" to DEFAULT_REPORTED_DATE_TIME,
       "agencyId" to IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,

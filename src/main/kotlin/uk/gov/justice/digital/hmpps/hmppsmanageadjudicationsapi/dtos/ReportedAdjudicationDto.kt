@@ -26,8 +26,6 @@ data class ReportedAdjudicationDto(
   val prisonerNumber: String,
   @Schema(description = "Gender applied for adjuducation rules", example = "MALE")
   val gender: Gender,
-  @Schema(description = "The current booking id for a prisoner", example = "1234")
-  val bookingId: Long,
   @Schema(description = "Incident details")
   val incidentDetails: IncidentDetailsDto,
   @Schema(description = "Is classified as a youth offender")

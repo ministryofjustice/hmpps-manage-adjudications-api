@@ -244,7 +244,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
         NomisAdjudicationCreationRequest(
           adjudicationNumber = 123456L,
-          bookingId = 1L,
         ),
       )
       whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
@@ -264,8 +263,8 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
-        .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId", "gender")
-        .contains("A12345", 123456L, 1L, "MDI", Gender.MALE)
+        .extracting("prisonerNumber", "reportNumber", "agencyId", "gender")
+        .contains("A12345", 123456L,  "MDI", Gender.MALE)
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting(
@@ -432,7 +431,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
         NomisAdjudicationCreationRequest(
           adjudicationNumber = 123,
-          bookingId = 33,
         ),
       )
       whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
@@ -531,7 +529,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       whenever(prisonApiGateway.requestAdjudicationCreationData(any())).thenReturn(
         NomisAdjudicationCreationRequest(
           adjudicationNumber = 123,
-          bookingId = 33,
         ),
       )
       whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
@@ -564,8 +561,8 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
-        .extracting("prisonerNumber", "reportNumber", "bookingId", "agencyId")
-        .contains("A12345", 1235L, 234L, "MDI")
+        .extracting("prisonerNumber", "reportNumber", "agencyId")
+        .contains("A12345", 1235L, "MDI")
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting(

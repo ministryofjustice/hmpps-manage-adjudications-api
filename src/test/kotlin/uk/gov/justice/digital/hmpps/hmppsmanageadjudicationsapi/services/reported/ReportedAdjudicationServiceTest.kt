@@ -174,12 +174,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         .extracting(
           "adjudicationNumber",
           "prisonerNumber",
-          "bookingId",
           "createdByUserId",
           "createdDateTime",
           "isYouthOffender",
         )
-        .contains(1235L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME, isYouthOffender)
+        .contains(1235L, "A12345", "A_SMITH", REPORTED_DATE_TIME, isYouthOffender)
 
       assertThat(reportedAdjudicationDto.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
@@ -414,7 +413,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
         offenderNo = "A12345",
         adjudicationNumber = 1235L,
-        bookingId = 234L,
         reporterName = "A_USER",
         reportedDateTime = REPORTED_DATE_TIME,
         agencyId = "MDI",
@@ -464,7 +462,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
         offenderNo = "A12345",
         adjudicationNumber = 1235L,
-        bookingId = 234L,
         reporterName = "A_USER",
         reportedDateTime = REPORTED_DATE_TIME,
         agencyId = "MDI",
@@ -500,7 +497,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         adjudicationDetailsToPublish = AdjudicationDetailsToPublish(
           offenderNo = reportedAdjudication.prisonerNumber,
           adjudicationNumber = reportedAdjudication.reportNumber,
-          bookingId = 234,
           reporterName = "",
           reportedDateTime = now,
           agencyId = reportedAdjudication.agencyId,

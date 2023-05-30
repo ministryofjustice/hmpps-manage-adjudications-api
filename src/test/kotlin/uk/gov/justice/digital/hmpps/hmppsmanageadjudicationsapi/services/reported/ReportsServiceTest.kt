@@ -80,10 +80,10 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(myReportedAdjudications.content)
-        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
+        .extracting("adjudicationNumber", "prisonerNumber", "createdByUserId", "createdDateTime")
         .contains(
-          Tuple.tuple(1L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME),
-          Tuple.tuple(2L, "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
+          Tuple.tuple(1L, "A12345", "A_SMITH", REPORTED_DATE_TIME),
+          Tuple.tuple(2L, "A12345", "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
         )
     }
   }
@@ -127,10 +127,10 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(myReportedAdjudications.content)
-        .extracting("adjudicationNumber", "prisonerNumber", "bookingId", "createdByUserId", "createdDateTime")
+        .extracting("adjudicationNumber", "prisonerNumber", "createdByUserId", "createdDateTime")
         .contains(
-          Tuple.tuple(1L, "A12345", 234L, "A_SMITH", REPORTED_DATE_TIME),
-          Tuple.tuple(2L, "A12345", 234L, "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
+          Tuple.tuple(1L, "A12345", "A_SMITH", REPORTED_DATE_TIME),
+          Tuple.tuple(2L, "A12345", "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
         )
     }
   }
