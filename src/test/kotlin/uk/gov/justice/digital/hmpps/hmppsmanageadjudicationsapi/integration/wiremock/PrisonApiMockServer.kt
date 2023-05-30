@@ -61,7 +61,6 @@ class PrisonApiMockServer : WireMockServer {
   fun stubPostAdjudicationCreationRequestData(testDataSet: AdjudicationIntTestDataSet) {
     stubFor(
       post(urlEqualTo("/api/adjudications/adjudication/request-creation-data"))
-        .withRequestBody(matching(testDataSet.prisonerNumber))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

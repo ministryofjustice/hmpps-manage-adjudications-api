@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPublishService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
 import java.time.LocalDateTime
 
@@ -47,6 +48,7 @@ data class IssueRequest(
 @Tag(name = "20. Adjudication Management")
 class ReportedAdjudicationController(
   private val reportedAdjudicationService: ReportedAdjudicationService,
+  private val eventPublishService: EventPublishService,
 ) : ReportedAdjudicationBaseController() {
 
   @GetMapping(value = ["/{adjudicationNumber}"])
@@ -74,6 +76,8 @@ class ReportedAdjudicationController(
       reportedAdjudicationStatusRequest.statusDetails,
     )
 
+    eventPublishService.publishAdjudicationUpdate(reportedAdjudication)
+
     return ReportedAdjudicationResponse(
       reportedAdjudication,
     )
@@ -91,6 +95,8 @@ class ReportedAdjudicationController(
       adjudicationNumber,
       issueRequest.dateTimeOfIssue,
     )
+
+    eventPublishService.publishAdjudicationUpdate(reportedAdjudication)
 
     return ReportedAdjudicationResponse(
       reportedAdjudication,

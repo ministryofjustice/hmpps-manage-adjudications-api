@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPublishService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.CompletedHearingService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
@@ -94,6 +95,7 @@ class OutcomeController(
   private val outcomeService: OutcomeService,
   private val referralService: ReferralService,
   private val completedHearingService: CompletedHearingService,
+  private val eventPublishService: EventPublishService,
 ) : ReportedAdjudicationBaseController() {
 
   @Operation(
@@ -126,7 +128,7 @@ class OutcomeController(
       details = notProceedRequest.details,
       reason = notProceedRequest.reason,
     )
-
+    eventPublishService.publishOutcomeUpdate(reportedAdjudication)
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
@@ -158,6 +160,7 @@ class OutcomeController(
       adjudicationNumber = adjudicationNumber,
     )
 
+    eventPublishService.publishOutcomeUpdate(reportedAdjudication)
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
@@ -191,7 +194,7 @@ class OutcomeController(
       reason = quashedRequest.reason,
       details = quashedRequest.details,
     )
-
+    eventPublishService.publishOutcomeUpdate(reportedAdjudication)
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
@@ -225,7 +228,7 @@ class OutcomeController(
       code = OutcomeCode.REFER_POLICE,
       details = policeReferralRequest.details,
     )
-
+    eventPublishService.publishOutcomeUpdate(reportedAdjudication)
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
@@ -260,7 +263,7 @@ class OutcomeController(
       plea = completedDismissedRequest.plea,
       details = completedDismissedRequest.details,
     )
-
+    eventPublishService.publishOutcomeUpdate(reportedAdjudication)
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
@@ -296,7 +299,7 @@ class OutcomeController(
       reason = completedNotProceedRequest.reason,
       details = completedNotProceedRequest.details,
     )
-
+    eventPublishService.publishOutcomeUpdate(reportedAdjudication)
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
@@ -332,7 +335,7 @@ class OutcomeController(
       amount = chargeProvedRequest.amount,
       caution = chargeProvedRequest.caution,
     )
-
+    eventPublishService.publishOutcomeUpdate(reportedAdjudication)
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
@@ -345,7 +348,7 @@ class OutcomeController(
     val reportedAdjudication = referralService.removeReferral(
       adjudicationNumber = adjudicationNumber,
     )
-
+    eventPublishService.publishOutcomeUpdate(reportedAdjudication)
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
@@ -358,7 +361,7 @@ class OutcomeController(
     val reportedAdjudication = outcomeService.deleteOutcome(
       adjudicationNumber = adjudicationNumber,
     )
-
+    eventPublishService.publishOutcomeUpdate(reportedAdjudication)
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
@@ -371,7 +374,7 @@ class OutcomeController(
     val reportedAdjudication = completedHearingService.removeOutcome(
       adjudicationNumber = adjudicationNumber,
     )
-
+    eventPublishService.publishOutcomeUpdate(reportedAdjudication)
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
@@ -388,7 +391,7 @@ class OutcomeController(
       reason = amendOutcomeRequest.reason,
       quashedReason = amendOutcomeRequest.quashedReason,
     )
-
+    eventPublishService.publishOutcomeUpdate(reportedAdjudication)
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 }

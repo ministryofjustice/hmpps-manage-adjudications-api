@@ -64,7 +64,6 @@ data class AdditionalInformation(
   val adjudicationNumber: String? = null,
   val prisonerNumber: String? = null,
   val reason: String? = null,
-  val prisonId: String? = null,
 )
 
 data class HMPPSDomainEvent(
@@ -89,7 +88,9 @@ data class HMPPSDomainEvent(
 }
 
 enum class AdjudicationDomainEventType(val value: String) {
-  ADJUDICATION_CREATED("adjudication.created"),
+  ADJUDICATION_CREATED("adjudication.report.created"),
+  ADJUDICATION_UPDATED("adjudication.report.updated"),
+  ADJUDICATION_OUTCOME_UPSERT("adjudication.report.outcome.upsert"),
 }
 
 fun Instant.toOffsetDateFormat(): String =
