@@ -10,7 +10,6 @@ data class AdjudicationIntTestDataSet(
   val adjudicationNumber: Long,
   val prisonerNumber: String,
   val gender: Gender = Gender.MALE,
-  val bookingId: Long,
   val agencyId: String,
   val locationId: Long,
   val dateTimeOfIncident: LocalDateTime,

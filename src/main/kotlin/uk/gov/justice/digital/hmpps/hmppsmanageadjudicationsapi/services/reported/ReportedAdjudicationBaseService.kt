@@ -51,7 +51,6 @@ open class ReportedDtoService(
     return ReportedAdjudicationDto(
       adjudicationNumber = reportNumber,
       prisonerNumber = prisonerNumber,
-      bookingId = bookingId,
       incidentDetails = IncidentDetailsDto(
         locationId = locationId,
         dateTimeOfIncident = dateTimeOfIncident,

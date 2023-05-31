@@ -64,7 +64,6 @@ data class AdditionalInformation(
   val adjudicationNumber: String? = null,
   val prisonerNumber: String? = null,
   val reason: String? = null,
-  val bookingId: Long? = null,
   val prisonId: String? = null,
 )
 

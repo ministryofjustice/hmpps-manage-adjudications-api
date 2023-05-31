@@ -69,8 +69,7 @@ class PrisonApiMockServer : WireMockServer {
             .withBody(
               """
                {
-                  "adjudicationNumber": ${testDataSet.adjudicationNumber},
-                  "bookingId": ${testDataSet.bookingId}
+                  "adjudicationNumber": ${testDataSet.adjudicationNumber}
                 }
               """.trimIndent(),
             ),
@@ -110,7 +109,6 @@ class PrisonApiMockServer : WireMockServer {
                   "adjudicationNumber": ${testDataSet.adjudicationNumber},
                   "reporterStaffId": 486080,
                   "offenderNo": "${testDataSet.prisonerNumber}",
-                  "bookingId": ${testDataSet.bookingId},
                   "agencyId": "${testDataSet.agencyId}",
                   "incidentTime": "${testDataSet.dateTimeOfIncidentISOString}",
                   "incidentLocationId": ${testDataSet.locationId},

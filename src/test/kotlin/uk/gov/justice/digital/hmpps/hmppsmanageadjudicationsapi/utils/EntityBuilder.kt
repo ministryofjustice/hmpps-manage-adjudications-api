@@ -25,7 +25,6 @@ class EntityBuilder {
   ): ReportedAdjudication {
     return ReportedAdjudication(
       reportNumber = reportNumber,
-      bookingId = 234L,
       prisonerNumber = "A12345",
       gender = Gender.MALE,
       agencyId = agencyId,

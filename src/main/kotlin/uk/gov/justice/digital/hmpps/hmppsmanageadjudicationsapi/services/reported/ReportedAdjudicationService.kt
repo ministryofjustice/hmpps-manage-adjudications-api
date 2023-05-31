@@ -93,7 +93,6 @@ class ReportedAdjudicationService(
       AdjudicationDetailsToPublish(
         offenderNo = reportedAdjudication.prisonerNumber,
         adjudicationNumber = reportedAdjudication.reportNumber,
-        bookingId = reportedAdjudication.bookingId,
         reporterName = reportedAdjudication.createdByUserId
           ?: throw EntityNotFoundException(
             "ReportedAdjudication creator name not set for reported adjudication number ${reportedAdjudication.reportNumber}",

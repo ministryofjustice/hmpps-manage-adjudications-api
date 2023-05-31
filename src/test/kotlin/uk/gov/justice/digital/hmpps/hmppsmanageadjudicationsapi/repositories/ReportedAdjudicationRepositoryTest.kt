@@ -117,12 +117,11 @@ class ReportedAdjudicationRepositoryTest {
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity)
-      .extracting("id", "prisonerNumber", "reportNumber", "bookingId", "agencyId", "createdByUserId", "gender")
+      .extracting("id", "prisonerNumber", "reportNumber", "agencyId", "createdByUserId", "gender")
       .contains(
         adjudication.id,
         adjudication.prisonerNumber,
         adjudication.reportNumber,
-        adjudication.bookingId,
         adjudication.agencyId,
         adjudication.createdByUserId,
         adjudication.gender,
@@ -241,12 +240,11 @@ class ReportedAdjudicationRepositoryTest {
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity)
-      .extracting("id", "prisonerNumber", "reportNumber", "bookingId", "createdByUserId")
+      .extracting("id", "prisonerNumber", "reportNumber", "createdByUserId")
       .contains(
         adjudication.id,
         adjudication.prisonerNumber,
         adjudication.reportNumber,
-        adjudication.bookingId,
         adjudication.createdByUserId,
       )
 

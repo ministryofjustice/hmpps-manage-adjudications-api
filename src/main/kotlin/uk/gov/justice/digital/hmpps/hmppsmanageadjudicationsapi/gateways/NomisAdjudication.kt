@@ -6,7 +6,6 @@ data class NomisAdjudication(
   val adjudicationNumber: Long,
   val reporterStaffId: Long,
   val offenderNo: String,
-  val bookingId: Long,
   val agencyId: String,
   val incidentTime: LocalDateTime,
   val incidentLocationId: Long,
