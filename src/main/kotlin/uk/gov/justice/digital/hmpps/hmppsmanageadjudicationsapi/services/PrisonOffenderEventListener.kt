@@ -14,6 +14,9 @@ class PrisonOffenderEventListener(
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
+
+    const val PRISONER_TRANSFER_EVENT_TYPE = "prisoner-offender-search.prisoner.received"
+    const val PRISONER_MERGE_EVENT_TYPE = "prison-offender-events.prisoner.merged"
   }
 
   @SqsListener("adjudications", factory = "hmppsQueueContainerFactoryProxy")
@@ -25,10 +28,10 @@ class PrisonOffenderEventListener(
 
     val hmppsDomainEvent = mapper.readValue(message, HMPPSDomainEvent::class.java)
     when (eventType) {
-      "prisoner-offender-search.prisoner.received" -> {
+      PRISONER_TRANSFER_EVENT_TYPE -> {
         // TODO: call to update prisoner location
       }
-      "prison-offender-events.prisoner.merged" -> {
+      PRISONER_MERGE_EVENT_TYPE -> {
         // TODO: call to update prisoner number
       }
       else -> {
