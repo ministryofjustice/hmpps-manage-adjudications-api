@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service
 @Service
 class PrisonOffenderEventListener(
   private val mapper: ObjectMapper,
+  private val transferService: TransferService,
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -29,7 +30,7 @@ class PrisonOffenderEventListener(
     val hmppsDomainEvent = mapper.readValue(message, HMPPSDomainEvent::class.java)
     when (eventType) {
       PRISONER_TRANSFER_EVENT_TYPE -> {
-        // TODO: call to update prisoner location
+        if (hmppsDomainEvent.additionalInformation?.reason == Reason.TRANSFERRED.name) transferService.handleTransferEvent()
       }
       PRISONER_MERGE_EVENT_TYPE -> {
         // TODO: call to update prisoner number
@@ -39,6 +40,10 @@ class PrisonOffenderEventListener(
       }
     }
   }
+}
+
+enum class Reason {
+  TRANSFERRED, // TODO need to confirm other valid reasons, is the prison Id the one going to or from and so on.
 }
 
 data class HMPPSEventType(val Value: String, val Type: String)

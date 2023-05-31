@@ -298,7 +298,11 @@ open class ReportedAdjudicationBaseService(
         adjudicationNumber,
       )
 
-    if (reportedAdjudication.agencyId != authenticationFacade.activeCaseload) throwEntityNotFoundException(adjudicationNumber)
+    if (listOf(reportedAdjudication.agencyId, reportedAdjudication.overrideAgencyId)
+      .none { it == authenticationFacade.activeCaseload }
+    ) {
+      throwEntityNotFoundException(adjudicationNumber)
+    }
 
     return reportedAdjudication
   }

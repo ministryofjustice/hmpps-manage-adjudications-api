@@ -106,6 +106,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `override agency is not found throws exception `() {
+      whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.overrideAgencyId = "XXX"
@@ -124,11 +125,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.overrideAgencyId = "TJW"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
         },
       )
 
       val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-
       assertThat(result).isNotNull
     }
 
