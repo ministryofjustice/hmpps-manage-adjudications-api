@@ -68,7 +68,7 @@ class PrisonApiMockServer : WireMockServer {
               """
                {
                   "adjudicationNumber": ${testDataSet.adjudicationNumber}
-                }
+               }
               """.trimIndent(),
             ),
         ),
@@ -83,13 +83,6 @@ class PrisonApiMockServer : WireMockServer {
             .withHeader("Content-Type", "application/json")
             .withStatus(500),
         ),
-    )
-  }
-
-  fun verifyPostAdjudicationCreationRequestData(bodyAsJson: String) {
-    verify(
-      postRequestedFor(urlEqualTo("/api/adjudications/adjudication/request-creation-data"))
-        .withRequestBody(equalTo(bodyAsJson)),
     )
   }
 

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.dra
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
@@ -14,6 +15,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationWorkflowService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPublishService
 
 @WebMvcTest(
   DraftAdjudicationWorkflowController::class,
@@ -22,6 +24,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Adjudic
 class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
   @MockBean
   lateinit var adjudicationWorkflowService: AdjudicationWorkflowService
+
+  @MockBean
+  lateinit var eventPublishService: EventPublishService
 
   @Nested
   inner class CompleteDraft {
@@ -34,10 +39,11 @@ class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `make a call to complete a draft adjudication`() {
+      whenever(adjudicationWorkflowService.completeDraftAdjudication(1)).thenReturn(REPORTED_ADJUDICATION_DTO)
       completeDraftAdjudication(1)
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(adjudicationWorkflowService).completeDraftAdjudication(1)
+      verify(eventPublishService).publishAdjudicationCreation(REPORTED_ADJUDICATION_DTO)
     }
 
     private fun completeDraftAdjudication(id: Long): ResultActions = mockMvc
@@ -72,15 +78,19 @@ class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to set the offence details`() {
+      whenever(
+        adjudicationWorkflowService.setOffenceDetailsAndCompleteDraft(
+          1,
+          OffenceDetailsRequestItem(
+            offenceCode = BASIC_OFFENCE_REQUEST.offenceCode,
+          ),
+        ),
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+
       makeAloSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(adjudicationWorkflowService).setOffenceDetailsAndCompleteDraft(
-        1,
-        OffenceDetailsRequestItem(
-          offenceCode = BASIC_OFFENCE_REQUEST.offenceCode,
-        ),
-      )
+      verify(eventPublishService).publishAdjudicationUpdate(REPORTED_ADJUDICATION_DTO)
     }
 
     private fun makeAloSetOffenceDetailsRequest(id: Long, offenceDetails: OffenceDetailsRequestItem): ResultActions {

@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPublishService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.CompletedHearingService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
@@ -42,6 +43,9 @@ class OutcomeControllerTest : TestControllerBase() {
 
   @MockBean
   lateinit var completedHearingService: CompletedHearingService
+
+  @MockBean
+  lateinit var eventPublishService: EventPublishService
 
   @Nested
   inner class CreateProsecution {
@@ -80,10 +84,12 @@ class OutcomeControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create an outcome`() {
+      whenever(outcomeService.createProsecution(1)).thenReturn(REPORTED_ADJUDICATION_DTO)
+
       createOutcomeRequest(1)
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(outcomeService).createProsecution(1)
+      verify(eventPublishService).publishOutcomeUpdate(REPORTED_ADJUDICATION_DTO)
     }
 
     private fun createOutcomeRequest(
