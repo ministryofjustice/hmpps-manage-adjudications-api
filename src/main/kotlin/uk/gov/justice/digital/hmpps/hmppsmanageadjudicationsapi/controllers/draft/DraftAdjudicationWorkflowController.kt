@@ -14,13 +14,12 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ErrorResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationWorkflowService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPublishService
+
 @RestController
 @Validated
 @Tag(name = "11. Draft Adjudication Workflow")
 class DraftAdjudicationWorkflowController(
   private val adjudicationWorkflowService: AdjudicationWorkflowService,
-  private val eventPublishService: EventPublishService,
 ) : DraftAdjudicationBaseController() {
 
   @PostMapping(value = ["/{id}/complete-draft-adjudication"])
@@ -45,11 +44,8 @@ class DraftAdjudicationWorkflowController(
   )
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
-  fun completeDraftAdjudication(@PathVariable(name = "id") id: Long): ReportedAdjudicationDto {
-    val adjudication = adjudicationWorkflowService.completeDraftAdjudication(id)
-    eventPublishService.publishAdjudicationCreation(adjudication)
-    return adjudication
-  }
+  fun completeDraftAdjudication(@PathVariable(name = "id") id: Long): ReportedAdjudicationDto =
+    adjudicationWorkflowService.completeDraftAdjudication(id)
 
   @PostMapping(value = ["/{id}/alo-offence-details"])
   @Operation(
@@ -77,13 +73,9 @@ class DraftAdjudicationWorkflowController(
     @PathVariable(name = "id") id: Long,
     @RequestBody @Valid
     offenceDetailsRequest: OffenceDetailsRequest,
-  ): ReportedAdjudicationDto {
-    val adjudication =
-      adjudicationWorkflowService.setOffenceDetailsAndCompleteDraft(
-        id = id,
-        offenceDetails = offenceDetailsRequest.offenceDetails,
-      )
-    eventPublishService.publishAdjudicationUpdate(adjudication)
-    return adjudication
-  }
+  ): ReportedAdjudicationDto =
+    adjudicationWorkflowService.setOffenceDetailsAndCompleteDraft(
+      id = id,
+      offenceDetails = offenceDetailsRequest.offenceDetails,
+    )
 }

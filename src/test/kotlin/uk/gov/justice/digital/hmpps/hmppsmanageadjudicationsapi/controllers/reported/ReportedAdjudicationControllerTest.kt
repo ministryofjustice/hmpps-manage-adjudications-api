@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPublishService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
 import java.time.LocalDateTime
 
@@ -32,9 +32,6 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
 
   @MockBean
   lateinit var reportedAdjudicationService: ReportedAdjudicationService
-
-  @MockBean
-  lateinit var eventPublishService: EventPublishService
 
   @Nested
   inner class ReportedAdjudicationDetails {
@@ -125,7 +122,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
         mapOf("status" to ReportedAdjudicationStatus.RETURNED, "statusReason" to "reason", "statusDetails" to "details"),
       )
 
-      verify(eventPublishService).publishAdjudicationUpdate(REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService).publishEvent(AdjudicationDomainEventType.ADJUDICATION_CREATED, REPORTED_ADJUDICATION_DTO)
     }
 
     @Test

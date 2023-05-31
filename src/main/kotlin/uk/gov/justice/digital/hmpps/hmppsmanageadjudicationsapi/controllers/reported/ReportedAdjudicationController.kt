@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPublishService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
 import java.time.LocalDateTime
 
@@ -48,17 +48,11 @@ data class IssueRequest(
 @Tag(name = "20. Adjudication Management")
 class ReportedAdjudicationController(
   private val reportedAdjudicationService: ReportedAdjudicationService,
-  private val eventPublishService: EventPublishService,
 ) : ReportedAdjudicationBaseController() {
 
   @GetMapping(value = ["/{adjudicationNumber}"])
-  fun getReportedAdjudicationDetails(@PathVariable(name = "adjudicationNumber") adjudicationNumber: Long): ReportedAdjudicationResponse {
-    val reportedAdjudication = reportedAdjudicationService.getReportedAdjudicationDetails(adjudicationNumber)
-
-    return ReportedAdjudicationResponse(
-      reportedAdjudication,
-    )
-  }
+  fun getReportedAdjudicationDetails(@PathVariable(name = "adjudicationNumber") adjudicationNumber: Long): ReportedAdjudicationResponse =
+    reportedAdjudicationService.getReportedAdjudicationDetails(adjudicationNumber).toResponse()
 
   @PutMapping(value = ["/{adjudicationNumber}/status"])
   @Operation(summary = "Set the status for the reported adjudication.")
@@ -68,20 +62,15 @@ class ReportedAdjudicationController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody @Valid
     reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = reportedAdjudicationService.setStatus(
-      adjudicationNumber,
-      reportedAdjudicationStatusRequest.status,
-      reportedAdjudicationStatusRequest.statusReason,
-      reportedAdjudicationStatusRequest.statusDetails,
-    )
-
-    eventPublishService.publishAdjudicationUpdate(reportedAdjudication)
-
-    return ReportedAdjudicationResponse(
-      reportedAdjudication,
-    )
-  }
+  ): ReportedAdjudicationResponse =
+    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_CREATED) {
+      reportedAdjudicationService.setStatus(
+        adjudicationNumber,
+        reportedAdjudicationStatusRequest.status,
+        reportedAdjudicationStatusRequest.statusReason,
+        reportedAdjudicationStatusRequest.statusDetails,
+      )
+    }
 
   @PutMapping(value = ["/{adjudicationNumber}/issue"])
   @Operation(summary = "Issue DIS Form")
@@ -90,16 +79,9 @@ class ReportedAdjudicationController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody @Valid
     issueRequest: IssueRequest,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = reportedAdjudicationService.setIssued(
+  ): ReportedAdjudicationResponse =
+    reportedAdjudicationService.setIssued(
       adjudicationNumber,
       issueRequest.dateTimeOfIssue,
-    )
-
-    eventPublishService.publishAdjudicationUpdate(reportedAdjudication)
-
-    return ReportedAdjudicationResponse(
-      reportedAdjudication,
-    )
-  }
+    ).toResponse()
 }

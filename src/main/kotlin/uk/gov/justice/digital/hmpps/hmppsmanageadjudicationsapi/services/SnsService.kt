@@ -87,10 +87,9 @@ data class HMPPSDomainEvent(
   )
 }
 
-enum class AdjudicationDomainEventType(val value: String) {
-  ADJUDICATION_CREATED("adjudication.report.created"),
-  ADJUDICATION_UPDATED("adjudication.report.updated"),
-  ADJUDICATION_OUTCOME_UPSERT("adjudication.report.outcome.upsert"),
+enum class AdjudicationDomainEventType(val value: String, val description: String, val auditType: AuditType) {
+  ADJUDICATION_CREATED("adjudication.report.created", "An adjudication has been created: ", AuditType.ADJUDICATION_CREATED),
+  ADJUDICATION_OUTCOME_UPSERT("adjudication.report.outcome.upsert", "An outcome has been updated: ", AuditType.OUTCOME_UPDATED),
 }
 
 fun Instant.toOffsetDateFormat(): String =

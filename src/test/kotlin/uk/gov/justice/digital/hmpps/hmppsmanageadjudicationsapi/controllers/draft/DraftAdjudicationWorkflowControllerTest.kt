@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.dra
 
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
@@ -15,7 +14,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationWorkflowService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPublishService
 
 @WebMvcTest(
   DraftAdjudicationWorkflowController::class,
@@ -24,9 +22,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPu
 class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
   @MockBean
   lateinit var adjudicationWorkflowService: AdjudicationWorkflowService
-
-  @MockBean
-  lateinit var eventPublishService: EventPublishService
 
   @Nested
   inner class CompleteDraft {
@@ -42,8 +37,6 @@ class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
       whenever(adjudicationWorkflowService.completeDraftAdjudication(1)).thenReturn(REPORTED_ADJUDICATION_DTO)
       completeDraftAdjudication(1)
         .andExpect(MockMvcResultMatchers.status().isCreated)
-
-      verify(eventPublishService).publishAdjudicationCreation(REPORTED_ADJUDICATION_DTO)
     }
 
     private fun completeDraftAdjudication(id: Long): ResultActions = mockMvc
@@ -89,8 +82,6 @@ class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
 
       makeAloSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
-
-      verify(eventPublishService).publishAdjudicationUpdate(REPORTED_ADJUDICATION_DTO)
     }
 
     private fun makeAloSetOffenceDetailsRequest(id: Long, offenceDetails: OffenceDetailsRequestItem): ResultActions {

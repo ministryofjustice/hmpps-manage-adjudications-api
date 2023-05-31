@@ -12,10 +12,10 @@ class EventPublishService(
   private val clock: Clock,
 ) {
 
-  fun publishAdjudicationCreation(adjudication: ReportedAdjudicationDto) {
+  fun publishEvent(event: AdjudicationDomainEventType, adjudication: ReportedAdjudicationDto) {
     snsService.publishDomainEvent(
-      AdjudicationDomainEventType.ADJUDICATION_CREATED,
-      "An adjudication has been created: ${adjudication.adjudicationNumber}",
+      event,
+      "${event.description} ${adjudication.adjudicationNumber}",
       occurredAt = LocalDateTime.now(clock),
       AdditionalInformation(
         adjudicationNumber = adjudication.adjudicationNumber.toString(),
@@ -24,43 +24,7 @@ class EventPublishService(
     )
 
     auditService.sendMessage(
-      AuditType.ADJUDICATION_CREATED,
-      adjudication.adjudicationNumber.toString(),
-      adjudication,
-    )
-  }
-
-  fun publishAdjudicationUpdate(adjudication: ReportedAdjudicationDto) {
-    snsService.publishDomainEvent(
-      AdjudicationDomainEventType.ADJUDICATION_UPDATED,
-      "An adjudication has been updated: ${adjudication.adjudicationNumber}",
-      occurredAt = LocalDateTime.now(clock),
-      AdditionalInformation(
-        adjudicationNumber = adjudication.adjudicationNumber.toString(),
-        prisonerNumber = adjudication.prisonerNumber,
-      ),
-    )
-
-    auditService.sendMessage(
-      AuditType.ADJUDICATION_UPDATED,
-      adjudication.adjudicationNumber.toString(),
-      adjudication,
-    )
-  }
-
-  fun publishOutcomeUpdate(adjudication: ReportedAdjudicationDto) {
-    snsService.publishDomainEvent(
-      AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT,
-      "An outcome has been updated for adjudication: ${adjudication.adjudicationNumber}",
-      occurredAt = LocalDateTime.now(clock),
-      AdditionalInformation(
-        adjudicationNumber = adjudication.adjudicationNumber.toString(),
-        prisonerNumber = adjudication.prisonerNumber,
-      ),
-    )
-
-    auditService.sendMessage(
-      AuditType.OUTCOME_UPDATED,
+      event.auditType,
       adjudication.adjudicationNumber.toString(),
       adjudication,
     )
