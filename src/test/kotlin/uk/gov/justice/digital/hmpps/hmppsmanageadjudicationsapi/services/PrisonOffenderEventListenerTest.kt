@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -26,14 +27,14 @@ class PrisonOffenderEventListenerTest {
   fun `transfer event calls transfer service`() {
     prisonOffenderEventListener.onPrisonOffenderEvent("/messages/transfer.json".readResourceAsText())
 
-    verify(transferService, atLeastOnce()).handleTransferEvent()
+    verify(transferService, atLeastOnce()).processTransferEvent("AA1234A", "TJW")
   }
 
   @Test
   fun `return from court does not call transfer service`() {
     prisonOffenderEventListener.onPrisonOffenderEvent("/messages/not_transfer.json".readResourceAsText())
 
-    verify(transferService, never()).handleTransferEvent()
+    verify(transferService, never()).processTransferEvent(any(), any())
   }
 
   private fun String.readResourceAsText(): String {

@@ -531,4 +531,14 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(savedEntity.punishmentComments.first().id).isEqualTo(1)
     assertThat(savedEntity.punishmentComments.first().comment).isEqualTo("some text")
   }
+
+  @Test
+  fun `findBy prisoner id and statuses `() {
+    val adjudications = reportedAdjudicationRepository.findByPrisonerNumberAndStatusIn(
+      prisonerNumber = "A12345",
+      statuses = listOf(ReportedAdjudicationStatus.UNSCHEDULED),
+    )
+
+    assertThat(adjudications.size).isEqualTo(2)
+  }
 }

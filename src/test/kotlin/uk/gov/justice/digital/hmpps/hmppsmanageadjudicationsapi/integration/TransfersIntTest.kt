@@ -15,6 +15,8 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   @BeforeEach
   fun setUp() {
     setAuditTime()
+    initDataForHearings()
+
     domainEventsTopicSnsClient.publish(
       PublishRequest.builder()
         .topicArn(domainEventsTopicArn)
@@ -44,15 +46,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   @CsvSource("TJW, true", "XXX, false")
   @ParameterizedTest
   fun `test access for {0} is {1} `(agencyId: String, allowed: Boolean) {
-    initDataForHearings()
-
     val response = webTestClient.get()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
       .headers(setHeaders(activeCaseload = agencyId))
       .exchange()
 
     when (allowed) {
-      true -> response.expectStatus().isOk
+      true -> response.expectStatus().isOk.expectBody().jsonPath("$.reportedAdjudication.overrideAgencyId").isEqualTo(agencyId)
       false -> response.expectStatus().isNotFound
     }
   }

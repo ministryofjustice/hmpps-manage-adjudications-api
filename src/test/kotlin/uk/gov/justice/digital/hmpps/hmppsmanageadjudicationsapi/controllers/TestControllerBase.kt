@@ -81,6 +81,7 @@ open class TestControllerBase {
         outcomes = listOf(),
         punishments = listOf(),
         punishmentComments = listOf(),
+        overrideAgencyId = null,
       )
 
     val INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO =

@@ -30,7 +30,12 @@ class PrisonOffenderEventListener(
     val hmppsDomainEvent = mapper.readValue(message, HMPPSDomainEvent::class.java)
     when (eventType) {
       PRISONER_TRANSFER_EVENT_TYPE -> {
-        if (hmppsDomainEvent.additionalInformation?.reason == Reason.TRANSFERRED.name) transferService.handleTransferEvent()
+        if (hmppsDomainEvent.additionalInformation?.reason == Reason.TRANSFERRED.name) {
+          transferService.processTransferEvent(
+            prisonerNumber = hmppsDomainEvent.additionalInformation?.nomsNumber,
+            agencyId = hmppsDomainEvent.additionalInformation?.prisonId,
+          )
+        }
       }
       PRISONER_MERGE_EVENT_TYPE -> {
         // TODO: call to update prisoner number

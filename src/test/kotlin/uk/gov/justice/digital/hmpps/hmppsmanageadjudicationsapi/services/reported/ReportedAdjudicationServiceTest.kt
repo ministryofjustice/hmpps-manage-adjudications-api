@@ -120,6 +120,19 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `override agency is not found throws exception when no case load or override set `() {
+      whenever(authenticationFacade.activeCaseload).thenReturn(null)
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication(),
+      )
+
+      assertThatThrownBy {
+        reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("ReportedAdjudication not found for 1")
+    }
+
+    @Test
     fun `override caseload allows access`() {
       whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
