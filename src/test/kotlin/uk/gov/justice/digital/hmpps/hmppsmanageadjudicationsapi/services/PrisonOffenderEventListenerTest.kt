@@ -30,7 +30,7 @@ class PrisonOffenderEventListenerTest {
   }
 
   @Test
-  fun `return from court does not calls transfer service`() {
+  fun `return from court does not call transfer service`() {
     prisonOffenderEventListener.onPrisonOffenderEvent("/messages/not_transfer.json".readResourceAsText())
 
     verify(transferService, never()).handleTransferEvent()
