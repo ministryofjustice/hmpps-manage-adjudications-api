@@ -1,3 +1,12 @@
 ALTER TABLE reported_adjudications RENAME COLUMN agency_id TO originating_agency_id;
 ALTER TABLE reported_adjudications ADD COLUMN override_agency_id varchar(6);
 CREATE INDEX IF NOT EXISTS prisoner_and_status_idx ON reported_adjudications(prisoner_number, status);
+DROP index reported_adjudications_agency_idx;
+DROP index reported_adjudications_user_idx;
+DROP index reported_adjudications_agency_hearing_date_idx;
+CREATE index IF NOT EXISTS reported_adjudications_agency_idx on reported_adjudications(originating_agency_id,date_time_of_discovery,status);
+CREATE index IF NOT EXISTS reported_adjudications_user_idx on reported_adjudications(originating_agency_id,create_user_id,date_time_of_discovery,status);
+CREATE INDEX IF NOT EXISTS reported_adjudications_override_agency_idx ON reported_adjudications(override_agency_id, date_time_of_discovery, status);
+CREATE index IF NOT EXISTS reported_adjudications_agency_hearing_date_idx on reported_adjudications(originating_agency_id,date_time_of_first_hearing,status);
+CREATE index IF NOT EXISTS reported_adjudications_override_agency_hearing_date_idx on reported_adjudications(override_agency_id,date_time_of_first_hearing,status);
+
