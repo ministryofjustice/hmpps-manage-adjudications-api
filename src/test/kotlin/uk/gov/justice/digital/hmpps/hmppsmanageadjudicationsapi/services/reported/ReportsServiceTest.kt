@@ -36,7 +36,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
       whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+        reportedAdjudicationRepository.findAllReportsByAgency(
           any(),
           any(),
           any(),
@@ -51,6 +51,20 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `returns empty list if active case load is not equal to agency filter `() {
+      whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
+      assertThat(
+        reportsService.getAllReportedAdjudications(
+          "MDI",
+          LocalDate.now(),
+          LocalDate.now(),
+          ReportedAdjudicationStatus.values().toList(),
+          Pageable.ofSize(20).withPage(0),
+        ),
+      ).isEmpty()
+    }
+
+    @Test
     fun `makes a call to the reported adjudication repository to get the page of adjudications`() {
       reportsService.getAllReportedAdjudications(
         "MDI",
@@ -60,11 +74,11 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository).findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+      verify(reportedAdjudicationRepository).findAllReportsByAgency(
         "MDI",
         LocalDate.now().atStartOfDay(),
         LocalDate.now().atTime(LocalTime.MAX),
-        ReportedAdjudicationStatus.values().toList(),
+        ReportedAdjudicationStatus.values().toList().map { it.name },
         Pageable.ofSize(20).withPage(0),
       )
     }
@@ -141,7 +155,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetween(
+        reportedAdjudicationRepository.findReportsForIssue(
           "MDI",
           LocalDate.now().atStartOfDay().minusDays(2),
           LocalDate.now().atTime(LocalTime.MAX),
@@ -149,6 +163,18 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       ).thenReturn(
         listOf(first, second),
       )
+    }
+
+    @Test
+    fun `returns empty list if active case load is not equal to agency filter `() {
+      whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
+      assertThat(
+        reportsService.getAdjudicationsForIssue(
+          agencyId = "MDI",
+          startDate = LocalDate.now().minusDays(2),
+          endDate = LocalDate.now(),
+        ),
+      ).isEmpty()
     }
 
     @Test
@@ -178,37 +204,29 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusIn(
+        reportedAdjudicationRepository.findReportsForPrint(
           "MDI",
           LocalDate.now().atStartOfDay().minusDays(2),
           LocalDate.now().atTime(LocalTime.MAX),
-          listOf(ReportedAdjudicationStatus.SCHEDULED),
+          listOf(ReportedAdjudicationStatus.SCHEDULED).map { it.name },
         ),
       ).thenReturn(
-        listOf(first),
+        listOf(first, second, third),
       )
+    }
 
-      whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNull(
-          "MDI",
-          LocalDate.now().atStartOfDay().minusDays(2),
-          LocalDate.now().atTime(LocalTime.MAX),
-          listOf(ReportedAdjudicationStatus.SCHEDULED),
-        ),
-      ).thenReturn(
-        listOf(second),
-      )
+    @Test
+    fun `returns empty list if active case load is not equal to agency filter `() {
+      whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
 
-      whenever(
-        reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
-          "MDI",
-          LocalDate.now().atStartOfDay().minusDays(2),
-          LocalDate.now().atTime(LocalTime.MAX),
-          listOf(ReportedAdjudicationStatus.SCHEDULED),
+      assertThat(
+        reportsService.getAdjudicationsForPrint(
+          agencyId = "MDI",
+          startDate = LocalDate.now().minusDays(2),
+          endDate = LocalDate.now(),
+          issueStatuses = IssuedStatus.values().toList(),
         ),
-      ).thenReturn(
-        listOf(third),
-      )
+      ).isEmpty()
     }
 
     @Test
@@ -220,13 +238,17 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         issueStatuses = IssuedStatus.values().toList(),
       )
 
+      assertThat(response.size).isEqualTo(3)
+
       assertThat(response)
         .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
         .contains(
           Tuple.tuple(3L, "A12345", "testing", now),
+          Tuple.tuple(4L, "A12345", "testing", now),
+          Tuple.tuple(2L, "A12345", null, null),
         )
 
-      assertThat(response.first().incidentDetails)
+      assertThat(response.first { it.adjudicationNumber == 3L }.incidentDetails)
         .extracting("dateTimeOfDiscovery", "locationId")
         .contains(first.dateTimeOfDiscovery, 2L)
     }
@@ -239,6 +261,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         endDate = LocalDate.now(),
         issueStatuses = listOf(IssuedStatus.ISSUED),
       )
+
+      assertThat(response.size).isEqualTo(2)
 
       assertThat(response)
         .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
@@ -259,6 +283,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         endDate = LocalDate.now(),
         issueStatuses = listOf(IssuedStatus.NOT_ISSUED),
       )
+
+      assertThat(response.size).isEqualTo(1)
 
       assertThat(response)
         .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")

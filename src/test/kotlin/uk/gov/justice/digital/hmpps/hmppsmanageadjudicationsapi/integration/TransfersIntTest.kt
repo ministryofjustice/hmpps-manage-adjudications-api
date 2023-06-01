@@ -8,14 +8,18 @@ import software.amazon.awssdk.services.sns.model.PublishRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdditionalInformation
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.PrisonOffenderEventListener
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.IssuedStatus
 import java.time.Instant
+import java.time.LocalDateTime
 
 class TransfersIntTest : SqsIntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {
     setAuditTime()
-    initDataForHearings()
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    initDataForHearings().createHearing()
 
     domainEventsTopicSnsClient.publish(
       PublishRequest.builder()
@@ -43,9 +47,9 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     )
   }
 
-  @CsvSource("TJW, true", "XXX, false")
+  @CsvSource("TJW,true", "XXX,false")
   @ParameterizedTest
-  fun `test access for {0} is {1} `(agencyId: String, allowed: Boolean) {
+  fun `test access for single report`(agencyId: String, allowed: Boolean) {
     Thread.sleep(1000)
     val response = webTestClient.get()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
@@ -56,5 +60,65 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       true -> response.expectStatus().isOk.expectBody().jsonPath("$.reportedAdjudication.overrideAgencyId").isEqualTo(agencyId)
       false -> response.expectStatus().isNotFound
     }
+  }
+
+  @CsvSource("TJW,1", "XXX,0")
+  @ParameterizedTest
+  fun `test access for reports `(agencyId: String, total: Int) {
+    Thread.sleep(1000)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/$agencyId?startDate=2010-11-10&endDate=2010-11-13&status=SCHEDULED&page=0&size=20")
+      .headers(setHeaders(activeCaseload = agencyId, username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk.expectBody().jsonPath("$.content.size()").isEqualTo(total)
+  }
+
+  @CsvSource("TJW,1", "XXX,0")
+  @ParameterizedTest
+  fun `test access for reports for issue `(agencyId: String, total: Int) {
+    Thread.sleep(1000)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/$agencyId/issue?startDate=2010-11-12&endDate=2020-12-16")
+      .headers(setHeaders(activeCaseload = agencyId))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudications.size()").isEqualTo(total)
+  }
+
+  @CsvSource("TJW,ISSUED,,1", "TJW,NOT_ISSUED,,1", "TJW,ISSUED,NOT_ISSUED,1", "XXX,ISSUED,,0", "XXX,NOT_ISSUED,,0", "XXX,ISSUED,NOT_ISSUED,0")
+  @ParameterizedTest
+  fun `test access for reports for print `(agencyId: String, issuedStatus: IssuedStatus, issuedStatus2: IssuedStatus?, total: Int) {
+    Thread.sleep(1000)
+
+    if (issuedStatus == IssuedStatus.ISSUED) {
+      val dateTimeOfIssue = LocalDateTime.of(2022, 11, 29, 10, 0)
+      webTestClient.put()
+        .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/issue")
+        .headers(setHeaders(activeCaseload = "TJW"))
+        .bodyValue(
+          mapOf(
+            "dateTimeOfIssue" to dateTimeOfIssue,
+          ),
+        )
+        .exchange()
+        .expectStatus().isOk
+    }
+
+    var issueStatues = "$issuedStatus"
+
+    issuedStatus2?.let {
+      issueStatues = "$issueStatues,$it"
+    }
+
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/$agencyId/print?issueStatus=$issueStatues&startDate=2010-11-12&endDate=2020-12-20")
+      .headers(setHeaders(activeCaseload = agencyId))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudications.size()").isEqualTo(total)
   }
 }

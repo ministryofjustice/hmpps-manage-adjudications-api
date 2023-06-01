@@ -2,13 +2,16 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
+import org.springframework.data.repository.query.Param
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, Long> {
+
   fun findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
     userId: String,
     agencyId: String,
@@ -17,37 +20,54 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     statuses: List<ReportedAdjudicationStatus>,
     pageable: Pageable,
   ): Page<ReportedAdjudication>
-  fun findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
-    agencyId: String,
-    startDate: LocalDateTime,
-    endDate: LocalDateTime,
-    statuses: List<ReportedAdjudicationStatus>,
+
+  @Query(
+    value = "select * from reported_adjudications ra " +
+      "where ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate " +
+      "and ra.status in :statuses " +
+      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId)",
+    countQuery = "select count(1) from reported_adjudications ra " +
+      "where ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate " +
+      "and ra.status in :statuses " +
+      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId)",
+    nativeQuery = true,
+  )
+  fun findAllReportsByAgency(
+    @Param("agencyId") agencyId: String,
+    @Param("startDate") startDate: LocalDateTime,
+    @Param("endDate") endDate: LocalDateTime,
+    @Param("statuses") statuses: List<String>,
     pageable: Pageable,
   ): Page<ReportedAdjudication>
-  fun findByAgencyIdAndDateTimeOfDiscoveryBetween(
-    agencyId: String,
-    startDate: LocalDateTime,
-    endDate: LocalDateTime,
+
+  @Query(
+    value = "select * from reported_adjudications ra " +
+      "where ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate " +
+      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId)",
+    nativeQuery = true,
+  )
+  fun findReportsForIssue(
+    @Param("agencyId") agencyId: String,
+    @Param("startDate") startDate: LocalDateTime,
+    @Param("endDate") endDate: LocalDateTime,
   ): List<ReportedAdjudication>
-  fun findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusIn(
-    agencyId: String,
-    startDate: LocalDateTime,
-    endDate: LocalDateTime,
-    statuses: List<ReportedAdjudicationStatus>,
+
+  @Query(
+    value = "select * from reported_adjudications ra " +
+      "where ra.date_time_of_first_hearing > :startDate and ra.date_time_of_first_hearing <= :endDate " +
+      "and ra.status in :statuses " +
+      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId)",
+    nativeQuery = true,
+  )
+  fun findReportsForPrint(
+    @Param("agencyId") agencyId: String,
+    @Param("startDate") startDate: LocalDateTime,
+    @Param("endDate") endDate: LocalDateTime,
+    @Param("statuses") statuses: List<String>,
   ): List<ReportedAdjudication>
-  fun findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
-    agencyId: String,
-    startDate: LocalDateTime,
-    endDate: LocalDateTime,
-    statuses: List<ReportedAdjudicationStatus>,
-  ): List<ReportedAdjudication>
-  fun findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNull(
-    agencyId: String,
-    startDate: LocalDateTime,
-    endDate: LocalDateTime,
-    statuses: List<ReportedAdjudicationStatus>,
-  ): List<ReportedAdjudication>
+
   fun findByReportNumber(adjudicationNumber: Long): ReportedAdjudication?
+
   fun findByReportNumberIn(adjudicationNumbers: List<Long>): List<ReportedAdjudication>
 
   fun findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(prisonerNumber: String, date: LocalDate): List<ReportedAdjudication>
