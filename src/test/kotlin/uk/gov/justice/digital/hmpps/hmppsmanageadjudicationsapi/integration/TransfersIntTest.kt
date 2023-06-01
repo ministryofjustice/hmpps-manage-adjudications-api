@@ -46,6 +46,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   @CsvSource("TJW, true", "XXX, false")
   @ParameterizedTest
   fun `test access for {0} is {1} `(agencyId: String, allowed: Boolean) {
+    Thread.sleep(1000)
     val response = webTestClient.get()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
       .headers(setHeaders(activeCaseload = agencyId))
