@@ -14,19 +14,8 @@ generic-service:
     OAUTH_ENDPOINT_URL: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: https://sign-in-dev.hmpps.service.justice.gov.uk/auth/.well-known/jwks.json
     PRISON_API_ENDPOINT_URL: https://api-dev.prison.service.justice.gov.uk
-    HMPPS_SQS_USE_WEB_TOKEN: "true"
 
   allowlist: null
-
-  namespace_secrets:
-    hmpps-domain-events-topic:
-      HMPPS_SQS_TOPICS_DOMAINEVENTS_ARN: "topic_arn"
-    sqs-hmpps-audit-secret:
-      HMPPS_SQS_QUEUES_AUDIT_QUEUE_NAME: "sqs_queue_name"
-    sqs-prisoner-event-queue-secret:
-      HMPPS_SQS_QUEUES_ADJUDICATIONS_QUEUE_NAME: "sqs_queue_name"
-    sqs-prisoner-event-queue-dlq-secret:
-      HMPPS_SQS_QUEUES_ADJUDICATIONS_DLQ_NAME: "sqs_queue_name"
 
 generic-prometheus-alerts:
   alertSeverity: digital-prison-service-dev
