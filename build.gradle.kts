@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.1.4"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.2.0"
   id("jacoco")
   kotlin("plugin.spring") version "1.8.21"
   kotlin("plugin.jpa") version "1.8.21"
@@ -39,8 +39,8 @@ dependencies {
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.38.0")
   testImplementation("org.flywaydb:flyway-core:9.19.1")
   testImplementation("org.mockito:mockito-inline")
-  testImplementation("org.testcontainers:localstack:1.18.1")
-  testImplementation("org.testcontainers:postgresql:1.18.1")
+  testImplementation("org.testcontainers:localstack:1.18.3")
+  testImplementation("org.testcontainers:postgresql:1.18.3")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.26.0")
 }
 

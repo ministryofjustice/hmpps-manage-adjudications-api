@@ -58,21 +58,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       hearingService.deleteHearing(1)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
-
-    Assertions.assertThatThrownBy {
-      hearingService.createHearingV1(1, 1, LocalDateTime.now(), OicHearingType.GOV)
-    }.isInstanceOf(EntityNotFoundException::class.java)
-      .hasMessageContaining("ReportedAdjudication not found for 1")
-
-    Assertions.assertThatThrownBy {
-      hearingService.amendHearingV1(1, 1, 1, LocalDateTime.now(), OicHearingType.GOV)
-    }.isInstanceOf(EntityNotFoundException::class.java)
-      .hasMessageContaining("ReportedAdjudication not found for 1")
-
-    Assertions.assertThatThrownBy {
-      hearingService.deleteHearingV1(1, 1)
-    }.isInstanceOf(EntityNotFoundException::class.java)
-      .hasMessageContaining("ReportedAdjudication not found for 1")
   }
 
   @Nested
