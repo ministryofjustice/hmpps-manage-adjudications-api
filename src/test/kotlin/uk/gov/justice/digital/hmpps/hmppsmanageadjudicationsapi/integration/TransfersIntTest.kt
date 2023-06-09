@@ -1,0 +1,124 @@
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
+
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import software.amazon.awssdk.services.sns.model.MessageAttributeValue
+import software.amazon.awssdk.services.sns.model.PublishRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdditionalInformation
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.HMPPSDomainEvent
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.PrisonOffenderEventListener
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.IssuedStatus
+import java.time.Instant
+import java.time.LocalDateTime
+
+class TransfersIntTest : SqsIntegrationTestBase() {
+
+  @BeforeEach
+  fun setUp() {
+    setAuditTime()
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    initDataForHearings().createHearing()
+
+    domainEventsTopicSnsClient.publish(
+      PublishRequest.builder()
+        .topicArn(domainEventsTopicArn)
+        .message(
+          jsonString(
+            HMPPSDomainEvent(
+              eventType = PrisonOffenderEventListener.PRISONER_TRANSFER_EVENT_TYPE,
+              additionalInformation = AdditionalInformation(
+                prisonId = "TJW",
+                nomsNumber = IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
+                reason = "TRANSFERRED",
+              ),
+              occurredAt = Instant.now(),
+              description = "transfer event",
+            ),
+          ),
+        )
+        .messageAttributes(
+          mapOf(
+            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(PrisonOffenderEventListener.PRISONER_TRANSFER_EVENT_TYPE).build(),
+          ),
+        )
+        .build(),
+    )
+  }
+
+  @CsvSource("TJW,true", "XXX,false")
+  @ParameterizedTest
+  fun `test access for single report`(agencyId: String, allowed: Boolean) {
+    Thread.sleep(1000)
+    val response = webTestClient.get()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
+      .headers(setHeaders(activeCaseload = agencyId))
+      .exchange()
+
+    when (allowed) {
+      true -> response.expectStatus().isOk.expectBody().jsonPath("$.reportedAdjudication.overrideAgencyId").isEqualTo(agencyId)
+      false -> response.expectStatus().isNotFound
+    }
+  }
+
+  @CsvSource("TJW,1", "XXX,0")
+  @ParameterizedTest
+  fun `test access for reports `(agencyId: String, total: Int) {
+    Thread.sleep(1000)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/$agencyId?startDate=2010-11-10&endDate=2010-11-13&status=SCHEDULED&page=0&size=20")
+      .headers(setHeaders(activeCaseload = agencyId, username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk.expectBody().jsonPath("$.content.size()").isEqualTo(total)
+  }
+
+  @CsvSource("TJW,1", "XXX,0")
+  @ParameterizedTest
+  fun `test access for reports for issue `(agencyId: String, total: Int) {
+    Thread.sleep(1000)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/$agencyId/issue?startDate=2010-11-12&endDate=2020-12-16")
+      .headers(setHeaders(activeCaseload = agencyId))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudications.size()").isEqualTo(total)
+  }
+
+  @CsvSource("TJW,ISSUED,,1", "TJW,NOT_ISSUED,,1", "TJW,ISSUED,NOT_ISSUED,1", "XXX,ISSUED,,0", "XXX,NOT_ISSUED,,0", "XXX,ISSUED,NOT_ISSUED,0")
+  @ParameterizedTest
+  fun `test access for reports for print `(agencyId: String, issuedStatus: IssuedStatus, issuedStatus2: IssuedStatus?, total: Int) {
+    Thread.sleep(1000)
+
+    if (issuedStatus == IssuedStatus.ISSUED) {
+      val dateTimeOfIssue = LocalDateTime.of(2022, 11, 29, 10, 0)
+      webTestClient.put()
+        .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/issue")
+        .headers(setHeaders(activeCaseload = "TJW"))
+        .bodyValue(
+          mapOf(
+            "dateTimeOfIssue" to dateTimeOfIssue,
+          ),
+        )
+        .exchange()
+        .expectStatus().isOk
+    }
+
+    var issueStatues = "$issuedStatus"
+
+    issuedStatus2?.let {
+      issueStatues = "$issueStatues,$it"
+    }
+
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/$agencyId/print?issueStatus=$issueStatues&startDate=2010-11-12&endDate=2020-12-20")
+      .headers(setHeaders(activeCaseload = agencyId))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudications.size()").isEqualTo(total)
+  }
+}

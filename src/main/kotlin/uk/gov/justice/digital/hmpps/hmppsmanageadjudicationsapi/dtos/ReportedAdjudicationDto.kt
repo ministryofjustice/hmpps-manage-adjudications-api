@@ -72,6 +72,8 @@ data class ReportedAdjudicationDto(
   val punishmentComments: List<PunishmentCommentDto>,
   @Schema(description = "flag to indicate a hearing outcome was entered in NOMIS")
   val outcomeEnteredInNomis: Boolean = false,
+  @Schema(description = "optional override agency id")
+  val overrideAgencyId: String?,
 )
 
 @Schema(description = "Details of an offence")
