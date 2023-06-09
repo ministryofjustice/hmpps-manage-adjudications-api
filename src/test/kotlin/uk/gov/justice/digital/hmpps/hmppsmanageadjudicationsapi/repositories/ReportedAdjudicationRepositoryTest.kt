@@ -300,13 +300,13 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `find reported adjudications by agency id`() {
-    val foundAdjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+    val foundAdjudications = reportedAdjudicationRepository.findAllReportsByAgency(
       "LEI",
       LocalDate.now().plusDays(1).atStartOfDay(),
       LocalDate.now().plusDays(1).atTime(
         LocalTime.MAX,
       ),
-      ReportedAdjudicationStatus.values().toList().filter { it != ReportedAdjudicationStatus.UNSCHEDULED },
+      ReportedAdjudicationStatus.values().toList().filter { it != ReportedAdjudicationStatus.UNSCHEDULED }.map { it.name },
       Pageable.ofSize(10),
     )
 
@@ -319,57 +319,19 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `find reported adjudications by agency id and first hearing date`() {
-    val foundAdjudications = reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusIn(
+    val foundAdjudications = reportedAdjudicationRepository.findReportsForPrint(
       "XXX",
       LocalDate.now().minusDays(1).atStartOfDay(),
       LocalDate.now().plusDays(1).atTime(
         LocalTime.MAX,
       ),
-      ReportedAdjudicationStatus.issuableStatusesForPrint(),
+      ReportedAdjudicationStatus.issuableStatusesForPrint().map { it.name },
     )
 
     assertThat(foundAdjudications).hasSize(1)
       .extracting("reportNumber")
       .contains(
         9998L,
-      )
-  }
-
-  @Test
-  fun `find reported adjudications by agency id and issue is not null`() {
-    val foundAdjudications =
-      reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNotNull(
-        "LEI",
-        LocalDate.now().minusDays(1).atStartOfDay(),
-        LocalDate.now().plusDays(1).atTime(
-          LocalTime.MAX,
-        ),
-        ReportedAdjudicationStatus.values().toList(),
-      )
-
-    assertThat(foundAdjudications).hasSize(1)
-      .extracting("reportNumber")
-      .contains(
-        9997L,
-      )
-  }
-
-  @Test
-  fun `find reported adjudications by agency id and issue is null`() {
-    val foundAdjudications =
-      reportedAdjudicationRepository.findByAgencyIdAndDateTimeOfFirstHearingBetweenAndStatusInAndDateTimeOfIssueIsNull(
-        "TJW",
-        LocalDate.now().minusDays(1).atStartOfDay(),
-        LocalDate.now().plusDays(1).atTime(
-          LocalTime.MAX,
-        ),
-        ReportedAdjudicationStatus.issuableStatuses(),
-      )
-
-    assertThat(foundAdjudications).hasSize(1)
-      .extracting("reportNumber")
-      .contains(
-        9999L,
       )
   }
 
@@ -530,5 +492,15 @@ class ReportedAdjudicationRepositoryTest {
 
     assertThat(savedEntity.punishmentComments.first().id).isEqualTo(1)
     assertThat(savedEntity.punishmentComments.first().comment).isEqualTo("some text")
+  }
+
+  @Test
+  fun `findBy prisoner id and statuses `() {
+    val adjudications = reportedAdjudicationRepository.findByPrisonerNumberAndStatusIn(
+      prisonerNumber = "A12345",
+      statuses = listOf(ReportedAdjudicationStatus.UNSCHEDULED),
+    )
+
+    assertThat(adjudications.size).isEqualTo(2)
   }
 }

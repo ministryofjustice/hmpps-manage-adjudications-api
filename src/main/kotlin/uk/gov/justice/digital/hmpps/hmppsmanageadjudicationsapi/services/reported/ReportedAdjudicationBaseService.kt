@@ -88,6 +88,7 @@ open class ReportedDtoService(
       punishments = this.getPunishments().filterOutChargeProvedPunishments().toPunishments(),
       punishmentComments = this.punishmentComments.toPunishmentComments(),
       outcomeEnteredInNomis = hearings.any { it.outcome?.code == HearingOutcomeCode.NOMIS },
+      overrideAgencyId = this.overrideAgencyId,
     )
   }
 
@@ -298,7 +299,13 @@ open class ReportedAdjudicationBaseService(
         adjudicationNumber,
       )
 
-    if (reportedAdjudication.agencyId != authenticationFacade.activeCaseload) throwEntityNotFoundException(adjudicationNumber)
+    val overrideAgencyId = reportedAdjudication.overrideAgencyId ?: reportedAdjudication.agencyId
+
+    if (listOf(reportedAdjudication.agencyId, overrideAgencyId)
+      .none { it == authenticationFacade.activeCaseload }
+    ) {
+      throwEntityNotFoundException(adjudicationNumber)
+    }
 
     return reportedAdjudication
   }

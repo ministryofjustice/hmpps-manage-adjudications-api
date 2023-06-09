@@ -11,9 +11,21 @@ import org.springframework.stereotype.Service
 @Service
 class PrisonOffenderEventListener(
   private val mapper: ObjectMapper,
+  private val transferService: TransferService,
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
+
+    const val PRISONER_TRANSFER_EVENT_TYPE = "prisoner-offender-search.prisoner.received"
+    const val PRISONER_MERGE_EVENT_TYPE = "prison-offender-events.prisoner.merged"
+
+    fun isValidReason(reason: String?): Boolean {
+      val toTest = reason ?: return false
+
+      return try {
+        Reason.values().any { it == Reason.valueOf(toTest) }
+      } catch (e: IllegalArgumentException) { false }
+    }
   }
 
   @SqsListener("adjudications", factory = "hmppsQueueContainerFactoryProxy")
@@ -25,10 +37,15 @@ class PrisonOffenderEventListener(
 
     val hmppsDomainEvent = mapper.readValue(message, HMPPSDomainEvent::class.java)
     when (eventType) {
-      "prisoner-offender-search.prisoner.received" -> {
-        // TODO: call to update prisoner location
+      PRISONER_TRANSFER_EVENT_TYPE -> {
+        if (isValidReason(hmppsDomainEvent.additionalInformation?.reason)) {
+          transferService.processTransferEvent(
+            prisonerNumber = hmppsDomainEvent.additionalInformation?.nomsNumber,
+            agencyId = hmppsDomainEvent.additionalInformation?.prisonId,
+          )
+        }
       }
-      "prison-offender-events.prisoner.merged" -> {
+      PRISONER_MERGE_EVENT_TYPE -> {
         // TODO: call to update prisoner number
       }
       else -> {
@@ -36,6 +53,10 @@ class PrisonOffenderEventListener(
       }
     }
   }
+}
+
+enum class Reason {
+  TRANSFERRED, NEW_ADMISSION, READMISSION, TEMPORARY_ABSENCE_RETURN, RETURN_FROM_COURT
 }
 
 data class HMPPSEventType(val Value: String, val Type: String)
