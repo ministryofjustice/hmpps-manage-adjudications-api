@@ -22,9 +22,9 @@ class PrisonOffenderEventListener(
     fun isValidReason(reason: String?): Boolean {
       val toTest = reason ?: return false
 
-     return try {
-         Reason.values().any { it == Reason.valueOf(toTest) }
-     } catch(e: IllegalArgumentException) { false }
+      return try {
+        Reason.values().any { it == Reason.valueOf(toTest) }
+      } catch (e: IllegalArgumentException) { false }
     }
   }
 
