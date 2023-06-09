@@ -12,8 +12,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -26,7 +26,7 @@ class HearingOutcomeService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
-  private val prisonApiGateway: PrisonApiGateway,
+  private val legacySyncService: LegacySyncService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -166,7 +166,7 @@ class HearingOutcomeService(
 
   private fun updateOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
     val hearing = reportedAdjudication.getHearing()
-    prisonApiGateway.amendHearing(
+    legacySyncService.amendHearing(
       adjudicationNumber = reportedAdjudication.reportNumber,
       oicHearingId = hearing.oicHearingId,
       oicHearingRequest = OicHearingRequest(
@@ -181,7 +181,7 @@ class HearingOutcomeService(
 
   private fun removeOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
     val hearing = reportedAdjudication.getHearing()
-    prisonApiGateway.amendHearing(
+    legacySyncService.amendHearing(
       adjudicationNumber = reportedAdjudication.reportNumber,
       oicHearingId = hearing.oicHearingId,
       oicHearingRequest = OicHearingRequest(

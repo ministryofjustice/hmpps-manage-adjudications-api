@@ -328,7 +328,6 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.adjudicationNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
-    prisonApiMockServer.verifyPostAdjudicationCreationRequestData(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber)
     intTestScenario.getDraftAdjudicationDetails().expectStatus().isNotFound
   }
 

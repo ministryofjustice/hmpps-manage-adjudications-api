@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.delete
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
-import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
@@ -61,7 +60,6 @@ class PrisonApiMockServer : WireMockServer {
   fun stubPostAdjudicationCreationRequestData(testDataSet: AdjudicationIntTestDataSet) {
     stubFor(
       post(urlEqualTo("/api/adjudications/adjudication/request-creation-data"))
-        .withRequestBody(matching(testDataSet.prisonerNumber))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -70,7 +68,7 @@ class PrisonApiMockServer : WireMockServer {
               """
                {
                   "adjudicationNumber": ${testDataSet.adjudicationNumber}
-                }
+               }
               """.trimIndent(),
             ),
         ),
@@ -85,13 +83,6 @@ class PrisonApiMockServer : WireMockServer {
             .withHeader("Content-Type", "application/json")
             .withStatus(500),
         ),
-    )
-  }
-
-  fun verifyPostAdjudicationCreationRequestData(bodyAsJson: String) {
-    verify(
-      postRequestedFor(urlEqualTo("/api/adjudications/adjudication/request-creation-data"))
-        .withRequestBody(equalTo(bodyAsJson)),
     )
   }
 

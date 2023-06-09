@@ -23,17 +23,17 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingResultRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 import java.time.LocalDateTime
 
 class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
-  private val prisonApiGateway: PrisonApiGateway = mock()
-  private val nomisOutcomeService = NomisOutcomeService(prisonApiGateway)
+  private val legacySyncService: LegacySyncService = mock()
+  private val nomisOutcomeService = NomisOutcomeService(legacySyncService)
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // not applicable
@@ -71,8 +71,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
-      verify(prisonApiGateway, never()).createHearing(any(), any())
-      verify(prisonApiGateway, never()).createHearingResult(anyOrNull(), any(), any())
+      verify(legacySyncService, never()).createHearing(any(), any())
+      verify(legacySyncService, never()).createHearingResult(anyOrNull(), any(), any())
     }
 
     @Test
@@ -94,7 +94,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         )
       }
 
-      whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(123)
+      whenever(legacySyncService.createHearing(any(), any())).thenReturn(123)
 
       val hearingId = nomisOutcomeService.createHearingResultIfApplicable(
         adjudicationNumber = reportedAdjudication.reportNumber,
@@ -103,9 +103,9 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(hearingId).isNotNull
-      verify(prisonApiGateway, atLeastOnce()).quashSanctions(any())
-      verify(prisonApiGateway, atLeastOnce()).createHearing(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).createHearingResult(
+      verify(legacySyncService, atLeastOnce()).quashSanctions(any())
+      verify(legacySyncService, atLeastOnce()).createHearing(any(), any())
+      verify(legacySyncService, atLeastOnce()).createHearingResult(
         reportedAdjudication.reportNumber,
         123,
         OicHearingResultRequest(
@@ -125,7 +125,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.addOutcome(Outcome(code = code))
       }
 
-      whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(123)
+      whenever(legacySyncService.createHearing(any(), any())).thenReturn(123)
 
       val hearingId = nomisOutcomeService.createHearingResultIfApplicable(
         adjudicationNumber = reportedAdjudication.reportNumber,
@@ -134,8 +134,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(hearingId).isNotNull
-      verify(prisonApiGateway, atLeastOnce()).createHearing(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).createHearingResult(
+      verify(legacySyncService, atLeastOnce()).createHearing(any(), any())
+      verify(legacySyncService, atLeastOnce()).createHearingResult(
         reportedAdjudication.reportNumber,
         123,
         OicHearingResultRequest(
@@ -160,8 +160,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, never()).createHearing(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).createHearingResult(any(), any(), any())
+      verify(legacySyncService, never()).createHearing(any(), any())
+      verify(legacySyncService, atLeastOnce()).createHearingResult(any(), any(), any())
     }
 
     @EnumSource(OicHearingType::class)
@@ -182,8 +182,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val hearing = reportedAdjudication.hearings.first()
       val request = createHearingResultRequestForVerify(reportedAdjudication, hearing)
 
-      verify(prisonApiGateway, never()).createHearing(any(), any())
-      verify(prisonApiGateway, atLeastOnce()).createHearingResult(
+      verify(legacySyncService, never()).createHearing(any(), any())
+      verify(legacySyncService, atLeastOnce()).createHearingResult(
         adjudicationNumber = reportedAdjudication.reportNumber,
         oicHearingId = hearing.oicHearingId,
         oicHearingResultRequest = request,
@@ -203,8 +203,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
-      verify(prisonApiGateway, never()).createHearing(any(), any())
-      verify(prisonApiGateway, never()).createHearingResult(anyOrNull(), any(), any())
+      verify(legacySyncService, never()).createHearing(any(), any())
+      verify(legacySyncService, never()).createHearingResult(anyOrNull(), any(), any())
     }
   }
 
@@ -258,7 +258,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
-      verify(prisonApiGateway, never()).amendHearingResult(any(), any(), any())
+      verify(legacySyncService, never()).amendHearingResult(any(), any(), any())
     }
 
     @Test
@@ -286,8 +286,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, never()).createHearing(anyOrNull(), any())
-      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(
+      verify(legacySyncService, never()).createHearing(anyOrNull(), any())
+      verify(legacySyncService, atLeastOnce()).amendHearingResult(
         reportedAdjudication.reportNumber,
         123L,
         OicHearingResultRequest(
@@ -313,8 +313,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, never()).createHearing(anyOrNull(), any())
-      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(
+      verify(legacySyncService, never()).createHearing(anyOrNull(), any())
+      verify(legacySyncService, atLeastOnce()).amendHearingResult(
         reportedAdjudication.reportNumber,
         123L,
         OicHearingResultRequest(
@@ -339,7 +339,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(anyOrNull(), any(), any())
+      verify(legacySyncService, atLeastOnce()).amendHearingResult(anyOrNull(), any(), any())
     }
 
     @EnumSource(OicHearingType::class)
@@ -360,7 +360,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val hearing = reportedAdjudication.hearings.first()
       val request = createHearingResultRequestForVerify(reportedAdjudication, hearing)
 
-      verify(prisonApiGateway, atLeastOnce()).amendHearingResult(
+      verify(legacySyncService, atLeastOnce()).amendHearingResult(
         adjudicationNumber = reportedAdjudication.reportNumber,
         oicHearingId = hearing.oicHearingId,
         oicHearingResultRequest = request,
@@ -381,7 +381,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, never()).amendHearingResult(anyOrNull(), any(), any())
+      verify(legacySyncService, never()).amendHearingResult(anyOrNull(), any(), any())
     }
   }
 
@@ -420,8 +420,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, never()).deleteHearing(any(), any())
-      verify(prisonApiGateway, never()).deleteHearingResult(any(), any())
+      verify(legacySyncService, never()).deleteHearing(any(), any())
+      verify(legacySyncService, never()).deleteHearingResult(any(), any())
     }
 
     @Test
@@ -449,8 +449,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, 123L)
-      verify(prisonApiGateway, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 123L)
+      verify(legacySyncService, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, 123L)
+      verify(legacySyncService, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 123L)
     }
 
     @CsvSource("NOT_PROCEED", "PROSECUTION")
@@ -468,8 +468,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, 122L)
-      verify(prisonApiGateway, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 122L)
+      verify(legacySyncService, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, 122L)
+      verify(legacySyncService, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 122L)
     }
 
     @CsvSource("REFER_POLICE", "NOT_PROCEED", "CHARGE_PROVED", "DISMISSED")
@@ -488,11 +488,11 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       if (code == OutcomeCode.CHARGE_PROVED) {
-        verify(prisonApiGateway, atLeastOnce()).deleteSanctions(any())
+        verify(legacySyncService, atLeastOnce()).deleteSanctions(any())
       }
 
-      verify(prisonApiGateway, never()).deleteHearing(reportedAdjudication.reportNumber, 100L)
-      verify(prisonApiGateway, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 100L)
+      verify(legacySyncService, never()).deleteHearing(reportedAdjudication.reportNumber, 100L)
+      verify(legacySyncService, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 100L)
     }
 
     @Test
@@ -509,8 +509,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(prisonApiGateway, never()).deleteHearing(any(), any())
-      verify(prisonApiGateway, never()).deleteHearingResult(any(), any())
+      verify(legacySyncService, never()).deleteHearing(any(), any())
+      verify(legacySyncService, never()).deleteHearingResult(any(), any())
     }
   }
 

@@ -22,22 +22,22 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class HearingServiceTest : ReportedAdjudicationTestBase() {
   private val hearingRepository: HearingRepository = mock()
-  private val prisonApiGateway: PrisonApiGateway = mock()
+  private val legacySyncService: LegacySyncService = mock()
   private val hearingService = HearingService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
     hearingRepository,
-    prisonApiGateway,
+    legacySyncService,
   )
 
   @Test
@@ -79,7 +79,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-      whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(5L)
+      whenever(legacySyncService.createHearing(any(), any())).thenReturn(5L)
     }
 
     @ParameterizedTest
@@ -161,7 +161,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(prisonApiGateway, atLeastOnce()).createHearing(
+      verify(legacySyncService, atLeastOnce()).createHearing(
         1235L,
         OicHearingRequest(
           dateTimeOfHearing = now,
@@ -277,7 +277,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-      whenever(prisonApiGateway.createHearing(any(), any())).thenReturn(5L)
+      whenever(legacySyncService.createHearing(any(), any())).thenReturn(5L)
     }
 
     @ParameterizedTest
@@ -344,7 +344,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(prisonApiGateway, atLeastOnce()).amendHearing(
+      verify(legacySyncService, atLeastOnce()).amendHearing(
         1235L,
         3,
         OicHearingRequest(
@@ -418,7 +418,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(prisonApiGateway, atLeastOnce()).deleteHearing(1235L, 3)
+      verify(legacySyncService, atLeastOnce()).deleteHearing(1235L, 3)
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(0)
 
@@ -452,7 +452,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(prisonApiGateway, atLeastOnce()).deleteHearing(1235L, 2)
+      verify(legacySyncService, atLeastOnce()).deleteHearing(1235L, 2)
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
@@ -480,7 +480,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(prisonApiGateway, atLeastOnce()).deleteHearing(1235L, 1)
+      verify(legacySyncService, atLeastOnce()).deleteHearing(1235L, 1)
 
       assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(3)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.REFER_POLICE)

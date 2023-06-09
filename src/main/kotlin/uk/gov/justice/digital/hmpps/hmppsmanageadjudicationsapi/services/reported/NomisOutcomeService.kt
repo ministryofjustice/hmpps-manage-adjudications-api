@@ -10,16 +10,16 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingResultRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import java.time.LocalDateTime
 
 @Transactional
 @Service
 class NomisOutcomeService(
-  private val prisonApiGateway: PrisonApiGateway,
+  private val legacySyncService: LegacySyncService,
 ) {
 
   fun createHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome): Long? {
@@ -27,7 +27,7 @@ class NomisOutcomeService(
 
     hearing?.let {
       if (outcome.createHearingAndOutcome() || isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)) {
-        val oicHearingId = prisonApiGateway.createHearing(
+        val oicHearingId = legacySyncService.createHearing(
           adjudicationNumber = adjudicationNumber,
           oicHearingRequest = OicHearingRequest(
             dateTimeOfHearing = LocalDateTime.now(),
@@ -42,7 +42,7 @@ class NomisOutcomeService(
           oicHearingId = oicHearingId,
         )
 
-        if (outcome.code == OutcomeCode.QUASHED) prisonApiGateway.quashSanctions(adjudicationNumber = adjudicationNumber)
+        if (outcome.code == OutcomeCode.QUASHED) legacySyncService.quashSanctions(adjudicationNumber = adjudicationNumber)
 
         return oicHearingId
       }
@@ -58,7 +58,7 @@ class NomisOutcomeService(
     hearing?.let {
       val isPoliceReferralOutcome = isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)
       if (outcome.canAmendOutcome() || isPoliceReferralOutcome) {
-        prisonApiGateway.amendHearingResult(
+        legacySyncService.amendHearingResult(
           adjudicationNumber = adjudicationNumber,
           oicHearingId = if (outcome.forceValidationOfOicHearingId(isPoliceReferralOutcome)) outcome.validateOicHearingId() else it.oicHearingId,
           oicHearingResultRequest = OicHearingResultRequest(
@@ -77,17 +77,17 @@ class NomisOutcomeService(
     hearing?.let {
       if (outcome.canDeleteOutcome() || isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)) {
         deleteHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome).run {
-          prisonApiGateway.deleteHearing(adjudicationNumber = adjudicationNumber, oicHearingId = outcome.validateOicHearingId())
+          legacySyncService.deleteHearing(adjudicationNumber = adjudicationNumber, oicHearingId = outcome.validateOicHearingId())
         }
         return
       }
-      if (outcome.code == OutcomeCode.CHARGE_PROVED) prisonApiGateway.deleteSanctions(adjudicationNumber = adjudicationNumber)
+      if (outcome.code == OutcomeCode.CHARGE_PROVED) legacySyncService.deleteSanctions(adjudicationNumber = adjudicationNumber)
       if (outcome.createOutcome()) deleteHearingResult(adjudicationNumber = adjudicationNumber, hearing = it, outcome = outcome)
     }
   }
 
   private fun createHearingResult(adjudicationNumber: Long, hearing: Hearing, outcome: Outcome, oicHearingId: Long? = null) {
-    prisonApiGateway.createHearingResult(
+    legacySyncService.createHearingResult(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = oicHearingId ?: hearing.oicHearingId,
       oicHearingResultRequest = OicHearingResultRequest(
@@ -99,7 +99,7 @@ class NomisOutcomeService(
   }
 
   private fun deleteHearingResult(adjudicationNumber: Long, hearing: Hearing, outcome: Outcome) {
-    prisonApiGateway.deleteHearingResult(
+    legacySyncService.deleteHearingResult(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = outcome.oicHearingId ?: hearing.oicHearingId,
     )

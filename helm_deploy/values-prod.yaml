@@ -14,6 +14,7 @@ generic-service:
     OAUTH_ENDPOINT_URL: https://sign-in.hmpps.service.justice.gov.uk/auth
     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: https://sign-in.hmpps.service.justice.gov.uk/auth/.well-known/jwks.json
     PRISON_API_ENDPOINT_URL: https://api.prison.service.justice.gov.uk
+    FEATURE_ASYNC_MODE: false
 
   postgresDatabaseRestore:
     enabled: true

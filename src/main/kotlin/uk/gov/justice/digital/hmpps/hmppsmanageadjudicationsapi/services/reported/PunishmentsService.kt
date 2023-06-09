@@ -17,9 +17,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
@@ -32,7 +32,7 @@ class PunishmentsService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
-  private val prisonApiGateway: PrisonApiGateway,
+  private val legacySyncService: LegacySyncService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -60,12 +60,12 @@ class PunishmentsService(
   }
 
   fun removeQuashedFinding(reportedAdjudication: ReportedAdjudication) {
-    prisonApiGateway.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber)
+    legacySyncService.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber)
 
     reportedAdjudication.createSanctionAndAssignSanctionSeq(type = PunishmentType.CAUTION)
     reportedAdjudication.createSanctionAndAssignSanctionSeq(type = PunishmentType.DAMAGES_OWED)
 
-    prisonApiGateway.createSanctions(
+    legacySyncService.createSanctions(
       adjudicationNumber = reportedAdjudication.reportNumber,
       sanctions = reportedAdjudication.mapToSanctions(),
     )
@@ -90,7 +90,7 @@ class PunishmentsService(
       }
     }
 
-    prisonApiGateway.createSanctions(
+    legacySyncService.createSanctions(
       adjudicationNumber = adjudicationNumber,
       sanctions = reportedAdjudication.mapToSanctions(),
     )
@@ -145,7 +145,7 @@ class PunishmentsService(
       }
     }
 
-    prisonApiGateway.updateSanctions(
+    legacySyncService.updateSanctions(
       adjudicationNumber = adjudicationNumber,
       sanctions = reportedAdjudication.mapToSanctions(),
     ).run {
@@ -206,7 +206,7 @@ class PunishmentsService(
   }
 
   private fun deleteDamagesOwed(reportedAdjudication: ReportedAdjudication, punishment: Punishment) {
-    prisonApiGateway.deleteSanction(
+    legacySyncService.deleteSanction(
       adjudicationNumber = reportedAdjudication.reportNumber,
       sanctionSeq = punishment.sanctionSeq!!,
     ).run {
@@ -215,9 +215,9 @@ class PunishmentsService(
   }
 
   private fun amendDamagesOwed(reportedAdjudication: ReportedAdjudication, punishment: Punishment, amount: Double) {
-    prisonApiGateway.deleteSanction(adjudicationNumber = reportedAdjudication.reportNumber, sanctionSeq = punishment.sanctionSeq!!).run {
+    legacySyncService.deleteSanction(adjudicationNumber = reportedAdjudication.reportNumber, sanctionSeq = punishment.sanctionSeq!!).run {
       punishment.amount = amount
-      punishment.sanctionSeq = prisonApiGateway.createSanction(
+      punishment.sanctionSeq = legacySyncService.createSanction(
         adjudicationNumber = reportedAdjudication.reportNumber,
         sanction = punishment.mapPunishmentToSanction(),
       )
@@ -243,7 +243,7 @@ class PunishmentsService(
   private fun amendToCaution(reportedAdjudication: ReportedAdjudication) {
     val preserveDamagesOwed = reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }
 
-    prisonApiGateway.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber).run {
+    legacySyncService.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber).run {
       reportedAdjudication.clearPunishments()
       createCaution(reportedAdjudication = reportedAdjudication)
     }.run {
@@ -260,7 +260,7 @@ class PunishmentsService(
   }
 
   private fun removeCaution(reportedAdjudication: ReportedAdjudication, punishment: Punishment) {
-    prisonApiGateway.deleteSanction(
+    legacySyncService.deleteSanction(
       adjudicationNumber = reportedAdjudication.reportNumber,
       sanctionSeq = punishment.sanctionSeq!!,
     ).run {
@@ -276,7 +276,7 @@ class PunishmentsService(
         PunishmentSchedule(days = 0),
       ),
     ).also {
-      it.sanctionSeq = prisonApiGateway.createSanction(
+      it.sanctionSeq = legacySyncService.createSanction(
         adjudicationNumber = adjudicationNumber,
         sanction = it.mapPunishmentToSanction(),
       )
@@ -347,7 +347,7 @@ class PunishmentsService(
 
   private fun ReportedAdjudication.createSanctionAndAssignSanctionSeq(type: PunishmentType) {
     this.getPunishments().firstOrNull { it.type == type }?.let {
-      it.sanctionSeq = prisonApiGateway.createSanction(
+      it.sanctionSeq = legacySyncService.createSanction(
         adjudicationNumber = this.reportNumber,
         sanction = it.mapPunishmentToSanction(),
       )

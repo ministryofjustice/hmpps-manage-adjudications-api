@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -21,7 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.PrisonApiGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -70,7 +71,9 @@ class AdjudicationWorkflowService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
-  private val prisonApiGateway: PrisonApiGateway,
+  private val legacySyncService: LegacySyncService,
+  private val featureFlagsService: FeatureFlagsService,
+  private val identityGenerationService: IdentityGenerationService,
   authenticationFacade: AuthenticationFacade,
   private val telemetryClient: TelemetryClient,
   private val draftOffenceService: DraftOffenceService,
@@ -158,10 +161,14 @@ class AdjudicationWorkflowService(
   }
 
   private fun createReportedAdjudication(draftAdjudication: DraftAdjudication): ReportedAdjudicationDto {
-    val nomisAdjudicationCreationRequestData = prisonApiGateway.requestAdjudicationCreationData(draftAdjudication.prisonerNumber)
+    val adjudicationNumber = if (featureFlagsService.isAsyncMode()) {
+      identityGenerationService.generateAdjudicationNumber()
+    } else {
+      legacySyncService.requestAdjudicationCreationData()!!
+    }
     return reportedAdjudicationService.save(
       ReportedAdjudication(
-        reportNumber = nomisAdjudicationCreationRequestData.adjudicationNumber,
+        reportNumber = adjudicationNumber,
         prisonerNumber = draftAdjudication.prisonerNumber,
         gender = draftAdjudication.gender,
         agencyId = draftAdjudication.agencyId,

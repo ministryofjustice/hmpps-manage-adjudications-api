@@ -22,7 +22,7 @@ data class Hearing(
   @field:Length(max = 6)
   var agencyId: String,
   var reportNumber: Long,
-  var oicHearingId: Long,
+  var oicHearingId: Long? = null,
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var oicHearingType: OicHearingType,

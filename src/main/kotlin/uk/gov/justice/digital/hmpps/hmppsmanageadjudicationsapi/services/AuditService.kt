@@ -29,7 +29,7 @@ class AuditService(
     val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  suspend fun sendMessage(auditType: AuditType, id: String, details: Any, username: String? = null) {
+  fun sendMessage(auditType: AuditType, id: String, details: Any, username: String? = null) {
     val auditEvent = AuditEvent(
       what = auditType.name,
       who = username ?: authenticationFacade.currentUsername ?: "adjudications-api",
@@ -66,4 +66,6 @@ data class AuditEvent(
 
 enum class AuditType {
   ADJUDICATION_CREATED,
+  ADJUDICATION_UPDATED,
+  OUTCOME_UPDATED,
 }
