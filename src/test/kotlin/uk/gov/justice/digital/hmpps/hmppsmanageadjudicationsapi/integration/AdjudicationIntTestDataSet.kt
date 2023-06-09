@@ -30,6 +30,7 @@ data class AdjudicationIntTestDataSet(
   val witnesses: List<WitnessTestDataSet>,
   val dateTimeOfHearing: LocalDateTime? = null,
   val dateTimeOfHearingISOString: String? = null,
+  var overrideAgencyId: String? = null,
 )
 
 data class OffenceTestDataSet(

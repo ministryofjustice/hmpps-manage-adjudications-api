@@ -391,7 +391,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
     )
 
     val intTestScenario = intTestBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "TJW" })
       .setApplicableRules()
       .setIncidentRole()
       .setAssociatedPrisoner()
@@ -419,6 +419,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.adjudicationNumber").isEqualTo(IntegrationTestData.UPDATED_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.overrideAgencyId").isEqualTo("TJW")
       .jsonPath("$.damages[0].code")
       .isEqualTo(DamageCode.CLEANING.name)
       .jsonPath("$.damages[0].details")

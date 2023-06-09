@@ -107,6 +107,7 @@ class AdjudicationWorkflowService(
       prisonerNumber = reportedAdjudication.prisonerNumber,
       gender = reportedAdjudication.gender,
       agencyId = reportedAdjudication.agencyId,
+      overrideAgencyId = reportedAdjudication.overrideAgencyId,
       incidentDetails = IncidentDetails(
         locationId = reportedAdjudication.locationId,
         dateTimeOfIncident = reportedAdjudication.dateTimeOfIncident,
