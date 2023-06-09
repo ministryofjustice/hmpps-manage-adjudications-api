@@ -39,6 +39,8 @@ data class NewAdjudicationRequest(
   val gender: Gender = Gender.MALE, // default when nothing set
   @Schema(description = "The agency id (or caseload) associated with this adjudication", example = "MDI")
   val agencyId: String,
+  @Schema(description = "The optional agencyId where the prisoner now resides", example = "MDI")
+  val overrideAgencyId: String? = null,
   @Schema(description = "The id of the location the incident took place")
   val locationId: Long,
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
@@ -187,6 +189,7 @@ class DraftAdjudicationController(
         newAdjudicationRequest.prisonerNumber,
         newAdjudicationRequest.gender,
         newAdjudicationRequest.agencyId,
+        newAdjudicationRequest.overrideAgencyId,
         newAdjudicationRequest.locationId,
         newAdjudicationRequest.dateTimeOfIncident,
         newAdjudicationRequest.dateTimeOfDiscovery,

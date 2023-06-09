@@ -47,6 +47,27 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `create draft adjudication with override agency id set`() {
+    webTestClient.post()
+      .uri("/draft-adjudications")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "prisonerNumber" to "A12345",
+          "agencyId" to "MDI",
+          "locationId" to 1,
+          "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT,
+          "dateTimeOfDiscovery" to DATE_TIME_OF_INCIDENT.plusDays(1),
+          "overrideAgencyId" to "TJW",
+        ),
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.draftAdjudication.overrideAgencyId").isEqualTo("TJW")
+  }
+
+  @Test
   fun `get draft adjudication details`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()
