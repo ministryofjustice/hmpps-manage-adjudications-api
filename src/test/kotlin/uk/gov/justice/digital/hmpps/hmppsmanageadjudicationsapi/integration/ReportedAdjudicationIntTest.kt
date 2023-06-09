@@ -34,7 +34,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     )
 
     draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "TJW" })
       .setApplicableRules()
       .setIncidentRole()
       .setOffenceData()
@@ -52,6 +52,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.adjudicationNumber")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.reportedAdjudication.overrideAgencyId").isEqualTo("TJW")
       .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString)
       .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfDiscovery")
@@ -147,7 +148,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     )
 
     draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "TJW" })
       .setApplicableRules()
       .setIncidentRole()
       .setOffenceData()
@@ -165,6 +166,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.draftAdjudication.adjudicationNumber")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.draftAdjudication.overrideAgencyId").isEqualTo("TJW")
       .jsonPath("$.draftAdjudication.damages[0].code")
       .isEqualTo(DamageCode.CLEANING.name)
       .jsonPath("$.draftAdjudication.damages[0].details")

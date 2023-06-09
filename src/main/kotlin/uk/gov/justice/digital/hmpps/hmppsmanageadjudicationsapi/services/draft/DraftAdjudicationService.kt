@@ -108,6 +108,7 @@ class DraftAdjudicationService(
     prisonerNumber: String,
     gender: Gender,
     agencyId: String,
+    overrideAgencyId: String?,
     locationId: Long,
     dateTimeOfIncident: LocalDateTime,
     dateTimeOfDiscovery: LocalDateTime? = null,
@@ -120,6 +121,7 @@ class DraftAdjudicationService(
       prisonerNumber = prisonerNumber,
       gender = gender,
       agencyId = agencyId,
+      overrideAgencyId = overrideAgencyId,
       incidentDetails = IncidentDetails(
         locationId = locationId,
         dateTimeOfIncident = dateTimeOfIncident,
