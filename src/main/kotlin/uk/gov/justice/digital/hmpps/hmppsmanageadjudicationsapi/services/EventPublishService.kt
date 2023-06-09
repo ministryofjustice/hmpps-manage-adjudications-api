@@ -8,29 +8,26 @@ import java.time.LocalDateTime
 
 @Service
 class EventPublishService(
-  private val featureFlagsService: FeatureFlagsService,
   private val snsService: SnsService,
   private val auditService: AuditService,
   private val clock: Clock,
 ) {
 
   fun publishEvent(event: AdjudicationDomainEventType, adjudication: ReportedAdjudicationDto) {
-    if (featureFlagsService.isAsyncMode()) {
-      snsService.publishDomainEvent(
-        event,
-        "${event.description} ${adjudication.adjudicationNumber}",
-        occurredAt = LocalDateTime.now(clock),
-        AdditionalInformation(
-          adjudicationNumber = adjudication.adjudicationNumber.toString(),
-          prisonerNumber = adjudication.prisonerNumber,
-        ),
-      )
+    snsService.publishDomainEvent(
+      event,
+      "${event.description} ${adjudication.adjudicationNumber}",
+      occurredAt = LocalDateTime.now(clock),
+      AdditionalInformation(
+        adjudicationNumber = adjudication.adjudicationNumber.toString(),
+        prisonerNumber = adjudication.prisonerNumber,
+      ),
+    )
 
-      auditService.sendMessage(
-        event.auditType,
-        adjudication.adjudicationNumber.toString(),
-        adjudication,
-      )
-    }
+    auditService.sendMessage(
+      event.auditType,
+      adjudication.adjudicationNumber.toString(),
+      adjudication,
+    )
   }
 }
