@@ -7,8 +7,6 @@ generic-service:
   ingress:
     host: manage-adjudications-api-preprod.hmpps.service.justice.gov.uk
 
-  serviceAccountName: hmpps-manage-adjudications-api-preprod
-
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
     OAUTH_ENDPOINT_URL: https://sign-in-preprod.hmpps.service.justice.gov.uk/auth
