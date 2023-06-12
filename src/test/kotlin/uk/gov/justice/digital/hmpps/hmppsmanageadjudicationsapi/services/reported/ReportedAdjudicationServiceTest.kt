@@ -1534,6 +1534,24 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class ReaonlyAdjudication {
+
+    /*
+      rules
+      1: its readonly if its awaiting review
+      2: its not readonly if its accepted
+
+     */
+
+
+    @CsvSource("1,XXX,true", "1,YYY,false", "2,YYY,false", "3,XXX,true")
+    @ParameterizedTest
+    fun `readonly test`(adjudicationNumber: Long, viewingAgency: String, expectedResult: Boolean) {
+
+    }
+  }
+
   companion object {
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)

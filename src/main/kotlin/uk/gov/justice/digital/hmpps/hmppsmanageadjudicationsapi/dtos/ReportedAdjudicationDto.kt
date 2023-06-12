@@ -74,6 +74,8 @@ data class ReportedAdjudicationDto(
   val outcomeEnteredInNomis: Boolean = false,
   @Schema(description = "optional override agency id")
   val overrideAgencyId: String?,
+  @Schema(description = "readonly flag to indicate if an ALO can carry out actions against a transferable adjudication")
+  val readonly: Boolean = false,
 )
 
 @Schema(description = "Details of an offence")
