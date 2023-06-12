@@ -6,6 +6,7 @@ import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -1538,18 +1539,16 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   inner class ReaonlyAdjudication {
 
     /*
-      rules
-      1: its readonly if its awaiting review
-      2: its not readonly if its accepted
+       rules/
 
+       reported: awaiting review / returned - edit > originating agency
+       reported: unscheduled > edit override agency
+       reported: scheduled > edit for agency that owns hearing
      */
 
 
-    @CsvSource("1,XXX,true", "1,YYY,false", "2,YYY,false", "3,XXX,true")
-    @ParameterizedTest
-    fun `readonly test`(adjudicationNumber: Long, viewingAgency: String, expectedResult: Boolean) {
+    //specifc tests are better.
 
-    }
   }
 
   companion object {
