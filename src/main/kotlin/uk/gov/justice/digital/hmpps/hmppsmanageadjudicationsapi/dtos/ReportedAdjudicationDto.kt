@@ -74,6 +74,8 @@ data class ReportedAdjudicationDto(
   val outcomeEnteredInNomis: Boolean = false,
   @Schema(description = "optional override agency id")
   val overrideAgencyId: String?,
+  @Schema(description = "optional actions flag to indicate if an ALO can carry out actions against a transferable adjudication, null if not transferable")
+  val transferableActionsAllowed: Boolean? = null,
 )
 
 @Schema(description = "Details of an offence")
@@ -144,6 +146,8 @@ data class HearingDto(
   val oicHearingType: OicHearingType,
   @Schema(description = "hearing outcome")
   val outcome: HearingOutcomeDto? = null,
+  @Schema(description = "agency id of hearing")
+  val agencyId: String,
 )
 
 @Schema(description = "hearing outcome")

@@ -1534,6 +1534,174 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class ReadonlyAdjudication {
+
+    @CsvSource("RETURNED", "AWAITING_REVIEW")
+    @ParameterizedTest
+    fun `is actionable for originating agency`(status: ReportedAdjudicationStatus) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = status
+          it.overrideAgencyId = "LEI"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableActionsAllowed).isTrue
+    }
+
+    @CsvSource("RETURNED", "AWAITING_REVIEW")
+    @ParameterizedTest
+    fun `is not actionable for override agency`(status: ReportedAdjudicationStatus) {
+      whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = status
+          it.overrideAgencyId = "LEI"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableActionsAllowed).isFalse
+    }
+
+    @Test
+    fun `scheduled is not actionable for override agency if the hearing belongs to the originating agency`() {
+      whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.SCHEDULED
+          it.overrideAgencyId = "LEI"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().agencyId = "MDI"
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableActionsAllowed).isFalse
+    }
+
+    @Test
+    fun `scheduled is actionable for originating agency if the hearing belongs to the originating agency`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.SCHEDULED
+          it.overrideAgencyId = "LEI"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().agencyId = "MDI"
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableActionsAllowed).isTrue
+    }
+
+    @Test
+    fun `scheduled is actionable for override agency if the hearing belongs to the override agency`() {
+      whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.SCHEDULED
+          it.overrideAgencyId = "LEI"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().agencyId = "LEI"
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableActionsAllowed).isTrue
+    }
+
+    @Test
+    fun `scheduled is not actionable for originating agency if the hearing belongs to the override agency`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.SCHEDULED
+          it.overrideAgencyId = "LEI"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().agencyId = "LEI"
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableActionsAllowed).isFalse
+    }
+
+    @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED", "UNSCHEDULED")
+    @ParameterizedTest
+    fun `for other states it is always not actionable for originating agency`(status: ReportedAdjudicationStatus) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = status
+          it.overrideAgencyId = "LEI"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().agencyId = "LEI"
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableActionsAllowed).isFalse
+    }
+
+    @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED", "UNSCHEDULED")
+    @ParameterizedTest
+    fun `for other states it is always actionable for override agency`(status: ReportedAdjudicationStatus) {
+      whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = status
+          it.overrideAgencyId = "LEI"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableActionsAllowed).isTrue
+    }
+
+    @EnumSource(ReportedAdjudicationStatus::class)
+    @ParameterizedTest
+    fun `report is not transferable and actionable flag should be null `(status: ReportedAdjudicationStatus) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = status
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableActionsAllowed).isNull()
+    }
+
+    @CsvSource("ACCEPTED", "REJECTED")
+    @ParameterizedTest
+    fun `always returns not actionable`(status: ReportedAdjudicationStatus) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = status
+          it.overrideAgencyId = "LEI"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableActionsAllowed).isFalse
+    }
+  }
+
   companion object {
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
