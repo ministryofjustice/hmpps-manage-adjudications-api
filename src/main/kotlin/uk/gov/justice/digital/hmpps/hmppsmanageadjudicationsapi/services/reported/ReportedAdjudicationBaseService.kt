@@ -280,6 +280,7 @@ open class ReportedDtoService(
     }.sortedByDescending { it.dateTime }.toList()
 
   private fun ReportedAdjudication.getReadonlyStatus(activeCaseload: String?): Boolean? {
+    activeCaseload ?: return null
     overrideAgencyId ?: return null
     return when (this.status) {
       ReportedAdjudicationStatus.REJECTED, ReportedAdjudicationStatus.ACCEPTED -> true
