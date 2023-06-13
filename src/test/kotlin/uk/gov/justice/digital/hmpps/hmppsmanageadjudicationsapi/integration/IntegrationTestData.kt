@@ -117,6 +117,31 @@ class IntegrationTestData(
       dateTimeOfHearingISOString = DEFAULT_DATE_TIME_OF_HEARING_TEXT,
     )
 
+    val DEFAULT_TRANSFER_ADJUDICATION = AdjudicationIntTestDataSet(
+      adjudicationNumber = 999999,
+      prisonerNumber = DEFAULT_PRISONER_NUMBER,
+      agencyId = "TJW",
+      locationId = UPDATED_LOCATION_ID,
+      dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
+      dateTimeOfIncident = DEFAULT_DATE_TIME_OF_INCIDENT,
+      dateTimeOfDiscovery = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1),
+      dateTimeOfDiscoveryISOString = DEFAULT_DATE_TIME_OF_DISCOVERY_TEXT,
+      handoverDeadlineISOString = DEFAULT_HANDOVER_DEADLINE_ISO_STRING,
+      isYouthOffender = false,
+      incidentRoleCode = DEFAULT_INCIDENT_ROLE_CODE,
+      incidentRoleParagraphNumber = DEFAULT_INCIDENT_ROLE_PARAGRAPH_NUMBER,
+      incidentRoleParagraphDescription = DEFAULT_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION,
+      incidentRoleAssociatedPrisonersNumber = DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER,
+      offence = DEFAULT_OFFENCE,
+      statement = DEFAULT_STATEMENT,
+      createdByUserId = DEFAULT_CREATED_USER_ID,
+      damages = DEFAULT_DAMAGES,
+      evidence = DEFAULT_EVIDENCE,
+      witnesses = DEFAULT_WITNESSES,
+      dateTimeOfHearing = DEFAULT_DATE_TIME_OF_INCIDENT.plusWeeks(1),
+      dateTimeOfHearingISOString = DEFAULT_DATE_TIME_OF_HEARING_TEXT,
+    )
+
     val UPDATED_ADJUDICATION = AdjudicationIntTestDataSet(
       adjudicationNumber = DEFAULT_ADJUDICATION_NUMBER,
       prisonerNumber = DEFAULT_PRISONER_NUMBER,
@@ -499,10 +524,11 @@ class IntegrationTestData(
 
   fun acceptReport(
     reportNumber: String,
+    activeCaseLoad: String,
   ): WebTestClient.ResponseSpec {
     return webTestClient.put()
       .uri("/reported-adjudications/$reportNumber/status")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO", activeCaseload = activeCaseLoad, roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
           "status" to ReportedAdjudicationStatus.UNSCHEDULED.name,

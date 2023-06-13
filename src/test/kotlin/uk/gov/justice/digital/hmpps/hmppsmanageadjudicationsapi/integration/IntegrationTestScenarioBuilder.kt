@@ -74,9 +74,10 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun acceptReport(reportNumber: String): IntegrationTestScenario {
+  fun acceptReport(reportNumber: String, activeCaseload: String = "MDI"): IntegrationTestScenario {
     intTestData.acceptReport(
       reportNumber,
+      activeCaseload,
     )
     return this
   }

@@ -164,4 +164,17 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].agencyId").isEqualTo("MDI")
       .jsonPath("$.reportedAdjudication.hearings[1].agencyId").isEqualTo("TJW")
   }
+
+  @Test
+  fun `get all reports for transfers only `() {
+    Thread.sleep(1000)
+
+    initDataForHearings(overrideAgencyId = "TJW", testData = IntegrationTestData.DEFAULT_TRANSFER_ADJUDICATION)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/TJW?startDate=2010-11-10&endDate=2010-11-13&status=SCHEDULED,UNSCHEDULED&transfersOnly=true&page=0&size=20")
+      .headers(setHeaders(activeCaseload = "TJW", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk.expectBody().jsonPath("$.content.size()").isEqualTo(1)
+  }
 }

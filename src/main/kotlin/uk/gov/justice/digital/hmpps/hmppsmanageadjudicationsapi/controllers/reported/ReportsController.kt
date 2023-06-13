@@ -70,6 +70,11 @@ class ReportsController(
       required = true,
       description = "list of status filter for reports",
     ),
+    Parameter(
+      name = "transfersOnly",
+      required = false,
+      description = "optional filter to only ger transferred reports",
+    ),
   )
   @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
   @GetMapping("/agency/{agencyId}")
@@ -82,6 +87,7 @@ class ReportsController(
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     endDate: LocalDate?,
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
+    @RequestParam(name = "transfersOnly") transfersOnly: Boolean = false,
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
   ): Page<ReportedAdjudicationDto> {
     return reportsService.getAllReportedAdjudications(
