@@ -146,7 +146,7 @@ enum class ReportedAdjudicationStatus {
   },
   RETURNED {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(AWAITING_REVIEW)
+      return listOf(AWAITING_REVIEW, UNSCHEDULED, REJECTED)
     }
   },
   UNSCHEDULED {
