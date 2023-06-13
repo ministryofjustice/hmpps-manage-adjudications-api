@@ -281,7 +281,6 @@ open class ReportedDtoService(
 
   private fun ReportedAdjudication.getReadonlyStatus(activeCaseload: String?): Boolean? {
     overrideAgencyId ?: return null
-    activeCaseload ?: return true
     return when (this.status) {
       ReportedAdjudicationStatus.REJECTED, ReportedAdjudicationStatus.ACCEPTED -> true
       ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.RETURNED, ReportedAdjudicationStatus.SCHEDULED -> this.overrideAgencyId == activeCaseload

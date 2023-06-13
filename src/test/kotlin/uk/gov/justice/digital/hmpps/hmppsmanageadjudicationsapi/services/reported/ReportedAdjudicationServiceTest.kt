@@ -1537,9 +1537,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class ReadonlyAdjudication {
 
-    @CsvSource("RETURNED", "AWAITING_REVIEW")
+    @CsvSource("RETURNED", "AWAITING_REVIEW, SCHEDULED")
     @ParameterizedTest
-    fun `adjudication awaiting review or returned is editable by originating agency`(status: ReportedAdjudicationStatus) {
+    fun `is editable by originating agency`(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = status
@@ -1553,9 +1553,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.transferableReadonly).isFalse
     }
 
-    @CsvSource("RETURNED", "AWAITING_REVIEW")
+    @CsvSource("RETURNED", "AWAITING_REVIEW", "SCHEDULED")
     @ParameterizedTest
-    fun `adjudication awaiting review or returned is readonly for override agency`(status: ReportedAdjudicationStatus) {
+    fun `is readonly for override agency`(status: ReportedAdjudicationStatus) {
       whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
@@ -1570,69 +1570,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.transferableReadonly).isTrue
     }
 
-    @Test
-    fun `unscheduled report is editable by override agency`() {
-      whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.status = ReportedAdjudicationStatus.UNSCHEDULED
-          it.overrideAgencyId = "LEI"
-          it.createDateTime = LocalDateTime.now()
-          it.createdByUserId = ""
-        },
-      )
-
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isFalse
-    }
-
-    @Test
-    fun `unscheduled report is readonly for originating agency`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.status = ReportedAdjudicationStatus.UNSCHEDULED
-          it.overrideAgencyId = "LEI"
-          it.createDateTime = LocalDateTime.now()
-          it.createdByUserId = ""
-        },
-      )
-
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isTrue
-    }
-
-    @Test
-    fun `scheduled report is readonly for override agency`() {
-      whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.status = ReportedAdjudicationStatus.SCHEDULED
-          it.overrideAgencyId = "LEI"
-          it.createDateTime = LocalDateTime.now()
-          it.createdByUserId = ""
-        },
-      )
-
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isTrue
-    }
-
-    @Test
-    fun `scheduled report is editable by originating agency`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.status = ReportedAdjudicationStatus.SCHEDULED
-          it.overrideAgencyId = "LEI"
-          it.createDateTime = LocalDateTime.now()
-          it.createdByUserId = ""
-        },
-      )
-
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isFalse
-    }
-
-    @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED")
+    @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED", "UNSCHEDULED")
     @ParameterizedTest
     fun `for other states it is always readonly for originating agency`(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
@@ -1648,7 +1586,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.transferableReadonly).isTrue
     }
 
-    @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED")
+    @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED", "UNSCHEDULED")
     @ParameterizedTest
     fun `for other states it is always editable for override agency`(status: ReportedAdjudicationStatus) {
       whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
@@ -1680,12 +1618,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.transferableReadonly).isNull()
     }
 
-    @Test
-    fun `no active caseload returns readonly is true`() {
-      whenever(authenticationFacade.activeCaseload).thenReturn(null)
+    @CsvSource("ACCEPTED", "REJECTED")
+    @ParameterizedTest
+    fun `always returns readonly is true`(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
-          it.status = ReportedAdjudicationStatus.SCHEDULED
+          it.status = status
           it.overrideAgencyId = "LEI"
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
