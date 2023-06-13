@@ -73,7 +73,7 @@ class ReportsController(
     Parameter(
       name = "transfersOnly",
       required = false,
-      description = "optional filter to only ger transferred reports",
+      description = "optional filter for transferred reports only",
     ),
   )
   @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
