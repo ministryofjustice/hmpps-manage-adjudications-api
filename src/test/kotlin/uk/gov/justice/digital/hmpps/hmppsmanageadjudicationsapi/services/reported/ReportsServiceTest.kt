@@ -298,6 +298,21 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class ReportCounts {
+
+    @Test
+    fun `get reports count for agency`() {
+      whenever(reportedAdjudicationRepository.countByAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.UNSCHEDULED)).thenReturn(2)
+      whenever(reportedAdjudicationRepository.countByOverrideAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.UNSCHEDULED)).thenReturn(1)
+
+      val result = reportsService.getReportCounts("MDI")
+
+      assertThat(result.reviewTotal).isEqualTo(2)
+      assertThat(result.transferReviewTotal).isEqualTo(1)
+    }
+  }
+
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // not required.
   }

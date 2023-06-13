@@ -27,6 +27,14 @@ data class IssuableAdjudicationsResponse(
   val reportedAdjudications: List<ReportedAdjudicationDto>,
 )
 
+@Schema(description = "Agency Report counts DTO")
+data class AgencyReportCountsDto(
+  @Schema(description = "total reports to review for agency")
+  val reviewTotal: Long,
+  @Schema(description = "total transferable reports to review for agency")
+  val transferReviewTotal: Long,
+)
+
 @RestController
 @Tag(name = "40. Reports")
 class ReportsController(

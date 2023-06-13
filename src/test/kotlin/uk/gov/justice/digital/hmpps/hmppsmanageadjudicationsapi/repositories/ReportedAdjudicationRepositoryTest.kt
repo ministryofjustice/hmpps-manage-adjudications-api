@@ -109,6 +109,19 @@ class ReportedAdjudicationRepositoryTest {
         it.dateTimeOfFirstHearing = LocalDateTime.now()
       },
     )
+    entityManager.persistAndFlush(
+      entityBuilder.reportedAdjudication(
+        reportNumber = 19997L,
+        dateTime = dateTimeOfIncident.plusHours(1),
+        agencyId = "LEI",
+        hearingId = null,
+      ).also {
+        it.status = ReportedAdjudicationStatus.UNSCHEDULED
+        it.dateTimeOfIssue = LocalDateTime.now()
+        it.dateTimeOfFirstHearing = LocalDateTime.now()
+        it.overrideAgencyId = "MDI"
+      },
+    )
   }
 
   @Test
@@ -480,7 +493,7 @@ class ReportedAdjudicationRepositoryTest {
   fun `hearing without outcome test`() {
     val hearings = hearingRepository.findByHearingOutcomeIsNull()
 
-    assertThat(hearings.size).isEqualTo(6)
+    assertThat(hearings.size).isEqualTo(7)
   }
 
   @Test
@@ -501,6 +514,20 @@ class ReportedAdjudicationRepositoryTest {
       statuses = listOf(ReportedAdjudicationStatus.UNSCHEDULED),
     )
 
-    assertThat(adjudications.size).isEqualTo(2)
+    assertThat(adjudications.size).isEqualTo(3)
+  }
+
+  @Test
+  fun `count by agency and status `() {
+    assertThat(
+      reportedAdjudicationRepository.countByAgencyIdAndStatus("LEI", ReportedAdjudicationStatus.UNSCHEDULED),
+    ).isEqualTo(2)
+  }
+
+  @Test
+  fun `count by override agency id and status`() {
+    assertThat(
+      reportedAdjudicationRepository.countByOverrideAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.UNSCHEDULED),
+    ).isEqualTo(1)
   }
 }

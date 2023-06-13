@@ -73,4 +73,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   fun findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(prisonerNumber: String, date: LocalDate): List<ReportedAdjudication>
 
   fun findByPrisonerNumberAndStatusIn(prisonerNumber: String, statuses: List<ReportedAdjudicationStatus>): List<ReportedAdjudication>
+
+  fun countByAgencyIdAndStatus(agencyId: String, status: ReportedAdjudicationStatus): Long
+
+  fun countByOverrideAgencyIdAndStatus(overrideAgencyId: String, status: ReportedAdjudicationStatus): Long
 }
