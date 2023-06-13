@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -45,7 +46,7 @@ import java.time.LocalDateTime
 open class ReportedDtoService(
   protected val offenceCodeLookupService: OffenceCodeLookupService,
 ) {
-  protected fun ReportedAdjudication.toDto(): ReportedAdjudicationDto {
+  protected fun ReportedAdjudication.toDto(activeCaseload: String? = null): ReportedAdjudicationDto {
     val hearings = this.hearings.toHearings()
     val outcomes = this.getOutcomes().createCombinedOutcomes(this.getPunishments())
     return ReportedAdjudicationDto(
@@ -89,6 +90,7 @@ open class ReportedDtoService(
       punishmentComments = this.punishmentComments.toPunishmentComments(),
       outcomeEnteredInNomis = hearings.any { it.outcome?.code == HearingOutcomeCode.NOMIS },
       overrideAgencyId = this.overrideAgencyId,
+      transferableReadonly = this.getReadonlyStatus(activeCaseload),
     )
   }
 
@@ -277,6 +279,16 @@ open class ReportedDtoService(
       )
     }.sortedByDescending { it.dateTime }.toList()
 
+  private fun ReportedAdjudication.getReadonlyStatus(activeCaseload: String?): Boolean? {
+    overrideAgencyId ?: return null
+    activeCaseload ?: return true
+    return when (this.status) {
+      ReportedAdjudicationStatus.REJECTED, ReportedAdjudicationStatus.ACCEPTED -> true
+      ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.RETURNED, ReportedAdjudicationStatus.SCHEDULED -> this.overrideAgencyId == activeCaseload
+      else -> this.agencyId == activeCaseload
+    }
+  }
+
   companion object {
     val outcomesToDisplayPunishments = listOf(OutcomeCode.CHARGE_PROVED, OutcomeCode.QUASHED)
     fun HearingDto.hearingHasNoAssociatedOutcome() =
@@ -311,7 +323,7 @@ open class ReportedAdjudicationBaseService(
   }
 
   protected fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
-    reportedAdjudicationRepository.save(reportedAdjudication).toDto()
+    reportedAdjudicationRepository.save(reportedAdjudication).toDto(authenticationFacade.activeCaseload)
 
   protected fun findByReportNumberIn(adjudicationNumbers: List<Long>) = reportedAdjudicationRepository.findByReportNumberIn(adjudicationNumbers)
 

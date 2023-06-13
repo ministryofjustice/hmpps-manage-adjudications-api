@@ -37,7 +37,7 @@ class ReportedAdjudicationService(
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
-    return reportedAdjudication.toDto()
+    return reportedAdjudication.toDto(authenticationFacade.activeCaseload)
   }
 
   fun lastOutcomeHasReferralOutcome(adjudicationNumber: Long): Boolean =
