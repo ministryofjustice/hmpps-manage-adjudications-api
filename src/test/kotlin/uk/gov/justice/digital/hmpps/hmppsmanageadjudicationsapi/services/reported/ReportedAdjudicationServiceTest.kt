@@ -1537,7 +1537,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class ReadonlyAdjudication {
 
-    @CsvSource("RETURNED", "AWAITING_REVIEW, SCHEDULED")
+    @CsvSource("RETURNED", "AWAITING_REVIEW")
     @ParameterizedTest
     fun `is editable by originating agency`(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
@@ -1553,7 +1553,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.transferableReadonly).isFalse
     }
 
-    @CsvSource("RETURNED", "AWAITING_REVIEW", "SCHEDULED")
+    @CsvSource("RETURNED", "AWAITING_REVIEW")
     @ParameterizedTest
     fun `is readonly for override agency`(status: ReportedAdjudicationStatus) {
       whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
@@ -1570,6 +1570,72 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.transferableReadonly).isTrue
     }
 
+    @Test
+    fun `scheduled is readonly for override agency if the hearing belongs to the originating agency`() {
+      whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.SCHEDULED
+          it.overrideAgencyId = "LEI"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().agencyId = "MDI"
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableReadonly).isTrue
+    }
+
+    @Test
+    fun `scheduled is editable for originating agency if the hearing belongs to the originating agency`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.SCHEDULED
+          it.overrideAgencyId = "LEI"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().agencyId = "MDI"
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableReadonly).isFalse
+    }
+
+    @Test
+    fun `scheduled is editable for override agency if the hearing belongs to the override agency`() {
+      whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.SCHEDULED
+          it.overrideAgencyId = "LEI"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().agencyId = "LEI"
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableReadonly).isFalse
+    }
+
+    @Test
+    fun `scheduled is readonly for originating agency if the hearing belongs to the override agency`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.SCHEDULED
+          it.overrideAgencyId = "LEI"
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().agencyId = "LEI"
+        },
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      assertThat(response.transferableReadonly).isTrue
+    }
+
     @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED", "UNSCHEDULED")
     @ParameterizedTest
     fun `for other states it is always readonly for originating agency`(status: ReportedAdjudicationStatus) {
@@ -1579,6 +1645,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.overrideAgencyId = "LEI"
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
+          it.hearings.first().agencyId = "LEI"
         },
       )
 

@@ -284,7 +284,8 @@ open class ReportedDtoService(
     overrideAgencyId ?: return null
     return when (this.status) {
       ReportedAdjudicationStatus.REJECTED, ReportedAdjudicationStatus.ACCEPTED -> true
-      ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.RETURNED, ReportedAdjudicationStatus.SCHEDULED -> this.overrideAgencyId == activeCaseload
+      ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.RETURNED -> this.overrideAgencyId == activeCaseload
+      ReportedAdjudicationStatus.SCHEDULED -> this.getLatestHearing()?.agencyId != activeCaseload
       else -> this.agencyId == activeCaseload
     }
   }
