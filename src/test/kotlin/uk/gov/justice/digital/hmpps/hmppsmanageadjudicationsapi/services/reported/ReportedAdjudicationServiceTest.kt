@@ -1539,7 +1539,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @CsvSource("RETURNED", "AWAITING_REVIEW")
     @ParameterizedTest
-    fun `is editable by originating agency`(status: ReportedAdjudicationStatus) {
+    fun `is actionable for originating agency`(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = status
@@ -1550,12 +1550,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isFalse
+      assertThat(response.transferableActionsAllowed).isTrue
     }
 
     @CsvSource("RETURNED", "AWAITING_REVIEW")
     @ParameterizedTest
-    fun `is readonly for override agency`(status: ReportedAdjudicationStatus) {
+    fun `is not actionable for override agency`(status: ReportedAdjudicationStatus) {
       whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
@@ -1567,11 +1567,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isTrue
+      assertThat(response.transferableActionsAllowed).isFalse
     }
 
     @Test
-    fun `scheduled is readonly for override agency if the hearing belongs to the originating agency`() {
+    fun `scheduled is not actionable for override agency if the hearing belongs to the originating agency`() {
       whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
@@ -1584,11 +1584,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isTrue
+      assertThat(response.transferableActionsAllowed).isFalse
     }
 
     @Test
-    fun `scheduled is editable for originating agency if the hearing belongs to the originating agency`() {
+    fun `scheduled is actionable for originating agency if the hearing belongs to the originating agency`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = ReportedAdjudicationStatus.SCHEDULED
@@ -1600,11 +1600,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isFalse
+      assertThat(response.transferableActionsAllowed).isTrue
     }
 
     @Test
-    fun `scheduled is editable for override agency if the hearing belongs to the override agency`() {
+    fun `scheduled is actionable for override agency if the hearing belongs to the override agency`() {
       whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
@@ -1617,11 +1617,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isFalse
+      assertThat(response.transferableActionsAllowed).isTrue
     }
 
     @Test
-    fun `scheduled is readonly for originating agency if the hearing belongs to the override agency`() {
+    fun `scheduled is not actionable for originating agency if the hearing belongs to the override agency`() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = ReportedAdjudicationStatus.SCHEDULED
@@ -1633,12 +1633,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isTrue
+      assertThat(response.transferableActionsAllowed).isFalse
     }
 
     @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED", "UNSCHEDULED")
     @ParameterizedTest
-    fun `for other states it is always readonly for originating agency`(status: ReportedAdjudicationStatus) {
+    fun `for other states it is always not actionable for originating agency`(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = status
@@ -1650,12 +1650,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isTrue
+      assertThat(response.transferableActionsAllowed).isFalse
     }
 
     @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED", "UNSCHEDULED")
     @ParameterizedTest
-    fun `for other states it is always editable for override agency`(status: ReportedAdjudicationStatus) {
+    fun `for other states it is always actionable for override agency`(status: ReportedAdjudicationStatus) {
       whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
@@ -1667,12 +1667,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isFalse
+      assertThat(response.transferableActionsAllowed).isTrue
     }
 
     @EnumSource(ReportedAdjudicationStatus::class)
     @ParameterizedTest
-    fun `report is not transferable and readonly flag should be null `(status: ReportedAdjudicationStatus) {
+    fun `report is not transferable and actionable flag should be null `(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = status
@@ -1682,12 +1682,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isNull()
+      assertThat(response.transferableActionsAllowed).isNull()
     }
 
     @CsvSource("ACCEPTED", "REJECTED")
     @ParameterizedTest
-    fun `always returns readonly is true`(status: ReportedAdjudicationStatus) {
+    fun `always returns not actionable`(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = status
@@ -1698,7 +1698,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
-      assertThat(response.transferableReadonly).isTrue
+      assertThat(response.transferableActionsAllowed).isFalse
     }
   }
 

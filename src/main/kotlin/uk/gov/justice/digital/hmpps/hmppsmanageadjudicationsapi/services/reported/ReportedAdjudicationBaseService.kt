@@ -90,7 +90,7 @@ open class ReportedDtoService(
       punishmentComments = this.punishmentComments.toPunishmentComments(),
       outcomeEnteredInNomis = hearings.any { it.outcome?.code == HearingOutcomeCode.NOMIS },
       overrideAgencyId = this.overrideAgencyId,
-      transferableReadonly = this.getReadonlyStatus(activeCaseload),
+      transferableActionsAllowed = this.isActionable(activeCaseload),
     )
   }
 
@@ -279,14 +279,14 @@ open class ReportedDtoService(
       )
     }.sortedByDescending { it.dateTime }.toList()
 
-  private fun ReportedAdjudication.getReadonlyStatus(activeCaseload: String?): Boolean? {
+  private fun ReportedAdjudication.isActionable(activeCaseload: String?): Boolean? {
     activeCaseload ?: return null
     overrideAgencyId ?: return null
     return when (this.status) {
-      ReportedAdjudicationStatus.REJECTED, ReportedAdjudicationStatus.ACCEPTED -> true
-      ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.RETURNED -> this.overrideAgencyId == activeCaseload
-      ReportedAdjudicationStatus.SCHEDULED -> this.getLatestHearing()?.agencyId != activeCaseload
-      else -> this.agencyId == activeCaseload
+      ReportedAdjudicationStatus.REJECTED, ReportedAdjudicationStatus.ACCEPTED -> false
+      ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.RETURNED -> this.agencyId == activeCaseload
+      ReportedAdjudicationStatus.SCHEDULED -> this.getLatestHearing()?.agencyId == activeCaseload
+      else -> this.overrideAgencyId == activeCaseload
     }
   }
 
