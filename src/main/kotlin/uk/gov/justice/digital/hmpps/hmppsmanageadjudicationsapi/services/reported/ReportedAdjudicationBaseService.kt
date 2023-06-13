@@ -282,7 +282,7 @@ open class ReportedDtoService(
 
   private fun ReportedAdjudication.isActionable(activeCaseload: String?): Boolean? {
     activeCaseload ?: return null
-    overrideAgencyId ?: return null
+    this.overrideAgencyId ?: return null
     return when (this.status) {
       ReportedAdjudicationStatus.REJECTED, ReportedAdjudicationStatus.ACCEPTED -> false
       ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.RETURNED -> this.agencyId == activeCaseload
