@@ -146,6 +146,7 @@ class ReportsControllerTest : TestControllerBase() {
         LocalDate.now().minusDays(3),
         LocalDate.now(),
         listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
+        false,
         pageRequest,
       )
     }

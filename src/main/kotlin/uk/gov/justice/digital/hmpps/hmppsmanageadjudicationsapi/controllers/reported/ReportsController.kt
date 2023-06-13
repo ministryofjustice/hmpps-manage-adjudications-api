@@ -91,11 +91,12 @@ class ReportsController(
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
   ): Page<ReportedAdjudicationDto> {
     return reportsService.getAllReportedAdjudications(
-      agencyId,
-      startDate ?: LocalDate.now().minusDays(3),
-      endDate ?: LocalDate.now(),
-      statuses,
-      pageable,
+      agencyId = agencyId,
+      startDate = startDate ?: LocalDate.now().minusDays(3),
+      endDate = endDate ?: LocalDate.now(),
+      statuses = statuses,
+      transfersOnly = transfersOnly,
+      pageable = pageable,
     )
   }
 
@@ -221,4 +222,10 @@ class ReportsController(
       ),
     )
   }
+
+  @Operation(summary = "Get report counts by agency")
+  @GetMapping("/agency/{agencyId}/report-counts")
+  fun getReportCounts(
+    @PathVariable(name = "agencyId") agencyId: String,
+  ): AgencyReportCountsDto = reportsService.getReportCounts(agencyId)
 }

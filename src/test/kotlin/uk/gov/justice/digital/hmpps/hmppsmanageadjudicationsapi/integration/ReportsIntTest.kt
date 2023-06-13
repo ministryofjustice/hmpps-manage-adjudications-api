@@ -249,7 +249,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get report count by agency `() {
-    initMyReportData()
+    initDataForHearings()
 
     webTestClient.get()
       .uri("/reported-adjudications/agency/MDI/report-counts")
@@ -257,7 +257,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.reviewTotal").isEqualTo(2)
+      .jsonPath("$.reviewTotal").isEqualTo(1)
       .jsonPath("$.transferReviewTotal").isEqualTo(0)
   }
 

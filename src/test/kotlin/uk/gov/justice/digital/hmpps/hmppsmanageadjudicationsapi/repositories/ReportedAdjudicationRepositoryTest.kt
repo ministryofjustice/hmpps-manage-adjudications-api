@@ -530,4 +530,17 @@ class ReportedAdjudicationRepositoryTest {
       reportedAdjudicationRepository.countByOverrideAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.UNSCHEDULED),
     ).isEqualTo(1)
   }
+
+  @Test
+  fun `find by override agency id `() {
+    val page = reportedAdjudicationRepository.findByOverrideAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+      "MDI",
+      LocalDateTime.now().minusYears(1),
+      LocalDateTime.now().plusYears(1),
+      ReportedAdjudicationStatus.values().toList(),
+      Pageable.ofSize(10),
+    )
+
+    assertThat(page.content.size).isEqualTo(1)
+  }
 }

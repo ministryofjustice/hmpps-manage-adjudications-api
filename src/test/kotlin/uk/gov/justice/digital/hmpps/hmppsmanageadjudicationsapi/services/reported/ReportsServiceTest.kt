@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
@@ -35,6 +36,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         entityBuilder.reportedAdjudication(reportNumber = 2L, dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
+
       whenever(
         reportedAdjudicationRepository.findAllReportsByAgency(
           any(),
@@ -59,6 +61,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           LocalDate.now(),
           LocalDate.now(),
           ReportedAdjudicationStatus.values().toList(),
+          false,
           Pageable.ofSize(20).withPage(0),
         ),
       ).isEmpty()
@@ -71,6 +74,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         LocalDate.now(),
         LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
+        false,
         Pageable.ofSize(20).withPage(0),
       )
 
@@ -90,6 +94,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         LocalDate.now(),
         LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
+        false,
         Pageable.ofSize(20).withPage(0),
       )
 
@@ -99,6 +104,34 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           Tuple.tuple(1L, "A12345", "A_SMITH", REPORTED_DATE_TIME),
           Tuple.tuple(2L, "A12345", "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
         )
+    }
+
+    @Test
+    fun `find all reports by override agency `() {
+      whenever(reportedAdjudicationRepository.findByOverrideAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(any(), any(), any(), any(), any()))
+        .thenReturn(
+          PageImpl(
+            listOf(
+              entityBuilder.reportedAdjudication().also {
+                it.createDateTime = LocalDateTime.now()
+                it.createdByUserId = ""
+              },
+            ),
+          ),
+        )
+
+      val myReportedAdjudications = reportsService.getAllReportedAdjudications(
+        "MDI",
+        LocalDate.now(),
+        LocalDate.now(),
+        ReportedAdjudicationStatus.values().toList(),
+        true,
+        Pageable.ofSize(20).withPage(0),
+      )
+
+      verify(reportedAdjudicationRepository, atLeastOnce()).findByOverrideAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(any(), any(), any(), any(), any())
+
+      assertThat(myReportedAdjudications.size).isEqualTo(1)
     }
   }
 
