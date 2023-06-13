@@ -62,7 +62,7 @@ class HearingService(
     reportedAdjudication.let {
       it.hearings.add(
         Hearing(
-          agencyId = reportedAdjudication.agencyId,
+          agencyId = authenticationFacade.activeCaseload!!,
           reportNumber = reportedAdjudication.reportNumber,
           locationId = locationId,
           dateTimeOfHearing = dateTimeOfHearing,
