@@ -78,6 +78,7 @@ class ReportsController(
   )
   @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
   @GetMapping("/agency/{agencyId}")
+  @Deprecated("to be removed - no longer require agency id")
   fun getReportedAdjudications(
     @PathVariable(name = "agencyId") agencyId: String,
     @RequestParam(name = "startDate")
@@ -92,6 +93,64 @@ class ReportsController(
   ): Page<ReportedAdjudicationDto> {
     return reportsService.getAllReportedAdjudications(
       agencyId = agencyId,
+      startDate = startDate ?: LocalDate.now().minusDays(3),
+      endDate = endDate ?: LocalDate.now(),
+      statuses = statuses,
+      transfersOnly = transfersOnly,
+      pageable = pageable,
+    )
+  }
+
+  @Operation(summary = "Get all reported adjudications for caseload")
+  @Parameters(
+    Parameter(
+      name = "page",
+      description = "Results page you want to retrieve (0..N). Default 0, e.g. the first page",
+    ),
+    Parameter(
+      name = "size",
+      description = "Number of records per page. Default 20",
+    ),
+    Parameter(
+      name = "sort",
+      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery DESC",
+    ),
+    Parameter(
+      name = "startDate",
+      required = false,
+      description = "optional inclusive start date for results, default is today - 3 days",
+    ),
+    Parameter(
+      name = "endDate",
+      required = false,
+      description = "optional inclusive end date for results, default is today",
+    ),
+    Parameter(
+      name = "status",
+      required = true,
+      description = "list of status filter for reports",
+    ),
+    Parameter(
+      name = "transfersOnly",
+      required = false,
+      description = "optional filter for transferred reports only",
+    ),
+  )
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
+  @GetMapping("/reports")
+  fun getReportedAdjudicationsV2(
+    @RequestParam(name = "startDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    startDate: LocalDate?,
+    @RequestParam(name = "endDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    endDate: LocalDate?,
+    @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
+    @RequestParam(name = "transfersOnly") transfersOnly: Boolean = false,
+    @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
+  ): Page<ReportedAdjudicationDto> {
+    return reportsService.getAllReportedAdjudications(
+      agencyId = null,
       startDate = startDate ?: LocalDate.now().minusDays(3),
       endDate = endDate ?: LocalDate.now(),
       statuses = statuses,
@@ -132,6 +191,7 @@ class ReportsController(
     ),
   )
   @GetMapping("/my/agency/{agencyId}")
+  @Deprecated("to be removed - no longer need agency id")
   fun getMyReportedAdjudications(
     @PathVariable(name = "agencyId") agencyId: String,
     @RequestParam(name = "startDate")
@@ -152,6 +212,57 @@ class ReportsController(
     )
   }
 
+  @Operation(summary = "Get my reported adjudications for caseload")
+  @Parameters(
+    Parameter(
+      name = "page",
+      description = "Results page you want to retrieve (0..N). Default 0, e.g. the first page",
+      example = "0",
+    ),
+    Parameter(
+      name = "size",
+      description = "Number of records per page. Default 20",
+    ),
+    Parameter(
+      name = "sort",
+      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery DESC",
+    ),
+    Parameter(
+      name = "startDate",
+      required = false,
+      description = "optional inclusive start date for results, default is today - 3 days",
+    ),
+    Parameter(
+      name = "endDate",
+      required = false,
+      description = "optional inclusive end date for results, default is today",
+    ),
+    Parameter(
+      name = "status",
+      required = true,
+      description = "list of status filter for reports",
+    ),
+  )
+  @GetMapping("/my-reports")
+  fun getMyReportedAdjudicationsV2(
+    @RequestParam(name = "startDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    startDate: LocalDate?,
+    @RequestParam(name = "endDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    endDate: LocalDate?,
+    @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
+    @PageableDefault(sort = ["dateTimeOfDiscovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
+  ): Page<ReportedAdjudicationDto> {
+    return reportsService.getMyReportedAdjudications(
+      agencyId = null,
+      startDate = startDate ?: LocalDate.now().minusDays(3),
+      endDate = endDate ?: LocalDate.now(),
+      statuses = statuses,
+      pageable = pageable,
+    )
+  }
+
   @Operation(summary = "Get all reported adjudications for issue")
   @Parameters(
     Parameter(
@@ -166,6 +277,7 @@ class ReportsController(
     ),
   )
   @GetMapping("/agency/{agencyId}/issue")
+  @Deprecated("to be removed - no longer require agency id")
   fun getReportedAdjudicationsForIssue(
     @PathVariable(name = "agencyId") agencyId: String,
     @RequestParam(name = "startDate")
@@ -178,6 +290,37 @@ class ReportsController(
     return IssuableAdjudicationsResponse(
       reportsService.getAdjudicationsForIssue(
         agencyId = agencyId,
+        startDate = startDate ?: LocalDate.now().minusDays(2),
+        endDate = endDate ?: LocalDate.now(),
+      ),
+    )
+  }
+
+  @Operation(summary = "Get all reported adjudications for issue")
+  @Parameters(
+    Parameter(
+      name = "startDate",
+      required = false,
+      description = "optional inclusive start date for results, default is today - 2 days",
+    ),
+    Parameter(
+      name = "endDate",
+      required = false,
+      description = "optional inclusive end date for results, default is today",
+    ),
+  )
+  @GetMapping("/for-issue")
+  fun getReportedAdjudicationsForIssueV2(
+    @RequestParam(name = "startDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    startDate: LocalDate?,
+    @RequestParam(name = "endDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    endDate: LocalDate?,
+  ): IssuableAdjudicationsResponse {
+    return IssuableAdjudicationsResponse(
+      reportsService.getAdjudicationsForIssue(
+        agencyId = null,
         startDate = startDate ?: LocalDate.now().minusDays(2),
         endDate = endDate ?: LocalDate.now(),
       ),
@@ -203,6 +346,7 @@ class ReportsController(
     ),
   )
   @GetMapping("/agency/{agencyId}/print")
+  @Deprecated("to be removed - no longer require agency id")
   fun getReportedAdjudicationsForPrint(
     @PathVariable(name = "agencyId") agencyId: String,
     @RequestParam(name = "startDate")
@@ -223,9 +367,45 @@ class ReportsController(
     )
   }
 
+  @Operation(summary = "Get all reported adjudications for print")
+  @Parameters(
+    Parameter(
+      name = "startDate",
+      required = false,
+      description = "optional inclusive hearing start date for results, default is today",
+    ),
+    Parameter(
+      name = "endDate",
+      required = false,
+      description = "optional inclusive hearing end date for results, default is today + 2",
+    ),
+    Parameter(
+      name = "issueStatus",
+      required = true,
+      description = "list of issue status, as comma separated String",
+    ),
+  )
+  @GetMapping("/for-print")
+  fun getReportedAdjudicationsForPrintV2(
+    @RequestParam(name = "startDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    startDate: LocalDate?,
+    @RequestParam(name = "endDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    endDate: LocalDate?,
+    @RequestParam(name = "issueStatus") issueStatuses: List<IssuedStatus>,
+  ): IssuableAdjudicationsResponse {
+    return IssuableAdjudicationsResponse(
+      reportsService.getAdjudicationsForPrint(
+        agencyId = null,
+        startDate = startDate ?: LocalDate.now(),
+        endDate = endDate ?: LocalDate.now().plusDays(2),
+        issueStatuses = issueStatuses,
+      ),
+    )
+  }
+
   @Operation(summary = "Get report counts by agency")
-  @GetMapping("/agency/{agencyId}/report-counts")
-  fun getReportCounts(
-    @PathVariable(name = "agencyId") agencyId: String,
-  ): AgencyReportCountsDto = reportsService.getReportCounts(agencyId)
+  @GetMapping("/report-counts")
+  fun getReportCounts(): AgencyReportCountsDto = reportsService.getReportCounts()
 }

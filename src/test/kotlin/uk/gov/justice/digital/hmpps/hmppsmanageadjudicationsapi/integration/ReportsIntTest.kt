@@ -29,7 +29,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     initMyReportData()
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/MDI?startDate=$startDate&endDate=$endDate&status=$reportedAdjudicationStatus&page=0&size=20")
+      .uri("/reported-adjudications/reports?startDate=$startDate&endDate=$endDate&status=$reportedAdjudicationStatus&page=0&size=20")
       .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -53,7 +53,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     initMyReportData()
 
     webTestClient.get()
-      .uri("/reported-adjudications/my/agency/MDI?startDate=$startDate&endDate=$endDate&status=$reportedAdjudicationStatus&page=0&size=20")
+      .uri("/reported-adjudications/my-reports?startDate=$startDate&endDate=$endDate&status=$reportedAdjudicationStatus&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -71,7 +71,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     val endDate = IntegrationTestData.ADJUDICATION_5.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
 
     webTestClient.get()
-      .uri("/reported-adjudications/my/agency/MDI?status=AWAITING_REVIEW&startDate=$startDate&endDate=$endDate&page=0&size=20")
+      .uri("/reported-adjudications/my-reports?status=AWAITING_REVIEW&startDate=$startDate&endDate=$endDate&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -132,7 +132,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     val endDate = IntegrationTestData.ADJUDICATION_3.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/MDI?status=AWAITING_REVIEW&startDate=$startDate&endDate=$endDate&page=0&size=20")
+      .uri("/reported-adjudications/reports?status=AWAITING_REVIEW&startDate=$startDate&endDate=$endDate&page=0&size=20")
       .headers(setHeaders(username = "NEW_USER", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -166,7 +166,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .issueReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/MDI/issue?startDate=2010-11-12&endDate=2020-12-16")
+      .uri("/reported-adjudications/for-issue?startDate=2010-11-12&endDate=2020-12-16")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk
@@ -202,7 +202,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .createHearing()
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/MDI/print?issueStatus=ISSUED&startDate=2010-11-12&endDate=2020-12-20")
+      .uri("/reported-adjudications/for-print?issueStatus=ISSUED&startDate=2010-11-12&endDate=2020-12-20")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk
@@ -237,7 +237,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .createHearing()
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/MDI/print?issueStatus=NOT_ISSUED&startDate=2010-11-12&endDate=2020-12-20")
+      .uri("/reported-adjudications/for-print?issueStatus=NOT_ISSUED&startDate=2010-11-12&endDate=2020-12-20")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk
@@ -252,7 +252,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     initDataForAccept()
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/MDI/report-counts")
+      .uri("/reported-adjudications/report-counts")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk

@@ -508,7 +508,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class InProgressDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(any(), any(), any(), any())).thenReturn(
+      whenever(draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(anyOrNull(), any(), any(), any())).thenReturn(
         PageImpl(
           listOf(
             DraftAdjudicationDto(
@@ -557,7 +557,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(status().isOk)
 
       verify(draftAdjudicationService).getCurrentUsersInProgressDraftAdjudications(
-        "MDI",
+        null,
         LocalDate.now().minusWeeks(1),
         LocalDate.now(),
         PageRequest.of(0, 20, Sort.by("IncidentDetailsDateTimeOfDiscovery").descending()),
@@ -566,7 +566,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     private fun getInProgressDraftAdjudications(): ResultActions = mockMvc
       .perform(
-        get("/draft-adjudications/my/agency/MDI?")
+        get("/draft-adjudications/my-reports?")
           .header("Content-Type", "application/json"),
       )
   }

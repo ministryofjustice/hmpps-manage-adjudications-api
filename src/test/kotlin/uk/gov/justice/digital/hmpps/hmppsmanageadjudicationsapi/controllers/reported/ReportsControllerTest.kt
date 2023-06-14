@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -46,7 +47,7 @@ class ReportsControllerTest : TestControllerBase() {
 
     whenever(
       reportsService.getMyReportedAdjudications(
-        any(),
+        anyOrNull(),
         any(),
         any(),
         any(),
@@ -74,7 +75,7 @@ class ReportsControllerTest : TestControllerBase() {
     fun `makes a call to return my reported adjudications`() {
       getMyAdjudications().andExpect(MockMvcResultMatchers.status().isOk)
       verify(reportsService).getMyReportedAdjudications(
-        "MDI",
+        null,
         LocalDate.now().minusDays(3),
         LocalDate.now(),
         listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
@@ -104,7 +105,7 @@ class ReportsControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].adjudicationNumber").value(1))
 
       verify(reportsService).getMyReportedAdjudications(
-        "MDI",
+        null,
         LocalDate.now().plusDays(5),
         LocalDate.now().plusDays(5),
         listOf(ReportedAdjudicationStatus.AWAITING_REVIEW),
@@ -120,7 +121,7 @@ class ReportsControllerTest : TestControllerBase() {
     private fun getMyAdjudications(): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/my/agency/MDI?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=date_time_of_discovery,DESC")
+          MockMvcRequestBuilders.get("/reported-adjudications/my-reports?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=date_time_of_discovery,DESC")
             .header("Content-Type", "application/json"),
         )
     }
@@ -128,7 +129,7 @@ class ReportsControllerTest : TestControllerBase() {
     private fun getMyAdjudicationsWithFilter(date: LocalDate): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/my/agency/MDI?status=AWAITING_REVIEW&startDate=$date&endDate=$date&page=0&size=20&sort=date_time_of_discovery,DESC")
+          MockMvcRequestBuilders.get("/reported-adjudications/my-reports?status=AWAITING_REVIEW&startDate=$date&endDate=$date&page=0&size=20&sort=date_time_of_discovery,DESC")
             .header("Content-Type", "application/json"),
         )
     }
@@ -142,7 +143,7 @@ class ReportsControllerTest : TestControllerBase() {
     fun `makes a call to return all reported adjudications`() {
       getAllAdjudications().andExpect(MockMvcResultMatchers.status().isOk)
       verify(reportsService).getAllReportedAdjudications(
-        "MDI",
+        null,
         LocalDate.now().minusDays(3),
         LocalDate.now(),
         listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
@@ -165,7 +166,7 @@ class ReportsControllerTest : TestControllerBase() {
     private fun getAllAdjudications(): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=date_time_of_discovery,DESC")
+          MockMvcRequestBuilders.get("/reported-adjudications/reports?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=date_time_of_discovery,DESC")
             .header("Content-Type", "application/json"),
         )
     }
@@ -181,17 +182,17 @@ class ReportsControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER")
     fun `get adjudications for issue with defaulted dates`() {
-      whenever(reportsService.getAdjudicationsForIssue("MDI", LocalDate.now().minusDays(2), LocalDate.now()))
+      whenever(reportsService.getAdjudicationsForIssue(null, LocalDate.now().minusDays(2), LocalDate.now()))
         .thenReturn(emptyList())
 
       getAdjudicationsForIssue().andExpect(MockMvcResultMatchers.status().isOk)
-      verify(reportsService).getAdjudicationsForIssue("MDI", LocalDate.now().minusDays(2), LocalDate.now())
+      verify(reportsService).getAdjudicationsForIssue(null, LocalDate.now().minusDays(2), LocalDate.now())
     }
 
     private fun getAdjudicationsForIssue(): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI/issue")
+          MockMvcRequestBuilders.get("/reported-adjudications/for-issue")
             .header("Content-Type", "application/json"),
         )
     }
@@ -207,17 +208,17 @@ class ReportsControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER")
     fun `get adjudications for print with defaulted dates`() {
-      whenever(reportsService.getAdjudicationsForPrint("MDI", LocalDate.now(), LocalDate.now().plusDays(2), IssuedStatus.values().toList()))
+      whenever(reportsService.getAdjudicationsForPrint(null, LocalDate.now(), LocalDate.now().plusDays(2), IssuedStatus.values().toList()))
         .thenReturn(emptyList())
 
       getAdjudicationsForPrint().andExpect(MockMvcResultMatchers.status().isOk)
-      verify(reportsService).getAdjudicationsForPrint("MDI", LocalDate.now(), LocalDate.now().plusDays(2), IssuedStatus.values().toList())
+      verify(reportsService).getAdjudicationsForPrint(null, LocalDate.now(), LocalDate.now().plusDays(2), IssuedStatus.values().toList())
     }
 
     private fun getAdjudicationsForPrint(): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI/print?issueStatus=ISSUED,NOT_ISSUED")
+          MockMvcRequestBuilders.get("/reported-adjudications/for-print?issueStatus=ISSUED,NOT_ISSUED")
             .header("Content-Type", "application/json"),
         )
     }
@@ -228,7 +229,7 @@ class ReportsControllerTest : TestControllerBase() {
 
     @BeforeEach
     fun `init`() {
-      whenever(reportsService.getReportCounts(any())).thenReturn(
+      whenever(reportsService.getReportCounts()).thenReturn(
         AgencyReportCountsDto(
           reviewTotal = 1,
           transferReviewTotal = 1,
@@ -246,13 +247,13 @@ class ReportsControllerTest : TestControllerBase() {
     fun `responds with report counts `() {
       getCounters().andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(reportsService, atLeastOnce()).getReportCounts(any())
+      verify(reportsService, atLeastOnce()).getReportCounts()
     }
 
     private fun getCounters(): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/agency/MDI/report-counts")
+          MockMvcRequestBuilders.get("/reported-adjudications/report-counts")
             .header("Content-Type", "application/json"),
         )
     }

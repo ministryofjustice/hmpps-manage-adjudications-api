@@ -345,7 +345,7 @@ class HearingsIntTest : SqsIntegrationTestBase() {
     initDataForHearings().createHearing()
 
     webTestClient.get()
-      .uri("/reported-adjudications/hearings/agency/${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}?hearingDate=${IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.toLocalDate()}")
+      .uri("/reported-adjudications/hearings?hearingDate=${IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.toLocalDate()}")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
