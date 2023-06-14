@@ -338,7 +338,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.offenceDetails!!.isEmpty()).isEqualTo(deleteOffences)
+      assertThat(argumentCaptor.value.offenceDetails.isEmpty()).isEqualTo(deleteOffences)
       assertThat(argumentCaptor.value.incidentRole!!.roleCode).isEqualTo(null)
       assertThat(argumentCaptor.value.incidentRole!!.associatedPrisonersNumber).isEqualTo(null)
 
@@ -794,7 +794,6 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
 
       draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(
-        "MDI",
         LocalDate.now().minusWeeks(1),
         LocalDate.now(),
         pageable,
@@ -813,7 +812,6 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     fun `given no user return an empty set`() {
       whenever(authenticationFacade.currentUsername).thenReturn(null)
       val draftAdjudications = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(
-        "MDI",
         LocalDate.now(),
         LocalDate.now(),
         pageable,

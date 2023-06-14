@@ -568,10 +568,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get all hearings `() {
-      val response = hearingService.getAllHearingsByAgencyIdAndDate(
-        "MDI",
-        LocalDate.now(),
-      )
+      val response = hearingService.getAllHearingsByAgencyIdAndDate(LocalDate.now())
 
       assertThat(response).isNotNull
       assertThat(response.size).isEqualTo(3)
@@ -590,16 +587,13 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     fun `empty response test `() {
       whenever(
         hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
-          "LEI",
+          "MDI",
           now.atStartOfDay(),
           now.plusDays(1).atStartOfDay(),
         ),
       ).thenReturn(emptyList())
 
-      val response = hearingService.getAllHearingsByAgencyIdAndDate(
-        "LEI",
-        now,
-      )
+      val response = hearingService.getAllHearingsByAgencyIdAndDate(now)
 
       assertThat(response).isNotNull
       assertThat(response.isEmpty()).isTrue

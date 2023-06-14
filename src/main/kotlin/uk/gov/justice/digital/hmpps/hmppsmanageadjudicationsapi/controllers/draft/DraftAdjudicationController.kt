@@ -142,54 +142,9 @@ class DraftAdjudicationController(
       description = "optional inclusive end date for results, default is today",
     ),
   )
-  @GetMapping("/my/agency/{agencyId}")
-  @Operation(summary = "Returns all the in progress draft adjudications created by the current user")
-  @Deprecated("to remove - do not require agency id")
-  fun getCurrentUsersInProgressDraftAdjudications(
-    @PathVariable(name = "agencyId") agencyId: String,
-    @RequestParam(name = "startDate")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    startDate: LocalDate?,
-    @RequestParam(name = "endDate")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    endDate: LocalDate?,
-    @PageableDefault(sort = ["IncidentDetailsDateTimeOfDiscovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
-  ): Page<DraftAdjudicationDto> =
-    draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(
-      agencyId = agencyId,
-      startDate = startDate ?: LocalDate.now().minusWeeks(1),
-      endDate = endDate ?: LocalDate.now(),
-      pageable = pageable,
-    )
-
-  @Parameters(
-    Parameter(
-      name = "page",
-      description = "Results page you want to retrieve (0..N). Default 0, e.g. the first page",
-      example = "0",
-    ),
-    Parameter(
-      name = "size",
-      description = "Number of records per page. Default 20",
-    ),
-    Parameter(
-      name = "sort",
-      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery,DESC",
-    ),
-    Parameter(
-      name = "startDate",
-      required = false,
-      description = "optional inclusive start date for results, default is today - 3 days",
-    ),
-    Parameter(
-      name = "endDate",
-      required = false,
-      description = "optional inclusive end date for results, default is today",
-    ),
-  )
   @GetMapping("/my-reports")
   @Operation(summary = "Returns all the in progress draft adjudications created by the current user")
-  fun getCurrentUsersInProgressDraftAdjudicationsV2(
+  fun getCurrentUsersInProgressDraftAdjudications(
     @RequestParam(name = "startDate")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     startDate: LocalDate?,
@@ -199,7 +154,6 @@ class DraftAdjudicationController(
     @PageableDefault(sort = ["IncidentDetailsDateTimeOfDiscovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
   ): Page<DraftAdjudicationDto> =
     draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(
-      agencyId = null,
       startDate = startDate ?: LocalDate.now().minusWeeks(1),
       endDate = endDate ?: LocalDate.now(),
       pageable = pageable,

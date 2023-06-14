@@ -54,24 +54,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `returns empty list if active case load is not equal to agency filter `() {
-      whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
-      assertThat(
-        reportsService.getAllReportedAdjudications(
-          "MDI",
-          LocalDate.now(),
-          LocalDate.now(),
-          ReportedAdjudicationStatus.values().toList(),
-          false,
-          Pageable.ofSize(20).withPage(0),
-        ),
-      ).isEmpty()
-    }
-
-    @Test
     fun `makes a call to the reported adjudication repository to get the page of adjudications`() {
       reportsService.getAllReportedAdjudications(
-        "MDI",
         LocalDate.now(),
         LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
@@ -91,7 +75,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `returns all reported adjudications`() {
       val myReportedAdjudications = reportsService.getAllReportedAdjudications(
-        "MDI",
         LocalDate.now(),
         LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
@@ -122,7 +105,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         )
 
       val myReportedAdjudications = reportsService.getAllReportedAdjudications(
-        "MDI",
         LocalDate.now(),
         LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
@@ -167,7 +149,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `returns my reported adjudications`() {
       val myReportedAdjudications = reportsService.getMyReportedAdjudications(
-        "MDI",
         LocalDate.now(),
         LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
@@ -200,21 +181,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `returns empty list if active case load is not equal to agency filter `() {
-      whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
-      assertThat(
-        reportsService.getAdjudicationsForIssue(
-          agencyId = "MDI",
-          startDate = LocalDate.now().minusDays(2),
-          endDate = LocalDate.now(),
-        ),
-      ).isEmpty()
-    }
-
-    @Test
     fun `returns adjudications for issue (All locations) with correct issue details and order for status SCHEDULED and UNSCHEDULED only `() {
       val response = reportsService.getAdjudicationsForIssue(
-        agencyId = "MDI",
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
       )
@@ -250,23 +218,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `returns empty list if active case load is not equal to agency filter `() {
-      whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
-
-      assertThat(
-        reportsService.getAdjudicationsForPrint(
-          agencyId = "MDI",
-          startDate = LocalDate.now().minusDays(2),
-          endDate = LocalDate.now(),
-          issueStatuses = IssuedStatus.values().toList(),
-        ),
-      ).isEmpty()
-    }
-
-    @Test
     fun `returns adjudications for issue (All locations) with correct issue details and order for status SCHEDULED only for all issue statuses `() {
       val response = reportsService.getAdjudicationsForPrint(
-        agencyId = "MDI",
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
         issueStatuses = IssuedStatus.values().toList(),
@@ -290,7 +243,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `returns issued adjudications for all locations `() {
       val response = reportsService.getAdjudicationsForPrint(
-        agencyId = "MDI",
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
         issueStatuses = listOf(IssuedStatus.ISSUED),
@@ -312,7 +264,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `returns not issued adjudications for all locations `() {
       val response = reportsService.getAdjudicationsForPrint(
-        agencyId = "MDI",
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
         issueStatuses = listOf(IssuedStatus.NOT_ISSUED),
