@@ -106,7 +106,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
   @Test
   fun `get 403 without the relevant role when attempting to return reported adjudications for a caseload`() {
     webTestClient.get()
-      .uri("/reported-adjudications/agency/MDI?status=SCHEDULED&page=0&size=20")
+      .uri("/reported-adjudications/reports?status=SCHEDULED&page=0&size=20")
       .headers(setHeaders(username = "NEW_USER"))
       .exchange()
       .expectStatus().isForbidden

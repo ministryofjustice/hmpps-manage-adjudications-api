@@ -230,7 +230,6 @@ class HearingControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         hearingService.getAllHearingsByAgencyIdAndDate(
-          anyOrNull(),
           any(),
         ),
       ).thenReturn(ALL_HEARINGS_DTO)
@@ -253,7 +252,7 @@ class HearingControllerTest : TestControllerBase() {
       val now = LocalDate.now()
       allHearingsRequest(now)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingService).getAllHearingsByAgencyIdAndDate(null, now)
+      verify(hearingService).getAllHearingsByAgencyIdAndDate(now)
     }
 
     private fun allHearingsRequest(

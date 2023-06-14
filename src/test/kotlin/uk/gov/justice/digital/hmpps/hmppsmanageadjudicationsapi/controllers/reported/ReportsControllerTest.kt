@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -47,7 +46,6 @@ class ReportsControllerTest : TestControllerBase() {
 
     whenever(
       reportsService.getMyReportedAdjudications(
-        anyOrNull(),
         any(),
         any(),
         any(),
@@ -75,7 +73,6 @@ class ReportsControllerTest : TestControllerBase() {
     fun `makes a call to return my reported adjudications`() {
       getMyAdjudications().andExpect(MockMvcResultMatchers.status().isOk)
       verify(reportsService).getMyReportedAdjudications(
-        null,
         LocalDate.now().minusDays(3),
         LocalDate.now(),
         listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
@@ -105,7 +102,6 @@ class ReportsControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].adjudicationNumber").value(1))
 
       verify(reportsService).getMyReportedAdjudications(
-        null,
         LocalDate.now().plusDays(5),
         LocalDate.now().plusDays(5),
         listOf(ReportedAdjudicationStatus.AWAITING_REVIEW),
@@ -143,7 +139,6 @@ class ReportsControllerTest : TestControllerBase() {
     fun `makes a call to return all reported adjudications`() {
       getAllAdjudications().andExpect(MockMvcResultMatchers.status().isOk)
       verify(reportsService).getAllReportedAdjudications(
-        null,
         LocalDate.now().minusDays(3),
         LocalDate.now(),
         listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
@@ -182,11 +177,11 @@ class ReportsControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER")
     fun `get adjudications for issue with defaulted dates`() {
-      whenever(reportsService.getAdjudicationsForIssue(null, LocalDate.now().minusDays(2), LocalDate.now()))
+      whenever(reportsService.getAdjudicationsForIssue(LocalDate.now().minusDays(2), LocalDate.now()))
         .thenReturn(emptyList())
 
       getAdjudicationsForIssue().andExpect(MockMvcResultMatchers.status().isOk)
-      verify(reportsService).getAdjudicationsForIssue(null, LocalDate.now().minusDays(2), LocalDate.now())
+      verify(reportsService).getAdjudicationsForIssue(LocalDate.now().minusDays(2), LocalDate.now())
     }
 
     private fun getAdjudicationsForIssue(): ResultActions {
@@ -208,11 +203,11 @@ class ReportsControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER")
     fun `get adjudications for print with defaulted dates`() {
-      whenever(reportsService.getAdjudicationsForPrint(null, LocalDate.now(), LocalDate.now().plusDays(2), IssuedStatus.values().toList()))
+      whenever(reportsService.getAdjudicationsForPrint(LocalDate.now(), LocalDate.now().plusDays(2), IssuedStatus.values().toList()))
         .thenReturn(emptyList())
 
       getAdjudicationsForPrint().andExpect(MockMvcResultMatchers.status().isOk)
-      verify(reportsService).getAdjudicationsForPrint(null, LocalDate.now(), LocalDate.now().plusDays(2), IssuedStatus.values().toList())
+      verify(reportsService).getAdjudicationsForPrint(LocalDate.now(), LocalDate.now().plusDays(2), IssuedStatus.values().toList())
     }
 
     private fun getAdjudicationsForPrint(): ResultActions {

@@ -129,11 +129,11 @@ class HearingService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun getAllHearingsByAgencyIdAndDate(agencyId: String?, dateOfHearing: LocalDate): List<HearingSummaryDto> {
+  fun getAllHearingsByAgencyIdAndDate(dateOfHearing: LocalDate): List<HearingSummaryDto> {
     val hearings = hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
-      agencyId ?: authenticationFacade.activeCaseload!!,
-      dateOfHearing.atStartOfDay(),
-      dateOfHearing.plusDays(1).atStartOfDay(),
+      agencyId = authenticationFacade.activeCaseload!!,
+      start = dateOfHearing.atStartOfDay(),
+      end = dateOfHearing.plusDays(1).atStartOfDay(),
     )
 
     val adjudicationsMap = findByReportNumberIn(

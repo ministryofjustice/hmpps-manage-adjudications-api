@@ -28,20 +28,17 @@ class ReportsService(
   offenceCodeLookupService: OffenceCodeLookupService,
 ) : ReportedDtoService(offenceCodeLookupService) {
   fun getAllReportedAdjudications(
-    agencyId: String?,
     startDate: LocalDate,
     endDate: LocalDate,
     statuses: List<ReportedAdjudicationStatus>,
     transfersOnly: Boolean,
     pageable: Pageable,
   ): Page<ReportedAdjudicationDto> {
-    if (agencyId != null && authenticationFacade.activeCaseload != agencyId) return Page.empty()
-
     val reportedAdjudicationsPage = if (transfersOnly) {
       val pageableOverride = PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.by("dateTimeOfDiscovery").descending())
 
       reportedAdjudicationRepository.findByOverrideAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
-        overrideAgencyId = agencyId ?: authenticationFacade.activeCaseload!!,
+        overrideAgencyId = authenticationFacade.activeCaseload!!,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
         statuses = statuses,
@@ -49,7 +46,7 @@ class ReportsService(
       )
     } else {
       reportedAdjudicationRepository.findAllReportsByAgency(
-        agencyId = agencyId ?: authenticationFacade.activeCaseload!!,
+        agencyId = authenticationFacade.activeCaseload!!,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
         statuses = statuses.map { it.name },
@@ -59,13 +56,13 @@ class ReportsService(
     return reportedAdjudicationsPage.map { it.toDto() }
   }
 
-  fun getMyReportedAdjudications(agencyId: String?, startDate: LocalDate, endDate: LocalDate, statuses: List<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
+  fun getMyReportedAdjudications(startDate: LocalDate, endDate: LocalDate, statuses: List<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val username = authenticationFacade.currentUsername
 
     val reportedAdjudicationsPage =
       reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
         userId = username!!,
-        agencyId = agencyId ?: authenticationFacade.activeCaseload!!,
+        agencyId = authenticationFacade.activeCaseload!!,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
         statuses = statuses,
@@ -74,11 +71,9 @@ class ReportsService(
     return reportedAdjudicationsPage.map { it.toDto() }
   }
 
-  fun getAdjudicationsForIssue(agencyId: String?, startDate: LocalDate, endDate: LocalDate): List<ReportedAdjudicationDto> {
-    if (agencyId != null && authenticationFacade.activeCaseload != agencyId) return emptyList()
-
+  fun getAdjudicationsForIssue(startDate: LocalDate, endDate: LocalDate): List<ReportedAdjudicationDto> {
     return reportedAdjudicationRepository.findReportsForIssue(
-      agencyId = agencyId ?: authenticationFacade.activeCaseload!!,
+      agencyId = authenticationFacade.activeCaseload!!,
       startDate = reportsFrom(startDate),
       endDate = reportsTo(endDate),
     ).filter { ReportedAdjudicationStatus.issuableStatuses().contains(it.status) }
@@ -86,11 +81,9 @@ class ReportsService(
       .map { it.toDto() }
   }
 
-  fun getAdjudicationsForPrint(agencyId: String?, startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>): List<ReportedAdjudicationDto> {
-    if (agencyId != null && authenticationFacade.activeCaseload != agencyId) return emptyList()
-
+  fun getAdjudicationsForPrint(startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>): List<ReportedAdjudicationDto> {
     val reportsForPrint = reportedAdjudicationRepository.findReportsForPrint(
-      agencyId = agencyId ?: authenticationFacade.activeCaseload!!,
+      agencyId = authenticationFacade.activeCaseload!!,
       startDate = reportsFrom(startDate),
       endDate = reportsTo(endDate),
       statuses = ReportedAdjudicationStatus.issuableStatusesForPrint().map { it.name },

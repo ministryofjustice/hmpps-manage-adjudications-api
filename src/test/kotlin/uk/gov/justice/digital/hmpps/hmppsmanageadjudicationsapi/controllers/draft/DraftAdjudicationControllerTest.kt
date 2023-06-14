@@ -508,7 +508,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class InProgressDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(anyOrNull(), any(), any(), any())).thenReturn(
+      whenever(draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(any(), any(), any())).thenReturn(
         PageImpl(
           listOf(
             DraftAdjudicationDto(
@@ -557,7 +557,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(status().isOk)
 
       verify(draftAdjudicationService).getCurrentUsersInProgressDraftAdjudications(
-        null,
         LocalDate.now().minusWeeks(1),
         LocalDate.now(),
         PageRequest.of(0, 20, Sort.by("IncidentDetailsDateTimeOfDiscovery").descending()),
