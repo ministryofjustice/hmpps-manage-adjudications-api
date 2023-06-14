@@ -247,6 +247,20 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudications[0].issuingOfficer").doesNotExist()
   }
 
+  @Test
+  fun `get report count by agency `() {
+    initDataForAccept()
+
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/MDI/report-counts")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reviewTotal").isEqualTo(1)
+      .jsonPath("$.transferReviewTotal").isEqualTo(0)
+  }
+
   private fun initMyReportData() {
     val intTestData = integrationTestData()
 

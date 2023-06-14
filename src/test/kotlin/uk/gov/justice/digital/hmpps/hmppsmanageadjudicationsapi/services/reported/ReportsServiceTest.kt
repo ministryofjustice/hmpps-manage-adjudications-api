@@ -6,11 +6,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferReviewStatuses
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -35,6 +37,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         entityBuilder.reportedAdjudication(reportNumber = 2L, dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
+
       whenever(
         reportedAdjudicationRepository.findAllReportsByAgency(
           any(),
@@ -59,6 +62,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           LocalDate.now(),
           LocalDate.now(),
           ReportedAdjudicationStatus.values().toList(),
+          false,
           Pageable.ofSize(20).withPage(0),
         ),
       ).isEmpty()
@@ -71,6 +75,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         LocalDate.now(),
         LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
+        false,
         Pageable.ofSize(20).withPage(0),
       )
 
@@ -90,6 +95,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         LocalDate.now(),
         LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
+        false,
         Pageable.ofSize(20).withPage(0),
       )
 
@@ -99,6 +105,34 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           Tuple.tuple(1L, "A12345", "A_SMITH", REPORTED_DATE_TIME),
           Tuple.tuple(2L, "A12345", "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
         )
+    }
+
+    @Test
+    fun `find all reports by override agency `() {
+      whenever(reportedAdjudicationRepository.findByOverrideAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(any(), any(), any(), any(), any()))
+        .thenReturn(
+          PageImpl(
+            listOf(
+              entityBuilder.reportedAdjudication().also {
+                it.createDateTime = LocalDateTime.now()
+                it.createdByUserId = ""
+              },
+            ),
+          ),
+        )
+
+      val myReportedAdjudications = reportsService.getAllReportedAdjudications(
+        "MDI",
+        LocalDate.now(),
+        LocalDate.now(),
+        ReportedAdjudicationStatus.values().toList(),
+        true,
+        Pageable.ofSize(20).withPage(0),
+      )
+
+      verify(reportedAdjudicationRepository, atLeastOnce()).findByOverrideAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(any(), any(), any(), any(), any())
+
+      assertThat(myReportedAdjudications.size).isEqualTo(1)
     }
   }
 
@@ -295,6 +329,21 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.first().incidentDetails)
         .extracting("dateTimeOfDiscovery", "locationId")
         .contains(second.dateTimeOfDiscovery, 3L)
+    }
+  }
+
+  @Nested
+  inner class ReportCounts {
+
+    @Test
+    fun `get reports count for agency`() {
+      whenever(reportedAdjudicationRepository.countByAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.AWAITING_REVIEW)).thenReturn(2)
+      whenever(reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn("MDI", transferReviewStatuses)).thenReturn(1)
+
+      val result = reportsService.getReportCounts("MDI")
+
+      assertThat(result.reviewTotal).isEqualTo(2)
+      assertThat(result.transferReviewTotal).isEqualTo(1)
     }
   }
 

@@ -27,6 +27,14 @@ data class IssuableAdjudicationsResponse(
   val reportedAdjudications: List<ReportedAdjudicationDto>,
 )
 
+@Schema(description = "Agency Report counts DTO")
+data class AgencyReportCountsDto(
+  @Schema(description = "total reports to review for agency")
+  val reviewTotal: Long,
+  @Schema(description = "total transferable reports to review for agency")
+  val transferReviewTotal: Long,
+)
+
 @RestController
 @Tag(name = "40. Reports")
 class ReportsController(
@@ -62,6 +70,11 @@ class ReportsController(
       required = true,
       description = "list of status filter for reports",
     ),
+    Parameter(
+      name = "transfersOnly",
+      required = false,
+      description = "optional filter for transferred reports only",
+    ),
   )
   @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
   @GetMapping("/agency/{agencyId}")
@@ -74,14 +87,16 @@ class ReportsController(
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     endDate: LocalDate?,
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
+    @RequestParam(name = "transfersOnly") transfersOnly: Boolean = false,
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
   ): Page<ReportedAdjudicationDto> {
     return reportsService.getAllReportedAdjudications(
-      agencyId,
-      startDate ?: LocalDate.now().minusDays(3),
-      endDate ?: LocalDate.now(),
-      statuses,
-      pageable,
+      agencyId = agencyId,
+      startDate = startDate ?: LocalDate.now().minusDays(3),
+      endDate = endDate ?: LocalDate.now(),
+      statuses = statuses,
+      transfersOnly = transfersOnly,
+      pageable = pageable,
     )
   }
 
@@ -207,4 +222,10 @@ class ReportsController(
       ),
     )
   }
+
+  @Operation(summary = "Get report counts by agency")
+  @GetMapping("/agency/{agencyId}/report-counts")
+  fun getReportCounts(
+    @PathVariable(name = "agencyId") agencyId: String,
+  ): AgencyReportCountsDto = reportsService.getReportCounts(agencyId)
 }

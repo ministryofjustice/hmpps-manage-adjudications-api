@@ -164,4 +164,40 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].agencyId").isEqualTo("MDI")
       .jsonPath("$.reportedAdjudication.hearings[1].agencyId").isEqualTo("TJW")
   }
+
+  @Test
+  fun `get report count by agency `() {
+    Thread.sleep(1000)
+
+    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    webTestClient.delete()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+
+    initDataForAccept(overrideAgencyId = "TJW", testData = IntegrationTestData.DEFAULT_TRANSFER_ADJUDICATION)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/TJW/report-counts")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reviewTotal").isEqualTo(1)
+      .jsonPath("$.transferReviewTotal").isEqualTo(1)
+  }
+
+  @Test
+  fun `get all reports for transfers only `() {
+    Thread.sleep(1000)
+
+    initDataForHearings()
+
+    webTestClient.get()
+      .uri("/reported-adjudications/agency/TJW?startDate=2010-11-10&endDate=2010-11-13&status=SCHEDULED,UNSCHEDULED&transfersOnly=true&page=0&size=20")
+      .headers(setHeaders(activeCaseload = "TJW", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk.expectBody().jsonPath("$.content.size()").isEqualTo(1)
+  }
 }

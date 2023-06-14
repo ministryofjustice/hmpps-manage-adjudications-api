@@ -22,27 +22,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reported adjudication details`() {
-    oAuthMockServer.stubGrantToken()
-
-    val intTestData = integrationTestData()
-
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
-      intTestData = intTestData,
-      intTestBase = this,
-      headers = draftUserHeaders,
-    )
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "TJW" })
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
+    initDataForAccept(testData = IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "TJW" })
 
     webTestClient.get()
       .uri("/reported-adjudications/1524242")
@@ -138,25 +118,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
   fun `create draft from reported adjudication returns expected result`() {
     oAuthMockServer.stubGrantToken()
 
-    val intTestData = integrationTestData()
-
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
-      intTestData = intTestData,
-      intTestBase = this,
-      headers = draftUserHeaders,
-    )
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "TJW" })
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
+    initDataForAccept(testData = IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "TJW" })
 
     webTestClient.post()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/create-draft-adjudication")
@@ -189,24 +151,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create draft from reported adjudication adds draft`() {
-    oAuthMockServer.stubGrantToken()
-
-    val intTestData = integrationTestData()
-
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
-      intTestData = intTestData,
-      intTestBase = this,
-      headers = draftUserHeaders,
-    )
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .completeDraft()
+    val intTestData = initDataForAccept()
 
     val createdDraftDetails = intTestData.recallCompletedDraftAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
 
@@ -234,24 +179,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `transition from one state to another`() {
-    oAuthMockServer.stubGrantToken()
-
-    val intTestData = integrationTestData()
-
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
-      intTestData = intTestData,
-      intTestBase = this,
-      headers = draftUserHeaders,
-    )
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .completeDraft()
+    initDataForAccept()
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
@@ -274,26 +202,9 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `accepted reports submit to Prison API`() {
-    oAuthMockServer.stubGrantToken()
     prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
 
-    val intTestData = integrationTestData()
-
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
-      intTestData = intTestData,
-      intTestBase = this,
-      headers = draftUserHeaders,
-    )
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setAssociatedPrisoner()
-      .setOffenceData()
-      .addIncidentStatement()
-      .completeDraft()
+    initDataForAccept()
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
@@ -328,25 +239,9 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `accepted reports request fails if Prison API call fails`() {
-    oAuthMockServer.stubGrantToken()
+    initDataForAccept()
+
     prisonApiMockServer.stubPostAdjudicationFailure()
-
-    val intTestData = integrationTestData()
-
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
-      intTestData = intTestData,
-      intTestBase = this,
-      headers = draftUserHeaders,
-    )
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .completeDraft()
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
@@ -398,25 +293,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `update damages to the reported adjudication`() {
-    val intTestData = integrationTestData()
-
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
-      intTestData = intTestData,
-      intTestBase = this,
-      headers = draftUserHeaders,
-    )
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
+    initDataForAccept()
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/damages/edit")
@@ -456,25 +333,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `update evidence to the reported adjudication`() {
-    val intTestData = integrationTestData()
-
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
-      intTestData = intTestData,
-      intTestBase = this,
-      headers = draftUserHeaders,
-    )
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
+    initDataForAccept()
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/evidence/edit")
@@ -514,25 +373,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `update witnesses to the reported adjudication`() {
-    val intTestData = integrationTestData()
-
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
-      intTestData = intTestData,
-      intTestBase = this,
-      headers = draftUserHeaders,
-    )
-
-    draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
+    initDataForAccept()
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/witnesses/edit")

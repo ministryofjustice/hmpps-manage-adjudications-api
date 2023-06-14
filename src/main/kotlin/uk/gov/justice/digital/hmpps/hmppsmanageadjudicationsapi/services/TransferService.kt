@@ -18,19 +18,21 @@ class TransferService(
       log.info("transfer event for $prisonerNumber to $agencyId")
       reportedAdjudicationRepository.findByPrisonerNumberAndStatusIn(
         prisonerNumber = prisonerNumber,
-        statuses = TRANSFERABLE_STATUSES,
+        statuses = transferableStatuses,
       ).filter { it.agencyId != agencyId }.forEach {
+        log.info("transferring report ${it.reportNumber} from ${it.agencyId} to $agencyId")
         it.overrideAgencyId = agencyId
       }
     }
   }
 
   companion object {
-    val TRANSFERABLE_STATUSES = listOf(
+    val transferableStatuses = listOf(
       ReportedAdjudicationStatus.UNSCHEDULED,
       ReportedAdjudicationStatus.SCHEDULED,
       ReportedAdjudicationStatus.ADJOURNED,
       ReportedAdjudicationStatus.REFER_POLICE,
+      ReportedAdjudicationStatus.REFER_INAD,
     )
 
     val log: Logger = LoggerFactory.getLogger(this::class.java)

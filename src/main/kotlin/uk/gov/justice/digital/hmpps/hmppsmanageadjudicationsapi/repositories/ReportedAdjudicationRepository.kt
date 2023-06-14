@@ -21,6 +21,14 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     pageable: Pageable,
   ): Page<ReportedAdjudication>
 
+  fun findByOverrideAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+    overrideAgencyId: String,
+    startDate: LocalDateTime,
+    endDate: LocalDateTime,
+    statuses: List<ReportedAdjudicationStatus>,
+    pageable: Pageable,
+  ): Page<ReportedAdjudication>
+
   @Query(
     value = "select * from reported_adjudications ra " +
       "where ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate " +
@@ -73,4 +81,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   fun findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(prisonerNumber: String, date: LocalDate): List<ReportedAdjudication>
 
   fun findByPrisonerNumberAndStatusIn(prisonerNumber: String, statuses: List<ReportedAdjudicationStatus>): List<ReportedAdjudication>
+
+  fun countByAgencyIdAndStatus(agencyId: String, status: ReportedAdjudicationStatus): Long
+
+  fun countByOverrideAgencyIdAndStatusIn(overrideAgencyId: String, statuses: List<ReportedAdjudicationStatus>): Long
 }

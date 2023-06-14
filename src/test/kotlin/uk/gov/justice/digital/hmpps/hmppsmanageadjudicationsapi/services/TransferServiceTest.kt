@@ -8,7 +8,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.TransferService.Companion.TRANSFERABLE_STATUSES
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.TransferService.Companion.transferableStatuses
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 
 class TransferServiceTest : ReportedAdjudicationTestBase() {
@@ -20,7 +20,7 @@ class TransferServiceTest : ReportedAdjudicationTestBase() {
     val reportedAdjudication = entityBuilder.reportedAdjudication()
     val reportedAdjudication2 = entityBuilder.reportedAdjudication().also { it.agencyId = "TJW" }
 
-    whenever(reportedAdjudicationRepository.findByPrisonerNumberAndStatusIn("AA1234A", TRANSFERABLE_STATUSES)).thenReturn(
+    whenever(reportedAdjudicationRepository.findByPrisonerNumberAndStatusIn("AA1234A", transferableStatuses)).thenReturn(
       listOf(reportedAdjudication, reportedAdjudication2),
     )
 
