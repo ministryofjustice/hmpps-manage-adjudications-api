@@ -340,7 +340,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.countByAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.AWAITING_REVIEW)).thenReturn(2)
       whenever(reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn("MDI", transferReviewStatuses)).thenReturn(1)
 
-      val result = reportsService.getReportCounts("MDI")
+      val result = reportsService.getReportCounts()
 
       assertThat(result.reviewTotal).isEqualTo(2)
       assertThat(result.transferReviewTotal).isEqualTo(1)

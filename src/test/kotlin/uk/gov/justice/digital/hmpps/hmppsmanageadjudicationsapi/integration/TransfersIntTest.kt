@@ -72,7 +72,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     Thread.sleep(1000)
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/$agencyId?startDate=2010-11-10&endDate=2010-11-13&status=SCHEDULED&page=0&size=20")
+      .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2010-11-13&status=SCHEDULED&page=0&size=20")
       .headers(setHeaders(activeCaseload = agencyId, username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk.expectBody().jsonPath("$.content.size()").isEqualTo(total)
@@ -84,7 +84,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     Thread.sleep(1000)
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/$agencyId/issue?startDate=2010-11-12&endDate=2020-12-16")
+      .uri("/reported-adjudications/for-issue?startDate=2010-11-12&endDate=2020-12-16")
       .headers(setHeaders(activeCaseload = agencyId))
       .exchange()
       .expectStatus().isOk
@@ -118,7 +118,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     }
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/$agencyId/print?issueStatus=$issueStatues&startDate=2010-11-12&endDate=2020-12-20")
+      .uri("/reported-adjudications/for-print?issueStatus=$issueStatues&startDate=2010-11-12&endDate=2020-12-20")
       .headers(setHeaders(activeCaseload = agencyId))
       .exchange()
       .expectStatus().isOk
@@ -179,8 +179,8 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     initDataForAccept(overrideAgencyId = "TJW", testData = IntegrationTestData.DEFAULT_TRANSFER_ADJUDICATION)
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/TJW/report-counts")
-      .headers(setHeaders())
+      .uri("/reported-adjudications/report-counts")
+      .headers(setHeaders(activeCaseload = "TJW"))
       .exchange()
       .expectStatus().isOk
       .expectBody()
@@ -195,7 +195,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     initDataForHearings()
 
     webTestClient.get()
-      .uri("/reported-adjudications/agency/TJW?startDate=2010-11-10&endDate=2010-11-13&status=SCHEDULED,UNSCHEDULED&transfersOnly=true&page=0&size=20")
+      .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2010-11-13&status=SCHEDULED,UNSCHEDULED&transfersOnly=true&page=0&size=20")
       .headers(setHeaders(activeCaseload = "TJW", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk.expectBody().jsonPath("$.content.size()").isEqualTo(1)

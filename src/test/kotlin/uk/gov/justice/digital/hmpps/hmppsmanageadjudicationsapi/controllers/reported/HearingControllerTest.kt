@@ -230,7 +230,7 @@ class HearingControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         hearingService.getAllHearingsByAgencyIdAndDate(
-          ArgumentMatchers.anyString(),
+          anyOrNull(),
           any(),
         ),
       ).thenReturn(ALL_HEARINGS_DTO)
@@ -238,31 +238,30 @@ class HearingControllerTest : TestControllerBase() {
 
     @Test
     fun `responds with a unauthorised status code`() {
-      allHearingsRequest("MDI", LocalDate.now()).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+      allHearingsRequest(LocalDate.now()).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER")
     fun `responds with a forbidden status code for non ALO`() {
-      allHearingsRequest("MDI", LocalDate.now()).andExpect(MockMvcResultMatchers.status().isForbidden)
+      allHearingsRequest(LocalDate.now()).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `get all hearings for agency `() {
       val now = LocalDate.now()
-      allHearingsRequest("MDI", now)
+      allHearingsRequest(now)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingService).getAllHearingsByAgencyIdAndDate("MDI", now)
+      verify(hearingService).getAllHearingsByAgencyIdAndDate(null, now)
     }
 
     private fun allHearingsRequest(
-      agency: String,
       date: LocalDate,
     ): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/hearings/agency/$agency?hearingDate=$date")
+          MockMvcRequestBuilders.get("/reported-adjudications/hearings?hearingDate=$date")
             .header("Content-Type", "application/json"),
         )
     }

@@ -163,6 +163,7 @@ class HearingController(
 
   @Operation(summary = "Get a list of hearings for a given date and agency")
   @GetMapping(value = ["/hearings/agency/{agencyId}"])
+  @Deprecated("no longer require agency id")
   fun getAllHearingsByAgencyAndDate(
     @PathVariable(name = "agencyId") agencyId: String,
     @RequestParam(name = "hearingDate")
@@ -170,6 +171,20 @@ class HearingController(
     hearingDate: LocalDate,
   ): HearingSummaryResponse {
     val hearings = hearingService.getAllHearingsByAgencyIdAndDate(agencyId = agencyId, dateOfHearing = hearingDate)
+
+    return HearingSummaryResponse(
+      hearings,
+    )
+  }
+
+  @Operation(summary = "Get a list of hearings for a given date and agency")
+  @GetMapping(value = ["/hearings"])
+  fun getAllHearingsByAgencyAndDateV2(
+    @RequestParam(name = "hearingDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    hearingDate: LocalDate,
+  ): HearingSummaryResponse {
+    val hearings = hearingService.getAllHearingsByAgencyIdAndDate(agencyId = null, dateOfHearing = hearingDate)
 
     return HearingSummaryResponse(
       hearings,
