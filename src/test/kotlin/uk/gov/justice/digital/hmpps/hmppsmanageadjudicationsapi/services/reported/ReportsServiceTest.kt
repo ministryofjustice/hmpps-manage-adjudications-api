@@ -12,6 +12,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferReviewStatuses
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -336,8 +337,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get reports count for agency`() {
-      whenever(reportedAdjudicationRepository.countByAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.UNSCHEDULED)).thenReturn(2)
-      whenever(reportedAdjudicationRepository.countByOverrideAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.UNSCHEDULED)).thenReturn(1)
+      whenever(reportedAdjudicationRepository.countByAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.AWAITING_REVIEW)).thenReturn(2)
+      whenever(reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn("MDI", transferReviewStatuses)).thenReturn(1)
 
       val result = reportsService.getReportCounts("MDI")
 

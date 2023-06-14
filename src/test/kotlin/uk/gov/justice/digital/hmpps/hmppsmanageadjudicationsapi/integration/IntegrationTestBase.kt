@@ -102,15 +102,45 @@ abstract class IntegrationTestBase : TestBase() {
     return IntegrationTestData(webTestClient, jwtAuthHelper, prisonApiMockServer)
   }
 
-  protected fun initDataForHearings(overrideAgencyId: String? = null, testData: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION): IntegrationTestScenario {
-    prisonApiMockServer.stubPostAdjudication(testData)
+  protected fun initDataForAccept(overrideAgencyId: String? = null, testData: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION): IntegrationTestData {
+    oAuthMockServer.stubGrantToken()
+    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
 
     val intTestData = integrationTestData()
+
     val draftUserHeaders = if (overrideAgencyId != null) {
       setHeaders(username = testData.createdByUserId, activeCaseload = overrideAgencyId)
     } else {
       setHeaders(username = testData.createdByUserId)
     }
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
+
+    draftIntTestScenarioBuilder
+      .startDraft(testData)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setAssociatedPrisoner()
+      .setOffenceData()
+      .addIncidentStatement()
+      .addDamages()
+      .addEvidence()
+      .addWitnesses()
+      .completeDraft()
+
+    return intTestData
+  }
+
+  protected fun initDataForHearings(): IntegrationTestScenario {
+    val testData = IntegrationTestData.DEFAULT_ADJUDICATION
+    prisonApiMockServer.stubPostAdjudication(testData)
+
+    val intTestData = integrationTestData()
+    val draftUserHeaders = setHeaders(username = testData.createdByUserId)
+
     val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,

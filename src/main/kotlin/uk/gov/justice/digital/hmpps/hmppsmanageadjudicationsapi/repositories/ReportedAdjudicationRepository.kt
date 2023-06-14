@@ -84,5 +84,5 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun countByAgencyIdAndStatus(agencyId: String, status: ReportedAdjudicationStatus): Long
 
-  fun countByOverrideAgencyIdAndStatus(overrideAgencyId: String, status: ReportedAdjudicationStatus): Long
+  fun countByOverrideAgencyIdAndStatusIn(overrideAgencyId: String, statuses: List<ReportedAdjudicationStatus>): Long
 }

@@ -176,7 +176,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    initDataForHearings(overrideAgencyId = "TJW", testData = IntegrationTestData.DEFAULT_TRANSFER_ADJUDICATION)
+    initDataForAccept(overrideAgencyId = "TJW", testData = IntegrationTestData.DEFAULT_TRANSFER_ADJUDICATION)
 
     webTestClient.get()
       .uri("/reported-adjudications/agency/TJW/report-counts")
@@ -192,7 +192,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   fun `get all reports for transfers only `() {
     Thread.sleep(1000)
 
-    initDataForHearings(overrideAgencyId = "TJW", testData = IntegrationTestData.DEFAULT_TRANSFER_ADJUDICATION)
+    initDataForHearings()
 
     webTestClient.get()
       .uri("/reported-adjudications/agency/TJW?startDate=2010-11-10&endDate=2010-11-13&status=SCHEDULED,UNSCHEDULED&transfersOnly=true&page=0&size=20")

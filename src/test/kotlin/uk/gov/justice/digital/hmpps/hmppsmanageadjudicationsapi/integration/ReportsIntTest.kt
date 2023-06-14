@@ -249,7 +249,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get report count by agency `() {
-    initDataForHearings()
+    initDataForAccept()
 
     webTestClient.get()
       .uri("/reported-adjudications/agency/MDI/report-counts")

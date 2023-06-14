@@ -112,8 +112,15 @@ class ReportsService(
   }
 
   fun getReportCounts(agencyId: String): AgencyReportCountsDto {
-    val reviewTotal = reportedAdjudicationRepository.countByAgencyIdAndStatus(agencyId, ReportedAdjudicationStatus.UNSCHEDULED)
-    val transferReviewTotal = reportedAdjudicationRepository.countByOverrideAgencyIdAndStatus(agencyId, ReportedAdjudicationStatus.UNSCHEDULED)
+    val reviewTotal = reportedAdjudicationRepository.countByAgencyIdAndStatus(
+      agencyId = agencyId,
+      status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+    )
+
+    val transferReviewTotal = reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn(
+      overrideAgencyId = agencyId,
+      statuses = transferReviewStatuses,
+    )
 
     return AgencyReportCountsDto(
       reviewTotal = reviewTotal,
@@ -122,6 +129,12 @@ class ReportsService(
   }
 
   companion object {
+    val transferReviewStatuses = listOf(
+      ReportedAdjudicationStatus.UNSCHEDULED,
+      ReportedAdjudicationStatus.REFER_POLICE,
+      ReportedAdjudicationStatus.ADJOURNED,
+      ReportedAdjudicationStatus.REFER_INAD,
+    )
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
     fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
   }

@@ -527,7 +527,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `count by override agency id and status`() {
     assertThat(
-      reportedAdjudicationRepository.countByOverrideAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.UNSCHEDULED),
+      reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn("MDI", listOf(ReportedAdjudicationStatus.UNSCHEDULED)),
     ).isEqualTo(1)
   }
 
