@@ -38,7 +38,7 @@ class ReportsService(
       val pageableOverride = PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.by("dateTimeOfDiscovery").descending())
 
       reportedAdjudicationRepository.findByOverrideAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
-        overrideAgencyId = authenticationFacade.activeCaseload!!,
+        overrideAgencyId = authenticationFacade.activeCaseload,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
         statuses = statuses,
@@ -46,7 +46,7 @@ class ReportsService(
       )
     } else {
       reportedAdjudicationRepository.findAllReportsByAgency(
-        agencyId = authenticationFacade.activeCaseload!!,
+        agencyId = authenticationFacade.activeCaseload,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
         statuses = statuses.map { it.name },
@@ -62,7 +62,7 @@ class ReportsService(
     val reportedAdjudicationsPage =
       reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
         userId = username!!,
-        agencyId = authenticationFacade.activeCaseload!!,
+        agencyId = authenticationFacade.activeCaseload,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
         statuses = statuses,
@@ -73,7 +73,7 @@ class ReportsService(
 
   fun getAdjudicationsForIssue(startDate: LocalDate, endDate: LocalDate): List<ReportedAdjudicationDto> {
     return reportedAdjudicationRepository.findReportsForIssue(
-      agencyId = authenticationFacade.activeCaseload!!,
+      agencyId = authenticationFacade.activeCaseload,
       startDate = reportsFrom(startDate),
       endDate = reportsTo(endDate),
     ).filter { ReportedAdjudicationStatus.issuableStatuses().contains(it.status) }
@@ -83,7 +83,7 @@ class ReportsService(
 
   fun getAdjudicationsForPrint(startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>): List<ReportedAdjudicationDto> {
     val reportsForPrint = reportedAdjudicationRepository.findReportsForPrint(
-      agencyId = authenticationFacade.activeCaseload!!,
+      agencyId = authenticationFacade.activeCaseload,
       startDate = reportsFrom(startDate),
       endDate = reportsTo(endDate),
       statuses = ReportedAdjudicationStatus.issuableStatusesForPrint().map { it.name },
@@ -105,7 +105,7 @@ class ReportsService(
   }
 
   fun getReportCounts(): AgencyReportCountsDto {
-    val agencyId = authenticationFacade.activeCaseload!!
+    val agencyId = authenticationFacade.activeCaseload
 
     val reviewTotal = reportedAdjudicationRepository.countByAgencyIdAndStatus(
       agencyId = agencyId,

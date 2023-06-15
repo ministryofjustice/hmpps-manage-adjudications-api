@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security
 
+import jakarta.validation.ValidationException
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
@@ -12,11 +13,11 @@ class UserDetails : AuthenticationFacade {
     get() = when (val userPrincipal: Any? = getUserPrincipal()) {
       is String -> userPrincipal.toString()
       is UserDetails -> userPrincipal.username
-      is Map<*, *> -> userPrincipal.get("username").toString()
+      is Map<*, *> -> userPrincipal["username"].toString()
       else -> null
     }
-  override val activeCaseload: String?
-    get() = getActiveCaseloadFromSecurityContext()
+  override val activeCaseload: String
+    get() = getActiveCaseloadFromSecurityContext() ?: throw ValidationException("no active caseload set")
 
   private fun getUserPrincipal(): Any? {
     val authentication = Optional.ofNullable(SecurityContextHolder.getContext().authentication)

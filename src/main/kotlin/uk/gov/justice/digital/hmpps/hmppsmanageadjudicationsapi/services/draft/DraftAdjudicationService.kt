@@ -260,7 +260,7 @@ class DraftAdjudicationService(
 
   fun getCurrentUsersInProgressDraftAdjudications(startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DraftAdjudicationDto> {
     val username = authenticationFacade.currentUsername ?: return Page.empty()
-    return getInProgress(authenticationFacade.activeCaseload!!, username, startDate, endDate, pageable)
+    return getInProgress(authenticationFacade.activeCaseload, username, startDate, endDate, pageable)
   }
 
   private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {
