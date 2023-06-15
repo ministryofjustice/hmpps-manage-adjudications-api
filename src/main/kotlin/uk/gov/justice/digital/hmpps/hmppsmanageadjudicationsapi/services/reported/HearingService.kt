@@ -62,7 +62,7 @@ class HearingService(
     reportedAdjudication.let {
       it.hearings.add(
         Hearing(
-          agencyId = authenticationFacade.activeCaseload!!,
+          agencyId = authenticationFacade.activeCaseload,
           reportNumber = reportedAdjudication.reportNumber,
           locationId = locationId,
           dateTimeOfHearing = dateTimeOfHearing,
@@ -131,7 +131,7 @@ class HearingService(
 
   fun getAllHearingsByAgencyIdAndDate(dateOfHearing: LocalDate): List<HearingSummaryDto> {
     val hearings = hearingRepository.findByAgencyIdAndDateTimeOfHearingBetween(
-      agencyId = authenticationFacade.activeCaseload!!,
+      agencyId = authenticationFacade.activeCaseload,
       start = dateOfHearing.atStartOfDay(),
       end = dateOfHearing.plusDays(1).atStartOfDay(),
     )
