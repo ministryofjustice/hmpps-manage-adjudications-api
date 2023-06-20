@@ -53,7 +53,7 @@ class ReportsService(
         pageable = pageable,
       )
     }
-    return reportedAdjudicationsPage.map { it.toDto() }
+    return reportedAdjudicationsPage.map { it.toDto(authenticationFacade.activeCaseload) }
   }
 
   fun getMyReportedAdjudications(startDate: LocalDate, endDate: LocalDate, statuses: List<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
@@ -78,7 +78,7 @@ class ReportsService(
       endDate = reportsTo(endDate),
     ).filter { ReportedAdjudicationStatus.issuableStatuses().contains(it.status) }
       .sortedBy { it.dateTimeOfDiscovery }
-      .map { it.toDto() }
+      .map { it.toDto(authenticationFacade.activeCaseload) }
   }
 
   fun getAdjudicationsForPrint(startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>): List<ReportedAdjudicationDto> {
@@ -90,15 +90,15 @@ class ReportsService(
     )
 
     if (issueStatuses.containsAll(IssuedStatus.values().toList())) {
-      return reportsForPrint.sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto() }
+      return reportsForPrint.sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto(authenticationFacade.activeCaseload) }
     }
 
     if (issueStatuses.contains(IssuedStatus.ISSUED)) {
-      return reportsForPrint.filter { it.dateTimeOfIssue != null }.sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto() }
+      return reportsForPrint.filter { it.dateTimeOfIssue != null }.sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto(authenticationFacade.activeCaseload) }
     }
 
     if (issueStatuses.contains(IssuedStatus.NOT_ISSUED)) {
-      return reportsForPrint.filter { it.dateTimeOfIssue == null }.sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto() }
+      return reportsForPrint.filter { it.dateTimeOfIssue == null }.sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto(authenticationFacade.activeCaseload) }
     }
 
     return emptyList()
