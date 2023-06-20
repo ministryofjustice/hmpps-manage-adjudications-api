@@ -524,6 +524,10 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         assertThat(argumentCaptor.value.punishmentComments).isEmpty()
       }
 
+      if (code == OutcomeCode.QUASHED) {
+        verify(punishmentsService, atLeastOnce()).removeQuashedFinding(any())
+      }
+
       assertThat(argumentCaptor.value.getOutcomes()).isEmpty()
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
 

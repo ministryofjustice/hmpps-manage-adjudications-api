@@ -229,11 +229,14 @@ class OutcomeService(
 
     reportedAdjudication.calculateStatus()
 
-    if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) {
-      reportedAdjudication.clearPunishments()
-      reportedAdjudication.punishmentComments.clear()
+    when (outcomeToDelete.code) {
+      OutcomeCode.CHARGE_PROVED -> {
+        reportedAdjudication.clearPunishments()
+        reportedAdjudication.punishmentComments.clear()
+      }
+      OutcomeCode.QUASHED -> punishmentsService.removeQuashedFinding(reportedAdjudication)
+      else -> {}
     }
-    if (outcomeToDelete.code == OutcomeCode.QUASHED) punishmentsService.removeQuashedFinding(reportedAdjudication)
 
     nomisOutcomeService.deleteHearingResultIfApplicable(
       adjudicationNumber = adjudicationNumber,
