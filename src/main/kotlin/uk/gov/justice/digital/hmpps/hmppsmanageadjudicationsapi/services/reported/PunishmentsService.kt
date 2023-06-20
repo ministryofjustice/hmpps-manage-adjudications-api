@@ -183,6 +183,51 @@ class PunishmentsService(
     }.flatten()
   }
 
+  fun createPunishmentComment(
+    adjudicationNumber: Long,
+    punishmentComment: PunishmentCommentRequest,
+  ): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+
+    reportedAdjudication.punishmentComments.add(
+      PunishmentComment(
+        comment = punishmentComment.comment,
+      ),
+    )
+
+    return saveToDto(reportedAdjudication)
+  }
+
+  fun updatePunishmentComment(
+    adjudicationNumber: Long,
+    punishmentComment: PunishmentCommentRequest,
+  ): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val punishmentCommentToUpdate = reportedAdjudication.punishmentComments.getPunishmentComment(punishmentComment.id!!)
+      .also {
+        it.createdByUserId?.validatePunishmentCommentAction(authenticationFacade.currentUsername!!)
+      }
+
+    punishmentCommentToUpdate.comment = punishmentComment.comment
+
+    return saveToDto(reportedAdjudication)
+  }
+
+  fun deletePunishmentComment(
+    adjudicationNumber: Long,
+    punishmentCommentId: Long,
+  ): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val punishmentComment = reportedAdjudication.punishmentComments.getPunishmentComment(punishmentCommentId)
+      .also {
+        it.createdByUserId?.validatePunishmentCommentAction(authenticationFacade.currentUsername!!)
+      }
+
+    reportedAdjudication.punishmentComments.remove(punishmentComment)
+
+    return saveToDto(reportedAdjudication)
+  }
+
   private fun handleDamagesOwedChange(reportedAdjudication: ReportedAdjudication, amount: Double?) {
     when (val damagesOwedPunishment = reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }) {
       null -> if (amount != null) createDamagesOwed(reportedAdjudication = reportedAdjudication, amount = amount)
@@ -354,55 +399,6 @@ class PunishmentsService(
     }
   }
 
-  fun createPunishmentComment(
-    adjudicationNumber: Long,
-    punishmentComment: PunishmentCommentRequest,
-  ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-
-    reportedAdjudication.punishmentComments.add(
-      PunishmentComment(
-        comment = punishmentComment.comment,
-      ),
-    )
-
-    return saveToDto(reportedAdjudication)
-  }
-
-  fun updatePunishmentComment(
-    adjudicationNumber: Long,
-    request: PunishmentCommentRequest,
-  ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val punishmentComment = reportedAdjudication.punishmentComments.getPunishmentComment(request.id!!)
-
-    val username = authenticationFacade.currentUsername
-    if (punishmentComment.createdByUserId != username) {
-      throw ForbiddenException("Only creator can update punishment comment. Creator username: ${punishmentComment.createdByUserId}, update attempt by username: $username.")
-    }
-
-    punishmentComment.comment = request.comment
-
-    return saveToDto(reportedAdjudication)
-  }
-
-  fun deletePunishmentComment(
-    adjudicationNumber: Long,
-    punishmentCommentId: Long,
-  ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val punishmentComment = reportedAdjudication.punishmentComments.getPunishmentComment(punishmentCommentId)
-
-    val username = authenticationFacade.currentUsername
-    if (punishmentComment.createdByUserId != username) {
-      throw ForbiddenException("Only creator can delete punishment comment. Creator username: ${punishmentComment.createdByUserId}, deletion attempt by username: $username.")
-    }
-
-    reportedAdjudication.punishmentComments.remove(punishmentComment)
-
-    return saveToDto(reportedAdjudication)
-  }
-
   companion object {
 
     fun ReportedAdjudication.mapToSanctions(): List<OffenderOicSanctionRequest> =
@@ -454,6 +450,12 @@ class PunishmentsService(
       }
       if (this.getPunishments().any { it.type == PunishmentType.CAUTION }) {
         throw ValidationException("outcome is a caution - no further punishments can be added")
+      }
+    }
+
+    fun String.validatePunishmentCommentAction(username: String) {
+      if (this != username) {
+        throw ForbiddenException("Only $this can carry out action on punishment comment. attempt by $username")
       }
     }
   }

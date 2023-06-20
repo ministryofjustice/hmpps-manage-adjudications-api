@@ -180,7 +180,7 @@ class PunishmentsController(
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = punishmentsService.updatePunishmentComment(
       adjudicationNumber = adjudicationNumber,
-      request = punishmentCommentRequest,
+      punishmentComment = punishmentCommentRequest,
     )
 
     return ReportedAdjudicationResponse(reportedAdjudication)

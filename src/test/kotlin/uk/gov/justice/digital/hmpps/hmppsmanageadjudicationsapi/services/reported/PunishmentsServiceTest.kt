@@ -88,6 +88,33 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    assertThatThrownBy {
+      punishmentsService.createPunishmentComment(
+        adjudicationNumber = 1,
+        punishmentComment = PunishmentCommentRequest(comment = ""),
+
+      )
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    assertThatThrownBy {
+      punishmentsService.updatePunishmentComment(
+        adjudicationNumber = 1,
+        punishmentComment = PunishmentCommentRequest(comment = ""),
+
+      )
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    assertThatThrownBy {
+      punishmentsService.deletePunishmentComment(
+        adjudicationNumber = 1,
+        punishmentCommentId = 1,
+
+      )
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
   }
 
   @Nested
@@ -1544,7 +1571,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThatThrownBy {
         punishmentsService.updatePunishmentComment(
           adjudicationNumber = 1,
-          request = PunishmentCommentRequest(id = -1, comment = "new text"),
+          punishmentComment = PunishmentCommentRequest(id = -1, comment = "new text"),
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Punishment comment id -1 is not found")
@@ -1569,10 +1596,10 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThatThrownBy {
         punishmentsService.updatePunishmentComment(
           adjudicationNumber = 1,
-          request = PunishmentCommentRequest(id = 2, comment = "new text"),
+          punishmentComment = PunishmentCommentRequest(id = 2, comment = "new text"),
         )
       }.isInstanceOf(ForbiddenException::class.java)
-        .hasMessageContaining("Only creator can update punishment comment. Creator username: author, update attempt by username: ITAG_USER.")
+        .hasMessageContaining("Only author can carry out action on punishment comment. attempt by ITAG_USER")
     }
 
     @Test
@@ -1595,7 +1622,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       punishmentsService.updatePunishmentComment(
         adjudicationNumber = 1,
-        request = PunishmentCommentRequest(id = 2, comment = "new text"),
+        punishmentComment = PunishmentCommentRequest(id = 2, comment = "new text"),
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -1652,7 +1679,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           punishmentCommentId = 2,
         )
       }.isInstanceOf(ForbiddenException::class.java)
-        .hasMessageContaining("Only creator can delete punishment comment. Creator username: author, deletion attempt by username: ITAG_USER.")
+        .hasMessageContaining("Only author can carry out action on punishment comment. attempt by ITAG_USER")
     }
 
     @Test
