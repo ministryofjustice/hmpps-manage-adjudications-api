@@ -86,6 +86,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.witnesses[0].reporter")
       .isEqualTo("B_MILLS")
       .jsonPath("$.reportedAdjudication.gender").isEqualTo(Gender.MALE.name)
+      .jsonPath("$.reportedAdjudication.originatingAgencyId").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.agencyId)
   }
 
   @Test

@@ -90,6 +90,7 @@ open class ReportedDtoService(
       punishmentComments = this.punishmentComments.toPunishmentComments(),
       outcomeEnteredInNomis = hearings.any { it.outcome?.code == HearingOutcomeCode.NOMIS },
       overrideAgencyId = this.overrideAgencyId,
+      originatingAgencyId = this.agencyId,
       transferableActionsAllowed = this.isActionable(activeCaseload),
     )
   }
