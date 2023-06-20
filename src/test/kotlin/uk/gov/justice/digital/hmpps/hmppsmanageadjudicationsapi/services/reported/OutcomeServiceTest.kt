@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
@@ -498,6 +499,17 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudication
           .also {
             it.addOutcome(Outcome(id = 1, code = code).also { o -> o.createDateTime = LocalDateTime.now() })
+            if (code == OutcomeCode.CHARGE_PROVED) {
+              it.addPunishment(
+                Punishment(
+                  type = PunishmentType.DAMAGES_OWED,
+                  schedule = mutableListOf(
+                    PunishmentSchedule(days = 10),
+                  ),
+                ),
+              )
+              it.punishmentComments.add(PunishmentComment(comment = ""))
+            }
           },
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -506,6 +518,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         1,
       )
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      if (code == OutcomeCode.CHARGE_PROVED) {
+        assertThat(argumentCaptor.value.getPunishments()).isEmpty()
+        assertThat(argumentCaptor.value.punishmentComments).isEmpty()
+      }
 
       assertThat(argumentCaptor.value.getOutcomes()).isEmpty()
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
