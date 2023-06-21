@@ -365,7 +365,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         ReportedAdjudicationService.TELEMETRY_EVENT,
         mapOf(
           "reportNumber" to entityBuilder.reportedAdjudication().reportNumber.toString(),
-          "agencyId" to entityBuilder.reportedAdjudication().agencyId,
+          "agencyId" to entityBuilder.reportedAdjudication().originatingAgencyId,
           "status" to to.name,
           "reason" to null,
         ),
@@ -409,7 +409,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         ReportedAdjudicationService.TELEMETRY_EVENT,
         mapOf(
           "reportNumber" to existingReportedAdjudication.reportNumber.toString(),
-          "agencyId" to existingReportedAdjudication.agencyId,
+          "agencyId" to existingReportedAdjudication.originatingAgencyId,
           "status" to ReportedAdjudicationStatus.REJECTED.name,
           "reason" to "Status Reason",
         ),
@@ -542,7 +542,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           adjudicationNumber = reportedAdjudication.reportNumber,
           reporterName = "",
           reportedDateTime = now,
-          agencyId = reportedAdjudication.agencyId,
+          agencyId = reportedAdjudication.originatingAgencyId,
           incidentLocationId = reportedAdjudication.locationId,
           incidentTime = reportedAdjudication.dateTimeOfDiscovery,
           statement = reportedAdjudication.statement,

@@ -90,7 +90,7 @@ open class ReportedDtoService(
       punishmentComments = this.punishmentComments.toPunishmentComments(),
       outcomeEnteredInNomis = hearings.any { it.outcome?.code == HearingOutcomeCode.NOMIS },
       overrideAgencyId = this.overrideAgencyId,
-      originatingAgencyId = this.agencyId,
+      originatingAgencyId = this.originatingAgencyId,
       transferableActionsAllowed = this.isActionable(activeCaseload),
     )
   }
@@ -286,7 +286,7 @@ open class ReportedDtoService(
     this.overrideAgencyId ?: return null
     return when (this.status) {
       ReportedAdjudicationStatus.REJECTED, ReportedAdjudicationStatus.ACCEPTED -> false
-      ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.RETURNED -> this.agencyId == activeCaseload
+      ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.RETURNED -> this.originatingAgencyId == activeCaseload
       ReportedAdjudicationStatus.SCHEDULED -> this.getLatestHearing()?.agencyId == activeCaseload
       else -> this.overrideAgencyId == activeCaseload
     }
@@ -314,9 +314,9 @@ open class ReportedAdjudicationBaseService(
         adjudicationNumber,
       )
 
-    val overrideAgencyId = reportedAdjudication.overrideAgencyId ?: reportedAdjudication.agencyId
+    val overrideAgencyId = reportedAdjudication.overrideAgencyId ?: reportedAdjudication.originatingAgencyId
 
-    if (listOf(reportedAdjudication.agencyId, overrideAgencyId)
+    if (listOf(reportedAdjudication.originatingAgencyId, overrideAgencyId)
       .none { it == authenticationFacade.activeCaseload }
     ) {
       throwEntityNotFoundException(adjudicationNumber)

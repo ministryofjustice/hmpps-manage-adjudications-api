@@ -27,7 +27,7 @@ class EntityBuilder {
       reportNumber = reportNumber,
       prisonerNumber = "A12345",
       gender = Gender.MALE,
-      agencyId = agencyId,
+      originatingAgencyId = agencyId,
       locationId = 2,
       dateTimeOfIncident = dateTime,
       dateTimeOfDiscovery = dateTime.plusDays(1),

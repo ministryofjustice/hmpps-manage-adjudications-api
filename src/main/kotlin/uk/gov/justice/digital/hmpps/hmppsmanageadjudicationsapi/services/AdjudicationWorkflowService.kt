@@ -106,7 +106,7 @@ class AdjudicationWorkflowService(
       reportByUserId = reportedAdjudication.createdByUserId,
       prisonerNumber = reportedAdjudication.prisonerNumber,
       gender = reportedAdjudication.gender,
-      agencyId = reportedAdjudication.agencyId,
+      agencyId = reportedAdjudication.originatingAgencyId,
       overrideAgencyId = reportedAdjudication.overrideAgencyId,
       incidentDetails = IncidentDetails(
         locationId = reportedAdjudication.locationId,
@@ -172,7 +172,7 @@ class AdjudicationWorkflowService(
         reportNumber = adjudicationNumber,
         prisonerNumber = draftAdjudication.prisonerNumber,
         gender = draftAdjudication.gender,
-        agencyId = draftAdjudication.agencyId,
+        originatingAgencyId = draftAdjudication.agencyId,
         overrideAgencyId = draftAdjudication.overrideAgencyId,
         locationId = draftAdjudication.incidentDetails.locationId,
         dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
@@ -210,7 +210,7 @@ class AdjudicationWorkflowService(
       it.reportNumber = previousReportedAdjudication.reportNumber
       it.prisonerNumber = draftAdjudication.prisonerNumber
       it.gender = draftAdjudication.gender
-      it.agencyId = draftAdjudication.agencyId
+      it.originatingAgencyId = draftAdjudication.agencyId
       it.overrideAgencyId = draftAdjudication.overrideAgencyId
       it.locationId = draftAdjudication.incidentDetails.locationId
       it.dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident

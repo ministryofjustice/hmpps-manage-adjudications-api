@@ -60,7 +60,7 @@ class ReportsService(
     val username = authenticationFacade.currentUsername
 
     val reportedAdjudicationsPage =
-      reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+      reportedAdjudicationRepository.findByCreatedByUserIdAndOriginatingAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
         userId = username!!,
         agencyId = authenticationFacade.activeCaseload,
         startDate = reportsFrom(startDate),
@@ -107,7 +107,7 @@ class ReportsService(
   fun getReportCounts(): AgencyReportCountsDto {
     val agencyId = authenticationFacade.activeCaseload
 
-    val reviewTotal = reportedAdjudicationRepository.countByAgencyIdAndStatus(
+    val reviewTotal = reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus(
       agencyId = agencyId,
       status = ReportedAdjudicationStatus.AWAITING_REVIEW,
     )

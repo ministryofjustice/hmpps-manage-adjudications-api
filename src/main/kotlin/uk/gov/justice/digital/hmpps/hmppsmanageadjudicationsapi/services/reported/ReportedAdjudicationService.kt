@@ -60,7 +60,7 @@ class ReportedAdjudicationService(
       TELEMETRY_EVENT,
       mapOf(
         "reportNumber" to reportedAdjudication.reportNumber.toString(),
-        "agencyId" to reportedAdjudication.agencyId,
+        "agencyId" to reportedAdjudication.originatingAgencyId,
         "status" to status.name,
         "reason" to statusReason,
       ),
@@ -101,7 +101,7 @@ class ReportedAdjudicationService(
           ?: throw EntityNotFoundException(
             "ReportedAdjudication creation time not set for reported adjudication number ${reportedAdjudication.reportNumber}",
           ),
-        agencyId = reportedAdjudication.agencyId,
+        agencyId = reportedAdjudication.originatingAgencyId,
         incidentTime = reportedAdjudication.dateTimeOfDiscovery,
         incidentLocationId = reportedAdjudication.locationId,
         statement = reportedAdjudication.statement,

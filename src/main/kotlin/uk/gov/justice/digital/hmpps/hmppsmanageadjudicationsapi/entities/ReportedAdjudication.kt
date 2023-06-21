@@ -24,8 +24,7 @@ data class ReportedAdjudication(
   @Column(nullable = false)
   var gender: Gender,
   var reportNumber: Long,
-  @Column(name = "originating_agency_id")
-  var agencyId: String,
+  var originatingAgencyId: String,
   var overrideAgencyId: String? = null,
   var locationId: Long,
   var dateTimeOfIncident: LocalDateTime,
