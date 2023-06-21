@@ -173,7 +173,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now)
-      assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
+      assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.originatingAgencyId)
       assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
       assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(5)
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
@@ -357,7 +357,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(2)
       assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now.plusDays(1))
-      assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.agencyId)
+      assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.originatingAgencyId)
       assertThat(argumentCaptor.value.hearings.first().reportNumber).isEqualTo(reportedAdjudication.reportNumber)
       assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(OicHearingType.INAD_ADULT)
       assertThat(argumentCaptor.value.dateTimeOfFirstHearing).isEqualTo(now.plusDays(1))
@@ -437,7 +437,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
               oicHearingId = 2L,
               dateTimeOfHearing = dateTimeOfHearing,
               locationId = 1L,
-              agencyId = reportedAdjudication.agencyId,
+              agencyId = reportedAdjudication.originatingAgencyId,
               reportNumber = 1235L,
               oicHearingType = OicHearingType.GOV,
             ),
@@ -529,7 +529,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
               oicHearingId = 2L,
               dateTimeOfHearing = now.atStartOfDay().plusHours(5),
               locationId = 1L,
-              agencyId = it.agencyId,
+              agencyId = it.originatingAgencyId,
               reportNumber = it.reportNumber,
               oicHearingType = OicHearingType.GOV,
             ),
@@ -538,7 +538,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
               oicHearingId = 2L,
               dateTimeOfHearing = now.atStartOfDay().plusHours(6),
               locationId = 1L,
-              agencyId = it.agencyId,
+              agencyId = it.originatingAgencyId,
               reportNumber = it.reportNumber,
               oicHearingType = OicHearingType.GOV,
             ),

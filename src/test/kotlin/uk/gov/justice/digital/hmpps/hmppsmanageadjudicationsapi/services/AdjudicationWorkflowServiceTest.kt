@@ -263,7 +263,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
-        .extracting("prisonerNumber", "reportNumber", "agencyId", "gender")
+        .extracting("prisonerNumber", "reportNumber", "originatingAgencyId", "gender")
         .contains("A12345", 123456L, "MDI", Gender.MALE)
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
@@ -553,7 +553,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
-        .extracting("prisonerNumber", "reportNumber", "agencyId")
+        .extracting("prisonerNumber", "reportNumber", "originatingAgencyId")
         .contains("A12345", 1235L, "MDI")
 
       assertThat(reportedAdjudicationArgumentCaptor.value)

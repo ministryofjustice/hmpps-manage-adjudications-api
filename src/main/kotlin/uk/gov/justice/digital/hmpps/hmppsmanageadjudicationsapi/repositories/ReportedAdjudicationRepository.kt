@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 
 interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, Long> {
 
-  fun findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+  fun findByCreatedByUserIdAndOriginatingAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
     userId: String,
     agencyId: String,
     startDate: LocalDateTime,
@@ -82,7 +82,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByPrisonerNumberAndStatusIn(prisonerNumber: String, statuses: List<ReportedAdjudicationStatus>): List<ReportedAdjudication>
 
-  fun countByAgencyIdAndStatus(agencyId: String, status: ReportedAdjudicationStatus): Long
+  fun countByOriginatingAgencyIdAndStatus(agencyId: String, status: ReportedAdjudicationStatus): Long
 
   fun countByOverrideAgencyIdAndStatusIn(overrideAgencyId: String, statuses: List<ReportedAdjudicationStatus>): Long
 }

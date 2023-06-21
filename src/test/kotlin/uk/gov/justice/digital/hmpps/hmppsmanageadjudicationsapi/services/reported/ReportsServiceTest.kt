@@ -131,7 +131,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
       whenever(
-        reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+        reportedAdjudicationRepository.findByCreatedByUserIdAndOriginatingAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
           any(),
           any(),
           any(),
@@ -288,7 +288,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get reports count for agency`() {
-      whenever(reportedAdjudicationRepository.countByAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.AWAITING_REVIEW)).thenReturn(2)
+      whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.AWAITING_REVIEW)).thenReturn(2)
       whenever(reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn("MDI", transferReviewStatuses)).thenReturn(1)
 
       val result = reportsService.getReportCounts()

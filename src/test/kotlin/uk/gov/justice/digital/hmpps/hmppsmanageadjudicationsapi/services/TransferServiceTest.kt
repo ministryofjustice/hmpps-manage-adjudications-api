@@ -18,7 +18,7 @@ class TransferServiceTest : ReportedAdjudicationTestBase() {
   @Test
   fun `prisoner has override value on records updated `() {
     val reportedAdjudication = entityBuilder.reportedAdjudication()
-    val reportedAdjudication2 = entityBuilder.reportedAdjudication().also { it.agencyId = "TJW" }
+    val reportedAdjudication2 = entityBuilder.reportedAdjudication().also { it.originatingAgencyId = "TJW" }
 
     whenever(reportedAdjudicationRepository.findByPrisonerNumberAndStatusIn("AA1234A", transferableStatuses)).thenReturn(
       listOf(reportedAdjudication, reportedAdjudication2),

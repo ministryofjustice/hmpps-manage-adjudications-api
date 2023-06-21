@@ -19,8 +19,8 @@ class TransferService(
       reportedAdjudicationRepository.findByPrisonerNumberAndStatusIn(
         prisonerNumber = prisonerNumber,
         statuses = transferableStatuses,
-      ).filter { it.agencyId != agencyId }.forEach {
-        log.info("transferring report ${it.reportNumber} from ${it.agencyId} to $agencyId")
+      ).filter { it.originatingAgencyId != agencyId }.forEach {
+        log.info("transferring report ${it.reportNumber} from ${it.originatingAgencyId} to $agencyId")
         it.overrideAgencyId = agencyId
       }
     }

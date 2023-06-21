@@ -130,12 +130,12 @@ class ReportedAdjudicationRepositoryTest {
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity)
-      .extracting("id", "prisonerNumber", "reportNumber", "agencyId", "createdByUserId", "gender")
+      .extracting("id", "prisonerNumber", "reportNumber", "originatingAgencyId", "createdByUserId", "gender")
       .contains(
         adjudication.id,
         adjudication.prisonerNumber,
         adjudication.reportNumber,
-        adjudication.agencyId,
+        adjudication.originatingAgencyId,
         adjudication.createdByUserId,
         adjudication.gender,
       )
@@ -351,7 +351,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `find reported adjudications by created user and agency id`() {
     val foundAdjudications =
-      reportedAdjudicationRepository.findByCreatedByUserIdAndAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+      reportedAdjudicationRepository.findByCreatedByUserIdAndOriginatingAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
         "ITAG_USER",
         "MDI",
         LocalDate.now().plusDays(1).atStartOfDay(),
@@ -520,7 +520,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `count by agency and status `() {
     assertThat(
-      reportedAdjudicationRepository.countByAgencyIdAndStatus("LEI", ReportedAdjudicationStatus.UNSCHEDULED),
+      reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus("LEI", ReportedAdjudicationStatus.UNSCHEDULED),
     ).isEqualTo(2)
   }
 
