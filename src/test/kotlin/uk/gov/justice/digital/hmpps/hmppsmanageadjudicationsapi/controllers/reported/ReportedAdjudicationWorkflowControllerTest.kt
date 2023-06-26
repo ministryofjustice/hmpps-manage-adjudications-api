@@ -54,6 +54,7 @@ class ReportedAdjudicationWorkflowControllerTest : TestControllerBase() {
         ),
         incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
         isYouthOffender = true,
+        originatingAgencyId = "MDI",
       ),
     )
   }

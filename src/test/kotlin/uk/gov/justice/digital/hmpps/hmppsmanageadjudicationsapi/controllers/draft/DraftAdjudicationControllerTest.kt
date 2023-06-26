@@ -223,6 +223,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           ),
           incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
           isYouthOffender = true,
+          originatingAgencyId = "MDI",
         ),
       )
       makeGetDraftAdjudicationRequest(1)
@@ -261,6 +262,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           ),
           incidentRole = INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO,
           isYouthOffender = true,
+          originatingAgencyId = "MDI",
         ),
       )
       makeGetDraftAdjudicationRequest(1)
@@ -524,6 +526,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
               ),
               incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO,
               isYouthOffender = true,
+              originatingAgencyId = "MDI",
             ),
             DraftAdjudicationDto(
               id = 2,
@@ -538,6 +541,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
               ),
               incidentRole = INCIDENT_ROLE_WITH_NO_VALUES_RESPONSE_DTO,
               isYouthOffender = true,
+              originatingAgencyId = "MDI",
             ),
           ),
         ),
