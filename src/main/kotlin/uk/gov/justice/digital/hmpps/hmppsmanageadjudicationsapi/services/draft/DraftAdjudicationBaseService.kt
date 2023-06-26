@@ -82,6 +82,7 @@ open class DraftAdjudicationBaseService(
       evidenceSaved = this.evidenceSaved,
       witnessesSaved = this.witnessesSaved,
       overrideAgencyId = this.overrideAgencyId,
+      originatingAgencyId = this.agencyId,
     )
 
   private fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(

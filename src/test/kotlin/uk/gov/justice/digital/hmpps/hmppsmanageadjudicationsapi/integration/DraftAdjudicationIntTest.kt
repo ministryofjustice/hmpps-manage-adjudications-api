@@ -40,6 +40,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.draftAdjudication.prisonerNumber").isEqualTo("A12345")
       .jsonPath("$.draftAdjudication.gender").isEqualTo(Gender.MALE.name)
       .jsonPath("$.draftAdjudication.startedByUserId").isEqualTo("ITAG_USER")
+      .jsonPath("$.draftAdjudication.originatingAgencyId").isEqualTo("MDI")
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").isEqualTo("2010-10-12T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfDiscovery").isEqualTo("2010-10-13T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-15T10:00:00")
@@ -65,6 +66,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.draftAdjudication.overrideAgencyId").isEqualTo("TJW")
+      .jsonPath("$.draftAdjudication.originatingAgencyId").isEqualTo("MDI")
   }
 
   @Test
