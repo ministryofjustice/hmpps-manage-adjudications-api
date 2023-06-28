@@ -19,9 +19,14 @@ class TransferService(
       reportedAdjudicationRepository.findByPrisonerNumberAndStatusIn(
         prisonerNumber = prisonerNumber,
         statuses = transferableStatuses,
-      ).filter { it.originatingAgencyId != agencyId }.forEach {
+      ).forEach {
         log.info("transferring report ${it.reportNumber} from ${it.originatingAgencyId} to $agencyId")
-        it.overrideAgencyId = agencyId
+        if (it.originatingAgencyId != agencyId) {
+          it.overrideAgencyId = agencyId
+        } else {
+          // we remove the lock, and the originating agency has full control again
+          it.overrideAgencyId = null
+        }
       }
     }
   }

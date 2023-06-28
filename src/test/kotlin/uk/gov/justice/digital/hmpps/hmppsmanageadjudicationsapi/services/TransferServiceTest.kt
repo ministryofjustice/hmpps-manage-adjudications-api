@@ -38,6 +38,22 @@ class TransferServiceTest : ReportedAdjudicationTestBase() {
     verify(reportedAdjudicationRepository, never()).findByPrisonerNumberAndStatusIn(any(), any())
   }
 
+  @Test
+  fun `when prisoner is transferred back to originating agency override is removed`() {
+    val reportedAdjudication = entityBuilder.reportedAdjudication().also {
+      it.originatingAgencyId = "MDI"
+      it.overrideAgencyId = "LEI"
+    }
+
+    whenever(reportedAdjudicationRepository.findByPrisonerNumberAndStatusIn("AA1234A", transferableStatuses)).thenReturn(
+      listOf(reportedAdjudication),
+    )
+
+    transferService.processTransferEvent(prisonerNumber = "AA1234A", agencyId = "MDI")
+
+    assertThat(reportedAdjudication.overrideAgencyId).isNull()
+  }
+
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // not applicable
   }
