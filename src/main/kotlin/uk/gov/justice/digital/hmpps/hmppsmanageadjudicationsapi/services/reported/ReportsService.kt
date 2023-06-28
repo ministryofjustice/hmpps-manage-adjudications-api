@@ -50,6 +50,7 @@ class ReportsService(
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
         statuses = statuses.map { it.name },
+        transferIgnoreStatuses = transferIgnoreStatuses.map { it.name },
         pageable = pageable,
       )
     }
@@ -130,6 +131,9 @@ class ReportsService(
       ReportedAdjudicationStatus.ADJOURNED,
       ReportedAdjudicationStatus.REFER_INAD,
     )
+
+    val transferIgnoreStatuses = transferReviewStatuses.plus(ReportedAdjudicationStatus.AWAITING_REVIEW)
+
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
     fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
   }

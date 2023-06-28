@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferIgnoreStatuses
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -73,6 +74,17 @@ class ReportedAdjudicationRepositoryTest {
         agencyId = "LEI",
         hearingId = null,
       ),
+    )
+    entityManager.persistAndFlush(
+      entityBuilder.reportedAdjudication(
+        reportNumber = 12366L,
+        dateTime = dateTimeOfIncident.plusHours(1),
+        agencyId = "TJW",
+        hearingId = null,
+      ).also {
+        it.overrideAgencyId = "LEI"
+        it.status = ReportedAdjudicationStatus.SCHEDULED
+      },
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
@@ -320,13 +332,16 @@ class ReportedAdjudicationRepositoryTest {
         LocalTime.MAX,
       ),
       ReportedAdjudicationStatus.values().toList().filter { it != ReportedAdjudicationStatus.UNSCHEDULED }.map { it.name },
+      transferIgnoreStatuses.map { it.name },
       Pageable.ofSize(10),
     )
 
-    assertThat(foundAdjudications.content).hasSize(1)
+    assertThat(foundAdjudications.content).hasSize(2)
       .extracting("reportNumber")
       .contains(
         1236L,
+        12366L,
+
       )
   }
 
@@ -493,7 +508,7 @@ class ReportedAdjudicationRepositoryTest {
   fun `hearing without outcome test`() {
     val hearings = hearingRepository.findByHearingOutcomeIsNull()
 
-    assertThat(hearings.size).isEqualTo(7)
+    assertThat(hearings.size).isEqualTo(8)
   }
 
   @Test
