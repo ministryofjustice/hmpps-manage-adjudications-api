@@ -26,6 +26,7 @@ data class ReportedAdjudication(
   var reportNumber: Long,
   var originatingAgencyId: String,
   var overrideAgencyId: String? = null,
+  var lastModifiedAgencyId: String? = null,
   var locationId: Long,
   var dateTimeOfIncident: LocalDateTime,
   var dateTimeOfDiscovery: LocalDateTime,

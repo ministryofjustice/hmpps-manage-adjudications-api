@@ -33,11 +33,19 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     value = "select * from reported_adjudications ra " +
       "where ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate " +
       "and ra.status in :statuses " +
-      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId and ra.status not in :transferIgnoreStatuses)",
+      "and (" +
+      "ra.originating_agency_id = :agencyId " +
+      "or ra.override_agency_id = :agencyId and ra.status not in :transferIgnoreStatuses and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :agencyId " +
+      "or ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) = :agencyId" +
+      ")",
     countQuery = "select count(1) from reported_adjudications ra " +
       "where ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate " +
       "and ra.status in :statuses " +
-      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId and ra.status not in :transferIgnoreStatuses)",
+      "and (" +
+      "ra.originating_agency_id = :agencyId " +
+      "or ra.override_agency_id = :agencyId and ra.status not in :transferIgnoreStatuses and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :agencyId " +
+      "or ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) = :agencyId" +
+      ")",
     nativeQuery = true,
   )
   fun findAllReportsByAgency(
@@ -85,5 +93,15 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun countByOriginatingAgencyIdAndStatus(agencyId: String, status: ReportedAdjudicationStatus): Long
 
-  fun countByOverrideAgencyIdAndStatusIn(overrideAgencyId: String, statuses: List<ReportedAdjudicationStatus>): Long
+  @Query(
+    value = "select count(1) from reported_adjudications ra " +
+      "where ra.override_agency_id = :overrideAgencyId " +
+      "and ra.status in :statuses " +
+      "and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :overrideAgencyId",
+    nativeQuery = true,
+  )
+  fun countTransfers(
+    @Param("overrideAgencyId") overrideAgencyId: String,
+    @Param("statuses") statuses: List<String>,
+  ): Long
 }

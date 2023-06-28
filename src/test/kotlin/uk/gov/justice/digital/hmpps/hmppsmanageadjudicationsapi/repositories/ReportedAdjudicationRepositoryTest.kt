@@ -88,6 +88,18 @@ class ReportedAdjudicationRepositoryTest {
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
+        reportNumber = 123666L,
+        dateTime = dateTimeOfIncident.plusHours(1),
+        agencyId = "TJW",
+        hearingId = null,
+      ).also {
+        it.overrideAgencyId = "LEI"
+        it.status = ReportedAdjudicationStatus.ADJOURNED
+        it.lastModifiedAgencyId = "LEI"
+      },
+    )
+    entityManager.persistAndFlush(
+      entityBuilder.reportedAdjudication(
         reportNumber = 9999L,
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "TJW",
@@ -132,6 +144,20 @@ class ReportedAdjudicationRepositoryTest {
         it.dateTimeOfIssue = LocalDateTime.now()
         it.dateTimeOfFirstHearing = LocalDateTime.now()
         it.overrideAgencyId = "MDI"
+      },
+    )
+    entityManager.persistAndFlush(
+      entityBuilder.reportedAdjudication(
+        reportNumber = 199977L,
+        dateTime = dateTimeOfIncident.plusHours(1),
+        agencyId = "LEI",
+        hearingId = null,
+      ).also {
+        it.status = ReportedAdjudicationStatus.UNSCHEDULED
+        it.dateTimeOfIssue = LocalDateTime.now()
+        it.dateTimeOfFirstHearing = LocalDateTime.now()
+        it.overrideAgencyId = "MDI"
+        it.lastModifiedAgencyId = "MDI"
       },
     )
   }
@@ -336,11 +362,12 @@ class ReportedAdjudicationRepositoryTest {
       Pageable.ofSize(10),
     )
 
-    assertThat(foundAdjudications.content).hasSize(2)
+    assertThat(foundAdjudications.content).hasSize(3)
       .extracting("reportNumber")
       .contains(
         1236L,
         12366L,
+        123666L,
       )
   }
 
@@ -507,7 +534,7 @@ class ReportedAdjudicationRepositoryTest {
   fun `hearing without outcome test`() {
     val hearings = hearingRepository.findByHearingOutcomeIsNull()
 
-    assertThat(hearings.size).isEqualTo(8)
+    assertThat(hearings.size).isEqualTo(10)
   }
 
   @Test
@@ -528,20 +555,20 @@ class ReportedAdjudicationRepositoryTest {
       statuses = listOf(ReportedAdjudicationStatus.UNSCHEDULED),
     )
 
-    assertThat(adjudications.size).isEqualTo(3)
+    assertThat(adjudications.size).isEqualTo(4)
   }
 
   @Test
   fun `count by agency and status `() {
     assertThat(
       reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus("LEI", ReportedAdjudicationStatus.UNSCHEDULED),
-    ).isEqualTo(2)
+    ).isEqualTo(3)
   }
 
   @Test
   fun `count by override agency id and status`() {
     assertThat(
-      reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn("MDI", listOf(ReportedAdjudicationStatus.UNSCHEDULED)),
+      reportedAdjudicationRepository.countTransfers("MDI", listOf(ReportedAdjudicationStatus.UNSCHEDULED).map { it.name }),
     ).isEqualTo(1)
   }
 
@@ -555,6 +582,6 @@ class ReportedAdjudicationRepositoryTest {
       Pageable.ofSize(10),
     )
 
-    assertThat(page.content.size).isEqualTo(1)
+    assertThat(page.content.size).isEqualTo(2)
   }
 }
