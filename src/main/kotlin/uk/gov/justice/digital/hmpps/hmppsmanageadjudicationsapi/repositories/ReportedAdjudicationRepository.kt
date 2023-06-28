@@ -33,11 +33,11 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     value = "select * from reported_adjudications ra " +
       "where ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate " +
       "and ra.status in :statuses " +
-      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId)",
+      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId and ra.status not in :transferIgnoreStatuses)",
     countQuery = "select count(1) from reported_adjudications ra " +
       "where ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate " +
       "and ra.status in :statuses " +
-      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId)",
+      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId and ra.status not in :transferIgnoreStatuses)",
     nativeQuery = true,
   )
   fun findAllReportsByAgency(
@@ -45,6 +45,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("startDate") startDate: LocalDateTime,
     @Param("endDate") endDate: LocalDateTime,
     @Param("statuses") statuses: List<String>,
+    @Param("transferIgnoreStatuses") transferIgnoreStatuses: List<String>,
     pageable: Pageable,
   ): Page<ReportedAdjudication>
 

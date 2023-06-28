@@ -12,6 +12,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferIgnoreStatuses
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferReviewStatuses
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -45,6 +46,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           any(),
           any(),
           any(),
+          any(),
         ),
       ).thenReturn(
         PageImpl(
@@ -68,6 +70,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         LocalDate.now().atStartOfDay(),
         LocalDate.now().atTime(LocalTime.MAX),
         ReportedAdjudicationStatus.values().toList().map { it.name },
+        transferIgnoreStatuses.map { it.name },
         Pageable.ofSize(20).withPage(0),
       )
     }
