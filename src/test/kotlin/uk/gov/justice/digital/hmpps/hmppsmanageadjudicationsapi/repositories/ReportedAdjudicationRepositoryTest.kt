@@ -341,7 +341,6 @@ class ReportedAdjudicationRepositoryTest {
       .contains(
         1236L,
         12366L,
-
       )
   }
 
