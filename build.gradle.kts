@@ -37,7 +37,7 @@ dependencies {
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.0")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.38.0")
-  testImplementation("org.flywaydb:flyway-core:9.20.0")
+  testImplementation("org.flywaydb:flyway-core")
   testImplementation("org.mockito:mockito-inline")
   testImplementation("org.testcontainers:localstack:1.18.3")
   testImplementation("org.testcontainers:postgresql:1.18.3")
