@@ -326,7 +326,11 @@ open class ReportedAdjudicationBaseService(
   }
 
   protected fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
-    reportedAdjudicationRepository.save(reportedAdjudication).toDto(authenticationFacade.activeCaseload)
+    reportedAdjudicationRepository.save(
+      reportedAdjudication.also {
+        it.lastModifiedAgencyId = authenticationFacade.activeCaseload
+      },
+    ).toDto(authenticationFacade.activeCaseload)
 
   protected fun findByReportNumberIn(adjudicationNumbers: List<Long>) = reportedAdjudicationRepository.findByReportNumberIn(adjudicationNumbers)
 

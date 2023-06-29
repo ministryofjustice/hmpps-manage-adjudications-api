@@ -113,9 +113,9 @@ class ReportsService(
       status = ReportedAdjudicationStatus.AWAITING_REVIEW,
     )
 
-    val transferReviewTotal = reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn(
+    val transferReviewTotal = reportedAdjudicationRepository.countTransfers(
       overrideAgencyId = agencyId,
-      statuses = transferReviewStatuses,
+      statuses = transferReviewStatuses.map { it.name },
     )
 
     return AgencyReportCountsDto(

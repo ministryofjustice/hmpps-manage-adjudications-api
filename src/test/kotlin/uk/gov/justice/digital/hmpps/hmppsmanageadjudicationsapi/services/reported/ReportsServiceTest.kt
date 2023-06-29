@@ -292,7 +292,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `get reports count for agency`() {
       whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.AWAITING_REVIEW)).thenReturn(2)
-      whenever(reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn("MDI", transferReviewStatuses)).thenReturn(1)
+      whenever(reportedAdjudicationRepository.countTransfers("MDI", transferReviewStatuses.map { it.name })).thenReturn(1)
 
       val result = reportsService.getReportCounts()
 
