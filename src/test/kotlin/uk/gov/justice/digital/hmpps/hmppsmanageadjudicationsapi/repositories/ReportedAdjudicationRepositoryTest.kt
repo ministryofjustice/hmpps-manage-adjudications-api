@@ -574,14 +574,18 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `find by override agency id `() {
-    val page = reportedAdjudicationRepository.findByOverrideAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+    val page = reportedAdjudicationRepository.findTransfersByAgency(
       "MDI",
       LocalDateTime.now().minusYears(1),
       LocalDateTime.now().plusYears(1),
-      ReportedAdjudicationStatus.values().toList(),
+      ReportedAdjudicationStatus.values().toList().map { it.name },
       Pageable.ofSize(10),
     )
 
-    assertThat(page.content.size).isEqualTo(2)
+    assertThat(page.content).hasSize(1)
+      .extracting("reportNumber")
+      .contains(
+        19997L,
+      )
   }
 }

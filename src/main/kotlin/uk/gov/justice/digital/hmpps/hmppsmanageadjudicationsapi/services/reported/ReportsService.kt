@@ -37,11 +37,11 @@ class ReportsService(
     val reportedAdjudicationsPage = if (transfersOnly) {
       val pageableOverride = PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.by("dateTimeOfDiscovery").descending())
 
-      reportedAdjudicationRepository.findByOverrideAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+      reportedAdjudicationRepository.findTransfersByAgency(
         overrideAgencyId = authenticationFacade.activeCaseload,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
-        statuses = statuses,
+        statuses = statuses.map { it.name },
         pageable = pageableOverride,
       )
     } else {
