@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.AgencyReportCountsDto
@@ -35,14 +33,12 @@ class ReportsService(
     pageable: Pageable,
   ): Page<ReportedAdjudicationDto> {
     val reportedAdjudicationsPage = if (transfersOnly) {
-      val pageableOverride = PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.by("dateTimeOfDiscovery").descending())
-
-      reportedAdjudicationRepository.findByOverrideAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+      reportedAdjudicationRepository.findTransfersByAgency(
         overrideAgencyId = authenticationFacade.activeCaseload,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
-        statuses = statuses,
-        pageable = pageableOverride,
+        statuses = statuses.map { it.name },
+        pageable = pageable,
       )
     } else {
       reportedAdjudicationRepository.findAllReportsByAgency(
@@ -50,6 +46,7 @@ class ReportsService(
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
         statuses = statuses.map { it.name },
+        transferIgnoreStatuses = transferIgnoreStatuses.map { it.name },
         pageable = pageable,
       )
     }
@@ -112,9 +109,9 @@ class ReportsService(
       status = ReportedAdjudicationStatus.AWAITING_REVIEW,
     )
 
-    val transferReviewTotal = reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn(
+    val transferReviewTotal = reportedAdjudicationRepository.countTransfers(
       overrideAgencyId = agencyId,
-      statuses = transferReviewStatuses,
+      statuses = transferReviewStatuses.map { it.name },
     )
 
     return AgencyReportCountsDto(
@@ -130,6 +127,9 @@ class ReportsService(
       ReportedAdjudicationStatus.ADJOURNED,
       ReportedAdjudicationStatus.REFER_INAD,
     )
+
+    val transferIgnoreStatuses = transferReviewStatuses.plus(ReportedAdjudicationStatus.AWAITING_REVIEW)
+
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
     fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)
   }

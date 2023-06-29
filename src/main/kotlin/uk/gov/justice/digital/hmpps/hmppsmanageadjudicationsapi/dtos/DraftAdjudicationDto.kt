@@ -44,6 +44,8 @@ data class DraftAdjudicationDto(
   val witnessesSaved: Boolean? = null,
   @Schema(description = "optional override agency id")
   val overrideAgencyId: String? = null,
+  @Schema(description = "agency id where report was created")
+  val originatingAgencyId: String,
 )
 
 @Schema(description = "Incident details")

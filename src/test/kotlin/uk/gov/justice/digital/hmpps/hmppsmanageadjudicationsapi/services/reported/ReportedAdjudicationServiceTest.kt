@@ -353,6 +353,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = to
           it.reviewUserId = if (to == ReportedAdjudicationStatus.AWAITING_REVIEW) null else "ITAG_USER"
+          it.lastModifiedAgencyId = it.originatingAgencyId
         },
       )
       if (updatesNomis) {
@@ -388,6 +389,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       returnedReportedAdjudication.reviewUserId = "ITAG_USER"
       returnedReportedAdjudication.createdByUserId = "A_USER"
       returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
+      returnedReportedAdjudication.lastModifiedAgencyId = returnedReportedAdjudication.originatingAgencyId
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         returnedReportedAdjudication,
       )
