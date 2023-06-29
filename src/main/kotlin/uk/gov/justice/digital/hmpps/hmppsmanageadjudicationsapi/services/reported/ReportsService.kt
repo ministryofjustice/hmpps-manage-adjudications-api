@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.AgencyReportCountsDto
@@ -35,14 +33,12 @@ class ReportsService(
     pageable: Pageable,
   ): Page<ReportedAdjudicationDto> {
     val reportedAdjudicationsPage = if (transfersOnly) {
-      val pageableOverride = PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.by("dateTimeOfDiscovery").descending())
-
       reportedAdjudicationRepository.findTransfersByAgency(
         overrideAgencyId = authenticationFacade.activeCaseload,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
         statuses = statuses.map { it.name },
-        pageable = pageableOverride,
+        pageable = pageable,
       )
     } else {
       reportedAdjudicationRepository.findAllReportsByAgency(
