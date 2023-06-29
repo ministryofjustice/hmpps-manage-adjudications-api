@@ -29,8 +29,8 @@ dependencies {
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.27.0")
 
   runtimeOnly("com.h2database:h2:2.1.214")
-  runtimeOnly("org.flywaydb:flyway-core:9.20.0")
-  runtimeOnly("org.postgresql:postgresql:42.6.0")
+  runtimeOnly("org.flywaydb:flyway-core")
+  runtimeOnly("org.postgresql:postgresql")
 
   testImplementation("io.jsonwebtoken:jjwt-impl:0.11.5")
   testImplementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
