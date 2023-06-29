@@ -95,7 +95,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `find all reports by override agency `() {
-      whenever(reportedAdjudicationRepository.findByOverrideAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(any(), any(), any(), any(), any()))
+      whenever(reportedAdjudicationRepository.findTransfersByAgency(any(), any(), any(), any(), any()))
         .thenReturn(
           PageImpl(
             listOf(
@@ -115,7 +115,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findByOverrideAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(any(), any(), any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersByAgency(any(), any(), any(), any(), any())
 
       assertThat(myReportedAdjudications.size).isEqualTo(1)
     }
