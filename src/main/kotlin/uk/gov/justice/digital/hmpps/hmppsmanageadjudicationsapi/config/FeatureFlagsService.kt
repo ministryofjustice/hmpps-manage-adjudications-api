@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service
 class FeatureFlagsService(
   @Value("\${feature.async-mode:false}")
   val asyncMode: Boolean,
+  @Value("\${feature.nomis-source-of-truth:true}")
+  val nomisSourceOfTruth: Boolean,
 ) {
 
   fun isAsyncMode(): Boolean {
@@ -15,5 +17,9 @@ class FeatureFlagsService(
 
   fun isLegacySyncMode(): Boolean {
     return !asyncMode
+  }
+
+  fun isNomisSourceOfTruth(): Boolean {
+    return nomisSourceOfTruth
   }
 }

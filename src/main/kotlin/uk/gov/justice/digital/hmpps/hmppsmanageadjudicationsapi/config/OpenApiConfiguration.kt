@@ -38,6 +38,7 @@ class OpenApiConfiguration(
     )
     .tags(
       listOf(
+        Tag().name("01. Adjudication Summary"),
         Tag().name("10. Draft Adjudication Management").description("Draft Adjudications Management"),
         Tag().name("11. Draft Adjudication Workflow").description("Draft Adjudications Workflow"),
         Tag().name("12. Draft Damages").description("Draft Adjudications - Damages"),
