@@ -13,11 +13,8 @@ generic-service:
 
   ingress:
     enabled: true
-    v1_2_enabled: true
-    v0_47_enabled: false
     host: app-hostname.local    # override per environment
     tlsSecretName: hmpps-manage-adjudications-api-cert
-    contextColour: green
     annotations:
       # Secure the all scheduled task endpoints from outside the Kubernetes ingress
       nginx.ingress.kubernetes.io/configuration-snippet: |
