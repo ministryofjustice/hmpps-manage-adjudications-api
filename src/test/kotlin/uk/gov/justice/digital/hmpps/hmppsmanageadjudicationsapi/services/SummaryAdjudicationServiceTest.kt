@@ -1,0 +1,123 @@
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
+
+import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
+import org.springframework.data.domain.PageRequest
+import org.springframework.http.HttpStatusCode
+import org.springframework.http.ResponseEntity
+import org.springframework.util.CollectionUtils
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Award
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyNomisGateway
+import java.time.LocalDate
+
+class SummaryAdjudicationServiceTest {
+
+  private val legacyNomisGateway: LegacyNomisGateway = mock()
+  private val featureFlagsService: FeatureFlagsService = mock()
+
+  private val prisonerNumber = "A1234AB"
+
+  private val summaryAdjudicationService = SummaryAdjudicationService(
+    legacyNomisGateway,
+    featureFlagsService,
+  )
+
+  @BeforeEach
+  fun beforeEach() {
+    whenever(featureFlagsService.isNomisSourceOfTruth()).thenReturn(true)
+  }
+
+  @Test
+  fun `can paginate results from NOMIS`() {
+    val today = LocalDate.now()
+
+    val offenceId = 1L
+    val prisonId = "MDI"
+    val finding = Finding.PROVED
+    val fromDate = today.minusDays(30)
+    val toDate = today.minusDays(1)
+    val pageable = PageRequest.of(1, 10)
+
+    val headers = CollectionUtils.unmodifiableMultiValueMap(
+      CollectionUtils.toMultiValueMap(
+        mapOf(
+          "Page-Offset" to listOf("10"),
+          "Page-Limit" to listOf("10"),
+          "Total-Records" to listOf("30"),
+        ),
+      ),
+    )
+
+    whenever(
+      legacyNomisGateway.getAdjudicationsForPrisoner(
+        prisonerNumber,
+        offenceId,
+        prisonId,
+        finding,
+        fromDate,
+        toDate,
+        pageable,
+      ),
+    ).thenReturn(
+      ResponseEntity(
+        AdjudicationResponse(
+          results = listOf(),
+          offences = listOf(),
+          agencies = listOf(),
+        ),
+        headers,
+        HttpStatusCode.valueOf(200),
+      ),
+    )
+
+    val adjudications = summaryAdjudicationService.getAdjudications(
+      prisonerNumber = prisonerNumber,
+      offenceId = offenceId,
+      prisonId = prisonId,
+      finding = finding,
+      fromDate = fromDate,
+      toDate = toDate,
+      pageable = pageable,
+    )
+
+    Assertions.assertThat(adjudications.results.totalElements).isEqualTo(30)
+    Assertions.assertThat(adjudications.results.totalPages).isEqualTo(3)
+    Assertions.assertThat(adjudications.results.pageable.pageNumber).isEqualTo(1)
+    Assertions.assertThat(adjudications.results.numberOfElements).isEqualTo(0)
+  }
+
+  @Test
+  fun `can get results for a booking`() {
+    whenever(legacyNomisGateway.getAdjudicationsForPrisonerForBooking(1L, null, null)).thenReturn(
+      AdjudicationSummary(
+        bookingId = 1L,
+        adjudicationCount = 2,
+        awards = listOf(Award(bookingId = 1L, sanctionCode = "T3"), Award(bookingId = 1L, sanctionCode = "T1")),
+      ),
+    )
+    val adjudicationSummary = summaryAdjudicationService.getAdjudicationSummary(1L, null, null)
+
+    Assertions.assertThat(adjudicationSummary.adjudicationCount).isEqualTo(2)
+  }
+
+  @Test
+  fun `can get results for a prisoner number`() {
+    val adjudicationNumber = 10000L
+    whenever(legacyNomisGateway.getAdjudicationDetailForPrisoner(prisonerNumber = prisonerNumber, chargeId = 1L)).thenReturn(
+      AdjudicationDetail(
+        adjudicationNumber = adjudicationNumber,
+      ),
+    )
+    val adjudicationDetail = summaryAdjudicationService.getAdjudication(prisonerNumber, 1L)
+
+    Assertions.assertThat(adjudicationDetail.adjudicationNumber).isEqualTo(adjudicationNumber)
+  }
+}
