@@ -33,3 +33,4 @@ oauth:
 
 feature:
   async-mode: true
+  nomis-source-of-truth: true
