@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudicatio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Award
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ProvenAdjudicationsSummary
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyNomisGateway
 import java.time.LocalDate
@@ -119,5 +120,19 @@ class SummaryAdjudicationServiceTest {
     val adjudicationDetail = summaryAdjudicationService.getAdjudication(prisonerNumber, 1L)
 
     Assertions.assertThat(adjudicationDetail.adjudicationNumber).isEqualTo(adjudicationNumber)
+  }
+
+  @Test
+  fun `can get proven adjudication results for a set of booking Ids`() {
+    val bookingIds = listOf(1L, 2L)
+    whenever(legacyNomisGateway.getProvenAdjudicationsForBookings(bookingIds, null, null)).thenReturn(
+      listOf(
+        ProvenAdjudicationsSummary(bookingId = 1L, provenAdjudicationCount = 2),
+        ProvenAdjudicationsSummary(bookingId = 2L, provenAdjudicationCount = 1),
+      ),
+    )
+    val provenAdjs = summaryAdjudicationService.getProvenAdjudicationsForBookings(bookingIds, null, null)
+
+    Assertions.assertThat(provenAdjs).hasSize(2)
   }
 }
