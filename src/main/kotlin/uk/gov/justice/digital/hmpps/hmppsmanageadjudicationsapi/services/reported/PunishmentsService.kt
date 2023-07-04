@@ -165,10 +165,14 @@ class PunishmentsService(
 
   fun getSuspendedPunishments(prisonerNumber: String, reportNumber: Long? = null): List<SuspendedPunishmentDto> {
     val reportsWithSuspendedPunishments = getReportsWithSuspendedPunishments(prisonerNumber = prisonerNumber)
+    var includeAdditionalDays: Boolean? = null
+    reportNumber?.let {
+      includeAdditionalDays = includeAdditionalDays(it)
+    }
 
     return reportsWithSuspendedPunishments.map {
       it.getPunishments().suspendedPunishmentsToActivate()
-        .filter { punishment -> reportNumber == null || punishment.type.includeInSuspendedPunishments(includeAdditionalDays(reportNumber)) }
+        .filter { punishment -> reportNumber == null || punishment.type.includeInSuspendedPunishments(includeAdditionalDays!!) }
         .map { punishment ->
           val schedule = punishment.schedule.latestSchedule()
 
