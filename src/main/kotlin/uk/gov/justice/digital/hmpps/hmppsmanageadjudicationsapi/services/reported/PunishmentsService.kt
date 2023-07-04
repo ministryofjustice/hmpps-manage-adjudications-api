@@ -82,7 +82,7 @@ class PunishmentsService(
     }
 
     punishments.forEach {
-      it.validateRequest(reportedAdjudication.getLatestHearing()!!)
+      it.validateRequest(reportedAdjudication.getLatestHearing())
       if (it.activatedFrom != null) {
         reportedAdjudication.addPunishment(
           activateSuspendedPunishment(adjudicationNumber = adjudicationNumber, punishmentRequest = it),
@@ -114,7 +114,7 @@ class PunishmentsService(
     }
 
     punishments.forEach {
-      it.validateRequest(reportedAdjudication.getLatestHearing()!!)
+      it.validateRequest(reportedAdjudication.getLatestHearing())
 
       when (it.id) {
         null -> when (it.activatedFrom) {
@@ -426,7 +426,7 @@ class PunishmentsService(
     fun List<PunishmentComment>.getPunishmentComment(id: Long): PunishmentComment =
       this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Punishment comment id $id is not found")
 
-    fun PunishmentRequest.validateRequest(latestHearing: Hearing) {
+    fun PunishmentRequest.validateRequest(latestHearing: Hearing?) {
       when (this.type) {
         PunishmentType.PRIVILEGE -> {
           this.privilegeType ?: throw ValidationException("subtype missing for type PRIVILEGE")
@@ -435,7 +435,7 @@ class PunishmentsService(
           }
         }
         PunishmentType.EARNINGS -> this.stoppagePercentage ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
-        PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> if (latestHearing.oicHearingType != OicHearingType.INAD_ADULT) throw ValidationException("Only INAD can set ${this.type}")
+        PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> if (latestHearing?.oicHearingType != OicHearingType.INAD_ADULT) throw ValidationException("Only INAD can set ${this.type}")
         else -> {}
       }
       when (this.type) {
