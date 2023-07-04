@@ -36,6 +36,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
@@ -403,6 +404,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.INAD_ADULT
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
           it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
           it.createdByUserId = "test"
@@ -410,6 +412,25 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+    }
+
+    @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
+    @ParameterizedTest
+    fun `throws exception if not inad hearing `(punishmentType: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.GOV
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.create(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequest(type = punishmentType, days = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Punishment $punishmentType is invalid as the punishment decision was not awarded by an independent adjudicator")
     }
 
     @CsvSource(
@@ -570,6 +591,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           ),
           PunishmentRequest(
             type = PunishmentType.ADDITIONAL_DAYS,
+            consecutiveReportNumber = 999,
             days = 1,
           ),
           PunishmentRequest(
@@ -584,8 +606,10 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       verify(legacySyncService, atLeastOnce()).createSanctions(any(), any())
 
       val removalWing = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.REMOVAL_WING }
+      val additionalDays = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.ADDITIONAL_DAYS }
 
       assertThat(removalWing.suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(additionalDays.consecutiveReportNumber).isEqualTo(999)
 
       assertThat(argumentCaptor.value.getPunishments().size).isEqualTo(4)
       assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
@@ -708,6 +732,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudication.also {
           it.clearPunishments()
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.INAD_ADULT
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
           it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
           it.createdByUserId = "test"
@@ -716,6 +741,25 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+    }
+
+    @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
+    @ParameterizedTest
+    fun `throws exception if not inad hearing `(punishmentType: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.GOV
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequest(type = punishmentType, days = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Punishment $punishmentType is invalid as the punishment decision was not awarded by an independent adjudicator")
     }
 
     @CsvSource(
@@ -1054,7 +1098,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           PunishmentRequest(
             id = 3,
             type = PunishmentType.ADDITIONAL_DAYS,
-            days = 2,
+            days = 3,
           ),
           PunishmentRequest(
             id = 4,

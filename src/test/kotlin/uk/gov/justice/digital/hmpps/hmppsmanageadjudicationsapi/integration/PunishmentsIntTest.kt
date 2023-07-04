@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.repo
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -36,6 +37,20 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
           DateTimeFormatter.ISO_DATE,
         ),
       )
+  }
+
+  @Test
+  fun `create punishments - additional days `() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved(caution = false)
+
+    createPunishments(type = PunishmentType.ADDITIONAL_DAYS, consecutiveReportNumber = 9999)
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.ADDITIONAL_DAYS.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].consecutiveReportNumber").isEqualTo(9999)
   }
 
   @Test
@@ -126,7 +141,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
       .createChargeProved(overrideTestDataSet = IntegrationTestData.ADJUDICATION_2, caution = false)
 
-    val result = createPunishments(type = PunishmentType.PROSPECTIVE_DAYS)
+    val result = createPunishments(type = PunishmentType.REMOVAL_WING)
       .returnResult(ReportedAdjudicationResponse::class.java)
       .responseBody
       .blockFirst()!!
@@ -140,8 +155,10 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
             listOf(
               PunishmentRequest(
                 id = result.reportedAdjudication.punishments.first().id!!,
-                type = PunishmentType.PROSPECTIVE_DAYS,
+                type = PunishmentType.REMOVAL_WING,
                 days = 10,
+                startDate = LocalDate.now(),
+                endDate = LocalDate.now().plusDays(5),
                 activatedFrom = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
               ),
             ),
@@ -150,7 +167,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isCreated
       .expectBody()
-      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.PROSPECTIVE_DAYS.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.REMOVAL_WING.name)
       .jsonPath("$.reportedAdjudication.punishments[0].activatedFrom").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     webTestClient.get()
@@ -159,7 +176,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
-      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.PROSPECTIVE_DAYS.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.REMOVAL_WING.name)
       .jsonPath("$.reportedAdjudication.punishments[0].activatedBy").isEqualTo(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
   }
 
@@ -179,7 +196,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
       .createChargeProved(overrideTestDataSet = IntegrationTestData.ADJUDICATION_2, caution = false)
 
-    val result = createPunishments(type = PunishmentType.PROSPECTIVE_DAYS)
+    val result = createPunishments(type = PunishmentType.REMOVAL_WING)
       .returnResult(ReportedAdjudicationResponse::class.java)
       .responseBody
       .blockFirst()!!
@@ -195,8 +212,10 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
             listOf(
               PunishmentRequest(
                 id = result.reportedAdjudication.punishments.first().id!!,
-                type = PunishmentType.PROSPECTIVE_DAYS,
+                type = PunishmentType.REMOVAL_WING,
                 days = 10,
+                startDate = LocalDate.now(),
+                endDate = LocalDate.now().plusDays(5),
                 activatedFrom = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
               ),
             ),
@@ -206,7 +225,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.PROSPECTIVE_DAYS.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.REMOVAL_WING.name)
       .jsonPath("$.reportedAdjudication.punishments[0].activatedFrom").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
 
     webTestClient.get()
@@ -215,7 +234,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
-      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.PROSPECTIVE_DAYS.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.REMOVAL_WING.name)
       .jsonPath("$.reportedAdjudication.punishments[0].activatedBy").isEqualTo(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
   }
 
@@ -324,6 +343,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   private fun createPunishments(
     adjudicationNumber: Long = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
     type: PunishmentType = PunishmentType.CONFINEMENT,
+    consecutiveReportNumber: Long? = null,
   ): WebTestClient.ResponseSpec {
     val suspendedUntil = LocalDate.now().plusMonths(1)
 
@@ -338,6 +358,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
                 type = type,
                 days = 10,
                 suspendedUntil = suspendedUntil,
+                consecutiveReportNumber = consecutiveReportNumber,
               ),
             ),
         ),

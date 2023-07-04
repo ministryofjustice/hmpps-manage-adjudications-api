@@ -48,6 +48,8 @@ data class PunishmentRequest(
   val suspendedUntil: LocalDate? = null,
   @Schema(description = "optional activated from report number")
   val activatedFrom: Long? = null,
+  @Schema(description = "optional consecutive report number")
+  val consecutiveReportNumber: Long? = null,
 )
 
 @Schema(description = "punishment comment request")

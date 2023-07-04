@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentD
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
@@ -20,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
@@ -80,7 +82,7 @@ class PunishmentsService(
     }
 
     punishments.forEach {
-      it.validateRequest()
+      it.validateRequest(reportedAdjudication.getLatestHearing())
       if (it.activatedFrom != null) {
         reportedAdjudication.addPunishment(
           activateSuspendedPunishment(adjudicationNumber = adjudicationNumber, punishmentRequest = it),
@@ -112,7 +114,7 @@ class PunishmentsService(
     }
 
     punishments.forEach {
-      it.validateRequest()
+      it.validateRequest(reportedAdjudication.getLatestHearing())
 
       when (it.id) {
         null -> when (it.activatedFrom) {
@@ -334,6 +336,7 @@ class PunishmentsService(
       otherPrivilege = punishmentRequest.otherPrivilege,
       stoppagePercentage = punishmentRequest.stoppagePercentage,
       suspendedUntil = punishmentRequest.suspendedUntil,
+      consecutiveReportNumber = punishmentRequest.consecutiveReportNumber,
       schedule = mutableListOf(
         PunishmentSchedule(
           days = punishmentRequest.days,
@@ -423,7 +426,7 @@ class PunishmentsService(
     fun List<PunishmentComment>.getPunishmentComment(id: Long): PunishmentComment =
       this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Punishment comment id $id is not found")
 
-    fun PunishmentRequest.validateRequest() {
+    fun PunishmentRequest.validateRequest(latestHearing: Hearing?) {
       when (this.type) {
         PunishmentType.PRIVILEGE -> {
           this.privilegeType ?: throw ValidationException("subtype missing for type PRIVILEGE")
@@ -432,6 +435,7 @@ class PunishmentsService(
           }
         }
         PunishmentType.EARNINGS -> this.stoppagePercentage ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
+        PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> if (latestHearing?.oicHearingType != OicHearingType.INAD_ADULT) throw ValidationException("Punishment ${this.type} is invalid as the punishment decision was not awarded by an independent adjudicator")
         else -> {}
       }
       when (this.type) {

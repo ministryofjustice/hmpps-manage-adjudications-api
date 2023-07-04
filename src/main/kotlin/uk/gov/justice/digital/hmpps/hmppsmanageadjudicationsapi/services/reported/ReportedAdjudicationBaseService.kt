@@ -259,6 +259,7 @@ open class ReportedDtoService(
         stoppagePercentage = it.stoppagePercentage,
         activatedFrom = it.activatedFrom,
         activatedBy = it.activatedBy,
+        consecutiveReportNumber = it.consecutiveReportNumber,
         schedule = it.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toPunishmentScheduleDto(),
       )
     }
