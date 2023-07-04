@@ -46,7 +46,7 @@ import java.time.LocalDateTime
 open class ReportedDtoService(
   protected val offenceCodeLookupService: OffenceCodeLookupService,
 ) {
-  protected fun ReportedAdjudication.toDto(activeCaseload: String? = null, consecutiveReportsAvailable: List<Long> = emptyList()): ReportedAdjudicationDto {
+  protected fun ReportedAdjudication.toDto(activeCaseload: String? = null, consecutiveReportsAvailable: List<Long>? = null): ReportedAdjudicationDto {
     val hearings = this.hearings.toHearings()
     val outcomes = this.getOutcomes().createCombinedOutcomes(this.getPunishments())
     return ReportedAdjudicationDto(
@@ -249,7 +249,7 @@ open class ReportedDtoService(
       )
     }.sortedBy { it.dateTimeOfIssue }.toList()
 
-  private fun List<Punishment>.toPunishments(consecutiveReportsAvailable: List<Long>): List<PunishmentDto> =
+  private fun List<Punishment>.toPunishments(consecutiveReportsAvailable: List<Long>?): List<PunishmentDto> =
     this.sortedBy { it.type }.map {
       PunishmentDto(
         id = it.id,
@@ -265,8 +265,9 @@ open class ReportedDtoService(
       )
     }
 
-  private fun isConsecutiveReportAvailable(consecutiveReportNumber: Long?, consecutiveReportsAvailable: List<Long>): Boolean? {
+  private fun isConsecutiveReportAvailable(consecutiveReportNumber: Long?, consecutiveReportsAvailable: List<Long>?): Boolean? {
     consecutiveReportNumber ?: return null
+    consecutiveReportsAvailable ?: return null
     return consecutiveReportsAvailable.any { it == consecutiveReportNumber }
   }
 
