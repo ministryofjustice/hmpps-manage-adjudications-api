@@ -430,7 +430,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           listOf(PunishmentRequest(type = punishmentType, days = 1)),
         )
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("Only INAD can set $punishmentType")
+        .hasMessageContaining("Punishment $punishmentType is invalid as the punishment decision was not awarded by an independent adjudicator")
     }
 
     @CsvSource(
@@ -759,7 +759,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           listOf(PunishmentRequest(type = punishmentType, days = 1)),
         )
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("Only INAD can set $punishmentType")
+        .hasMessageContaining("Punishment $punishmentType is invalid as the punishment decision was not awarded by an independent adjudicator")
     }
 
     @CsvSource(

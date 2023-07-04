@@ -435,7 +435,7 @@ class PunishmentsService(
           }
         }
         PunishmentType.EARNINGS -> this.stoppagePercentage ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
-        PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> if (latestHearing?.oicHearingType != OicHearingType.INAD_ADULT) throw ValidationException("Only INAD can set ${this.type}")
+        PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> if (latestHearing?.oicHearingType != OicHearingType.INAD_ADULT) throw ValidationException("Punishment ${this.type} is invalid as the punishment decision was not awarded by an independent adjudicator")
         else -> {}
       }
       when (this.type) {
