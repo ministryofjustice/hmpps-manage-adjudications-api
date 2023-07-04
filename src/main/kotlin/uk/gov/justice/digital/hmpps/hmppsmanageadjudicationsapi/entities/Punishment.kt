@@ -31,6 +31,7 @@ data class Punishment(
   @JoinColumn(name = "punishment_fk_id")
   var schedule: MutableList<PunishmentSchedule>,
   var deleted: Boolean? = null,
+  var consecutiveReportNumber: Long? = null,
 ) : BaseEntity()
 
 enum class PunishmentType {

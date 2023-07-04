@@ -5,6 +5,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDateTime
 
 class IntegrationTestScenarioBuilder(
@@ -85,10 +86,12 @@ class IntegrationTestScenario(
   fun createHearing(
     overrideTestDataSet: AdjudicationIntTestDataSet = testAdjudicationDataSet,
     dateTimeOfHearing: LocalDateTime? = null,
+    oicHearingType: OicHearingType? = OicHearingType.GOV,
   ): IntegrationTestScenario {
     intTestData.createHearing(
       overrideTestDataSet,
       dateTimeOfHearing,
+      oicHearingType,
     )
     return this
   }
