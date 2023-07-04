@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFl
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSearchResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ProvenAdjudicationsSummary
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyNomisGateway
 import java.time.LocalDate
@@ -74,6 +75,15 @@ class SummaryAdjudicationService(
     } else {
       // TODO: get data from this database!
       AdjudicationSummary(bookingId = bookingId, adjudicationCount = 0, awards = listOf())
+    }
+  }
+
+  fun getProvenAdjudicationsForBookings(bookingIds: List<Long>, awardCutoffDate: LocalDate?, adjudicationCutoffDate: LocalDate?): List<ProvenAdjudicationsSummary> {
+    return if (featureFlagsService.isNomisSourceOfTruth()) {
+      legacyNomisGateway.getProvenAdjudicationsForBookings(bookingIds, awardCutoffDate, adjudicationCutoffDate)
+    } else {
+      // TODO: get data from this database!
+      listOf()
     }
   }
 }
