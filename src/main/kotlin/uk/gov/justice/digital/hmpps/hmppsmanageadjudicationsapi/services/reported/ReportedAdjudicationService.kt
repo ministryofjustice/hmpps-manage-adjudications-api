@@ -37,7 +37,7 @@ class ReportedAdjudicationService(
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
-    return reportedAdjudication.toDto(authenticationFacade.activeCaseload)
+    return reportedAdjudication.toDto(authenticationFacade.activeCaseload, reportedAdjudication.getConsecutiveReportsAvailable())
   }
 
   fun lastOutcomeHasReferralOutcome(adjudicationNumber: Long): Boolean =
@@ -86,6 +86,16 @@ class ReportedAdjudicationService(
     }
 
     return saveToDto(reportedAdjudication)
+  }
+
+  @Deprecated("this should be removed once data migration is complete - all reports will be available")
+  private fun ReportedAdjudication.getConsecutiveReportsAvailable(): List<Long> {
+    val consecutiveReportsToFind = this.getPunishments().filter { it.consecutiveReportNumber != null }.map { it.consecutiveReportNumber!! }
+    if (consecutiveReportsToFind.isNotEmpty()) {
+      return findByReportNumberIn(consecutiveReportsToFind).map { it.reportNumber }
+    }
+
+    return emptyList()
   }
 
   private fun saveToPrisonApi(reportedAdjudication: ReportedAdjudication) {
