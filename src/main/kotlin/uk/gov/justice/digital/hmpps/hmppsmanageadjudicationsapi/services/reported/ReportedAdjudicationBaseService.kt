@@ -46,7 +46,7 @@ import java.time.LocalDateTime
 open class ReportedDtoService(
   protected val offenceCodeLookupService: OffenceCodeLookupService,
 ) {
-  protected fun ReportedAdjudication.toDto(activeCaseload: String? = null): ReportedAdjudicationDto {
+  protected fun ReportedAdjudication.toDto(activeCaseload: String? = null, consecutiveReportsAvailable: List<Long> = emptyList()): ReportedAdjudicationDto {
     val hearings = this.hearings.toHearings()
     val outcomes = this.getOutcomes().createCombinedOutcomes(this.getPunishments())
     return ReportedAdjudicationDto(
@@ -86,7 +86,7 @@ open class ReportedDtoService(
       gender = gender,
       dateTimeOfFirstHearing = dateTimeOfFirstHearing,
       outcomes = createOutcomeHistory(hearings.toMutableList(), outcomes.toMutableList()),
-      punishments = this.getPunishments().filterOutChargeProvedPunishments().toPunishments(),
+      punishments = this.getPunishments().filterOutChargeProvedPunishments().toPunishments(consecutiveReportsAvailable),
       punishmentComments = this.punishmentComments.toPunishmentComments(),
       outcomeEnteredInNomis = hearings.any { it.outcome?.code == HearingOutcomeCode.NOMIS },
       overrideAgencyId = this.overrideAgencyId,
@@ -249,7 +249,7 @@ open class ReportedDtoService(
       )
     }.sortedBy { it.dateTimeOfIssue }.toList()
 
-  private fun List<Punishment>.toPunishments(): List<PunishmentDto> =
+  private fun List<Punishment>.toPunishments(consecutiveReportsAvailable: List<Long>): List<PunishmentDto> =
     this.sortedBy { it.type }.map {
       PunishmentDto(
         id = it.id,
@@ -260,9 +260,15 @@ open class ReportedDtoService(
         activatedFrom = it.activatedFrom,
         activatedBy = it.activatedBy,
         consecutiveReportNumber = it.consecutiveReportNumber,
+        consecutiveReportAvailable = isConsecutiveReportAvailable(it.consecutiveReportNumber, consecutiveReportsAvailable),
         schedule = it.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toPunishmentScheduleDto(),
       )
     }
+
+  private fun isConsecutiveReportAvailable(consecutiveReportNumber: Long?, consecutiveReportsAvailable: List<Long>): Boolean? {
+    consecutiveReportNumber ?: return null
+    return consecutiveReportsAvailable.any { it == consecutiveReportNumber }
+  }
 
   private fun PunishmentSchedule.toPunishmentScheduleDto(): PunishmentScheduleDto =
     PunishmentScheduleDto(

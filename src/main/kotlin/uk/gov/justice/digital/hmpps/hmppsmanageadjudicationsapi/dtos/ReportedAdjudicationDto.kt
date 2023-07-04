@@ -248,6 +248,8 @@ data class PunishmentDto(
   val schedule: PunishmentScheduleDto,
   @Schema(description = "optional consecutive report number")
   val consecutiveReportNumber: Long? = null,
+  @Schema(description = "optional consecutive report number is available to view in adjudications service")
+  val consecutiveReportAvailable: Boolean? = null,
 )
 
 @Schema(description = "punishment schedule")

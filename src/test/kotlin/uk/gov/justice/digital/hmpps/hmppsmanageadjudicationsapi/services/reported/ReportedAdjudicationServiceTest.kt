@@ -283,6 +283,51 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(reportedAdjudicationDto.hearings[1].oicHearingType).isEqualTo(OicHearingType.GOV)
       assertThat(reportedAdjudicationDto.hearings[2].oicHearingType).isEqualTo(OicHearingType.INAD_YOI)
     }
+
+    @Test
+    fun `get reported adjudication details with flag to indicate consecutive report is available to view `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.ADDITIONAL_DAYS,
+              consecutiveReportNumber = 999,
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 10),
+              ),
+            ),
+          )
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.ADDITIONAL_DAYS,
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 10),
+              ),
+            ),
+          )
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.ADDITIONAL_DAYS,
+              consecutiveReportNumber = 9999,
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 10),
+              ),
+            ),
+          )
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.findByReportNumberIn(any())).thenReturn(listOf(entityBuilder.reportedAdjudication(reportNumber = 999)))
+
+      val dto = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+
+      verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumberIn(listOf(999, 9999))
+      assertThat(dto.punishments.first { it.consecutiveReportNumber == 999L }.consecutiveReportAvailable).isTrue
+      assertThat(dto.punishments.first { it.consecutiveReportNumber == 9999L }.consecutiveReportAvailable).isFalse
+      assertThat(dto.punishments.first { it.consecutiveReportNumber == null }.consecutiveReportAvailable).isNull()
+    }
   }
 
   @Nested
