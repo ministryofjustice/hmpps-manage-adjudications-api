@@ -272,6 +272,16 @@ data class SuspendedPunishmentDto(
   val punishment: PunishmentDto,
 )
 
+@Schema(description = "additional days to activate dto")
+data class AdditionalDaysDto(
+  @Schema(description = "report number punishment from")
+  val reportNumber: Long,
+  @Schema(description = "date charge proved")
+  val chargeProvedDate: LocalDate,
+  @Schema(description = "punishment dto")
+  val punishment: PunishmentDto,
+)
+
 @Schema(description = "punishment comment")
 data class PunishmentCommentDto(
   @Schema(description = "punishment comment id used for edit and delete")

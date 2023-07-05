@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdditionalDaysDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
@@ -216,6 +217,53 @@ class PunishmentsControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.get("/reported-adjudications/punishments/AE1234/suspended")
+            .header("Content-Type", "application/json"),
+        )
+    }
+  }
+
+  @Nested
+  inner class GetReportsWithAdditionalDays {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        punishmentsService.getReportsWithAdditionalDays(
+          any(),
+          any(),
+        ),
+      ).thenReturn(ADDITIONAL_DAYS_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      getReportsWithAdditionalDaysRequest().andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      getReportsWithAdditionalDaysRequest().andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      getReportsWithAdditionalDaysRequest().andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to get reports with additional days`() {
+      getReportsWithAdditionalDaysRequest()
+        .andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(punishmentsService).getReportsWithAdditionalDays("AE1234", PunishmentType.ADDITIONAL_DAYS)
+    }
+
+    private fun getReportsWithAdditionalDaysRequest(): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.get("/reported-adjudications/punishments/AE1234/for-consecutive?type=ADDITIONAL_DAYS")
             .header("Content-Type", "application/json"),
         )
     }
@@ -474,6 +522,18 @@ class PunishmentsControllerTest : TestControllerBase() {
           schedule = PunishmentScheduleDto(
             days = 10,
             suspendedUntil = LocalDate.now(),
+          ),
+        ),
+      ),
+    )
+    val ADDITIONAL_DAYS_DTO = listOf(
+      AdditionalDaysDto(
+        reportNumber = 1,
+        chargeProvedDate = LocalDate.now(),
+        punishment = PunishmentDto(
+          type = PunishmentType.ADDITIONAL_DAYS,
+          schedule = PunishmentScheduleDto(
+            days = 10,
           ),
         ),
       ),

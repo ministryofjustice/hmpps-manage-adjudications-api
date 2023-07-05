@@ -1395,6 +1395,66 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
   }
 
   @Nested
+  inner class GetAdditionalDaysReports {
+
+    private val reportedAdjudications = listOf(
+      entityBuilder.reportedAdjudication(reportNumber = 1).also {
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+            ),
+          ),
+        )
+      },
+      entityBuilder.reportedAdjudication(reportNumber = 1).also {
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.PROSPECTIVE_DAYS,
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+            ),
+          ),
+        )
+      },
+    )
+
+    @EnumSource(PunishmentType::class)
+    @ParameterizedTest
+    fun `throws exception if punishment type in request not additional days or prospective days`(punishmentType: PunishmentType) {
+      if (listOf(PunishmentType.ADDITIONAL_DAYS, PunishmentType.PROSPECTIVE_DAYS).contains(punishmentType)) return
+
+      assertThatThrownBy {
+        punishmentsService.getReportsWithAdditionalDays(
+          prisonerNumber = "",
+          punishmentType = punishmentType,
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Punishment type must be ADDITIONAL_DAYS or PROSPECTIVE_DAYS")
+    }
+
+    @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
+    @ParameterizedTest
+    fun `get additional days reports`(punishmentType: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull("AE1234", punishmentType)).thenReturn(
+        reportedAdjudications.filter { it.getPunishments().any { p -> p.type == punishmentType } },
+      )
+
+      val additionalDaysReports = punishmentsService.getReportsWithAdditionalDays(
+        prisonerNumber = "AE1234",
+        punishmentType = punishmentType,
+      )
+
+      assertThat(additionalDaysReports.size).isEqualTo(1)
+      assertThat(additionalDaysReports.first().punishment.type).isEqualTo(punishmentType)
+      assertThat(additionalDaysReports.first().reportNumber).isEqualTo(1)
+      assertThat(additionalDaysReports.first().punishment.schedule.days).isEqualTo(10)
+      assertThat(additionalDaysReports.first().chargeProvedDate).isEqualTo(reportedAdjudications.first().hearings.first().dateTimeOfHearing.toLocalDate())
+    }
+  }
+
+  @Nested
   inner class PunishmentSanctionMapper {
 
     @EnumSource(PunishmentType::class)

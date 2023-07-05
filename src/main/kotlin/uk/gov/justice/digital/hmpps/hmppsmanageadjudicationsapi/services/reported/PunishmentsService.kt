@@ -6,6 +6,7 @@ import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentCommentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdditionalDaysDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -26,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
 import java.time.LocalDate
 
 @Transactional
@@ -188,6 +190,30 @@ class PunishmentsService(
             ),
           )
         }
+    }.flatten()
+  }
+
+  fun getReportsWithAdditionalDays(prisonerNumber: String, punishmentType: PunishmentType): List<AdditionalDaysDto> {
+    if (!PunishmentType.additionalDays().contains(punishmentType)) throw ValidationException("Punishment type must be ADDITIONAL_DAYS or PROSPECTIVE_DAYS")
+
+    return getReportsWithActiveAdditionalDays(
+      prisonerNumber = prisonerNumber,
+      punishmentType = punishmentType,
+    ).map {
+      it.getPunishments().filter { punishment -> PunishmentType.additionalDays().contains(punishment.type) }.map {
+          punishment ->
+        val schedule = punishment.schedule.latestSchedule()
+
+        AdditionalDaysDto(
+          reportNumber = it.reportNumber,
+          chargeProvedDate = it.getLatestHearing()?.dateTimeOfHearing?.toLocalDate()!!,
+          punishment = PunishmentDto(
+            id = punishment.id,
+            type = punishment.type,
+            schedule = PunishmentScheduleDto(days = schedule.days),
+          ),
+        )
+      }
     }.flatten()
   }
 
@@ -475,7 +501,7 @@ class PunishmentsService(
     }
 
     fun PunishmentType.includeInSuspendedPunishments(includeAdditionalDays: Boolean): Boolean {
-      return if (!listOf(PunishmentType.ADDITIONAL_DAYS, PunishmentType.PROSPECTIVE_DAYS).contains(this)) {
+      return if (!PunishmentType.additionalDays().contains(this)) {
         true
       } else {
         includeAdditionalDays

@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentCommentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
@@ -265,6 +267,46 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
           DateTimeFormatter.ISO_DATE,
         ),
       )
+  }
+
+  @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
+  @ParameterizedTest
+  fun `get additional days punishments `(punishmentType: PunishmentType) {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved(caution = false)
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to
+            listOf(
+              PunishmentRequest(
+                type = punishmentType,
+                days = 10,
+              ),
+            ),
+        ),
+      )
+      .exchange()
+      .expectStatus().isCreated
+
+    webTestClient.get()
+      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/for-consecutive?type=$punishmentType")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.size()").isEqualTo(1)
+      .jsonPath("$.[0].reportNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.[0].punishment.type").isEqualTo(punishmentType.name)
+      .jsonPath("$.[0].punishment.schedule.days").isEqualTo(10)
+      .jsonPath("$.[0].chargeProvedDate").isEqualTo("2010-11-19")
   }
 
   @Test
