@@ -547,6 +547,22 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(reportNumber = 100101).also {
+        it.hearings.clear()
+        it.prisonerNumber = "TEST"
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            suspendedUntil = LocalDate.now(),
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10),
+            ),
+          ),
+        )
+      },
+    )
+
     val additionalDaysReports = reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull("TEST", PunishmentType.ADDITIONAL_DAYS)
 
     assertThat(additionalDaysReports.size).isEqualTo(1)
