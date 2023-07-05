@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -180,6 +181,7 @@ class PunishmentsControllerTest : TestControllerBase() {
       whenever(
         punishmentsService.getSuspendedPunishments(
           any(),
+          anyOrNull(),
         ),
       ).thenReturn(SUSPENDED_PUNISHMENTS_DTO)
     }

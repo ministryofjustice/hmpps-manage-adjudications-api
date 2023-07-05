@@ -16,6 +16,10 @@ enum class OicHearingType {
       false -> if (listOf(GOV_YOI, INAD_YOI).contains(this)) throw IllegalStateException("oic hearing type is not applicable for rule set")
     }
   }
+
+  companion object {
+    fun inadTypes() = listOf(INAD_ADULT, INAD_YOI)
+  }
 }
 
 data class OicHearingRequest(

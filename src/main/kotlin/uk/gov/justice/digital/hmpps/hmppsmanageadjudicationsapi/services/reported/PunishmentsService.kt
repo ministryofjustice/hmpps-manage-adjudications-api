@@ -163,25 +163,31 @@ class PunishmentsService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun getSuspendedPunishments(prisonerNumber: String): List<SuspendedPunishmentDto> {
+  fun getSuspendedPunishments(prisonerNumber: String, reportNumber: Long? = null): List<SuspendedPunishmentDto> {
     val reportsWithSuspendedPunishments = getReportsWithSuspendedPunishments(prisonerNumber = prisonerNumber)
+    var includeAdditionalDays: Boolean? = null
+    reportNumber?.let {
+      includeAdditionalDays = includeAdditionalDays(it)
+    }
 
     return reportsWithSuspendedPunishments.map {
-      it.getPunishments().suspendedPunishmentsToActivate().map { p ->
-        val schedule = p.schedule.latestSchedule()
+      it.getPunishments().suspendedPunishmentsToActivate()
+        .filter { punishment -> reportNumber == null || punishment.type.includeInSuspendedPunishments(includeAdditionalDays!!) }
+        .map { punishment ->
+          val schedule = punishment.schedule.latestSchedule()
 
-        SuspendedPunishmentDto(
-          reportNumber = it.reportNumber,
-          punishment = PunishmentDto(
-            id = p.id,
-            type = p.type,
-            privilegeType = p.privilegeType,
-            otherPrivilege = p.otherPrivilege,
-            stoppagePercentage = p.stoppagePercentage,
-            schedule = PunishmentScheduleDto(days = schedule.days, suspendedUntil = schedule.suspendedUntil),
-          ),
-        )
-      }
+          SuspendedPunishmentDto(
+            reportNumber = it.reportNumber,
+            punishment = PunishmentDto(
+              id = punishment.id,
+              type = punishment.type,
+              privilegeType = punishment.privilegeType,
+              otherPrivilege = punishment.otherPrivilege,
+              stoppagePercentage = punishment.stoppagePercentage,
+              schedule = PunishmentScheduleDto(days = schedule.days, suspendedUntil = schedule.suspendedUntil),
+            ),
+          )
+        }
     }.flatten()
   }
 
@@ -228,6 +234,11 @@ class PunishmentsService(
     reportedAdjudication.punishmentComments.remove(punishmentComment)
 
     return saveToDto(reportedAdjudication)
+  }
+
+  private fun includeAdditionalDays(reportNumber: Long): Boolean {
+    val reportedAdjudication = findByAdjudicationNumber(reportNumber)
+    return OicHearingType.inadTypes().contains(reportedAdjudication.getLatestHearing()?.oicHearingType)
   }
 
   private fun handleDamagesOwedChange(reportedAdjudication: ReportedAdjudication, amount: Double?) {
@@ -435,7 +446,7 @@ class PunishmentsService(
           }
         }
         PunishmentType.EARNINGS -> this.stoppagePercentage ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
-        PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> if (latestHearing?.oicHearingType != OicHearingType.INAD_ADULT) throw ValidationException("Punishment ${this.type} is invalid as the punishment decision was not awarded by an independent adjudicator")
+        PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> if (!OicHearingType.inadTypes().contains(latestHearing?.oicHearingType)) throw ValidationException("Punishment ${this.type} is invalid as the punishment decision was not awarded by an independent adjudicator")
         else -> {}
       }
       when (this.type) {
@@ -460,6 +471,14 @@ class PunishmentsService(
     fun String.validatePunishmentCommentAction(username: String) {
       if (this != username) {
         throw ForbiddenException("Only $this can carry out action on punishment comment. attempt by $username")
+      }
+    }
+
+    fun PunishmentType.includeInSuspendedPunishments(includeAdditionalDays: Boolean): Boolean {
+      return if (!listOf(PunishmentType.ADDITIONAL_DAYS, PunishmentType.PROSPECTIVE_DAYS).contains(this)) {
+        true
+      } else {
+        includeAdditionalDays
       }
     }
   }

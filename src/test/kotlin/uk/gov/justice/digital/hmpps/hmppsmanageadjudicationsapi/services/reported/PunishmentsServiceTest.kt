@@ -54,6 +54,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     legacySyncService,
   )
 
+  @Test
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     assertThatThrownBy {
       punishmentsService.create(
@@ -67,15 +68,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       punishmentsService.update(
         adjudicationNumber = 1,
         listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)),
-      )
-    }.isInstanceOf(EntityNotFoundException::class.java)
-      .hasMessageContaining("ReportedAdjudication not found for 1")
-
-    assertThatThrownBy {
-      punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
-        reportedAdjudication = entityBuilder.reportedAdjudication(),
-        caution = true,
-        amount = null,
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
@@ -113,6 +105,29 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         adjudicationNumber = 1,
         punishmentCommentId = 1,
 
+      )
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    whenever(reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any())).thenReturn(
+      listOf(
+        entityBuilder.reportedAdjudication().also {
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.REMOVAL_WING,
+              suspendedUntil = LocalDate.now(),
+              schedule =
+              mutableListOf(PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now())),
+            ),
+          )
+        },
+      ),
+    )
+
+    assertThatThrownBy {
+      punishmentsService.getSuspendedPunishments(
+        prisonerNumber = "",
+        reportNumber = 1,
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
@@ -1316,18 +1331,66 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           ),
         )
       },
+      entityBuilder.reportedAdjudication(reportNumber = 4).also {
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            suspendedUntil = LocalDate.now(),
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+            ),
+          ),
+        )
+      },
+      entityBuilder.reportedAdjudication(reportNumber = 5).also {
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.PROSPECTIVE_DAYS,
+            suspendedUntil = LocalDate.now(),
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+            ),
+          ),
+        )
+      },
     )
 
     @Test
     fun `get suspended punishments `() {
       whenever(reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any())).thenReturn(reportedAdjudications)
-      val suspended = punishmentsService.getSuspendedPunishments("AE1234")
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
+      val suspended = punishmentsService.getSuspendedPunishments("AE1234", reportNumber = 1)
+
+      val removalWing = suspended.first { it.punishment.type == PunishmentType.REMOVAL_WING }
 
       assertThat(suspended.size).isEqualTo(1)
-      assertThat(suspended.first().reportNumber).isEqualTo(1)
-      assertThat(suspended.first().punishment.type).isEqualTo(PunishmentType.REMOVAL_WING)
-      assertThat(suspended.first().punishment.schedule.days).isEqualTo(10)
-      assertThat(suspended.first().punishment.schedule.suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(removalWing.reportNumber).isEqualTo(1)
+      assertThat(removalWing.punishment.type).isEqualTo(PunishmentType.REMOVAL_WING)
+      assertThat(removalWing.punishment.schedule.days).isEqualTo(10)
+      assertThat(removalWing.punishment.schedule.suspendedUntil).isEqualTo(LocalDate.now())
+    }
+
+    @CsvSource("INAD_ADULT", "INAD_YOI")
+    @ParameterizedTest
+    fun `get suspended punishments for reported adjudication from independent adjudicator `(oicHearingType: OicHearingType) {
+      whenever(reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any())).thenReturn(reportedAdjudications)
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.hearings.first().oicHearingType = oicHearingType
+        },
+      )
+
+      val suspended = punishmentsService.getSuspendedPunishments("AE1234", reportNumber = 1)
+
+      val removalWing = suspended.first { it.punishment.type == PunishmentType.REMOVAL_WING }
+      val additionalDays = suspended.first { it.punishment.type == PunishmentType.ADDITIONAL_DAYS }
+      val prospectiveDays = suspended.first { it.punishment.type == PunishmentType.PROSPECTIVE_DAYS }
+
+      assertThat(removalWing).isNotNull
+      assertThat(additionalDays).isNotNull
+      assertThat(prospectiveDays).isNotNull
+
+      assertThat(suspended.size).isEqualTo(3)
     }
   }
 
