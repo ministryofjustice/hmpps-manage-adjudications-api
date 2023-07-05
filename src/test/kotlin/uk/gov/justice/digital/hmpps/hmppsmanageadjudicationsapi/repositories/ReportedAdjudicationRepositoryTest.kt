@@ -531,6 +531,44 @@ class ReportedAdjudicationRepositoryTest {
   }
 
   @Test
+  fun `additional days search`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(reportNumber = 100100).also {
+        it.hearings.clear()
+        it.prisonerNumber = "TEST"
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10),
+            ),
+          ),
+        )
+      },
+    )
+
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(reportNumber = 100101).also {
+        it.hearings.clear()
+        it.prisonerNumber = "TEST"
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            suspendedUntil = LocalDate.now(),
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10),
+            ),
+          ),
+        )
+      },
+    )
+
+    val additionalDaysReports = reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull("TEST", PunishmentType.ADDITIONAL_DAYS)
+
+    assertThat(additionalDaysReports.size).isEqualTo(1)
+  }
+
+  @Test
   fun `hearing without outcome test`() {
     val hearings = hearingRepository.findByHearingOutcomeIsNull()
 

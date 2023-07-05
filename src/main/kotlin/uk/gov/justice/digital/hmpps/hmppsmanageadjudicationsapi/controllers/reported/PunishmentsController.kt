@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdditionalDaysDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
@@ -123,6 +124,14 @@ class PunishmentsController(
     @PathVariable(name = "prisonerNumber") prisonerNumber: String,
     @RequestParam(name = "reportNumber", required = false) reportNumber: Long? = null,
   ): List<SuspendedPunishmentDto> = punishmentsService.getSuspendedPunishments(prisonerNumber = prisonerNumber, reportNumber = reportNumber)
+
+  @Operation(summary = "get a list of active additional days reports by prisoner for a consecutive punishment")
+  @GetMapping(value = ["/punishments/{prisonerNumber}/for-consecutive"])
+  @ResponseStatus(HttpStatus.OK)
+  fun getActiveAdditionalDaysReports(
+    @PathVariable(name = "prisonerNumber") prisonerNumber: String,
+    @RequestParam(name = "type") punishmentType: PunishmentType,
+  ): List<AdditionalDaysDto> = punishmentsService.getReportsWithAdditionalDays(prisonerNumber = prisonerNumber, punishmentType = punishmentType)
 
   @Operation(
     summary = "create punishment comment",
