@@ -110,38 +110,45 @@ class PunishmentsService(
     }
 
     val idsToUpdate = punishments.filter { it.id != null }.map { it.id }
-    reportedAdjudication.getPunishments().filterOutChargeProvedPunishments().filter { !idsToUpdate.contains(it.id) }.forEach {
-      it.type.consecutiveReportValidation(adjudicationNumber)
-      it.deleted = true
+    reportedAdjudication.getPunishments().filterOutChargeProvedPunishments().filter { !idsToUpdate.contains(it.id) }.forEach { punishment ->
+      punishment.type.consecutiveReportValidation(adjudicationNumber).let {
+        punishment.deleted = true
+      }
     }
 
-    punishments.forEach {
-      it.validateRequest(reportedAdjudication.getLatestHearing())
+    punishments.forEach { punishmentRequest ->
+      punishmentRequest.validateRequest(reportedAdjudication.getLatestHearing())
 
-      when (it.id) {
-        null -> when (it.activatedFrom) {
-          null -> reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = it))
-          else -> reportedAdjudication.addPunishment(activateSuspendedPunishment(adjudicationNumber = adjudicationNumber, punishmentRequest = it))
+      when (punishmentRequest.id) {
+        null -> when (punishmentRequest.activatedFrom) {
+          null -> reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = punishmentRequest))
+          else -> reportedAdjudication.addPunishment(activateSuspendedPunishment(adjudicationNumber = adjudicationNumber, punishmentRequest = punishmentRequest))
         }
         else -> {
-          when (it.activatedFrom) {
+          when (punishmentRequest.activatedFrom) {
             null -> {
-              val punishmentToAmend = reportedAdjudication.getPunishments().getPunishmentToAmend(it.id)
+              val punishmentToAmend = reportedAdjudication.getPunishments().getPunishmentToAmend(punishmentRequest.id)
               when (punishmentToAmend.type) {
-                it.type -> updatePunishment(punishmentToAmend, it)
+                punishmentRequest.type -> {
+                  punishmentRequest.suspendedUntil?.let {
+                    punishmentRequest.type.consecutiveReportValidation(adjudicationNumber)
+                  }
+                  updatePunishment(punishmentToAmend, punishmentRequest)
+                }
                 else -> {
-                  punishmentToAmend.type.consecutiveReportValidation(adjudicationNumber)
-                  punishmentToAmend.deleted = true
-                  reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = it))
+                  punishmentToAmend.type.consecutiveReportValidation(adjudicationNumber).let {
+                    punishmentToAmend.deleted = true
+                    reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = punishmentRequest))
+                  }
                 }
               }
             }
             else ->
-              if (reportedAdjudication.getPunishments().getPunishment(it.id) == null) {
+              if (reportedAdjudication.getPunishments().getPunishment(punishmentRequest.id) == null) {
                 reportedAdjudication.addPunishment(
                   activateSuspendedPunishment(
                     adjudicationNumber = adjudicationNumber,
-                    punishmentRequest = it,
+                    punishmentRequest = punishmentRequest,
                   ),
                 )
               }
