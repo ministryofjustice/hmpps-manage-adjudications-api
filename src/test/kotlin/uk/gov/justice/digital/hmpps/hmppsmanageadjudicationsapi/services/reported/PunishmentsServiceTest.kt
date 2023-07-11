@@ -1016,15 +1016,13 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           it.addPunishment(
             Punishment(
               type = PunishmentType.PROSPECTIVE_DAYS,
-              consecutiveReportNumber = 1234,
-              schedule =
-              mutableListOf(PunishmentSchedule(days = 10)),
+              schedule = mutableListOf(PunishmentSchedule(days = 10)),
             ),
           )
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveReportNumberAndPunishmentsType(1234, PunishmentType.PROSPECTIVE_DAYS)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveReportNumberAndPunishmentsType(1, PunishmentType.PROSPECTIVE_DAYS)).thenReturn(
         listOf(entityBuilder.reportedAdjudication(reportNumber = 1234)),
       )
 
@@ -1034,7 +1032,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           punishments = emptyList(),
         )
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("Unable to delete: PROSPECTIVE_DAYS is linked to report 1234")
+        .hasMessageContaining("Unable to delete: ${PunishmentType.PROSPECTIVE_DAYS} is linked to another report")
     }
 
     @Test

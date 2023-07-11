@@ -27,7 +27,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
 import java.time.LocalDate
 
 @Transactional
@@ -110,8 +109,14 @@ class PunishmentsService(
       it.validateCanAddPunishments()
     }
 
-    val ids = punishments.filter { it.id != null }.map { it.id }
-    reportedAdjudication.getPunishments().filterOutChargeProvedPunishments().filter { !ids.contains(it.id) }.forEach {
+    val idsToUpdate = punishments.filter { it.id != null }.map { it.id }
+    reportedAdjudication.getPunishments().filterOutChargeProvedPunishments().filter { !idsToUpdate.contains(it.id) }.forEach {
+      if (PunishmentType.additionalDays().contains(it.type)) {
+        if (isLinkedToReport(adjudicationNumber, it.type)) {
+          throw ValidationException("Unable to delete: ${it.type} is linked to another report")
+        }
+      }
+
       it.deleted = true
     }
 
