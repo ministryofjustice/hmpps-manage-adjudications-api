@@ -626,4 +626,25 @@ class ReportedAdjudicationRepositoryTest {
         19997L,
       )
   }
+
+  @Test
+  fun `find by consecutive report number and type `() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(reportNumber = -9999).also {
+        it.hearings.clear()
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.PROSPECTIVE_DAYS,
+            consecutiveReportNumber = 1234,
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10),
+            ),
+          ),
+        )
+      },
+    )
+
+    val result = reportedAdjudicationRepository.findByPunishmentsConsecutiveReportNumberAndPunishmentsType(1234, PunishmentType.PROSPECTIVE_DAYS)
+    assertThat(result.size).isEqualTo(1)
+  }
 }
