@@ -1033,7 +1033,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           punishments = emptyList(),
         )
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("Unable to delete: $type is linked to another report")
+        .hasMessageContaining("Unable to modify: $type is linked to another report")
     }
 
     @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
@@ -1064,7 +1064,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           ),
         )
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("Unable to amend: $type is linked to another report")
+        .hasMessageContaining("Unable to modify: $type is linked to another report")
     }
 
     @Test

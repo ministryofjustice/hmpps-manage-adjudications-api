@@ -111,12 +111,7 @@ class PunishmentsService(
 
     val idsToUpdate = punishments.filter { it.id != null }.map { it.id }
     reportedAdjudication.getPunishments().filterOutChargeProvedPunishments().filter { !idsToUpdate.contains(it.id) }.forEach {
-      if (PunishmentType.additionalDays().contains(it.type)) {
-        if (isLinkedToReport(adjudicationNumber, it.type)) {
-          throw ValidationException("Unable to delete: ${it.type} is linked to another report")
-        }
-      }
-
+      it.type.consecutiveReportValidation(adjudicationNumber)
       it.deleted = true
     }
 
@@ -135,6 +130,7 @@ class PunishmentsService(
               when (punishmentToAmend.type) {
                 it.type -> updatePunishment(punishmentToAmend, it)
                 else -> {
+                  punishmentToAmend.type.consecutiveReportValidation(adjudicationNumber)
                   punishmentToAmend.deleted = true
                   reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = it))
                 }
@@ -168,6 +164,14 @@ class PunishmentsService(
     }
 
     return saveToDto(reportedAdjudication)
+  }
+
+  private fun PunishmentType.consecutiveReportValidation(adjudicationNumber: Long) {
+    if (PunishmentType.additionalDays().contains(this)) {
+      if (isLinkedToReport(adjudicationNumber, this)) {
+        throw ValidationException("Unable to modify: $this is linked to another report")
+      }
+    }
   }
 
   fun getSuspendedPunishments(prisonerNumber: String, reportNumber: Long? = null): List<SuspendedPunishmentDto> {
