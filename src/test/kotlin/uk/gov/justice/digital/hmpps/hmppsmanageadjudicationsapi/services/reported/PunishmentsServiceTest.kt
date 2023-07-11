@@ -1067,6 +1067,38 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("Unable to modify: $type is linked to another report")
     }
 
+    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
+    @ParameterizedTest
+    fun `throws validation exception if amended to suspended and linked to consecutive report`(type: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.INAD_ADULT
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = type,
+              schedule = mutableListOf(PunishmentSchedule(days = 10)),
+            ),
+          )
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveReportNumberAndPunishmentsType(1, type)).thenReturn(
+        listOf(entityBuilder.reportedAdjudication(reportNumber = 1234)),
+      )
+
+      assertThatThrownBy {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          punishments = listOf(
+            PunishmentRequest(id = 1, type = type, days = 10, suspendedUntil = LocalDate.now()),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Unable to modify: $type is linked to another report")
+    }
+
     @Test
     fun `throws exception if id for punishment is not located `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
