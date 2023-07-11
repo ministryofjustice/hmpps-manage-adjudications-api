@@ -1009,6 +1009,35 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `throws validation exception when deleting a punishment linked to another report`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.PROSPECTIVE_DAYS,
+              consecutiveReportNumber = 1234,
+              schedule =
+              mutableListOf(PunishmentSchedule(days = 10)),
+            ),
+          )
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveReportNumberAndPunishmentsType(1234, PunishmentType.PROSPECTIVE_DAYS)).thenReturn(
+        listOf(entityBuilder.reportedAdjudication(reportNumber = 1234)),
+      )
+
+      assertThatThrownBy {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          punishments = emptyList(),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Unable to delete: PROSPECTIVE_DAYS is linked to report 1234")
+    }
+
+    @Test
     fun `throws exception if id for punishment is not located `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         reportedAdjudication.also {
