@@ -22,6 +22,7 @@ data class OffenderOicSanctionRequest(
   val compensationAmount: Double? = null,
   val sanctionDays: Long,
   val commentText: String? = null,
+  val consecutiveReportNumber: Long? = null,
 ) {
   companion object {
 

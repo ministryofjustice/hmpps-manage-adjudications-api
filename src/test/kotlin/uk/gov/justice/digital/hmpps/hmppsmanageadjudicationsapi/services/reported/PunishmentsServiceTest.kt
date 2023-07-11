@@ -1587,6 +1587,21 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       }
       assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.ADA)
     }
+
+    @Test
+    fun `consecutive report number is mapped to sanction request`() {
+      val punishment = Punishment(
+        type = PunishmentType.PROSPECTIVE_DAYS,
+        consecutiveReportNumber = 1234,
+        schedule = mutableListOf(
+          PunishmentSchedule(days = 10),
+        ),
+      )
+
+      val oicSanctionRequest = punishment.mapPunishmentToSanction()
+
+      assertThat(oicSanctionRequest.consecutiveReportNumber).isEqualTo(1234)
+    }
   }
 
   @Nested
