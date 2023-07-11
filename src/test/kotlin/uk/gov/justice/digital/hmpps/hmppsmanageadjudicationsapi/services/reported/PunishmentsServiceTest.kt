@@ -1008,21 +1008,22 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("missing all schedule data")
     }
 
-    @Test
-    fun `throws validation exception when deleting a punishment linked to another report`() {
+    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
+    @ParameterizedTest
+    fun `throws validation exception when deleting a punishment linked to another report`(type: PunishmentType) {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.addPunishment(
             Punishment(
-              type = PunishmentType.PROSPECTIVE_DAYS,
+              type = type,
               schedule = mutableListOf(PunishmentSchedule(days = 10)),
             ),
           )
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveReportNumberAndPunishmentsType(1, PunishmentType.PROSPECTIVE_DAYS)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveReportNumberAndPunishmentsType(1, type)).thenReturn(
         listOf(entityBuilder.reportedAdjudication(reportNumber = 1234)),
       )
 
@@ -1032,7 +1033,38 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           punishments = emptyList(),
         )
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("Unable to delete: ${PunishmentType.PROSPECTIVE_DAYS} is linked to another report")
+        .hasMessageContaining("Unable to delete: $type is linked to another report")
+    }
+
+    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
+    @ParameterizedTest
+    fun `throws validation exception when amending a punishment to a non additional days type that is linked to another report `(type: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = type,
+              schedule = mutableListOf(PunishmentSchedule(days = 10)),
+            ),
+          )
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveReportNumberAndPunishmentsType(1, type)).thenReturn(
+        listOf(entityBuilder.reportedAdjudication(reportNumber = 1234)),
+      )
+
+      assertThatThrownBy {
+        punishmentsService.update(
+          adjudicationNumber = 1,
+          punishments = listOf(
+            PunishmentRequest(id = 1, type = PunishmentType.EXTRA_WORK, days = 10, suspendedUntil = LocalDate.now()),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Unable to amend: $type is linked to another report")
     }
 
     @Test
