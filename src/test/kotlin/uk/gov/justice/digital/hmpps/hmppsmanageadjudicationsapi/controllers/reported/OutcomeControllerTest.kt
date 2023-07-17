@@ -452,13 +452,11 @@ class OutcomeControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        completedHearingService.createChargeProved(
+        completedHearingService.createChargeProvedV2(
           anyLong(),
           any(),
           any(),
           anyOrNull(),
-          any(),
-          any(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -494,24 +492,22 @@ class OutcomeControllerTest : TestControllerBase() {
     fun `makes a call to create a proven outcome`() {
       createChargeProvedRequest(1, CHARGE_PROVED_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(completedHearingService).createChargeProved(
+      verify(completedHearingService).createChargeProvedV2(
         1,
         CHARGE_PROVED_REQUEST.adjudicator,
         CHARGE_PROVED_REQUEST.plea,
-        CHARGE_PROVED_REQUEST.amount,
-        CHARGE_PROVED_REQUEST.caution,
       )
     }
 
     private fun createChargeProvedRequest(
       id: Long,
-      proven: HearingCompletedChargeProvedRequest,
+      proven: HearingCompletedChargeProvedRequestV2,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(proven)
 
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.post("/reported-adjudications/$id/complete-hearing/charge-proved")
+          MockMvcRequestBuilders.post("/reported-adjudications/$id/complete-hearing/charge-proved/v2")
             .header("Content-Type", "application/json")
             .content(body),
         )
@@ -724,7 +720,7 @@ class OutcomeControllerTest : TestControllerBase() {
     private val NOT_PROCEED_REQUEST = NotProceedRequest(reason = NotProceedReason.NOT_FAIR, details = "details")
     private val COMPLETED_NOT_PROCEED_REQUEST = HearingCompletedNotProceedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, reason = NotProceedReason.NOT_FAIR, details = "details")
     private val COMPLETED_DISMISSED_REQUEST = HearingCompletedDismissedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, details = "details")
-    private val CHARGE_PROVED_REQUEST = HearingCompletedChargeProvedRequest(adjudicator = "test", plea = HearingOutcomePlea.GUILTY, caution = false)
+    private val CHARGE_PROVED_REQUEST = HearingCompletedChargeProvedRequestV2(adjudicator = "test", plea = HearingOutcomePlea.GUILTY)
     private val QUASHED_REQUEST = QuashedRequest(reason = QuashedReason.APPEAL_UPHELD, details = "details")
     private val AMEND_REFER_POLICE_REQUEST = AmendOutcomeRequest(details = "details")
     private val AMEND_NOT_PROCEED_REQUEST = AmendOutcomeRequest(details = "details", reason = NotProceedReason.NOT_FAIR)

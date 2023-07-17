@@ -134,6 +134,7 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.DISMISSED.name)
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   @Test
   fun `create completed hearing outcome - charge proved`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
@@ -162,6 +163,35 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.id").isNotEmpty
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.amount").isEqualTo(100.50)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.caution").isEqualTo(true)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.CHARGE_PROVED.name)
+  }
+
+  @Test
+  fun `create completed hearing outcome - charge proved v2`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForOutcome().createHearing()
+
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/complete-hearing/charge-proved/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "plea" to HearingOutcomePlea.NOT_GUILTY,
+        ),
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator").isEqualTo("test")
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea").isEqualTo(HearingOutcomePlea.NOT_GUILTY.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.id").isNotEmpty
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.amount").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.caution").doesNotExist()
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.CHARGE_PROVED.name)
   }
 

@@ -58,6 +58,7 @@ class CompletedHearingService(
     )
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   fun createChargeProved(
     adjudicationNumber: Long,
     adjudicator: String,
@@ -76,6 +77,24 @@ class CompletedHearingService(
       adjudicationNumber = adjudicationNumber,
       amount = amount,
       caution = caution,
+      validate = validate,
+    )
+  }
+
+  fun createChargeProvedV2(
+    adjudicationNumber: Long,
+    adjudicator: String,
+    plea: HearingOutcomePlea,
+    validate: Boolean = true,
+  ): ReportedAdjudicationDto {
+    hearingOutcomeService.createCompletedHearing(
+      adjudicationNumber = adjudicationNumber,
+      adjudicator = adjudicator,
+      plea = plea,
+    )
+
+    return outcomeService.createChargeProvedV2(
+      adjudicationNumber = adjudicationNumber,
       validate = validate,
     )
   }
