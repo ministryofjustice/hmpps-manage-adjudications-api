@@ -127,8 +127,7 @@ class AmendHearingOutcomeService(
       adjournedReason = amendHearingOutcomeRequest.adjournReason,
     )
 
-    val outcomeCodeToAmend = currentStatus.mapStatusToOutcomeCode() ?: return updated
-    if (outcomeCodeToAmend == OutcomeCode.CHARGE_PROVED) return updated
+    val outcomeCodeToAmend = currentStatus.mapStatusToOutcomeCodeV2() ?: return updated
 
     return outcomeService.amendOutcomeViaService(
       adjudicationNumber = adjudicationNumber,
@@ -321,6 +320,15 @@ class AmendHearingOutcomeService(
         ReportedAdjudicationStatus.DISMISSED -> OutcomeCode.DISMISSED
         ReportedAdjudicationStatus.NOT_PROCEED -> OutcomeCode.NOT_PROCEED
         ReportedAdjudicationStatus.CHARGE_PROVED -> OutcomeCode.CHARGE_PROVED
+        else -> null
+      }
+
+    fun ReportedAdjudicationStatus.mapStatusToOutcomeCodeV2(): OutcomeCode? =
+      when (this) {
+        ReportedAdjudicationStatus.REFER_POLICE -> OutcomeCode.REFER_POLICE
+        ReportedAdjudicationStatus.REFER_INAD -> OutcomeCode.REFER_INAD
+        ReportedAdjudicationStatus.DISMISSED -> OutcomeCode.DISMISSED
+        ReportedAdjudicationStatus.NOT_PROCEED -> OutcomeCode.NOT_PROCEED
         else -> null
       }
 
