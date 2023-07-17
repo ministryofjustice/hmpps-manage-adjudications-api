@@ -107,6 +107,15 @@ class IntegrationTestScenario(
     return this
   }
 
+  fun createChargeProvedV2(
+    overrideTestDataSet: AdjudicationIntTestDataSet = testAdjudicationDataSet,
+  ): IntegrationTestScenario {
+    intTestData.createChargeProvedV2(
+      overrideTestDataSet,
+    )
+    return this
+  }
+
   fun createPunishments(): IntegrationTestScenario {
     intTestData.createPunishments(testAdjudicationDataSet)
 

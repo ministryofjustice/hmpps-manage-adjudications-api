@@ -670,6 +670,24 @@ class IntegrationTestData(
       .blockFirst()!!
   }
 
+  fun createChargeProvedV2(
+    testDataSet: AdjudicationIntTestDataSet,
+  ): ReportedAdjudicationResponse {
+    return webTestClient.post()
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/complete-hearing/charge-proved/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "plea" to HearingOutcomePlea.NOT_GUILTY,
+        ),
+      )
+      .exchange()
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
   fun createPunishments(
     testDataSet: AdjudicationIntTestDataSet,
   ): WebTestClient.ResponseSpec {

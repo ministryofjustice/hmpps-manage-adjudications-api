@@ -192,10 +192,7 @@ class OutcomeService(
       }
     }
 
-    return saveToDto(
-      reportedAdjudication = reportedAdjudication,
-      damagesAndCautionV2 = outcomeToCreate.code == OutcomeCode.CHARGE_PROVED && caution == null,
-    )
+    return saveToDto(reportedAdjudication)
   }
 
   private fun amendOutcome(
