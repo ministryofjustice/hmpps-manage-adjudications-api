@@ -58,6 +58,7 @@ data class HearingCompletedDismissedRequest(
   val details: String,
 )
 
+@Deprecated("to remove on completion of NN-5319")
 @Schema(description = "Request to add charge proved - hearing completed")
 data class HearingCompletedChargeProvedRequest(
   @Schema(description = "the name of the adjudicator")
@@ -68,6 +69,14 @@ data class HearingCompletedChargeProvedRequest(
   val amount: Double? = null,
   @Schema(description = "is this a caution")
   val caution: Boolean,
+)
+
+@Schema(description = "Request to add charge proved - hearing completed")
+data class HearingCompletedChargeProvedRequestV2(
+  @Schema(description = "the name of the adjudicator")
+  val adjudicator: String,
+  @Schema(description = "plea")
+  val plea: HearingOutcomePlea,
 )
 
 @Schema(description = "Request to quash charge")
@@ -295,25 +304,7 @@ class OutcomeController(
       )
     }
 
-  @Operation(
-    summary = "create a charge proved from hearing outcome",
-    responses = [
-      io.swagger.v3.oas.annotations.responses.ApiResponse(
-        responseCode = "201",
-        description = "Charged Proved Created",
-      ),
-      io.swagger.v3.oas.annotations.responses.ApiResponse(
-        responseCode = "415",
-        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
-        content = [
-          io.swagger.v3.oas.annotations.media.Content(
-            mediaType = "application/json",
-            schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
+  @Deprecated("to remove on completion of NN-5319")
   @PostMapping(value = ["/{adjudicationNumber}/complete-hearing/charge-proved"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createChargeProvedFromHearing(
@@ -327,6 +318,20 @@ class OutcomeController(
         plea = chargeProvedRequest.plea,
         amount = chargeProvedRequest.amount,
         caution = chargeProvedRequest.caution,
+      )
+    }
+
+  @PostMapping(value = ["/{adjudicationNumber}/complete-hearing/charge-proved/v2"])
+  @ResponseStatus(HttpStatus.CREATED)
+  fun createChargeProvedFromHearingV2(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody chargeProvedRequest: HearingCompletedChargeProvedRequestV2,
+  ): ReportedAdjudicationResponse =
+    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT) {
+      completedHearingService.createChargeProvedV2(
+        adjudicationNumber = adjudicationNumber,
+        adjudicator = chargeProvedRequest.adjudicator,
+        plea = chargeProvedRequest.plea,
       )
     }
 

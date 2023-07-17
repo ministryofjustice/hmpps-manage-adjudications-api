@@ -14,6 +14,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
@@ -73,6 +74,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     Assertions.assertThatThrownBy {
       outcomeService.createChargeProved(1, 0.0, false)
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    Assertions.assertThatThrownBy {
+      outcomeService.createChargeProvedV2(1, false)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
@@ -320,6 +326,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
 
+    @Deprecated("to remove on completion of NN-5319")
     @Test
     fun `create charge proved `() {
       reportedAdjudication.status = ReportedAdjudicationStatus.SCHEDULED
@@ -335,6 +342,27 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       verify(nomisOutcomeService, atLeastOnce()).createHearingResultIfApplicable(any(), any(), any())
       verify(punishmentsService, atLeastOnce()).createPunishmentsFromChargeProvedIfApplicable(any(), any(), any())
+
+      assertThat(argumentCaptor.value.getOutcomes().first()).isNotNull
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().first().details).isNull()
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `create charge proved v2 `() {
+      reportedAdjudication.status = ReportedAdjudicationStatus.SCHEDULED
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.createChargeProvedV2(
+        1235L,
+        true,
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(nomisOutcomeService, atLeastOnce()).createHearingResultIfApplicable(any(), any(), any())
+      verify(punishmentsService, never()).createPunishmentsFromChargeProvedIfApplicable(any(), any(), any())
 
       assertThat(argumentCaptor.value.getOutcomes().first()).isNotNull
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)

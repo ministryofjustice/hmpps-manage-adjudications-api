@@ -73,6 +73,7 @@ class OutcomeService(
     validate = validate,
   )
 
+  @Deprecated("to remove on completion of NN-5319")
   fun createChargeProved(
     adjudicationNumber: Long,
     amount: Double? = null,
@@ -83,6 +84,15 @@ class OutcomeService(
     code = OutcomeCode.CHARGE_PROVED,
     amount = amount,
     caution = caution,
+    validate = validate,
+  )
+
+  fun createChargeProvedV2(
+    adjudicationNumber: Long,
+    validate: Boolean = true,
+  ): ReportedAdjudicationDto = createOutcome(
+    adjudicationNumber = adjudicationNumber,
+    code = OutcomeCode.CHARGE_PROVED,
     validate = validate,
   )
 
@@ -173,14 +183,19 @@ class OutcomeService(
     reportedAdjudication.addOutcome(outcomeToCreate)
 
     if (outcomeToCreate.code == OutcomeCode.CHARGE_PROVED) {
-      punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
-        reportedAdjudication = reportedAdjudication,
-        caution = caution!!,
-        amount = amount,
-      )
+      caution?.let {
+        punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
+          reportedAdjudication = reportedAdjudication,
+          caution = it,
+          amount = amount,
+        )
+      }
     }
 
-    return saveToDto(reportedAdjudication)
+    return saveToDto(
+      reportedAdjudication = reportedAdjudication,
+      damagesAndCautionV2 = outcomeToCreate.code == OutcomeCode.CHARGE_PROVED && caution == null,
+    )
   }
 
   private fun amendOutcome(
