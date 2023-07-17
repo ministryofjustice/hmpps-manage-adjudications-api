@@ -451,7 +451,7 @@ class HearingControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        amendHearingOutcomeService.amendHearingOutcome(
+        amendHearingOutcomeService.amendHearingOutcomeV2(
           ArgumentMatchers.anyLong(),
           any(),
           any(),
@@ -483,7 +483,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to amend a hearing outcome`() {
       amendHearingOutcomeRequest(1, AMEND_OUTCOME_REQUEST, ReportedAdjudicationStatus.REFER_POLICE)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(amendHearingOutcomeService).amendHearingOutcome(
+      verify(amendHearingOutcomeService).amendHearingOutcomeV2(
         adjudicationNumber = 1,
         status = ReportedAdjudicationStatus.REFER_POLICE,
         AMEND_OUTCOME_REQUEST,
@@ -492,13 +492,13 @@ class HearingControllerTest : TestControllerBase() {
 
     private fun amendHearingOutcomeRequest(
       id: Long,
-      amendRequest: AmendHearingOutcomeRequest,
+      amendRequest: AmendHearingOutcomeRequestV2,
       status: ReportedAdjudicationStatus,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(amendRequest)
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing/outcome/$status")
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing/outcome/$status/v2")
             .header("Content-Type", "application/json")
             .content(body),
         )
@@ -523,6 +523,6 @@ class HearingControllerTest : TestControllerBase() {
         ),
       )
 
-    private val AMEND_OUTCOME_REQUEST = AmendHearingOutcomeRequest()
+    private val AMEND_OUTCOME_REQUEST = AmendHearingOutcomeRequestV2()
   }
 }

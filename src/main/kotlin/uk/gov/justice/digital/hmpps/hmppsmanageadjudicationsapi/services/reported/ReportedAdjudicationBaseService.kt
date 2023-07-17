@@ -46,9 +46,9 @@ import java.time.LocalDateTime
 open class ReportedDtoService(
   protected val offenceCodeLookupService: OffenceCodeLookupService,
 ) {
-  protected fun ReportedAdjudication.toDto(activeCaseload: String? = null, consecutiveReportsAvailable: List<Long>? = null, damagesAndCautionV2: Boolean = false): ReportedAdjudicationDto {
+  protected fun ReportedAdjudication.toDto(activeCaseload: String? = null, consecutiveReportsAvailable: List<Long>? = null): ReportedAdjudicationDto {
     val hearings = this.hearings.toHearings()
-    val outcomes = this.getOutcomes().createCombinedOutcomes(this.getPunishments(), damagesAndCautionV2)
+    val outcomes = this.getOutcomes().createCombinedOutcomes(this.getPunishments())
     return ReportedAdjudicationDto(
       adjudicationNumber = reportNumber,
       prisonerNumber = prisonerNumber,
@@ -131,7 +131,7 @@ open class ReportedDtoService(
     return history.toList()
   }
 
-  protected fun List<Outcome>.createCombinedOutcomes(punishments: List<Punishment>, damagesAndCautionV2: Boolean = false): List<CombinedOutcomeDto> {
+  protected fun List<Outcome>.createCombinedOutcomes(punishments: List<Punishment>): List<CombinedOutcomeDto> {
     if (this.isEmpty()) return emptyList()
 
     val combinedOutcomes = mutableListOf<CombinedOutcomeDto>()
@@ -146,14 +146,14 @@ open class ReportedDtoService(
 
           combinedOutcomes.add(
             CombinedOutcomeDto(
-              outcome = outcome.toOutcomeDto(punishments, damagesAndCautionV2),
-              referralOutcome = referralOutcome?.toOutcomeDto(punishments, damagesAndCautionV2),
+              outcome = outcome.toOutcomeDto(punishments),
+              referralOutcome = referralOutcome?.toOutcomeDto(punishments),
             ),
           )
         }
         else -> combinedOutcomes.add(
           CombinedOutcomeDto(
-            outcome = outcome.toOutcomeDto(punishments, damagesAndCautionV2),
+            outcome = outcome.toOutcomeDto(punishments),
           ),
         )
       }
@@ -230,14 +230,14 @@ open class ReportedDtoService(
       plea = this.plea,
     )
 
-  private fun Outcome.toOutcomeDto(punishments: List<Punishment>, damagesAndCautionV2: Boolean): OutcomeDto =
+  private fun Outcome.toOutcomeDto(punishments: List<Punishment>): OutcomeDto =
     OutcomeDto(
       id = this.id,
       code = this.code,
       details = this.details,
       reason = this.reason,
-      amount = if (!damagesAndCautionV2 && outcomesToDisplayPunishments.contains(this.code)) punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }?.amount else null,
-      caution = if (!damagesAndCautionV2 && outcomesToDisplayPunishments.contains(this.code)) punishments.any { it.type == PunishmentType.CAUTION } else null,
+      amount = if (outcomesToDisplayPunishments.contains(this.code)) punishments.firstOrNull { it.type == PunishmentType.DAMAGES_OWED }?.amount else null,
+      caution = if (outcomesToDisplayPunishments.contains(this.code)) punishments.any { it.type == PunishmentType.CAUTION } else null,
       quashedReason = this.quashedReason,
     )
 
@@ -333,16 +333,12 @@ open class ReportedAdjudicationBaseService(
     return reportedAdjudication
   }
 
-  protected fun saveToDto(reportedAdjudication: ReportedAdjudication, damagesAndCautionV2: Boolean = false): ReportedAdjudicationDto =
+  protected fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
     reportedAdjudicationRepository.save(
       reportedAdjudication.also {
         it.lastModifiedAgencyId = authenticationFacade.activeCaseload
       },
-    ).toDto(
-      activeCaseload = authenticationFacade.activeCaseload,
-      consecutiveReportsAvailable = null,
-      damagesAndCautionV2 = damagesAndCautionV2,
-    )
+    ).toDto(activeCaseload = authenticationFacade.activeCaseload)
 
   protected fun findByReportNumberIn(adjudicationNumbers: List<Long>) = reportedAdjudicationRepository.findByReportNumberIn(adjudicationNumbers)
 

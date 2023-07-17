@@ -191,7 +191,6 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea").isEqualTo(HearingOutcomePlea.NOT_GUILTY.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.id").isNotEmpty
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.amount").doesNotExist()
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.caution").doesNotExist()
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.CHARGE_PROVED.name)
   }
 

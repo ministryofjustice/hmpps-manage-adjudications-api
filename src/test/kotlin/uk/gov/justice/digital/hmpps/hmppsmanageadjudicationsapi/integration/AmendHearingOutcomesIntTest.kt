@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.AmendHearingOutcomeRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.AmendHearingOutcomeRequestV2
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
@@ -111,6 +112,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
       .isEqualTo("updated adjudicator")
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   @Test
   fun `amend hearing outcome test - before - charge proved, after - charge proved`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
@@ -144,6 +146,37 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
       .isEqualTo(100.99)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.caution")
       .isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.adjudicator")
+      .isEqualTo("updated adjudicator")
+  }
+
+  @Test
+  fun `amend hearing outcome test - before - charge proved, after - charge proved v2`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubDeleteSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    initDataForHearings().createHearing().createChargeProvedV2()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/${ReportedAdjudicationStatus.CHARGE_PROVED.name}/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "updated adjudicator",
+          "plea" to HearingOutcomePlea.NOT_ASKED,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.plea")
+      .isEqualTo(HearingOutcomePlea.NOT_ASKED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.amount").doesNotExist()
       .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.adjudicator")
       .isEqualTo("updated adjudicator")
   }
@@ -213,6 +246,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
       .isEqualTo("updated details")
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   @CsvSource(
     "REFER_POLICE, REFER_INAD", "REFER_POLICE, ADJOURNED", "REFER_POLICE, DISMISSED", "REFER_POLICE, NOT_PROCEED", "REFER_POLICE, CHARGE_PROVED",
     "REFER_INAD, REFER_POLICE", "REFER_INAD, ADJOURNED", "REFER_INAD, DISMISSED", "REFER_INAD, NOT_PROCEED", "REFER_INAD, CHARGE_PROVED",
@@ -325,6 +359,115 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
       }
   }
 
+  @CsvSource(
+    "REFER_POLICE, REFER_INAD", "REFER_POLICE, ADJOURNED", "REFER_POLICE, DISMISSED", "REFER_POLICE, NOT_PROCEED", "REFER_POLICE, CHARGE_PROVED",
+    "REFER_INAD, REFER_POLICE", "REFER_INAD, ADJOURNED", "REFER_INAD, DISMISSED", "REFER_INAD, NOT_PROCEED", "REFER_INAD, CHARGE_PROVED",
+    "ADJOURNED, REFER_POLICE", "ADJOURNED, REFER_INAD", "ADJOURNED, DISMISSED", "ADJOURNED, NOT_PROCEED", "ADJOURNED, CHARGE_PROVED",
+    "DISMISSED, REFER_POLICE", "DISMISSED, REFER_INAD", "DISMISSED, ADJOURNED", "DISMISSED, NOT_PROCEED", "DISMISSED, CHARGE_PROVED",
+    "NOT_PROCEED, REFER_POLICE", "NOT_PROCEED, REFER_INAD", "NOT_PROCEED, ADJOURNED", "NOT_PROCEED, DISMISSED", "NOT_PROCEED, CHARGE_PROVED",
+    "CHARGE_PROVED, REFER_POLICE", "CHARGE_PROVED, REFER_INAD", "CHARGE_PROVED, ADJOURNED", "CHARGE_PROVED, DISMISSED", "CHARGE_PROVED, NOT_PROCEED",
+  )
+  @ParameterizedTest
+  fun `amend hearing outcome v2 from {0} to {1}`(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubDeleteSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+
+    initDataForHearings().createHearing().also {
+      when (from) {
+        ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD -> it.createReferral(HearingOutcomeCode.valueOf(from.name))
+        ReportedAdjudicationStatus.DISMISSED -> it.createDismissed()
+        ReportedAdjudicationStatus.NOT_PROCEED -> it.createNotProceed()
+        ReportedAdjudicationStatus.ADJOURNED -> it.createAdjourn()
+        ReportedAdjudicationStatus.CHARGE_PROVED -> it.createChargeProvedV2()
+        else -> throw RuntimeException("not valid test data")
+      }
+    }
+
+    when (to) {
+      ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD -> amendOutcomeRequestV2(
+        AmendHearingOutcomeRequestV2(
+          adjudicator = "updated",
+          details = "updated details",
+        ),
+        to,
+      )
+      ReportedAdjudicationStatus.DISMISSED -> amendOutcomeRequestV2(
+        AmendHearingOutcomeRequestV2(
+          adjudicator = "updated",
+          details = "updated details",
+          plea = HearingOutcomePlea.GUILTY,
+        ),
+        to,
+      )
+      ReportedAdjudicationStatus.NOT_PROCEED -> amendOutcomeRequestV2(
+        AmendHearingOutcomeRequestV2(
+          adjudicator = "updated",
+          details = "updated details",
+          plea = HearingOutcomePlea.GUILTY,
+          notProceedReason = NotProceedReason.EXPIRED_NOTICE,
+        ),
+        to,
+      )
+      ReportedAdjudicationStatus.ADJOURNED -> amendOutcomeRequestV2(
+        AmendHearingOutcomeRequestV2(
+          adjudicator = "updated",
+          details = "updated details",
+          plea = HearingOutcomePlea.GUILTY,
+          adjournReason = HearingOutcomeAdjournReason.MCKENZIE,
+        ),
+        to,
+      )
+      ReportedAdjudicationStatus.CHARGE_PROVED -> amendOutcomeRequestV2(
+        AmendHearingOutcomeRequestV2(
+          adjudicator = "updated",
+          plea = HearingOutcomePlea.GUILTY,
+        ),
+        to,
+      )
+      else -> throw RuntimeException("invalid")
+    }.expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.adjudicator").isEqualTo("updated")
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(to.name).also {
+        when (to) {
+          ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
+            it.jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.details").isEqualTo("updated details")
+              .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(to.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(to.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details").isEqualTo("updated details")
+          ReportedAdjudicationStatus.DISMISSED ->
+            it.jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.plea").isEqualTo(HearingOutcomePlea.GUILTY.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(HearingOutcomeCode.COMPLETE.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.DISMISSED.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details").isEqualTo("updated details")
+          ReportedAdjudicationStatus.NOT_PROCEED ->
+            it.jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.plea").isEqualTo(HearingOutcomePlea.GUILTY.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(HearingOutcomeCode.COMPLETE.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.reason").isEqualTo(NotProceedReason.EXPIRED_NOTICE.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details").isEqualTo("updated details")
+          ReportedAdjudicationStatus.ADJOURNED ->
+            it.jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.plea").isEqualTo(HearingOutcomePlea.GUILTY.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(HearingOutcomeCode.ADJOURN.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.details").isEqualTo("updated details")
+              .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.reason").isEqualTo(HearingOutcomeAdjournReason.MCKENZIE.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
+          ReportedAdjudicationStatus.CHARGE_PROVED ->
+            it.jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.plea").isEqualTo(HearingOutcomePlea.GUILTY.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(HearingOutcomeCode.COMPLETE.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.CHARGE_PROVED.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.amount").doesNotExist()
+          else -> {}
+        }
+      }
+  }
+
+  @Deprecated("to remove on completion of NN-5319")
   @Test
   fun `amend hearing outcome - charge proved where the amount is no longer required `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
@@ -418,6 +561,15 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
   private fun amendOutcomeRequest(request: AmendHearingOutcomeRequest, to: ReportedAdjudicationStatus): WebTestClient.ResponseSpec =
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/$to")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        objectMapper.writeValueAsString(request),
+      )
+      .exchange()
+
+  private fun amendOutcomeRequestV2(request: AmendHearingOutcomeRequestV2, to: ReportedAdjudicationStatus): WebTestClient.ResponseSpec =
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/$to/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         objectMapper.writeValueAsString(request),

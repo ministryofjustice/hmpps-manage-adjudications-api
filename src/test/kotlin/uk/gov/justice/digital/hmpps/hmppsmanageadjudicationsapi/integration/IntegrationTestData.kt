@@ -649,6 +649,7 @@ class IntegrationTestData(
       .blockFirst()!!
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   fun createChargeProved(
     testDataSet: AdjudicationIntTestDataSet,
     caution: Boolean? = true,
@@ -662,6 +663,24 @@ class IntegrationTestData(
           "plea" to HearingOutcomePlea.NOT_GUILTY,
           "amount" to 100.50,
           "caution" to caution,
+        ),
+      )
+      .exchange()
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+  }
+
+  fun createChargeProvedV2(
+    testDataSet: AdjudicationIntTestDataSet,
+  ): ReportedAdjudicationResponse {
+    return webTestClient.post()
+      .uri("/reported-adjudications/${testDataSet.adjudicationNumber}/complete-hearing/charge-proved/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "test",
+          "plea" to HearingOutcomePlea.NOT_GUILTY,
         ),
       )
       .exchange()

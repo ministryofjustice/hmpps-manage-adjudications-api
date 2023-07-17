@@ -69,6 +69,7 @@ data class AdjournRequest(
   val plea: HearingOutcomePlea,
 )
 
+@Deprecated("to remove on completion of NN-5319")
 @Schema(description = "amend hearing outcome request")
 data class AmendHearingOutcomeRequest(
   @Schema(description = "the name of the adjudicator")
@@ -87,6 +88,20 @@ data class AmendHearingOutcomeRequest(
   val damagesOwed: Boolean? = null,
   @Schema(description = "amount of damages")
   val amount: Double? = null,
+)
+
+@Schema(description = "amend hearing outcome request")
+data class AmendHearingOutcomeRequestV2(
+  @Schema(description = "the name of the adjudicator")
+  val adjudicator: String? = null,
+  @Schema(description = "the adjourn reason")
+  val adjournReason: HearingOutcomeAdjournReason? = null,
+  @Schema(description = "not proceed reason")
+  val notProceedReason: NotProceedReason? = null,
+  @Schema(description = "details")
+  val details: String? = null,
+  @Schema(description = "plea")
+  val plea: HearingOutcomePlea? = null,
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
@@ -258,6 +273,7 @@ class HearingController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   @Operation(summary = "amends a hearing outcome and associated outcome")
   @PutMapping(value = ["/{adjudicationNumber}/hearing/outcome/{status}"])
   @ResponseStatus(HttpStatus.OK)
@@ -268,6 +284,24 @@ class HearingController(
   ): ReportedAdjudicationResponse {
     val reportedAdjudication =
       amendHearingOutcomeService.amendHearingOutcome(
+        adjudicationNumber = adjudicationNumber,
+        status = status,
+        amendHearingOutcomeRequest = amendHearingOutcomeRequest,
+      )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(summary = "amends a hearing outcome and associated outcome")
+  @PutMapping(value = ["/{adjudicationNumber}/hearing/outcome/{status}/v2"])
+  @ResponseStatus(HttpStatus.OK)
+  fun amendHearingOutcomeV2(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "status") status: ReportedAdjudicationStatus,
+    @RequestBody amendHearingOutcomeRequest: AmendHearingOutcomeRequestV2,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication =
+      amendHearingOutcomeService.amendHearingOutcomeV2(
         adjudicationNumber = adjudicationNumber,
         status = status,
         amendHearingOutcomeRequest = amendHearingOutcomeRequest,
