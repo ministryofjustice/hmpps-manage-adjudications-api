@@ -649,6 +649,7 @@ class IntegrationTestData(
       .blockFirst()!!
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   fun createChargeProved(
     testDataSet: AdjudicationIntTestDataSet,
     caution: Boolean? = true,
