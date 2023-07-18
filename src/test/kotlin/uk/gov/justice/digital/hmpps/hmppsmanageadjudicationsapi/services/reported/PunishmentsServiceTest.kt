@@ -1088,7 +1088,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             id = 1,
             type = PunishmentType.CAUTION,
           ),
-         PunishmentRequestV2(
+          PunishmentRequestV2(
             id = 1,
             type = PunishmentType.DAMAGES_OWED,
             damagesOwedAmount = 100.0,
