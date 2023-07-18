@@ -18,7 +18,7 @@ class LegacySyncService(
   }
 
   fun publishAdjudication(adjudicationDetailsToPublish: AdjudicationDetailsToPublish) {
-    if (featureFlagsService.isLegacySyncMode()) {
+    if (featureFlagsService.isLegacySyncMode() && !featureFlagsService.createAdjudicationAsyncOnly) {
       legacyNomisGateway.publishAdjudication(adjudicationDetailsToPublish)
     }
   }

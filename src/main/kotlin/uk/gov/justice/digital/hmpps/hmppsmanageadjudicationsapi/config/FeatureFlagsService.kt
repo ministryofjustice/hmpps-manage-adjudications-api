@@ -9,6 +9,8 @@ class FeatureFlagsService(
   val asyncMode: Boolean,
   @Value("\${feature.nomis-source-of-truth:true}")
   val nomisSourceOfTruth: Boolean,
+  @Value("\${feature.create-adjudication-async-only}")
+  val createAdjudicationAsyncOnly: Boolean,
 ) {
 
   fun isAsyncMode(): Boolean {
