@@ -39,6 +39,7 @@ enum class PunishmentType {
 
   companion object {
     fun additionalDays() = listOf(ADDITIONAL_DAYS, PROSPECTIVE_DAYS)
+    fun damagesAndCaution() = listOf(CAUTION, DAMAGES_OWED)
   }
 }
 enum class PrivilegeType {
