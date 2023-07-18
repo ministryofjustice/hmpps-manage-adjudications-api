@@ -32,5 +32,5 @@ oauth:
     url: http://localhost:9090/auth
 
 feature:
-  async-mode: false
+  async-mode: true
   nomis-source-of-truth: true
