@@ -153,6 +153,7 @@ class PunishmentsController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   @Operation(summary = "updates a set of punishments")
   @PutMapping(value = ["/{adjudicationNumber}/punishments"])
   @ResponseStatus(HttpStatus.OK)
@@ -161,6 +162,21 @@ class PunishmentsController(
     @RequestBody punishmentsRequest: PunishmentsRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = punishmentsService.update(
+      adjudicationNumber = adjudicationNumber,
+      punishments = punishmentsRequest.punishments,
+    )
+
+    return ReportedAdjudicationResponse(reportedAdjudication)
+  }
+
+  @Operation(summary = "updates a set of punishments")
+  @PutMapping(value = ["/{adjudicationNumber}/punishments/v2"])
+  @ResponseStatus(HttpStatus.OK)
+  fun updateV2(
+    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @RequestBody punishmentsRequest: PunishmentsRequestV2,
+  ): ReportedAdjudicationResponse {
+    val reportedAdjudication = punishmentsService.updateV2(
       adjudicationNumber = adjudicationNumber,
       punishments = punishmentsRequest.punishments,
     )

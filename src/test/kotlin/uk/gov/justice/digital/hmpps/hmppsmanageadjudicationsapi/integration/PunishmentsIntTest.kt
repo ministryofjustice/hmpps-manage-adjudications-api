@@ -91,6 +91,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.punishments[0].consecutiveReportNumber").isEqualTo(9999)
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   @Test
   fun `update punishments - amends one record, removes a record, and creates a record`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
@@ -143,6 +144,79 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
                 endDate = suspendedUntil,
               ),
               PunishmentRequest(
+                type = PunishmentType.EXCLUSION_WORK,
+                days = 8,
+                suspendedUntil = suspendedUntil,
+              ),
+            ),
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(2)
+      .jsonPath("$.reportedAdjudication.punishments[0].id").isEqualTo(punishmentToAmend)
+      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.CONFINEMENT.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.days").isEqualTo(15)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo(formattedDate)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.endDate").isEqualTo(formattedDate)
+      .jsonPath("$.reportedAdjudication.punishments[1].type").isEqualTo(PunishmentType.EXCLUSION_WORK.name)
+      .jsonPath("$.reportedAdjudication.punishments[1].schedule.days").isEqualTo(8)
+      .jsonPath("$.reportedAdjudication.punishments[1].schedule.suspendedUntil").isEqualTo(formattedDate)
+  }
+
+  @Test
+  fun `update punishments - amends one record, removes a record, and creates a record v2`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubUpdateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    initDataForOutcome().createHearing().createChargeProvedV2()
+
+    val suspendedUntil = LocalDate.now().plusMonths(1)
+    val formattedDate = suspendedUntil.format(DateTimeFormatter.ISO_DATE)
+    val reportedAdjudicationResponse = webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to
+            listOf(
+              PunishmentRequestV2(
+                type = PunishmentType.CONFINEMENT,
+                days = 10,
+                suspendedUntil = suspendedUntil,
+              ),
+              PunishmentRequestV2(
+                type = PunishmentType.REMOVAL_ACTIVITY,
+                days = 10,
+                suspendedUntil = suspendedUntil,
+              ),
+            ),
+        ),
+      )
+      .exchange()
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+
+    val punishmentToAmend = reportedAdjudicationResponse.reportedAdjudication.punishments.first { it.type == PunishmentType.CONFINEMENT }.id
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to
+            listOf(
+              PunishmentRequestV2(
+                id = punishmentToAmend,
+                type = PunishmentType.CONFINEMENT,
+                days = 15,
+                startDate = suspendedUntil,
+                endDate = suspendedUntil,
+              ),
+              PunishmentRequestV2(
                 type = PunishmentType.EXCLUSION_WORK,
                 days = 8,
                 suspendedUntil = suspendedUntil,
