@@ -1053,6 +1053,30 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `saves caution `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = punishmentsService.createV2(
+        adjudicationNumber = 1,
+        listOf(
+          PunishmentRequestV2(
+            id = 1,
+            type = PunishmentType.CAUTION,
+          ),
+        ),
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(legacySyncService, atLeastOnce()).createSanctions(any(), any())
+
+      val caution = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.CAUTION }
+
+      assertThat(caution).isNotNull
+      assertThat(response).isNotNull
+    }
+
+    @Test
     fun `saves damages owed and caution `() {
       whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -1064,7 +1088,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             id = 1,
             type = PunishmentType.CAUTION,
           ),
-          PunishmentRequestV2(
+         PunishmentRequestV2(
             id = 1,
             type = PunishmentType.DAMAGES_OWED,
             damagesOwedAmount = 100.0,
