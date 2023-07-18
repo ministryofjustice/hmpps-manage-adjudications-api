@@ -73,7 +73,8 @@ class ReportedAdjudicationController(
           reportedAdjudicationStatusRequest.statusDetails,
         )
       },
-      eventRule = {it.status == ReportedAdjudicationStatus.UNSCHEDULED})
+      eventRule = { it.status == ReportedAdjudicationStatus.UNSCHEDULED },
+    )
 
   @PutMapping(value = ["/{adjudicationNumber}/issue"])
   @Operation(summary = "Issue DIS Form")
