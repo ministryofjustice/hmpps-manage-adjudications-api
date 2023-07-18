@@ -641,7 +641,7 @@ class PunishmentsService(
     fun List<PunishmentRequestV2>.validateCaution() {
       if (this.any { it.type == PunishmentType.CAUTION }) {
         if (!this.all { PunishmentType.damagesAndCaution().contains(it.type) }) {
-          throw ValidationException("CAUTION can only include DAMAGES_OWED\"")
+          throw ValidationException("CAUTION can only include DAMAGES_OWED")
         }
       }
     }
