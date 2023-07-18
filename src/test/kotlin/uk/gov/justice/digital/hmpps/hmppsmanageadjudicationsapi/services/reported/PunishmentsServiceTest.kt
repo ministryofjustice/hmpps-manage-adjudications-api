@@ -1141,6 +1141,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   @Nested
   inner class UpdatePunishments {
 
@@ -1785,6 +1786,636 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first().activatedFrom).isEqualTo(2)
 
       assertThat(response).isNotNull
+    }
+  }
+
+  @Nested
+  inner class UpdatePunishmentsV2 {
+
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+
+    @BeforeEach
+    fun `init`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.clearPunishments()
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.INAD_ADULT
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          it.createdByUserId = "test"
+          it.createDateTime = LocalDateTime.now()
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+    }
+
+    @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
+    @ParameterizedTest
+    fun `throws exception if not inad hearing `(punishmentType: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.GOV
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequestV2(type = punishmentType, days = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Punishment $punishmentType is invalid as the punishment decision was not awarded by an independent adjudicator")
+    }
+
+    @CsvSource(
+      "ADJOURNED", "REFER_POLICE", "REFER_INAD", "SCHEDULED", "UNSCHEDULED", "AWAITING_REVIEW", "PROSECUTION",
+      "NOT_PROCEED", "DISMISSED", "REJECTED", "RETURNED",
+    )
+    @ParameterizedTest
+    fun `validation error - wrong status code - must be CHARGE_PROVED `(status: ReportedAdjudicationStatus) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also { it.status = status },
+      )
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequestV2(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("status is not CHARGE_PROVED")
+    }
+
+    @Test
+    fun `validation error - privilege missing sub type `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.ASSOCIATION,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequestV2(id = 1, type = PunishmentType.PRIVILEGE, days = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("subtype missing for type PRIVILEGE")
+    }
+
+    @Test
+    fun `validation error - other privilege missing description `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.OTHER,
+              otherPrivilege = "",
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          listOf(
+            PunishmentRequestV2(
+              id = 1,
+              type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.OTHER,
+              days = 1,
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("description missing for type PRIVILEGE - sub type OTHER")
+    }
+
+    @Test
+    fun `validation error - earnings missing stoppage percentage `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = PunishmentType.EARNINGS,
+              stoppagePercentage = 10,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequestV2(id = 1, type = PunishmentType.EARNINGS, days = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("stoppage percentage missing for type EARNINGS")
+    }
+
+    @CsvSource(
+      "PRIVILEGE",
+      "EARNINGS",
+      "CONFINEMENT",
+      "REMOVAL_ACTIVITY",
+      "EXCLUSION_WORK",
+      "EXTRA_WORK",
+      "REMOVAL_WING",
+    )
+    @ParameterizedTest
+    fun `validation error - not suspended missing start date `(type: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = type,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          listOf(getRequestV2(id = 1, type = type, endDate = LocalDate.now())),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("missing start date for schedule")
+    }
+
+    @CsvSource(
+      "PRIVILEGE",
+      "EARNINGS",
+      "CONFINEMENT",
+      "REMOVAL_ACTIVITY",
+      "EXCLUSION_WORK",
+      "EXTRA_WORK",
+      "REMOVAL_WING",
+    )
+    @ParameterizedTest
+    fun `validation error - not suspended missing end date `(type: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = type,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          listOf(
+            getRequestV2(id = 1, type = type, startDate = LocalDate.now()),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("missing end date for schedule")
+    }
+
+    @CsvSource(
+      "PRIVILEGE",
+      "EARNINGS",
+      "CONFINEMENT",
+      "REMOVAL_ACTIVITY",
+      "EXCLUSION_WORK",
+      "EXTRA_WORK",
+      "REMOVAL_WING",
+    )
+    @ParameterizedTest
+    fun `validation error - suspended missing all schedule dates `(type: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = type,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          listOf(getRequestV2(id = 1, type = type)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("missing all schedule data")
+    }
+
+    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
+    @ParameterizedTest
+    fun `throws validation exception when deleting a punishment linked to another report`(type: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.addPunishment(
+            Punishment(
+              type = type,
+              schedule = mutableListOf(PunishmentSchedule(days = 10)),
+            ),
+          )
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveReportNumberAndPunishmentsType(1, type)).thenReturn(
+        listOf(entityBuilder.reportedAdjudication(reportNumber = 1234)),
+      )
+
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          punishments = emptyList(),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Unable to modify: $type is linked to another report")
+    }
+
+    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
+    @ParameterizedTest
+    fun `throws validation exception when amending a punishment to a non additional days type that is linked to another report `(type: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = type,
+              schedule = mutableListOf(PunishmentSchedule(days = 10)),
+            ),
+          )
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveReportNumberAndPunishmentsType(1, type)).thenReturn(
+        listOf(entityBuilder.reportedAdjudication(reportNumber = 1234)),
+      )
+
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          punishments = listOf(
+            PunishmentRequestV2(id = 1, type = PunishmentType.EXTRA_WORK, days = 10, suspendedUntil = LocalDate.now()),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Unable to modify: $type is linked to another report")
+    }
+
+    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
+    @ParameterizedTest
+    fun `throws validation exception if amended to suspended and linked to consecutive report`(type: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.INAD_ADULT
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = type,
+              schedule = mutableListOf(PunishmentSchedule(days = 10)),
+            ),
+          )
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveReportNumberAndPunishmentsType(1, type)).thenReturn(
+        listOf(entityBuilder.reportedAdjudication(reportNumber = 1234)),
+      )
+
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          punishments = listOf(
+            PunishmentRequestV2(id = 1, type = type, days = 10, suspendedUntil = LocalDate.now()),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Unable to modify: $type is linked to another report")
+    }
+
+    @Test
+    fun `throws exception if id for punishment is not located `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = PunishmentType.CONFINEMENT,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          listOf(PunishmentRequestV2(id = 2, type = PunishmentType.REMOVAL_ACTIVITY, days = 1, suspendedUntil = LocalDate.now())),
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Punishment 2 is not associated with ReportedAdjudication")
+    }
+
+    @Test
+    fun `update punishments `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          mutableListOf(
+            Punishment(
+              id = 1,
+              type = PunishmentType.CONFINEMENT,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()).also {
+                  it.createDateTime = LocalDateTime.now()
+                },
+              ),
+            ),
+            Punishment(
+              id = 2,
+              type = PunishmentType.EXCLUSION_WORK,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()).also {
+                  it.createDateTime = LocalDateTime.now()
+                },
+              ),
+            ),
+            Punishment(
+              id = 3,
+              type = PunishmentType.ADDITIONAL_DAYS,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1).also {
+                  it.createDateTime = LocalDateTime.now()
+                },
+              ),
+            ),
+            Punishment(
+              id = 4,
+              type = PunishmentType.REMOVAL_WING,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, days = 1, suspendedUntil = LocalDate.now()).also {
+                  it.createDateTime = LocalDateTime.now()
+                },
+              ),
+            ),
+          ).forEach { p -> it.addPunishment(p) }
+        },
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val response = punishmentsService.updateV2(
+        adjudicationNumber = 1,
+        listOf(
+          PunishmentRequestV2(
+            id = 1,
+            type = PunishmentType.PRIVILEGE,
+            privilegeType = PrivilegeType.OTHER,
+            otherPrivilege = "other",
+            days = 1,
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(1),
+          ),
+          PunishmentRequestV2(
+            type = PunishmentType.PROSPECTIVE_DAYS,
+            days = 1,
+          ),
+          PunishmentRequestV2(
+            id = 3,
+            type = PunishmentType.ADDITIONAL_DAYS,
+            days = 3,
+          ),
+          PunishmentRequestV2(
+            id = 4,
+            type = PunishmentType.REMOVAL_WING,
+            days = 1,
+            suspendedUntil = LocalDate.now(),
+          ),
+        ),
+      )
+
+      verify(legacySyncService, atLeastOnce()).updateSanctions(any(), any())
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(response).isNotNull
+      assertThat(argumentCaptor.value.getPunishments().size).isEqualTo(4)
+
+      val privilege = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.PRIVILEGE }
+      val additionalDays = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.ADDITIONAL_DAYS }
+      val prospectiveDays = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.PROSPECTIVE_DAYS }
+      val removalWing = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.REMOVAL_WING }
+      assertThat(argumentCaptor.value.getPunishments().firstOrNull { it.type == PunishmentType.EXCLUSION_WORK })
+
+      assertThat(privilege.id).isNull()
+      assertThat(additionalDays.id).isEqualTo(3)
+      assertThat(additionalDays.schedule.size).isEqualTo(2)
+      assertThat(prospectiveDays.schedule.size).isEqualTo(1)
+      assertThat(removalWing.schedule.size).isEqualTo(1)
+      assertThat(removalWing.suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(prospectiveDays.schedule.first().days).isEqualTo(1)
+      assertThat(privilege.schedule.first().startDate).isEqualTo(LocalDate.now())
+      assertThat(privilege.schedule.first().endDate).isEqualTo(LocalDate.now().plusDays(1))
+      assertThat(privilege.otherPrivilege).isEqualTo("other")
+      assertThat(privilege.privilegeType).isEqualTo(PrivilegeType.OTHER)
+    }
+
+    @Test
+    fun `activated from punishment not found `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+        reportedAdjudication.also {
+          it.addPunishment(
+            Punishment(id = 1, type = PunishmentType.PROSPECTIVE_DAYS, schedule = mutableListOf(PunishmentSchedule(days = 1))),
+          )
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(entityBuilder.reportedAdjudication())
+
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          listOf(
+            PunishmentRequestV2(
+              id = 10,
+              type = PunishmentType.PROSPECTIVE_DAYS,
+              days = 1,
+              activatedFrom = 2,
+            ),
+          ),
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("suspended punishment not found")
+    }
+
+    @Test
+    fun `activated from punishment has already been activated `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+        reportedAdjudication.also {
+          it.addPunishment(
+            Punishment(id = 1, activatedFrom = 2, type = PunishmentType.PROSPECTIVE_DAYS, schedule = mutableListOf(PunishmentSchedule(days = 1))),
+          )
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.addPunishment(
+            Punishment(id = 3, type = PunishmentType.PROSPECTIVE_DAYS, activatedBy = 1, schedule = mutableListOf(PunishmentSchedule(days = 1))),
+          )
+        },
+      )
+
+      assertDoesNotThrow {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          listOf(
+            PunishmentRequestV2(
+              id = 1,
+              type = PunishmentType.PROSPECTIVE_DAYS,
+              days = 1,
+              activatedFrom = 2,
+            ),
+          ),
+        )
+      }
+    }
+
+    @Test
+    fun `clone suspended punishment `() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(
+        entityBuilder.reportedAdjudication(reportNumber = 2).also {
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = PunishmentType.CONFINEMENT,
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+        },
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = punishmentsService.updateV2(
+        adjudicationNumber = 1,
+        listOf(
+          PunishmentRequestV2(
+            id = 1,
+            type = PunishmentType.CONFINEMENT,
+            days = 1,
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(1),
+            activatedFrom = 2,
+          ),
+        ),
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumber(2)
+
+      assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
+      assertThat(argumentCaptor.value.getPunishments().first().id).isNull()
+      assertThat(argumentCaptor.value.getPunishments().first().activatedFrom).isEqualTo(2)
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `activate manual suspended punishment`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = punishmentsService.updateV2(
+        adjudicationNumber = 1,
+        listOf(
+          PunishmentRequestV2(
+            type = PunishmentType.PRIVILEGE,
+            privilegeType = PrivilegeType.OTHER,
+            otherPrivilege = "other",
+            days = 1,
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(1),
+            activatedFrom = 2,
+          ),
+        ),
+      )
+
+      verify(reportedAdjudicationRepository, never()).findByReportNumber(2)
+      verify(legacySyncService, atLeastOnce()).updateSanctions(any(), any())
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
+      assertThat(argumentCaptor.value.getPunishments().first().id).isNull()
+      assertThat(argumentCaptor.value.getPunishments().first().activatedFrom).isEqualTo(2)
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `validation error - punishments contains a caution and non applicable caution punishments`() {
+      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+
+      assertThatThrownBy {
+        punishmentsService.updateV2(
+          adjudicationNumber = 1,
+          listOf(
+            PunishmentRequestV2(
+              id = 1,
+              type = PunishmentType.CAUTION,
+              days = 1,
+              activatedFrom = 2,
+            ),
+            PunishmentRequestV2(
+              id = 1,
+              type = PunishmentType.DAMAGES_OWED,
+              days = 1,
+              activatedFrom = 2,
+              damagesOwedAmount = 100.0,
+            ),
+            PunishmentRequestV2(
+              id = 1,
+              type = PunishmentType.REMOVAL_WING,
+              days = 1,
+              activatedFrom = 2,
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("CAUTION can only include DAMAGES_OWED")
     }
   }
 
