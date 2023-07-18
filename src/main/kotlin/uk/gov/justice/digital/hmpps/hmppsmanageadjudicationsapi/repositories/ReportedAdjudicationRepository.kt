@@ -82,6 +82,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByPrisonerNumberAndStatusIn(prisonerNumber: String, statuses: List<ReportedAdjudicationStatus>): List<ReportedAdjudication>
 
+  fun findByPrisonerNumberAndReportNumber(prisonerNumber: String, reportNumber: Long): ReportedAdjudication?
+
   fun countByOriginatingAgencyIdAndStatus(agencyId: String, status: ReportedAdjudicationStatus): Long
 
   @Query(

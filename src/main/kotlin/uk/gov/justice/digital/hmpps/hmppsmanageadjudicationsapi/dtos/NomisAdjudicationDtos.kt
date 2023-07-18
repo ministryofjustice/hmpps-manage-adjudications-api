@@ -8,8 +8,6 @@ import java.time.LocalDateTime
 
 @Schema(description = "Adjudication Summary for a prisoner")
 data class AdjudicationSummary(
-  @Schema(required = true, description = "Prisoner Booking Id")
-  val bookingId: Long,
 
   @Schema(required = true, description = "Number of proven adjudications")
   val adjudicationCount: Int,
@@ -146,8 +144,14 @@ data class AdjudicationDetail(
   @Schema(description = "Incident Time", example = "2017-03-17T08:02:00")
   val incidentTime: LocalDateTime? = null,
 
+  @Schema(description = "Prison ID", example = "MDI")
+  val prisonId: String? = null,
+
   @Schema(description = "Establishment", example = "Moorland (HMP & YOI)")
   val establishment: String? = null,
+
+  @Schema(description = "Interior Location ID", example = "357596")
+  val interiorLocationId: Long? = null,
 
   @Schema(description = "Interior Location", example = "Wing A")
   val interiorLocation: String? = null,
@@ -160,6 +164,9 @@ data class AdjudicationDetail(
 
   @Schema(description = "Report Type", example = "Governor's Report")
   val reportType: String? = null,
+
+  @Schema(description = "Reporter Username", example = "John_SMTIH")
+  val reporterUsername: String? = null,
 
   @Schema(description = "Reporter First Name", example = "John")
   val reporterFirstName: String? = null,
@@ -186,11 +193,20 @@ data class Hearing(
   @Schema(description = "Hearing Time", example = "2017-03-17T08:30:00")
   val hearingTime: LocalDateTime? = null,
 
+  @Schema(description = "Prison ID", example = "MDI")
+  val prisonId: String? = null,
+
   @Schema(description = "Establishment", example = "Moorland (HMP & YOI)")
   val establishment: String? = null,
 
+  @Schema(description = "Hearing Location ID", example = "357596")
+  val locationId: Long? = null,
+
   @Schema(description = "Hearing Location", example = "Adjudication Room")
   val location: String? = null,
+
+  @Schema(description = "Adjudicator Username", example = "BOB_SMITH")
+  val heardByUsername: String? = null,
 
   @Schema(description = "Adjudicator First name", example = "Bob")
   val heardByFirstName: String? = null,
