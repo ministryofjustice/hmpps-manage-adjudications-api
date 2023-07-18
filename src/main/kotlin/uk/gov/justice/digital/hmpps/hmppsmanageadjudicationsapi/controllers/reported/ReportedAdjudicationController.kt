@@ -63,14 +63,17 @@ class ReportedAdjudicationController(
     @RequestBody @Valid
     reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_CREATED) {
-      reportedAdjudicationService.setStatus(
-        adjudicationNumber,
-        reportedAdjudicationStatusRequest.status,
-        reportedAdjudicationStatusRequest.statusReason,
-        reportedAdjudicationStatusRequest.statusDetails,
-      )
-    }
+    eventPublishWrapper(
+      event = AdjudicationDomainEventType.ADJUDICATION_CREATED,
+      controllerAction = {
+        reportedAdjudicationService.setStatus(
+          adjudicationNumber,
+          reportedAdjudicationStatusRequest.status,
+          reportedAdjudicationStatusRequest.statusReason,
+          reportedAdjudicationStatusRequest.statusDetails,
+        )
+      },
+      eventRule = {it.status == ReportedAdjudicationStatus.UNSCHEDULED})
 
   @PutMapping(value = ["/{adjudicationNumber}/issue"])
   @Operation(summary = "Issue DIS Form")

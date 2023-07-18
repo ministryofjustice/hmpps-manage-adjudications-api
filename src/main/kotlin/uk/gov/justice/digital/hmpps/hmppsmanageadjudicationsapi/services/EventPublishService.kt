@@ -19,7 +19,6 @@ class EventPublishService(
       occurredAt = LocalDateTime.now(clock),
       AdditionalInformation(
         adjudicationNumber = adjudication.adjudicationNumber.toString(),
-        prisonerNumber = adjudication.prisonerNumber,
       ),
     )
 

@@ -73,7 +73,7 @@ open class TestControllerBase {
         incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
         createdByUserId = "A_SMITH",
         createdDateTime = REPORTED_DATE_TIME,
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        status = ReportedAdjudicationStatus.UNSCHEDULED,
         reviewedByUserId = null,
         statusReason = null,
         statusDetails = null,

@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.CompletedHearingService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
@@ -85,8 +84,6 @@ class OutcomeControllerTest : TestControllerBase() {
 
       createOutcomeRequest(1)
         .andExpect(MockMvcResultMatchers.status().isCreated)
-
-      verify(eventPublishService).publishEvent(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun createOutcomeRequest(
