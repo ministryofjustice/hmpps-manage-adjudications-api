@@ -97,5 +97,5 @@ api:
 
 feature:
   nomis-source-of-truth: ${FEATURE_NOMIS_SOURCE_OF_TRUTH:true}
-  async-mode: ${FEATURE_ASYNC_MODE:true}
+  async-mode: ${FEATURE_ASYNC_MODE:false}
   create-adjudication-async-only: false
