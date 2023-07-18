@@ -63,6 +63,9 @@ class SnsService(hmppsQueueService: HmppsQueueService, private val objectMapper:
 data class AdditionalInformation(
   val adjudicationNumber: String? = null,
   val prisonerNumber: String? = null,
+  val hearingNumber: String? = null,
+  val outcomeNumber: String? = null,
+  val punishmentNumber: String? = null,
   val nomsNumber: String? = null,
   val reason: String? = null,
   val prisonId: String? = null,
@@ -91,7 +94,9 @@ data class HMPPSDomainEvent(
 
 enum class AdjudicationDomainEventType(val value: String, val description: String, val auditType: AuditType) {
   ADJUDICATION_CREATED("adjudication.report.created", "An adjudication has been created: ", AuditType.ADJUDICATION_CREATED),
-  ADJUDICATION_OUTCOME_UPSERT("adjudication.report.outcome.upsert", "An outcome has been updated: ", AuditType.OUTCOME_UPDATED),
+  ADJUDICATION_HEARING_CREATED("adjudication.hearing.created", "A hearing has been created: ", AuditType.HEARING_CREATED),
+  ADJUDICATION_OUTCOME_UPSERT("adjudication.outcome.upsert", "An outcome has been updated: ", AuditType.OUTCOME_UPDATED),
+  ADJUDICATION_PUNISHMENT_CREATED("adjudication.punishment.created", "An punishment has been created: ", AuditType.PUNISHMENT_CREATED),
 }
 
 fun Instant.toOffsetDateFormat(): String =
