@@ -73,7 +73,47 @@ open class TestControllerBase {
         incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
         createdByUserId = "A_SMITH",
         createdDateTime = REPORTED_DATE_TIME,
-        status = ReportedAdjudicationStatus.UNSCHEDULED,
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+        reviewedByUserId = null,
+        statusReason = null,
+        statusDetails = null,
+        damages = listOf(),
+        evidence = listOf(),
+        witnesses = listOf(),
+        hearings = listOf(),
+        disIssueHistory = listOf(),
+        gender = Gender.MALE,
+        outcomes = listOf(),
+        punishments = listOf(),
+        punishmentComments = listOf(),
+        overrideAgencyId = null,
+        originatingAgencyId = "MDI",
+      )
+
+    fun reportedAdjudicationDto(status: ReportedAdjudicationStatus) =
+      ReportedAdjudicationDto(
+        adjudicationNumber = 1,
+        prisonerNumber = "A12345",
+        incidentDetails = IncidentDetailsDto(
+          locationId = 2,
+          dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+          dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
+          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
+        ),
+        isYouthOffender = false,
+        incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+        offenceDetails =
+        OffenceDto(
+          offenceCode = 2,
+          OffenceRuleDto(
+            paragraphNumber = "3",
+            paragraphDescription = "A paragraph description",
+          ),
+        ),
+        incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
+        createdByUserId = "A_SMITH",
+        createdDateTime = REPORTED_DATE_TIME,
+        status = status,
         reviewedByUserId = null,
         statusReason = null,
         statusDetails = null,

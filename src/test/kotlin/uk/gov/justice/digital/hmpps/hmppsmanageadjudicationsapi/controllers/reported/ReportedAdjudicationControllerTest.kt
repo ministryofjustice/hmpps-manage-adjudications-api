@@ -133,7 +133,9 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `makes a call to set the status of the reported adjudication`(status: ReportedAdjudicationStatus, eventCalled: Boolean) {
-      whenever(reportedAdjudicationService.setStatus(123, status, "reason", "details")).thenReturn(REPORTED_ADJUDICATION_DTO)
+      whenever(reportedAdjudicationService.setStatus(123, status, "reason", "details")).thenReturn(
+        reportedAdjudicationDto(status),
+      )
 
       makeReportedAdjudicationSetStatusRequest(
         123,
@@ -142,7 +144,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
 
       val verificationMode = if (eventCalled) atLeastOnce() else never()
 
-      verify(eventPublishService, verificationMode).publishEvent(AdjudicationDomainEventType.ADJUDICATION_CREATED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, verificationMode).publishEvent(AdjudicationDomainEventType.ADJUDICATION_CREATED, reportedAdjudicationDto((status)))
     }
 
     @Test
