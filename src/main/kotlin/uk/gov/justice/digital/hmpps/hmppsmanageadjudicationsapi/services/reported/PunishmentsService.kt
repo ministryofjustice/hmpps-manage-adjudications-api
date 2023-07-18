@@ -6,6 +6,7 @@ import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentCommentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequestV2
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdditionalDaysDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
@@ -42,6 +43,7 @@ class PunishmentsService(
   authenticationFacade,
 ) {
 
+  @Deprecated("to remove on completion of NN-5319")
   fun createPunishmentsFromChargeProvedIfApplicable(reportedAdjudication: ReportedAdjudication, caution: Boolean, amount: Double?) {
     if (caution) createCaution(reportedAdjudication = reportedAdjudication)
 
@@ -50,6 +52,7 @@ class PunishmentsService(
     }
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   fun amendPunishmentsFromChargeProvedIfApplicable(adjudicationNumber: Long, caution: Boolean, damagesOwed: Boolean?, amount: Double?): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
@@ -74,6 +77,7 @@ class PunishmentsService(
     )
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   fun create(
     adjudicationNumber: Long,
     punishments: List<PunishmentRequest>,
@@ -90,6 +94,35 @@ class PunishmentsService(
         )
       } else {
         reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = it))
+      }
+    }
+
+    legacySyncService.createSanctions(
+      adjudicationNumber = adjudicationNumber,
+      sanctions = reportedAdjudication.mapToSanctions(),
+    )
+
+    return saveToDto(reportedAdjudication)
+  }
+
+  fun createV2(
+    adjudicationNumber: Long,
+    punishments: List<PunishmentRequestV2>,
+  ): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+      it.validateCanAddPunishmentsV2()
+    }
+
+    punishments.validateCaution()
+
+    punishments.forEach {
+      it.validateRequestV2(reportedAdjudication.getLatestHearing())
+      if (it.activatedFrom != null) {
+        reportedAdjudication.addPunishment(
+          activateSuspendedPunishmentV2(adjudicationNumber = adjudicationNumber, punishmentRequest = it),
+        )
+      } else {
+        reportedAdjudication.addPunishment(createNewPunishmentV2(punishmentRequest = it))
       }
     }
 
@@ -281,6 +314,7 @@ class PunishmentsService(
     return OicHearingType.inadTypes().contains(reportedAdjudication.getLatestHearing()?.oicHearingType)
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun handleDamagesOwedChange(reportedAdjudication: ReportedAdjudication, amount: Double?) {
     when (val damagesOwedPunishment = reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }) {
       null -> if (amount != null) createDamagesOwed(reportedAdjudication = reportedAdjudication, amount = amount)
@@ -293,6 +327,7 @@ class PunishmentsService(
     }
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun createDamagesOwed(reportedAdjudication: ReportedAdjudication, amount: Double) {
     reportedAdjudication.addPunishment(
       createPunishmentFromChargeProved(
@@ -303,6 +338,7 @@ class PunishmentsService(
     )
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun deleteDamagesOwed(reportedAdjudication: ReportedAdjudication, punishment: Punishment) {
     legacySyncService.deleteSanction(
       adjudicationNumber = reportedAdjudication.reportNumber,
@@ -312,6 +348,7 @@ class PunishmentsService(
     }
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun amendDamagesOwed(reportedAdjudication: ReportedAdjudication, punishment: Punishment, amount: Double) {
     legacySyncService.deleteSanction(adjudicationNumber = reportedAdjudication.reportNumber, sanctionSeq = punishment.sanctionSeq!!).run {
       punishment.amount = amount
@@ -322,6 +359,7 @@ class PunishmentsService(
     }
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun handleCautionChange(reportedAdjudication: ReportedAdjudication, caution: Boolean) {
     when (val cautionPunishment = reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.CAUTION }) {
       null -> if (caution) amendToCaution(reportedAdjudication = reportedAdjudication)
@@ -329,6 +367,7 @@ class PunishmentsService(
     }
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun createCaution(reportedAdjudication: ReportedAdjudication) {
     reportedAdjudication.addPunishment(
       createPunishmentFromChargeProved(
@@ -338,6 +377,7 @@ class PunishmentsService(
     )
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun amendToCaution(reportedAdjudication: ReportedAdjudication) {
     val preserveDamagesOwed = reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }
 
@@ -357,6 +397,7 @@ class PunishmentsService(
     }
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun removeCaution(reportedAdjudication: ReportedAdjudication, punishment: Punishment) {
     legacySyncService.deleteSanction(
       adjudicationNumber = reportedAdjudication.reportNumber,
@@ -366,6 +407,7 @@ class PunishmentsService(
     }
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun createPunishmentFromChargeProved(adjudicationNumber: Long, type: PunishmentType, amount: Double? = null): Punishment =
     Punishment(
       type = type,
@@ -380,6 +422,7 @@ class PunishmentsService(
       )
     }
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun createNewPunishment(punishmentRequest: PunishmentRequest): Punishment =
     Punishment(
       type = punishmentRequest.type,
@@ -396,6 +439,28 @@ class PunishmentsService(
           suspendedUntil = punishmentRequest.suspendedUntil,
         ),
       ),
+    )
+
+  private fun createNewPunishmentV2(punishmentRequest: PunishmentRequestV2): Punishment =
+    Punishment(
+      type = punishmentRequest.type,
+      privilegeType = punishmentRequest.privilegeType,
+      otherPrivilege = punishmentRequest.otherPrivilege,
+      stoppagePercentage = punishmentRequest.stoppagePercentage,
+      suspendedUntil = punishmentRequest.suspendedUntil,
+      consecutiveReportNumber = punishmentRequest.consecutiveReportNumber,
+      amount = punishmentRequest.damagesOwedAmount,
+      schedule = when (punishmentRequest.type) {
+        PunishmentType.CAUTION, PunishmentType.DAMAGES_OWED -> mutableListOf(PunishmentSchedule(days = 0))
+        else -> mutableListOf(
+          PunishmentSchedule(
+            days = punishmentRequest.days!!,
+            startDate = punishmentRequest.startDate,
+            endDate = punishmentRequest.endDate,
+            suspendedUntil = punishmentRequest.suspendedUntil,
+          ),
+        )
+      },
     )
 
   private fun updatePunishment(punishment: Punishment, punishmentRequest: PunishmentRequest) =
@@ -416,6 +481,7 @@ class PunishmentsService(
       }
     }
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun activateSuspendedPunishment(adjudicationNumber: Long, punishmentRequest: PunishmentRequest): Punishment {
     var suspendedPunishment: Punishment? = null
     punishmentRequest.id?.run {
@@ -428,6 +494,25 @@ class PunishmentsService(
     return cloneSuspendedPunishment(
       punishment = suspendedPunishment ?: createNewPunishment(punishmentRequest = punishmentRequest),
       days = punishmentRequest.days,
+      startDate = punishmentRequest.startDate,
+      endDate = punishmentRequest.endDate,
+    ).also {
+      it.activatedFrom = punishmentRequest.activatedFrom
+    }
+  }
+
+  private fun activateSuspendedPunishmentV2(adjudicationNumber: Long, punishmentRequest: PunishmentRequestV2): Punishment {
+    var suspendedPunishment: Punishment? = null
+    punishmentRequest.id?.run {
+      val activatedFromReport = findByAdjudicationNumber(punishmentRequest.activatedFrom!!)
+      suspendedPunishment = activatedFromReport.getPunishments().getSuspendedPunishment(punishmentRequest.id).also {
+        it.activatedBy = adjudicationNumber
+      }
+    }
+
+    return cloneSuspendedPunishment(
+      punishment = suspendedPunishment ?: createNewPunishmentV2(punishmentRequest = punishmentRequest),
+      days = punishmentRequest.days!!,
       startDate = punishmentRequest.startDate,
       endDate = punishmentRequest.endDate,
     ).also {
@@ -477,6 +562,7 @@ class PunishmentsService(
     fun List<PunishmentComment>.getPunishmentComment(id: Long): PunishmentComment =
       this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Punishment comment id $id is not found")
 
+    @Deprecated("to remove on completion of NN-5319")
     fun PunishmentRequest.validateRequest(latestHearing: Hearing?) {
       when (this.type) {
         PunishmentType.PRIVILEGE -> {
@@ -499,12 +585,42 @@ class PunishmentsService(
       }
     }
 
+    fun PunishmentRequestV2.validateRequestV2(latestHearing: Hearing?) {
+      when (this.type) {
+        PunishmentType.DAMAGES_OWED -> this.damagesOwedAmount ?: throw ValidationException("amount missing for type DAMAGES_OWED")
+        PunishmentType.PRIVILEGE -> {
+          this.privilegeType ?: throw ValidationException("subtype missing for type PRIVILEGE")
+          if (this.privilegeType == PrivilegeType.OTHER) {
+            this.otherPrivilege ?: throw ValidationException("description missing for type PRIVILEGE - sub type OTHER")
+          }
+        }
+        PunishmentType.EARNINGS -> this.stoppagePercentage ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
+        PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> if (!OicHearingType.inadTypes().contains(latestHearing?.oicHearingType)) throw ValidationException("Punishment ${this.type} is invalid as the punishment decision was not awarded by an independent adjudicator")
+        else -> {}
+      }
+      when (this.type) {
+        PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS, PunishmentType.DAMAGES_OWED, PunishmentType.CAUTION -> {}
+        else -> {
+          this.suspendedUntil ?: this.startDate ?: this.endDate ?: throw ValidationException("missing all schedule data")
+          this.suspendedUntil ?: this.startDate ?: throw ValidationException("missing start date for schedule")
+          this.suspendedUntil ?: this.endDate ?: throw ValidationException("missing end date for schedule")
+        }
+      }
+    }
+
+    @Deprecated("to remove on completion of NN-5319")
     fun ReportedAdjudication.validateCanAddPunishments() {
       if (this.status != ReportedAdjudicationStatus.CHARGE_PROVED) {
         throw ValidationException("status is not CHARGE_PROVED")
       }
       if (this.getPunishments().any { it.type == PunishmentType.CAUTION }) {
         throw ValidationException("outcome is a caution - no further punishments can be added")
+      }
+    }
+
+    fun ReportedAdjudication.validateCanAddPunishmentsV2() {
+      if (this.status != ReportedAdjudicationStatus.CHARGE_PROVED) {
+        throw ValidationException("status is not CHARGE_PROVED")
       }
     }
 
@@ -519,6 +635,14 @@ class PunishmentsService(
         true
       } else {
         includeAdditionalDays
+      }
+    }
+
+    fun List<PunishmentRequestV2>.validateCaution() {
+      if (this.any { it.type == PunishmentType.CAUTION }) {
+        if (!this.all { PunishmentType.damagesAndCaution().contains(it.type) }) {
+          throw ValidationException("CAUTION can only include DAMAGES_OWED")
+        }
       }
     }
   }
