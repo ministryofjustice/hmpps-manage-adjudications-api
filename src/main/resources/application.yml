@@ -99,7 +99,7 @@ feature:
   nomis-source-of-truth: ${FEATURE_NOMIS_SOURCE_OF_TRUTH:true}
   async:
       chargeNumbers: false
-      adjudications: ${ASYNC_ADJUDICATIONS:false}
+      adjudications: ${FEATURE_ASYNC_ADJUDICATIONS:false}
       hearings: false
       outcomes: false
       punishments: false
