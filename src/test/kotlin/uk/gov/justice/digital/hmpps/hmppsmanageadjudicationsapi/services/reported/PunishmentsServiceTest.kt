@@ -2567,7 +2567,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     fun `get additional days reports`(punishmentType: PunishmentType) {
       whenever(reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull("AE1234", punishmentType)).thenReturn(
-        reportedAdjudications.filter { it.getPunishments().any { p -> p.type == punishmentType } },
+        reportedAdjudications,
       )
 
       val additionalDaysReports = punishmentsService.getReportsWithAdditionalDays(
