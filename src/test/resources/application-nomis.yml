@@ -1,0 +1,3 @@
+feature:
+  async-mode: false
+  nomis-source-of-truth: true
