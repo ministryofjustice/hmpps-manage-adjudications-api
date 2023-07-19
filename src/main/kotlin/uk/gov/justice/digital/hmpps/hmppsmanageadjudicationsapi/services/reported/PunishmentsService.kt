@@ -128,12 +128,13 @@ class PunishmentsService(
 
     legacySyncService.createSanctions(
       adjudicationNumber = adjudicationNumber,
-      sanctions = reportedAdjudication.mapToSanctions(),
+      sanctions = reportedAdjudication.mapToSanctionsV2(),
     )
 
     return saveToDto(reportedAdjudication)
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   fun update(
     adjudicationNumber: Long,
     punishments: List<PunishmentRequest>,
@@ -202,6 +203,72 @@ class PunishmentsService(
         ).sanctionSeq
       }
     }
+
+    return saveToDto(reportedAdjudication)
+  }
+
+  fun updateV2(
+    adjudicationNumber: Long,
+    punishments: List<PunishmentRequestV2>,
+  ): ReportedAdjudicationDto {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+      it.validateCanAddPunishmentsV2()
+    }
+
+    punishments.validateCaution()
+
+    val idsToUpdate = punishments.filter { it.id != null }.map { it.id }
+    reportedAdjudication.getPunishments().filter { !idsToUpdate.contains(it.id) }.forEach { punishment ->
+      punishment.type.consecutiveReportValidation(adjudicationNumber).let {
+        punishment.deleted = true
+      }
+    }
+
+    punishments.forEach { punishmentRequest ->
+      punishmentRequest.validateRequestV2(reportedAdjudication.getLatestHearing())
+
+      when (punishmentRequest.id) {
+        null -> when (punishmentRequest.activatedFrom) {
+          null -> reportedAdjudication.addPunishment(createNewPunishmentV2(punishmentRequest = punishmentRequest))
+          else -> reportedAdjudication.addPunishment(activateSuspendedPunishmentV2(adjudicationNumber = adjudicationNumber, punishmentRequest = punishmentRequest))
+        }
+        else -> {
+          when (punishmentRequest.activatedFrom) {
+            null -> {
+              val punishmentToAmend = reportedAdjudication.getPunishments().getPunishmentToAmend(punishmentRequest.id)
+              when (punishmentToAmend.type) {
+                punishmentRequest.type -> {
+                  punishmentRequest.suspendedUntil?.let {
+                    punishmentRequest.type.consecutiveReportValidation(adjudicationNumber)
+                  }
+                  updatePunishmentV2(punishmentToAmend, punishmentRequest)
+                }
+                else -> {
+                  punishmentToAmend.type.consecutiveReportValidation(adjudicationNumber).let {
+                    punishmentToAmend.deleted = true
+                    reportedAdjudication.addPunishment(createNewPunishmentV2(punishmentRequest = punishmentRequest))
+                  }
+                }
+              }
+            }
+            else ->
+              if (reportedAdjudication.getPunishments().getPunishment(punishmentRequest.id) == null) {
+                reportedAdjudication.addPunishment(
+                  activateSuspendedPunishmentV2(
+                    adjudicationNumber = adjudicationNumber,
+                    punishmentRequest = punishmentRequest,
+                  ),
+                )
+              }
+          }
+        }
+      }
+    }
+
+    legacySyncService.updateSanctions(
+      adjudicationNumber = adjudicationNumber,
+      sanctions = reportedAdjudication.mapToSanctionsV2(),
+    )
 
     return saveToDto(reportedAdjudication)
   }
@@ -463,6 +530,7 @@ class PunishmentsService(
       },
     )
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun updatePunishment(punishment: Punishment, punishmentRequest: PunishmentRequest) =
     punishment.let {
       it.privilegeType = punishmentRequest.privilegeType
@@ -473,6 +541,24 @@ class PunishmentsService(
         it.schedule.add(
           PunishmentSchedule(
             days = punishmentRequest.days,
+            startDate = punishmentRequest.startDate,
+            endDate = punishmentRequest.endDate,
+            suspendedUntil = punishmentRequest.suspendedUntil,
+          ),
+        )
+      }
+    }
+
+  private fun updatePunishmentV2(punishment: Punishment, punishmentRequest: PunishmentRequestV2) =
+    punishment.let {
+      it.privilegeType = punishmentRequest.privilegeType
+      it.otherPrivilege = punishmentRequest.otherPrivilege
+      it.stoppagePercentage = punishmentRequest.stoppagePercentage
+      it.suspendedUntil = punishmentRequest.suspendedUntil
+      if (it.schedule.latestSchedule().hasScheduleBeenUpdatedV2(punishmentRequest) && !PunishmentType.damagesAndCaution().contains(it.type)) {
+        it.schedule.add(
+          PunishmentSchedule(
+            days = punishmentRequest.days!!,
             startDate = punishmentRequest.startDate,
             endDate = punishmentRequest.endDate,
             suspendedUntil = punishmentRequest.suspendedUntil,
@@ -540,8 +626,12 @@ class PunishmentsService(
 
   companion object {
 
+    @Deprecated("to remove on completion of NN-5319")
     fun ReportedAdjudication.mapToSanctions(): List<OffenderOicSanctionRequest> =
       this.getPunishments().filterOutChargeProvedPunishments().map { it.mapPunishmentToSanction() }
+
+    fun ReportedAdjudication.mapToSanctionsV2(): List<OffenderOicSanctionRequest> =
+      this.getPunishments().map { it.mapPunishmentToSanction() }
 
     fun List<PunishmentSchedule>.latestSchedule() = this.maxBy { it.createDateTime!! }
 
@@ -550,7 +640,12 @@ class PunishmentsService(
 
     fun List<Punishment>.getSuspendedPunishment(id: Long): Punishment = this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("suspended punishment not found")
 
+    @Deprecated("to remove on completion of NN-5319")
     fun PunishmentSchedule.hasScheduleBeenUpdated(punishmentRequest: PunishmentRequest): Boolean =
+      this.days != punishmentRequest.days || this.endDate != punishmentRequest.endDate || this.startDate != punishmentRequest.startDate ||
+        this.suspendedUntil != punishmentRequest.suspendedUntil
+
+    fun PunishmentSchedule.hasScheduleBeenUpdatedV2(punishmentRequest: PunishmentRequestV2): Boolean =
       this.days != punishmentRequest.days || this.endDate != punishmentRequest.endDate || this.startDate != punishmentRequest.startDate ||
         this.suspendedUntil != punishmentRequest.suspendedUntil
 

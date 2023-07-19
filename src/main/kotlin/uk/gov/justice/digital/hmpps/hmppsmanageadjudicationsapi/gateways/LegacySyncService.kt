@@ -86,6 +86,7 @@ class LegacySyncService(
     }
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   fun createSanction(adjudicationNumber: Long, sanction: OffenderOicSanctionRequest): Long? {
     return if (featureFlagsService.isAsyncMode()) {
       null
@@ -94,6 +95,7 @@ class LegacySyncService(
     }
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   fun deleteSanction(adjudicationNumber: Long, sanctionSeq: Long) {
     if (featureFlagsService.isLegacySyncMode()) {
       legacyNomisGateway.deleteSanction(adjudicationNumber, sanctionSeq)

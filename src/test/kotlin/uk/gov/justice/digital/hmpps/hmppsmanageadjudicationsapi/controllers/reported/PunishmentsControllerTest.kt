@@ -55,7 +55,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     fun `responds with a unauthorised status code`() {
       createPunishmentsRequest(
         1,
-        PUNISHMENT_REQUEST_V2,
+        PUNISHMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -64,7 +64,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for non ALO`() {
       createPunishmentsRequest(
         1,
-        PUNISHMENT_REQUEST_V2,
+        PUNISHMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -73,14 +73,14 @@ class PunishmentsControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for ALO without write scope`() {
       createPunishmentsRequest(
         1,
-        PUNISHMENT_REQUEST_V2,
+        PUNISHMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create a set of punishments`() {
-      createPunishmentsRequest(1, PUNISHMENT_REQUEST_V2)
+      createPunishmentsRequest(1, PUNISHMENT_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(punishmentsService).createV2(
@@ -112,7 +112,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        punishmentsService.update(
+        punishmentsService.updateV2(
           ArgumentMatchers.anyLong(),
           any(),
         ),
@@ -151,24 +151,24 @@ class PunishmentsControllerTest : TestControllerBase() {
       updatePunishmentsRequest(1, PUNISHMENT_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(punishmentsService).update(
+      verify(punishmentsService).updateV2(
         adjudicationNumber = 1,
-        listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
+        listOf(PunishmentRequestV2(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
       )
     }
 
     private fun updatePunishmentsRequest(
       id: Long,
-      punishmentRequest: PunishmentRequest,
+      punishmentRequest: PunishmentRequestV2,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(
-        PunishmentsRequest(
+        PunishmentsRequestV2(
           punishments = listOf(punishmentRequest),
         ),
       )
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.put("/reported-adjudications/$id/punishments")
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/punishments/v2")
             .header("Content-Type", "application/json")
             .content(body),
         )
@@ -511,8 +511,7 @@ class PunishmentsControllerTest : TestControllerBase() {
   }
 
   companion object {
-    val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 10)
-    val PUNISHMENT_REQUEST_V2 = PunishmentRequestV2(type = PunishmentType.REMOVAL_ACTIVITY, days = 10)
+    val PUNISHMENT_REQUEST = PunishmentRequestV2(type = PunishmentType.REMOVAL_ACTIVITY, days = 10)
     val PUNISHMENT_COMMENT_REQUEST = PunishmentCommentRequest(comment = "some text")
     val SUSPENDED_PUNISHMENTS_DTO = listOf(
       SuspendedPunishmentDto(
