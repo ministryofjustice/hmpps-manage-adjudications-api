@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHear
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+@Deprecated("to remove on completion of NN-5319")
 @Schema(description = "Reported adjudication details")
 data class ReportedAdjudicationDto(
   @Schema(description = "The number for the reported adjudication")
@@ -68,6 +69,67 @@ data class ReportedAdjudicationDto(
   val outcomes: List<OutcomeHistoryDto>,
   @Schema(description = "punishments")
   val punishments: List<PunishmentDto>,
+  @Schema(description = "punishments")
+  val punishmentComments: List<PunishmentCommentDto>,
+  @Schema(description = "flag to indicate a hearing outcome was entered in NOMIS")
+  val outcomeEnteredInNomis: Boolean = false,
+  @Schema(description = "optional override agency id")
+  val overrideAgencyId: String?,
+  @Schema(description = "agency id where report was created")
+  val originatingAgencyId: String,
+  @Schema(description = "optional actions flag to indicate if an ALO can carry out actions against a transferable adjudication, null if not transferable")
+  val transferableActionsAllowed: Boolean? = null,
+)
+
+data class ReportedAdjudicationDtoV2(
+  @Schema(description = "The number for the reported adjudication")
+  val adjudicationNumber: Long,
+  @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
+  val prisonerNumber: String,
+  @Schema(description = "Gender applied for adjudication rules", example = "MALE")
+  val gender: Gender,
+  @Schema(description = "Incident details")
+  val incidentDetails: IncidentDetailsDto,
+  @Schema(description = "Is classified as a youth offender")
+  val isYouthOffender: Boolean,
+  @Schema(description = "Information about the role of this prisoner in the incident")
+  val incidentRole: IncidentRoleDto,
+  @Schema(description = "Details about the offence the prisoner is accused of")
+  val offenceDetails: OffenceDto,
+  @Schema(description = "Incident statement")
+  val incidentStatement: IncidentStatementDto,
+  @Schema(description = "Created by user id")
+  val createdByUserId: String,
+  @Schema(description = "When the report was created")
+  val createdDateTime: LocalDateTime,
+  @Schema(description = "The status of the reported adjudication")
+  val status: ReportedAdjudicationStatus,
+  @Schema(description = "Reviewed by user id")
+  val reviewedByUserId: String?,
+  @Schema(description = "The reason for the status of the reported adjudication")
+  val statusReason: String?,
+  @Schema(description = "The name for the status of the reported adjudication")
+  val statusDetails: String?,
+  @Schema(description = "Damages related to incident")
+  val damages: List<ReportedDamageDto>,
+  @Schema(description = "Evidence related to incident")
+  val evidence: List<ReportedEvidenceDto>,
+  @Schema(description = "Witnesses related to incident")
+  val witnesses: List<ReportedWitnessDto>,
+  @Schema(description = "Hearings related to adjudication")
+  val hearings: List<HearingDto>,
+  @Schema(description = "The last issuing officer")
+  val issuingOfficer: String? = null,
+  @Schema(description = "The last date time of form issued")
+  val dateTimeOfIssue: LocalDateTime? = null,
+  @Schema(description = "Previous DIS1/2 issues")
+  val disIssueHistory: List<DisIssueHistoryDto>,
+  @Schema(description = "date time of first hearing")
+  val dateTimeOfFirstHearing: LocalDateTime? = null,
+  @Schema(description = "Hearings, hearing outcomes, referrals and outcomes in chronological order")
+  val outcomes: List<OutcomeHistoryDtoV2>,
+  @Schema(description = "punishments")
+  val punishments: List<PunishmentDtoV2>,
   @Schema(description = "punishments")
   val punishmentComments: List<PunishmentCommentDto>,
   @Schema(description = "flag to indicate a hearing outcome was entered in NOMIS")
@@ -186,6 +248,7 @@ data class HearingSummaryDto(
   val status: ReportedAdjudicationStatus,
 )
 
+@Deprecated("to remove on completion of NN-5319")
 @Schema(description = "item for hearings and referrals table")
 data class OutcomeHistoryDto(
   @Schema(description = "hearing including hearing outcome")
@@ -194,6 +257,15 @@ data class OutcomeHistoryDto(
   val outcome: CombinedOutcomeDto? = null,
 )
 
+@Schema(description = "item for hearings and referrals table")
+data class OutcomeHistoryDtoV2(
+  @Schema(description = "hearing including hearing outcome")
+  val hearing: HearingDto? = null,
+  @Schema(description = "combined outcome")
+  val outcome: CombinedOutcomeDtoV2? = null,
+)
+
+@Deprecated("to remove on completion of NN-5319")
 @Schema(description = "Outcome")
 data class OutcomeDto(
   @Schema(description = "The id of the outcome")
@@ -212,12 +284,35 @@ data class OutcomeDto(
   val quashedReason: QuashedReason? = null,
 )
 
+@Schema(description = "Outcome")
+data class OutcomeDtoV2(
+  @Schema(description = "The id of the outcome")
+  val id: Long? = null,
+  @Schema(description = "outcome code")
+  val code: OutcomeCode,
+  @Schema(description = "optional details")
+  val details: String? = null,
+  @Schema(description = "optional not proceeded with reason")
+  val reason: NotProceedReason? = null,
+  @Schema(description = "optional quashed reason")
+  val quashedReason: QuashedReason? = null,
+)
+
+@Deprecated("to remove on completion of NN-5319")
 @Schema(description = "Combined Outcome - currently to support referral but maybe expanded once awards are added")
 data class CombinedOutcomeDto(
   @Schema(description = "the outcome")
   val outcome: OutcomeDto,
   @Schema(description = "the optional referral outcome")
   val referralOutcome: OutcomeDto? = null,
+)
+
+@Schema(description = "Combined Outcome - currently to support referral but maybe expanded once awards are added")
+data class CombinedOutcomeDtoV2(
+  @Schema(description = "the outcome")
+  val outcome: OutcomeDtoV2,
+  @Schema(description = "the optional referral outcome")
+  val referralOutcome: OutcomeDtoV2? = null,
 )
 
 @Schema(description = "Previous DIS1/2 issues")
@@ -228,6 +323,7 @@ data class DisIssueHistoryDto(
   val dateTimeOfIssue: LocalDateTime,
 )
 
+@Deprecated("to remove on completion of NN-5319")
 @Schema(description = "punishment")
 data class PunishmentDto(
   @Schema(description = "punishment id used for edit and delete")
@@ -250,6 +346,32 @@ data class PunishmentDto(
   val consecutiveReportNumber: Long? = null,
   @Schema(description = "optional consecutive report number is available to view in adjudications service")
   val consecutiveReportAvailable: Boolean? = null,
+)
+
+@Schema(description = "punishment")
+data class PunishmentDtoV2(
+  @Schema(description = "punishment id used for edit and delete")
+  val id: Long? = null,
+  @Schema(description = "punishment type")
+  val type: PunishmentType,
+  @Schema(description = "optional privilege type")
+  val privilegeType: PrivilegeType? = null,
+  @Schema(description = "optional other privilege type")
+  val otherPrivilege: String? = null,
+  @Schema(description = "optional stoppage of earnings percentage")
+  val stoppagePercentage: Int? = null,
+  @Schema(description = "optional activated by report number")
+  val activatedBy: Long? = null,
+  @Schema(description = "optional activated from report number")
+  val activatedFrom: Long? = null,
+  @Schema(description = "latest punishment schedule")
+  val schedule: PunishmentScheduleDto,
+  @Schema(description = "optional consecutive report number")
+  val consecutiveReportNumber: Long? = null,
+  @Schema(description = "optional consecutive report number is available to view in adjudications service")
+  val consecutiveReportAvailable: Boolean? = null,
+  @Schema(description = "optional amount - money being recovered for damages")
+  val damagesOwedAmount: Double? = null,
 )
 
 @Schema(description = "punishment schedule")
