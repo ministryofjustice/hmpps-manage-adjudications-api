@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.AmendHearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
@@ -139,16 +138,13 @@ class HearingController(
   fun createHearing(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody hearingRequest: HearingRequest,
-  ): ReportedAdjudicationResponse {
-    return eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_HEARING_CREATED) {
-      hearingService.createHearing(
-        adjudicationNumber = adjudicationNumber,
-        locationId = hearingRequest.locationId,
-        dateTimeOfHearing = hearingRequest.dateTimeOfHearing,
-        oicHearingType = hearingRequest.oicHearingType,
-      )
-    }
-  }
+  ): ReportedAdjudicationResponse =
+    hearingService.createHearing(
+      adjudicationNumber = adjudicationNumber,
+      locationId = hearingRequest.locationId,
+      dateTimeOfHearing = hearingRequest.dateTimeOfHearing,
+      oicHearingType = hearingRequest.oicHearingType,
+    ).toResponse()
 
   @PutMapping(value = ["/{adjudicationNumber}/hearing/v2"])
   @Operation(summary = "Amends latest hearing")
@@ -156,26 +152,20 @@ class HearingController(
   fun amendHearing(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody hearingRequest: HearingRequest,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = hearingService.amendHearing(
+  ): ReportedAdjudicationResponse =
+    hearingService.amendHearing(
       adjudicationNumber = adjudicationNumber,
       locationId = hearingRequest.locationId,
       dateTimeOfHearing = hearingRequest.dateTimeOfHearing,
       oicHearingType = hearingRequest.oicHearingType,
-    )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
+    ).toResponse()
 
   @DeleteMapping(value = ["/{adjudicationNumber}/hearing/v2"])
   @Operation(summary = "deletes latest hearing")
   @ResponseStatus(HttpStatus.OK)
   fun deleteHearing(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = hearingService.deleteHearing(adjudicationNumber = adjudicationNumber)
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
+  ): ReportedAdjudicationResponse = hearingService.deleteHearing(adjudicationNumber = adjudicationNumber).toResponse()
 
   @Operation(summary = "Get a list of hearings for a given date and agency")
   @GetMapping(value = ["/hearings"])
@@ -215,17 +205,13 @@ class HearingController(
   fun createReferral(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody referralRequest: ReferralRequest,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication =
-      referralService.createReferral(
-        adjudicationNumber = adjudicationNumber,
-        code = referralRequest.code.validateReferral(),
-        adjudicator = referralRequest.adjudicator,
-        details = referralRequest.details,
-      )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
+  ): ReportedAdjudicationResponse =
+    referralService.createReferral(
+      adjudicationNumber = adjudicationNumber,
+      code = referralRequest.code.validateReferral(),
+      adjudicator = referralRequest.adjudicator,
+      details = referralRequest.details,
+    ).toResponse()
 
   @Operation(
     summary = "create a adjourn for latest hearing",
@@ -251,28 +237,21 @@ class HearingController(
   fun createAdjourn(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody adjournRequest: AdjournRequest,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication =
-      hearingOutcomeService.createAdjourn(
-        adjudicationNumber = adjudicationNumber,
-        adjudicator = adjournRequest.adjudicator,
-        details = adjournRequest.details,
-        reason = adjournRequest.reason,
-        plea = adjournRequest.plea,
-      )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
+  ): ReportedAdjudicationResponse =
+    hearingOutcomeService.createAdjourn(
+      adjudicationNumber = adjudicationNumber,
+      adjudicator = adjournRequest.adjudicator,
+      details = adjournRequest.details,
+      reason = adjournRequest.reason,
+      plea = adjournRequest.plea,
+    ).toResponse()
 
   @DeleteMapping(value = ["/{adjudicationNumber}/hearing/outcome/adjourn"])
   @Operation(summary = "removes the adjourn outcome")
   @ResponseStatus(HttpStatus.OK)
   fun removeAdjourn(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = hearingOutcomeService.removeAdjourn(adjudicationNumber = adjudicationNumber)
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
+  ): ReportedAdjudicationResponse = hearingOutcomeService.removeAdjourn(adjudicationNumber = adjudicationNumber).toResponse()
 
   @Deprecated("to remove on completion of NN-5319")
   @Operation(summary = "amends a hearing outcome and associated outcome")
@@ -282,16 +261,12 @@ class HearingController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @PathVariable(name = "status") status: ReportedAdjudicationStatus,
     @RequestBody amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication =
-      amendHearingOutcomeService.amendHearingOutcome(
-        adjudicationNumber = adjudicationNumber,
-        status = status,
-        amendHearingOutcomeRequest = amendHearingOutcomeRequest,
-      )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
+  ): ReportedAdjudicationResponse =
+    amendHearingOutcomeService.amendHearingOutcome(
+      adjudicationNumber = adjudicationNumber,
+      status = status,
+      amendHearingOutcomeRequest = amendHearingOutcomeRequest,
+    ).toResponse()
 
   @Operation(summary = "amends a hearing outcome and associated outcome")
   @PutMapping(value = ["/{adjudicationNumber}/hearing/outcome/{status}/v2"])
@@ -300,14 +275,10 @@ class HearingController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @PathVariable(name = "status") status: ReportedAdjudicationStatus,
     @RequestBody amendHearingOutcomeRequest: AmendHearingOutcomeRequestV2,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication =
-      amendHearingOutcomeService.amendHearingOutcomeV2(
-        adjudicationNumber = adjudicationNumber,
-        status = status,
-        amendHearingOutcomeRequest = amendHearingOutcomeRequest,
-      )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
+  ): ReportedAdjudicationResponse =
+    amendHearingOutcomeService.amendHearingOutcomeV2(
+      adjudicationNumber = adjudicationNumber,
+      status = status,
+      amendHearingOutcomeRequest = amendHearingOutcomeRequest,
+    ).toResponse()
 }

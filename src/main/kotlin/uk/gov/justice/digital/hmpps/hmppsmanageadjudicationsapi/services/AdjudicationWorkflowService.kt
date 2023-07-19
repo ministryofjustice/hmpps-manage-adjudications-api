@@ -4,7 +4,6 @@ import com.microsoft.applicationinsights.TelemetryClient
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -72,8 +71,6 @@ class AdjudicationWorkflowService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   private val legacySyncService: LegacySyncService,
-  private val featureFlagsService: FeatureFlagsService,
-  private val identityGenerationService: IdentityGenerationService,
   authenticationFacade: AuthenticationFacade,
   private val telemetryClient: TelemetryClient,
   private val draftOffenceService: DraftOffenceService,

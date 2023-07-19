@@ -66,7 +66,4 @@ data class AuditEvent(
 
 enum class AuditType {
   ADJUDICATION_CREATED,
-  HEARING_CREATED,
-  OUTCOME_UPDATED,
-  PUNISHMENT_CREATED,
 }

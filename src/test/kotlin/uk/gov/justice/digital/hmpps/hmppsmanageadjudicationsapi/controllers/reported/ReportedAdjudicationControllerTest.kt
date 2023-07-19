@@ -3,8 +3,12 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import jakarta.persistence.EntityNotFoundException
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.kotlin.any
+import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -114,15 +118,33 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `makes a call to set the status of the reported adjudication`() {
-      whenever(reportedAdjudicationService.setStatus(123, ReportedAdjudicationStatus.RETURNED, "reason", "details")).thenReturn(REPORTED_ADJUDICATION_DTO)
+    fun `does not call event service on exception`() {
+      whenever(reportedAdjudicationService.setStatus(123, ReportedAdjudicationStatus.RETURNED, "reason", "details")).thenThrow(RuntimeException())
 
       makeReportedAdjudicationSetStatusRequest(
         123,
         mapOf("status" to ReportedAdjudicationStatus.RETURNED, "statusReason" to "reason", "statusDetails" to "details"),
       )
 
-      verify(eventPublishService).publishEvent(AdjudicationDomainEventType.ADJUDICATION_CREATED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, never()).publishEvent(any(), any())
+    }
+
+    @CsvSource("RETURNED,false", "REJECTED,false", "UNSCHEDULED,true")
+    @ParameterizedTest
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `makes a call to set the status of the reported adjudication`(status: ReportedAdjudicationStatus, eventCalled: Boolean) {
+      whenever(reportedAdjudicationService.setStatus(123, status, "reason", "details")).thenReturn(
+        reportedAdjudicationDto(status),
+      )
+
+      makeReportedAdjudicationSetStatusRequest(
+        123,
+        mapOf("status" to status, "statusReason" to "reason", "statusDetails" to "details"),
+      )
+
+      val verificationMode = if (eventCalled) atLeastOnce() else never()
+
+      verify(eventPublishService, verificationMode).publishEvent(AdjudicationDomainEventType.ADJUDICATION_CREATED, reportedAdjudicationDto((status)))
     }
 
     @Test

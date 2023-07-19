@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdditionalD
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService
 import java.time.LocalDate
 
@@ -132,26 +131,20 @@ class PunishmentsController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody punishmentsRequest: PunishmentsRequest,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_PUNISHMENT_CREATED) {
-      punishmentsService.create(
-        adjudicationNumber = adjudicationNumber,
-        punishments = punishmentsRequest.punishments,
-      )
-    }
+    punishmentsService.create(
+      adjudicationNumber = adjudicationNumber,
+      punishments = punishmentsRequest.punishments,
+    ).toResponse()
 
   @PostMapping(value = ["/{adjudicationNumber}/punishments/v2"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createV2(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody punishmentsRequest: PunishmentsRequestV2,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = punishmentsService.createV2(
-      adjudicationNumber = adjudicationNumber,
-      punishments = punishmentsRequest.punishments,
-    )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
+  ): ReportedAdjudicationResponse = punishmentsService.createV2(
+    adjudicationNumber = adjudicationNumber,
+    punishments = punishmentsRequest.punishments,
+  ).toResponse()
 
   @Deprecated("to remove on completion of NN-5319")
   @Operation(summary = "updates a set of punishments")
@@ -175,14 +168,10 @@ class PunishmentsController(
   fun updateV2(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody punishmentsRequest: PunishmentsRequestV2,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = punishmentsService.updateV2(
-      adjudicationNumber = adjudicationNumber,
-      punishments = punishmentsRequest.punishments,
-    )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
+  ): ReportedAdjudicationResponse = punishmentsService.updateV2(
+    adjudicationNumber = adjudicationNumber,
+    punishments = punishmentsRequest.punishments,
+  ).toResponse()
 
   @Operation(summary = "get a list of suspended punishments by prisoner")
   @GetMapping(value = ["/punishments/{prisonerNumber}/suspended"])

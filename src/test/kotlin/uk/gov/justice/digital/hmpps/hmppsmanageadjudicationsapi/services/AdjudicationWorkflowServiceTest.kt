@@ -20,7 +20,6 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
@@ -60,8 +59,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
   private val legacySyncService: LegacySyncService = mock()
   private val telemetryClient: TelemetryClient = mock()
-  private val featureFlagsService: FeatureFlagsService = mock()
-  private val identityGenerationService: IdentityGenerationService = mock()
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val draftOffenceService: DraftOffenceService = mock()
 
@@ -70,8 +67,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     legacySyncService,
-    featureFlagsService,
-    identityGenerationService,
     authenticationFacade,
     telemetryClient,
     draftOffenceService,

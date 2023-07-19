@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.CompletedHearingService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
@@ -131,13 +130,11 @@ class OutcomeController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody notProceedRequest: NotProceedRequest,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT) {
-      outcomeService.createNotProceed(
-        adjudicationNumber = adjudicationNumber,
-        details = notProceedRequest.details,
-        reason = notProceedRequest.reason,
-      )
-    }
+    outcomeService.createNotProceed(
+      adjudicationNumber = adjudicationNumber,
+      details = notProceedRequest.details,
+      reason = notProceedRequest.reason,
+    ).toResponse()
 
   @Operation(
     summary = "create a prosecution outcome",
@@ -163,11 +160,9 @@ class OutcomeController(
   fun createProsecution(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT) {
-      outcomeService.createProsecution(
-        adjudicationNumber = adjudicationNumber,
-      )
-    }
+    outcomeService.createProsecution(
+      adjudicationNumber = adjudicationNumber,
+    ).toResponse()
 
   @Operation(
     summary = "quash an outcome",
@@ -194,13 +189,11 @@ class OutcomeController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody quashedRequest: QuashedRequest,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT) {
-      outcomeService.createQuashed(
-        adjudicationNumber = adjudicationNumber,
-        reason = quashedRequest.reason,
-        details = quashedRequest.details,
-      )
-    }
+    outcomeService.createQuashed(
+      adjudicationNumber = adjudicationNumber,
+      reason = quashedRequest.reason,
+      details = quashedRequest.details,
+    ).toResponse()
 
   @Operation(
     summary = "create a police refer outcome",
@@ -227,13 +220,11 @@ class OutcomeController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody policeReferralRequest: PoliceReferralRequest,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT) {
-      outcomeService.createReferral(
-        adjudicationNumber = adjudicationNumber,
-        code = OutcomeCode.REFER_POLICE,
-        details = policeReferralRequest.details,
-      )
-    }
+    outcomeService.createReferral(
+      adjudicationNumber = adjudicationNumber,
+      code = OutcomeCode.REFER_POLICE,
+      details = policeReferralRequest.details,
+    ).toResponse()
 
   @Operation(
     summary = "create a dismissed from hearing outcome",
@@ -260,14 +251,12 @@ class OutcomeController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody completedDismissedRequest: HearingCompletedDismissedRequest,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT) {
-      completedHearingService.createDismissed(
-        adjudicationNumber = adjudicationNumber,
-        adjudicator = completedDismissedRequest.adjudicator,
-        plea = completedDismissedRequest.plea,
-        details = completedDismissedRequest.details,
-      )
-    }
+    completedHearingService.createDismissed(
+      adjudicationNumber = adjudicationNumber,
+      adjudicator = completedDismissedRequest.adjudicator,
+      plea = completedDismissedRequest.plea,
+      details = completedDismissedRequest.details,
+    ).toResponse()
 
   @Operation(
     summary = "create a not proceed from hearing outcome",
@@ -294,15 +283,13 @@ class OutcomeController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody completedNotProceedRequest: HearingCompletedNotProceedRequest,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT) {
-      completedHearingService.createNotProceed(
-        adjudicationNumber = adjudicationNumber,
-        adjudicator = completedNotProceedRequest.adjudicator,
-        plea = completedNotProceedRequest.plea,
-        reason = completedNotProceedRequest.reason,
-        details = completedNotProceedRequest.details,
-      )
-    }
+    completedHearingService.createNotProceed(
+      adjudicationNumber = adjudicationNumber,
+      adjudicator = completedNotProceedRequest.adjudicator,
+      plea = completedNotProceedRequest.plea,
+      reason = completedNotProceedRequest.reason,
+      details = completedNotProceedRequest.details,
+    ).toResponse()
 
   @Deprecated("to remove on completion of NN-5319")
   @PostMapping(value = ["/{adjudicationNumber}/complete-hearing/charge-proved"])
@@ -311,15 +298,13 @@ class OutcomeController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody chargeProvedRequest: HearingCompletedChargeProvedRequest,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT) {
-      completedHearingService.createChargeProved(
-        adjudicationNumber = adjudicationNumber,
-        adjudicator = chargeProvedRequest.adjudicator,
-        plea = chargeProvedRequest.plea,
-        amount = chargeProvedRequest.amount,
-        caution = chargeProvedRequest.caution,
-      )
-    }
+    completedHearingService.createChargeProved(
+      adjudicationNumber = adjudicationNumber,
+      adjudicator = chargeProvedRequest.adjudicator,
+      plea = chargeProvedRequest.plea,
+      amount = chargeProvedRequest.amount,
+      caution = chargeProvedRequest.caution,
+    ).toResponse()
 
   @PostMapping(value = ["/{adjudicationNumber}/complete-hearing/charge-proved/v2"])
   @ResponseStatus(HttpStatus.CREATED)
@@ -327,13 +312,11 @@ class OutcomeController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody chargeProvedRequest: HearingCompletedChargeProvedRequestV2,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT) {
-      completedHearingService.createChargeProvedV2(
-        adjudicationNumber = adjudicationNumber,
-        adjudicator = chargeProvedRequest.adjudicator,
-        plea = chargeProvedRequest.plea,
-      )
-    }
+    completedHearingService.createChargeProvedV2(
+      adjudicationNumber = adjudicationNumber,
+      adjudicator = chargeProvedRequest.adjudicator,
+      plea = chargeProvedRequest.plea,
+    ).toResponse()
 
   @Operation(summary = "remove a referral")
   @DeleteMapping(value = ["/{adjudicationNumber}/remove-referral"])
@@ -341,11 +324,9 @@ class OutcomeController(
   fun removeReferral(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT) {
-      referralService.removeReferral(
-        adjudicationNumber = adjudicationNumber,
-      )
-    }
+    referralService.removeReferral(
+      adjudicationNumber = adjudicationNumber,
+    ).toResponse()
 
   @Operation(summary = "remove a not proceed without a referral or hearing, or a quashed outcome")
   @DeleteMapping(value = ["/{adjudicationNumber}/outcome"])
@@ -353,11 +334,9 @@ class OutcomeController(
   fun removeNotProceedWithoutReferralOrQuashed(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT) {
-      outcomeService.deleteOutcome(
-        adjudicationNumber = adjudicationNumber,
-      )
-    }
+    outcomeService.deleteOutcome(
+      adjudicationNumber = adjudicationNumber,
+    ).toResponse()
 
   @Operation(summary = "remove a completed hearing outcome")
   @DeleteMapping(value = ["/{adjudicationNumber}/remove-completed-hearing"])
@@ -365,11 +344,9 @@ class OutcomeController(
   fun removeCompletedHearingOutcome(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT) {
-      completedHearingService.removeOutcome(
-        adjudicationNumber = adjudicationNumber,
-      )
-    }
+    completedHearingService.removeOutcome(
+      adjudicationNumber = adjudicationNumber,
+    ).toResponse()
 
   @Operation(summary = "amend outcome without a hearing (refer police, not proceed or quashed), unless its a referral outcome - not proceed")
   @PutMapping(value = ["/{adjudicationNumber}/outcome"])
@@ -378,12 +355,10 @@ class OutcomeController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody amendOutcomeRequest: AmendOutcomeRequest,
   ): ReportedAdjudicationResponse =
-    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_OUTCOME_UPSERT) {
-      outcomeService.amendOutcomeViaApi(
-        adjudicationNumber = adjudicationNumber,
-        details = amendOutcomeRequest.details,
-        reason = amendOutcomeRequest.reason,
-        quashedReason = amendOutcomeRequest.quashedReason,
-      )
-    }
+    outcomeService.amendOutcomeViaApi(
+      adjudicationNumber = adjudicationNumber,
+      details = amendOutcomeRequest.details,
+      reason = amendOutcomeRequest.reason,
+      quashedReason = amendOutcomeRequest.quashedReason,
+    ).toResponse()
 }

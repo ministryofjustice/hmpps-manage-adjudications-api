@@ -9,7 +9,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.util.CollectionUtils
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
@@ -22,18 +22,18 @@ import java.time.LocalDate
 class SummaryAdjudicationServiceTest {
 
   private val legacyNomisGateway: LegacyNomisGateway = mock()
-  private val featureFlagsService: FeatureFlagsService = mock()
+  private val featureFlagsConfig: FeatureFlagsConfig = mock()
 
   private val prisonerNumber = "A1234AB"
 
   private val summaryAdjudicationService = SummaryAdjudicationService(
     legacyNomisGateway,
-    featureFlagsService,
+    featureFlagsConfig,
   )
 
   @BeforeEach
   fun beforeEach() {
-    whenever(featureFlagsService.isNomisSourceOfTruth()).thenReturn(true)
+    whenever(featureFlagsConfig.nomisSourceOfTruth).thenReturn(true)
   }
 
   @Test
