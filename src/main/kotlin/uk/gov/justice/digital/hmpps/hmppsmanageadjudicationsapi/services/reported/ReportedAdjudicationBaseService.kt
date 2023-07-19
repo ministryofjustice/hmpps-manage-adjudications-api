@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 
 import jakarta.persistence.EntityNotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDtoV2
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DisIssueHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingOutcomeDto
@@ -11,11 +12,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentSta
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDtoV2
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHistoryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHistoryDtoV2
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentCommentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDtoV2
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDtoV2
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedDamageDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedEvidenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedWitnessDto
@@ -46,6 +51,8 @@ import java.time.LocalDateTime
 open class ReportedDtoService(
   protected val offenceCodeLookupService: OffenceCodeLookupService,
 ) {
+
+  @Deprecated("to remove on completion of NN-5319")
   protected fun ReportedAdjudication.toDto(activeCaseload: String? = null, consecutiveReportsAvailable: List<Long>? = null): ReportedAdjudicationDto {
     val hearings = this.hearings.toHearings()
     val outcomes = this.getOutcomes().createCombinedOutcomes(this.getPunishments())
@@ -95,9 +102,59 @@ open class ReportedDtoService(
     )
   }
 
+  protected fun ReportedAdjudication.toDtoV2(activeCaseload: String? = null, consecutiveReportsAvailable: List<Long>? = null): ReportedAdjudicationDtoV2 {
+    val hearings = this.hearings.toHearings()
+    val outcomes = this.getOutcomes().createCombinedOutcomesV2()
+    return ReportedAdjudicationDtoV2(
+      adjudicationNumber = reportNumber,
+      prisonerNumber = prisonerNumber,
+      incidentDetails = IncidentDetailsDto(
+        locationId = locationId,
+        dateTimeOfIncident = dateTimeOfIncident,
+        dateTimeOfDiscovery = dateTimeOfDiscovery,
+        handoverDeadline = handoverDeadline,
+      ),
+      isYouthOffender = isYouthOffender,
+      incidentRole = IncidentRoleDto(
+        roleCode = incidentRoleCode,
+        offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleCode, isYouthOffender),
+        associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
+        associatedPrisonersName = incidentRoleAssociatedPrisonersName,
+      ),
+      offenceDetails = toReportedOffence(offenceDetails.first(), isYouthOffender, gender, offenceCodeLookupService),
+      incidentStatement = IncidentStatementDto(
+        statement = statement,
+        completed = true,
+      ),
+      createdByUserId = createdByUserId!!,
+      createdDateTime = createDateTime!!,
+      reviewedByUserId = reviewUserId,
+      damages = this.damages.toReportedDamages(),
+      evidence = this.evidence.toReportedEvidence(),
+      witnesses = this.witnesses.toReportedWitnesses(),
+      status = status,
+      statusReason = statusReason,
+      statusDetails = statusDetails,
+      hearings = hearings,
+      issuingOfficer = issuingOfficer,
+      dateTimeOfIssue = dateTimeOfIssue,
+      disIssueHistory = this.disIssueHistory.toDisIssueHistory(),
+      gender = gender,
+      dateTimeOfFirstHearing = dateTimeOfFirstHearing,
+      outcomes = createOutcomeHistoryV2(hearings.toMutableList(), outcomes.toMutableList()),
+      punishments = this.getPunishments().toPunishmentsV2(consecutiveReportsAvailable),
+      punishmentComments = this.punishmentComments.toPunishmentComments(),
+      outcomeEnteredInNomis = hearings.any { it.outcome?.code == HearingOutcomeCode.NOMIS },
+      overrideAgencyId = this.overrideAgencyId,
+      originatingAgencyId = this.originatingAgencyId,
+      transferableActionsAllowed = this.isActionable(activeCaseload),
+    )
+  }
+
   protected fun ReportedAdjudication.getOutcomeHistory(): List<OutcomeHistoryDto> =
     createOutcomeHistory(this.hearings.toHearings().toMutableList(), this.getOutcomes().createCombinedOutcomes(this.getPunishments()).toMutableList())
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun createOutcomeHistory(hearings: MutableList<HearingDto>, outcomes: MutableList<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
     if (hearings.isEmpty() && outcomes.isEmpty()) return listOf()
     if (outcomes.isEmpty()) return hearings.map { OutcomeHistoryDto(hearing = it) }
@@ -131,6 +188,40 @@ open class ReportedDtoService(
     return history.toList()
   }
 
+  private fun createOutcomeHistoryV2(hearings: MutableList<HearingDto>, outcomes: MutableList<CombinedOutcomeDtoV2>): List<OutcomeHistoryDtoV2> {
+    if (hearings.isEmpty() && outcomes.isEmpty()) return listOf()
+    if (outcomes.isEmpty()) return hearings.map { OutcomeHistoryDtoV2(hearing = it) }
+    if (hearings.isEmpty()) return outcomes.map { OutcomeHistoryDtoV2(outcome = it) }
+
+    val history = mutableListOf<OutcomeHistoryDtoV2>()
+    val referPoliceOutcomeCount = outcomes.count { it.outcome.code == OutcomeCode.REFER_POLICE }
+    val referPoliceHearingOutcomeCount = hearings.count { it.outcome?.code == HearingOutcomeCode.REFER_POLICE }
+
+    // special case.  if we have more refer police outcomes than hearing outcomes, it means the first action was to refer to police
+    if (referPoliceOutcomeCount > referPoliceHearingOutcomeCount) {
+      history.add(OutcomeHistoryDtoV2(outcome = outcomes.removeFirst()))
+    }
+
+    do {
+      val hearing = hearings.removeFirst()
+      val outcome = if (hearing.hearingHasNoAssociatedOutcome()) null else outcomes.removeFirstOrNull()
+
+      history.add(
+        OutcomeHistoryDtoV2(hearing = hearing, outcome = outcome),
+      )
+    } while (hearings.isNotEmpty())
+
+    // quashed will be left if it is present
+    outcomes.removeFirstOrNull()?.let {
+      history.add(
+        OutcomeHistoryDtoV2(outcome = it),
+      )
+    }
+
+    return history.toList()
+  }
+
+  @Deprecated("to remove on completion of NN-5319")
   protected fun List<Outcome>.createCombinedOutcomes(punishments: List<Punishment>): List<CombinedOutcomeDto> {
     if (this.isEmpty()) return emptyList()
 
@@ -154,6 +245,37 @@ open class ReportedDtoService(
         else -> combinedOutcomes.add(
           CombinedOutcomeDto(
             outcome = outcome.toOutcomeDto(punishments),
+          ),
+        )
+      }
+    } while (orderedOutcomes.isNotEmpty())
+
+    return combinedOutcomes
+  }
+
+  protected fun List<Outcome>.createCombinedOutcomesV2(): List<CombinedOutcomeDtoV2> {
+    if (this.isEmpty()) return emptyList()
+
+    val combinedOutcomes = mutableListOf<CombinedOutcomeDtoV2>()
+    val orderedOutcomes = this.sortedBy { it.createDateTime }.toMutableList()
+
+    do {
+      val outcome = orderedOutcomes.removeFirst()
+      when (outcome.code) {
+        OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD -> {
+          // a referral can only ever be followed by a referral outcome, or nothing (ie referral is current final state)
+          val referralOutcome = orderedOutcomes.removeFirstOrNull()
+
+          combinedOutcomes.add(
+            CombinedOutcomeDtoV2(
+              outcome = outcome.toOutcomeDtoV2(),
+              referralOutcome = referralOutcome?.toOutcomeDtoV2(),
+            ),
+          )
+        }
+        else -> combinedOutcomes.add(
+          CombinedOutcomeDtoV2(
+            outcome = outcome.toOutcomeDtoV2(),
           ),
         )
       }
@@ -230,6 +352,7 @@ open class ReportedDtoService(
       plea = this.plea,
     )
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun Outcome.toOutcomeDto(punishments: List<Punishment>): OutcomeDto =
     OutcomeDto(
       id = this.id,
@@ -241,6 +364,15 @@ open class ReportedDtoService(
       quashedReason = this.quashedReason,
     )
 
+  private fun Outcome.toOutcomeDtoV2(): OutcomeDtoV2 =
+    OutcomeDtoV2(
+      id = this.id,
+      code = this.code,
+      details = this.details,
+      reason = this.reason,
+      quashedReason = this.quashedReason,
+    )
+
   private fun List<DisIssueHistory>.toDisIssueHistory(): List<DisIssueHistoryDto> =
     this.map {
       DisIssueHistoryDto(
@@ -249,6 +381,7 @@ open class ReportedDtoService(
       )
     }.sortedBy { it.dateTimeOfIssue }.toList()
 
+  @Deprecated("to remove on completion of NN-5319")
   private fun List<Punishment>.toPunishments(consecutiveReportsAvailable: List<Long>?): List<PunishmentDto> =
     this.sortedBy { it.type }.map {
       PunishmentDto(
@@ -257,6 +390,23 @@ open class ReportedDtoService(
         privilegeType = it.privilegeType,
         otherPrivilege = it.otherPrivilege,
         stoppagePercentage = it.stoppagePercentage,
+        activatedFrom = it.activatedFrom,
+        activatedBy = it.activatedBy,
+        consecutiveReportNumber = it.consecutiveReportNumber,
+        consecutiveReportAvailable = isConsecutiveReportAvailable(it.consecutiveReportNumber, consecutiveReportsAvailable),
+        schedule = it.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toPunishmentScheduleDto(),
+      )
+    }
+
+  private fun List<Punishment>.toPunishmentsV2(consecutiveReportsAvailable: List<Long>?): List<PunishmentDtoV2> =
+    this.sortedBy { it.type }.map {
+      PunishmentDtoV2(
+        id = it.id,
+        type = it.type,
+        privilegeType = it.privilegeType,
+        otherPrivilege = it.otherPrivilege,
+        stoppagePercentage = it.stoppagePercentage,
+        amount = it.amount,
         activatedFrom = it.activatedFrom,
         activatedBy = it.activatedBy,
         consecutiveReportNumber = it.consecutiveReportNumber,

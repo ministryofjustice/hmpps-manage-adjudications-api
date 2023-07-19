@@ -13,7 +13,7 @@ class LegacySyncService(
     return if (!featureFlagsConfig.chargeNumbers) {
       legacyNomisGateway.requestAdjudicationCreationData()
     } else {
-      null
+      TODO("this is not implemented and needs design, no equivalent sync service endpoint, it will be handled outside of this service")
     }
   }
 
