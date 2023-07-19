@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdditionalD
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService
 import java.time.LocalDate
 
@@ -130,14 +131,13 @@ class PunishmentsController(
   fun create(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody punishmentsRequest: PunishmentsRequest,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = punishmentsService.create(
-      adjudicationNumber = adjudicationNumber,
-      punishments = punishmentsRequest.punishments,
-    )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
+  ): ReportedAdjudicationResponse =
+    eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_PUNISHMENT_CREATED) {
+      punishmentsService.create(
+        adjudicationNumber = adjudicationNumber,
+        punishments = punishmentsRequest.punishments,
+      )
+    }
 
   @PostMapping(value = ["/{adjudicationNumber}/punishments/v2"])
   @ResponseStatus(HttpStatus.CREATED)
@@ -190,7 +190,8 @@ class PunishmentsController(
   fun getSuspendedPunishments(
     @PathVariable(name = "prisonerNumber") prisonerNumber: String,
     @RequestParam(name = "reportNumber", required = false) reportNumber: Long? = null,
-  ): List<SuspendedPunishmentDto> = punishmentsService.getSuspendedPunishments(prisonerNumber = prisonerNumber, reportNumber = reportNumber)
+  ): List<SuspendedPunishmentDto> =
+    punishmentsService.getSuspendedPunishments(prisonerNumber = prisonerNumber, reportNumber = reportNumber)
 
   @Operation(summary = "get a list of active additional days reports by prisoner for a consecutive punishment")
   @GetMapping(value = ["/punishments/{prisonerNumber}/for-consecutive"])
@@ -198,7 +199,8 @@ class PunishmentsController(
   fun getActiveAdditionalDaysReports(
     @PathVariable(name = "prisonerNumber") prisonerNumber: String,
     @RequestParam(name = "type") punishmentType: PunishmentType,
-  ): List<AdditionalDaysDto> = punishmentsService.getReportsWithAdditionalDays(prisonerNumber = prisonerNumber, punishmentType = punishmentType)
+  ): List<AdditionalDaysDto> =
+    punishmentsService.getReportsWithAdditionalDays(prisonerNumber = prisonerNumber, punishmentType = punishmentType)
 
   @Operation(
     summary = "create punishment comment",

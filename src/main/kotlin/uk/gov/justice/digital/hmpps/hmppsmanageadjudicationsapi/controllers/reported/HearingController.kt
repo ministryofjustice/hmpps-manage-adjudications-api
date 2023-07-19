@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.AmendHearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
@@ -139,14 +140,14 @@ class HearingController(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody hearingRequest: HearingRequest,
   ): ReportedAdjudicationResponse {
-    val reportedAdjudication = hearingService.createHearing(
-      adjudicationNumber = adjudicationNumber,
-      locationId = hearingRequest.locationId,
-      dateTimeOfHearing = hearingRequest.dateTimeOfHearing,
-      oicHearingType = hearingRequest.oicHearingType,
-    )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
+    return eventPublishWrapper(AdjudicationDomainEventType.ADJUDICATION_HEARING_CREATED) {
+      hearingService.createHearing(
+        adjudicationNumber = adjudicationNumber,
+        locationId = hearingRequest.locationId,
+        dateTimeOfHearing = hearingRequest.dateTimeOfHearing,
+        oicHearingType = hearingRequest.oicHearingType,
+      )
+    }
   }
 
   @PutMapping(value = ["/{adjudicationNumber}/hearing/v2"])
