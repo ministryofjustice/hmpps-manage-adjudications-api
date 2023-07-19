@@ -315,7 +315,7 @@ class PunishmentsService(
       prisonerNumber = prisonerNumber,
       punishmentType = punishmentType,
     ).map {
-      it.getPunishments().filter { punishment -> PunishmentType.additionalDays().contains(punishment.type) }.map { punishment ->
+      it.getPunishments().filter { punishment -> punishment.type == punishmentType }.map { punishment ->
         val schedule = punishment.schedule.latestSchedule()
 
         AdditionalDaysDto(
