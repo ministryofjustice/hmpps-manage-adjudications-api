@@ -32,5 +32,13 @@ oauth:
     url: http://localhost:9090/auth
 
 feature:
-  async-mode: true
   nomis-source-of-truth: true
+  async:
+    chargeNumbers: false
+    adjudications: true
+    hearings: false
+    outcomes: false
+    punishments: false
+    witnesses: false
+    damages: false
+    evidence: false

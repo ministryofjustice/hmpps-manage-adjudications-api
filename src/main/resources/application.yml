@@ -97,5 +97,14 @@ api:
 
 feature:
   nomis-source-of-truth: ${FEATURE_NOMIS_SOURCE_OF_TRUTH:true}
-  async-mode: ${FEATURE_ASYNC_MODE:false}
-  create-adjudication-async-only: false
+  async:
+      chargeNumbers: false
+      adjudications: ${ASYNC_ADJUDICATIONS:false}
+      hearings: false
+      outcomes: false
+      punishments: false
+      witnesses: false
+      damages: false
+      evidence: false
+
+

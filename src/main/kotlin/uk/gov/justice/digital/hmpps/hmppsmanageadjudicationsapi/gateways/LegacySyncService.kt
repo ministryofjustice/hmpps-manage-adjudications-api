@@ -1,16 +1,18 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AsyncConfig
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsService
 
 @Service
 class LegacySyncService(
   private val legacyNomisGateway: LegacyNomisGateway,
   private val featureFlagsService: FeatureFlagsService,
+  private val asyncConfig: AsyncConfig,
 ) {
 
   fun requestAdjudicationCreationData(): Long? {
-    return if (featureFlagsService.isLegacySyncMode()) {
+    return if (!asyncConfig.chargeNumbers) {
       legacyNomisGateway.requestAdjudicationCreationData()
     } else {
       null
@@ -18,13 +20,13 @@ class LegacySyncService(
   }
 
   fun publishAdjudication(adjudicationDetailsToPublish: AdjudicationDetailsToPublish) {
-    if (featureFlagsService.isLegacySyncMode() && !featureFlagsService.createAdjudicationAsyncOnly) {
+    if (!asyncConfig.adjudications) {
       legacyNomisGateway.publishAdjudication(adjudicationDetailsToPublish)
     }
   }
 
   fun createHearing(adjudicationNumber: Long, oicHearingRequest: OicHearingRequest): Long? {
-    return if (featureFlagsService.isAsyncMode()) {
+    return if (asyncConfig.hearings) {
       null
     } else {
       legacyNomisGateway.createHearing(adjudicationNumber, oicHearingRequest)
@@ -32,7 +34,7 @@ class LegacySyncService(
   }
 
   fun amendHearing(adjudicationNumber: Long, oicHearingId: Long?, oicHearingRequest: OicHearingRequest) {
-    if (featureFlagsService.isLegacySyncMode()) {
+    if (!asyncConfig.hearings) {
       legacyNomisGateway.amendHearing(
         adjudicationNumber = adjudicationNumber,
         oicHearingId = oicHearingId!!,
@@ -42,7 +44,7 @@ class LegacySyncService(
   }
 
   fun deleteHearing(adjudicationNumber: Long, oicHearingId: Long?) {
-    if (featureFlagsService.isLegacySyncMode()) {
+    if (!asyncConfig.hearings) {
       legacyNomisGateway.deleteHearing(
         adjudicationNumber = adjudicationNumber,
         oicHearingId = oicHearingId!!,
@@ -55,7 +57,7 @@ class LegacySyncService(
     oicHearingId: Long?,
     oicHearingResultRequest: OicHearingResultRequest,
   ) {
-    if (featureFlagsService.isLegacySyncMode()) {
+    if (!asyncConfig.outcomes) {
       legacyNomisGateway.createHearingResult(
         adjudicationNumber = adjudicationNumber,
         oicHearingId = oicHearingId!!,
@@ -69,7 +71,7 @@ class LegacySyncService(
     oicHearingId: Long?,
     oicHearingResultRequest: OicHearingResultRequest,
   ) {
-    if (featureFlagsService.isLegacySyncMode()) {
+    if (!asyncConfig.outcomes) {
       legacyNomisGateway.amendHearingResult(
         adjudicationNumber = adjudicationNumber,
         oicHearingId = oicHearingId!!,
@@ -79,7 +81,7 @@ class LegacySyncService(
   }
 
   fun deleteHearingResult(adjudicationNumber: Long, oicHearingId: Long?) {
-    if (featureFlagsService.isLegacySyncMode()) {
+    if (!asyncConfig.outcomes) {
       legacyNomisGateway.deleteHearingResult(adjudicationNumber = adjudicationNumber, oicHearingId = oicHearingId!!)
     }
   }
