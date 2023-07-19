@@ -2,20 +2,20 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.bind.ConstructorBinding
 import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Service
 
-@Configuration
 @ConfigurationProperties(prefix = "feature.async")
-data class AsyncConfig(
-  val chargeNumbers: Boolean,
-  val adjudications: Boolean,
-  val hearings: Boolean,
-  val outcomes: Boolean,
-  val punishments: Boolean,
-  val witnesses: Boolean,
-  val damages: Boolean,
-  val evidence: Boolean,
+class AsyncConfig(
+ val chargeNumbers: Boolean,
+ val adjudications: Boolean,
+ val hearings: Boolean,
+ val outcomes: Boolean,
+ val punishments: Boolean,
+ val witnesses: Boolean,
+ val damages: Boolean,
+ val evidence: Boolean,
 )
 
 @Service
