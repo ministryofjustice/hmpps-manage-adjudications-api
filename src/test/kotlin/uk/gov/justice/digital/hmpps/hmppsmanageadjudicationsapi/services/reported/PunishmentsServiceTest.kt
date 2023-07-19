@@ -2529,6 +2529,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         it.addPunishment(
           Punishment(
             type = PunishmentType.ADDITIONAL_DAYS,
+            consecutiveReportNumber = 12345,
             schedule = mutableListOf(
               PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
             ),
@@ -2539,6 +2540,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         it.addPunishment(
           Punishment(
             type = PunishmentType.PROSPECTIVE_DAYS,
+            consecutiveReportNumber = 12345,
             schedule = mutableListOf(
               PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
             ),
@@ -2577,6 +2579,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(additionalDaysReports.first().punishment.type).isEqualTo(punishmentType)
       assertThat(additionalDaysReports.first().reportNumber).isEqualTo(1)
       assertThat(additionalDaysReports.first().punishment.schedule.days).isEqualTo(10)
+      assertThat(additionalDaysReports.first().punishment.consecutiveReportNumber).isEqualTo(12345)
       assertThat(additionalDaysReports.first().chargeProvedDate).isEqualTo(reportedAdjudications.first().hearings.first().dateTimeOfHearing.toLocalDate())
     }
   }
