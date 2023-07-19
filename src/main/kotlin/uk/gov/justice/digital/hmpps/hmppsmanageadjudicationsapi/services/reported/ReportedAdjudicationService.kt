@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDtoV2
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssueHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -34,10 +35,23 @@ class ReportedAdjudicationService(
     const val TELEMETRY_EVENT = "ReportedAdjudicationStatusEvent"
   }
 
+  @Deprecated("to remove on completion of NN-5319")
   fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
     val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
 
-    return reportedAdjudication.toDto(authenticationFacade.activeCaseload, reportedAdjudication.getConsecutiveReportsAvailable())
+    return reportedAdjudication.toDto(
+      activeCaseload = authenticationFacade.activeCaseload,
+      consecutiveReportsAvailable = reportedAdjudication.getConsecutiveReportsAvailable(),
+    )
+  }
+
+  fun getReportedAdjudicationDetailsV2(adjudicationNumber: Long): ReportedAdjudicationDtoV2 {
+    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+
+    return reportedAdjudication.toDtoV2(
+      activeCaseload = authenticationFacade.activeCaseload,
+      consecutiveReportsAvailable = reportedAdjudication.getConsecutiveReportsAvailable(),
+    )
   }
 
   fun lastOutcomeHasReferralOutcome(adjudicationNumber: Long): Boolean =

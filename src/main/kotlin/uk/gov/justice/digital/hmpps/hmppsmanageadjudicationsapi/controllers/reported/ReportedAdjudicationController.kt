@@ -50,9 +50,14 @@ class ReportedAdjudicationController(
   private val reportedAdjudicationService: ReportedAdjudicationService,
 ) : ReportedAdjudicationBaseController() {
 
+  @Deprecated("to remove on completion of NN-5319")
   @GetMapping(value = ["/{adjudicationNumber}"])
   fun getReportedAdjudicationDetails(@PathVariable(name = "adjudicationNumber") adjudicationNumber: Long): ReportedAdjudicationResponse =
     reportedAdjudicationService.getReportedAdjudicationDetails(adjudicationNumber).toResponse()
+
+  @GetMapping(value = ["/{adjudicationNumber}/v2"])
+  fun getReportedAdjudicationDetailsV2(@PathVariable(name = "adjudicationNumber") adjudicationNumber: Long): ReportedAdjudicationResponseV2 =
+    reportedAdjudicationService.getReportedAdjudicationDetailsV2(adjudicationNumber).toResponseV2()
 
   @PutMapping(value = ["/{adjudicationNumber}/status"])
   @Operation(summary = "Set the status for the reported adjudication.")
