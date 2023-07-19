@@ -162,7 +162,7 @@ class AdjudicationWorkflowService(
   }
 
   private fun createReportedAdjudication(draftAdjudication: DraftAdjudication): ReportedAdjudicationDto {
-    val adjudicationNumber =  legacySyncService.requestAdjudicationCreationData()!!
+    val adjudicationNumber = legacySyncService.requestAdjudicationCreationData()!!
 
     return reportedAdjudicationService.save(
       ReportedAdjudication(
