@@ -324,6 +324,7 @@ class PunishmentsService(
           punishment = PunishmentDto(
             id = punishment.id,
             type = punishment.type,
+            consecutiveReportNumber = punishment.consecutiveReportNumber,
             schedule = PunishmentScheduleDto(days = schedule.days),
           ),
         )

@@ -130,28 +130,21 @@ class PunishmentsController(
   fun create(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody punishmentsRequest: PunishmentsRequest,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = punishmentsService.create(
+  ): ReportedAdjudicationResponse =
+    punishmentsService.create(
       adjudicationNumber = adjudicationNumber,
       punishments = punishmentsRequest.punishments,
-    )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
+    ).toResponse()
 
   @PostMapping(value = ["/{adjudicationNumber}/punishments/v2"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createV2(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody punishmentsRequest: PunishmentsRequestV2,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = punishmentsService.createV2(
-      adjudicationNumber = adjudicationNumber,
-      punishments = punishmentsRequest.punishments,
-    )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
+  ): ReportedAdjudicationResponse = punishmentsService.createV2(
+    adjudicationNumber = adjudicationNumber,
+    punishments = punishmentsRequest.punishments,
+  ).toResponse()
 
   @Deprecated("to remove on completion of NN-5319")
   @Operation(summary = "updates a set of punishments")
@@ -175,14 +168,10 @@ class PunishmentsController(
   fun updateV2(
     @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
     @RequestBody punishmentsRequest: PunishmentsRequestV2,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = punishmentsService.updateV2(
-      adjudicationNumber = adjudicationNumber,
-      punishments = punishmentsRequest.punishments,
-    )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
+  ): ReportedAdjudicationResponse = punishmentsService.updateV2(
+    adjudicationNumber = adjudicationNumber,
+    punishments = punishmentsRequest.punishments,
+  ).toResponse()
 
   @Operation(summary = "get a list of suspended punishments by prisoner")
   @GetMapping(value = ["/punishments/{prisonerNumber}/suspended"])
@@ -190,7 +179,8 @@ class PunishmentsController(
   fun getSuspendedPunishments(
     @PathVariable(name = "prisonerNumber") prisonerNumber: String,
     @RequestParam(name = "reportNumber", required = false) reportNumber: Long? = null,
-  ): List<SuspendedPunishmentDto> = punishmentsService.getSuspendedPunishments(prisonerNumber = prisonerNumber, reportNumber = reportNumber)
+  ): List<SuspendedPunishmentDto> =
+    punishmentsService.getSuspendedPunishments(prisonerNumber = prisonerNumber, reportNumber = reportNumber)
 
   @Operation(summary = "get a list of active additional days reports by prisoner for a consecutive punishment")
   @GetMapping(value = ["/punishments/{prisonerNumber}/for-consecutive"])
@@ -198,7 +188,8 @@ class PunishmentsController(
   fun getActiveAdditionalDaysReports(
     @PathVariable(name = "prisonerNumber") prisonerNumber: String,
     @RequestParam(name = "type") punishmentType: PunishmentType,
-  ): List<AdditionalDaysDto> = punishmentsService.getReportsWithAdditionalDays(prisonerNumber = prisonerNumber, punishmentType = punishmentType)
+  ): List<AdditionalDaysDto> =
+    punishmentsService.getReportsWithAdditionalDays(prisonerNumber = prisonerNumber, punishmentType = punishmentType)
 
   @Operation(
     summary = "create punishment comment",

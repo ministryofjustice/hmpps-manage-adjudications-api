@@ -63,6 +63,9 @@ class SnsService(hmppsQueueService: HmppsQueueService, private val objectMapper:
 data class AdditionalInformation(
   val adjudicationNumber: String? = null,
   val prisonerNumber: String? = null,
+  val hearingNumber: String? = null,
+  val outcomeNumber: String? = null,
+  val punishmentNumber: String? = null,
   val nomsNumber: String? = null,
   val reason: String? = null,
   val prisonId: String? = null,
