@@ -1,16 +1,16 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AsyncConfig
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
 
 @Service
 class LegacySyncService(
   private val legacyNomisGateway: LegacyNomisGateway,
-  private val asyncConfig: AsyncConfig,
+  private val featureFlagsConfig: FeatureFlagsConfig,
 ) {
 
   fun requestAdjudicationCreationData(): Long? {
-    return if (!asyncConfig.chargeNumbers) {
+    return if (!featureFlagsConfig.chargeNumbers) {
       legacyNomisGateway.requestAdjudicationCreationData()
     } else {
       null
@@ -18,13 +18,13 @@ class LegacySyncService(
   }
 
   fun publishAdjudication(adjudicationDetailsToPublish: AdjudicationDetailsToPublish) {
-    if (!asyncConfig.adjudications) {
+    if (!featureFlagsConfig.adjudications) {
       legacyNomisGateway.publishAdjudication(adjudicationDetailsToPublish)
     }
   }
 
   fun createHearing(adjudicationNumber: Long, oicHearingRequest: OicHearingRequest): Long? {
-    return if (!asyncConfig.hearings) {
+    return if (!featureFlagsConfig.hearings) {
       legacyNomisGateway.createHearing(adjudicationNumber, oicHearingRequest)
     } else {
       null
@@ -32,7 +32,7 @@ class LegacySyncService(
   }
 
   fun amendHearing(adjudicationNumber: Long, oicHearingId: Long?, oicHearingRequest: OicHearingRequest) {
-    if (!asyncConfig.hearings) {
+    if (!featureFlagsConfig.hearings) {
       legacyNomisGateway.amendHearing(
         adjudicationNumber = adjudicationNumber,
         oicHearingId = oicHearingId!!,
@@ -42,7 +42,7 @@ class LegacySyncService(
   }
 
   fun deleteHearing(adjudicationNumber: Long, oicHearingId: Long?) {
-    if (!asyncConfig.hearings) {
+    if (!featureFlagsConfig.hearings) {
       legacyNomisGateway.deleteHearing(
         adjudicationNumber = adjudicationNumber,
         oicHearingId = oicHearingId!!,
@@ -55,7 +55,7 @@ class LegacySyncService(
     oicHearingId: Long?,
     oicHearingResultRequest: OicHearingResultRequest,
   ) {
-    if (!asyncConfig.outcomes) {
+    if (!featureFlagsConfig.outcomes) {
       legacyNomisGateway.createHearingResult(
         adjudicationNumber = adjudicationNumber,
         oicHearingId = oicHearingId!!,
@@ -69,7 +69,7 @@ class LegacySyncService(
     oicHearingId: Long?,
     oicHearingResultRequest: OicHearingResultRequest,
   ) {
-    if (!asyncConfig.outcomes) {
+    if (!featureFlagsConfig.outcomes) {
       legacyNomisGateway.amendHearingResult(
         adjudicationNumber = adjudicationNumber,
         oicHearingId = oicHearingId!!,
@@ -79,7 +79,7 @@ class LegacySyncService(
   }
 
   fun deleteHearingResult(adjudicationNumber: Long, oicHearingId: Long?) {
-    if (!asyncConfig.outcomes) {
+    if (!featureFlagsConfig.outcomes) {
       legacyNomisGateway.deleteHearingResult(adjudicationNumber = adjudicationNumber, oicHearingId = oicHearingId!!)
     }
   }
@@ -93,25 +93,25 @@ class LegacySyncService(
     legacyNomisGateway.deleteSanction(adjudicationNumber, sanctionSeq)
 
   fun createSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>) {
-    if (!asyncConfig.outcomes && !asyncConfig.punishments) {
+    if (!featureFlagsConfig.outcomes && !featureFlagsConfig.punishments) {
       legacyNomisGateway.createSanctions(adjudicationNumber, sanctions)
     }
   }
 
   fun updateSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>) {
-    if (!asyncConfig.punishments) {
+    if (!featureFlagsConfig.punishments) {
       legacyNomisGateway.updateSanctions(adjudicationNumber, sanctions)
     }
   }
 
   fun quashSanctions(adjudicationNumber: Long) {
-    if (!asyncConfig.punishments) {
+    if (!featureFlagsConfig.punishments) {
       legacyNomisGateway.quashSanctions(adjudicationNumber)
     }
   }
 
   fun deleteSanctions(adjudicationNumber: Long) {
-    if (!asyncConfig.punishments) {
+    if (!featureFlagsConfig.punishments) {
       legacyNomisGateway.deleteSanctions(adjudicationNumber)
     }
   }

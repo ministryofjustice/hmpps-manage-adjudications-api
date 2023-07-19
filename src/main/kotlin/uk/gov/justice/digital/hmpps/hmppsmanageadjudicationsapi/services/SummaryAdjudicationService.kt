@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSearchResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
@@ -20,10 +20,10 @@ import java.time.LocalDate
 @Transactional
 class SummaryAdjudicationService(
   private val legacyNomisGateway: LegacyNomisGateway,
-  private val featureFlagsService: FeatureFlagsService,
+  private val featureFlagsConfig: FeatureFlagsConfig,
 ) {
   fun getAdjudication(prisonerNumber: String, chargeId: Long): AdjudicationDetail {
-    return if (featureFlagsService.isNomisSourceOfTruth()) {
+    return if (featureFlagsConfig.nomisSourceOfTruth) {
       legacyNomisGateway.getAdjudicationDetailForPrisoner(prisonerNumber, chargeId)
     } else {
       // TODO: get data from this database!
@@ -40,7 +40,7 @@ class SummaryAdjudicationService(
     toDate: LocalDate?,
     pageable: Pageable,
   ): AdjudicationSearchResponse {
-    return if (featureFlagsService.isNomisSourceOfTruth()) {
+    return if (featureFlagsConfig.nomisSourceOfTruth) {
       val response = legacyNomisGateway.getAdjudicationsForPrisoner(
         prisonerNumber,
         offenceId,
@@ -70,7 +70,7 @@ class SummaryAdjudicationService(
   private fun HttpHeaders.getHeader(key: String) = this[key]?.get(0) ?: "0"
 
   fun getAdjudicationSummary(bookingId: Long, awardCutoffDate: LocalDate?, adjudicationCutoffDate: LocalDate?): AdjudicationSummary {
-    return if (featureFlagsService.isNomisSourceOfTruth()) {
+    return if (featureFlagsConfig.nomisSourceOfTruth) {
       legacyNomisGateway.getAdjudicationsForPrisonerForBooking(bookingId, awardCutoffDate, adjudicationCutoffDate)
     } else {
       // TODO: get data from this database!
@@ -79,7 +79,7 @@ class SummaryAdjudicationService(
   }
 
   fun getProvenAdjudicationsForBookings(bookingIds: List<Long>, awardCutoffDate: LocalDate?, adjudicationCutoffDate: LocalDate?): List<ProvenAdjudicationsSummary> {
-    return if (featureFlagsService.isNomisSourceOfTruth()) {
+    return if (featureFlagsConfig.nomisSourceOfTruth) {
       legacyNomisGateway.getProvenAdjudicationsForBookings(bookingIds, awardCutoffDate, adjudicationCutoffDate)
     } else {
       // TODO: get data from this database!
