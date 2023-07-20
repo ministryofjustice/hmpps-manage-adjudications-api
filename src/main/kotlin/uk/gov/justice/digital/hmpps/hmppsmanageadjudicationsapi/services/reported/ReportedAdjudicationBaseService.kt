@@ -304,6 +304,7 @@ open class ReportedDtoService(
   private fun List<ReportedDamage>.toReportedDamages(): List<ReportedDamageDto> =
     this.map {
       ReportedDamageDto(
+        id = it.id,
         code = it.code,
         details = it.details,
         reporter = it.reporter,
@@ -313,6 +314,7 @@ open class ReportedDtoService(
   private fun List<ReportedEvidence>.toReportedEvidence(): List<ReportedEvidenceDto> =
     this.map {
       ReportedEvidenceDto(
+        id = it.id,
         code = it.code,
         identifier = it.identifier,
         details = it.details,
@@ -323,6 +325,7 @@ open class ReportedDtoService(
   private fun List<ReportedWitness>.toReportedWitnesses(): List<ReportedWitnessDto> =
     this.map {
       ReportedWitnessDto(
+        id = it.id,
         code = it.code,
         firstName = it.firstName,
         lastName = it.lastName,

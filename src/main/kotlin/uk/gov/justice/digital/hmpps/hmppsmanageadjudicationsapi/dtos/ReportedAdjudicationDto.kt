@@ -167,6 +167,8 @@ data class OffenceRuleDto(
 
 @Schema(description = "Reported damages")
 data class ReportedDamageDto(
+  @Schema(description = "The id of the damage")
+  val id: Long? = null,
   @Schema(description = "The damage code based on an enum for defined damages", example = "CLEANING")
   val code: DamageCode,
   @Schema(description = "The details of the damage", example = "the kettle was broken")
@@ -177,6 +179,8 @@ data class ReportedDamageDto(
 
 @Schema(description = "Reported evidence")
 data class ReportedEvidenceDto(
+  @Schema(description = "The id of the evidence")
+  val id: Long? = null,
   @Schema(description = "The evidence code based on an enum for defined evidence", example = "PHOTO")
   val code: EvidenceCode,
   @Schema(description = "Evidence identifier", example = "Tag number or Camera number")
@@ -189,6 +193,8 @@ data class ReportedEvidenceDto(
 
 @Schema(description = "Reported witness")
 data class ReportedWitnessDto(
+  @Schema(description = "The id of the witness")
+  val id: Long? = null,
   @Schema(description = "The witness code based on an enum for defined witness", example = "PRISON_OFFICER")
   val code: WitnessCode,
   @Schema(description = "Witness first name", example = "Fred")
