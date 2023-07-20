@@ -178,7 +178,7 @@ class PunishmentsController(
   @ResponseStatus(HttpStatus.OK)
   fun getSuspendedPunishments(
     @PathVariable(name = "prisonerNumber") prisonerNumber: String,
-    @RequestParam(name = "reportNumber", required = false) reportNumber: Long? = null,
+    @RequestParam(name = "reportNumber") reportNumber: Long,
   ): List<SuspendedPunishmentDto> =
     punishmentsService.getSuspendedPunishments(prisonerNumber = prisonerNumber, reportNumber = reportNumber)
 
