@@ -210,13 +210,13 @@ class PunishmentsControllerTest : TestControllerBase() {
       getSuspendedPunishmentsRequest()
         .andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(punishmentsService).getSuspendedPunishments("AE1234")
+      verify(punishmentsService).getSuspendedPunishments("AE1234", 12345)
     }
 
     private fun getSuspendedPunishmentsRequest(): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/punishments/AE1234/suspended")
+          MockMvcRequestBuilders.get("/reported-adjudications/punishments/AE1234/suspended?reportNumber=12345")
             .header("Content-Type", "application/json"),
         )
     }
