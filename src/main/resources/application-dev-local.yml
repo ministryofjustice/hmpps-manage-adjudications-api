@@ -39,6 +39,3 @@ feature:
     hearings: false
     outcomes: false
     punishments: false
-    witnesses: false
-    damages: false
-    evidence: false
