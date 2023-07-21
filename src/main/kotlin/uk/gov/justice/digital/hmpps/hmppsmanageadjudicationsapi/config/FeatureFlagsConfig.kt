@@ -17,10 +17,4 @@ class FeatureFlagsConfig(
   val outcomes: Boolean,
   @Value("\${feature.async.punishments}")
   val punishments: Boolean,
-  @Value("\${feature.async.witnesses}")
-  val witnesses: Boolean,
-  @Value("\${feature.async.damages}")
-  val damages: Boolean,
-  @Value("\${feature.async.evidence}")
-  val evidence: Boolean,
 )
