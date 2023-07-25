@@ -23,7 +23,8 @@ data class ReportedAdjudication(
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var gender: Gender,
-  var reportNumber: Long,
+  @field:Length(max = 16)
+  var chargeNumber: String,
   var originatingAgencyId: String,
   var overrideAgencyId: String? = null,
   var lastModifiedAgencyId: String? = null,
@@ -84,7 +85,7 @@ data class ReportedAdjudication(
       this.statusDetails = details
       this.reviewUserId = reviewUserId
     } else {
-      throw IllegalStateException("ReportedAdjudication ${this.reportNumber} cannot transition from ${this.status} to $to")
+      throw IllegalStateException("ReportedAdjudication ${this.chargeNumber} cannot transition from ${this.status} to $to")
     }
   }
 

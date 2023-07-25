@@ -32,7 +32,7 @@ class WitnessesServiceTest : ReportedAdjudicationTestBase() {
 
   @BeforeEach
   fun init() {
-    whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
     whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
     whenever(authenticationFacade.currentUsername).thenReturn("Fred")
     reportedAdjudication.createdByUserId = "Jane"
@@ -42,7 +42,7 @@ class WitnessesServiceTest : ReportedAdjudicationTestBase() {
   @Test
   fun `update witnesses for adjudication`() {
     val response = witnessesService.updateWitnesses(
-      1,
+      "1",
       listOf(
         WitnessRequestItem(
           reportedAdjudication.witnesses.first().code,
@@ -70,10 +70,10 @@ class WitnessesServiceTest : ReportedAdjudicationTestBase() {
 
   @Test
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-    whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(null)
 
     Assertions.assertThatThrownBy {
-      witnessesService.updateWitnesses(1, listOf(WitnessRequestItem(WitnessCode.STAFF, "first", "last")))
+      witnessesService.updateWitnesses("1", listOf(WitnessRequestItem(WitnessCode.STAFF, "first", "last")))
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }

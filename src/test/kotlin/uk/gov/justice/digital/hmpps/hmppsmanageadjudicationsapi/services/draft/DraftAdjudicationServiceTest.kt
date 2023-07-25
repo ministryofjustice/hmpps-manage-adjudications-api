@@ -745,7 +745,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndReportNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
+        draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndChargeNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
           any(),
           any(),
           any(),
@@ -799,7 +799,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         pageable,
       )
 
-      verify(draftAdjudicationRepository).findByAgencyIdAndCreatedByUserIdAndReportNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
+      verify(draftAdjudicationRepository).findByAgencyIdAndCreatedByUserIdAndChargeNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
         "MDI",
         "ITAG_USER",
         LocalDate.now().minusWeeks(1).atStartOfDay(),

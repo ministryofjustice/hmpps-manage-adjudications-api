@@ -31,19 +31,19 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `creates a dismissed outcome and hearing outcome of completed `() {
       completedHearingService.createDismissed(
-        adjudicationNumber = 1L,
+        chargeNumber = "1",
         adjudicator = "test",
         plea = HearingOutcomePlea.UNFIT,
         details = "details",
       )
 
       verify(outcomeService, atLeastOnce()).createDismissed(
-        adjudicationNumber = 1L,
+        chargeNumber = "1",
         details = "details",
       )
 
       verify(hearingOutcomeService, atLeastOnce()).createCompletedHearing(
-        adjudicationNumber = 1L,
+        chargeNumber = "1",
         adjudicator = "test",
         plea = HearingOutcomePlea.UNFIT,
       )
@@ -56,7 +56,7 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `creates a not proceed outcome and hearing outcome of completed `() {
       completedHearingService.createNotProceed(
-        adjudicationNumber = 1L,
+        chargeNumber = "1",
         adjudicator = "test",
         plea = HearingOutcomePlea.UNFIT,
         reason = NotProceedReason.NOT_FAIR,
@@ -64,13 +64,13 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(outcomeService, atLeastOnce()).createNotProceed(
-        adjudicationNumber = 1L,
+        chargeNumber = "1",
         reason = NotProceedReason.NOT_FAIR,
         details = "details",
       )
 
       verify(hearingOutcomeService, atLeastOnce()).createCompletedHearing(
-        adjudicationNumber = 1L,
+        chargeNumber = "1",
         adjudicator = "test",
         plea = HearingOutcomePlea.UNFIT,
       )
@@ -82,17 +82,17 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `creates a charge proved outcome and hearing outcome of completed `() {
       completedHearingService.createChargeProvedV2(
-        adjudicationNumber = 1L,
+        chargeNumber = "1",
         adjudicator = "test",
         plea = HearingOutcomePlea.UNFIT,
       )
 
       verify(outcomeService, atLeastOnce()).createChargeProvedV2(
-        adjudicationNumber = 1L,
+        chargeNumber = "1",
       )
 
       verify(hearingOutcomeService, atLeastOnce()).createCompletedHearing(
-        adjudicationNumber = 1L,
+        chargeNumber = "1",
         adjudicator = "test",
         plea = HearingOutcomePlea.UNFIT,
       )
@@ -104,23 +104,23 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `remove a completed hearing outcome removes outcome and hearing outcome `() {
-      whenever(outcomeService.getLatestOutcome(1L)).thenReturn(Outcome(id = 1L, code = OutcomeCode.CHARGE_PROVED))
-      completedHearingService.removeOutcome(adjudicationNumber = 1L)
+      whenever(outcomeService.getLatestOutcome("1")).thenReturn(Outcome(id = 1L, code = OutcomeCode.CHARGE_PROVED))
+      completedHearingService.removeOutcome(chargeNumber = "1")
 
-      verify(outcomeService, atLeastOnce()).deleteOutcome(adjudicationNumber = 1L, id = 1L)
-      verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(adjudicationNumber = 1L)
+      verify(outcomeService, atLeastOnce()).deleteOutcome(chargeNumber = "1", id = 1L)
+      verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(chargeNumber = "1")
     }
 
     @Test
     fun `remove a completed hearing outcome throws validation exception if not a completed outcome type `() {
       Assertions.assertThatThrownBy {
-        completedHearingService.removeOutcome(adjudicationNumber = 1L)
+        completedHearingService.removeOutcome(chargeNumber = "1")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("No completed hearing outcome to remove")
 
-      whenever(outcomeService.getLatestOutcome(1L)).thenReturn(null)
-      verify(outcomeService, never()).deleteOutcome(adjudicationNumber = 1L, id = 1L)
-      verify(hearingOutcomeService, never()).deleteHearingOutcome(adjudicationNumber = 1L)
+      whenever(outcomeService.getLatestOutcome("1")).thenReturn(null)
+      verify(outcomeService, never()).deleteOutcome(chargeNumber = "1", id = 1L)
+      verify(hearingOutcomeService, never()).deleteHearingOutcome(chargeNumber = "1")
     }
   }
 }

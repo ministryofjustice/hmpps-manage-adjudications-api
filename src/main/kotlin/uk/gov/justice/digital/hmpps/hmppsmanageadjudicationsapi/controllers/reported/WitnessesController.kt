@@ -20,16 +20,16 @@ class WitnessesController(
   private val witnessesService: WitnessesService,
 ) : ReportedAdjudicationBaseController() {
 
-  @PutMapping(value = ["/{adjudicationNumber}/witnesses/edit"])
+  @PutMapping(value = ["/{chargeNumber}/witnesses/edit"])
   @Operation(summary = "Updates the witnesses for the reported adjudication.", description = "0 or more witnesses to be supplied, only updates records owned by current user")
   @ResponseStatus(HttpStatus.OK)
   fun updateWitnesses(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     witnessesRequest: WitnessesRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = witnessesService.updateWitnesses(
-      adjudicationNumber,
+      chargeNumber,
       witnessesRequest.witnesses,
     )
 

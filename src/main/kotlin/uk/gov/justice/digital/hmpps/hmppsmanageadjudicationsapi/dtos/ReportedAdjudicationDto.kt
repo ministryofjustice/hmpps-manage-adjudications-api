@@ -21,8 +21,11 @@ import java.time.LocalDateTime
 @Deprecated("to remove on completion of NN-5319")
 @Schema(description = "Reported adjudication details")
 data class ReportedAdjudicationDto(
+  @Deprecated("to remove on completion of NN-5319")
   @Schema(description = "The number for the reported adjudication")
   val adjudicationNumber: Long,
+  @Schema(description = "The charge number for the reported adjudication")
+  val chargeNumber: String,
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
   @Schema(description = "Gender applied for adjudication rules", example = "MALE")
@@ -83,8 +86,11 @@ data class ReportedAdjudicationDto(
 
 @Schema(description = "Reported adjudication details")
 data class ReportedAdjudicationDtoV2(
+  @Deprecated("to remove on completion of NN-5319")
   @Schema(description = "The number for the reported adjudication")
   val adjudicationNumber: Long,
+  @Schema(description = "The charge number for the reported adjudication")
+  val chargeNumber: String,
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
   @Schema(description = "Gender applied for adjudication rules", example = "MALE")
@@ -239,8 +245,11 @@ data class HearingSummaryDto(
   val dateTimeOfHearing: LocalDateTime,
   @Schema(description = "Date and time the incident was discovered", example = "2010-10-12T10:00:00")
   val dateTimeOfDiscovery: LocalDateTime,
+  @Deprecated("to remove on completion of NN-5319")
   @Schema(description = "The number for the reported adjudication")
   val adjudicationNumber: Long,
+  @Schema(description = "The charge number for the reported adjudication")
+  val chargeNumber: String,
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
   @Schema(description = "type of hearing")
@@ -335,14 +344,17 @@ data class PunishmentDto(
   val otherPrivilege: String? = null,
   @Schema(description = "optional stoppage of earnings percentage")
   val stoppagePercentage: Int? = null,
-  @Schema(description = "optional activated by report number")
-  val activatedBy: Long? = null,
-  @Schema(description = "optional activated from report number")
-  val activatedFrom: Long? = null,
+  @Schema(description = "optional activated by charge number")
+  val activatedBy: String? = null,
+  @Schema(description = "optional activated from charge number")
+  val activatedFrom: String? = null,
   @Schema(description = "latest punishment schedule")
   val schedule: PunishmentScheduleDto,
+  @Deprecated("to remove on completion of NN-5319")
   @Schema(description = "optional consecutive report number")
   val consecutiveReportNumber: Long? = null,
+  @Schema(description = "optional consecutive charge number")
+  val consecutiveChargeNumber: String? = null,
   @Schema(description = "optional consecutive report number is available to view in adjudications service")
   val consecutiveReportAvailable: Boolean? = null,
 )
@@ -360,13 +372,16 @@ data class PunishmentDtoV2(
   @Schema(description = "optional stoppage of earnings percentage")
   val stoppagePercentage: Int? = null,
   @Schema(description = "optional activated by report number")
-  val activatedBy: Long? = null,
+  val activatedBy: String? = null,
   @Schema(description = "optional activated from report number")
-  val activatedFrom: Long? = null,
+  val activatedFrom: String? = null,
   @Schema(description = "latest punishment schedule")
   val schedule: PunishmentScheduleDto,
+  @Deprecated("to remove on completion of NN-5319")
   @Schema(description = "optional consecutive report number")
   val consecutiveReportNumber: Long? = null,
+  @Schema(description = "optional consecutive charge number")
+  val consecutiveChargeNumber: String? = null,
   @Schema(description = "optional consecutive report number is available to view in adjudications service")
   val consecutiveReportAvailable: Boolean? = null,
   @Schema(description = "optional amount - money being recovered for damages")
@@ -387,16 +402,22 @@ data class PunishmentScheduleDto(
 
 @Schema(description = "suspended punishment dto")
 data class SuspendedPunishmentDto(
+  @Deprecated("to remove on completion of NN-5319")
   @Schema(description = "report number punishment from")
   val reportNumber: Long,
+  @Schema(description = "charge number punishment from")
+  val chargeNumber: String,
   @Schema(description = "punishment dto")
   val punishment: PunishmentDto,
 )
 
 @Schema(description = "additional days to activate dto")
 data class AdditionalDaysDto(
+  @Deprecated("to remove on completion of NN-5319")
   @Schema(description = "report number punishment from")
   val reportNumber: Long,
+  @Schema(description = "charge number punishment from")
+  val chargeNumber: String,
   @Schema(description = "date charge proved")
   val chargeProvedDate: LocalDate,
   @Schema(description = "punishment dto")

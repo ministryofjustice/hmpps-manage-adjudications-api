@@ -17,27 +17,27 @@ class CompletedHearingService(
 ) {
 
   fun createDismissed(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     adjudicator: String,
     plea: HearingOutcomePlea,
     details: String,
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.createCompletedHearing(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       adjudicator = adjudicator,
       plea = plea,
     )
 
     return outcomeService.createDismissed(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       details = details,
       validate = validate,
     )
   }
 
   fun createNotProceed(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     adjudicator: String,
     plea: HearingOutcomePlea,
     reason: NotProceedReason,
@@ -45,13 +45,13 @@ class CompletedHearingService(
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.createCompletedHearing(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       adjudicator = adjudicator,
       plea = plea,
     )
 
     return outcomeService.createNotProceed(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       reason = reason,
       details = details,
       validate = validate,
@@ -60,7 +60,7 @@ class CompletedHearingService(
 
   @Deprecated("to remove on completion of NN-5319")
   fun createChargeProved(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     adjudicator: String,
     plea: HearingOutcomePlea,
     amount: Double? = null,
@@ -68,13 +68,13 @@ class CompletedHearingService(
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.createCompletedHearing(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       adjudicator = adjudicator,
       plea = plea,
     )
 
     return outcomeService.createChargeProved(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       amount = amount,
       caution = caution,
       validate = validate,
@@ -82,35 +82,35 @@ class CompletedHearingService(
   }
 
   fun createChargeProvedV2(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     adjudicator: String,
     plea: HearingOutcomePlea,
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.createCompletedHearing(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       adjudicator = adjudicator,
       plea = plea,
     )
 
     return outcomeService.createChargeProvedV2(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       validate = validate,
     )
   }
 
   fun removeOutcome(
-    adjudicationNumber: Long,
+    chargeNumber: String,
   ): ReportedAdjudicationDto {
-    val idToRemove = outcomeService.getLatestOutcome(adjudicationNumber = adjudicationNumber).validateCanRemove().id!!
+    val idToRemove = outcomeService.getLatestOutcome(chargeNumber = chargeNumber).validateCanRemove().id!!
 
     outcomeService.deleteOutcome(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       id = idToRemove,
     )
 
     return hearingOutcomeService.deleteHearingOutcome(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
     )
   }
 

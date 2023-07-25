@@ -33,27 +33,27 @@ class HearingOutcomeService(
   authenticationFacade,
 ) {
   fun createReferral(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     code: HearingOutcomeCode,
     adjudicator: String,
     details: String,
   ): ReportedAdjudicationDto =
     createHearingOutcome(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       code = code.validateReferral(),
       adjudicator = adjudicator,
       details = details,
     )
 
   fun createAdjourn(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     adjudicator: String,
     reason: HearingOutcomeAdjournReason,
     details: String,
     plea: HearingOutcomePlea,
   ): ReportedAdjudicationDto =
     createHearingOutcome(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       code = HearingOutcomeCode.ADJOURN,
       adjudicator = adjudicator,
       reason = reason,
@@ -62,34 +62,34 @@ class HearingOutcomeService(
     )
 
   fun createCompletedHearing(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     adjudicator: String,
     plea: HearingOutcomePlea,
   ): ReportedAdjudicationDto = createHearingOutcome(
-    adjudicationNumber = adjudicationNumber,
+    chargeNumber = chargeNumber,
     code = HearingOutcomeCode.COMPLETE,
     adjudicator = adjudicator,
     plea = plea,
   )
 
   fun removeAdjourn(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     recalculateStatus: Boolean = true,
   ): ReportedAdjudicationDto {
-    findByAdjudicationNumber(adjudicationNumber).latestOutcomeIsAdjourn()
+    findByChargeNumber(chargeNumber).latestOutcomeIsAdjourn()
 
-    return deleteHearingOutcome(adjudicationNumber = adjudicationNumber, recalculateStatus = recalculateStatus)
+    return deleteHearingOutcome(chargeNumber = chargeNumber, recalculateStatus = recalculateStatus)
   }
 
   private fun createHearingOutcome(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     code: HearingOutcomeCode,
     adjudicator: String,
     reason: HearingOutcomeAdjournReason? = null,
     details: String? = null,
     plea: HearingOutcomePlea? = null,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
 
     reportedAdjudication.getHearing().hearingOutcome = HearingOutcome(
       code = code,
@@ -104,8 +104,8 @@ class HearingOutcomeService(
     return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus()) it.calculateStatus() })
   }
 
-  fun deleteHearingOutcome(adjudicationNumber: Long, recalculateStatus: Boolean = true): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+  fun deleteHearingOutcome(chargeNumber: String, recalculateStatus: Boolean = true): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
     val hearingToRemoveOutcome = reportedAdjudication.getHearing()
 
     val code = hearingToRemoveOutcome.hearingOutcome.hearingOutcomeExists().code
@@ -117,22 +117,22 @@ class HearingOutcomeService(
   }
 
   fun getCurrentStatusAndLatestOutcome(
-    adjudicationNumber: Long,
+    chargeNumber: String,
   ): Pair<ReportedAdjudicationStatus, HearingOutcome> {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
 
     return Pair(reportedAdjudication.status, reportedAdjudication.latestHearingOutcome())
   }
 
   fun amendHearingOutcome(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     outcomeCodeToAmend: HearingOutcomeCode,
     adjudicator: String? = null,
     details: String? = null,
     plea: HearingOutcomePlea? = null,
     adjournedReason: HearingOutcomeAdjournReason? = null,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
     val hearingOutcomeToAmend = reportedAdjudication.latestHearingOutcome().isLatestSameAsAmendRequest(outcomeCodeToAmend)
 
     adjudicator?.let { hearingOutcomeToAmend.adjudicator = it }
@@ -154,8 +154,8 @@ class HearingOutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun getHearingOutcomeForReferral(adjudicationNumber: Long, code: OutcomeCode, outcomeIndex: Int): HearingOutcome? {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+  fun getHearingOutcomeForReferral(chargeNumber: String, code: OutcomeCode, outcomeIndex: Int): HearingOutcome? {
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
     if (reportedAdjudication.hearings.none { it.hearingOutcome?.code?.outcomeCode == code }) return null
     val matched = reportedAdjudication.hearings.filter { it.hearingOutcome?.code?.outcomeCode == code }.sortedBy { it.dateTimeOfHearing }
     // note: you can only REFER_POLICE once without a hearing
@@ -167,7 +167,7 @@ class HearingOutcomeService(
   private fun updateOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
     val hearing = reportedAdjudication.getHearing()
     legacySyncService.amendHearing(
-      adjudicationNumber = reportedAdjudication.reportNumber,
+      adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
       oicHearingId = hearing.oicHearingId,
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = hearing.dateTimeOfHearing,
@@ -182,7 +182,7 @@ class HearingOutcomeService(
   private fun removeOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
     val hearing = reportedAdjudication.getHearing()
     legacySyncService.amendHearing(
-      adjudicationNumber = reportedAdjudication.reportNumber,
+      adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
       oicHearingId = hearing.oicHearingId,
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = hearing.dateTimeOfHearing,

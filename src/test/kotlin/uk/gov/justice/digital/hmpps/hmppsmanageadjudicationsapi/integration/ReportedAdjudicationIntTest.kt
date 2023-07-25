@@ -34,7 +34,9 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.reportedAdjudication.adjudicationNumber")
-      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+      .jsonPath("$.reportedAdjudication.chargeNumber")
+      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
       .jsonPath("$.reportedAdjudication.overrideAgencyId").isEqualTo("TJW")
       .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString)
@@ -103,7 +105,9 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.reportedAdjudication.adjudicationNumber")
-      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+      .jsonPath("$.reportedAdjudication.chargeNumber")
+      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
       .jsonPath("$.reportedAdjudication.overrideAgencyId").isEqualTo("TJW")
       .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString)
@@ -194,13 +198,13 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     initDataForAccept(testData = IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "TJW" })
 
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/create-draft-adjudication")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/create-draft-adjudication")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.draftAdjudication.adjudicationNumber")
-      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
       .jsonPath("$.draftAdjudication.overrideAgencyId").isEqualTo("TJW")
       .jsonPath("$.draftAdjudication.damages[0].code")
       .isEqualTo(DamageCode.CLEANING.name)
@@ -255,7 +259,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     initDataForAccept()
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/status")
       .headers(setHeaders())
       .bodyValue(
         mapOf(
@@ -280,7 +284,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     initDataForAccept()
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/status")
       .headers(setHeaders())
       .bodyValue(
         mapOf(
@@ -294,7 +298,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
     val expectedBody = mapOf(
       "offenderNo" to IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
-      "adjudicationNumber" to IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+      "adjudicationNumber" to IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong(),
       "reporterName" to IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId,
       "reportedDateTime" to DEFAULT_REPORTED_DATE_TIME,
       "agencyId" to IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
@@ -317,7 +321,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubPostAdjudicationFailure()
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/status")
       .headers(setHeaders())
       .bodyValue(
         mapOf(
@@ -351,7 +355,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .reportedAdjudicationSetStatus(ReportedAdjudicationStatus.REJECTED)
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/status")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/status")
       .headers(setHeaders())
       .bodyValue(
         mapOf(
@@ -369,7 +373,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     initDataForAccept()
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/damages/edit")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/damages/edit")
       .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
@@ -409,7 +413,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     initDataForAccept()
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/evidence/edit")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/evidence/edit")
       .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
@@ -449,7 +453,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     initDataForAccept()
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/witnesses/edit")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/witnesses/edit")
       .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
@@ -509,12 +513,12 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .addEvidence()
       .addWitnesses()
       .completeDraft()
-      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber.toString())
+      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toString())
 
     val dateTimeOfIssue = LocalDateTime.of(2022, 11, 29, 10, 0)
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/issue")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/issue")
       .headers(setHeaders())
       .bodyValue(
         mapOf(
@@ -531,7 +535,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     // re-issue DIS1/2
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/issue")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/issue")
       .headers(setHeaders(username = IntegrationTestData.DEFAULT_CREATED_USER_ID))
       .bodyValue(
         mapOf(

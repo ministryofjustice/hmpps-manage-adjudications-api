@@ -34,7 +34,7 @@ class WitnessesControllerTest : TestControllerBase() {
   fun beforeEach() {
     whenever(
       witnessesService.updateWitnesses(
-        ArgumentMatchers.anyLong(),
+        ArgumentMatchers.anyString(),
         any(),
       ),
     ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -54,7 +54,7 @@ class WitnessesControllerTest : TestControllerBase() {
     setWitnessesRequest(1, WITNESSES_REQUEST)
       .andExpect(MockMvcResultMatchers.status().isOk)
 
-    verify(witnessesService).updateWitnesses(1, WITNESSES_REQUEST.witnesses)
+    verify(witnessesService).updateWitnesses("1", WITNESSES_REQUEST.witnesses)
   }
 
   private fun setWitnessesRequest(

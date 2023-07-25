@@ -33,7 +33,7 @@ class DamagesServiceTest : ReportedAdjudicationTestBase() {
 
   @BeforeEach
   fun init() {
-    whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
     whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
     whenever(authenticationFacade.currentUsername).thenReturn("Fred")
     reportedAdjudication.createdByUserId = "Jane"
@@ -43,7 +43,7 @@ class DamagesServiceTest : ReportedAdjudicationTestBase() {
   @Test
   fun `update damages for adjudication`() {
     val response = damagesService.updateDamages(
-      1,
+      "1",
       listOf(
         DamageRequestItem(
           reportedAdjudication.damages.first().code,
@@ -70,10 +70,10 @@ class DamagesServiceTest : ReportedAdjudicationTestBase() {
 
   @Test
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-    whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(null)
 
     Assertions.assertThatThrownBy {
-      damagesService.updateDamages(1, listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
+      damagesService.updateDamages("1", listOf(DamageRequestItem(DamageCode.CLEANING, "details")))
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }

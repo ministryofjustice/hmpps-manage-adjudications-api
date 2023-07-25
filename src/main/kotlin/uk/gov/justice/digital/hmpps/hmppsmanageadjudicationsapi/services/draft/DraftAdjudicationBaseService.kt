@@ -50,12 +50,12 @@ open class DraftAdjudicationBaseService(
   protected fun delete(draftAdjudication: DraftAdjudication) = draftAdjudicationRepository.delete(draftAdjudication)
 
   protected fun delete() {
-    draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(
+    draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndChargeNumberIsNotNull(
       LocalDateTime.now().minusDays(DraftAdjudicationService.DAYS_TO_DELETE),
     )
   }
   protected fun getInProgress(agencyId: String, username: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DraftAdjudicationDto> =
-    draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndReportNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
+    draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndChargeNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
       agencyId,
       username,
       startDate.atStartOfDay(),
@@ -72,8 +72,9 @@ open class DraftAdjudicationBaseService(
       incidentDetails = this.incidentDetails.toDto(),
       incidentRole = this.incidentRole?.toDto(this.isYouthOffender!!),
       offenceDetails = this.offenceDetails.firstOrNull()?.toDto(offenceCodeLookupService, this.isYouthOffender!!, this.gender),
-      adjudicationNumber = this.reportNumber,
-      startedByUserId = this.reportNumber?.let { this.reportByUserId } ?: this.createdByUserId,
+      adjudicationNumber = this.chargeNumber?.toLong(),
+      chargeNumber = this.chargeNumber,
+      startedByUserId = this.chargeNumber?.let { this.reportByUserId } ?: this.createdByUserId,
       isYouthOffender = this.isYouthOffender,
       damages = this.damages.map { it.toDto() },
       evidence = this.evidence.map { it.toDto() },

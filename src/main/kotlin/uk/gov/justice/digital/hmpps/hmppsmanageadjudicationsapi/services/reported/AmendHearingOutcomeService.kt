@@ -24,25 +24,25 @@ class AmendHearingOutcomeService(
 
   @Deprecated("to remove on completion of NN-5319")
   fun amendHearingOutcome(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     status: ReportedAdjudicationStatus,
     amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
   ): ReportedAdjudicationDto {
     val currentInfo = hearingOutcomeService.getCurrentStatusAndLatestOutcome(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
     )
     val currentStatus = currentInfo.first
     val latestHearingOutcome = currentInfo.second
 
     return if (currentStatus == status) {
       amend(
-        adjudicationNumber = adjudicationNumber,
+        chargeNumber = chargeNumber,
         currentStatus = currentStatus,
         amendHearingOutcomeRequest = amendHearingOutcomeRequest,
       )
     } else {
       removeAndCreate(
-        adjudicationNumber = adjudicationNumber,
+        chargeNumber = chargeNumber,
         toStatus = status,
         currentStatus = currentStatus,
         latestHearingOutcome = latestHearingOutcome,
@@ -52,25 +52,25 @@ class AmendHearingOutcomeService(
   }
 
   fun amendHearingOutcomeV2(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     status: ReportedAdjudicationStatus,
     amendHearingOutcomeRequest: AmendHearingOutcomeRequestV2,
   ): ReportedAdjudicationDto {
     val currentInfo = hearingOutcomeService.getCurrentStatusAndLatestOutcome(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
     )
     val currentStatus = currentInfo.first
     val latestHearingOutcome = currentInfo.second
 
     return if (currentStatus == status) {
       amendV2(
-        adjudicationNumber = adjudicationNumber,
+        chargeNumber = chargeNumber,
         currentStatus = currentStatus,
         amendHearingOutcomeRequest = amendHearingOutcomeRequest,
       )
     } else {
       removeAndCreateV2(
-        adjudicationNumber = adjudicationNumber,
+        chargeNumber = chargeNumber,
         toStatus = status,
         currentStatus = currentStatus,
         latestHearingOutcome = latestHearingOutcome,
@@ -81,12 +81,12 @@ class AmendHearingOutcomeService(
 
   @Deprecated("to remove on completion of NN-5319")
   private fun amend(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     currentStatus: ReportedAdjudicationStatus,
     amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
   ): ReportedAdjudicationDto {
     val updated = hearingOutcomeService.amendHearingOutcome(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       outcomeCodeToAmend = currentStatus.mapStatusToHearingOutcomeCode(),
       adjudicator = amendHearingOutcomeRequest.adjudicator,
       details = amendHearingOutcomeRequest.details,
@@ -98,14 +98,14 @@ class AmendHearingOutcomeService(
 
     return if (outcomeCodeToAmend == OutcomeCode.CHARGE_PROVED) {
       punishmentsService.amendPunishmentsFromChargeProvedIfApplicable(
-        adjudicationNumber = adjudicationNumber,
+        adjudicationNumber = chargeNumber,
         caution = amendHearingOutcomeRequest.caution!!,
         damagesOwed = amendHearingOutcomeRequest.damagesOwed,
         amount = amendHearingOutcomeRequest.amount,
       )
     } else {
       outcomeService.amendOutcomeViaService(
-        adjudicationNumber = adjudicationNumber,
+        chargeNumber = chargeNumber,
         outcomeCodeToAmend = outcomeCodeToAmend,
         details = amendHearingOutcomeRequest.details,
         notProceedReason = amendHearingOutcomeRequest.notProceedReason,
@@ -114,12 +114,12 @@ class AmendHearingOutcomeService(
   }
 
   private fun amendV2(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     currentStatus: ReportedAdjudicationStatus,
     amendHearingOutcomeRequest: AmendHearingOutcomeRequestV2,
   ): ReportedAdjudicationDto {
     val updated = hearingOutcomeService.amendHearingOutcome(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       outcomeCodeToAmend = currentStatus.mapStatusToHearingOutcomeCode(),
       adjudicator = amendHearingOutcomeRequest.adjudicator,
       details = amendHearingOutcomeRequest.details,
@@ -130,7 +130,7 @@ class AmendHearingOutcomeService(
     val outcomeCodeToAmend = currentStatus.mapStatusToOutcomeCodeV2() ?: return updated
 
     return outcomeService.amendOutcomeViaService(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       outcomeCodeToAmend = outcomeCodeToAmend,
       details = amendHearingOutcomeRequest.details,
       notProceedReason = amendHearingOutcomeRequest.notProceedReason,
@@ -139,7 +139,7 @@ class AmendHearingOutcomeService(
 
   @Deprecated("to remove on completion of NN-5319")
   private fun removeAndCreate(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     toStatus: ReportedAdjudicationStatus,
     currentStatus: ReportedAdjudicationStatus,
     latestHearingOutcome: HearingOutcome,
@@ -150,7 +150,7 @@ class AmendHearingOutcomeService(
     toStatus.validateCanAmend(false)
 
     if ((referrals.contains(toStatus) || referrals.contains(currentStatus)) &&
-      reportedAdjudicationService.lastOutcomeHasReferralOutcome(adjudicationNumber)
+      reportedAdjudicationService.lastOutcomeHasReferralOutcome(chargeNumber)
     ) {
       throw ValidationException("referral has outcome - unable to amend")
     }
@@ -158,15 +158,15 @@ class AmendHearingOutcomeService(
     when (currentStatus) {
       ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
         referralService.removeReferral(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
         )
       ReportedAdjudicationStatus.DISMISSED, ReportedAdjudicationStatus.NOT_PROCEED, ReportedAdjudicationStatus.CHARGE_PROVED ->
         completedHearingService.removeOutcome(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
         )
       ReportedAdjudicationStatus.ADJOURNED ->
         hearingOutcomeService.removeAdjourn(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
           recalculateStatus = false,
         )
       else -> throw RuntimeException("should not of made it to this point - fatal")
@@ -175,7 +175,7 @@ class AmendHearingOutcomeService(
     return when (toStatus) {
       ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
         referralService.createReferral(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
           code = HearingOutcomeCode.valueOf(toStatus.name),
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
@@ -183,7 +183,7 @@ class AmendHearingOutcomeService(
         )
       ReportedAdjudicationStatus.DISMISSED ->
         completedHearingService.createDismissed(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
@@ -191,7 +191,7 @@ class AmendHearingOutcomeService(
         )
       ReportedAdjudicationStatus.NOT_PROCEED ->
         completedHearingService.createNotProceed(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
@@ -200,7 +200,7 @@ class AmendHearingOutcomeService(
         )
       ReportedAdjudicationStatus.ADJOURNED ->
         hearingOutcomeService.createAdjourn(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
@@ -208,7 +208,7 @@ class AmendHearingOutcomeService(
         )
       ReportedAdjudicationStatus.CHARGE_PROVED ->
         completedHearingService.createChargeProved(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
           amount = amendHearingOutcomeRequest.amount,
@@ -220,7 +220,7 @@ class AmendHearingOutcomeService(
   }
 
   private fun removeAndCreateV2(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     toStatus: ReportedAdjudicationStatus,
     currentStatus: ReportedAdjudicationStatus,
     latestHearingOutcome: HearingOutcome,
@@ -231,7 +231,7 @@ class AmendHearingOutcomeService(
     toStatus.validateCanAmend(false)
 
     if ((referrals.contains(toStatus) || referrals.contains(currentStatus)) &&
-      reportedAdjudicationService.lastOutcomeHasReferralOutcome(adjudicationNumber)
+      reportedAdjudicationService.lastOutcomeHasReferralOutcome(chargeNumber)
     ) {
       throw ValidationException("referral has outcome - unable to amend")
     }
@@ -239,15 +239,15 @@ class AmendHearingOutcomeService(
     when (currentStatus) {
       ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
         referralService.removeReferral(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
         )
       ReportedAdjudicationStatus.DISMISSED, ReportedAdjudicationStatus.NOT_PROCEED, ReportedAdjudicationStatus.CHARGE_PROVED ->
         completedHearingService.removeOutcome(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
         )
       ReportedAdjudicationStatus.ADJOURNED ->
         hearingOutcomeService.removeAdjourn(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
           recalculateStatus = false,
         )
       else -> throw RuntimeException("should not of made it to this point - fatal")
@@ -256,7 +256,7 @@ class AmendHearingOutcomeService(
     return when (toStatus) {
       ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
         referralService.createReferral(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
           code = HearingOutcomeCode.valueOf(toStatus.name),
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
@@ -264,7 +264,7 @@ class AmendHearingOutcomeService(
         )
       ReportedAdjudicationStatus.DISMISSED ->
         completedHearingService.createDismissed(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
@@ -272,7 +272,7 @@ class AmendHearingOutcomeService(
         )
       ReportedAdjudicationStatus.NOT_PROCEED ->
         completedHearingService.createNotProceed(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
@@ -281,7 +281,7 @@ class AmendHearingOutcomeService(
         )
       ReportedAdjudicationStatus.ADJOURNED ->
         hearingOutcomeService.createAdjourn(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
@@ -289,7 +289,7 @@ class AmendHearingOutcomeService(
         )
       ReportedAdjudicationStatus.CHARGE_PROVED ->
         completedHearingService.createChargeProvedV2(
-          adjudicationNumber = adjudicationNumber,
+          chargeNumber = chargeNumber,
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
           validate = false,

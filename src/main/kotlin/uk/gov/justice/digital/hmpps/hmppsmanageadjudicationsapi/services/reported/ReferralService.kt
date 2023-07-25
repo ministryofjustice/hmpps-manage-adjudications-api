@@ -16,45 +16,45 @@ class ReferralService(
 ) {
 
   fun createReferral(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     code: HearingOutcomeCode,
     adjudicator: String,
     details: String,
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
     hearingOutcomeService.createReferral(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       code = code,
       adjudicator = adjudicator,
       details = details,
     )
     return outcomeService.createReferral(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       code = code.outcomeCode!!,
       details = details,
       validate = validate,
     )
   }
 
-  fun removeReferral(adjudicationNumber: Long): ReportedAdjudicationDto {
-    val outcomes = outcomeService.getOutcomes(adjudicationNumber).validateHasReferral().validateReferralIsLatest()
+  fun removeReferral(chargeNumber: String): ReportedAdjudicationDto {
+    val outcomes = outcomeService.getOutcomes(chargeNumber).validateHasReferral().validateReferralIsLatest()
     val outcomeToRemove = outcomes.last()
     val outcomeIndex = outcomes.filter { it.outcome.code == outcomeToRemove.outcome.code }.indexOf(outcomeToRemove)
 
     if (outcomeToRemove.referralOutcome != null) {
-      return outcomeService.deleteOutcome(adjudicationNumber = adjudicationNumber, id = outcomeToRemove.referralOutcome.id!!)
+      return outcomeService.deleteOutcome(chargeNumber = chargeNumber, id = outcomeToRemove.referralOutcome.id!!)
     }
 
     hearingOutcomeService.getHearingOutcomeForReferral(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       code = outcomeToRemove.outcome.code,
       outcomeIndex = outcomeIndex,
     )?.let {
-      hearingOutcomeService.deleteHearingOutcome(adjudicationNumber = adjudicationNumber)
+      hearingOutcomeService.deleteHearingOutcome(chargeNumber = chargeNumber)
     }
 
     return outcomeService.deleteOutcome(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       id = outcomeToRemove.outcome.id!!,
     )
   }

@@ -70,7 +70,7 @@ data class OffenderOicSanctionRequest(
         sanctionDays = latestSchedule.days.toLong(),
         compensationAmount = this.amount ?: this.stoppagePercentage?.toDouble(),
         commentText = this.commentMapper(),
-        consecutiveReportNumber = this.consecutiveReportNumber,
+        consecutiveReportNumber = this.consecutiveChargeNumber?.toLong(),
       )
     }
   }

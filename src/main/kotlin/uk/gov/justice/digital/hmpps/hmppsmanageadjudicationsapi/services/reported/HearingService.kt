@@ -39,8 +39,8 @@ class HearingService(
   authenticationFacade,
 ) {
 
-  fun createHearing(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+  fun createHearing(chargeNumber: String, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
       it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED)
       it.hearings.validateHearingDate(dateTimeOfHearing)
@@ -51,7 +51,7 @@ class HearingService(
     }
 
     val oicHearingId = legacySyncService.createHearing(
-      adjudicationNumber = adjudicationNumber,
+      adjudicationNumber = chargeNumber.toLong(),
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = dateTimeOfHearing,
         hearingLocationId = locationId,
@@ -63,7 +63,7 @@ class HearingService(
       it.hearings.add(
         Hearing(
           agencyId = authenticationFacade.activeCaseload,
-          reportNumber = reportedAdjudication.reportNumber,
+          chargeNumber = reportedAdjudication.chargeNumber,
           locationId = locationId,
           dateTimeOfHearing = dateTimeOfHearing,
           oicHearingId = oicHearingId,
@@ -80,8 +80,8 @@ class HearingService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun amendHearing(adjudicationNumber: Long, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+  fun amendHearing(chargeNumber: String, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
       it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED)
     }
@@ -90,7 +90,7 @@ class HearingService(
     reportedAdjudication.hearings.filter { it.id != hearingToEdit.id }.validateHearingDate(dateTimeOfHearing)
 
     legacySyncService.amendHearing(
-      adjudicationNumber = adjudicationNumber,
+      adjudicationNumber = chargeNumber.toLong(),
       oicHearingId = hearingToEdit.oicHearingId,
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = dateTimeOfHearing,
@@ -110,12 +110,12 @@ class HearingService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun deleteHearing(adjudicationNumber: Long): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+  fun deleteHearing(chargeNumber: String): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
     val hearingToRemove = reportedAdjudication.getHearing().canDelete()
 
     legacySyncService.deleteHearing(
-      adjudicationNumber = adjudicationNumber,
+      adjudicationNumber = chargeNumber.toLong(),
       oicHearingId = hearingToRemove.oicHearingId,
     )
 
@@ -137,21 +137,22 @@ class HearingService(
     )
 
     val adjudicationsMap = findByReportNumberIn(
-      hearings.map { it.reportNumber },
-    ).associateBy { it.reportNumber }
+      hearings.map { it.chargeNumber },
+    ).associateBy { it.chargeNumber }
 
     return toHearingSummaries(hearings, adjudicationsMap)
   }
 
-  private fun toHearingSummaries(hearings: List<Hearing>, adjudications: Map<Long, ReportedAdjudication>): List<HearingSummaryDto> =
+  private fun toHearingSummaries(hearings: List<Hearing>, adjudications: Map<String, ReportedAdjudication>): List<HearingSummaryDto> =
     hearings.map {
-      val adjudication = adjudications[it.reportNumber]!!
+      val adjudication = adjudications[it.chargeNumber]!!
       HearingSummaryDto(
         id = it.id!!,
         dateTimeOfHearing = it.dateTimeOfHearing,
         dateTimeOfDiscovery = adjudication.dateTimeOfDiscovery,
         prisonerNumber = adjudication.prisonerNumber,
-        adjudicationNumber = it.reportNumber,
+        adjudicationNumber = it.chargeNumber.toLong(),
+        chargeNumber = it.chargeNumber,
         oicHearingType = it.oicHearingType,
         status = adjudication.status,
       )

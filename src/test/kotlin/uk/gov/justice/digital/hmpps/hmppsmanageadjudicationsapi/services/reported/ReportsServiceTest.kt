@@ -31,11 +31,11 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @BeforeEach
     fun beforeEach() {
       val reportedAdjudication1 =
-        entityBuilder.reportedAdjudication(reportNumber = 1L, dateTime = DATE_TIME_OF_INCIDENT)
+        entityBuilder.reportedAdjudication(chargeNumber = "1", dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
       val reportedAdjudication2 =
-        entityBuilder.reportedAdjudication(reportNumber = 2L, dateTime = DATE_TIME_OF_INCIDENT)
+        entityBuilder.reportedAdjudication(chargeNumber = "2", dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
 
@@ -126,11 +126,11 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @BeforeEach
     fun beforeEach() {
       val reportedAdjudication1 =
-        entityBuilder.reportedAdjudication(reportNumber = 1L, dateTime = DATE_TIME_OF_INCIDENT)
+        entityBuilder.reportedAdjudication(chargeNumber = "1", dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication1.createdByUserId = "A_SMITH"
       reportedAdjudication1.createDateTime = REPORTED_DATE_TIME
       val reportedAdjudication2 =
-        entityBuilder.reportedAdjudication(reportNumber = 2L, dateTime = DATE_TIME_OF_INCIDENT)
+        entityBuilder.reportedAdjudication(chargeNumber = "2", dateTime = DATE_TIME_OF_INCIDENT)
       reportedAdjudication2.createdByUserId = "P_SMITH"
       reportedAdjudication2.createDateTime = REPORTED_DATE_TIME.plusDays(2)
       whenever(
@@ -311,7 +311,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     private val now = LocalDateTime.now()
 
     private val third = entityBuilder.reportedAdjudication(
-      reportNumber = 4L,
+      chargeNumber = "4",
       dateTime = now.minusDays(3),
     ).also {
       it.status = ReportedAdjudicationStatus.SCHEDULED
@@ -323,7 +323,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     private val second = entityBuilder.reportedAdjudication(
-      reportNumber = 2L,
+      chargeNumber = "2",
       dateTime = now.minusDays(2),
     ).also {
       it.status = ReportedAdjudicationStatus.UNSCHEDULED
@@ -333,7 +333,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     private val first = entityBuilder.reportedAdjudication(
-      reportNumber = 3L,
+      chargeNumber = "3",
       dateTime = now.minusDays(3),
     ).also {
       it.status = ReportedAdjudicationStatus.SCHEDULED

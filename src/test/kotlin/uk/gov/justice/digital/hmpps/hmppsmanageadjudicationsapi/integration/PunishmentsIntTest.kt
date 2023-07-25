@@ -26,9 +26,9 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   @Deprecated("to remove on completion of NN-5319")
   @Test
   fun `create punishments `() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     initDataForOutcome().createHearing().createChargeProved(caution = false)
 
     createPunishments()
@@ -45,9 +45,9 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create punishments v2`() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     initDataForOutcome().createHearing().createChargeProvedV2()
 
     createPunishmentsV2()
@@ -65,45 +65,47 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   @Deprecated("to remove on completion of NN-5319")
   @Test
   fun `create punishments - additional days `() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     initDataForOutcome().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved(caution = false)
 
-    createPunishments(type = PunishmentType.ADDITIONAL_DAYS, consecutiveReportNumber = 9999)
+    createPunishments(type = PunishmentType.ADDITIONAL_DAYS, consecutiveReportNumber = "9999")
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.ADDITIONAL_DAYS.name)
       .jsonPath("$.reportedAdjudication.punishments[0].consecutiveReportNumber").isEqualTo(9999)
+      .jsonPath("$.reportedAdjudication.punishments[0].consecutiveChargeNumber").isEqualTo(9999)
   }
 
   @Test
   fun `create punishments - additional days v2`() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     initDataForOutcome().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProvedV2()
 
-    createPunishmentsV2(type = PunishmentType.ADDITIONAL_DAYS, consecutiveReportNumber = 9999)
+    createPunishmentsV2(type = PunishmentType.ADDITIONAL_DAYS, consecutiveReportNumber = "9999")
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.ADDITIONAL_DAYS.name)
       .jsonPath("$.reportedAdjudication.punishments[0].consecutiveReportNumber").isEqualTo(9999)
+      .jsonPath("$.reportedAdjudication.punishments[0].consecutiveChargeNumber").isEqualTo(9999)
   }
 
   @Deprecated("to remove on completion of NN-5319")
   @Test
   fun `update punishments - amends one record, removes a record, and creates a record`() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubUpdateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubUpdateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     initDataForOutcome().createHearing().createChargeProved(caution = false)
 
     val suspendedUntil = LocalDate.now().plusMonths(1)
     val formattedDate = suspendedUntil.format(DateTimeFormatter.ISO_DATE)
     val reportedAdjudicationResponse = webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -130,7 +132,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     val punishmentToAmend = reportedAdjudicationResponse.reportedAdjudication.punishments.first { it.type == PunishmentType.CONFINEMENT }.id
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -167,16 +169,16 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `update punishments - amends one record, removes a record, and creates a record v2`() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubUpdateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubUpdateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     initDataForOutcome().createHearing().createChargeProvedV2()
 
     val suspendedUntil = LocalDate.now().plusMonths(1)
     val formattedDate = suspendedUntil.format(DateTimeFormatter.ISO_DATE)
     val reportedAdjudicationResponse = webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments/v2")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -203,7 +205,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     val punishmentToAmend = reportedAdjudicationResponse.reportedAdjudication.punishments.first { it.type == PunishmentType.CONFINEMENT }.id
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments/v2")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -240,14 +242,14 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `activate suspended punishment on create `() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
-    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
-    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.ADJUDICATION_2.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.ADJUDICATION_2.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.ADJUDICATION_2.chargeNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.ADJUDICATION_2.chargeNumber)
 
     initDataForOutcome().createHearing().createChargeProved(caution = false)
     initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
@@ -259,7 +261,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .blockFirst()!!
 
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.ADJUDICATION_2.adjudicationNumber}/punishments")
+      .uri("/reported-adjudications/${IntegrationTestData.ADJUDICATION_2.chargeNumber}/punishments")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -271,7 +273,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
                 days = 10,
                 startDate = LocalDate.now(),
                 endDate = LocalDate.now().plusDays(5),
-                activatedFrom = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+                activatedFrom = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
               ),
             ),
         ),
@@ -280,29 +282,29 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.REMOVAL_WING.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].activatedFrom").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.reportedAdjudication.punishments[0].activatedFrom").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
     webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.REMOVAL_WING.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].activatedBy").isEqualTo(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
+      .jsonPath("$.reportedAdjudication.punishments[0].activatedBy").isEqualTo(IntegrationTestData.ADJUDICATION_2.chargeNumber)
   }
 
   @Test
   fun `activate suspended punishment on update `() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
-    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
-    prisonApiMockServer.stubUpdateSanctions(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.ADJUDICATION_2.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.ADJUDICATION_2.chargeNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.ADJUDICATION_2.chargeNumber)
+    prisonApiMockServer.stubUpdateSanctions(IntegrationTestData.ADJUDICATION_2.chargeNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.ADJUDICATION_2.chargeNumber)
 
     initDataForOutcome().createHearing().createChargeProved(caution = false)
     initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
@@ -313,10 +315,10 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .responseBody
       .blockFirst()!!
 
-    createPunishments(adjudicationNumber = IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
+    createPunishments(adjudicationNumber = IntegrationTestData.ADJUDICATION_2.chargeNumber)
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.ADJUDICATION_2.adjudicationNumber}/punishments")
+      .uri("/reported-adjudications/${IntegrationTestData.ADJUDICATION_2.chargeNumber}/punishments")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -328,7 +330,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
                 days = 10,
                 startDate = LocalDate.now(),
                 endDate = LocalDate.now().plusDays(5),
-                activatedFrom = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+                activatedFrom = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
               ),
             ),
         ),
@@ -338,24 +340,24 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(1)
       .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.REMOVAL_WING.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].activatedFrom").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.reportedAdjudication.punishments[0].activatedFrom").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
     webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.REMOVAL_WING.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].activatedBy").isEqualTo(IntegrationTestData.ADJUDICATION_2.adjudicationNumber)
+      .jsonPath("$.reportedAdjudication.punishments[0].activatedBy").isEqualTo(IntegrationTestData.ADJUDICATION_2.chargeNumber)
   }
 
   @Test
   fun `get suspended punishments `() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
     initDataForOutcome().createHearing().createChargeProved(caution = false)
 
@@ -363,13 +365,13 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isCreated
 
     webTestClient.get()
-      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended?reportNumber=${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
+      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended?reportNumber=${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
-      .jsonPath("$.[0].reportNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.[0].reportNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
       .jsonPath("$.[0].punishment.type").isEqualTo(PunishmentType.CONFINEMENT.name)
       .jsonPath("$.[0].punishment.schedule.days").isEqualTo(10)
       .jsonPath("$.[0].punishment.schedule.suspendedUntil").isEqualTo(
@@ -382,15 +384,15 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
   @ParameterizedTest
   fun `get additional days punishments `(punishmentType: PunishmentType) {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
-    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
     initDataForOutcome().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved(caution = false)
 
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -413,7 +415,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
-      .jsonPath("$.[0].reportNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.[0].reportNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
       .jsonPath("$.[0].punishment.type").isEqualTo(punishmentType.name)
       .jsonPath("$.[0].punishment.schedule.days").isEqualTo(10)
       .jsonPath("$.[0].chargeProvedDate").isEqualTo("2010-11-19")
@@ -436,7 +438,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     initDataForOutcome()
 
     val reportedAdjudicationResponse = webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments/comment")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/comment")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         PunishmentCommentRequest(
@@ -451,7 +453,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     val punishmentCommentToAmend = reportedAdjudicationResponse.reportedAdjudication.punishmentComments[0].id
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments/comment")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/comment")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         PunishmentCommentRequest(id = punishmentCommentToAmend, comment = "new text"),
@@ -469,7 +471,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     initDataForOutcome()
 
     val reportedAdjudicationResponse = webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments/comment")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/comment")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         PunishmentCommentRequest(
@@ -484,7 +486,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     val punishmentCommentToAmend = reportedAdjudicationResponse.reportedAdjudication.punishmentComments[0].id
 
     webTestClient.delete()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/punishments/comment/$punishmentCommentToAmend")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/comment/$punishmentCommentToAmend")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -494,9 +496,9 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Deprecated("to remove on completion of NN-5319")
   private fun createPunishments(
-    adjudicationNumber: Long = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+    adjudicationNumber: String = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
     type: PunishmentType = PunishmentType.CONFINEMENT,
-    consecutiveReportNumber: Long? = null,
+    consecutiveReportNumber: String? = null,
   ): WebTestClient.ResponseSpec {
     val suspendedUntil = LocalDate.now().plusMonths(1)
 
@@ -520,9 +522,9 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   }
 
   private fun createPunishmentsV2(
-    adjudicationNumber: Long = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+    adjudicationNumber: String = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
     type: PunishmentType = PunishmentType.CONFINEMENT,
-    consecutiveReportNumber: Long? = null,
+    consecutiveReportNumber: String? = null,
   ): WebTestClient.ResponseSpec {
     val suspendedUntil = LocalDate.now().plusMonths(1)
 
@@ -546,7 +548,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   }
 
   private fun createPunishmentComment(
-    adjudicationNumber: Long = IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber,
+    adjudicationNumber: String = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/$adjudicationNumber/punishments/comment")

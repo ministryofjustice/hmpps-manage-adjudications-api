@@ -25,12 +25,12 @@ class NomisHearingOutcomeService(
     log.info("Lock down record check: checking for NOMIS hearing results.")
     hearingRepository.findByHearingOutcomeIsNull().forEach { hearing ->
       if (hearing.oicHearingId != null && legacyNomisGateway.hearingOutcomesExistInNomis(
-          adjudicationNumber = hearing.reportNumber,
+          adjudicationNumber = hearing.chargeNumber.toLong(),
           oicHearingId = hearing.oicHearingId!!,
         )
       ) {
         log.info("Adjudication hearing ${hearing.id} has results created in NOMIS, locking hearing outcomes")
-        reportedAdjudicationRepository.findByReportNumber(hearing.reportNumber)?.let {
+        reportedAdjudicationRepository.findByChargeNumber(hearing.chargeNumber)?.let {
           it.hearings.filter { hearing -> hearing.hearingOutcome == null }.forEach { hearing ->
             hearing.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
           }

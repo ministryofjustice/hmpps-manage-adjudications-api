@@ -34,7 +34,7 @@ class DamagesControllerTest : TestControllerBase() {
   fun beforeEach() {
     whenever(
       damagesService.updateDamages(
-        ArgumentMatchers.anyLong(),
+        ArgumentMatchers.anyString(),
         any(),
       ),
     ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -51,7 +51,7 @@ class DamagesControllerTest : TestControllerBase() {
     setDamagesRequest(1, DAMAGES_REQUEST)
       .andExpect(MockMvcResultMatchers.status().isOk)
 
-    verify(damagesService).updateDamages(1, DAMAGES_REQUEST.damages)
+    verify(damagesService).updateDamages("1", DAMAGES_REQUEST.damages)
   }
 
   private fun setDamagesRequest(

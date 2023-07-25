@@ -56,8 +56,8 @@ private class ReportedAdjudicationServiceWrapper(
   offenceCodeLookupService,
   authenticationFacade,
 ) {
-  fun get(adjudicationNumber: Long) =
-    findByAdjudicationNumber(adjudicationNumber)
+  fun get(chargeNumber: String) =
+    findByChargeNumber(chargeNumber)
 
   fun save(reportedAdjudication: ReportedAdjudication) = saveToDto(reportedAdjudication)
 
@@ -85,7 +85,7 @@ class AdjudicationWorkflowService(
     ValidationChecks.values().toList().stream()
       .forEach { it.validate(draftAdjudication) }
 
-    val isNew = draftAdjudication.reportNumber == null
+    val isNew = draftAdjudication.chargeNumber == null
     val generatedReportedAdjudication = saveAdjudication(draftAdjudication, isNew)
     telemetryCapture(draftAdjudication, generatedReportedAdjudication.adjudicationNumber)
 
@@ -94,12 +94,12 @@ class AdjudicationWorkflowService(
     return generatedReportedAdjudication
   }
 
-  fun createDraftFromReportedAdjudication(adjudicationNumber: Long): DraftAdjudicationDto {
+  fun createDraftFromReportedAdjudication(chargeNumber: String): DraftAdjudicationDto {
     val reportedAdjudication =
-      reportedAdjudicationService.get(adjudicationNumber)
+      reportedAdjudicationService.get(chargeNumber)
 
     val draftAdjudication = DraftAdjudication(
-      reportNumber = reportedAdjudication.reportNumber,
+      chargeNumber = reportedAdjudication.chargeNumber,
       reportByUserId = reportedAdjudication.createdByUserId,
       prisonerNumber = reportedAdjudication.prisonerNumber,
       gender = reportedAdjudication.gender,
@@ -150,11 +150,11 @@ class AdjudicationWorkflowService(
   }
 
   private fun checkStateTransition(draftAdjudication: DraftAdjudication) {
-    val reportNumber = draftAdjudication.reportNumber!!
+    val reportNumber = draftAdjudication.chargeNumber!!
     val reportedAdjudication = reportedAdjudicationService.get(reportNumber)
     val fromStatus = reportedAdjudication.status
     if (!ReportedAdjudicationStatus.AWAITING_REVIEW.canTransitionFrom(fromStatus)) {
-      throw IllegalStateException("Unable to complete draft adjudication ${draftAdjudication.reportNumber} as it is in the state $fromStatus")
+      throw IllegalStateException("Unable to complete draft adjudication ${draftAdjudication.chargeNumber} as it is in the state $fromStatus")
     }
   }
 
@@ -163,7 +163,7 @@ class AdjudicationWorkflowService(
 
     return reportedAdjudicationService.save(
       ReportedAdjudication(
-        reportNumber = adjudicationNumber,
+        chargeNumber = adjudicationNumber.toString(),
         prisonerNumber = draftAdjudication.prisonerNumber,
         gender = draftAdjudication.gender,
         originatingAgencyId = draftAdjudication.agencyId,
@@ -195,13 +195,13 @@ class AdjudicationWorkflowService(
   private fun updateReportedAdjudication(
     draftAdjudication: DraftAdjudication,
   ): ReportedAdjudicationDto {
-    val reportedAdjudicationNumber = draftAdjudication.reportNumber
+    val reportedAdjudicationNumber = draftAdjudication.chargeNumber
       ?: throw EntityNotFoundException("No reported adjudication number set on the draft adjudication")
     val previousReportedAdjudication =
       reportedAdjudicationService.get(reportedAdjudicationNumber)
     val reporter = reportedAdjudicationService.getUsername()!!
     previousReportedAdjudication.let {
-      it.reportNumber = previousReportedAdjudication.reportNumber
+      it.chargeNumber = previousReportedAdjudication.chargeNumber
       it.prisonerNumber = draftAdjudication.prisonerNumber
       it.gender = draftAdjudication.gender
       it.originatingAgencyId = draftAdjudication.agencyId

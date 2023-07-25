@@ -128,7 +128,7 @@ class DraftAdjudicationService(
         dateTimeOfDiscovery = actualDateTimeOfDiscovery,
         handoverDeadline = daysToActionFromIncident(actualDateTimeOfDiscovery),
       ),
-      reportNumber = null,
+      chargeNumber = null,
       reportByUserId = null,
     )
 

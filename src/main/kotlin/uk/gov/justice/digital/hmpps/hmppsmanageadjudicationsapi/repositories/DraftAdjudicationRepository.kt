@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 interface DraftAdjudicationRepository : CrudRepository<DraftAdjudication, Long> {
   fun save(draftAdjudication: DraftAdjudication?): DraftAdjudication
 
-  fun findByAgencyIdAndCreatedByUserIdAndReportNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
+  fun findByAgencyIdAndCreatedByUserIdAndChargeNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
     agencyId: String,
     username: String,
     startDate: LocalDateTime,
@@ -16,5 +16,5 @@ interface DraftAdjudicationRepository : CrudRepository<DraftAdjudication, Long> 
     pageable: Pageable,
   ): Page<DraftAdjudication>
 
-  fun deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(createdTime: LocalDateTime): List<DraftAdjudication>
+  fun deleteDraftAdjudicationByCreateDateTimeBeforeAndChargeNumberIsNotNull(createdTime: LocalDateTime): List<DraftAdjudication>
 }

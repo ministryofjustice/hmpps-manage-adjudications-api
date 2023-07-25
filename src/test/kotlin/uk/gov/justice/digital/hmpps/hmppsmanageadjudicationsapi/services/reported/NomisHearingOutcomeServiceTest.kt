@@ -35,7 +35,7 @@ class NomisHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.first().oicHearingId = 1L
       it.hearings.add(
         Hearing(
-          reportNumber = 1L,
+          chargeNumber = "1",
           dateTimeOfHearing = LocalDateTime.now(),
           locationId = 1,
           agencyId = "",
@@ -48,12 +48,12 @@ class NomisHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     whenever(hearingRepository.findByHearingOutcomeIsNull()).thenReturn(
       listOf(
-        Hearing(reportNumber = 1L, dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 1L, oicHearingType = OicHearingType.GOV),
-        Hearing(reportNumber = 2L, dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 2L, oicHearingType = OicHearingType.GOV),
+        Hearing(chargeNumber = "1", dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 1L, oicHearingType = OicHearingType.GOV),
+        Hearing(chargeNumber = "2", dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 2L, oicHearingType = OicHearingType.GOV),
       ),
     )
 
-    whenever(reportedAdjudicationRepository.findByReportNumber(1L)).thenReturn(reportedAdjudication)
+    whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
 
     whenever(legacyNomisGateway.hearingOutcomesExistInNomis(1L, 1L)).thenReturn(true)
     whenever(legacyNomisGateway.hearingOutcomesExistInNomis(2L, 2L)).thenReturn(false)

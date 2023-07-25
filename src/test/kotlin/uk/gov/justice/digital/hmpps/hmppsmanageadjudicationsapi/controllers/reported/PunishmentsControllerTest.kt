@@ -45,7 +45,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         punishmentsService.createV2(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           any(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -84,7 +84,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(punishmentsService).createV2(
-        adjudicationNumber = 1,
+        chargeNumber = "1",
         listOf(PunishmentRequestV2(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
       )
     }
@@ -113,7 +113,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         punishmentsService.updateV2(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           any(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -152,7 +152,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(punishmentsService).updateV2(
-        adjudicationNumber = 1,
+        chargeNumber = "1",
         listOf(PunishmentRequestV2(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
       )
     }
@@ -210,7 +210,7 @@ class PunishmentsControllerTest : TestControllerBase() {
       getSuspendedPunishmentsRequest()
         .andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(punishmentsService).getSuspendedPunishments("AE1234", 12345)
+      verify(punishmentsService).getSuspendedPunishments("AE1234", "12345")
     }
 
     private fun getSuspendedPunishmentsRequest(): ResultActions {
@@ -276,7 +276,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         punishmentsService.createPunishmentComment(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           any(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -315,7 +315,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(punishmentsService).createPunishmentComment(
-        adjudicationNumber = 1,
+        chargeNumber = "1",
         PUNISHMENT_COMMENT_REQUEST,
       )
     }
@@ -341,7 +341,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         punishmentsService.updatePunishmentComment(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           any(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -404,7 +404,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(punishmentsService).updatePunishmentComment(
-        adjudicationNumber = 1,
+        chargeNumber = "1",
         PUNISHMENT_COMMENT_REQUEST,
       )
     }
@@ -430,7 +430,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         punishmentsService.deletePunishmentComment(
-          ArgumentMatchers.anyLong(),
+          ArgumentMatchers.anyString(),
           ArgumentMatchers.anyLong(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -493,7 +493,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(punishmentsService).deletePunishmentComment(
-        adjudicationNumber = 1,
+        chargeNumber = "1",
         punishmentCommentId = 2,
       )
     }
@@ -516,6 +516,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     val SUSPENDED_PUNISHMENTS_DTO = listOf(
       SuspendedPunishmentDto(
         reportNumber = 1,
+        chargeNumber = "1",
         punishment =
         PunishmentDto(
           type = PunishmentType.REMOVAL_WING,
@@ -529,6 +530,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     val ADDITIONAL_DAYS_DTO = listOf(
       AdditionalDaysDto(
         reportNumber = 1,
+        chargeNumber = "1",
         chargeProvedDate = LocalDate.now(),
         punishment = PunishmentDto(
           type = PunishmentType.ADDITIONAL_DAYS,

@@ -20,7 +20,7 @@ class TransferService(
         prisonerNumber = prisonerNumber,
         statuses = transferableStatuses,
       ).forEach {
-        log.info("transferring report ${it.reportNumber} from ${it.originatingAgencyId} to $agencyId")
+        log.info("transferring report ${it.chargeNumber} from ${it.originatingAgencyId} to $agencyId")
         if (it.originatingAgencyId != agencyId) {
           it.overrideAgencyId = agencyId
         } else {

@@ -213,6 +213,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         DraftAdjudicationDto(
           id = 1,
           adjudicationNumber = null,
+          chargeNumber = null,
           prisonerNumber = "A12345",
           gender = Gender.MALE,
           incidentDetails = IncidentDetailsDto(
@@ -252,6 +253,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         DraftAdjudicationDto(
           id = 1,
           adjudicationNumber = null,
+          chargeNumber = null,
           prisonerNumber = "A12345",
           gender = Gender.MALE,
           incidentDetails = IncidentDetailsDto(
@@ -516,6 +518,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             DraftAdjudicationDto(
               id = 1,
               adjudicationNumber = null,
+              chargeNumber = null,
               prisonerNumber = "A12345",
               gender = Gender.MALE,
               incidentDetails = IncidentDetailsDto(
@@ -531,6 +534,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             DraftAdjudicationDto(
               id = 2,
               adjudicationNumber = null,
+              chargeNumber = null,
               prisonerNumber = "A12346",
               gender = Gender.MALE,
               incidentDetails = IncidentDetailsDto(

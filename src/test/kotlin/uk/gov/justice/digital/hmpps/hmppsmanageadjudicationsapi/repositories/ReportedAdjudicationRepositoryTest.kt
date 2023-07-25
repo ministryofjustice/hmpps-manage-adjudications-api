@@ -55,21 +55,21 @@ class ReportedAdjudicationRepositoryTest {
   fun setUp() {
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 1234L,
+        chargeNumber = "1234",
         dateTime = dateTimeOfIncident,
         hearingId = null,
       ),
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 1235L,
+        chargeNumber = "1235",
         dateTime = dateTimeOfIncident.plusHours(1),
         hearingId = null,
       ),
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 1236L,
+        chargeNumber = "1236",
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "LEI",
         hearingId = null,
@@ -77,7 +77,7 @@ class ReportedAdjudicationRepositoryTest {
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 12366L,
+        chargeNumber = "12366",
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "TJW",
         hearingId = null,
@@ -88,7 +88,7 @@ class ReportedAdjudicationRepositoryTest {
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 123666L,
+        chargeNumber = "123666",
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "TJW",
         hearingId = null,
@@ -100,7 +100,7 @@ class ReportedAdjudicationRepositoryTest {
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 9999L,
+        chargeNumber = "9999",
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "TJW",
         hearingId = null,
@@ -111,7 +111,7 @@ class ReportedAdjudicationRepositoryTest {
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 9998L,
+        chargeNumber = "9998",
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "XXX",
         hearingId = null,
@@ -123,7 +123,7 @@ class ReportedAdjudicationRepositoryTest {
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 9997L,
+        chargeNumber = "9997",
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "LEI",
         hearingId = null,
@@ -135,7 +135,7 @@ class ReportedAdjudicationRepositoryTest {
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 19997L,
+        chargeNumber = "19997",
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "LEI",
         hearingId = null,
@@ -148,7 +148,7 @@ class ReportedAdjudicationRepositoryTest {
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
-        reportNumber = 199977L,
+        chargeNumber = "199977",
         dateTime = dateTimeOfIncident.plusHours(1),
         agencyId = "LEI",
         hearingId = null,
@@ -164,15 +164,15 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `save a new reported adjudication`() {
-    val adjudication = entityBuilder.reportedAdjudication(reportNumber = 1238L, hearingId = null)
+    val adjudication = entityBuilder.reportedAdjudication(chargeNumber = "1238", hearingId = null)
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity)
-      .extracting("id", "prisonerNumber", "reportNumber", "originatingAgencyId", "createdByUserId", "gender")
+      .extracting("id", "prisonerNumber", "chargeNumber", "originatingAgencyId", "createdByUserId", "gender")
       .contains(
         adjudication.id,
         adjudication.prisonerNumber,
-        adjudication.reportNumber,
+        adjudication.chargeNumber,
         adjudication.originatingAgencyId,
         adjudication.createdByUserId,
         adjudication.gender,
@@ -261,7 +261,7 @@ class ReportedAdjudicationRepositoryTest {
         "locationId",
         "dateTimeOfHearing",
         "agencyId",
-        "reportNumber",
+        "chargeNumber",
         "oicHearingId",
       )
       .contains(
@@ -269,7 +269,7 @@ class ReportedAdjudicationRepositoryTest {
           adjudication.hearings[0].locationId,
           adjudication.hearings[0].dateTimeOfHearing,
           adjudication.hearings[0].agencyId,
-          adjudication.hearings[0].reportNumber,
+          adjudication.hearings[0].chargeNumber,
           adjudication.hearings[0].oicHearingId,
         ),
       )
@@ -277,7 +277,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `update offence details of an existing reported adjudication`() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByChargeNumber("1236")
 
     adjudication!!.offenceDetails =
       mutableListOf(
@@ -291,11 +291,11 @@ class ReportedAdjudicationRepositoryTest {
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity)
-      .extracting("id", "prisonerNumber", "reportNumber", "createdByUserId")
+      .extracting("id", "prisonerNumber", "chargeNumber", "createdByUserId")
       .contains(
         adjudication.id,
         adjudication.prisonerNumber,
-        adjudication.reportNumber,
+        adjudication.chargeNumber,
         adjudication.createdByUserId,
       )
 
@@ -318,7 +318,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `set the status an existing reported adjudication`() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByChargeNumber("1236")
 
     adjudication!!.transition(
       to = ReportedAdjudicationStatus.REJECTED,
@@ -339,12 +339,12 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `find reported adjudications by report number`() {
-    val foundAdjudication = reportedAdjudicationRepository.findByReportNumber(1234L)
+    val foundAdjudication = reportedAdjudicationRepository.findByChargeNumber("1234")
 
     assertThat(foundAdjudication)
-      .extracting("reportNumber", "statement")
+      .extracting("chargeNumber", "statement")
       .contains(
-        1234L,
+        "1234",
         "Example statement",
       )
   }
@@ -363,11 +363,11 @@ class ReportedAdjudicationRepositoryTest {
     )
 
     assertThat(foundAdjudications.content).hasSize(3)
-      .extracting("reportNumber")
+      .extracting("chargeNumber")
       .contains(
-        1236L,
-        12366L,
-        123666L,
+        "1236",
+        "12366",
+        "123666",
       )
   }
 
@@ -383,9 +383,9 @@ class ReportedAdjudicationRepositoryTest {
     )
 
     assertThat(foundAdjudications).hasSize(1)
-      .extracting("reportNumber")
+      .extracting("chargeNumber")
       .contains(
-        9998L,
+        "9998",
       )
   }
 
@@ -404,10 +404,10 @@ class ReportedAdjudicationRepositoryTest {
       )
 
     assertThat(foundAdjudications.content).hasSize(2)
-      .extracting("reportNumber")
+      .extracting("chargeNumber")
       .contains(
-        1234L,
-        1235L,
+        "1234",
+        "1235",
       )
   }
 
@@ -415,7 +415,7 @@ class ReportedAdjudicationRepositoryTest {
   fun `validation error to confirm annotation works`() {
     assertThatThrownBy {
       entityManager.persistAndFlush(
-        entityBuilder.reportedAdjudication(1237L).also {
+        entityBuilder.reportedAdjudication("1237").also {
           it.damages.add(
             ReportedDamage(
               code = DamageCode.REDECORATION,
@@ -430,8 +430,8 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `get adjudications by report number in `() {
-    val adjudications = reportedAdjudicationRepository.findByReportNumberIn(
-      listOf(1234L, 1235L, 1236L),
+    val adjudications = reportedAdjudicationRepository.findByChargeNumberIn(
+      listOf("1234", "1235", "1236"),
     )
 
     assertThat(adjudications.size).isEqualTo(3)
@@ -451,7 +451,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `set issue details `() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByChargeNumber("1236")
     val now = LocalDateTime.now()
     adjudication!!.issuingOfficer = "testing"
     adjudication.dateTimeOfIssue = now
@@ -465,7 +465,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `hearing outcome`() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByChargeNumber("1236")
     adjudication!!.hearings.first().hearingOutcome = HearingOutcome(
       adjudicator = "test",
       code = HearingOutcomeCode.REFER_POLICE,
@@ -480,7 +480,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `adjudication outcome`() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByChargeNumber("1236")
     adjudication!!.addOutcome(Outcome(code = OutcomeCode.REFER_POLICE))
 
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
@@ -490,7 +490,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `punishment and schedule `() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByChargeNumber("1236")
     adjudication!!.addPunishment(
       Punishment(
         type = PunishmentType.ADDITIONAL_DAYS,
@@ -511,7 +511,7 @@ class ReportedAdjudicationRepositoryTest {
   fun `suspended search `() {
     for (i in 1..10) {
       reportedAdjudicationRepository.save(
-        entityBuilder.reportedAdjudication(reportNumber = i.toLong()).also {
+        entityBuilder.reportedAdjudication(chargeNumber = i.toString()).also {
           it.prisonerNumber = "TEST"
           it.hearings.clear()
           it.addPunishment(
@@ -533,7 +533,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `additional days search`() {
     reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(reportNumber = 100100).also {
+      entityBuilder.reportedAdjudication(chargeNumber = "100100").also {
         it.hearings.clear()
         it.prisonerNumber = "TEST"
         it.addPunishment(
@@ -548,7 +548,7 @@ class ReportedAdjudicationRepositoryTest {
     )
 
     reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(reportNumber = 100101).also {
+      entityBuilder.reportedAdjudication(chargeNumber = "100101").also {
         it.hearings.clear()
         it.prisonerNumber = "TEST"
         it.addPunishment(
@@ -577,7 +577,7 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `punishment comments`() {
-    val adjudication = reportedAdjudicationRepository.findByReportNumber(1236L)
+    val adjudication = reportedAdjudicationRepository.findByChargeNumber("1236")
     adjudication!!.punishmentComments.add(PunishmentComment(comment = "some text"))
 
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
@@ -621,21 +621,21 @@ class ReportedAdjudicationRepositoryTest {
     )
 
     assertThat(page.content).hasSize(1)
-      .extracting("reportNumber")
+      .extracting("chargeNumber")
       .contains(
-        19997L,
+        "19997",
       )
   }
 
   @Test
   fun `find by consecutive report number and type `() {
     reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(reportNumber = -9999).also {
+      entityBuilder.reportedAdjudication(chargeNumber = "-9999").also {
         it.hearings.clear()
         it.addPunishment(
           Punishment(
             type = PunishmentType.PROSPECTIVE_DAYS,
-            consecutiveReportNumber = 1234,
+            consecutiveChargeNumber = "1234",
             schedule = mutableListOf(
               PunishmentSchedule(days = 10),
             ),
@@ -644,7 +644,7 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    val result = reportedAdjudicationRepository.findByPunishmentsConsecutiveReportNumberAndPunishmentsType(1234, PunishmentType.PROSPECTIVE_DAYS)
+    val result = reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsType("1234", PunishmentType.PROSPECTIVE_DAYS)
     assertThat(result.size).isEqualTo(1)
   }
 }

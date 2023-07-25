@@ -53,11 +53,12 @@ open class ReportedDtoService(
 ) {
 
   @Deprecated("to remove on completion of NN-5319")
-  protected fun ReportedAdjudication.toDto(activeCaseload: String? = null, consecutiveReportsAvailable: List<Long>? = null): ReportedAdjudicationDto {
+  protected fun ReportedAdjudication.toDto(activeCaseload: String? = null, consecutiveReportsAvailable: List<String>? = null): ReportedAdjudicationDto {
     val hearings = this.hearings.toHearings()
     val outcomes = this.getOutcomes().createCombinedOutcomes(this.getPunishments())
     return ReportedAdjudicationDto(
-      adjudicationNumber = reportNumber,
+      adjudicationNumber = chargeNumber.toLong(),
+      chargeNumber = chargeNumber,
       prisonerNumber = prisonerNumber,
       incidentDetails = IncidentDetailsDto(
         locationId = locationId,
@@ -102,11 +103,12 @@ open class ReportedDtoService(
     )
   }
 
-  protected fun ReportedAdjudication.toDtoV2(activeCaseload: String? = null, consecutiveReportsAvailable: List<Long>? = null): ReportedAdjudicationDtoV2 {
+  protected fun ReportedAdjudication.toDtoV2(activeCaseload: String? = null, consecutiveReportsAvailable: List<String>? = null): ReportedAdjudicationDtoV2 {
     val hearings = this.hearings.toHearings()
     val outcomes = this.getOutcomes().createCombinedOutcomesV2()
     return ReportedAdjudicationDtoV2(
-      adjudicationNumber = reportNumber,
+      adjudicationNumber = chargeNumber.toLong(),
+      chargeNumber = chargeNumber,
       prisonerNumber = prisonerNumber,
       incidentDetails = IncidentDetailsDto(
         locationId = locationId,
@@ -382,7 +384,7 @@ open class ReportedDtoService(
     }.sortedBy { it.dateTimeOfIssue }.toList()
 
   @Deprecated("to remove on completion of NN-5319")
-  private fun List<Punishment>.toPunishments(consecutiveReportsAvailable: List<Long>?): List<PunishmentDto> =
+  private fun List<Punishment>.toPunishments(consecutiveReportsAvailable: List<String>?): List<PunishmentDto> =
     this.sortedBy { it.type }.map {
       PunishmentDto(
         id = it.id,
@@ -390,15 +392,16 @@ open class ReportedDtoService(
         privilegeType = it.privilegeType,
         otherPrivilege = it.otherPrivilege,
         stoppagePercentage = it.stoppagePercentage,
-        activatedFrom = it.activatedFrom,
-        activatedBy = it.activatedBy,
-        consecutiveReportNumber = it.consecutiveReportNumber,
-        consecutiveReportAvailable = isConsecutiveReportAvailable(it.consecutiveReportNumber, consecutiveReportsAvailable),
+        activatedFrom = it.activatedFromChargeNumber,
+        activatedBy = it.activatedByChargeNumber,
+        consecutiveReportNumber = it.consecutiveChargeNumber?.toLong(),
+        consecutiveChargeNumber = it.consecutiveChargeNumber,
+        consecutiveReportAvailable = isConsecutiveReportAvailable(it.consecutiveChargeNumber, consecutiveReportsAvailable),
         schedule = it.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toPunishmentScheduleDto(),
       )
     }
 
-  private fun List<Punishment>.toPunishmentsV2(consecutiveReportsAvailable: List<Long>?): List<PunishmentDtoV2> =
+  private fun List<Punishment>.toPunishmentsV2(consecutiveReportsAvailable: List<String>?): List<PunishmentDtoV2> =
     this.sortedBy { it.type }.map {
       PunishmentDtoV2(
         id = it.id,
@@ -407,15 +410,16 @@ open class ReportedDtoService(
         otherPrivilege = it.otherPrivilege,
         stoppagePercentage = it.stoppagePercentage,
         amount = it.amount,
-        activatedFrom = it.activatedFrom,
-        activatedBy = it.activatedBy,
-        consecutiveReportNumber = it.consecutiveReportNumber,
-        consecutiveReportAvailable = isConsecutiveReportAvailable(it.consecutiveReportNumber, consecutiveReportsAvailable),
+        activatedFrom = it.activatedFromChargeNumber,
+        activatedBy = it.activatedByChargeNumber,
+        consecutiveReportNumber = it.consecutiveChargeNumber?.toLong(),
+        consecutiveChargeNumber = it.consecutiveChargeNumber,
+        consecutiveReportAvailable = isConsecutiveReportAvailable(it.consecutiveChargeNumber, consecutiveReportsAvailable),
         schedule = it.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toPunishmentScheduleDto(),
       )
     }
 
-  private fun isConsecutiveReportAvailable(consecutiveReportNumber: Long?, consecutiveReportsAvailable: List<Long>?): Boolean? {
+  private fun isConsecutiveReportAvailable(consecutiveReportNumber: String?, consecutiveReportsAvailable: List<String>?): Boolean? {
     consecutiveReportNumber ?: return null
     consecutiveReportsAvailable ?: return null
     return consecutiveReportsAvailable.any { it == consecutiveReportNumber }
@@ -466,10 +470,10 @@ open class ReportedAdjudicationBaseService(
   protected val authenticationFacade: AuthenticationFacade,
 ) : ReportedDtoService(offenceCodeLookupService) {
 
-  protected fun findByAdjudicationNumber(adjudicationNumber: Long): ReportedAdjudication {
+  protected fun findByChargeNumber(chargeNumber: String): ReportedAdjudication {
     val reportedAdjudication =
-      reportedAdjudicationRepository.findByReportNumber(adjudicationNumber) ?: throwEntityNotFoundException(
-        adjudicationNumber,
+      reportedAdjudicationRepository.findByChargeNumber(chargeNumber) ?: throwEntityNotFoundException(
+        chargeNumber,
       )
 
     val overrideAgencyId = reportedAdjudication.overrideAgencyId ?: reportedAdjudication.originatingAgencyId
@@ -477,7 +481,7 @@ open class ReportedAdjudicationBaseService(
     if (listOf(reportedAdjudication.originatingAgencyId, overrideAgencyId)
       .none { it == authenticationFacade.activeCaseload }
     ) {
-      throwEntityNotFoundException(adjudicationNumber)
+      throwEntityNotFoundException(chargeNumber)
     }
 
     return reportedAdjudication
@@ -490,7 +494,7 @@ open class ReportedAdjudicationBaseService(
       },
     ).toDto(activeCaseload = authenticationFacade.activeCaseload)
 
-  protected fun findByReportNumberIn(adjudicationNumbers: List<Long>) = reportedAdjudicationRepository.findByReportNumberIn(adjudicationNumbers)
+  protected fun findByReportNumberIn(adjudicationNumbers: List<String>) = reportedAdjudicationRepository.findByChargeNumberIn(adjudicationNumbers)
 
   protected fun getReportsWithSuspendedPunishments(prisonerNumber: String) = reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(
     prisonerNumber = prisonerNumber,
@@ -500,11 +504,11 @@ open class ReportedAdjudicationBaseService(
   protected fun getReportsWithActiveAdditionalDays(prisonerNumber: String, punishmentType: PunishmentType) =
     reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(prisonerNumber, punishmentType)
 
-  protected fun isLinkedToReport(consecutiveReportNumber: Long, type: PunishmentType): Boolean =
-    reportedAdjudicationRepository.findByPunishmentsConsecutiveReportNumberAndPunishmentsType(consecutiveReportNumber, type).isNotEmpty()
+  protected fun isLinkedToReport(consecutiveReportNumber: String, type: PunishmentType): Boolean =
+    reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsType(consecutiveReportNumber, type).isNotEmpty()
 
   companion object {
-    fun throwEntityNotFoundException(id: Long): Nothing =
+    fun throwEntityNotFoundException(id: String): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")
   }
 }
