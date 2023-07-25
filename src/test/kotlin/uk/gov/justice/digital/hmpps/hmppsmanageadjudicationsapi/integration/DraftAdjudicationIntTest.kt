@@ -124,7 +124,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.adjudicationNumber").isEqualTo(testAdjudication.adjudicationNumber)
+      .jsonPath("$.draftAdjudication.adjudicationNumber").isEqualTo(testAdjudication.chargeNumber)
   }
 
   @Test
@@ -349,7 +349,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isCreated
       .expectBody()
-      .jsonPath("$.adjudicationNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.adjudicationNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
     intTestScenario.getDraftAdjudicationDetails().expectStatus().isNotFound
   }
@@ -420,7 +420,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isCreated
       .expectBody()
-      .jsonPath("$.adjudicationNumber").isEqualTo(IntegrationTestData.UPDATED_ADJUDICATION.adjudicationNumber)
+      .jsonPath("$.adjudicationNumber").isEqualTo(IntegrationTestData.UPDATED_ADJUDICATION.chargeNumber)
       .jsonPath("$.overrideAgencyId").isEqualTo("TJW")
       .jsonPath("$.damages[0].code")
       .isEqualTo(DamageCode.CLEANING.name)
@@ -828,7 +828,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.adjudicationNumber").isEqualTo(testAdjudication.adjudicationNumber)
+      .jsonPath("$.adjudicationNumber").isEqualTo(testAdjudication.chargeNumber)
       .jsonPath("$.offenceDetails.offenceRule.paragraphNumber")
       .isEqualTo(IntegrationTestData.ADJUDICATION_2.offence.paragraphNumber)
       .jsonPath("$.offenceDetails.offenceRule.paragraphDescription")
@@ -837,7 +837,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
 
   private fun getReportedAdjudicationRequestStatus() =
     webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}")
       .headers(setHeaders())
       .exchange()
       .expectStatus()

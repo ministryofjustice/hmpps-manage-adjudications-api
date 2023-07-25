@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.mockito.ArgumentMatchers.anyLong
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.verify
@@ -49,7 +49,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         outcomeService.createProsecution(
-          anyLong(),
+          anyString(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -80,7 +80,7 @@ class OutcomeControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create an outcome`() {
-      whenever(outcomeService.createProsecution(1)).thenReturn(REPORTED_ADJUDICATION_DTO)
+      whenever(outcomeService.createProsecution("1")).thenReturn(REPORTED_ADJUDICATION_DTO)
 
       createOutcomeRequest(1)
         .andExpect(MockMvcResultMatchers.status().isCreated)
@@ -103,7 +103,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         outcomeService.createNotProceed(
-          anyLong(),
+          anyString(),
           any(),
           any(),
           any(),
@@ -146,7 +146,7 @@ class OutcomeControllerTest : TestControllerBase() {
       )
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(outcomeService).createNotProceed(1, NotProceedReason.NOT_FAIR, "details")
+      verify(outcomeService).createNotProceed("1", NotProceedReason.NOT_FAIR, "details")
     }
 
     private fun createOutcomeRequest(
@@ -169,7 +169,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         outcomeService.createReferral(
-          anyLong(),
+          anyString(),
           any(),
           any(),
           any(),
@@ -211,7 +211,7 @@ class OutcomeControllerTest : TestControllerBase() {
         POLICE_REFER_REQUEST,
       )
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(outcomeService).createReferral(1, OutcomeCode.REFER_POLICE, "details")
+      verify(outcomeService).createReferral("1", OutcomeCode.REFER_POLICE, "details")
     }
 
     private fun createOutcomeRequest(
@@ -234,7 +234,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         completedHearingService.createNotProceed(
-          anyLong(),
+          anyString(),
           any(),
           any(),
           any(),
@@ -245,7 +245,7 @@ class OutcomeControllerTest : TestControllerBase() {
 
       whenever(
         completedHearingService.createDismissed(
-          anyLong(),
+          anyString(),
           any(),
           any(),
           any(),
@@ -303,13 +303,13 @@ class OutcomeControllerTest : TestControllerBase() {
 
       when (code) {
         OutcomeCode.DISMISSED -> verify(completedHearingService).createDismissed(
-          1,
+          "1",
           "test",
           HearingOutcomePlea.UNFIT,
           "details",
         )
         OutcomeCode.NOT_PROCEED -> verify(completedHearingService).createNotProceed(
-          1,
+          "1",
           "test",
           HearingOutcomePlea.UNFIT,
           NotProceedReason.NOT_FAIR,
@@ -347,7 +347,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         referralService.removeReferral(
-          anyLong(),
+          anyString(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -374,7 +374,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun `makes a call to remove a referral`() {
       removeReferralRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(referralService).removeReferral(1)
+      verify(referralService).removeReferral("1")
     }
 
     private fun removeReferralRequest(
@@ -394,7 +394,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         outcomeService.deleteOutcome(
-          anyLong(),
+          anyString(),
           anyOrNull(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -429,7 +429,7 @@ class OutcomeControllerTest : TestControllerBase() {
       deleteOutcomeRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(outcomeService).deleteOutcome(
-        1,
+        "1",
       )
     }
 
@@ -450,7 +450,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         completedHearingService.createChargeProvedV2(
-          anyLong(),
+          anyString(),
           any(),
           any(),
           anyOrNull(),
@@ -490,7 +490,7 @@ class OutcomeControllerTest : TestControllerBase() {
       createChargeProvedRequest(1, CHARGE_PROVED_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
       verify(completedHearingService).createChargeProvedV2(
-        1,
+        "1",
         CHARGE_PROVED_REQUEST.adjudicator,
         CHARGE_PROVED_REQUEST.plea,
       )
@@ -517,7 +517,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         completedHearingService.removeOutcome(
-          anyLong(),
+          anyString(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -544,7 +544,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun `makes a call to remove a completed hearing`() {
       removeCompletedHearingOutcomeRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(completedHearingService).removeOutcome(1)
+      verify(completedHearingService).removeOutcome("1")
     }
 
     private fun removeCompletedHearingOutcomeRequest(
@@ -564,7 +564,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         outcomeService.createQuashed(
-          anyLong(),
+          anyString(),
           any(),
           any(),
         ),
@@ -603,7 +603,7 @@ class OutcomeControllerTest : TestControllerBase() {
       createQuashedRequest(1, QUASHED_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(outcomeService).createQuashed(1, QUASHED_REQUEST.reason, QUASHED_REQUEST.details)
+      verify(outcomeService).createQuashed("1", QUASHED_REQUEST.reason, QUASHED_REQUEST.details)
     }
 
     private fun createQuashedRequest(
@@ -626,7 +626,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         outcomeService.amendOutcomeViaApi(
-          anyLong(),
+          anyString(),
           any(),
           anyOrNull(),
           anyOrNull(),
@@ -667,7 +667,7 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(outcomeService).amendOutcomeViaApi(
-        adjudicationNumber = 1,
+        chargeNumber = "1",
         details = "details",
         reason = AMEND_NOT_PROCEED_REQUEST.reason,
       )
@@ -680,7 +680,7 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(outcomeService).amendOutcomeViaApi(
-        adjudicationNumber = 1,
+        chargeNumber = "1",
         details = "details",
       )
     }
@@ -692,7 +692,7 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(outcomeService).amendOutcomeViaApi(
-        adjudicationNumber = 1,
+        chargeNumber = "1",
         details = "details",
         quashedReason = AMEND_QUASHED_REQUEST.quashedReason,
       )

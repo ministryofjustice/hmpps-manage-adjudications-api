@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.mockito.ArgumentMatchers.anyLong
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.never
@@ -48,19 +48,19 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER")
     fun `returns the adjudication for a given id`() {
-      whenever(reportedAdjudicationService.getReportedAdjudicationDetailsV2(anyLong())).thenReturn(
+      whenever(reportedAdjudicationService.getReportedAdjudicationDetailsV2(anyString())).thenReturn(
         REPORTED_ADJUDICATION_DTO_V2,
       )
       makeGetAdjudicationRequest(1)
         .andExpect(status().isOk)
         .andExpect(jsonPath("$.reportedAdjudication.adjudicationNumber").value(1))
-      verify(reportedAdjudicationService).getReportedAdjudicationDetailsV2(1)
+      verify(reportedAdjudicationService).getReportedAdjudicationDetailsV2("1")
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER")
     fun `responds with an not found status code`() {
-      whenever(reportedAdjudicationService.getReportedAdjudicationDetailsV2(anyLong())).thenThrow(EntityNotFoundException::class.java)
+      whenever(reportedAdjudicationService.getReportedAdjudicationDetailsV2(anyString())).thenThrow(EntityNotFoundException::class.java)
 
       makeGetAdjudicationRequest(1).andExpect(status().isNotFound)
     }
@@ -119,7 +119,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `does not call event service on exception`() {
-      whenever(reportedAdjudicationService.setStatus(123, ReportedAdjudicationStatus.RETURNED, "reason", "details")).thenThrow(RuntimeException())
+      whenever(reportedAdjudicationService.setStatus("123", ReportedAdjudicationStatus.RETURNED, "reason", "details")).thenThrow(RuntimeException())
 
       makeReportedAdjudicationSetStatusRequest(
         123,
@@ -133,7 +133,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `makes a call to set the status of the reported adjudication`(status: ReportedAdjudicationStatus, eventCalled: Boolean) {
-      whenever(reportedAdjudicationService.setStatus(123, status, "reason", "details")).thenReturn(
+      whenever(reportedAdjudicationService.setStatus("123", status, "reason", "details")).thenReturn(
         reportedAdjudicationDto(status),
       )
 
@@ -182,12 +182,12 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds successfully from issued details request `() {
       whenever(
-        reportedAdjudicationService.setIssued(anyLong(), any()),
+        reportedAdjudicationService.setIssued(anyString(), any()),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
 
       makeIssuedRequest(1, IssueRequest(now))
         .andExpect(status().isOk)
-      verify(reportedAdjudicationService).setIssued(1, now)
+      verify(reportedAdjudicationService).setIssued("1", now)
     }
   }
 }

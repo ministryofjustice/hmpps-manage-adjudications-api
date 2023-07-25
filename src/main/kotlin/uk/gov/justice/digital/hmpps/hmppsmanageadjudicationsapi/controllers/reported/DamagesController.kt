@@ -20,16 +20,16 @@ class DamagesController(
   private val damagesService: DamagesService,
 ) : ReportedAdjudicationBaseController() {
 
-  @PutMapping(value = ["/{adjudicationNumber}/damages/edit"])
+  @PutMapping(value = ["/{chargeNumber}/damages/edit"])
   @Operation(summary = "Updates the damages for the reported adjudication.", description = "0 or more damages to be supplied, only updates records owned by current user")
   @ResponseStatus(HttpStatus.OK)
   fun updateDamages(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     damagesRequest: DamagesRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = damagesService.updateDamages(
-      adjudicationNumber,
+      chargeNumber,
       damagesRequest.damages,
     )
 

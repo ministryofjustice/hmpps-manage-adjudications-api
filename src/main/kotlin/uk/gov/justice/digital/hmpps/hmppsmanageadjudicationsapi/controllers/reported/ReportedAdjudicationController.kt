@@ -51,20 +51,20 @@ class ReportedAdjudicationController(
 ) : ReportedAdjudicationBaseController() {
 
   @Deprecated("to remove on completion of NN-5319")
-  @GetMapping(value = ["/{adjudicationNumber}"])
-  fun getReportedAdjudicationDetails(@PathVariable(name = "adjudicationNumber") adjudicationNumber: Long): ReportedAdjudicationResponse =
-    reportedAdjudicationService.getReportedAdjudicationDetails(adjudicationNumber).toResponse()
+  @GetMapping(value = ["/{chargeNumber}"])
+  fun getReportedAdjudicationDetails(@PathVariable(name = "chargeNumber") chargeNumber: String): ReportedAdjudicationResponse =
+    reportedAdjudicationService.getReportedAdjudicationDetails(chargeNumber).toResponse()
 
-  @GetMapping(value = ["/{adjudicationNumber}/v2"])
-  fun getReportedAdjudicationDetailsV2(@PathVariable(name = "adjudicationNumber") adjudicationNumber: Long): ReportedAdjudicationResponseV2 =
-    reportedAdjudicationService.getReportedAdjudicationDetailsV2(adjudicationNumber).toResponseV2()
+  @GetMapping(value = ["/{chargeNumber}/v2"])
+  fun getReportedAdjudicationDetailsV2(@PathVariable(name = "chargeNumber") chargeNumber: String): ReportedAdjudicationResponseV2 =
+    reportedAdjudicationService.getReportedAdjudicationDetailsV2(chargeNumber).toResponseV2()
 
-  @PutMapping(value = ["/{adjudicationNumber}/status"])
+  @PutMapping(value = ["/{chargeNumber}/status"])
   @Operation(summary = "Set the status for the reported adjudication.")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.OK)
   fun setStatus(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest,
   ): ReportedAdjudicationResponse =
@@ -72,7 +72,7 @@ class ReportedAdjudicationController(
       event = AdjudicationDomainEventType.ADJUDICATION_CREATED,
       controllerAction = {
         reportedAdjudicationService.setStatus(
-          adjudicationNumber,
+          chargeNumber,
           reportedAdjudicationStatusRequest.status,
           reportedAdjudicationStatusRequest.statusReason,
           reportedAdjudicationStatusRequest.statusDetails,
@@ -81,16 +81,16 @@ class ReportedAdjudicationController(
       eventRule = { it.status == ReportedAdjudicationStatus.UNSCHEDULED },
     )
 
-  @PutMapping(value = ["/{adjudicationNumber}/issue"])
+  @PutMapping(value = ["/{chargeNumber}/issue"])
   @Operation(summary = "Issue DIS Form")
   @PreAuthorize("hasAuthority('SCOPE_write')")
   fun setIssued(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     issueRequest: IssueRequest,
   ): ReportedAdjudicationResponse =
     reportedAdjudicationService.setIssued(
-      adjudicationNumber,
+      chargeNumber,
       issueRequest.dateTimeOfIssue,
     ).toResponse()
 }

@@ -50,7 +50,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         nomisOutcomeService.createHearingResultIfApplicable(
-          adjudicationNumber = reportedAdjudication.reportNumber,
+          adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
           hearing = reportedAdjudication.getLatestHearing(),
           outcome = reportedAdjudication.latestOutcome()!!,
         )
@@ -67,7 +67,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.createHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
@@ -97,7 +97,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(legacySyncService.createHearing(any(), any())).thenReturn(123)
 
       val hearingId = nomisOutcomeService.createHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
@@ -106,7 +106,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(legacySyncService, atLeastOnce()).quashSanctions(any())
       verify(legacySyncService, atLeastOnce()).createHearing(any(), any())
       verify(legacySyncService, atLeastOnce()).createHearingResult(
-        reportedAdjudication.reportNumber,
+        reportedAdjudication.chargeNumber.toLong(),
         123,
         OicHearingResultRequest(
           pleaFindingCode = Plea.GUILTY,
@@ -128,7 +128,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(legacySyncService.createHearing(any(), any())).thenReturn(123)
 
       val hearingId = nomisOutcomeService.createHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
@@ -136,7 +136,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(hearingId).isNotNull
       verify(legacySyncService, atLeastOnce()).createHearing(any(), any())
       verify(legacySyncService, atLeastOnce()).createHearingResult(
-        reportedAdjudication.reportNumber,
+        reportedAdjudication.chargeNumber.toLong(),
         123,
         OicHearingResultRequest(
           pleaFindingCode = Plea.NOT_ASKED,
@@ -155,7 +155,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.createHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
@@ -174,7 +174,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.createHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
@@ -184,7 +184,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(legacySyncService, never()).createHearing(any(), any())
       verify(legacySyncService, atLeastOnce()).createHearingResult(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         oicHearingId = hearing.oicHearingId,
         oicHearingResultRequest = request,
       )
@@ -199,7 +199,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.createHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
@@ -221,7 +221,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         nomisOutcomeService.amendHearingResultIfApplicable(
-          adjudicationNumber = reportedAdjudication.reportNumber,
+          adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
           hearing = reportedAdjudication.getLatestHearing(),
           outcome = reportedAdjudication.latestOutcome()!!,
         )
@@ -237,7 +237,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         nomisOutcomeService.amendHearingResultIfApplicable(
-          adjudicationNumber = reportedAdjudication.reportNumber,
+          adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
           hearing = reportedAdjudication.getLatestHearing(),
           outcome = reportedAdjudication.latestOutcome()!!,
         )
@@ -254,7 +254,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.amendHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
@@ -281,14 +281,14 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.amendHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
       verify(legacySyncService, never()).createHearing(anyOrNull(), any())
       verify(legacySyncService, atLeastOnce()).amendHearingResult(
-        reportedAdjudication.reportNumber,
+        reportedAdjudication.chargeNumber.toLong(),
         123L,
         OicHearingResultRequest(
           findingCode = Finding.QUASHED,
@@ -308,14 +308,14 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.amendHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
       verify(legacySyncService, never()).createHearing(anyOrNull(), any())
       verify(legacySyncService, atLeastOnce()).amendHearingResult(
-        reportedAdjudication.reportNumber,
+        reportedAdjudication.chargeNumber.toLong(),
         123L,
         OicHearingResultRequest(
           pleaFindingCode = Plea.NOT_ASKED,
@@ -334,7 +334,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.amendHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
@@ -352,7 +352,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.amendHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
@@ -361,7 +361,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val request = createHearingResultRequestForVerify(reportedAdjudication, hearing)
 
       verify(legacySyncService, atLeastOnce()).amendHearingResult(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         oicHearingId = hearing.oicHearingId,
         oicHearingResultRequest = request,
       )
@@ -376,7 +376,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.amendHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
@@ -398,7 +398,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         nomisOutcomeService.deleteHearingResultIfApplicable(
-          adjudicationNumber = reportedAdjudication.reportNumber,
+          adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
           hearing = reportedAdjudication.getLatestHearing(),
           outcome = reportedAdjudication.latestOutcome()!!,
         )
@@ -415,7 +415,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.deleteHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
@@ -444,13 +444,13 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.deleteHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(legacySyncService, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, 123L)
-      verify(legacySyncService, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 123L)
+      verify(legacySyncService, atLeastOnce()).deleteHearing(reportedAdjudication.chargeNumber.toLong(), 123L)
+      verify(legacySyncService, atLeastOnce()).deleteHearingResult(reportedAdjudication.chargeNumber.toLong(), 123L)
     }
 
     @CsvSource("NOT_PROCEED", "PROSECUTION")
@@ -463,13 +463,13 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.deleteHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
 
-      verify(legacySyncService, atLeastOnce()).deleteHearing(reportedAdjudication.reportNumber, 122L)
-      verify(legacySyncService, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 122L)
+      verify(legacySyncService, atLeastOnce()).deleteHearing(reportedAdjudication.chargeNumber.toLong(), 122L)
+      verify(legacySyncService, atLeastOnce()).deleteHearingResult(reportedAdjudication.chargeNumber.toLong(), 122L)
     }
 
     @CsvSource("REFER_POLICE", "NOT_PROCEED", "CHARGE_PROVED", "DISMISSED")
@@ -482,7 +482,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.deleteHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )
@@ -491,8 +491,8 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
         verify(legacySyncService, atLeastOnce()).deleteSanctions(any())
       }
 
-      verify(legacySyncService, never()).deleteHearing(reportedAdjudication.reportNumber, 100L)
-      verify(legacySyncService, atLeastOnce()).deleteHearingResult(reportedAdjudication.reportNumber, 100L)
+      verify(legacySyncService, never()).deleteHearing(reportedAdjudication.chargeNumber.toLong(), 100L)
+      verify(legacySyncService, atLeastOnce()).deleteHearingResult(reportedAdjudication.chargeNumber.toLong(), 100L)
     }
 
     @Test
@@ -504,7 +504,7 @@ class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       nomisOutcomeService.deleteHearingResultIfApplicable(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = reportedAdjudication.latestOutcome()!!,
       )

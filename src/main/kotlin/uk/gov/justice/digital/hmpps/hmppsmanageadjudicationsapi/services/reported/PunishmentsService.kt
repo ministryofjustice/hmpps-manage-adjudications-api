@@ -53,8 +53,8 @@ class PunishmentsService(
   }
 
   @Deprecated("to remove on completion of NN-5319")
-  fun amendPunishmentsFromChargeProvedIfApplicable(adjudicationNumber: Long, caution: Boolean, damagesOwed: Boolean?, amount: Double?): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+  fun amendPunishmentsFromChargeProvedIfApplicable(adjudicationNumber: String, caution: Boolean, damagesOwed: Boolean?, amount: Double?): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(adjudicationNumber)
 
     handleCautionChange(reportedAdjudication = reportedAdjudication, caution = caution).run {
       damagesOwed?.run {
@@ -66,23 +66,23 @@ class PunishmentsService(
   }
 
   fun removeQuashedFinding(reportedAdjudication: ReportedAdjudication) {
-    legacySyncService.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber)
+    legacySyncService.deleteSanctions(adjudicationNumber = reportedAdjudication.chargeNumber.toLong())
 
     reportedAdjudication.createSanctionAndAssignSanctionSeq(type = PunishmentType.CAUTION)
     reportedAdjudication.createSanctionAndAssignSanctionSeq(type = PunishmentType.DAMAGES_OWED)
 
     legacySyncService.createSanctions(
-      adjudicationNumber = reportedAdjudication.reportNumber,
+      adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
       sanctions = reportedAdjudication.mapToSanctions(),
     )
   }
 
   @Deprecated("to remove on completion of NN-5319")
   fun create(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     punishments: List<PunishmentRequest>,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       it.validateCanAddPunishments()
     }
 
@@ -90,7 +90,7 @@ class PunishmentsService(
       it.validateRequest(reportedAdjudication.getLatestHearing())
       if (it.activatedFrom != null) {
         reportedAdjudication.addPunishment(
-          activateSuspendedPunishment(adjudicationNumber = adjudicationNumber, punishmentRequest = it),
+          activateSuspendedPunishment(chargeNumber = chargeNumber, punishmentRequest = it),
         )
       } else {
         reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = it))
@@ -98,7 +98,7 @@ class PunishmentsService(
     }
 
     legacySyncService.createSanctions(
-      adjudicationNumber = adjudicationNumber,
+      adjudicationNumber = chargeNumber.toLong(),
       sanctions = reportedAdjudication.mapToSanctions(),
     )
 
@@ -106,10 +106,10 @@ class PunishmentsService(
   }
 
   fun createV2(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     punishments: List<PunishmentRequestV2>,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       it.validateCanAddPunishmentsV2()
     }
 
@@ -119,7 +119,7 @@ class PunishmentsService(
       it.validateRequestV2(reportedAdjudication.getLatestHearing())
       if (it.activatedFrom != null) {
         reportedAdjudication.addPunishment(
-          activateSuspendedPunishmentV2(adjudicationNumber = adjudicationNumber, punishmentRequest = it),
+          activateSuspendedPunishmentV2(chargeNumber = chargeNumber, punishmentRequest = it),
         )
       } else {
         reportedAdjudication.addPunishment(createNewPunishmentV2(punishmentRequest = it))
@@ -127,7 +127,7 @@ class PunishmentsService(
     }
 
     legacySyncService.createSanctions(
-      adjudicationNumber = adjudicationNumber,
+      adjudicationNumber = chargeNumber.toLong(),
       sanctions = reportedAdjudication.mapToSanctionsV2(),
     )
 
@@ -136,16 +136,16 @@ class PunishmentsService(
 
   @Deprecated("to remove on completion of NN-5319")
   fun update(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     punishments: List<PunishmentRequest>,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       it.validateCanAddPunishments()
     }
 
     val idsToUpdate = punishments.filter { it.id != null }.map { it.id }
     reportedAdjudication.getPunishments().filterOutChargeProvedPunishments().filter { !idsToUpdate.contains(it.id) }.forEach { punishment ->
-      punishment.type.consecutiveReportValidation(adjudicationNumber).let {
+      punishment.type.consecutiveReportValidation(chargeNumber).let {
         punishment.deleted = true
       }
     }
@@ -156,7 +156,7 @@ class PunishmentsService(
       when (punishmentRequest.id) {
         null -> when (punishmentRequest.activatedFrom) {
           null -> reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = punishmentRequest))
-          else -> reportedAdjudication.addPunishment(activateSuspendedPunishment(adjudicationNumber = adjudicationNumber, punishmentRequest = punishmentRequest))
+          else -> reportedAdjudication.addPunishment(activateSuspendedPunishment(chargeNumber = chargeNumber, punishmentRequest = punishmentRequest))
         }
         else -> {
           when (punishmentRequest.activatedFrom) {
@@ -165,12 +165,12 @@ class PunishmentsService(
               when (punishmentToAmend.type) {
                 punishmentRequest.type -> {
                   punishmentRequest.suspendedUntil?.let {
-                    punishmentRequest.type.consecutiveReportValidation(adjudicationNumber)
+                    punishmentRequest.type.consecutiveReportValidation(chargeNumber)
                   }
                   updatePunishment(punishmentToAmend, punishmentRequest)
                 }
                 else -> {
-                  punishmentToAmend.type.consecutiveReportValidation(adjudicationNumber).let {
+                  punishmentToAmend.type.consecutiveReportValidation(chargeNumber).let {
                     punishmentToAmend.deleted = true
                     reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = punishmentRequest))
                   }
@@ -181,7 +181,7 @@ class PunishmentsService(
               if (reportedAdjudication.getPunishments().getPunishment(punishmentRequest.id) == null) {
                 reportedAdjudication.addPunishment(
                   activateSuspendedPunishment(
-                    adjudicationNumber = adjudicationNumber,
+                    chargeNumber = chargeNumber,
                     punishmentRequest = punishmentRequest,
                   ),
                 )
@@ -192,12 +192,12 @@ class PunishmentsService(
     }
 
     legacySyncService.updateSanctions(
-      adjudicationNumber = adjudicationNumber,
+      adjudicationNumber = chargeNumber.toLong(),
       sanctions = reportedAdjudication.mapToSanctions(),
     ).run {
       reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }?.let {
         it.sanctionSeq = createPunishmentFromChargeProved(
-          adjudicationNumber = reportedAdjudication.reportNumber,
+          chargeNumber = reportedAdjudication.chargeNumber,
           type = PunishmentType.DAMAGES_OWED,
           amount = it.amount!!,
         ).sanctionSeq
@@ -208,10 +208,10 @@ class PunishmentsService(
   }
 
   fun updateV2(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     punishments: List<PunishmentRequestV2>,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       it.validateCanAddPunishmentsV2()
     }
 
@@ -219,7 +219,7 @@ class PunishmentsService(
 
     val idsToUpdate = punishments.filter { it.id != null }.map { it.id }
     reportedAdjudication.getPunishments().filter { !idsToUpdate.contains(it.id) }.forEach { punishment ->
-      punishment.type.consecutiveReportValidation(adjudicationNumber).let {
+      punishment.type.consecutiveReportValidation(chargeNumber).let {
         punishment.deleted = true
       }
     }
@@ -230,7 +230,7 @@ class PunishmentsService(
       when (punishmentRequest.id) {
         null -> when (punishmentRequest.activatedFrom) {
           null -> reportedAdjudication.addPunishment(createNewPunishmentV2(punishmentRequest = punishmentRequest))
-          else -> reportedAdjudication.addPunishment(activateSuspendedPunishmentV2(adjudicationNumber = adjudicationNumber, punishmentRequest = punishmentRequest))
+          else -> reportedAdjudication.addPunishment(activateSuspendedPunishmentV2(chargeNumber = chargeNumber, punishmentRequest = punishmentRequest))
         }
         else -> {
           when (punishmentRequest.activatedFrom) {
@@ -239,12 +239,12 @@ class PunishmentsService(
               when (punishmentToAmend.type) {
                 punishmentRequest.type -> {
                   punishmentRequest.suspendedUntil?.let {
-                    punishmentRequest.type.consecutiveReportValidation(adjudicationNumber)
+                    punishmentRequest.type.consecutiveReportValidation(chargeNumber)
                   }
                   updatePunishmentV2(punishmentToAmend, punishmentRequest)
                 }
                 else -> {
-                  punishmentToAmend.type.consecutiveReportValidation(adjudicationNumber).let {
+                  punishmentToAmend.type.consecutiveReportValidation(chargeNumber).let {
                     punishmentToAmend.deleted = true
                     reportedAdjudication.addPunishment(createNewPunishmentV2(punishmentRequest = punishmentRequest))
                   }
@@ -255,7 +255,7 @@ class PunishmentsService(
               if (reportedAdjudication.getPunishments().getPunishment(punishmentRequest.id) == null) {
                 reportedAdjudication.addPunishment(
                   activateSuspendedPunishmentV2(
-                    adjudicationNumber = adjudicationNumber,
+                    chargeNumber = chargeNumber,
                     punishmentRequest = punishmentRequest,
                   ),
                 )
@@ -266,24 +266,24 @@ class PunishmentsService(
     }
 
     legacySyncService.updateSanctions(
-      adjudicationNumber = adjudicationNumber,
+      adjudicationNumber = chargeNumber.toLong(),
       sanctions = reportedAdjudication.mapToSanctionsV2(),
     )
 
     return saveToDto(reportedAdjudication)
   }
 
-  private fun PunishmentType.consecutiveReportValidation(adjudicationNumber: Long) {
+  private fun PunishmentType.consecutiveReportValidation(chargeNumber: String) {
     if (PunishmentType.additionalDays().contains(this)) {
-      if (isLinkedToReport(adjudicationNumber, this)) {
+      if (isLinkedToReport(chargeNumber, this)) {
         throw ValidationException("Unable to modify: $this is linked to another report")
       }
     }
   }
 
-  fun getSuspendedPunishments(prisonerNumber: String, reportNumber: Long): List<SuspendedPunishmentDto> {
+  fun getSuspendedPunishments(prisonerNumber: String, chargeNumber: String): List<SuspendedPunishmentDto> {
     val reportsWithSuspendedPunishments = getReportsWithSuspendedPunishments(prisonerNumber = prisonerNumber)
-    val includeAdditionalDays = includeAdditionalDays(reportNumber)
+    val includeAdditionalDays = includeAdditionalDays(chargeNumber)
 
     return reportsWithSuspendedPunishments.map {
       it.getPunishments().suspendedPunishmentsToActivate()
@@ -291,7 +291,7 @@ class PunishmentsService(
           val schedule = punishment.schedule.latestSchedule()
 
           SuspendedPunishmentDto(
-            reportNumber = it.reportNumber,
+            reportNumber = it.chargeNumber.toLong(),
             punishment = PunishmentDto(
               id = punishment.id,
               type = punishment.type,
@@ -316,12 +316,12 @@ class PunishmentsService(
         val schedule = punishment.schedule.latestSchedule()
 
         AdditionalDaysDto(
-          reportNumber = it.reportNumber,
+          reportNumber = it.chargeNumber.toLong(),
           chargeProvedDate = it.getLatestHearing()?.dateTimeOfHearing?.toLocalDate()!!,
           punishment = PunishmentDto(
             id = punishment.id,
             type = punishment.type,
-            consecutiveReportNumber = punishment.consecutiveReportNumber,
+            consecutiveReportNumber = punishment.consecutiveChargeNumber?.toLong(),
             schedule = PunishmentScheduleDto(days = schedule.days),
           ),
         )
@@ -330,10 +330,10 @@ class PunishmentsService(
   }
 
   fun createPunishmentComment(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     punishmentComment: PunishmentCommentRequest,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
 
     reportedAdjudication.punishmentComments.add(
       PunishmentComment(
@@ -345,10 +345,10 @@ class PunishmentsService(
   }
 
   fun updatePunishmentComment(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     punishmentComment: PunishmentCommentRequest,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
     val punishmentCommentToUpdate = reportedAdjudication.punishmentComments.getPunishmentComment(punishmentComment.id!!)
       .also {
         it.createdByUserId?.validatePunishmentCommentAction(authenticationFacade.currentUsername!!)
@@ -360,10 +360,10 @@ class PunishmentsService(
   }
 
   fun deletePunishmentComment(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     punishmentCommentId: Long,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
     val punishmentComment = reportedAdjudication.punishmentComments.getPunishmentComment(punishmentCommentId)
       .also {
         it.createdByUserId?.validatePunishmentCommentAction(authenticationFacade.currentUsername!!)
@@ -374,8 +374,8 @@ class PunishmentsService(
     return saveToDto(reportedAdjudication)
   }
 
-  private fun includeAdditionalDays(reportNumber: Long): Boolean {
-    val reportedAdjudication = findByAdjudicationNumber(reportNumber)
+  private fun includeAdditionalDays(chargeNumber: String): Boolean {
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
     return OicHearingType.inadTypes().contains(reportedAdjudication.getLatestHearing()?.oicHearingType)
   }
 
@@ -396,7 +396,7 @@ class PunishmentsService(
   private fun createDamagesOwed(reportedAdjudication: ReportedAdjudication, amount: Double) {
     reportedAdjudication.addPunishment(
       createPunishmentFromChargeProved(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        chargeNumber = reportedAdjudication.chargeNumber,
         type = PunishmentType.DAMAGES_OWED,
         amount = amount,
       ),
@@ -406,7 +406,7 @@ class PunishmentsService(
   @Deprecated("to remove on completion of NN-5319")
   private fun deleteDamagesOwed(reportedAdjudication: ReportedAdjudication, punishment: Punishment) {
     legacySyncService.deleteSanction(
-      adjudicationNumber = reportedAdjudication.reportNumber,
+      adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
       sanctionSeq = punishment.sanctionSeq!!,
     ).run {
       punishment.deleted = true
@@ -415,10 +415,10 @@ class PunishmentsService(
 
   @Deprecated("to remove on completion of NN-5319")
   private fun amendDamagesOwed(reportedAdjudication: ReportedAdjudication, punishment: Punishment, amount: Double) {
-    legacySyncService.deleteSanction(adjudicationNumber = reportedAdjudication.reportNumber, sanctionSeq = punishment.sanctionSeq!!).run {
+    legacySyncService.deleteSanction(adjudicationNumber = reportedAdjudication.chargeNumber.toLong(), sanctionSeq = punishment.sanctionSeq!!).run {
       punishment.amount = amount
       punishment.sanctionSeq = legacySyncService.createSanction(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         sanction = punishment.mapPunishmentToSanction(),
       )
     }
@@ -436,7 +436,7 @@ class PunishmentsService(
   private fun createCaution(reportedAdjudication: ReportedAdjudication) {
     reportedAdjudication.addPunishment(
       createPunishmentFromChargeProved(
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        chargeNumber = reportedAdjudication.chargeNumber,
         type = PunishmentType.CAUTION,
       ),
     )
@@ -446,14 +446,14 @@ class PunishmentsService(
   private fun amendToCaution(reportedAdjudication: ReportedAdjudication) {
     val preserveDamagesOwed = reportedAdjudication.getPunishments().firstOrNull { it.type == PunishmentType.DAMAGES_OWED }
 
-    legacySyncService.deleteSanctions(adjudicationNumber = reportedAdjudication.reportNumber).run {
+    legacySyncService.deleteSanctions(adjudicationNumber = reportedAdjudication.chargeNumber.toLong()).run {
       reportedAdjudication.clearPunishments()
       createCaution(reportedAdjudication = reportedAdjudication)
     }.run {
       preserveDamagesOwed?.run {
         reportedAdjudication.addPunishment(
           createPunishmentFromChargeProved(
-            adjudicationNumber = reportedAdjudication.reportNumber,
+            chargeNumber = reportedAdjudication.chargeNumber,
             type = PunishmentType.DAMAGES_OWED,
             amount = preserveDamagesOwed.amount,
           ),
@@ -465,7 +465,7 @@ class PunishmentsService(
   @Deprecated("to remove on completion of NN-5319")
   private fun removeCaution(reportedAdjudication: ReportedAdjudication, punishment: Punishment) {
     legacySyncService.deleteSanction(
-      adjudicationNumber = reportedAdjudication.reportNumber,
+      adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
       sanctionSeq = punishment.sanctionSeq!!,
     ).run {
       punishment.deleted = true
@@ -473,7 +473,7 @@ class PunishmentsService(
   }
 
   @Deprecated("to remove on completion of NN-5319")
-  private fun createPunishmentFromChargeProved(adjudicationNumber: Long, type: PunishmentType, amount: Double? = null): Punishment =
+  private fun createPunishmentFromChargeProved(chargeNumber: String, type: PunishmentType, amount: Double? = null): Punishment =
     Punishment(
       type = type,
       amount = amount,
@@ -482,7 +482,7 @@ class PunishmentsService(
       ),
     ).also {
       it.sanctionSeq = legacySyncService.createSanction(
-        adjudicationNumber = adjudicationNumber,
+        adjudicationNumber = chargeNumber.toLong(),
         sanction = it.mapPunishmentToSanction(),
       )
     }
@@ -495,7 +495,7 @@ class PunishmentsService(
       otherPrivilege = punishmentRequest.otherPrivilege,
       stoppagePercentage = punishmentRequest.stoppagePercentage,
       suspendedUntil = punishmentRequest.suspendedUntil,
-      consecutiveReportNumber = punishmentRequest.consecutiveReportNumber,
+      consecutiveChargeNumber = punishmentRequest.consecutiveReportNumber,
       schedule = mutableListOf(
         PunishmentSchedule(
           days = punishmentRequest.days,
@@ -513,7 +513,7 @@ class PunishmentsService(
       otherPrivilege = punishmentRequest.otherPrivilege,
       stoppagePercentage = punishmentRequest.stoppagePercentage,
       suspendedUntil = punishmentRequest.suspendedUntil,
-      consecutiveReportNumber = punishmentRequest.consecutiveReportNumber,
+      consecutiveChargeNumber = punishmentRequest.consecutiveReportNumber,
       amount = punishmentRequest.damagesOwedAmount,
       schedule = when (punishmentRequest.type) {
         PunishmentType.CAUTION, PunishmentType.DAMAGES_OWED -> mutableListOf(PunishmentSchedule(days = 0))
@@ -566,12 +566,12 @@ class PunishmentsService(
     }
 
   @Deprecated("to remove on completion of NN-5319")
-  private fun activateSuspendedPunishment(adjudicationNumber: Long, punishmentRequest: PunishmentRequest): Punishment {
+  private fun activateSuspendedPunishment(chargeNumber: String, punishmentRequest: PunishmentRequest): Punishment {
     var suspendedPunishment: Punishment? = null
     punishmentRequest.id?.run {
-      val activatedFromReport = findByAdjudicationNumber(punishmentRequest.activatedFrom!!)
+      val activatedFromReport = findByChargeNumber(punishmentRequest.activatedFrom!!)
       suspendedPunishment = activatedFromReport.getPunishments().getSuspendedPunishment(punishmentRequest.id).also {
-        it.activatedBy = adjudicationNumber
+        it.activatedByChargeNumber = chargeNumber
       }
     }
 
@@ -581,16 +581,16 @@ class PunishmentsService(
       startDate = punishmentRequest.startDate,
       endDate = punishmentRequest.endDate,
     ).also {
-      it.activatedFrom = punishmentRequest.activatedFrom
+      it.activatedFromChargeNumber = punishmentRequest.activatedFrom
     }
   }
 
-  private fun activateSuspendedPunishmentV2(adjudicationNumber: Long, punishmentRequest: PunishmentRequestV2): Punishment {
+  private fun activateSuspendedPunishmentV2(chargeNumber: String, punishmentRequest: PunishmentRequestV2): Punishment {
     var suspendedPunishment: Punishment? = null
     punishmentRequest.id?.run {
-      val activatedFromReport = findByAdjudicationNumber(punishmentRequest.activatedFrom!!)
+      val activatedFromReport = findByChargeNumber(punishmentRequest.activatedFrom!!)
       suspendedPunishment = activatedFromReport.getPunishments().getSuspendedPunishment(punishmentRequest.id).also {
-        it.activatedBy = adjudicationNumber
+        it.activatedByChargeNumber = chargeNumber
       }
     }
 
@@ -600,7 +600,7 @@ class PunishmentsService(
       startDate = punishmentRequest.startDate,
       endDate = punishmentRequest.endDate,
     ).also {
-      it.activatedFrom = punishmentRequest.activatedFrom
+      it.activatedFromChargeNumber = punishmentRequest.activatedFrom
     }
   }
   private fun cloneSuspendedPunishment(punishment: Punishment, days: Int, startDate: LocalDate?, endDate: LocalDate?) = Punishment(
@@ -616,7 +616,7 @@ class PunishmentsService(
   private fun ReportedAdjudication.createSanctionAndAssignSanctionSeq(type: PunishmentType) {
     this.getPunishments().firstOrNull { it.type == type }?.let {
       it.sanctionSeq = legacySyncService.createSanction(
-        adjudicationNumber = this.reportNumber,
+        adjudicationNumber = this.chargeNumber.toLong(),
         sanction = it.mapPunishmentToSanction(),
       )
     }
@@ -634,7 +634,7 @@ class PunishmentsService(
     fun List<PunishmentSchedule>.latestSchedule() = this.maxBy { it.createDateTime!! }
 
     fun List<Punishment>.suspendedPunishmentsToActivate() =
-      this.filter { p -> p.activatedFrom == null && p.activatedBy == null && p.schedule.latestSchedule().suspendedUntil != null }
+      this.filter { p -> p.activatedFromChargeNumber == null && p.activatedByChargeNumber == null && p.schedule.latestSchedule().suspendedUntil != null }
 
     fun List<Punishment>.getSuspendedPunishment(id: Long): Punishment = this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("suspended punishment not found")
 

@@ -18,13 +18,13 @@ import java.time.LocalDateTime
 class EntityBuilder {
 
   fun reportedAdjudication(
-    reportNumber: Long = 1235L,
+    chargeNumber: String = "1235",
     dateTime: LocalDateTime = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
     agencyId: String = "MDI",
     hearingId: Long? = 1L,
   ): ReportedAdjudication {
     return ReportedAdjudication(
-      reportNumber = reportNumber,
+      chargeNumber = chargeNumber,
       prisonerNumber = "A12345",
       gender = Gender.MALE,
       originatingAgencyId = agencyId,
@@ -72,7 +72,7 @@ class EntityBuilder {
       ),
       draftCreatedOn = dateTime,
       hearings = mutableListOf(
-        createHearing(reportNumber, dateTime, agencyId, hearingId),
+        createHearing(chargeNumber, dateTime, agencyId, hearingId),
       ),
       outcomes = mutableListOf(),
       disIssueHistory = mutableListOf(),
@@ -82,7 +82,7 @@ class EntityBuilder {
   }
 
   fun createHearing(
-    reportNumber: Long = 1235L,
+    chargeNumber: String = "1235",
     dateTime: LocalDateTime = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
     agencyId: String = "MDI",
     hearingId: Long? = 1L,
@@ -91,7 +91,7 @@ class EntityBuilder {
     locationId = 1L,
     dateTimeOfHearing = dateTime.plusWeeks(1),
     agencyId = agencyId,
-    reportNumber = reportNumber,
+    chargeNumber = chargeNumber,
     oicHearingId = 3L,
     oicHearingType = OicHearingType.GOV,
   )

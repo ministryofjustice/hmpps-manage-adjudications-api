@@ -22,8 +22,8 @@ data class Punishment(
   @field:Length(max = 32)
   var otherPrivilege: String? = null,
   var stoppagePercentage: Int? = null,
-  var activatedBy: Long? = null,
-  var activatedFrom: Long? = null,
+  var activatedByChargeNumber: String? = null,
+  var activatedFromChargeNumber: String? = null,
   var suspendedUntil: LocalDate? = null,
   var amount: Double? = null,
   var sanctionSeq: Long? = null,
@@ -31,7 +31,7 @@ data class Punishment(
   @JoinColumn(name = "punishment_fk_id")
   var schedule: MutableList<PunishmentSchedule>,
   var deleted: Boolean? = null,
-  var consecutiveReportNumber: Long? = null,
+  var consecutiveChargeNumber: String? = null,
 ) : BaseEntity()
 
 enum class PunishmentType {

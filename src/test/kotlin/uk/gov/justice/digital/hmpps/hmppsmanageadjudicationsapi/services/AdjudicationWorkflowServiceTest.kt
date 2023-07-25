@@ -79,7 +79,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     private val expectedSavedDraftAdjudication = DraftAdjudication(
       prisonerNumber = "A12345",
       gender = Gender.MALE,
-      reportNumber = 1235L,
+      chargeNumber = "1235",
       reportByUserId = "A_SMITH",
       agencyId = "MDI",
       incidentDetails = IncidentDetails(
@@ -129,20 +129,20 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     fun beforeEach() {
       reportedAdjudication.createdByUserId = "A_SMITH"
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
       whenever(draftAdjudicationRepository.save(any())).thenReturn(savedDraftAdjudication)
     }
 
     @Test
     fun `adds the relevant draft data to the repository`() {
-      adjudicationWorkflowService.createDraftFromReportedAdjudication(123)
+      adjudicationWorkflowService.createDraftFromReportedAdjudication("123")
 
       verify(draftAdjudicationRepository).save(expectedSavedDraftAdjudication)
     }
 
     @Test
     fun `returns the correct data`() {
-      val createdDraft = adjudicationWorkflowService.createDraftFromReportedAdjudication(123)
+      val createdDraft = adjudicationWorkflowService.createDraftFromReportedAdjudication("123")
 
       assertThat(createdDraft)
         .extracting("prisonerNumber", "id", "adjudicationNumber", "startedByUserId", "gender")
@@ -258,8 +258,8 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
-        .extracting("prisonerNumber", "reportNumber", "originatingAgencyId", "gender")
-        .contains("A12345", 123456L, "MDI", Gender.MALE)
+        .extracting("prisonerNumber", "chargeNumber", "originatingAgencyId", "gender")
+        .contains("A12345", "123456", "MDI", Gender.MALE)
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting(
@@ -413,7 +413,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             id = 1,
             prisonerNumber = "A12345",
             gender = Gender.MALE,
-            reportNumber = 123,
+            chargeNumber = "123",
             agencyId = "MDI",
             incidentDetails = incidentDetails(2L, INCIDENT_TIME),
             incidentRole = incidentRoleWithNoValuesSet(),
@@ -432,7 +432,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         passedInAdjudication
       }
 
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
     }
 
     @ParameterizedTest
@@ -441,7 +441,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       "REJECTED",
     )
     fun `cannot complete when the reported adjudication is in the wrong state`(from: ReportedAdjudicationStatus) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also { it.status = from },
       )
       assertThrows(IllegalStateException::class.java) {
@@ -455,7 +455,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       "RETURNED",
     )
     fun `completes when the reported adjudication is in a correct state`(from: ReportedAdjudicationStatus) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.status = from
         },
@@ -481,7 +481,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             id = 1,
             prisonerNumber = "A12345",
             gender = Gender.MALE,
-            reportNumber = 123L,
+            chargeNumber = "123",
             reportByUserId = "A_SMITH",
             agencyId = "MDI",
             incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, clock),
@@ -504,7 +504,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           ),
         ),
       )
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.damages = mutableListOf(
             ReportedDamage(code = DamageCode.CLEANING, details = "details", reporter = "Rod"),
@@ -530,7 +530,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `throws an entity not found exception if the reported adjudication for the supplied id does not exists`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(null)
 
       assertThatThrownBy {
         adjudicationWorkflowService.completeDraftAdjudication(1)
@@ -542,14 +542,14 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     fun `updates the completed adjudication record`() {
       adjudicationWorkflowService.completeDraftAdjudication(1)
 
-      verify(reportedAdjudicationRepository, times(2)).findByReportNumber(123L)
+      verify(reportedAdjudicationRepository, times(2)).findByChargeNumber("123")
 
       val reportedAdjudicationArgumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(reportedAdjudicationArgumentCaptor.capture())
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
-        .extracting("prisonerNumber", "reportNumber", "originatingAgencyId")
-        .contains("A12345", 1235L, "MDI")
+        .extracting("prisonerNumber", "chargeNumber", "originatingAgencyId")
+        .contains("A12345", "1235", "MDI")
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting(
@@ -683,7 +683,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             id = 1,
             prisonerNumber = "A12345",
             gender = Gender.MALE,
-            reportNumber = 123L,
+            chargeNumber = "123",
             reportByUserId = "A_SMITH",
             agencyId = "MDI",
             incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, clock),
@@ -697,7 +697,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication(),
       )
 
@@ -721,10 +721,10 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
   @Test
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-    whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(null)
 
     assertThatThrownBy {
-      adjudicationWorkflowService.createDraftFromReportedAdjudication(1)
+      adjudicationWorkflowService.createDraftFromReportedAdjudication("1")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }
@@ -739,11 +739,9 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     const val OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another paragraph description"
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
-    private val INCIDENT_ROLE_CODE = "25a"
-    private val INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(a)"
-    private val INCIDENT_ROLE_PARAGRAPH_DESCRIPTION = "Attempts to commit any of the foregoing offences:"
-    private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
-    private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
+    private const val INCIDENT_ROLE_CODE = "25a"
+    private const val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
+    private const val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
     private const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"
     private const val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)

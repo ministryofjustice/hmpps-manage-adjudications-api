@@ -239,7 +239,7 @@ class DraftAdjudicationRepositoryTest {
       DraftAdjudication(
         prisonerNumber = "A12347",
         gender = Gender.MALE,
-        reportNumber = 123,
+        chargeNumber = "123",
         reportByUserId = "A_SMITH",
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
@@ -257,7 +257,7 @@ class DraftAdjudicationRepositoryTest {
       ),
     )
     val foundAdjudications =
-      draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndReportNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
+      draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndChargeNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
         "MDI",
         "ITAG_USER",
         dateTimeOfIncident.minusDays(1),
@@ -275,22 +275,22 @@ class DraftAdjudicationRepositoryTest {
   @Test
   fun `delete orphaned adjudications should do nothing if they are not old enough`() {
     val deleteBefore = LocalDateTime.now()
-    val draft = draftWithAllData(1L)
+    val draft = draftWithAllData("1")
     entityManager.persistAndFlush(draft)
     // We should not delete anything because the time we use was at the very beginning of the test, before we created anything.
     val deleted =
-      draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(deleteBefore)
+      draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndChargeNumberIsNotNull(deleteBefore)
     assertThat(deleted).hasSize(0)
   }
 
   @Test
   fun `delete orphaned adjudications should completely remove orphaned adjudications if they are old enough`() {
-    val draft = draftWithAllData(1L)
+    val draft = draftWithAllData("1")
     val saved = entityManager.persistAndFlush(draft)
     val deleteBefore = LocalDateTime.now().plusSeconds(1)
     // We should delete the saved adjudication because the time we use is in the future, after the draft was created.
     val allDeleted =
-      draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndReportNumberIsNotNull(deleteBefore)
+      draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndChargeNumberIsNotNull(deleteBefore)
     assertThat(allDeleted).hasSize(1)
     val deleted = allDeleted[0]
     assertThat(entityManager.find(IncidentDetails::class.java, deleted.incidentDetails.id)).isNull()
@@ -320,9 +320,9 @@ class DraftAdjudicationRepositoryTest {
     )
   }
 
-  private fun draftWithAllData(reportNumber: Long? = null): DraftAdjudication {
+  private fun draftWithAllData(chargeNumber: String? = null): DraftAdjudication {
     return DraftAdjudication(
-      reportNumber = reportNumber,
+      chargeNumber = chargeNumber,
       prisonerNumber = "A12345",
       gender = Gender.MALE,
       agencyId = "MDI",

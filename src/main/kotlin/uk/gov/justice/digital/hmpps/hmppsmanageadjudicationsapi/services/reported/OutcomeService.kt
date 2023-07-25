@@ -31,30 +31,30 @@ class OutcomeService(
 ) {
 
   fun createProsecution(
-    adjudicationNumber: Long,
+    chargeNumber: String,
   ): ReportedAdjudicationDto = createOutcome(
-    adjudicationNumber = adjudicationNumber,
+    chargeNumber = chargeNumber,
     code = OutcomeCode.PROSECUTION,
   )
 
   fun createDismissed(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     details: String,
     validate: Boolean = true,
   ): ReportedAdjudicationDto = createOutcome(
-    adjudicationNumber = adjudicationNumber,
+    chargeNumber = chargeNumber,
     code = OutcomeCode.DISMISSED,
     details = details,
     validate = validate,
   )
 
   fun createNotProceed(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     reason: NotProceedReason,
     details: String,
     validate: Boolean = true,
   ): ReportedAdjudicationDto = createOutcome(
-    adjudicationNumber = adjudicationNumber,
+    chargeNumber = chargeNumber,
     code = OutcomeCode.NOT_PROCEED,
     reason = reason,
     details = details,
@@ -62,12 +62,12 @@ class OutcomeService(
   )
 
   fun createReferral(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     code: OutcomeCode,
     details: String,
     validate: Boolean = true,
   ): ReportedAdjudicationDto = createOutcome(
-    adjudicationNumber = adjudicationNumber,
+    chargeNumber = chargeNumber,
     code = code.validateReferral(),
     details = details,
     validate = validate,
@@ -75,12 +75,12 @@ class OutcomeService(
 
   @Deprecated("to remove on completion of NN-5319")
   fun createChargeProved(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     amount: Double? = null,
     caution: Boolean,
     validate: Boolean = true,
   ): ReportedAdjudicationDto = createOutcome(
-    adjudicationNumber = adjudicationNumber,
+    chargeNumber = chargeNumber,
     code = OutcomeCode.CHARGE_PROVED,
     amount = amount,
     caution = caution,
@@ -88,23 +88,23 @@ class OutcomeService(
   )
 
   fun createChargeProvedV2(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     validate: Boolean = true,
   ): ReportedAdjudicationDto = createOutcome(
-    adjudicationNumber = adjudicationNumber,
+    chargeNumber = chargeNumber,
     code = OutcomeCode.CHARGE_PROVED,
     validate = validate,
   )
 
   fun createQuashed(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     reason: QuashedReason,
     details: String,
   ): ReportedAdjudicationDto {
-    findByAdjudicationNumber(adjudicationNumber).latestOutcome().canQuash()
+    findByChargeNumber(chargeNumber).latestOutcome().canQuash()
 
     return createOutcome(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       code = OutcomeCode.QUASHED,
       details = details,
       quashedReason = reason,
@@ -112,17 +112,17 @@ class OutcomeService(
   }
 
   fun amendOutcomeViaApi(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     details: String,
     reason: NotProceedReason? = null,
     quashedReason: QuashedReason? = null,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
-    val isReferralOutcome = if (reportedAdjudication.hearings.isNotEmpty()) getOutcomes(adjudicationNumber).isLatestReferralOutcome() else false
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
+    val isReferralOutcome = if (reportedAdjudication.hearings.isNotEmpty()) getOutcomes(chargeNumber).isLatestReferralOutcome() else false
     reportedAdjudication.latestOutcome().canAmendViaApi(reportedAdjudication.hearings.isNotEmpty(), isReferralOutcome)
 
     return amendOutcome(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       details = details,
       reason = reason,
       quashedReason = quashedReason,
@@ -130,26 +130,26 @@ class OutcomeService(
   }
 
   fun amendOutcomeViaService(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     outcomeCodeToAmend: OutcomeCode,
     details: String? = null,
     notProceedReason: NotProceedReason? = null,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
 
     reportedAdjudication.latestOutcome()
       .canAmendViaService(reportedAdjudication.hearings.isNotEmpty())
       .isLatestSameAsAmendRequest(outcomeCodeToAmend)
 
     return amendOutcome(
-      adjudicationNumber = adjudicationNumber,
+      chargeNumber = chargeNumber,
       details = details,
       reason = notProceedReason,
     )
   }
 
   private fun createOutcome(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     code: OutcomeCode,
     details: String? = null,
     reason: NotProceedReason? = null,
@@ -158,7 +158,7 @@ class OutcomeService(
     quashedReason: QuashedReason? = null,
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       if (validate) it.status.validateTransition(code.status)
       it.status = code.status
     }
@@ -174,7 +174,7 @@ class OutcomeService(
       quashedReason = quashedReason,
     ).also {
       it.oicHearingId = nomisOutcomeService.createHearingResultIfApplicable(
-        adjudicationNumber = adjudicationNumber,
+        adjudicationNumber = chargeNumber.toLong(),
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = it,
       )
@@ -196,12 +196,12 @@ class OutcomeService(
   }
 
   private fun amendOutcome(
-    adjudicationNumber: Long,
+    chargeNumber: String,
     details: String? = null,
     reason: NotProceedReason? = null,
     quashedReason: QuashedReason? = null,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
 
     reportedAdjudication.latestOutcome()!!.let {
       when (it.code) {
@@ -221,7 +221,7 @@ class OutcomeService(
     }
 
     nomisOutcomeService.amendHearingResultIfApplicable(
-      adjudicationNumber = adjudicationNumber,
+      adjudicationNumber = chargeNumber.toLong(),
       hearing = reportedAdjudication.getLatestHearing(),
       outcome = reportedAdjudication.latestOutcome()!!,
     )
@@ -229,11 +229,11 @@ class OutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun deleteOutcome(adjudicationNumber: Long, id: Long? = null): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+  fun deleteOutcome(chargeNumber: String, id: Long? = null): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
 
     val outcomeToDelete = when (id) {
-      null -> reportedAdjudication.latestOutcome()?.canDelete(reportedAdjudication.hearings.isNotEmpty()) ?: throw EntityNotFoundException("Outcome not found for $adjudicationNumber")
+      null -> reportedAdjudication.latestOutcome()?.canDelete(reportedAdjudication.hearings.isNotEmpty()) ?: throw EntityNotFoundException("Outcome not found for $chargeNumber")
       else -> reportedAdjudication.getOutcome(id)
     }.also {
       it.deleted = true
@@ -251,7 +251,7 @@ class OutcomeService(
     }
 
     nomisOutcomeService.deleteHearingResultIfApplicable(
-      adjudicationNumber = adjudicationNumber,
+      adjudicationNumber = chargeNumber.toLong(),
       hearing = reportedAdjudication.getLatestHearing(),
       outcome = outcomeToDelete,
     )
@@ -259,12 +259,12 @@ class OutcomeService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun getOutcomes(adjudicationNumber: Long): List<CombinedOutcomeDto> {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+  fun getOutcomes(chargeNumber: String): List<CombinedOutcomeDto> {
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
     return reportedAdjudication.getOutcomes().createCombinedOutcomes(reportedAdjudication.getPunishments())
   }
 
-  fun getLatestOutcome(adjudicationNumber: Long): Outcome? = findByAdjudicationNumber(adjudicationNumber).latestOutcome()
+  fun getLatestOutcome(chargeNumber: String): Outcome? = findByChargeNumber(chargeNumber).latestOutcome()
 
   companion object {
     fun ReportedAdjudication.latestOutcome(): Outcome? = this.getOutcomes().maxByOrNull { it.createDateTime!! }

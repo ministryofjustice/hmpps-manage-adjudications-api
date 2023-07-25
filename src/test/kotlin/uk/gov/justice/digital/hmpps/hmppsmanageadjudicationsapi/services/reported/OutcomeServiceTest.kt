@@ -48,57 +48,57 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
   @Test
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     Assertions.assertThatThrownBy {
-      outcomeService.createReferral(1, OutcomeCode.REFER_POLICE, "")
+      outcomeService.createReferral("1", OutcomeCode.REFER_POLICE, "")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      outcomeService.createProsecution(1)
+      outcomeService.createProsecution("1")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      outcomeService.createNotProceed(1, NotProceedReason.NOT_FAIR, "")
+      outcomeService.createNotProceed("1", NotProceedReason.NOT_FAIR, "")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      outcomeService.getOutcomes(1)
+      outcomeService.getOutcomes("1")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      outcomeService.deleteOutcome(1, 1)
+      outcomeService.deleteOutcome("1", 1)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      outcomeService.createChargeProved(1, 0.0, false)
+      outcomeService.createChargeProved("1", 0.0, false)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      outcomeService.createChargeProvedV2(1, false)
+      outcomeService.createChargeProvedV2("1", false)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      outcomeService.getLatestOutcome(1)
+      outcomeService.getLatestOutcome("1")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      outcomeService.createQuashed(1, QuashedReason.APPEAL_UPHELD, "details")
+      outcomeService.createQuashed("1", QuashedReason.APPEAL_UPHELD, "details")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      outcomeService.amendOutcomeViaApi(1, "details")
+      outcomeService.amendOutcomeViaApi("1", "details")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      outcomeService.amendOutcomeViaService(1, OutcomeCode.CHARGE_PROVED)
+      outcomeService.amendOutcomeViaService("1", OutcomeCode.CHARGE_PROVED)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }
@@ -111,7 +111,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @BeforeEach
     fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.status = ReportedAdjudicationStatus.UNSCHEDULED
           it.createdByUserId = "test"
@@ -124,7 +124,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     @CsvSource("REJECTED", "AWAITING_REVIEW", "NOT_PROCEED", "REFER_INAD", "REFER_POLICE", "UNSCHEDULED", "CHARGE_PROVED", "QUASHED")
     fun `create outcome throws exception if invalid state `(status: ReportedAdjudicationStatus) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.status = status
         },
@@ -137,7 +137,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
 
       Assertions.assertThatThrownBy {
-        outcomeService.createReferral(adjudicationNumber = 1, code = code, details = "details")
+        outcomeService.createReferral(chargeNumber = "1", code = code, details = "details")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Invalid status transition")
     }
@@ -147,7 +147,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `throws exception if referral validation fails`(code: OutcomeCode) {
       Assertions.assertThatThrownBy {
         outcomeService.createReferral(
-          adjudicationNumber = 1L,
+          chargeNumber = "1",
           code = code,
           details = "details",
         )
@@ -168,7 +168,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     private fun assertTransition(codeFrom: OutcomeCode, codeTo: OutcomeCode) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.addOutcome(
             Outcome(code = codeFrom).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) },
@@ -178,7 +178,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        outcomeService.createReferral(adjudicationNumber = 1, code = codeTo, details = "details")
+        outcomeService.createReferral(chargeNumber = "1", code = codeTo, details = "details")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Invalid referral transition")
     }
@@ -190,7 +190,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.createNotProceed(
-        1235L,
+        "1235",
         NotProceedReason.NOT_FAIR,
         "details",
       )
@@ -212,7 +212,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.createDismissed(
-        1235L,
+        "1235",
         "details",
       )
 
@@ -233,9 +233,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       whenever(nomisOutcomeService.createHearingResultIfApplicable(any(), anyOrNull(), any())).thenReturn(1L)
 
-      val response = outcomeService.createProsecution(
-        1235L,
-      )
+      val response = outcomeService.createProsecution("1235")
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       verify(nomisOutcomeService, atLeastOnce()).createHearingResultIfApplicable(any(), any(), any())
@@ -250,7 +248,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `create quashed`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.createdByUserId = "test"
@@ -264,7 +262,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.createQuashed(
-        1235L,
+        "1235",
         QuashedReason.APPEAL_UPHELD,
         "details",
       )
@@ -283,14 +281,14 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("REFER_POLICE", "REFER_INAD", "DISMISSED", "SCHEDULE_HEARING", "PROSECUTION", "NOT_PROCEED", "QUASHED")
     @ParameterizedTest
     fun `create quashed throws exception if previous outcome is not a charge proved `(code: OutcomeCode) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.addOutcome(Outcome(code = code))
         },
       )
 
       Assertions.assertThatThrownBy {
-        outcomeService.createQuashed(1, QuashedReason.APPEAL_UPHELD, "details")
+        outcomeService.createQuashed("1", QuashedReason.APPEAL_UPHELD, "details")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("unable to quash this outcome")
     }
@@ -298,7 +296,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `create quashed throws exception if no previous hearing outcome `() {
       Assertions.assertThatThrownBy {
-        outcomeService.createQuashed(1, QuashedReason.APPEAL_UPHELD, "details")
+        outcomeService.createQuashed("1", QuashedReason.APPEAL_UPHELD, "details")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("unable to quash this outcome")
     }
@@ -311,7 +309,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.createReferral(
-        1235L,
+        "1235",
         code,
         "details",
       )
@@ -334,7 +332,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.createChargeProved(
-        1235L,
+        "1235",
         100.0,
         true,
       )
@@ -356,7 +354,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.createChargeProvedV2(
-        1235L,
+        "1235",
         true,
       )
 
@@ -383,8 +381,8 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @BeforeEach
     fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.findByReportNumber(3)).thenReturn(reportedAdjudicationWithOutcomeAndNoHearings)
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByChargeNumber("3")).thenReturn(reportedAdjudicationWithOutcomeAndNoHearings)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         reportedAdjudication.also {
           it.createDateTime = LocalDateTime.now()
@@ -411,12 +409,12 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         )
       }
 
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.deleteOutcome(
-        2,
+        "2",
         1,
       )
 
@@ -439,7 +437,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.deleteOutcome(
-        3,
+        "3",
         1,
       )
 
@@ -454,7 +452,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `delete outcome throws no outcome found for adjudication `() {
       Assertions.assertThatThrownBy {
-        outcomeService.deleteOutcome(1, 1)
+        outcomeService.deleteOutcome("1", 1)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Outcome not found for 1")
     }
@@ -462,7 +460,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `delete latest outcome throws not found if no outcomes present `() {
       Assertions.assertThatThrownBy {
-        outcomeService.deleteOutcome(1)
+        outcomeService.deleteOutcome("1")
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Outcome not found for 1")
     }
@@ -470,7 +468,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     @CsvSource("REFER_POLICE", "REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "NOT_PROCEED", "CHARGE_PROVED")
     fun `throws invalid state if delete latest outcome is invalid type `(code: OutcomeCode) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         reportedAdjudication
           .also {
             it.addOutcome(Outcome(code = code).also { o -> o.createDateTime = LocalDateTime.now() })
@@ -478,7 +476,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        outcomeService.deleteOutcome(1)
+        outcomeService.deleteOutcome("1")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Unable to delete via api - DEL/outcome")
     }
@@ -486,7 +484,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("QUASHED", "NOT_PROCEED")
     @ParameterizedTest
     fun `delete latest outcome succeeds without provided id `(code: OutcomeCode) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           if (code == OutcomeCode.NOT_PROCEED) it.hearings.clear()
           it.addOutcome(
@@ -502,7 +500,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.deleteOutcome(
-        4,
+        "4",
       )
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
@@ -523,7 +521,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("CHARGE_PROVED", "NOT_PROCEED", "DISMISSED")
     @ParameterizedTest
     fun `delete a completed hearing outcome `(code: OutcomeCode) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         reportedAdjudication
           .also {
             it.addOutcome(Outcome(id = 1, code = code).also { o -> o.createDateTime = LocalDateTime.now() })
@@ -542,7 +540,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val response = outcomeService.deleteOutcome(
-        1,
+        "1",
         1,
       )
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -609,22 +607,22 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @BeforeEach
     fun init() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.findByReportNumber(2)).thenReturn(reportedAdjudication2)
-      whenever(reportedAdjudicationRepository.findByReportNumber(3)).thenReturn(reportedAdjudication3)
-      whenever(reportedAdjudicationRepository.findByReportNumber(4)).thenReturn(reportedAdjudicationNoOutcomes)
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByChargeNumber("2")).thenReturn(reportedAdjudication2)
+      whenever(reportedAdjudicationRepository.findByChargeNumber("3")).thenReturn(reportedAdjudication3)
+      whenever(reportedAdjudicationRepository.findByChargeNumber("4")).thenReturn(reportedAdjudicationNoOutcomes)
     }
 
     @Test
     fun `no outcomes`() {
-      val result = outcomeService.getOutcomes(4)
+      val result = outcomeService.getOutcomes("4")
 
       assertThat(result.isEmpty()).isEqualTo(true)
     }
 
     @Test
     fun `get outcomes without any referral outcomes`() {
-      val result = outcomeService.getOutcomes(1)
+      val result = outcomeService.getOutcomes("1")
 
       assertThat(result.size).isEqualTo(1)
       assertThat(result.first().outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
@@ -633,7 +631,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get outcomes with referral outcomes`() {
-      val result = outcomeService.getOutcomes(2)
+      val result = outcomeService.getOutcomes("2")
 
       assertThat(result.size).isEqualTo(1)
       assertThat(result.first().outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
@@ -643,7 +641,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get outcomes with multiple referral outcomes`() {
-      val result = outcomeService.getOutcomes(3)
+      val result = outcomeService.getOutcomes("3")
 
       assertThat(result.size).isEqualTo(2)
       assertThat(result.first().outcome.code).isEqualTo(OutcomeCode.REFER_INAD)
@@ -671,7 +669,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `amend refer police succeeds `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.hearings.clear()
           it.status = OutcomeCode.REFER_POLICE.status
@@ -680,7 +678,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
-      val response = outcomeService.amendOutcomeViaApi(1235L, "updated")
+      val response = outcomeService.amendOutcomeViaApi("1235", "updated")
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
@@ -695,7 +693,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `amend quashed succeeds `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.status = OutcomeCode.QUASHED.status
           it.addOutcome(Outcome(code = OutcomeCode.QUASHED, details = "previous", quashedReason = QuashedReason.APPEAL_UPHELD))
@@ -704,7 +702,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = outcomeService.amendOutcomeViaApi(
-        adjudicationNumber = 1235L,
+        chargeNumber = "1235",
         details = "updated",
         quashedReason = QuashedReason.FLAWED_CASE,
       )
@@ -722,7 +720,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `amend not proceed succeeds `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.hearings.clear()
           it.status = OutcomeCode.NOT_PROCEED.status
@@ -731,7 +729,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
-      val response = outcomeService.amendOutcomeViaApi(1235L, "updated", NotProceedReason.WITNESS_NOT_ATTEND)
+      val response = outcomeService.amendOutcomeViaApi("1235", "updated", NotProceedReason.WITNESS_NOT_ATTEND)
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
@@ -747,24 +745,24 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
     @ParameterizedTest
     fun `throws validation exception if invalid outcome type for amend `(code: OutcomeCode) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.status = code.status
           it.addOutcome(Outcome(code = code, details = "previous", reason = NotProceedReason.NOT_FAIR))
         },
       )
       Assertions.assertThatThrownBy {
-        outcomeService.amendOutcomeViaApi(1, "details")
+        outcomeService.amendOutcomeViaApi("1", "details")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("unable to amend this outcome")
     }
 
     @Test
     fun `throws validation exception if no latest outcome to amend `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
 
       Assertions.assertThatThrownBy {
-        outcomeService.amendOutcomeViaApi(1, "details")
+        outcomeService.amendOutcomeViaApi("1", "details")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("unable to amend this outcome")
     }
@@ -774,7 +772,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
   inner class AmendOutcome {
     private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
       it.hearings.clear()
-      it.hearings.add(Hearing(dateTimeOfHearing = LocalDateTime.now(), oicHearingId = 1L, reportNumber = 1L, agencyId = "", oicHearingType = OicHearingType.GOV, locationId = 1L))
+      it.hearings.add(Hearing(dateTimeOfHearing = LocalDateTime.now(), oicHearingId = 1L, chargeNumber = "1", agencyId = "", oicHearingType = OicHearingType.GOV, locationId = 1L))
       it.createdByUserId = ""
       it.createDateTime = LocalDateTime.now()
     }
@@ -791,9 +789,9 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `throws entity not found exception if no latest outcome `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
       Assertions.assertThatThrownBy {
-        outcomeService.amendOutcomeViaService(1, OutcomeCode.CHARGE_PROVED)
+        outcomeService.amendOutcomeViaService("1", OutcomeCode.CHARGE_PROVED)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("no latest outcome to amend")
     }
@@ -801,7 +799,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("REFER_POLICE", "REFER_INAD", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
     @ParameterizedTest
     fun `throws validation exception if the latest outcome is not of the correct type `(code: OutcomeCode) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.addOutcome(
             Outcome(code = OutcomeCode.values().first { oc -> oc != code }),
@@ -809,7 +807,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       Assertions.assertThatThrownBy {
-        outcomeService.amendOutcomeViaService(1, code)
+        outcomeService.amendOutcomeViaService("1", code)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("latest outcome is not of same type")
     }
@@ -817,7 +815,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("QUASHED", "SCHEDULE_HEARING", "REFER_POLICE", "NOT_PROCEED, CHARGE_PROVED")
     @ParameterizedTest
     fun `throws validation exception if outcome code not supported by this function `(code: OutcomeCode) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.addOutcome(Outcome(code = code))
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
@@ -826,7 +824,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        outcomeService.amendOutcomeViaService(1, OutcomeCode.CHARGE_PROVED)
+        outcomeService.amendOutcomeViaService("1", OutcomeCode.CHARGE_PROVED)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("unable to amend via this function")
     }
@@ -834,7 +832,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("REFER_INAD", "REFER_POLICE")
     @ParameterizedTest
     fun `amends referral successfully `(code: HearingOutcomeCode) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.hearings.first().hearingOutcome = HearingOutcome(code = code, adjudicator = "adjudicator")
           it.addOutcome(Outcome(code = code.outcomeCode!!, details = "details"))
@@ -842,7 +840,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val response = outcomeService.amendOutcomeViaService(
-        adjudicationNumber = 1L,
+        chargeNumber = "1",
         outcomeCodeToAmend = code.outcomeCode!!,
         details = "updated",
       )
@@ -861,7 +859,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `amends dismissed successfully `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "adjudicator")
           it.addOutcome(Outcome(code = OutcomeCode.DISMISSED, details = "details"))
@@ -869,7 +867,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val response = outcomeService.amendOutcomeViaService(
-        adjudicationNumber = 1L,
+        chargeNumber = "1",
         outcomeCodeToAmend = OutcomeCode.DISMISSED,
         details = "updated",
       )
@@ -888,7 +886,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `amends not proceed successfully `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "adjudicator")
           it.addOutcome(Outcome(code = OutcomeCode.NOT_PROCEED, details = "details", reason = NotProceedReason.NOT_FAIR))
@@ -896,7 +894,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val response = outcomeService.amendOutcomeViaService(
-        adjudicationNumber = 1L,
+        chargeNumber = "1",
         outcomeCodeToAmend = OutcomeCode.NOT_PROCEED,
         details = "updated",
         notProceedReason = NotProceedReason.WITNESS_NOT_ATTEND,

@@ -54,7 +54,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome entered in nomis flag is set `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
@@ -62,14 +62,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1L)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
       assertThat(result.outcomeEnteredInNomis).isTrue
     }
 
     @Test
     fun `filter out caution and damages owed from dto if present in punishments `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
@@ -91,16 +91,16 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           )
         },
       )
-      assertThat(reportedAdjudicationService.getReportedAdjudicationDetails(1L).punishments).isEmpty()
+      assertThat(reportedAdjudicationService.getReportedAdjudicationDetails("1").punishments).isEmpty()
     }
 
     @Test
     fun `adjudication is not part of active case load throws exception `() {
       whenever(authenticationFacade.activeCaseload).thenReturn("OTHER")
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
 
       assertThatThrownBy {
-        reportedAdjudicationService.getReportedAdjudicationDetails(1)
+        reportedAdjudicationService.getReportedAdjudicationDetails("1")
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("ReportedAdjudication not found for 1")
     }
@@ -108,14 +108,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `override agency is not found throws exception `() {
       whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.overrideAgencyId = "XXX"
         },
       )
 
       assertThatThrownBy {
-        reportedAdjudicationService.getReportedAdjudicationDetails(1)
+        reportedAdjudicationService.getReportedAdjudicationDetails("1")
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("ReportedAdjudication not found for 1")
     }
@@ -123,12 +123,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `override agency is not found throws exception when no case load or override set `() {
       whenever(authenticationFacade.activeCaseload).thenReturn(null)
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication(),
       )
 
       assertThatThrownBy {
-        reportedAdjudicationService.getReportedAdjudicationDetails(1)
+        reportedAdjudicationService.getReportedAdjudicationDetails("1")
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("ReportedAdjudication not found for 1")
     }
@@ -136,7 +136,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `override caseload allows access`() {
       whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.overrideAgencyId = "TJW"
           it.createDateTime = LocalDateTime.now()
@@ -144,7 +144,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("1")
       assertThat(result).isNotNull
     }
 
@@ -183,7 +183,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           locationId = 1,
           agencyId = "MDI",
           oicHearingId = 1,
-          reportNumber = 1235L,
+          chargeNumber = "1235",
         )
 
         val thirdHearing = Hearing(
@@ -192,7 +192,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           locationId = 1,
           agencyId = "MDI",
           oicHearingId = 1,
-          reportNumber = 1235L,
+          chargeNumber = "1235",
         )
 
         it.hearings.add(newFirstHearing)
@@ -201,7 +201,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
 
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.isYouthOffender = isYouthOffender
           it.offenceDetails = offenceDetails
@@ -212,7 +212,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
       assertThat(reportedAdjudicationDto)
         .extracting(
@@ -287,14 +287,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get reported adjudication details with flag to indicate consecutive report is available to view `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
           it.addPunishment(
             Punishment(
               type = PunishmentType.ADDITIONAL_DAYS,
-              consecutiveReportNumber = 999,
+              consecutiveChargeNumber = "999",
               schedule = mutableListOf(
                 PunishmentSchedule(days = 10),
               ),
@@ -311,7 +311,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.addPunishment(
             Punishment(
               type = PunishmentType.ADDITIONAL_DAYS,
-              consecutiveReportNumber = 9999,
+              consecutiveChargeNumber = "9999",
               schedule = mutableListOf(
                 PunishmentSchedule(days = 10),
               ),
@@ -320,11 +320,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByReportNumberIn(any())).thenReturn(listOf(entityBuilder.reportedAdjudication(reportNumber = 999)))
+      whenever(reportedAdjudicationRepository.findByChargeNumberIn(any())).thenReturn(listOf(entityBuilder.reportedAdjudication(chargeNumber = "999")))
 
-      val dto = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val dto = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumberIn(listOf(999, 9999))
+      verify(reportedAdjudicationRepository, atLeastOnce()).findByChargeNumberIn(listOf("999", "9999"))
       assertThat(dto.punishments.first { it.consecutiveReportNumber == 999L }.consecutiveReportAvailable).isTrue
       assertThat(dto.punishments.first { it.consecutiveReportNumber == 9999L }.consecutiveReportAvailable).isFalse
       assertThat(dto.punishments.first { it.consecutiveReportNumber == null }.consecutiveReportAvailable).isNull()
@@ -336,7 +336,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome entered in nomis flag is set `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
@@ -344,14 +344,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetailsV2(1L)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
 
       assertThat(result.outcomeEnteredInNomis).isTrue
     }
 
     @Test
     fun `caution and damages owed should be in punishments`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
@@ -373,16 +373,16 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           )
         },
       )
-      assertThat(reportedAdjudicationService.getReportedAdjudicationDetailsV2(1L).punishments.size).isEqualTo(2)
+      assertThat(reportedAdjudicationService.getReportedAdjudicationDetailsV2("1").punishments.size).isEqualTo(2)
     }
 
     @Test
     fun `adjudication is not part of active case load throws exception `() {
       whenever(authenticationFacade.activeCaseload).thenReturn("OTHER")
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
 
       assertThatThrownBy {
-        reportedAdjudicationService.getReportedAdjudicationDetailsV2(1)
+        reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("ReportedAdjudication not found for 1")
     }
@@ -390,14 +390,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `override agency is not found throws exception `() {
       whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.overrideAgencyId = "XXX"
         },
       )
 
       assertThatThrownBy {
-        reportedAdjudicationService.getReportedAdjudicationDetailsV2(1)
+        reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("ReportedAdjudication not found for 1")
     }
@@ -405,12 +405,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `override agency is not found throws exception when no case load or override set `() {
       whenever(authenticationFacade.activeCaseload).thenReturn(null)
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication(),
       )
 
       assertThatThrownBy {
-        reportedAdjudicationService.getReportedAdjudicationDetailsV2(1)
+        reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("ReportedAdjudication not found for 1")
     }
@@ -418,7 +418,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `override caseload allows access`() {
       whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.overrideAgencyId = "TJW"
           it.createDateTime = LocalDateTime.now()
@@ -426,7 +426,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetailsV2(1)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
       assertThat(result).isNotNull
     }
 
@@ -465,7 +465,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           locationId = 1,
           agencyId = "MDI",
           oicHearingId = 1,
-          reportNumber = 1235L,
+          chargeNumber = "1235",
         )
 
         val thirdHearing = Hearing(
@@ -474,7 +474,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           locationId = 1,
           agencyId = "MDI",
           oicHearingId = 1,
-          reportNumber = 1235L,
+          chargeNumber = "1235",
         )
 
         it.hearings.add(newFirstHearing)
@@ -483,7 +483,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
 
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.isYouthOffender = isYouthOffender
           it.offenceDetails = offenceDetails
@@ -494,7 +494,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetailsV2(1)
+      val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
 
       assertThat(reportedAdjudicationDto)
         .extracting(
@@ -569,14 +569,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get reported adjudication details with flag to indicate consecutive report is available to view `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
           it.addPunishment(
             Punishment(
               type = PunishmentType.ADDITIONAL_DAYS,
-              consecutiveReportNumber = 999,
+              consecutiveChargeNumber = "999",
               schedule = mutableListOf(
                 PunishmentSchedule(days = 10),
               ),
@@ -593,7 +593,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.addPunishment(
             Punishment(
               type = PunishmentType.ADDITIONAL_DAYS,
-              consecutiveReportNumber = 9999,
+              consecutiveChargeNumber = "9999",
               schedule = mutableListOf(
                 PunishmentSchedule(days = 10),
               ),
@@ -602,11 +602,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByReportNumberIn(any())).thenReturn(listOf(entityBuilder.reportedAdjudication(reportNumber = 999)))
+      whenever(reportedAdjudicationRepository.findByChargeNumberIn(any())).thenReturn(listOf(entityBuilder.reportedAdjudication(chargeNumber = "999")))
 
-      val dto = reportedAdjudicationService.getReportedAdjudicationDetailsV2(1)
+      val dto = reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findByReportNumberIn(listOf(999, 9999))
+      verify(reportedAdjudicationRepository, atLeastOnce()).findByChargeNumberIn(listOf("999", "9999"))
       assertThat(dto.punishments.first { it.consecutiveReportNumber == 999L }.consecutiveReportAvailable).isTrue
       assertThat(dto.punishments.first { it.consecutiveReportNumber == 9999L }.consecutiveReportAvailable).isFalse
       assertThat(dto.punishments.first { it.consecutiveReportNumber == null }.consecutiveReportAvailable).isNull()
@@ -619,7 +619,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `use of accepted throws validation error `() {
       Assertions.assertThrows(ValidationException::class.java) {
-        reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.ACCEPTED)
+        reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.ACCEPTED)
       }
     }
 
@@ -628,14 +628,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `setting status for a reported adjudication throws an illegal state exception for invalid transitions`(
       from: ReportedAdjudicationStatus,
     ) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = from
         },
       )
       ReportedAdjudicationStatus.values().filter { it != ReportedAdjudicationStatus.ACCEPTED }.filter { !from.nextStates().contains(it) }.forEach {
         Assertions.assertThrows(IllegalStateException::class.java) {
-          reportedAdjudicationService.setStatus(1, it)
+          reportedAdjudicationService.setStatus("1", it)
         }
       }
     }
@@ -662,7 +662,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       to: ReportedAdjudicationStatus,
       updatesNomis: Boolean,
     ) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = from
           it.createdByUserId = "A_SMITH"
@@ -676,7 +676,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.createDateTime = REPORTED_DATE_TIME
         },
       )
-      reportedAdjudicationService.setStatus(1, to)
+      reportedAdjudicationService.setStatus("1", to)
       verify(reportedAdjudicationRepository).save(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = to
@@ -693,7 +693,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       verify(telemetryClient).trackEvent(
         ReportedAdjudicationService.TELEMETRY_EVENT,
         mapOf(
-          "reportNumber" to entityBuilder.reportedAdjudication().reportNumber.toString(),
+          "reportNumber" to entityBuilder.reportedAdjudication().chargeNumber.toString(),
           "agencyId" to entityBuilder.reportedAdjudication().originatingAgencyId,
           "status" to to.name,
           "reason" to null,
@@ -705,7 +705,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `returns correct status information`() {
       val existingReportedAdjudication = existingReportedAdjudication(true, true, false)
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         existingReportedAdjudication,
       )
 
@@ -723,7 +723,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val actualReturnedReportedAdjudication = reportedAdjudicationService.setStatus(
-        1,
+        "1",
         ReportedAdjudicationStatus.REJECTED,
         "Status Reason",
         "Status Reason String",
@@ -738,7 +738,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       verify(telemetryClient).trackEvent(
         ReportedAdjudicationService.TELEMETRY_EVENT,
         mapOf(
-          "reportNumber" to existingReportedAdjudication.reportNumber.toString(),
+          "reportNumber" to existingReportedAdjudication.chargeNumber,
           "agencyId" to existingReportedAdjudication.originatingAgencyId,
           "status" to ReportedAdjudicationStatus.REJECTED.name,
           "reason" to "Status Reason",
@@ -756,7 +756,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       committedOnOwn: Boolean,
     ) {
       val existingReportedAdjudication = existingReportedAdjudication(committedOnOwn, true, false)
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         existingReportedAdjudication,
       )
 
@@ -771,7 +771,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.UNSCHEDULED)
+      reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.UNSCHEDULED)
 
       var expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN, OFFENCE_CODE_3_NOMIS_CODE_ON_OWN)
       var expectedConnectedOffenderIds: List<String> = emptyList()
@@ -809,7 +809,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       isYouthOffender: Boolean,
     ) {
       val existingReportedAdjudication = existingReportedAdjudication(false, false, isYouthOffender)
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(existingReportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existingReportedAdjudication)
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
         it.status = ReportedAdjudicationStatus.UNSCHEDULED
@@ -820,7 +820,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         returnedReportedAdjudication,
       )
 
-      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.UNSCHEDULED)
+      reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.UNSCHEDULED)
 
       var expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ASSISTED)
       if (isYouthOffender) {
@@ -861,15 +861,15 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         it.offenceDetails.first().victimOtherPersonsName = null
       }
 
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
 
-      reportedAdjudicationService.setStatus(1, ReportedAdjudicationStatus.UNSCHEDULED)
+      reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.UNSCHEDULED)
 
       verify(legacySyncService, atLeastOnce()).publishAdjudication(
         adjudicationDetailsToPublish = AdjudicationDetailsToPublish(
           offenderNo = reportedAdjudication.prisonerNumber,
-          adjudicationNumber = reportedAdjudication.reportNumber,
+          adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
           reporterName = "",
           reportedDateTime = now,
           agencyId = reportedAdjudication.originatingAgencyId,
@@ -933,13 +933,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   inner class Issued {
 
     private val now = LocalDateTime.now()
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(1)
+    private val reportedAdjudication = entityBuilder.reportedAdjudication("1")
       .also {
         it.createdByUserId = "A_SMITH"
         it.createDateTime = LocalDateTime.now()
       }
 
-    private val reportedAdjudicationDisIssued = entityBuilder.reportedAdjudication(1)
+    private val reportedAdjudicationDisIssued = entityBuilder.reportedAdjudication("1")
       .also {
         it.createdByUserId = "A_SMITH"
         it.createDateTime = now.minusHours(2)
@@ -952,10 +952,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `issue a reported adjudication DIS form with valid status`(status: ReportedAdjudicationStatus) {
       reportedAdjudication.status = status
 
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
 
-      val response = reportedAdjudicationService.setIssued(1, now)
+      val response = reportedAdjudicationService.setIssued("1", now)
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -971,10 +971,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `re-issue a reported adjudication DIS form`(status: ReportedAdjudicationStatus) {
       reportedAdjudicationDisIssued.status = status
 
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationDisIssued)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationDisIssued)
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudicationDisIssued)
 
-      val response = reportedAdjudicationService.setIssued(1, now)
+      val response = reportedAdjudicationService.setIssued("1", now)
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -991,10 +991,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `throws exception when issuing DIS is wrong status`(status: ReportedAdjudicationStatus) {
       reportedAdjudication.status = status
 
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
 
       assertThatThrownBy {
-        reportedAdjudicationService.setIssued(1, now)
+        reportedAdjudicationService.setIssued("1", now)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("$status not valid status for DIS issue")
     }
@@ -1046,7 +1046,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       it.hearings.add(
-        Hearing(locationId = 1, agencyId = "", reportNumber = 1L, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = 1L),
+        Hearing(locationId = 1, agencyId = "", chargeNumber = "1", oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingId = 1L),
       )
     }
 
@@ -1088,7 +1088,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         Hearing(
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          chargeNumber = "1",
           oicHearingType = OicHearingType.INAD_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(2),
           oicHearingId = 1L,
@@ -1185,7 +1185,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         Hearing(
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          chargeNumber = "1",
           oicHearingType = OicHearingType.GOV_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(1),
           oicHearingId = 1L,
@@ -1196,7 +1196,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         Hearing(
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          chargeNumber = "1",
           oicHearingType = OicHearingType.INAD_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(2),
           oicHearingId = 1L,
@@ -1214,7 +1214,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         Hearing(
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          chargeNumber = "1",
           oicHearingType = OicHearingType.GOV_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(1),
           oicHearingId = 1L,
@@ -1251,7 +1251,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         Hearing(
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          chargeNumber = "1",
           oicHearingType = OicHearingType.GOV_ADULT,
           dateTimeOfHearing = LocalDateTime.now().plusDays(1),
           oicHearingId = 1L,
@@ -1285,7 +1285,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           dateTimeOfHearing = LocalDateTime.now(),
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          chargeNumber = "1",
           oicHearingType = OicHearingType.GOV,
           hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
         ),
@@ -1342,7 +1342,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           dateTimeOfHearing = LocalDateTime.now().plusDays(5),
           locationId = 1,
           agencyId = "",
-          reportNumber = 1L,
+          chargeNumber = "1",
           oicHearingType = OicHearingType.GOV,
           hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
         ),
@@ -1368,7 +1368,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `no data`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(0)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber("0")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
@@ -1376,21 +1376,21 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(0)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("0")
 
       assertThat(result.outcomes.isEmpty()).isTrue
     }
 
     @Test
     fun `single hearing`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(10)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber("10")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(10)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("10")
 
       assertThat(result.outcomes.size).isEqualTo(1)
       assertThat(result.outcomes.first().hearing).isNotNull
@@ -1400,9 +1400,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - Refer police no hearing`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationReferPolice)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationReferPolice)
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
       assertThat(result.outcomes.size).isEqualTo(1)
       assertThat(result.outcomes.first().hearing).isNull()
@@ -1414,8 +1414,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - Not proceed no hearing`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationNotProceed)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(2)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationNotProceed)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("2")
 
       assertThat(result.outcomes.size).isEqualTo(1)
       assertThat(result.outcomes.first().hearing).isNull()
@@ -1427,8 +1427,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - Refer police, No prosecution, hearing scheduled`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationNoProsecution)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(4).validateFirstItem()
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationNoProsecution)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("4").validateFirstItem()
 
       assertThat(result.outcomes.size).isEqualTo(2)
 
@@ -1439,16 +1439,16 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationReferInad)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(5).validateFirstItem().validateSecondItem()
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationReferInad)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("5").validateFirstItem().validateSecondItem()
 
       assertThat(result.outcomes.size).isEqualTo(2)
     }
 
     @Test
     fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD, hearing scheduled`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationInadHearing)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(6).validateFirstItem().validateSecondItem()
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationInadHearing)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("6").validateFirstItem().validateSecondItem()
 
       assertThat(result.outcomes.size).isEqualTo(3)
 
@@ -1459,8 +1459,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD, hearing scheduled, refer to police`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationInadReferPolice)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(7).validateFirstItem().validateSecondItem()
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationInadReferPolice)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("7").validateFirstItem().validateSecondItem()
 
       assertThat(result.outcomes.size).isEqualTo(3)
 
@@ -1474,8 +1474,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD, hearing scheduled, refer to police, prosecution YES`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationProsecution)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(8).validateFirstItem().validateSecondItem()
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationProsecution)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("8").validateFirstItem().validateSecondItem()
 
       assertThat(result.outcomes.size).isEqualTo(3)
 
@@ -1490,8 +1490,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - Schedule hearing, refer to inad, scheduled hearing, refer to police, prosecution yes`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationProsecutionAllHearings)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(9)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationProsecutionAllHearings)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("9")
 
       assertThat(result.outcomes.size).isEqualTo(2)
       assertThat(result.outcomes.first().hearing).isNotNull
@@ -1513,8 +1513,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - Refer police no hearing, No prosecution, Not proceed`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationReferPoliceNotProceed)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(11)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationReferPoliceNotProceed)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("11")
       assertThat(result.outcomes.size).isEqualTo(1)
 
       assertThat(result.outcomes.first().hearing).isNull()
@@ -1526,9 +1526,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - hearing refers to INAD who chooses NOT_PROCEED `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationReferInadNotProceed)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationReferInadNotProceed)
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(12)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("12")
       assertThat(result.outcomes.size).isEqualTo(1)
 
       assertThat(result.outcomes.first().hearing).isNotNull
@@ -1542,8 +1542,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - refer to police, no prosecution, hearing scheduled and adjourned`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationAdjourned)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(13).validateFirstItem()
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationAdjourned)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("13").validateFirstItem()
       assertThat(result.outcomes.size).isEqualTo(2)
 
       assertThat(result.outcomes.last().hearing).isNotNull
@@ -1554,8 +1554,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - refer to police, no prosecution, hearing scheduled, refer to inad, hearing scheduled and adjourned`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationReferPoliceReferInadAdjourned)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(14).validateFirstItem().validateSecondItem()
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationReferPoliceReferInadAdjourned)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("14").validateFirstItem().validateSecondItem()
       assertThat(result.outcomes.size).isEqualTo(3)
 
       assertThat(result.outcomes.last().hearing).isNotNull
@@ -1566,8 +1566,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - hearing completed - dismissed `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationCompletedHearingDismissed)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(15)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationCompletedHearingDismissed)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("15")
       assertThat(result.outcomes.size).isEqualTo(1)
 
       assertThat(result.outcomes.first().hearing).isNotNull
@@ -1581,8 +1581,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - hearing completed - not proceed `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationCompletedHearingNotProceed)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(16)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationCompletedHearingNotProceed)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("16")
       assertThat(result.outcomes.size).isEqualTo(1)
 
       assertThat(result.outcomes.first().hearing).isNotNull
@@ -1596,8 +1596,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - hearing completed - charge proved `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationCompletedHearingChargeProved)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(17)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationCompletedHearingChargeProved)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("17")
       assertThat(result.outcomes.size).isEqualTo(1)
 
       assertThat(result.outcomes.first().hearing).isNotNull
@@ -1611,8 +1611,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - refer to police, no prosecution, hearing scheduled and adjourned, rescheduled and charge proved `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationCompletedHearingAfterAdjourn)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(18).validateFirstItem().validateSecondItem()
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationCompletedHearingAfterAdjourn)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("18").validateFirstItem().validateSecondItem()
       assertThat(result.outcomes.size).isEqualTo(4)
 
       assertThat(result.outcomes.last().hearing).isNotNull
@@ -1626,8 +1626,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - quashed `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(reportedAdjudicationCompletedHearingNotProceedQuashed)
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(19)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationCompletedHearingNotProceedQuashed)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("19")
       assertThat(result.outcomes.size).isEqualTo(2)
 
       assertThat(result.outcomes.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.NOT_PROCEED)
@@ -1636,7 +1636,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `outcome history DTO - multiple same outcomes `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
@@ -1650,7 +1650,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               oicHearingType = OicHearingType.GOV,
               dateTimeOfHearing = LocalDateTime.now(),
               hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
-              reportNumber = 1L,
+              chargeNumber = "1",
             ),
           )
 
@@ -1683,13 +1683,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               oicHearingType = OicHearingType.GOV,
               dateTimeOfHearing = LocalDateTime.now().plusDays(1),
               hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
-              reportNumber = 1L,
+              chargeNumber = "1",
             ),
           )
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(20)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("20")
       assertThat(result.outcomes.size).isEqualTo(2)
 
       assertThat(result.outcomes.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
@@ -1700,7 +1700,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `original nomis hearing outcome status - 1 hearing `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
@@ -1711,7 +1711,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
       assertThat(result.outcomes.size).isEqualTo(1)
 
@@ -1722,7 +1722,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `original nomis hearing outcome status - multiple hearing `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
@@ -1731,13 +1731,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             adjudicator = "",
           )
           it.hearings.add(
-            Hearing(dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 1, oicHearingType = OicHearingType.GOV, reportNumber = 1),
+            Hearing(dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 1, oicHearingType = OicHearingType.GOV, chargeNumber = "1"),
           )
           it.hearings.last().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
       assertThat(result.outcomes.size).isEqualTo(2)
 
@@ -1750,7 +1750,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `subsequent nomis hearing outcome status - original outcome created via adjudications`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
@@ -1764,13 +1764,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             },
           )
           it.hearings.add(
-            Hearing(dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 1, oicHearingType = OicHearingType.GOV, reportNumber = 1),
+            Hearing(dateTimeOfHearing = LocalDateTime.now(), locationId = 1, agencyId = "", oicHearingId = 1, oicHearingType = OicHearingType.GOV, chargeNumber = "1"),
           )
           it.hearings.last().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
         },
       )
 
-      val result = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
       assertThat(result.outcomes.size).isEqualTo(2)
 
@@ -1809,7 +1809,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `returns true when last item is referral outcome `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.hearings.first().hearingOutcome = HearingOutcome(
             code = HearingOutcomeCode.REFER_POLICE,
@@ -1824,35 +1824,35 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(true)
+      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome("1")).isEqualTo(true)
     }
 
     @Test
     fun `returns false when no history `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.hearings.clear()
           it.clearOutcomes()
         },
       )
 
-      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(false)
+      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome("1")).isEqualTo(false)
     }
 
     @Test
     fun `returns false when no last item has no outcome `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.clearOutcomes()
         },
       )
 
-      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(false)
+      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome("1")).isEqualTo(false)
     }
 
     @Test
     fun `returns false when no last item has no referral outcome `() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(1)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.addOutcome(
             Outcome(code = OutcomeCode.REFER_POLICE),
@@ -1860,7 +1860,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)).isEqualTo(false)
+      assertThat(reportedAdjudicationService.lastOutcomeHasReferralOutcome("1")).isEqualTo(false)
     }
   }
 
@@ -1870,7 +1870,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("RETURNED", "AWAITING_REVIEW")
     @ParameterizedTest
     fun `is actionable for originating agency`(status: ReportedAdjudicationStatus) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = status
           it.overrideAgencyId = "LEI"
@@ -1879,7 +1879,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails("1")
       assertThat(response.transferableActionsAllowed).isTrue
     }
 
@@ -1887,7 +1887,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     fun `is not actionable for override agency`(status: ReportedAdjudicationStatus) {
       whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = status
           it.overrideAgencyId = "LEI"
@@ -1896,14 +1896,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails("1")
       assertThat(response.transferableActionsAllowed).isFalse
     }
 
     @Test
     fun `scheduled is not actionable for override agency if the hearing belongs to the originating agency`() {
       whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = ReportedAdjudicationStatus.SCHEDULED
           it.overrideAgencyId = "LEI"
@@ -1913,13 +1913,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails("1")
       assertThat(response.transferableActionsAllowed).isFalse
     }
 
     @Test
     fun `scheduled is actionable for originating agency if the hearing belongs to the originating agency`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = ReportedAdjudicationStatus.SCHEDULED
           it.overrideAgencyId = "LEI"
@@ -1929,14 +1929,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails("1")
       assertThat(response.transferableActionsAllowed).isTrue
     }
 
     @Test
     fun `scheduled is actionable for override agency if the hearing belongs to the override agency`() {
       whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = ReportedAdjudicationStatus.SCHEDULED
           it.overrideAgencyId = "LEI"
@@ -1946,13 +1946,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails("1")
       assertThat(response.transferableActionsAllowed).isTrue
     }
 
     @Test
     fun `scheduled is not actionable for originating agency if the hearing belongs to the override agency`() {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = ReportedAdjudicationStatus.SCHEDULED
           it.overrideAgencyId = "LEI"
@@ -1962,14 +1962,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails("1")
       assertThat(response.transferableActionsAllowed).isFalse
     }
 
     @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED", "UNSCHEDULED")
     @ParameterizedTest
     fun `for other states it is always not actionable for originating agency`(status: ReportedAdjudicationStatus) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = status
           it.overrideAgencyId = "LEI"
@@ -1979,7 +1979,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails("1")
       assertThat(response.transferableActionsAllowed).isFalse
     }
 
@@ -1987,7 +1987,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     fun `for other states it is always actionable for override agency`(status: ReportedAdjudicationStatus) {
       whenever(authenticationFacade.activeCaseload).thenReturn("LEI")
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = status
           it.overrideAgencyId = "LEI"
@@ -1996,14 +1996,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails("1")
       assertThat(response.transferableActionsAllowed).isTrue
     }
 
     @EnumSource(ReportedAdjudicationStatus::class)
     @ParameterizedTest
     fun `report is not transferable and actionable flag should be null `(status: ReportedAdjudicationStatus) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = status
           it.createDateTime = LocalDateTime.now()
@@ -2011,14 +2011,14 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails("1")
       assertThat(response.transferableActionsAllowed).isNull()
     }
 
     @CsvSource("ACCEPTED", "REJECTED")
     @ParameterizedTest
     fun `always returns not actionable`(status: ReportedAdjudicationStatus) {
-      whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = status
           it.overrideAgencyId = "LEI"
@@ -2027,7 +2027,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val response = reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails("1")
       assertThat(response.transferableActionsAllowed).isFalse
     }
   }
@@ -2056,20 +2056,20 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
   @Test
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
-    whenever(reportedAdjudicationRepository.findByReportNumber(any())).thenReturn(null)
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(null)
 
     assertThatThrownBy {
-      reportedAdjudicationService.getReportedAdjudicationDetails(1)
+      reportedAdjudicationService.getReportedAdjudicationDetails("1")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     assertThatThrownBy {
-      reportedAdjudicationService.setIssued(1, LocalDateTime.now())
+      reportedAdjudicationService.setIssued("1", LocalDateTime.now())
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     assertThatThrownBy {
-      reportedAdjudicationService.lastOutcomeHasReferralOutcome(1)
+      reportedAdjudicationService.lastOutcomeHasReferralOutcome("1")
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
   }

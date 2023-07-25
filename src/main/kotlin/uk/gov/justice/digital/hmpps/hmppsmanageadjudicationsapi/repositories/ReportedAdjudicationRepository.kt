@@ -75,9 +75,9 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("statuses") statuses: List<String>,
   ): List<ReportedAdjudication>
 
-  fun findByReportNumber(adjudicationNumber: Long): ReportedAdjudication?
+  fun findByChargeNumber(chargeNumber: String): ReportedAdjudication?
 
-  fun findByReportNumberIn(adjudicationNumbers: List<Long>): List<ReportedAdjudication>
+  fun findByChargeNumberIn(chargeNumbers: List<String>): List<ReportedAdjudication>
 
   fun findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(prisonerNumber: String, date: LocalDate): List<ReportedAdjudication>
 
@@ -99,7 +99,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("statuses") statuses: List<String>,
   ): Long
 
-  fun findByPunishmentsConsecutiveReportNumberAndPunishmentsType(consecutiveReportNumber: Long, type: PunishmentType): List<ReportedAdjudication>
+  fun findByPunishmentsConsecutiveChargeNumberAndPunishmentsType(consecutiveChargeNumber: String, type: PunishmentType): List<ReportedAdjudication>
 
   companion object {
 

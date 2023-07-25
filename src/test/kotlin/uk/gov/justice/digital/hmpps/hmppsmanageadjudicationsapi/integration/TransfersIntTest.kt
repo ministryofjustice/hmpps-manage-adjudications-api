@@ -21,7 +21,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   @BeforeEach
   fun setUp() {
     setAuditTime()
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     initDataForHearings().createHearing()
 
     domainEventsTopicSnsClient.publish(
@@ -55,7 +55,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   fun `test access for single report`(agencyId: String, allowed: Boolean) {
     Thread.sleep(1000)
     val response = webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}")
       .headers(setHeaders(activeCaseload = agencyId))
       .exchange()
 
@@ -69,7 +69,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   @ParameterizedTest
   fun `test access for reports `(agencyId: String, total: Int) {
     Thread.sleep(1000)
-    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     adjourn(activeCaseLoad = "TJW")
 
     webTestClient.get()
@@ -101,7 +101,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     if (issuedStatus == IssuedStatus.ISSUED) {
       val dateTimeOfIssue = LocalDateTime.of(2022, 11, 29, 10, 0)
       webTestClient.put()
-        .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/issue")
+        .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/issue")
         .headers(setHeaders(activeCaseload = "TJW"))
         .bodyValue(
           mapOf(
@@ -135,7 +135,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     val dateTimeOfHearing = LocalDateTime.of(2020, 10, 12, 10, 0)
 
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/v2")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
       .headers(setHeaders(activeCaseload = "TJW", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -155,9 +155,9 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   fun `get report count by agency `() {
     Thread.sleep(1000)
 
-    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     webTestClient.delete()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/v2")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -188,10 +188,10 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   }
 
   private fun adjourn(activeCaseLoad: String = "MDI") {
-    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.adjudicationNumber}/hearing/outcome/adjourn")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/adjourn")
       .headers(setHeaders(activeCaseload = activeCaseLoad, username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(

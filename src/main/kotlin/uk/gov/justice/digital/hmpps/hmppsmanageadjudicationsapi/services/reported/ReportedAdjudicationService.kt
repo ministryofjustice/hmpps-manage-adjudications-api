@@ -36,8 +36,8 @@ class ReportedAdjudicationService(
   }
 
   @Deprecated("to remove on completion of NN-5319")
-  fun getReportedAdjudicationDetails(adjudicationNumber: Long): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+  fun getReportedAdjudicationDetails(chargeNumber: String): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
 
     return reportedAdjudication.toDto(
       activeCaseload = authenticationFacade.activeCaseload,
@@ -45,8 +45,8 @@ class ReportedAdjudicationService(
     )
   }
 
-  fun getReportedAdjudicationDetailsV2(adjudicationNumber: Long): ReportedAdjudicationDtoV2 {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+  fun getReportedAdjudicationDetailsV2(chargeNumber: String): ReportedAdjudicationDtoV2 {
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
 
     return reportedAdjudication.toDtoV2(
       activeCaseload = authenticationFacade.activeCaseload,
@@ -54,14 +54,14 @@ class ReportedAdjudicationService(
     )
   }
 
-  fun lastOutcomeHasReferralOutcome(adjudicationNumber: Long): Boolean =
-    findByAdjudicationNumber(adjudicationNumber).getOutcomeHistory().lastOrNull()?.outcome?.referralOutcome != null
+  fun lastOutcomeHasReferralOutcome(chargeNumber: String): Boolean =
+    findByChargeNumber(chargeNumber).getOutcomeHistory().lastOrNull()?.outcome?.referralOutcome != null
 
-  fun setStatus(adjudicationNumber: Long, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
+  fun setStatus(chargeNumber: String, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
     if (status == ReportedAdjudicationStatus.ACCEPTED) throw ValidationException("ACCEPTED is deprecated use UNSCHEDULED")
 
     val username = if (status == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber)
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
     val reportedAdjudicationToReturn = reportedAdjudication.let {
       it.transition(to = status, reason = statusReason, details = statusDetails, reviewUserId = username)
       saveToDto(it)
@@ -73,7 +73,7 @@ class ReportedAdjudicationService(
     telemetryClient.trackEvent(
       TELEMETRY_EVENT,
       mapOf(
-        "reportNumber" to reportedAdjudication.reportNumber.toString(),
+        "reportNumber" to reportedAdjudication.chargeNumber.toString(),
         "agencyId" to reportedAdjudication.originatingAgencyId,
         "status" to status.name,
         "reason" to statusReason,
@@ -84,8 +84,8 @@ class ReportedAdjudicationService(
     return reportedAdjudicationToReturn
   }
 
-  fun setIssued(adjudicationNumber: Long, dateTimeOfIssue: LocalDateTime): ReportedAdjudicationDto {
-    val reportedAdjudication = findByAdjudicationNumber(adjudicationNumber).also {
+  fun setIssued(chargeNumber: String, dateTimeOfIssue: LocalDateTime): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       it.status.canBeIssuedValidation()
       if (it.dateTimeOfIssue != null) {
         it.disIssueHistory.add(
@@ -103,10 +103,10 @@ class ReportedAdjudicationService(
   }
 
   @Deprecated("this should be removed once data migration is complete - all reports will be available")
-  private fun ReportedAdjudication.getConsecutiveReportsAvailable(): List<Long> {
-    val consecutiveReportsToFind = this.getPunishments().filter { it.consecutiveReportNumber != null }.map { it.consecutiveReportNumber!! }
+  private fun ReportedAdjudication.getConsecutiveReportsAvailable(): List<String> {
+    val consecutiveReportsToFind = this.getPunishments().filter { it.consecutiveChargeNumber != null }.map { it.consecutiveChargeNumber!! }
     if (consecutiveReportsToFind.isNotEmpty()) {
-      return findByReportNumberIn(consecutiveReportsToFind).map { it.reportNumber }
+      return findByReportNumberIn(consecutiveReportsToFind).map { it.chargeNumber }
     }
 
     return emptyList()
@@ -116,14 +116,14 @@ class ReportedAdjudicationService(
     legacySyncService.publishAdjudication(
       AdjudicationDetailsToPublish(
         offenderNo = reportedAdjudication.prisonerNumber,
-        adjudicationNumber = reportedAdjudication.reportNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
         reporterName = reportedAdjudication.createdByUserId
           ?: throw EntityNotFoundException(
-            "ReportedAdjudication creator name not set for reported adjudication number ${reportedAdjudication.reportNumber}",
+            "ReportedAdjudication creator name not set for reported adjudication number ${reportedAdjudication.chargeNumber}",
           ),
         reportedDateTime = reportedAdjudication.createDateTime
           ?: throw EntityNotFoundException(
-            "ReportedAdjudication creation time not set for reported adjudication number ${reportedAdjudication.reportNumber}",
+            "ReportedAdjudication creation time not set for reported adjudication number ${reportedAdjudication.chargeNumber}",
           ),
         agencyId = reportedAdjudication.originatingAgencyId,
         incidentTime = reportedAdjudication.dateTimeOfDiscovery,

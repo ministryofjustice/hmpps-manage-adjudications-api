@@ -20,16 +20,16 @@ class EvidenceController(
   private val evidenceService: EvidenceService,
 ) : ReportedAdjudicationBaseController() {
 
-  @PutMapping(value = ["/{adjudicationNumber}/evidence/edit"])
+  @PutMapping(value = ["/{chargeNumber}/evidence/edit"])
   @Operation(summary = "Updates the evidence for the reported adjudication.", description = "0 or more evidence to be supplied, only updates records owned by current user")
   @ResponseStatus(HttpStatus.OK)
   fun updateEvidence(
-    @PathVariable(name = "adjudicationNumber") adjudicationNumber: Long,
+    @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     evidenceRequest: EvidenceRequest,
   ): ReportedAdjudicationResponse {
     val reportedAdjudication = evidenceService.updateEvidence(
-      adjudicationNumber,
+      chargeNumber,
       evidenceRequest.evidence,
     )
 

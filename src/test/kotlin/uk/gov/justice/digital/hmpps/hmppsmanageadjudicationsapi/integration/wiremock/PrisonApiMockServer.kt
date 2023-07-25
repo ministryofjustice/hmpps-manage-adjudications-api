@@ -67,7 +67,7 @@ class PrisonApiMockServer : WireMockServer {
             .withBody(
               """
                {
-                  "adjudicationNumber": ${testDataSet.adjudicationNumber}
+                  "adjudicationNumber": ${testDataSet.chargeNumber}
                }
               """.trimIndent(),
             ),
@@ -97,7 +97,7 @@ class PrisonApiMockServer : WireMockServer {
             .withBody(
               """
                {
-                  "adjudicationNumber": ${testDataSet.adjudicationNumber},
+                  "adjudicationNumber": ${testDataSet.chargeNumber},
                   "reporterStaffId": 486080,
                   "offenderNo": "${testDataSet.prisonerNumber}",
                   "agencyId": "${testDataSet.agencyId}",
@@ -130,9 +130,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubCreateHearing(adjudicationNumber: Long) {
+  fun stubCreateHearing(chargeNumber: String) {
     stubFor(
-      post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing"))
+      post(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/hearing"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -148,9 +148,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubCreateHearingFailure(adjudicationNumber: Long) {
+  fun stubCreateHearingFailure(chargeNumber: String) {
     stubFor(
-      post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing"))
+      post(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/hearing"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -159,9 +159,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubAmendHearing(adjudicationNumber: Long) {
+  fun stubAmendHearing(chargeNumber: String) {
     stubFor(
-      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
+      put(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/hearing/100"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -170,9 +170,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubAmendHearingFailure(adjudicationNumber: Long) {
+  fun stubAmendHearingFailure(chargeNumber: String) {
     stubFor(
-      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
+      put(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/hearing/100"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -181,9 +181,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteHearing(adjudicationNumber: Long) {
+  fun stubDeleteHearing(chargeNumber: String) {
     stubFor(
-      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
+      delete(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/hearing/100"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -192,9 +192,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteHearingFailure(adjudicationNumber: Long) {
+  fun stubDeleteHearingFailure(chargeNumber: String) {
     stubFor(
-      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100"))
+      delete(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/hearing/100"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -203,10 +203,10 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubCreateHearingResult(adjudicationNumber: Long) {
+  fun stubCreateHearingResult(chargeNumber: String) {
     stubFor(
       post(
-        urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"),
+        urlEqualTo("/api/adjudications/adjudication/$chargeNumber/hearing/100/result"),
       )
         .willReturn(
           aResponse()
@@ -216,9 +216,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubAmendHearingResult(adjudicationNumber: Long) {
+  fun stubAmendHearingResult(chargeNumber: String) {
     stubFor(
-      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"))
+      put(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/hearing/100/result"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -227,9 +227,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteHearingResult(adjudicationNumber: Long) {
+  fun stubDeleteHearingResult(chargeNumber: String) {
     stubFor(
-      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/hearing/100/result"))
+      delete(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/hearing/100/result"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -238,9 +238,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubCreateSanctions(adjudicationNumber: Long) {
+  fun stubCreateSanctions(chargeNumber: String) {
     stubFor(
-      post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
+      post(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/sanctions"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -249,9 +249,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubCreateSanction(adjudicationNumber: Long) {
+  fun stubCreateSanction(chargeNumber: String) {
     stubFor(
-      post(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanction"))
+      post(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/sanction"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -265,9 +265,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubUpdateSanctions(adjudicationNumber: Long) {
+  fun stubUpdateSanctions(chargeNumber: String) {
     stubFor(
-      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
+      put(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/sanctions"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -276,9 +276,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubQuashSanctions(adjudicationNumber: Long) {
+  fun stubQuashSanctions(chargeNumber: String) {
     stubFor(
-      put(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions/quash"))
+      put(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/sanctions/quash"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -287,9 +287,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteSanctions(adjudicationNumber: Long) {
+  fun stubDeleteSanctions(chargeNumber: String) {
     stubFor(
-      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanctions"))
+      delete(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/sanctions"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -298,9 +298,9 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubDeleteSanction(adjudicationNumber: Long) {
+  fun stubDeleteSanction(chargeNumber: String) {
     stubFor(
-      delete(urlEqualTo("/api/adjudications/adjudication/$adjudicationNumber/sanction/1"))
+      delete(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/sanction/1"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

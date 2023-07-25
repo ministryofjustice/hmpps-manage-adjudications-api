@@ -21,7 +21,7 @@ data class Hearing(
   var dateTimeOfHearing: LocalDateTime,
   @field:Length(max = 6)
   var agencyId: String,
-  var reportNumber: Long,
+  var chargeNumber: String,
   var oicHearingId: Long? = null,
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

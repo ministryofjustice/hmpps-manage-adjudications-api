@@ -18,7 +18,7 @@ class ReportedAdjudicationWorkflowController(
   private val adjudicationWorkflowService: AdjudicationWorkflowService,
 ) : ReportedAdjudicationBaseController() {
 
-  @PostMapping(value = ["/{adjudicationNumber}/create-draft-adjudication"])
+  @PostMapping(value = ["/{chargeNumber}/create-draft-adjudication"])
   @Operation(
     summary = "Creates a draft adjudication from the reported adjudication with the given number.",
     responses = [
@@ -40,8 +40,8 @@ class ReportedAdjudicationWorkflowController(
   )
   @PreAuthorize("hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
-  fun createDraftAdjudication(@PathVariable(name = "adjudicationNumber") adjudicationNumber: Long): DraftAdjudicationResponse {
-    val draftAdjudication = adjudicationWorkflowService.createDraftFromReportedAdjudication(adjudicationNumber)
+  fun createDraftAdjudication(@PathVariable(name = "chargeNumber") chargeNumber: String): DraftAdjudicationResponse {
+    val draftAdjudication = adjudicationWorkflowService.createDraftFromReportedAdjudication(chargeNumber)
     return DraftAdjudicationResponse(
       draftAdjudication,
     )
