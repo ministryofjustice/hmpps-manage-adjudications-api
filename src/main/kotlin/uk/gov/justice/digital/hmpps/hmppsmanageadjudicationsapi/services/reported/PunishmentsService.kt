@@ -292,6 +292,7 @@ class PunishmentsService(
 
           SuspendedPunishmentDto(
             reportNumber = it.chargeNumber.toLong(),
+            chargeNumber = it.chargeNumber,
             punishment = PunishmentDto(
               id = punishment.id,
               type = punishment.type,
@@ -317,11 +318,13 @@ class PunishmentsService(
 
         AdditionalDaysDto(
           reportNumber = it.chargeNumber.toLong(),
+          chargeNumber = it.chargeNumber,
           chargeProvedDate = it.getLatestHearing()?.dateTimeOfHearing?.toLocalDate()!!,
           punishment = PunishmentDto(
             id = punishment.id,
             type = punishment.type,
             consecutiveReportNumber = punishment.consecutiveChargeNumber?.toLong(),
+            consecutiveChargeNumber = punishment.consecutiveChargeNumber,
             schedule = PunishmentScheduleDto(days = schedule.days),
           ),
         )

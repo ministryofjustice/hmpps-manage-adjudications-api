@@ -55,6 +55,7 @@ open class TestControllerBase {
     val REPORTED_ADJUDICATION_DTO =
       ReportedAdjudicationDto(
         adjudicationNumber = 1,
+        chargeNumber = "1",
         prisonerNumber = "A12345",
         incidentDetails = IncidentDetailsDto(
           locationId = 2,
@@ -95,6 +96,7 @@ open class TestControllerBase {
     val REPORTED_ADJUDICATION_DTO_V2 =
       ReportedAdjudicationDtoV2(
         adjudicationNumber = 1,
+        chargeNumber = "1",
         prisonerNumber = "A12345",
         incidentDetails = IncidentDetailsDto(
           locationId = 2,
@@ -135,6 +137,7 @@ open class TestControllerBase {
     fun reportedAdjudicationDto(status: ReportedAdjudicationStatus) =
       ReportedAdjudicationDto(
         adjudicationNumber = 1,
+        chargeNumber = "1",
         prisonerNumber = "A12345",
         incidentDetails = IncidentDetailsDto(
           locationId = 2,
@@ -185,6 +188,7 @@ open class TestControllerBase {
     fun draftAdjudicationDto(statement: String = "test") = DraftAdjudicationDto(
       id = 1L,
       adjudicationNumber = null,
+      chargeNumber = null,
       prisonerNumber = "A12345",
       gender = Gender.MALE,
       incidentDetails = IncidentDetailsDto(

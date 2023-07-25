@@ -22,7 +22,9 @@ data class Punishment(
   @field:Length(max = 32)
   var otherPrivilege: String? = null,
   var stoppagePercentage: Int? = null,
+  @field:Length(max = 16)
   var activatedByChargeNumber: String? = null,
+  @field:Length(max = 16)
   var activatedFromChargeNumber: String? = null,
   var suspendedUntil: LocalDate? = null,
   var amount: Double? = null,
@@ -31,6 +33,7 @@ data class Punishment(
   @JoinColumn(name = "punishment_fk_id")
   var schedule: MutableList<PunishmentSchedule>,
   var deleted: Boolean? = null,
+  @field:Length(max = 16)
   var consecutiveChargeNumber: String? = null,
 ) : BaseEntity()
 

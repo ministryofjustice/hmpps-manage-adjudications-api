@@ -58,6 +58,7 @@ open class ReportedDtoService(
     val outcomes = this.getOutcomes().createCombinedOutcomes(this.getPunishments())
     return ReportedAdjudicationDto(
       adjudicationNumber = chargeNumber.toLong(),
+      chargeNumber = chargeNumber,
       prisonerNumber = prisonerNumber,
       incidentDetails = IncidentDetailsDto(
         locationId = locationId,
@@ -107,6 +108,7 @@ open class ReportedDtoService(
     val outcomes = this.getOutcomes().createCombinedOutcomesV2()
     return ReportedAdjudicationDtoV2(
       adjudicationNumber = chargeNumber.toLong(),
+      chargeNumber = chargeNumber,
       prisonerNumber = prisonerNumber,
       incidentDetails = IncidentDetailsDto(
         locationId = locationId,
@@ -390,9 +392,10 @@ open class ReportedDtoService(
         privilegeType = it.privilegeType,
         otherPrivilege = it.otherPrivilege,
         stoppagePercentage = it.stoppagePercentage,
-        activatedFrom = it.activatedFromChargeNumber?.toLong(),
-        activatedBy = it.activatedByChargeNumber?.toLong(),
+        activatedFrom = it.activatedFromChargeNumber,
+        activatedBy = it.activatedByChargeNumber,
         consecutiveReportNumber = it.consecutiveChargeNumber?.toLong(),
+        consecutiveChargeNumber = it.consecutiveChargeNumber,
         consecutiveReportAvailable = isConsecutiveReportAvailable(it.consecutiveChargeNumber, consecutiveReportsAvailable),
         schedule = it.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toPunishmentScheduleDto(),
       )
@@ -407,9 +410,10 @@ open class ReportedDtoService(
         otherPrivilege = it.otherPrivilege,
         stoppagePercentage = it.stoppagePercentage,
         amount = it.amount,
-        activatedFrom = it.activatedFromChargeNumber?.toLong(),
-        activatedBy = it.activatedByChargeNumber?.toLong(),
+        activatedFrom = it.activatedFromChargeNumber,
+        activatedBy = it.activatedByChargeNumber,
         consecutiveReportNumber = it.consecutiveChargeNumber?.toLong(),
+        consecutiveChargeNumber = it.consecutiveChargeNumber,
         consecutiveReportAvailable = isConsecutiveReportAvailable(it.consecutiveChargeNumber, consecutiveReportsAvailable),
         schedule = it.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toPunishmentScheduleDto(),
       )

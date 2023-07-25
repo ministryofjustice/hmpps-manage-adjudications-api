@@ -35,6 +35,8 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.adjudicationNumber")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+      .jsonPath("$.reportedAdjudication.chargeNumber")
+      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
       .jsonPath("$.reportedAdjudication.overrideAgencyId").isEqualTo("TJW")
       .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString)
@@ -103,6 +105,8 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.reportedAdjudication.adjudicationNumber")
+      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+      .jsonPath("$.reportedAdjudication.chargeNumber")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
       .jsonPath("$.reportedAdjudication.overrideAgencyId").isEqualTo("TJW")
       .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident")

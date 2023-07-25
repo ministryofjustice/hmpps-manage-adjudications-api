@@ -23,6 +23,7 @@ data class ReportedAdjudication(
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var gender: Gender,
+  @field:Length(max = 16)
   var chargeNumber: String,
   var originatingAgencyId: String,
   var overrideAgencyId: String? = null,

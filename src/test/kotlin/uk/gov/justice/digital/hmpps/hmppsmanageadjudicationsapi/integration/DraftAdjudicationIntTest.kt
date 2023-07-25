@@ -125,6 +125,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
       .jsonPath("$.draftAdjudication.adjudicationNumber").isEqualTo(testAdjudication.chargeNumber)
+      .jsonPath("$.draftAdjudication.chargeNumber").isEqualTo(testAdjudication.chargeNumber)
   }
 
   @Test

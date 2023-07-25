@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import org.hibernate.validator.constraints.Length
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Pronouns
 
 @Entity
@@ -20,6 +21,7 @@ data class DraftAdjudication(
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var gender: Gender,
+  @field:Length(max = 16)
   val chargeNumber: String? = null,
   val reportByUserId: String? = null,
   var isYouthOffender: Boolean? = null,

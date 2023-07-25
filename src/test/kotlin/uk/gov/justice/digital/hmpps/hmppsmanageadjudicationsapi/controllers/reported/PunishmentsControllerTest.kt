@@ -516,6 +516,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     val SUSPENDED_PUNISHMENTS_DTO = listOf(
       SuspendedPunishmentDto(
         reportNumber = 1,
+        chargeNumber = "1",
         punishment =
         PunishmentDto(
           type = PunishmentType.REMOVAL_WING,
@@ -529,6 +530,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     val ADDITIONAL_DAYS_DTO = listOf(
       AdditionalDaysDto(
         reportNumber = 1,
+        chargeNumber = "1",
         chargeProvedDate = LocalDate.now(),
         punishment = PunishmentDto(
           type = PunishmentType.ADDITIONAL_DAYS,
