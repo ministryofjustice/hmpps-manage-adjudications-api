@@ -13,15 +13,15 @@ class MigrateFixtures {
   )
 
   val WITH_ASSOCIATE = migrationEntityBuilder.createAdjudication(
-    associate = migrationEntityBuilder.createAssociate(),
+    associates = listOf(migrationEntityBuilder.createAssociate()),
   )
 
   val WITH_STAFF_VICTIM = migrationEntityBuilder.createAdjudication(
-    victim = migrationEntityBuilder.createVictim(),
+    victims = listOf(migrationEntityBuilder.createVictim()),
   )
 
   val WITH_PRISONER_VICTIM = migrationEntityBuilder.createAdjudication(
-    victim = migrationEntityBuilder.createVictim(victimIdentifier = "QW12345", isStaff = false),
+    victims = listOf(migrationEntityBuilder.createVictim(victimIdentifier = "QW12345", isStaff = false)),
   )
 
   val YOUTH_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication(

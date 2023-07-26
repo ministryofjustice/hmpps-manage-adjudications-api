@@ -21,14 +21,18 @@ data class AdjudicationMigrateDto(
   val locationId: Long,
   @Schema(description = "the incident statement")
   val statement: String,
+  @Schema(description = "reporting officer")
+  val reportingOfficer: ReportingOfficer,
+  @Schema(description = "created by username from nomis audit - to be mapped to reviewedBy")
+  val createdByUsername: String,
   @Schema(description = "prisoner details")
   val prisoner: MigratePrisoner,
   @Schema(description = "offence details")
   val offence: MigrateOffence,
-  @Schema(description = "optional victim", required = false)
-  val victim: MigrateVictim? = null,
-  @Schema(description = "incident associate", required = false)
-  val associate: MigrateAssociate? = null,
+  @Schema(description = "optional victims", required = false)
+  val victims: List<MigrateVictim> = emptyList(),
+  @Schema(description = "optional associates", required = false)
+  val associates: List<MigrateAssociate> = emptyList(),
 )
 
 @Schema(description = "prisoner details")
@@ -59,6 +63,12 @@ data class MigrateVictim(
 data class MigrateAssociate(
   @Schema(description = "associate prisoner number")
   val associatedPrisoner: String?,
+)
+
+@Schema(description = "reporting officer")
+data class ReportingOfficer(
+  @Schema(description = "reporting officer username")
+  val username: String,
 )
 
 enum class NomisGender {
