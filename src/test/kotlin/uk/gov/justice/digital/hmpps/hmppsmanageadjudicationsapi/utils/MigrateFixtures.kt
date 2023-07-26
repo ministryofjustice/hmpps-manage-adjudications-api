@@ -50,6 +50,7 @@ class MigrateFixtures {
     victims = listOf(
       migrationEntityBuilder.createVictim(victimIdentifier = "rod", isStaff = true),
       migrationEntityBuilder.createVictim(victimIdentifier = "jane", isStaff = false),
+      migrationEntityBuilder.createVictim(victimIdentifier = "freddy", isStaff = false),
     ),
   )
 
