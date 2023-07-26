@@ -34,8 +34,8 @@ data class ReportedAdjudication(
   var handoverDeadline: LocalDateTime,
   var isYouthOffender: Boolean,
   var incidentRoleCode: String?,
-  var incidentRoleAssociatedPrisonersNumber: String?,
-  var incidentRoleAssociatedPrisonersName: String?,
+  //var incidentRoleAssociatedPrisonersNumber: String?,
+  //var incidentRoleAssociatedPrisonersName: String?,
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var status: ReportedAdjudicationStatus,
@@ -76,6 +76,9 @@ data class ReportedAdjudication(
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")
   var punishmentComments: MutableList<PunishmentComment>,
+  @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "reported_adjudication_fk_id")
+  var associates: MutableList<Associate>,
 ) :
   BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reason: String? = null, details: String? = null, reviewUserId: String? = null) {
