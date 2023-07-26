@@ -42,7 +42,7 @@ data class MigratePrisoner(
   @Schema(description = "agency the prisoner is currently residing, or null if no longer in prison")
   val currentAgencyId: String?,
   @Schema(description = "gender of the prisoner")
-  val gender: NomisGender,
+  val gender: String,
 )
 
 @Schema(description = "offence details")

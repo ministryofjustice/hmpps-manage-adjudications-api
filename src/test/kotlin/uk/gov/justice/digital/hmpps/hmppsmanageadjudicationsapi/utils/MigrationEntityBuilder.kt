@@ -41,7 +41,7 @@ class MigrationEntityBuilder {
     MigratePrisoner(
       prisonerNumber = prisonerNumber,
       currentAgencyId = currentAgencyId,
-      gender = gender,
+      gender = gender.name,
     )
 
   fun createOffence(offenceCode: String = "51:17"): MigrateOffence = MigrateOffence(offenceCode = offenceCode)
