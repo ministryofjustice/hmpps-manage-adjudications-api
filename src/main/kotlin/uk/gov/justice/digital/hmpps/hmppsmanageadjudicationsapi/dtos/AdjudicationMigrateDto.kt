@@ -38,7 +38,7 @@ data class MigratePrisoner(
   @Schema(description = "agency the prisoner is currently residing, or null if no longer in prison")
   val currentAgencyId: String?,
   @Schema(description = "gender of the prisoner")
-  val gender: String,
+  val gender: NomisGender,
 )
 
 @Schema(description = "offence details")
@@ -60,3 +60,7 @@ data class MigrateAssociate(
   @Schema(description = "associate prisoner number")
   val associatedPrisoner: String?,
 )
+
+enum class NomisGender {
+  M, F, NK, NS, REF
+}

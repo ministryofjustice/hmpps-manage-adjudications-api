@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils
 
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 
 class MigrateFixtures {
   private val migrationEntityBuilder = MigrationEntityBuilder()
@@ -27,8 +28,8 @@ class MigrateFixtures {
     offence = MigrateOffence(offenceCode = "55:17"),
   )
 
-  val INVALID_GENDER = migrationEntityBuilder.createAdjudication(
-    prisoner = migrationEntityBuilder.createPrisoner(gender = "?"),
+  val NON_BINARY_GENDER = migrationEntityBuilder.createAdjudication(
+    prisoner = migrationEntityBuilder.createPrisoner(gender = NomisGender.NK),
   )
 
   val ADULT_MULITPLE_OFFENCES = listOf(

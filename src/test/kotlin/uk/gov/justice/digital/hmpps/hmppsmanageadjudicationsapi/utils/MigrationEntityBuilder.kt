@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateAsso
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePrisoner
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateVictim
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 import java.time.LocalDateTime
 
 class MigrationEntityBuilder {
@@ -33,7 +34,7 @@ class MigrationEntityBuilder {
       associate = associate,
     )
 
-  fun createPrisoner(prisonerNumber: String = "AE12345", currentAgencyId: String? = null, gender: String = "MALE"): MigratePrisoner =
+  fun createPrisoner(prisonerNumber: String = "AE12345", currentAgencyId: String? = null, gender: NomisGender = NomisGender.M): MigratePrisoner =
     MigratePrisoner(
       prisonerNumber = prisonerNumber,
       currentAgencyId = currentAgencyId,
