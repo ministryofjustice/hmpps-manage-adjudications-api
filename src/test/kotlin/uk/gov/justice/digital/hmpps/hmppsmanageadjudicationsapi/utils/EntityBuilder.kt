@@ -81,7 +81,7 @@ class EntityBuilder {
       punishments = mutableListOf(),
       punishmentComments = mutableListOf(),
       additionalAssociates = mutableListOf(
-        AdditionalAssociate(incidentRoleAssociatedPrisonersName = "vlad", incidentRoleAssociatedPrisonersNumber = null),
+        AdditionalAssociate(incidentRoleAssociatedPrisonersNumber = "12345"),
       ),
     )
   }

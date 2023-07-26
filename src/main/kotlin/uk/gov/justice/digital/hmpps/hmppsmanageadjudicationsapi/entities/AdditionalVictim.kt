@@ -10,5 +10,4 @@ data class AdditionalVictim(
   override val id: Long? = null,
   var victimPrisonersNumber: String? = null,
   var victimStaffUsername: String? = null,
-  var victimOtherPersonsName: String? = null,
 ) : BaseEntity()

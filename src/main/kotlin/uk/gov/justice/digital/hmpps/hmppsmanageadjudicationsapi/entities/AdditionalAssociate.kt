@@ -9,5 +9,4 @@ import jakarta.persistence.Table
 data class AdditionalAssociate(
   override val id: Long? = null,
   var incidentRoleAssociatedPrisonersNumber: String?,
-  var incidentRoleAssociatedPrisonersName: String?,
 ) : BaseEntity()
