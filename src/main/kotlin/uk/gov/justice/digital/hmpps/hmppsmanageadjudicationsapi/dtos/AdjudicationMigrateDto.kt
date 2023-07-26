@@ -21,8 +21,6 @@ data class AdjudicationMigrateDto(
   val locationId: Long,
   @Schema(description = "the incident statement")
   val statement: String,
-  @Schema(description = "adjudication under yoi rules")
-  val yoiRulesUsed: Boolean,
   @Schema(description = "prisoner details")
   val prisoner: MigratePrisoner,
   @Schema(description = "offence details")

@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils
 
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
+
 class MigrateFixtures {
   private val migrationEntityBuilder = MigrationEntityBuilder()
 
@@ -21,7 +23,9 @@ class MigrateFixtures {
     victim = migrationEntityBuilder.createVictim(victimIdentifier = "QW12345", isStaff = false),
   )
 
-  val YOUTH_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication(yoiRulesUsed = true)
+  val YOUTH_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication(
+    offence = MigrateOffence(offenceCode = "55:17"),
+  )
 
   val INVALID_GENDER = migrationEntityBuilder.createAdjudication(
     prisoner = migrationEntityBuilder.createPrisoner(gender = "?"),
