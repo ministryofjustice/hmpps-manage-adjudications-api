@@ -18,7 +18,7 @@ class EventPublishService(
       "${event.description} ${adjudication.adjudicationNumber}",
       occurredAt = LocalDateTime.now(clock),
       AdditionalInformation(
-        adjudicationNumber = adjudication.adjudicationNumber.toString(),
+        chargeNumber = adjudication.adjudicationNumber.toString(),
         prisonId = adjudication.originatingAgencyId,
       ),
     )
