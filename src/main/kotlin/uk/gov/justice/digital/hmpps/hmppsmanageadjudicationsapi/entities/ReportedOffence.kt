@@ -12,10 +12,10 @@ import jakarta.persistence.Table
 data class ReportedOffence(
   override val id: Long? = null,
   var offenceCode: Int,
-  //var victimPrisonersNumber: String? = null,
-  //var victimStaffUsername: String? = null,
-  //var victimOtherPersonsName: String? = null,
+  var victimPrisonersNumber: String? = null,
+  var victimStaffUsername: String? = null,
+  var victimOtherPersonsName: String? = null,
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_offence_fk_id")
-  var victims: MutableList<Victim>,
-  ) : BaseEntity()
+  var additionalVictims: MutableList<AdditionalVictim>,
+) : BaseEntity()

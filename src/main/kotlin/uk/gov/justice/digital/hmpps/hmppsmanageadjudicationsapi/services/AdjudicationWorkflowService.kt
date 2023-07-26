@@ -188,6 +188,7 @@ class AdjudicationWorkflowService(
         disIssueHistory = mutableListOf(),
         punishments = mutableListOf(),
         punishmentComments = mutableListOf(),
+        additionalAssociates = mutableListOf(),
       ),
     )
   }
@@ -285,6 +286,7 @@ class AdjudicationWorkflowService(
         victimPrisonersNumber = it.victimPrisonersNumber,
         victimStaffUsername = it.victimStaffUsername,
         victimOtherPersonsName = it.victimOtherPersonsName,
+        additionalVictims = mutableListOf(),
       )
     }.toMutableList()
   }

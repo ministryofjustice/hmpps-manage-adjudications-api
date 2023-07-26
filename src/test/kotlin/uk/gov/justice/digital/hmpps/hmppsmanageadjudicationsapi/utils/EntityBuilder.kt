@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils
 
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.AdditionalAssociate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
@@ -43,6 +44,7 @@ class EntityBuilder {
           victimPrisonersNumber = "A1234AA",
           victimStaffUsername = "ABC12D",
           victimOtherPersonsName = "A Person",
+          additionalVictims = mutableListOf(),
         ),
       ),
       statement = "Example statement",
@@ -78,6 +80,9 @@ class EntityBuilder {
       disIssueHistory = mutableListOf(),
       punishments = mutableListOf(),
       punishmentComments = mutableListOf(),
+      additionalAssociates = mutableListOf(
+        AdditionalAssociate(incidentRoleAssociatedPrisonersName = "vlad", incidentRoleAssociatedPrisonersNumber = null),
+      ),
     )
   }
 
