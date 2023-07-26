@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils
 
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 
 class MigrateFixtures {
   private val migrationEntityBuilder = MigrationEntityBuilder()
@@ -12,22 +13,26 @@ class MigrateFixtures {
   )
 
   val WITH_ASSOCIATE = migrationEntityBuilder.createAdjudication(
-    associate = migrationEntityBuilder.createAssociate(),
+    associates = listOf(migrationEntityBuilder.createAssociate()),
   )
 
   val WITH_STAFF_VICTIM = migrationEntityBuilder.createAdjudication(
-    victim = migrationEntityBuilder.createVictim(),
+    victims = listOf(migrationEntityBuilder.createVictim()),
   )
 
   val WITH_PRISONER_VICTIM = migrationEntityBuilder.createAdjudication(
-    victim = migrationEntityBuilder.createVictim(victimIdentifier = "QW12345", isStaff = false),
+    victims = listOf(migrationEntityBuilder.createVictim(victimIdentifier = "QW12345", isStaff = false)),
   )
 
   val YOUTH_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication(
     offence = MigrateOffence(offenceCode = "55:17"),
   )
 
-  val INVALID_GENDER = migrationEntityBuilder.createAdjudication(
+  val NON_BINARY_GENDER = migrationEntityBuilder.createAdjudication(
+    prisoner = migrationEntityBuilder.createPrisoner(gender = NomisGender.NK.name),
+  )
+
+  val UNKNOWN_GENDER = migrationEntityBuilder.createAdjudication(
     prisoner = migrationEntityBuilder.createPrisoner(gender = "?"),
   )
 
