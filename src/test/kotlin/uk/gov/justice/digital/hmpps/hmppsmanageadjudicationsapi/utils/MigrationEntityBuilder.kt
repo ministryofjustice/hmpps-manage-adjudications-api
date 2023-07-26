@@ -37,11 +37,11 @@ class MigrationEntityBuilder {
       createdByUsername = "alo",
     )
 
-  fun createPrisoner(prisonerNumber: String = "AE12345", currentAgencyId: String? = null, gender: NomisGender = NomisGender.M): MigratePrisoner =
+  fun createPrisoner(prisonerNumber: String = "AE12345", currentAgencyId: String? = null, gender: String = NomisGender.M.name): MigratePrisoner =
     MigratePrisoner(
       prisonerNumber = prisonerNumber,
       currentAgencyId = currentAgencyId,
-      gender = gender.name,
+      gender = gender,
     )
 
   fun createOffence(offenceCode: String = "51:17"): MigrateOffence = MigrateOffence(offenceCode = offenceCode)

@@ -29,7 +29,11 @@ class MigrateFixtures {
   )
 
   val NON_BINARY_GENDER = migrationEntityBuilder.createAdjudication(
-    prisoner = migrationEntityBuilder.createPrisoner(gender = NomisGender.NK),
+    prisoner = migrationEntityBuilder.createPrisoner(gender = NomisGender.NK.name),
+  )
+
+  val UNKNOWN_GENDER = migrationEntityBuilder.createAdjudication(
+    prisoner = migrationEntityBuilder.createPrisoner(gender = "?"),
   )
 
   val ADULT_MULITPLE_OFFENCES = listOf(
