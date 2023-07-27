@@ -61,6 +61,12 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_WITNESSES = migrationEntityBuilder.createAdjudication(
+    witnesses = listOf(
+      migrationEntityBuilder.createWitness(),
+    ),
+  )
+
   val MULTIPLE_OFFENDERS = listOf(
     migrationEntityBuilder.createAdjudication(
       oicIncidentId = 2,

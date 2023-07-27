@@ -5,8 +5,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateAsso
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePrisoner
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateVictim
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportingOfficer
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDateTime
 
 class MigrationEntityBuilder {
@@ -19,6 +21,7 @@ class MigrationEntityBuilder {
     offence: MigrateOffence = createOffence(),
     victims: List<MigrateVictim> = emptyList(),
     associates: List<MigrateAssociate> = emptyList(),
+    witnesses: List<MigrateWitness> = emptyList(),
   ): AdjudicationMigrateDto =
     AdjudicationMigrateDto(
       agencyIncidentId = agencyIncidentId,
@@ -35,6 +38,7 @@ class MigrationEntityBuilder {
       associates = associates,
       reportingOfficer = ReportingOfficer(username = "dave"),
       createdByUsername = "alo",
+      witnesses = witnesses,
     )
 
   fun createPrisoner(prisonerNumber: String = "AE12345", currentAgencyId: String? = null, gender: String = NomisGender.M.name): MigratePrisoner =
@@ -49,4 +53,6 @@ class MigrationEntityBuilder {
   fun createVictim(victimIdentifier: String = "SWATSON_GEN", isStaff: Boolean = true): MigrateVictim = MigrateVictim(victimIdentifier = victimIdentifier, isStaff = isStaff)
 
   fun createAssociate(associatedPrisoner: String = "ZY12345"): MigrateAssociate = MigrateAssociate(associatedPrisoner = associatedPrisoner)
+
+  fun createWitness(): MigrateWitness = MigrateWitness(firstName = "first", lastName = "last", createdBy = "OFFICER_GEN", witnessType = WitnessCode.OFFICER)
 }
