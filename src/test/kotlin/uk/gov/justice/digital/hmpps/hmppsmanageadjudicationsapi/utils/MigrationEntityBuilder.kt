@@ -60,5 +60,5 @@ class MigrationEntityBuilder {
 
   fun createWitness(): MigrateWitness = MigrateWitness(firstName = "first", lastName = "last", createdBy = "OFFICER_GEN", witnessType = WitnessCode.OFFICER)
 
-  fun createDamage(): MigrateDamage = MigrateDamage(damageType = DamageCode.CLEANING, details = "something", createdBy = "OFFICER_GEN")
+  fun createDamage(details: String? = "something"): MigrateDamage = MigrateDamage(damageType = DamageCode.CLEANING, details = details, createdBy = "OFFICER_GEN")
 }

@@ -93,8 +93,8 @@ data class MigrateWitness(
 data class MigrateDamage(
   @Schema(description = "damage / repair type")
   val damageType: DamageCode,
-  @Schema(description = "detail of damage")
-  val details: String,
+  @Schema(description = "detail of damage - can be null as not enforced on nomis")
+  val details: String?,
   @Schema(description = "created by username")
   val createdBy: String,
 
