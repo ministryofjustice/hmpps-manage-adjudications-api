@@ -2,12 +2,14 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils
 
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateAssociate
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePrisoner
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateVictim
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportingOfficer
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDateTime
 
@@ -22,6 +24,7 @@ class MigrationEntityBuilder {
     victims: List<MigrateVictim> = emptyList(),
     associates: List<MigrateAssociate> = emptyList(),
     witnesses: List<MigrateWitness> = emptyList(),
+    damages: List<MigrateDamage> = emptyList(),
   ): AdjudicationMigrateDto =
     AdjudicationMigrateDto(
       agencyIncidentId = agencyIncidentId,
@@ -39,6 +42,7 @@ class MigrationEntityBuilder {
       reportingOfficer = ReportingOfficer(username = "dave"),
       createdByUsername = "alo",
       witnesses = witnesses,
+      damages = damages,
     )
 
   fun createPrisoner(prisonerNumber: String = "AE12345", currentAgencyId: String? = null, gender: String = NomisGender.M.name): MigratePrisoner =
@@ -55,4 +59,6 @@ class MigrationEntityBuilder {
   fun createAssociate(associatedPrisoner: String = "ZY12345"): MigrateAssociate = MigrateAssociate(associatedPrisoner = associatedPrisoner)
 
   fun createWitness(): MigrateWitness = MigrateWitness(firstName = "first", lastName = "last", createdBy = "OFFICER_GEN", witnessType = WitnessCode.OFFICER)
+
+  fun createDamage(): MigrateDamage = MigrateDamage(damageType = DamageCode.CLEANING, details = "something", createdBy = "OFFICER_GEN")
 }

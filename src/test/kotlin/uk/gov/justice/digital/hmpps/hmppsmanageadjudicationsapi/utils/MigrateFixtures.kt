@@ -67,6 +67,12 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_DAMAGES = migrationEntityBuilder.createAdjudication(
+    damages = listOf(
+      migrationEntityBuilder.createDamage(),
+    ),
+  )
+
   val MULTIPLE_OFFENDERS = listOf(
     migrationEntityBuilder.createAdjudication(
       oicIncidentId = 2,
