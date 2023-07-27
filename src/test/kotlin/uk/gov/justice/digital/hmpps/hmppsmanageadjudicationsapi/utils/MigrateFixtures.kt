@@ -48,16 +48,16 @@ class MigrateFixtures {
 
   val ADDITIONAL_VICTIMS = migrationEntityBuilder.createAdjudication(
     victims = listOf(
-      migrationEntityBuilder.createVictim(victimIdentifier = "rod", isStaff = true),
-      migrationEntityBuilder.createVictim(victimIdentifier = "jane", isStaff = false),
-      migrationEntityBuilder.createVictim(victimIdentifier = "freddy", isStaff = false),
+      migrationEntityBuilder.createVictim(victimIdentifier = "OFFICER_GEN", isStaff = true),
+      migrationEntityBuilder.createVictim(victimIdentifier = "FD12345", isStaff = false),
+      migrationEntityBuilder.createVictim(victimIdentifier = "GH12345", isStaff = false),
     ),
   )
 
   val ADDITIONAL_ASSOCIATES = migrationEntityBuilder.createAdjudication(
     associates = listOf(
-      migrationEntityBuilder.createAssociate(associatedPrisoner = "liz"),
-      migrationEntityBuilder.createAssociate(associatedPrisoner = "rishi"),
+      migrationEntityBuilder.createAssociate(associatedPrisoner = "QWERTY12"),
+      migrationEntityBuilder.createAssociate(associatedPrisoner = "QWERTY13"),
     ),
   )
 

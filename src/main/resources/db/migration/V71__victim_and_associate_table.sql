@@ -29,6 +29,8 @@ create table additional_victim
 
 create index victim_reported_offence_fk_idx on additional_victim(reported_offence_fk_id);
 
+ALTER TABLE reported_adjudications ADD COLUMN agency_incident_id bigint null;
+
 
 
 

@@ -25,6 +25,7 @@ data class ReportedAdjudication(
   var gender: Gender,
   @field:Length(max = 16)
   var chargeNumber: String,
+  var agencyIncidentId: Long? = null,
   var originatingAgencyId: String,
   var overrideAgencyId: String? = null,
   var lastModifiedAgencyId: String? = null,
