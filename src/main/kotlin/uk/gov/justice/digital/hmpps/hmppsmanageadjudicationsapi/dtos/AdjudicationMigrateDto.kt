@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos
 
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDateTime
 
@@ -39,6 +40,8 @@ data class AdjudicationMigrateDto(
   val witnesses: List<MigrateWitness> = emptyList(),
   @Schema(description = "damages / repairs", required = false)
   val damages: List<MigrateDamage> = emptyList(),
+  @Schema(description = "evidence", required = false)
+  val evidence: List<MigrateEvidence> = emptyList(),
 )
 
 @Schema(description = "prisoner details")
@@ -98,6 +101,16 @@ data class MigrateDamage(
   @Schema(description = "created by username")
   val createdBy: String,
 
+)
+
+@Schema(description = "evidence related to adjudication")
+data class MigrateEvidence(
+  @Schema(description = "evidence code")
+  val evidenceCode: EvidenceCode,
+  @Schema(description = "evidence details / statement")
+  val details: String,
+  @Schema(description = "this is the reporter, we could use the investigator in this field, or createdBy user")
+  val reporter: String,
 )
 
 enum class NomisGender {
