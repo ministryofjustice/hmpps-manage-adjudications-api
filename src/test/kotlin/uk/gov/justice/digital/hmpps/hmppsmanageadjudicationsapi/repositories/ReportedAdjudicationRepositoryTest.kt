@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConfiguration
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.AdditionalVictim
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -194,12 +195,14 @@ class ReportedAdjudicationRepositoryTest {
         "incidentRoleCode",
         "incidentRoleAssociatedPrisonersNumber",
         "incidentRoleAssociatedPrisonersName",
+        "additionalAssociates",
       )
       .contains(
         adjudication.isYouthOffender,
         adjudication.incidentRoleCode,
         adjudication.incidentRoleAssociatedPrisonersNumber,
         adjudication.incidentRoleAssociatedPrisonersName,
+        adjudication.additionalAssociates,
       )
 
     assertThat(savedEntity.offenceDetails).hasSize(1)
@@ -286,6 +289,9 @@ class ReportedAdjudicationRepositoryTest {
           victimPrisonersNumber = "C2345CC",
           victimStaffUsername = "DEF34G",
           victimOtherPersonsName = "Yet Another Person",
+          additionalVictims = mutableListOf(
+            AdditionalVictim(),
+          ),
         ),
       )
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
@@ -305,13 +311,15 @@ class ReportedAdjudicationRepositoryTest {
         "victimPrisonersNumber",
         "victimStaffUsername",
         "victimOtherPersonsName",
+        "additionalVictims",
       )
       .contains(
         Tuple(
-          adjudication.offenceDetails!![0].offenceCode,
-          adjudication.offenceDetails!![0].victimPrisonersNumber,
-          adjudication.offenceDetails!![0].victimStaffUsername,
-          adjudication.offenceDetails!![0].victimOtherPersonsName,
+          adjudication.offenceDetails[0].offenceCode,
+          adjudication.offenceDetails[0].victimPrisonersNumber,
+          adjudication.offenceDetails[0].victimStaffUsername,
+          adjudication.offenceDetails[0].victimOtherPersonsName,
+          adjudication.offenceDetails[0].additionalVictims,
         ),
       )
   }

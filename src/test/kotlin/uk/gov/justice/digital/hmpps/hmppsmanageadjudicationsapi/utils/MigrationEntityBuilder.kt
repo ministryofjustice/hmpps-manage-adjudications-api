@@ -48,5 +48,5 @@ class MigrationEntityBuilder {
 
   fun createVictim(victimIdentifier: String = "SWATSON_GEN", isStaff: Boolean = true): MigrateVictim = MigrateVictim(victimIdentifier = victimIdentifier, isStaff = isStaff)
 
-  fun createAssociate(): MigrateAssociate = MigrateAssociate(associatedPrisoner = "ZY12345")
+  fun createAssociate(associatedPrisoner: String = "ZY12345"): MigrateAssociate = MigrateAssociate(associatedPrisoner = associatedPrisoner)
 }

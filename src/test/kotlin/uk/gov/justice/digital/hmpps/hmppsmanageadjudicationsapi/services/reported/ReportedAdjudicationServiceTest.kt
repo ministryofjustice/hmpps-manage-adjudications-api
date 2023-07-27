@@ -159,18 +159,21 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       var offenceDetails = mutableListOf(
         ReportedOffence(
           offenceCode = 2,
+          additionalVictims = mutableListOf(),
         ),
         ReportedOffence(
           offenceCode = 3,
           victimPrisonersNumber = "BB2345B",
           victimStaffUsername = "DEF34G",
           victimOtherPersonsName = "Another Name",
+          additionalVictims = mutableListOf(),
         ),
       )
       if (isYouthOffender) {
         offenceDetails = mutableListOf(
           ReportedOffence(
             offenceCode = 2,
+            additionalVictims = mutableListOf(),
           ),
         )
       }
@@ -441,18 +444,21 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       var offenceDetails = mutableListOf(
         ReportedOffence(
           offenceCode = 2,
+          additionalVictims = mutableListOf(),
         ),
         ReportedOffence(
           offenceCode = 3,
           victimPrisonersNumber = "BB2345B",
           victimStaffUsername = "DEF34G",
           victimOtherPersonsName = "Another Name",
+          additionalVictims = mutableListOf(),
         ),
       )
       if (isYouthOffender) {
         offenceDetails = mutableListOf(
           ReportedOffence(
             offenceCode = 2,
+            additionalVictims = mutableListOf(),
           ),
         )
       }
@@ -901,6 +907,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       val offenceDetails = mutableListOf(
         ReportedOffence(
           offenceCode = 2,
+          additionalVictims = mutableListOf(),
         ),
       )
       if (hasSecondOffenceWithAllAssociatedPersonsSet) {
@@ -910,6 +917,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             victimPrisonersNumber = "A1234AA",
             victimStaffUsername = "ABC12D",
             victimOtherPersonsName = "A name",
+            additionalVictims = mutableListOf(),
           ),
         )
       }

@@ -25,6 +25,7 @@ data class ReportedAdjudication(
   var gender: Gender,
   @field:Length(max = 16)
   var chargeNumber: String,
+  var agencyIncidentId: Long? = null,
   var originatingAgencyId: String,
   var overrideAgencyId: String? = null,
   var lastModifiedAgencyId: String? = null,
@@ -76,6 +77,9 @@ data class ReportedAdjudication(
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")
   var punishmentComments: MutableList<PunishmentComment>,
+  @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "reported_adjudication_fk_id")
+  var additionalAssociates: MutableList<AdditionalAssociate>,
 ) :
   BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reason: String? = null, details: String? = null, reviewUserId: String? = null) {

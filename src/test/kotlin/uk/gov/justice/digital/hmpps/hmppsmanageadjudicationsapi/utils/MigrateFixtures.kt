@@ -46,6 +46,21 @@ class MigrateFixtures {
     prisoner = migrationEntityBuilder.createPrisoner(currentAgencyId = "LEI"),
   )
 
+  val ADDITIONAL_VICTIMS = migrationEntityBuilder.createAdjudication(
+    victims = listOf(
+      migrationEntityBuilder.createVictim(victimIdentifier = "OFFICER_GEN", isStaff = true),
+      migrationEntityBuilder.createVictim(victimIdentifier = "FD12345", isStaff = false),
+      migrationEntityBuilder.createVictim(victimIdentifier = "GH12345", isStaff = false),
+    ),
+  )
+
+  val ADDITIONAL_ASSOCIATES = migrationEntityBuilder.createAdjudication(
+    associates = listOf(
+      migrationEntityBuilder.createAssociate(associatedPrisoner = "QWERTY12"),
+      migrationEntityBuilder.createAssociate(associatedPrisoner = "QWERTY13"),
+    ),
+  )
+
   val MULTIPLE_OFFENDERS = listOf(
     migrationEntityBuilder.createAdjudication(
       oicIncidentId = 2,
