@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateDama
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePrisoner
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePunishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateVictim
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
@@ -13,6 +14,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportingOf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 class MigrationEntityBuilder {
@@ -28,6 +32,7 @@ class MigrationEntityBuilder {
     witnesses: List<MigrateWitness> = emptyList(),
     damages: List<MigrateDamage> = emptyList(),
     evidence: List<MigrateEvidence> = emptyList(),
+    punishments: List<MigratePunishment> = emptyList(),
   ): AdjudicationMigrateDto =
     AdjudicationMigrateDto(
       agencyIncidentId = agencyIncidentId,
@@ -47,6 +52,7 @@ class MigrationEntityBuilder {
       witnesses = witnesses,
       damages = damages,
       evidence = evidence,
+      punishments = punishments,
     )
 
   fun createPrisoner(prisonerNumber: String = "AE12345", currentAgencyId: String? = null, gender: String = NomisGender.M.name): MigratePrisoner =
@@ -67,4 +73,24 @@ class MigrationEntityBuilder {
   fun createDamage(details: String? = "something"): MigrateDamage = MigrateDamage(damageType = DamageCode.CLEANING, details = details, createdBy = "OFFICER_GEN")
 
   fun createEvidence(): MigrateEvidence = MigrateEvidence(evidenceCode = EvidenceCode.PHOTO, details = "details", reporter = "OFFICER_GEN")
+
+  fun createPunishment(
+    code: String = OicSanctionCode.CAUTION.name,
+    status: String = Status.IMMEDIATE.name,
+    comment: String? = null,
+    amount: BigDecimal? = null,
+    days: Int? = 1,
+    effectiveDate: LocalDateTime = LocalDateTime.now(),
+    consecutiveChargeNumber: Long? = null,
+  ): MigratePunishment =
+    MigratePunishment(
+      sanctionCode = code,
+      sanctionStatus = status,
+      sanctionSeq = 1,
+      comment = comment,
+      compensationAmount = amount,
+      consecutiveChargeNumber = consecutiveChargeNumber,
+      days = days,
+      effectiveDate = effectiveDate,
+    )
 }
