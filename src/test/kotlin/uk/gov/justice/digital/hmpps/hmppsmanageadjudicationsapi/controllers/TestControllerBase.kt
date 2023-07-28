@@ -71,6 +71,8 @@ open class TestControllerBase {
           OffenceRuleDto(
             paragraphNumber = "3",
             paragraphDescription = "A paragraph description",
+            nomisCode = null,
+            withOthersNomisCode = null,
           ),
         ),
         incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
@@ -112,6 +114,8 @@ open class TestControllerBase {
           OffenceRuleDto(
             paragraphNumber = "3",
             paragraphDescription = "A paragraph description",
+            nomisCode = null,
+            withOthersNomisCode = null,
           ),
         ),
         incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
@@ -153,6 +157,8 @@ open class TestControllerBase {
           OffenceRuleDto(
             paragraphNumber = "3",
             paragraphDescription = "A paragraph description",
+            nomisCode = null,
+            withOthersNomisCode = null,
           ),
         ),
         incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),

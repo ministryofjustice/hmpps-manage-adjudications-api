@@ -90,17 +90,20 @@ enum class OffenceCodes(val paragraph: String, val withOthers: String? = null, v
   YOI_55_24(paragraph = "24", withOthers = "55:29AL", uniqueOffenceCodes = listOf(21001), paragraphDescription = Descriptions.YOI_24_ADULT_21),
   DEFAULT(paragraph = "", uniqueOffenceCodes = emptyList(), paragraphDescription = Descriptions.DEFAULT),
   ;
+  fun getNomisCode() = convertToCode(this.name)
 
-  fun getNomisCode(isYouthOffender: Boolean) = if (isYouthOffender) convertToCode(this.name, "YOI_") else convertToCode(this.name, "ADULT_")
-
-  fun getNomisCodeWithOthers(isYouthOffender: Boolean) = this.withOthers ?: getNomisCode(isYouthOffender)
+  fun getNomisCodeWithOthers() = this.withOthers ?: getNomisCode()
 
   companion object {
-    fun convertToCode(name: String, filter: String) = name.substringAfter(filter).replace("_", ":")
-    fun getAdultOffenceCodes() = OffenceCodes.values().filter { it.getNomisCode(false).startsWith("51:") }
-    fun getYouthOffenceCodes() = OffenceCodes.values().filter { it.getNomisCode(true).startsWith("55:") }
+    private val matchAdultOrYoi = "[^_]*_".toRegex()
+    fun convertToCode(name: String) = name.replaceFirst(matchAdultOrYoi, "").replace("_", ":")
+    fun getAdultOffenceCodes() = OffenceCodes.values().filter { it.getNomisCode().startsWith("51:") }
+    fun getYouthOffenceCodes() = OffenceCodes.values().filter { it.getNomisCode().startsWith("55:") }
 
     fun validateOffenceCode(offenceCode: Int) =
       OffenceCodes.values().flatMap { it.uniqueOffenceCodes }.firstOrNull { it == offenceCode } ?: throw ValidationException("Invalid offence code $offenceCode")
+
+    fun getOffenceCode(offenceCode: Int): OffenceCodes? =
+      OffenceCodes.values().firstOrNull { it.uniqueOffenceCodes.contains(offenceCode) }
   }
 }

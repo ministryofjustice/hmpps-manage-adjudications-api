@@ -41,6 +41,11 @@ class OffenceCodeLookupServiceTest {
     assertValuesSetForAllItems(24101..24101)
   }
 
+  @Test
+  fun `get offence code`() {
+    assertThat(OffenceCodes.getOffenceCode(4001)).isEqualTo(OffenceCodes.ADULT_51_4)
+  }
+
   private fun assertValuesSetForAllItems(offenceCodes: IntRange) {
     offenceCodes.forEach {
       assertValuesSetForItem(it, false, "51:")
