@@ -49,6 +49,12 @@ class IntegrationTestData(
       paragraphDescription = "Fights with any person",
     )
 
+    val WITH_OTHERS = OffenceTestDataSet(
+      offenceCode = 2001,
+      paragraphNumber = "",
+      paragraphDescription = "",
+    )
+
     const val DEFAULT_CHARGE_NUMBER = "1524242"
     const val DEFAULT_PRISONER_NUMBER = "AA1234A"
     const val DEFAULT_PRISONER_BOOKING_ID = 123L
@@ -220,7 +226,7 @@ class IntegrationTestData(
       incidentRoleParagraphNumber = "25(c)",
       incidentRoleParagraphDescription = "Assists another prisoner to commit, or to attempt to commit, any of the foregoing offences:",
       incidentRoleAssociatedPrisonersNumber = "D4567DD",
-      offence = DEFAULT_OFFENCE,
+      offence = WITH_OTHERS,
       statement = "Another test statement",
       createdByUserId = "L_NESS",
       damages = DEFAULT_DAMAGES,

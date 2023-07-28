@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import java.time.LocalDateTime
 
 @ActiveProfiles("test", "nomis")
@@ -92,6 +93,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .isEqualTo("B_MILLS")
       .jsonPath("$.reportedAdjudication.gender").isEqualTo(Gender.MALE.name)
       .jsonPath("$.reportedAdjudication.originatingAgencyId").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.agencyId)
+      .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.nomisCode").isEqualTo(OffenceCodes.ADULT_51_4.getNomisCode())
   }
 
   @Test
@@ -162,7 +164,20 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.witnesses[0].reporter")
       .isEqualTo("B_MILLS")
       .jsonPath("$.reportedAdjudication.gender").isEqualTo(Gender.MALE.name)
-      .jsonPath("$.reportedAdjudication.originatingAgencyId").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.agencyId)
+      .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.nomisCode").isEqualTo(OffenceCodes.ADULT_51_4.getNomisCode())
+  }
+
+  @Test
+  fun `get reported adjudication with other nomis code set`() {
+    initDataForAccept(testData = IntegrationTestData.ADJUDICATION_3.also { it.overrideAgencyId = "TJW" })
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${IntegrationTestData.ADJUDICATION_3.chargeNumber}/v2")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.withOthersNomisCode").isEqualTo(OffenceCodes.ADULT_51_2A.withOthers)
   }
 
   @Test

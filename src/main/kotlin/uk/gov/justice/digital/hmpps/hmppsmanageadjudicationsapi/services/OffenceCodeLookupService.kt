@@ -8,9 +8,9 @@ class OffenceCodeLookupService {
   private val youthOffenceCodes = OffenceCodes.getYouthOffenceCodes()
   private val adultOffenceCodes = OffenceCodes.getAdultOffenceCodes()
 
-  fun getCommittedOnOwnNomisOffenceCodes(offenceCode: Int, isYouthOffender: Boolean): String = offenceDetails(offenceCode, isYouthOffender).getNomisCode(isYouthOffender)
+  fun getCommittedOnOwnNomisOffenceCodes(offenceCode: Int, isYouthOffender: Boolean): String = offenceDetails(offenceCode, isYouthOffender).getNomisCode()
 
-  fun getNotCommittedOnOwnNomisOffenceCode(offenceCode: Int, isYouthOffender: Boolean): String = offenceDetails(offenceCode, isYouthOffender).getNomisCodeWithOthers(isYouthOffender)
+  fun getNotCommittedOnOwnNomisOffenceCode(offenceCode: Int, isYouthOffender: Boolean): String = offenceDetails(offenceCode, isYouthOffender).getNomisCodeWithOthers()
 
   fun getParagraphNumber(offenceCode: Int, isYouthOffender: Boolean): String =
     offenceDetails(offenceCode, isYouthOffender).paragraph
