@@ -14,8 +14,38 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudicatio
 
 @Schema(description = "adjudication migrate response")
 data class MigrateResponse(
+  @Schema(description = "charge number mapping")
+  val chargeNumberMapping: ChargeNumberMapping,
+  @Schema(description = "hearing mappings")
+  val hearingMappings: List<HearingMapping>? = emptyList(),
+  @Schema(description = "punishment mappings")
+  val punishmentMappings: List<PunishmentMapping>? = emptyList(),
+)
+
+@Schema(description = "charge number mapping")
+data class ChargeNumberMapping(
   @Schema(description = "charge number created")
   val chargeNumber: String,
+  @Schema(description = "oic incident id")
+  val oicIncidentId: Long,
+  @Schema(description = "charge sequence")
+  val chargeSequence: Long,
+)
+
+@Schema(description = "hearing mapping")
+data class HearingMapping(
+  @Schema(description = "hearing id")
+  val hearingId: Long,
+  @Schema(description = "oic hearing id")
+  val oicHearingId: Long,
+)
+
+@Schema(description = "punishment mapping")
+data class PunishmentMapping(
+  @Schema(description = "punishment id")
+  val punishmentId: Long,
+  @Schema(description = "sanction sequence")
+  val sanctionSeq: Long,
 )
 
 @PreAuthorize("hasAuthority('SCOPE_write')")
@@ -42,5 +72,7 @@ class MigrateController() : ReportedAdjudicationBaseController() {
   )
   @PostMapping(value = ["/migrate"])
   @ResponseStatus(HttpStatus.CREATED)
-  fun migrate(@RequestBody adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse = MigrateResponse(chargeNumber = "")
+  fun migrate(@RequestBody adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse = MigrateResponse(
+    chargeNumberMapping = ChargeNumberMapping(chargeNumber = "", oicIncidentId = 1, chargeSequence = 1),
+  )
 }

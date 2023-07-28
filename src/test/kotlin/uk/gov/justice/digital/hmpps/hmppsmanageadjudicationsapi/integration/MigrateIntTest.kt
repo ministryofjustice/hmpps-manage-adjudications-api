@@ -24,7 +24,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
         .exchange()
         .expectStatus().isCreated
         .expectBody()
-        .jsonPath("$.chargeNumber").exists()
+        .jsonPath("$.chargeNumberMapping.chargeNumber").exists()
     }
   }
 }
