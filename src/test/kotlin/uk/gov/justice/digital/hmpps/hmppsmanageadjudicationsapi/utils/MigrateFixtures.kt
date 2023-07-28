@@ -8,6 +8,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 class MigrateFixtures {
+
   private val migrationEntityBuilder = MigrationEntityBuilder()
 
   val ADULT_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication()
