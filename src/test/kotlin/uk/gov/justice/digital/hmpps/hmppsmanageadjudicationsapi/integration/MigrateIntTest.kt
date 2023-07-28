@@ -15,7 +15,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
 
   @ParameterizedTest
   @MethodSource("getAllAdjudications")
-  fun `migrate`(adjudicationMigrateDto: AdjudicationMigrateDto) {
+  fun `migrate all the new records`(adjudicationMigrateDto: AdjudicationMigrateDto) {
     val body = objectMapper.writeValueAsString(adjudicationMigrateDto)
     webTestClient.post()
       .uri("/reported-adjudications/migrate")
