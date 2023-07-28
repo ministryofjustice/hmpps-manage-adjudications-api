@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Schema(description = "Adjudication to migrate into service")
@@ -42,6 +43,8 @@ data class AdjudicationMigrateDto(
   val damages: List<MigrateDamage> = emptyList(),
   @Schema(description = "evidence", required = false)
   val evidence: List<MigrateEvidence> = emptyList(),
+  @Schema(description = "punishments / sanctions", required = false)
+  val punishments: List<MigratePunishment> = emptyList(),
 )
 
 @Schema(description = "prisoner details")
@@ -113,6 +116,25 @@ data class MigrateEvidence(
   val reporter: String,
 )
 
+@Schema(description = "punishment / sanction")
+data class MigratePunishment(
+  @Schema(description = "sanction code")
+  val sanctionCode: String,
+  @Schema(description = "sanction status")
+  val sanctionStatus: String,
+  @Schema(description = "sanction sequence")
+  val sanctionSeq: Long,
+  @Schema(description = "effective date")
+  val effectiveDate: LocalDateTime,
+  @Schema(description = "comment text")
+  val comment: String?,
+  @Schema(description = "compensation amount")
+  val compensationAmount: BigDecimal?,
+  @Schema(description = "consecutive charge number - for nomis this needs to be the oic_incident_id for the consecutiveOffenderBookId/consecutiveSanctionSeq")
+  val consecutiveChargeNumber: Long?,
+  @Schema(description = "days applied - note we do not support months, should be converted to days if present TBC")
+  val days: Int?,
+)
 enum class NomisGender {
   M, F, NK, NS, REF
 }
