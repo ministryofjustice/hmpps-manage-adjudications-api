@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -45,6 +46,8 @@ data class AdjudicationMigrateDto(
   val evidence: List<MigrateEvidence> = emptyList(),
   @Schema(description = "punishments / sanctions", required = false)
   val punishments: List<MigratePunishment> = emptyList(),
+  @Schema(description = "hearings", required = false)
+  val hearings: List<MigrateHearing> = emptyList(),
 )
 
 @Schema(description = "prisoner details")
@@ -135,6 +138,37 @@ data class MigratePunishment(
   @Schema(description = "days applied - note we do not support months, should be converted to days if present TBC")
   val days: Int?,
 )
+
+@Schema(description = "hearing and optional result")
+data class MigrateHearing(
+  @Schema(description = "oic hearing id")
+  val oicHearingId: Long,
+  @Schema(description = "oic hearing type")
+  val oicHearingType: OicHearingType,
+  @Schema(description = "date time of hearing")
+  val hearingDateTime: LocalDateTime,
+  @Schema(description = "hearing location id")
+  val locationId: Long,
+  @Schema(description = "adjudicator username - nomis has this on the hearing, so will accept at this level but for our service it goes on outcome")
+  val adjudicator: String?,
+  @Schema(description = "comment text")
+  val commentText: String?,
+  @Schema(description = "hearing result", required = false)
+  val hearingResult: MigrateHearingResult? = null,
+)
+
+@Schema(description = "hearing result")
+data class MigrateHearingResult(
+  @Schema(description = "plea")
+  val plea: String,
+  @Schema(description = "finding")
+  val finding: String,
+  @Schema(description = "date time created")
+  val createdDateTime: LocalDateTime,
+  @Schema(description = "created by")
+  val createdBy: String,
+)
+
 enum class NomisGender {
   M, F, NK, NS, REF
 }

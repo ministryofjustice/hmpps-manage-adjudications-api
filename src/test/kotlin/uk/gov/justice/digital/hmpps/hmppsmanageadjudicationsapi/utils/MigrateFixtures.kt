@@ -2,7 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils
 
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 class MigrateFixtures {
   private val migrationEntityBuilder = MigrationEntityBuilder()
@@ -187,6 +189,90 @@ class MigrateFixtures {
       offenceSequence = 2,
       prisoner = migrationEntityBuilder.createPrisoner(
         prisonerNumber = "AD12345",
+      ),
+    ),
+  )
+
+  val WITH_HEARING = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(),
+    ),
+  )
+
+  val WITH_NO_ADJUDICATOR = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(adjudicator = null),
+    ),
+  )
+
+  val WITH_HEARINGS = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(),
+      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1)),
+    ),
+  )
+
+  val WITH_HEARING_AND_RESULT = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+    ),
+  )
+
+  val WITH_HEARINGS_AND_RESULTS = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
+      ),
+    ),
+  )
+
+  val WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
+      ),
+    ),
+  )
+
+  val WITH_HEARINGS_AND_SOME_RESULTS = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name, createdDateTime = LocalDateTime.now().plusDays(1)),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(3),
+      ),
+    ),
+  )
+
+  val WITH_HEARINGS_AND_RESULTS_MUDDLED = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(1),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(3),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(2),
       ),
     ),
   )
