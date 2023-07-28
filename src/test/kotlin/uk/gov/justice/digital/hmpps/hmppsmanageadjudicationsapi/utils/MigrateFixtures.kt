@@ -254,7 +254,7 @@ class MigrateFixtures {
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
       migrationEntityBuilder.createHearing(
-        hearingDateTime = LocalDateTime.now().plusDays(3),
+        hearingDateTime = LocalDateTime.now().plusDays(2),
       ),
     ),
   )
@@ -268,11 +268,11 @@ class MigrateFixtures {
         hearingDateTime = LocalDateTime.now().plusDays(1),
       ),
       migrationEntityBuilder.createHearing(
-        hearingDateTime = LocalDateTime.now().plusDays(3),
+        hearingDateTime = LocalDateTime.now().plusDays(2),
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
       migrationEntityBuilder.createHearing(
-        hearingDateTime = LocalDateTime.now().plusDays(2),
+        hearingDateTime = LocalDateTime.now().plusDays(3),
       ),
     ),
   )
