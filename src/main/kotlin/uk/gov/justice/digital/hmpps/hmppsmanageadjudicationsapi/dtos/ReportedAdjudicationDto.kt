@@ -169,6 +169,10 @@ data class OffenceRuleDto(
   val paragraphNumber: String,
   @Schema(description = "The name relating to the paragraph description", example = "Committed an assault")
   val paragraphDescription: String,
+  @Schema(description = "nomis code")
+  val nomisCode: String?,
+  @Schema(description = "with others nomis code")
+  val withOthersNomisCode: String?,
 )
 
 @Schema(description = "Reported damages")
