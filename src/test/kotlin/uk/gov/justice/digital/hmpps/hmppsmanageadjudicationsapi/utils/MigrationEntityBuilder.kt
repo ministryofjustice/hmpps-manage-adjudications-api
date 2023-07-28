@@ -4,6 +4,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudicatio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateAssociate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateEvidence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateHearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateHearingResult
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePrisoner
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePunishment
@@ -14,7 +16,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportingOf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -33,6 +38,7 @@ class MigrationEntityBuilder {
     damages: List<MigrateDamage> = emptyList(),
     evidence: List<MigrateEvidence> = emptyList(),
     punishments: List<MigratePunishment> = emptyList(),
+    hearings: List<MigrateHearing> = emptyList(),
   ): AdjudicationMigrateDto =
     AdjudicationMigrateDto(
       agencyIncidentId = agencyIncidentId,
@@ -53,9 +59,14 @@ class MigrationEntityBuilder {
       damages = damages,
       evidence = evidence,
       punishments = punishments,
+      hearings = hearings,
     )
 
-  fun createPrisoner(prisonerNumber: String = "AE12345", currentAgencyId: String? = null, gender: String = NomisGender.M.name): MigratePrisoner =
+  fun createPrisoner(
+    prisonerNumber: String = "AE12345",
+    currentAgencyId: String? = null,
+    gender: String = NomisGender.M.name,
+  ): MigratePrisoner =
     MigratePrisoner(
       prisonerNumber = prisonerNumber,
       currentAgencyId = currentAgencyId,
@@ -93,4 +104,30 @@ class MigrationEntityBuilder {
       days = days,
       effectiveDate = effectiveDate,
     )
+
+  fun createHearing(
+    comment: String? = null,
+    adjudicator: String? = "ALO_GEN",
+    hearingDateTime: LocalDateTime = LocalDateTime.now(),
+    hearingResult: MigrateHearingResult? = null,
+  ): MigrateHearing = MigrateHearing(
+    oicHearingId = 1,
+    oicHearingType = OicHearingType.GOV_ADULT,
+    hearingDateTime = hearingDateTime,
+    commentText = comment,
+    locationId = 1,
+    adjudicator = adjudicator,
+    hearingResult = hearingResult,
+  )
+
+  fun createHearingResult(
+    plea: String = Plea.NOT_GUILTY.name,
+    finding: String = Finding.PROVED.name,
+    createdDateTime: LocalDateTime = LocalDateTime.now(),
+  ): MigrateHearingResult = MigrateHearingResult(
+    plea = plea,
+    finding = finding,
+    createdDateTime = createdDateTime,
+    createdBy = "ALO_GEN",
+  )
 }
