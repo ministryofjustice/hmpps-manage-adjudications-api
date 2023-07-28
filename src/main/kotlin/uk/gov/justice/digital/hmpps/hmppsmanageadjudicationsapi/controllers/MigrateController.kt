@@ -44,6 +44,8 @@ data class HearingMapping(
 data class PunishmentMapping(
   @Schema(description = "punishment id")
   val punishmentId: Long,
+  @Schema(description = "offender book id")
+  val bookingId: Long,
   @Schema(description = "sanction sequence")
   val sanctionSeq: Long,
 )
