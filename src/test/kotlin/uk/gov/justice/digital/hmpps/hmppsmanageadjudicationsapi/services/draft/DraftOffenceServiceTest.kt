@@ -12,8 +12,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
@@ -45,7 +43,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     Assertions.assertThatThrownBy {
       incidentOffenceService.setOffenceDetails(
         1,
-        BASIC_OFFENCE_DETAILS_REQUEST,
+        OffenceDetailsRequestItem(offenceCode = 1002),
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("DraftAdjudication not found for 1")
@@ -58,7 +56,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     Assertions.assertThatThrownBy {
       incidentOffenceService.setOffenceDetails(
         1,
-        BASIC_OFFENCE_DETAILS_REQUEST,
+        OffenceDetailsRequestItem(offenceCode = 1002),
       )
     }.isInstanceOf(IllegalStateException::class.java)
       .hasMessageContaining(ValidationChecks.APPLICABLE_RULES.errorMessage)
@@ -77,7 +75,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     Assertions.assertThatThrownBy {
       incidentOffenceService.setOffenceDetails(
         1,
-        BASIC_OFFENCE_DETAILS_INVALID_REQUEST,
+        OffenceDetailsRequestItem(offenceCode = 2),
       )
     }.isInstanceOf(ValidationException::class.java)
       .hasMessageContaining("Invalid offence code 2")
@@ -91,16 +89,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
   fun `adds the offence details to a draft adjudication`(
     isYouthOffender: Boolean,
   ) {
-    var offenceDetailsToAdd = BASIC_OFFENCE_DETAILS_REQUEST
-
-    var offenceDetailsToSave = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY)
-    var expectedOffenceDetailsResponse = BASIC_OFFENCE_DETAILS_RESPONSE_DTO
-
-    if (isYouthOffender) {
-      offenceDetailsToAdd = YOUTH_OFFENCE_DETAILS_REQUEST
-      offenceDetailsToSave = mutableListOf(YOUTH_OFFENCE_DETAILS_DB_ENTITY)
-      expectedOffenceDetailsResponse = YOUTH_OFFENCE_DETAILS_RESPONSE_DTO
-    }
+    val offenceDetailsToAdd = OffenceDetailsRequestItem(offenceCode = 1002)
 
     whenever(draftAdjudicationRepository.findById(any())).thenReturn(
       Optional.of(
@@ -110,11 +99,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
       ),
     )
 
-    whenever(draftAdjudicationRepository.save(any())).thenReturn(
-      draftAdjudicationEntity.copy(
-        offenceDetails = offenceDetailsToSave,
-      ),
-    )
+    whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudicationEntity)
 
     val draftAdjudication = incidentOffenceService.setOffenceDetails(1, offenceDetailsToAdd)
 
@@ -122,23 +107,15 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
       .extracting("id", "prisonerNumber")
       .contains(1L, "A12345")
 
-    assertThat(draftAdjudication.offenceDetails).isEqualTo(expectedOffenceDetailsResponse)
-
     val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
     verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
-    assertThat(argumentCaptor.value.offenceDetails).isEqualTo(offenceDetailsToSave)
+    assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(1002)
   }
 
   @Test
   fun `edits the offence details of an existing draft adjudication`() {
-    val existingOffenceDetails = mutableListOf(Offence(offenceCode = 1))
-    val offenceDetailsToUse = BASIC_OFFENCE_DETAILS_REQUEST
-
-    val offenceDetailsToSave = mutableListOf(
-      BASIC_OFFENCE_DETAILS_DB_ENTITY,
-    )
-    val expectedOffenceDetailsResponse = BASIC_OFFENCE_DETAILS_RESPONSE_DTO
+    val existingOffenceDetails = mutableListOf(Offence(offenceCode = 1001))
 
     val existingDraftAdjudicationEntity = DraftAdjudication(
       id = 1,
@@ -159,78 +136,18 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(existingDraftAdjudicationEntity))
 
     whenever(draftAdjudicationRepository.save(any())).thenReturn(
-      existingDraftAdjudicationEntity.copy(
-        offenceDetails = offenceDetailsToSave,
-      ),
+      existingDraftAdjudicationEntity,
     )
 
-    val draftAdjudication = incidentOffenceService.setOffenceDetails(1, offenceDetailsToUse)
+    val draftAdjudication = incidentOffenceService.setOffenceDetails(1, OffenceDetailsRequestItem(offenceCode = 1002))
 
     assertThat(draftAdjudication)
       .extracting("id", "prisonerNumber")
       .contains(1L, "A12345")
 
-    assertThat(draftAdjudication.offenceDetails).isEqualTo(expectedOffenceDetailsResponse)
-
     val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
     verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
-    assertThat(argumentCaptor.value.offenceDetails).isEqualTo(offenceDetailsToSave)
-  }
-
-  @Test
-  fun `treats empty strings as null values`() {
-    val offenceDetailsToAdd =
-      OffenceDetailsRequestItem(
-        offenceCode = 1001,
-        victimPrisonersNumber = "",
-        victimStaffUsername = "",
-        victimOtherPersonsName = "",
-      )
-
-    val offenceDetailsToSave = mutableListOf(
-      Offence(
-        offenceCode = 1001,
-      ),
-    )
-    val expectedOffenceDetailsResponse =
-      OffenceDetailsDto(
-        offenceCode = 1001,
-        offenceRule = OffenceRuleDetailsDto(
-          paragraphNumber = OFFENCE_CODE_2_PARAGRAPH_NUMBER,
-          paragraphDescription = OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
-        ),
-      )
-
-    val draftAdjudicationEntity = DraftAdjudication(
-      id = 1,
-      prisonerNumber = "A12345",
-      gender = Gender.MALE,
-      agencyId = "MDI",
-      incidentDetails = DraftAdjudicationServiceTest.incidentDetails(2L, clock),
-      incidentRole = DraftAdjudicationServiceTest.incidentRoleWithNoValuesSet(),
-      isYouthOffender = false,
-    )
-
-    whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
-
-    whenever(draftAdjudicationRepository.save(any())).thenReturn(
-      draftAdjudicationEntity.copy(
-        offenceDetails = offenceDetailsToSave,
-      ),
-    )
-
-    val draftAdjudication = incidentOffenceService.setOffenceDetails(1, offenceDetailsToAdd)
-
-    assertThat(draftAdjudication)
-      .extracting("id", "prisonerNumber")
-      .contains(1L, "A12345")
-
-    assertThat(draftAdjudication.offenceDetails).isEqualTo(expectedOffenceDetailsResponse)
-
-    val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
-    verify(draftAdjudicationRepository).save(argumentCaptor.capture())
-
-    assertThat(argumentCaptor.value.offenceDetails).isEqualTo(offenceDetailsToSave)
+    assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(1002)
   }
 }

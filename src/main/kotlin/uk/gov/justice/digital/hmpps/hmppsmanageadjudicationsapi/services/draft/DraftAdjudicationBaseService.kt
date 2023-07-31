@@ -54,7 +54,14 @@ open class DraftAdjudicationBaseService(
       LocalDateTime.now().minusDays(DraftAdjudicationService.DAYS_TO_DELETE),
     )
   }
-  protected fun getInProgress(agencyId: String, username: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DraftAdjudicationDto> =
+
+  protected fun getInProgress(
+    agencyId: String,
+    username: String,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    pageable: Pageable,
+  ): Page<DraftAdjudicationDto> =
     draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndChargeNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
       agencyId,
       username,
@@ -71,7 +78,8 @@ open class DraftAdjudicationBaseService(
       incidentStatement = this.incidentStatement?.toDto(),
       incidentDetails = this.incidentDetails.toDto(),
       incidentRole = this.incidentRole?.toDto(this.isYouthOffender!!),
-      offenceDetails = this.offenceDetails.firstOrNull()?.toDto(offenceCodeLookupService, this.isYouthOffender!!, this.gender),
+      offenceDetails = this.offenceDetails.firstOrNull()
+        ?.toDto(offenceCodeLookupService, this.isYouthOffender!!, this.gender),
       adjudicationNumber = this.chargeNumber?.toLong(),
       chargeNumber = this.chargeNumber,
       startedByUserId = this.chargeNumber?.let { this.reportByUserId } ?: this.createdByUserId,
@@ -100,16 +108,26 @@ open class DraftAdjudicationBaseService(
     associatedPrisonersName = this.associatedPrisonersName,
   )
 
-  private fun Offence.toDto(offenceCodeLookupService: OffenceCodeLookupService, isYouthOffender: Boolean, gender: Gender): OffenceDetailsDto = OffenceDetailsDto(
-    offenceCode = this.offenceCode,
-    offenceRule = OffenceRuleDetailsDto(
-      paragraphNumber = offenceCodeLookupService.getParagraphNumber(offenceCode, isYouthOffender),
-      paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode, isYouthOffender, gender),
-    ),
-    victimPrisonersNumber = this.victimPrisonersNumber,
-    victimStaffUsername = this.victimStaffUsername,
-    victimOtherPersonsName = this.victimOtherPersonsName,
-  )
+  private fun Offence.toDto(
+    offenceCodeLookupService: OffenceCodeLookupService,
+    isYouthOffender: Boolean,
+    gender: Gender,
+  ): OffenceDetailsDto {
+    val offenceDetails = offenceCodeLookupService.getOffenceDetails(
+      offenceCode = offenceCode,
+      isYouthOffender = isYouthOffender,
+    )
+    return OffenceDetailsDto(
+      offenceCode = this.offenceCode,
+      offenceRule = OffenceRuleDetailsDto(
+        paragraphNumber = offenceDetails.paragraph,
+        paragraphDescription = offenceDetails.paragraphDescription.getParagraphDescription(gender),
+      ),
+      victimPrisonersNumber = this.victimPrisonersNumber,
+      victimStaffUsername = this.victimStaffUsername,
+      victimOtherPersonsName = this.victimOtherPersonsName,
+    )
+  }
 
   private fun IncidentStatement.toDto(): IncidentStatementDto = IncidentStatementDto(
     statement = this.statement!!,

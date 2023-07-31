@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import java.time.Clock
@@ -144,11 +145,14 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     fun `returns the draft adjudication`(
       isYouthOffender: Boolean,
     ) {
-      var offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
-      if (isYouthOffender) {
-        offenceDetails = mutableListOf(YOUTH_OFFENCE_DETAILS_DB_ENTITY)
-      }
-
+      var offenceDetails = mutableListOf(
+        Offence(
+          offenceCode = 1002,
+          victimOtherPersonsName = "y",
+          victimPrisonersNumber = "x",
+          victimStaffUsername = "z",
+        ),
+      )
       val draftAdjudication =
         DraftAdjudication(
           id = 1,
@@ -192,43 +196,23 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           incidentRoleDtoWithAllValuesSet().associatedPrisonersName,
         )
 
-      if (isYouthOffender) {
-        assertThat(draftAdjudicationDto.offenceDetails)
-          .extracting(
-            "offenceCode",
-            "offenceRule.paragraphNumber",
-            "offenceRule.paragraphDescription",
-            "victimPrisonersNumber",
-            "victimStaffUsername",
-            "victimOtherPersonsName",
-          )
-          .contains(
-            YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-            YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-            YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
-            YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-            YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
-            YOUTH_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName,
-          )
-      } else {
-        assertThat(draftAdjudicationDto.offenceDetails)
-          .extracting(
-            "offenceCode",
-            "offenceRule.paragraphNumber",
-            "offenceRule.paragraphDescription",
-            "victimPrisonersNumber",
-            "victimStaffUsername",
-            "victimOtherPersonsName",
-          )
-          .contains(
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
-            BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName,
-          )
-      }
+      assertThat(draftAdjudicationDto.offenceDetails)
+        .extracting(
+          "offenceCode",
+          "offenceRule.paragraphNumber",
+          "offenceRule.paragraphDescription",
+          "victimPrisonersNumber",
+          "victimStaffUsername",
+          "victimOtherPersonsName",
+        )
+        .contains(
+          1002,
+          offenceCodeLookupService.getOffenceDetails(1002, isYouthOffender).paragraph,
+          offenceCodeLookupService.getOffenceDetails(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
+          "x",
+          "y",
+          "z",
+        )
 
       assertThat(draftAdjudicationDto.incidentStatement)
         .extracting("statement", "completed")
@@ -245,7 +229,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, now),
-        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
           completed = false,
@@ -260,7 +244,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, now),
-        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
           completed = false,
@@ -356,7 +340,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
             agencyId = "MDI",
             incidentDetails = incidentDetails(2L, now),
             incidentRole = IncidentRole(null, "25a", null, null),
-            offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+            offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
             incidentStatement = IncidentStatement(
               statement = "Example statement",
               completed = false,
@@ -385,7 +369,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, now),
         incidentRole = incidentRoleWithNoValuesSet(),
-        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
           completed = false,
@@ -768,7 +752,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
               ),
               incidentRole = incidentRoleWithAllValuesSet(),
-              offenceDetails = mutableListOf(FULL_OFFENCE_DETAILS_DB_ENTITY),
+              offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
               incidentStatement = IncidentStatement(
                 statement = "Example statement",
                 completed = false,
@@ -835,7 +819,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           statement = "Example statement",
           completed = false,
         ),
-        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
         isYouthOffender = true,
       )
 
@@ -876,7 +860,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           statement = "Example statement",
           completed = false,
         ),
-        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY),
+        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
         isYouthOffender = true,
       )
 
@@ -884,7 +868,6 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     fun `sets gender to female`() {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
       whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
-      whenever(offenceCodeLookupService.getParagraphDescription(1001, true, Gender.FEMALE)).thenReturn(OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION)
 
       val response = draftAdjudicationService.setGender(1, Gender.FEMALE)
 
@@ -910,7 +893,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
             statement = "Example statement",
             completed = false,
           ),
-          offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY),
+          offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
           isYouthOffender = true,
         ).apply { createdByUserId = "ITAG_USER" }
 
@@ -992,7 +975,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, now),
         incidentRole = incidentRoleWithAllValuesSet(),
-        offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
           completed = false,
@@ -1033,17 +1016,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         "offenceCode",
         "offenceRule.paragraphNumber",
         "offenceRule.paragraphDescription",
-        "victimPrisonersNumber",
-        "victimStaffUsername",
-        "victimOtherPersonsName",
       )
       .contains(
-        BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-        BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphNumber,
-        BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceRule.paragraphDescription,
-        BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-        BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
-        BASIC_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName,
+        1002,
+        offenceCodeLookupService.getOffenceDetails(1002, false).paragraph,
+        offenceCodeLookupService.getOffenceDetails(1002, false).paragraphDescription.getParagraphDescription(Gender.MALE),
       )
 
     assertThat(draftAdjudicationDto.incidentStatement)

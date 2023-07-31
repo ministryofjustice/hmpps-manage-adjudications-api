@@ -19,7 +19,7 @@ data class DraftAdjudicationDto(
   val chargeNumber: String?,
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
-  @Schema(description = "Gender applied for adjuducation rules", example = "MALE")
+  @Schema(description = "Gender applied for adjudication rules", example = "MALE")
   val gender: Gender,
   @Schema(description = "Incident details")
   val incidentDetails: IncidentDetailsDto,

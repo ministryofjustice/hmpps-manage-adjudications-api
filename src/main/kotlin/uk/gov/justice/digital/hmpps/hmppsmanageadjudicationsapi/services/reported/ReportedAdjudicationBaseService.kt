@@ -293,16 +293,12 @@ open class ReportedDtoService(
     gender: Gender,
     offenceCodeLookupService: OffenceCodeLookupService,
   ): OffenceDto {
-    val offenceCode = OffenceCodes.getOffenceCode(offenceCode = offence.offenceCode)
+    val offenceCode = offenceCodeLookupService.getOffenceCode(offenceCode = offence.offenceCode, isYouthOffender = isYouthOffender)
     return OffenceDto(
       offenceCode = offence.offenceCode,
       offenceRule = OffenceRuleDto(
-        paragraphNumber = offenceCodeLookupService.getParagraphNumber(offence.offenceCode, isYouthOffender),
-        paragraphDescription = offenceCodeLookupService.getParagraphDescription(
-          offence.offenceCode,
-          isYouthOffender,
-          gender,
-        ),
+        paragraphNumber = offenceCode?.paragraph ?: OffenceCodes.DEFAULT.paragraph,
+        paragraphDescription = (offenceCode?.paragraphDescription ?: OffenceCodes.DEFAULT.paragraphDescription).getParagraphDescription(gender),
         nomisCode = offenceCode?.getNomisCode(),
         withOthersNomisCode = offenceCode?.withOthers,
       ),

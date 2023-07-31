@@ -96,7 +96,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       offenceDetails = mutableListOf(
         Offence(
           // offence with all data set
-          offenceCode = 3,
+          offenceCode = 1002,
           victimPrisonersNumber = "A1234AA",
           victimStaffUsername = "ABC12D",
           victimOtherPersonsName = "A Person",
@@ -172,9 +172,9 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           "victimOtherPersonsName",
         )
         .contains(
-          3,
-          OFFENCE_CODE_3_PARAGRAPH_NUMBER,
-          OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
+          1002,
+          offenceCodeLookupService.getOffenceDetails(1002, false).paragraph,
+          offenceCodeLookupService.getOffenceDetails(1002, false).paragraphDescription.getParagraphDescription(Gender.MALE),
           "A1234AA",
           "ABC12D",
           "A Person",

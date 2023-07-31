@@ -25,9 +25,14 @@ class DraftOffenceService(
 ) {
 
   fun lookupRuleDetails(offenceCode: Int, isYouthOffender: Boolean, gender: Gender): OffenceRuleDetailsDto {
+    val offenceDetails = offenceCodeLookupService.getOffenceDetails(
+      offenceCode = offenceCode,
+      isYouthOffender = isYouthOffender,
+    )
+
     return OffenceRuleDetailsDto(
-      paragraphNumber = offenceCodeLookupService.getParagraphNumber(offenceCode, isYouthOffender),
-      paragraphDescription = offenceCodeLookupService.getParagraphDescription(offenceCode, isYouthOffender, gender),
+      paragraphNumber = offenceDetails.paragraph,
+      paragraphDescription = offenceDetails.paragraphDescription.getParagraphDescription(gender),
     )
   }
 

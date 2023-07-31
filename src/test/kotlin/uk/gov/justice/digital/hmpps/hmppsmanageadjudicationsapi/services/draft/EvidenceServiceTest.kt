@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidenc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import java.util.Optional
 
 class EvidenceServiceTest : DraftAdjudicationTestBase() {
@@ -37,7 +38,7 @@ class EvidenceServiceTest : DraftAdjudicationTestBase() {
         statement = "Example statement",
         completed = false,
       ),
-      offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+      offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
       isYouthOffender = true,
       evidence = mutableListOf(
         Evidence(code = EvidenceCode.PHOTO, details = "details", reporter = "Fred"),

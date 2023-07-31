@@ -39,8 +39,7 @@ class EntityBuilder {
       incidentRoleAssociatedPrisonersName = "Associated Prisoner",
       offenceDetails = mutableListOf(
         ReportedOffence(
-          // offence with all data set
-          offenceCode = 3,
+          offenceCode = 1002,
           victimPrisonersNumber = "A1234AA",
           victimStaffUsername = "ABC12D",
           victimOtherPersonsName = "A Person",
