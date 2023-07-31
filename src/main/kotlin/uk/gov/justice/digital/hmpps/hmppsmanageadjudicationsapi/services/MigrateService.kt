@@ -29,7 +29,7 @@ class MigrateService(
       )
       else -> migrateExistingRecordService.accept(
         adjudicationMigrateDto = adjudicationMigrateDto,
-        reportedAdjudication = reportedAdjudication,
+        existingAdjudication = reportedAdjudication,
       )
     }
   }

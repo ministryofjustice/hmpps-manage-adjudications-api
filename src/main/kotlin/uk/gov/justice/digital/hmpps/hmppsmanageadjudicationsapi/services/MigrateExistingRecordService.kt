@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 class MigrateExistingRecordService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
-  fun accept(adjudicationMigrateDto: AdjudicationMigrateDto, reportedAdjudication: ReportedAdjudication): MigrateResponse {
+  fun accept(adjudicationMigrateDto: AdjudicationMigrateDto, existingAdjudication: ReportedAdjudication): MigrateResponse {
     TODO("implement me")
   }
 }
