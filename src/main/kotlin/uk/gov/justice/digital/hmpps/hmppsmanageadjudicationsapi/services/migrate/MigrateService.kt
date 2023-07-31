@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

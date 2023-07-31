@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ExistingRecordConflictException
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.UnableToMigrateException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.ExistingRecordConflictException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.UnableToMigrateException
 
 @RestControllerAdvice
 class ApiExceptionHandler {
