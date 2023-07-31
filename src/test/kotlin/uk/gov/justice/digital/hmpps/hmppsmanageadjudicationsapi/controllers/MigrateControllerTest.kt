@@ -51,4 +51,27 @@ class MigrateControllerTest : TestControllerBase() {
         )
     }
   }
+
+  @Nested
+  inner class Reset {
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      createResetRequest().andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a 200`() {
+      createResetRequest().andExpect(MockMvcResultMatchers.status().isOk)
+    }
+
+    private fun createResetRequest(): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.delete("/reported-adjudications/migrate/reset")
+            .header("Content-Type", "application/json"),
+        )
+    }
+  }
 }
