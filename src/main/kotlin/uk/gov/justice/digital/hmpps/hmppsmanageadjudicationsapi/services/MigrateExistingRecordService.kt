@@ -13,6 +13,6 @@ class MigrateExistingRecordService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto, existingAdjudication: ReportedAdjudication): MigrateResponse {
-    TODO("implement me")
+    throw ExistingRecordConflictException("todo")
   }
 }

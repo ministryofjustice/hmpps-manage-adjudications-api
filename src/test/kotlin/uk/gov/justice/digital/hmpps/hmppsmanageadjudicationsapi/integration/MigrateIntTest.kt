@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import io.netty.handler.codec.http.HttpResponseStatus
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrateFixtures
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrationEntityBuilder
 import java.util.stream.Stream
 
 class MigrateIntTest : SqsIntegrationTestBase() {
@@ -26,6 +28,22 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.chargeNumberMapping.chargeNumber").exists()
+  }
+
+  @Test
+  fun `migrate existing record throws custom exception`() {
+    val body = objectMapper.writeValueAsString(
+      getConflictRecord(oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong()),
+    )
+
+    initDataForHearings()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/migrate")
+      .headers(setHeaders())
+      .bodyValue(body)
+      .exchange()
+      .expectStatus().isEqualTo(HttpResponseStatus.CONFLICT.code())
   }
 
   @Test
@@ -61,5 +79,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
 
     @JvmStatic
     fun getAllNewAdjudications(): Stream<AdjudicationMigrateDto> = migrateFixtures.getAll().stream()
+
+    fun getConflictRecord(oicIncidentId: Long) = MigrationEntityBuilder().createAdjudication(oicIncidentId = oicIncidentId)
   }
 }

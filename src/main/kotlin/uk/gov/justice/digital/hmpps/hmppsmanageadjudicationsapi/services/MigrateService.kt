@@ -6,6 +6,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Migr
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 
+class ExistingRecordConflictException(message: String) : Exception(message)
+
+class UnableToMigrateException(message: String) : Exception(message)
+
 @Transactional
 @Service
 class MigrateService(
