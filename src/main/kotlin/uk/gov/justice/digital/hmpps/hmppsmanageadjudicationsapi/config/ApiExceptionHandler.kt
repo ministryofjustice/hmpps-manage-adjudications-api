@@ -152,7 +152,7 @@ class ApiExceptionHandler {
 
   @ExceptionHandler(ExistingRecordConflictException::class)
   fun handleExistingRecordConflictException(e: ExistingRecordConflictException): ResponseEntity<ErrorResponse?>? {
-    log.info("Validation exception: {}", e.message)
+    log.info("ExistingRecordConflictException: {}", e.message)
 
     return ResponseEntity
       .status(CONFLICT)
@@ -166,7 +166,7 @@ class ApiExceptionHandler {
 
   @ExceptionHandler(UnableToMigrateException::class)
   fun handleUnableToMigrateException(e: UnableToMigrateException): ResponseEntity<ErrorResponse?>? {
-    log.info("Validation exception: {}", e.message)
+    log.info("UnableToMigrateException: {}", e.message)
 
     return ResponseEntity
       .status(UNPROCESSABLE_ENTITY)
