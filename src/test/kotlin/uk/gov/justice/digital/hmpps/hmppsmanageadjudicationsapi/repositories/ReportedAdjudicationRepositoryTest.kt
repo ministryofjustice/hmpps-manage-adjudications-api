@@ -655,4 +655,18 @@ class ReportedAdjudicationRepositoryTest {
     val result = reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsType("1234", PunishmentType.PROSPECTIVE_DAYS)
     assertThat(result.size).isEqualTo(1)
   }
+
+  @Test
+  fun `delete migrated record`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(chargeNumber = "99999/1").also {
+        it.hearings.clear()
+        it.migrated = true
+      },
+    )
+
+    assertThat(reportedAdjudicationRepository.findByChargeNumber("99999/1")).isNotNull
+    reportedAdjudicationRepository.deleteByMigratedIsTrue()
+    assertThat(reportedAdjudicationRepository.findByChargeNumber("99999/1")).isNull()
+  }
 }

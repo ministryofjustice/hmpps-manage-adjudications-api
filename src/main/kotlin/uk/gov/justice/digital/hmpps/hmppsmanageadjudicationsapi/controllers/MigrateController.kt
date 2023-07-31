@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationBaseController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.MigrateService
 
 @Schema(description = "adjudication migrate response")
 data class MigrateResponse(
@@ -54,7 +55,9 @@ data class PunishmentMapping(
 @PreAuthorize("hasAuthority('SCOPE_write')")
 @RestController
 @Tag(name = "99. Migrate")
-class MigrateController() : ReportedAdjudicationBaseController() {
+class MigrateController(
+  private val migrateService: MigrateService,
+) : ReportedAdjudicationBaseController() {
 
   @Operation(
     summary = "migrates a record into the adjudication service",
@@ -82,5 +85,5 @@ class MigrateController() : ReportedAdjudicationBaseController() {
   @Operation(summary = "resets the migration and removes all migrated records from database")
   @DeleteMapping(value = ["/migrate/reset"])
   @ResponseStatus(HttpStatus.OK)
-  fun reset() {}
+  fun reset() = migrateService.reset()
 }
