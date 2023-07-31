@@ -18,9 +18,12 @@ class OffenceCodeLookupService {
   fun getParagraphDescription(offenceCode: Int, isYouthOffender: Boolean, gender: Gender = Gender.MALE): String =
     offenceDetails(offenceCode, isYouthOffender).paragraphDescription.getParagraphDescription(gender)
 
-  private fun offenceDetails(offenceCode: Int, isYouthOffender: Boolean): OffenceCodes =
+  fun getOffenceCode(offenceCode: Int, isYouthOffender: Boolean): OffenceCodes? =
     when (isYouthOffender) {
-      true -> youthOffenceCodes.firstOrNull { it.uniqueOffenceCodes.contains(offenceCode) } ?: OffenceCodes.DEFAULT
-      false -> adultOffenceCodes.firstOrNull { it.uniqueOffenceCodes.contains(offenceCode) } ?: OffenceCodes.DEFAULT
+      true -> youthOffenceCodes.firstOrNull { it.uniqueOffenceCodes.contains(offenceCode) }
+      false -> adultOffenceCodes.firstOrNull { it.uniqueOffenceCodes.contains(offenceCode) }
     }
+
+  private fun offenceDetails(offenceCode: Int, isYouthOffender: Boolean): OffenceCodes =
+    getOffenceCode(offenceCode, isYouthOffender) ?: OffenceCodes.DEFAULT
 }

@@ -45,7 +45,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -293,7 +292,7 @@ open class ReportedDtoService(
     gender: Gender,
     offenceCodeLookupService: OffenceCodeLookupService,
   ): OffenceDto {
-    val offenceCode = OffenceCodes.getOffenceCode(offenceCode = offence.offenceCode)
+    val offenceCode = offenceCodeLookupService.getOffenceCode(offenceCode = offence.offenceCode, isYouthOffender = isYouthOffender)
     return OffenceDto(
       offenceCode = offence.offenceCode,
       offenceRule = OffenceRuleDto(

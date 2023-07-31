@@ -42,8 +42,13 @@ class OffenceCodeLookupServiceTest {
   }
 
   @Test
-  fun `get offence code`() {
-    assertThat(OffenceCodes.getOffenceCode(4001)).isEqualTo(OffenceCodes.ADULT_51_4)
+  fun `get offence code for yoi`() {
+    assertThat(offenceCodeLookupService.getOffenceCode(1002, true)).isEqualTo(OffenceCodes.YOI_55_9D)
+  }
+
+  @Test
+  fun `get offence code for adult`() {
+    assertThat(offenceCodeLookupService.getOffenceCode(1002, false)).isEqualTo(OffenceCodes.ADULT_51_1B)
   }
 
   private fun assertValuesSetForAllItems(offenceCodes: IntRange) {
