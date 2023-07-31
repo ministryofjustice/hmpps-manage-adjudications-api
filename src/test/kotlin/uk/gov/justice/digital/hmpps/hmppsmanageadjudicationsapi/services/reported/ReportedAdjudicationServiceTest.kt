@@ -19,6 +19,7 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -156,27 +157,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `returns the reported adjudication`(
       isYouthOffender: Boolean,
     ) {
-      var offenceDetails = mutableListOf(
+      val offenceDetails = mutableListOf(
         ReportedOffence(
-          offenceCode = 2,
-          additionalVictims = mutableListOf(),
-        ),
-        ReportedOffence(
-          offenceCode = 3,
-          victimPrisonersNumber = "BB2345B",
-          victimStaffUsername = "DEF34G",
-          victimOtherPersonsName = "Another Name",
+          offenceCode = 1002,
           additionalVictims = mutableListOf(),
         ),
       )
-      if (isYouthOffender) {
-        offenceDetails = mutableListOf(
-          ReportedOffence(
-            offenceCode = 2,
-            additionalVictims = mutableListOf(),
-          ),
-        )
-      }
+
       val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
         it.hearings[0].dateTimeOfHearing = LocalDateTime.now().plusWeeks(1)
 
@@ -239,43 +226,23 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         .extracting("status", "reviewedByUserId", "statusReason", "statusDetails")
         .contains(ReportedAdjudicationStatus.REJECTED, "A_REVIEWER", "Status Reason", "Status Reason String")
 
-      if (isYouthOffender) {
-        assertThat(reportedAdjudicationDto.offenceDetails)
-          .extracting(
-            "offenceCode",
-            "offenceRule.paragraphNumber",
-            "offenceRule.paragraphDescription",
-            "victimPrisonersNumber",
-            "victimStaffUsername",
-            "victimOtherPersonsName",
-          )
-          .contains(
-            2,
-            YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER,
-            YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
-            null,
-            null,
-            null,
-          )
-      } else {
-        assertThat(reportedAdjudicationDto.offenceDetails)
-          .extracting(
-            "offenceCode",
-            "offenceRule.paragraphNumber",
-            "offenceRule.paragraphDescription",
-            "victimPrisonersNumber",
-            "victimStaffUsername",
-            "victimOtherPersonsName",
-          )
-          .contains(
-            2,
-            OFFENCE_CODE_2_PARAGRAPH_NUMBER,
-            OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
-            null,
-            null,
-            null,
-          )
-      }
+      assertThat(reportedAdjudicationDto.offenceDetails)
+        .extracting(
+          "offenceCode",
+          "offenceRule.paragraphNumber",
+          "offenceRule.paragraphDescription",
+          "victimPrisonersNumber",
+          "victimStaffUsername",
+          "victimOtherPersonsName",
+        )
+        .contains(
+          1002,
+          offenceCodeLookupService.getOffenceDetails(1002, isYouthOffender).paragraph,
+          offenceCodeLookupService.getOffenceDetails(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
+          null,
+          null,
+          null,
+        )
 
       assertThat(reportedAdjudicationDto.incidentStatement)
         .extracting("statement", "completed")
@@ -441,27 +408,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `returns the reported adjudication`(
       isYouthOffender: Boolean,
     ) {
-      var offenceDetails = mutableListOf(
+      val offenceDetails = mutableListOf(
         ReportedOffence(
-          offenceCode = 2,
-          additionalVictims = mutableListOf(),
-        ),
-        ReportedOffence(
-          offenceCode = 3,
-          victimPrisonersNumber = "BB2345B",
-          victimStaffUsername = "DEF34G",
-          victimOtherPersonsName = "Another Name",
+          offenceCode = 1002,
           additionalVictims = mutableListOf(),
         ),
       )
-      if (isYouthOffender) {
-        offenceDetails = mutableListOf(
-          ReportedOffence(
-            offenceCode = 2,
-            additionalVictims = mutableListOf(),
-          ),
-        )
-      }
       val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
         it.hearings[0].dateTimeOfHearing = LocalDateTime.now().plusWeeks(1)
 
@@ -524,43 +476,23 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         .extracting("status", "reviewedByUserId", "statusReason", "statusDetails")
         .contains(ReportedAdjudicationStatus.REJECTED, "A_REVIEWER", "Status Reason", "Status Reason String")
 
-      if (isYouthOffender) {
-        assertThat(reportedAdjudicationDto.offenceDetails)
-          .extracting(
-            "offenceCode",
-            "offenceRule.paragraphNumber",
-            "offenceRule.paragraphDescription",
-            "victimPrisonersNumber",
-            "victimStaffUsername",
-            "victimOtherPersonsName",
-          )
-          .contains(
-            2,
-            YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER,
-            YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
-            null,
-            null,
-            null,
-          )
-      } else {
-        assertThat(reportedAdjudicationDto.offenceDetails)
-          .extracting(
-            "offenceCode",
-            "offenceRule.paragraphNumber",
-            "offenceRule.paragraphDescription",
-            "victimPrisonersNumber",
-            "victimStaffUsername",
-            "victimOtherPersonsName",
-          )
-          .contains(
-            2,
-            OFFENCE_CODE_2_PARAGRAPH_NUMBER,
-            OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
-            null,
-            null,
-            null,
-          )
-      }
+      assertThat(reportedAdjudicationDto.offenceDetails)
+        .extracting(
+          "offenceCode",
+          "offenceRule.paragraphNumber",
+          "offenceRule.paragraphDescription",
+          "victimPrisonersNumber",
+          "victimStaffUsername",
+          "victimOtherPersonsName",
+        )
+        .contains(
+          1002,
+          offenceCodeLookupService.getOffenceDetails(1002, isYouthOffender).paragraph,
+          offenceCodeLookupService.getOffenceDetails(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
+          null,
+          null,
+          null,
+        )
 
       assertThat(reportedAdjudicationDto.incidentStatement)
         .extracting("statement", "completed")
@@ -710,7 +642,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `returns correct status information`() {
-      val existingReportedAdjudication = existingReportedAdjudication(true, true, false)
+      val existingReportedAdjudication = existingReportedAdjudication(true, true, true)
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         existingReportedAdjudication,
       )
@@ -761,7 +693,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `setting status with different roles submits to prison api with correct data`(
       committedOnOwn: Boolean,
     ) {
-      val existingReportedAdjudication = existingReportedAdjudication(committedOnOwn, true, false)
+      val existingReportedAdjudication = existingReportedAdjudication(committedOnOwn, true, true)
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         existingReportedAdjudication,
       )
@@ -779,10 +711,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.UNSCHEDULED)
 
-      var expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ON_OWN, OFFENCE_CODE_3_NOMIS_CODE_ON_OWN)
       var expectedConnectedOffenderIds: List<String> = emptyList()
       if (!committedOnOwn) {
-        expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ASSISTED, OFFENCE_CODE_3_NOMIS_CODE_ASSISTED)
         expectedConnectedOffenderIds = listOf(INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)
       }
 
@@ -798,7 +728,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         incidentLocationId = 2L,
         incidentTime = DATE_TIME_OF_INCIDENT.plusDays(1),
         statement = INCIDENT_STATEMENT,
-        offenceCodes = expectedOffenceCodes,
+        offenceCodes = if (committedOnOwn) {
+          listOf(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(1002, true))
+        } else {
+          listOf(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(1002, true))
+        },
         victimOffenderIds = expectedVictimOffenderIds,
         victimStaffUsernames = expectedVictimStaffUsernames,
         connectedOffenderIds = expectedConnectedOffenderIds,
@@ -814,7 +748,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `setting status with different youth offender flag submits to prison api with correct data`(
       isYouthOffender: Boolean,
     ) {
-      val existingReportedAdjudication = existingReportedAdjudication(false, false, isYouthOffender)
+      val existingReportedAdjudication = existingReportedAdjudication(false, isYouthOffender, false)
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existingReportedAdjudication)
 
       val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
@@ -827,12 +761,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.UNSCHEDULED)
-
-      var expectedOffenceCodes = listOf(OFFENCE_CODE_2_NOMIS_CODE_ASSISTED)
-      if (isYouthOffender) {
-        expectedOffenceCodes =
-          listOf(YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED)
-      }
 
       val expectedConnectedOffenderIds = listOf(INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)
       val expectedVictimOffenderIds: List<String> = emptyList()
@@ -847,7 +775,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         incidentLocationId = 2L,
         incidentTime = DATE_TIME_OF_INCIDENT.plusDays(1),
         statement = INCIDENT_STATEMENT,
-        offenceCodes = expectedOffenceCodes,
+        offenceCodes = listOf(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(1002, isYouthOffender)),
         victimOffenderIds = expectedVictimOffenderIds,
         victimStaffUsernames = expectedVictimStaffUsernames,
         connectedOffenderIds = expectedConnectedOffenderIds,
@@ -882,7 +810,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           incidentLocationId = reportedAdjudication.locationId,
           incidentTime = reportedAdjudication.dateTimeOfDiscovery,
           statement = reportedAdjudication.statement,
-          offenceCodes = listOf("25f"),
+          offenceCodes = listOf(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(1002, false)),
           victimStaffUsernames = emptyList(),
           victimOffenderIds = emptyList(),
           connectedOffenderIds = emptyList(),
@@ -892,8 +820,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     private fun existingReportedAdjudication(
       committedOnOwn: Boolean,
-      hasSecondOffenceWithAllAssociatedPersonsSet: Boolean,
       isYouthOffender: Boolean,
+      withVictims: Boolean,
     ): ReportedAdjudication {
       var incidentRoleCode: String? = null
       var incidentRoleAssociatedPrisonersNumber: String? = null
@@ -904,21 +832,19 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         incidentRoleAssociatedPrisonersName = INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME
       }
 
-      val offenceDetails = mutableListOf(
-        ReportedOffence(
-          offenceCode = 2,
-          additionalVictims = mutableListOf(),
-        ),
-      )
-      if (hasSecondOffenceWithAllAssociatedPersonsSet) {
-        offenceDetails.add(
+      val offenceDetails = if (withVictims) {
+        mutableListOf(
           ReportedOffence(
-            offenceCode = 3,
+            offenceCode = 1002,
             victimPrisonersNumber = "A1234AA",
             victimStaffUsername = "ABC12D",
             victimOtherPersonsName = "A name",
             additionalVictims = mutableListOf(),
           ),
+        )
+      } else {
+        mutableListOf(
+          ReportedOffence(offenceCode = 1002, additionalVictims = mutableListOf()),
         )
       }
 
@@ -2045,16 +1971,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private const val INCIDENT_STATEMENT = "Example statement"
 
-    private const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"
-    private const val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
     private const val OFFENCE_CODE_2_NOMIS_CODE_ON_OWN = "5b"
     private const val OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "25z"
 
     private const val OFFENCE_CODE_3_NOMIS_CODE_ON_OWN = "5f"
     private const val OFFENCE_CODE_3_NOMIS_CODE_ASSISTED = "25f"
 
-    private const val YOUTH_OFFENCE_CODE_2_PARAGRAPH_NUMBER = "7(b)"
-    private const val YOUTH_OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A youth paragraph description"
     private const val YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "29z"
 
     private val INCIDENT_ROLE_CODE = "25a"

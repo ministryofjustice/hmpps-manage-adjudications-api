@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 
 class OffenceCodeLookupServiceTest {
   private val offenceCodeLookupService: OffenceCodeLookupService = OffenceCodeLookupService()
@@ -43,7 +44,7 @@ class OffenceCodeLookupServiceTest {
 
   @Test
   fun `get offence code for yoi`() {
-    assertThat(offenceCodeLookupService.getOffenceCode(1002, true)).isEqualTo(OffenceCodes.YOI_55_9D)
+    assertThat(offenceCodeLookupService.getOffenceCode(1002, true)).isEqualTo(OffenceCodes.YOI_55_1A)
   }
 
   @Test
@@ -59,8 +60,8 @@ class OffenceCodeLookupServiceTest {
   }
 
   private fun assertValuesSetForItem(code: Int, isYouthOffender: Boolean, nomisCodePrefix: String) {
-    assertThat(offenceCodeLookupService.getParagraphNumber(code, isYouthOffender)).isNotBlank
-    assertThat(offenceCodeLookupService.getParagraphDescription(code, isYouthOffender)).isNotBlank
+    assertThat(offenceCodeLookupService.getOffenceDetails(code, isYouthOffender).paragraph).isNotBlank
+    assertThat(offenceCodeLookupService.getOffenceDetails(code, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE)).isNotBlank
     assertThat(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(code, isYouthOffender)).hasSizeGreaterThan(0)
     offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(code, isYouthOffender).startsWith(nomisCodePrefix)
     assertThat(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(code, isYouthOffender)).startsWith(nomisCodePrefix)

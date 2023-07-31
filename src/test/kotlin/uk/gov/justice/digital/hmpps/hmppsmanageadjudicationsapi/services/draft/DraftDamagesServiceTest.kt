@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageC
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import java.util.Optional
 
 class DraftDamagesServiceTest : DraftAdjudicationTestBase() {
@@ -36,7 +37,7 @@ class DraftDamagesServiceTest : DraftAdjudicationTestBase() {
         statement = "Example statement",
         completed = false,
       ),
-      offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+      offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
       isYouthOffender = true,
       damages = mutableListOf(
         Damage(code = DamageCode.CLEANING, details = "details", reporter = "Fred"),
