@@ -15,7 +15,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
   }
 
   @ParameterizedTest
-  @MethodSource("getAllAdjudications")
+  @MethodSource("getAllNewAdjudications")
   fun `migrate all the new records`(adjudicationMigrateDto: AdjudicationMigrateDto) {
     val body = objectMapper.writeValueAsString(adjudicationMigrateDto)
     webTestClient.post()
@@ -60,6 +60,6 @@ class MigrateIntTest : SqsIntegrationTestBase() {
     fun getAdjudicationForReset(): AdjudicationMigrateDto = migrateFixtures.ADULT_SINGLE_OFFENCE
 
     @JvmStatic
-    fun getAllAdjudications(): Stream<AdjudicationMigrateDto> = migrateFixtures.getAll().stream()
+    fun getAllNewAdjudications(): Stream<AdjudicationMigrateDto> = migrateFixtures.getAll().stream()
   }
 }

@@ -78,9 +78,7 @@ class MigrateController(
   )
   @PostMapping(value = ["/migrate"])
   @ResponseStatus(HttpStatus.CREATED)
-  fun migrate(@RequestBody adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse = MigrateResponse(
-    chargeNumberMapping = ChargeNumberMapping(chargeNumber = "", oicIncidentId = 1, chargeSequence = 1),
-  )
+  fun migrate(@RequestBody adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse = migrateService.accept(adjudicationMigrateDto)
 
   @Operation(summary = "resets the migration and removes all migrated records from database")
   @DeleteMapping(value = ["/migrate/reset"])

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.verify
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -44,6 +45,8 @@ class MigrateControllerTest : TestControllerBase() {
       createMigrationRequest(
         migrateFixtures.ADULT_SINGLE_OFFENCE,
       ).andExpect(MockMvcResultMatchers.status().isCreated)
+
+      verify(migrateService, atLeastOnce()).accept(any())
     }
 
     private fun createMigrationRequest(
