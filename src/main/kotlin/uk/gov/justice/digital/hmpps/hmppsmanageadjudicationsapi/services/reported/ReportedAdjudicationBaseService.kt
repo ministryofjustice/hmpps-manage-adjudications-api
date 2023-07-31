@@ -45,6 +45,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -296,12 +297,8 @@ open class ReportedDtoService(
     return OffenceDto(
       offenceCode = offence.offenceCode,
       offenceRule = OffenceRuleDto(
-        paragraphNumber = offenceCodeLookupService.getParagraphNumber(offence.offenceCode, isYouthOffender),
-        paragraphDescription = offenceCodeLookupService.getParagraphDescription(
-          offence.offenceCode,
-          isYouthOffender,
-          gender,
-        ),
+        paragraphNumber = offenceCode?.paragraph ?: OffenceCodes.DEFAULT.paragraph,
+        paragraphDescription = (offenceCode?.paragraphDescription ?: OffenceCodes.DEFAULT.paragraphDescription).getParagraphDescription(gender),
         nomisCode = offenceCode?.getNomisCode(),
         withOthersNomisCode = offenceCode?.withOthers,
       ),
