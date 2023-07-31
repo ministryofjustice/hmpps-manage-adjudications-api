@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils
 
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
@@ -7,6 +8,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 class MigrateFixtures {
+
   private val migrationEntityBuilder = MigrationEntityBuilder()
 
   val ADULT_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication()
@@ -275,5 +277,11 @@ class MigrateFixtures {
         hearingDateTime = LocalDateTime.now().plusDays(3),
       ),
     ),
+  )
+
+  fun getAll(): List<AdjudicationMigrateDto> = listOf(
+    ADULT_SINGLE_OFFENCE, WITH_ASSOCIATE, WITH_STAFF_VICTIM, WITH_PRISONER_VICTIM, YOUTH_SINGLE_OFFENCE, NON_BINARY_GENDER, UNKNOWN_GENDER,
+    WITH_HEARINGS_AND_RESULTS_MUDDLED, WITH_HEARINGS_AND_SOME_RESULTS, WITH_HEARINGS_AND_RESULTS, WITH_HEARING, WITH_NO_ADJUDICATOR,
+    WITH_HEARINGS, WITH_HEARING_AND_RESULT, WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED,
   )
 }

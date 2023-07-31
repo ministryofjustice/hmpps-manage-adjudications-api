@@ -23,12 +23,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import kotlin.random.Random
 
 class MigrationEntityBuilder {
 
   fun createAdjudication(
     agencyIncidentId: Long = 1,
-    oicIncidentId: Long = 1,
+    oicIncidentId: Long = Random.nextLong(10000, 999999),
     offenceSequence: Long = 1,
     prisoner: MigratePrisoner = createPrisoner(),
     offence: MigrateOffence = createOffence(),
