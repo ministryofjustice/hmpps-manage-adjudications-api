@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -77,4 +78,9 @@ class MigrateController() : ReportedAdjudicationBaseController() {
   fun migrate(@RequestBody adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse = MigrateResponse(
     chargeNumberMapping = ChargeNumberMapping(chargeNumber = "", oicIncidentId = 1, chargeSequence = 1),
   )
+
+  @Operation(summary = "resets the migration and removes all migrated records from database")
+  @DeleteMapping(value = ["/migrate/reset"])
+  @ResponseStatus(HttpStatus.OK)
+  fun reset() {}
 }
