@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
-import io.netty.handler.codec.http.HttpResponseStatus
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrateFixtures
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrationEntityBuilder
@@ -43,7 +43,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .headers(setHeaders())
       .bodyValue(body)
       .exchange()
-      .expectStatus().isEqualTo(HttpResponseStatus.CONFLICT.code())
+      .expectStatus().isEqualTo(HttpStatus.CONFLICT)
   }
 
   @Test
