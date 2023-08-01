@@ -314,7 +314,7 @@ class PunishmentsService(
     return getReportsWithActiveAdditionalDays(
       prisonerNumber = prisonerNumber,
       punishmentType = punishmentType,
-    ).filter { it.filterForAdditionalDays(reportedAdjudication) }
+    ).filter { it.includeAdaWithSameHearingDateAndSeparateCharge(reportedAdjudication) }
       .map {
         it.getPunishments().filter { punishment -> punishment.type == punishmentType }.map { punishment ->
           val schedule = punishment.schedule.latestSchedule()
@@ -745,7 +745,7 @@ class PunishmentsService(
       }
     }
 
-    fun ReportedAdjudication.filterForAdditionalDays(currentAdjudication: ReportedAdjudication): Boolean =
+    fun ReportedAdjudication.includeAdaWithSameHearingDateAndSeparateCharge(currentAdjudication: ReportedAdjudication): Boolean =
       this.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() == currentAdjudication.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() &&
         this.chargeNumber != currentAdjudication.chargeNumber
   }
