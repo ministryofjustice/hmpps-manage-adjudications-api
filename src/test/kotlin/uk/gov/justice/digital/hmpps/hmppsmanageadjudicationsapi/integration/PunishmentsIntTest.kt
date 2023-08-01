@@ -388,8 +388,10 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.ADJUDICATION_2.chargeNumber)
 
     initDataForOutcome().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved(caution = false)
+    initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(dateTimeOfHearing = IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing, overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
 
     webTestClient.post()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments")
@@ -409,7 +411,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isCreated
 
     webTestClient.get()
-      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/for-consecutive?type=$punishmentType")
+      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/for-consecutive?type=$punishmentType&chargeNumber=${IntegrationTestData.ADJUDICATION_2.chargeNumber}")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk

@@ -188,8 +188,13 @@ class PunishmentsController(
   fun getActiveAdditionalDaysReports(
     @PathVariable(name = "prisonerNumber") prisonerNumber: String,
     @RequestParam(name = "type") punishmentType: PunishmentType,
+    @RequestParam(name = "chargeNumber") chargeNumber: String,
   ): List<AdditionalDaysDto> =
-    punishmentsService.getReportsWithAdditionalDays(prisonerNumber = prisonerNumber, punishmentType = punishmentType)
+    punishmentsService.getReportsWithAdditionalDays(
+      chargeNumber = chargeNumber,
+      prisonerNumber = prisonerNumber,
+      punishmentType = punishmentType,
+    )
 
   @Operation(
     summary = "create punishment comment",

@@ -132,6 +132,16 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
+
+    assertThatThrownBy {
+      punishmentsService.getReportsWithAdditionalDays(
+        chargeNumber = "1",
+        prisonerNumber = "1",
+        punishmentType = PunishmentType.PROSPECTIVE_DAYS,
+
+      )
+    }.isInstanceOf(EntityNotFoundException::class.java)
+      .hasMessageContaining("ReportedAdjudication not found for 1")
   }
 
   @Nested
@@ -2526,6 +2536,19 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     private val reportedAdjudications = listOf(
       entityBuilder.reportedAdjudication(chargeNumber = "1").also {
+        it.hearings.first().dateTimeOfHearing = LocalDateTime.now()
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            consecutiveChargeNumber = "12345",
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+            ),
+          ),
+        )
+      },
+      entityBuilder.reportedAdjudication(chargeNumber = "12345").also {
+        it.hearings.first().dateTimeOfHearing = LocalDateTime.now()
         it.addPunishment(
           Punishment(
             type = PunishmentType.ADDITIONAL_DAYS,
@@ -2537,9 +2560,46 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       },
       entityBuilder.reportedAdjudication(chargeNumber = "1").also {
+        it.hearings.first().dateTimeOfHearing = LocalDateTime.now()
         it.addPunishment(
           Punishment(
             type = PunishmentType.PROSPECTIVE_DAYS,
+            consecutiveChargeNumber = "12345",
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+            ),
+          ),
+        )
+      },
+      entityBuilder.reportedAdjudication(chargeNumber = "12345").also {
+        it.hearings.first().dateTimeOfHearing = LocalDateTime.now()
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.PROSPECTIVE_DAYS,
+            consecutiveChargeNumber = "12345",
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+            ),
+          ),
+        )
+      },
+      entityBuilder.reportedAdjudication(chargeNumber = "1").also {
+        it.hearings.first().dateTimeOfHearing = LocalDateTime.now().plusDays(1)
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.PROSPECTIVE_DAYS,
+            consecutiveChargeNumber = "12345",
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+            ),
+          ),
+        )
+      },
+      entityBuilder.reportedAdjudication(chargeNumber = "1").also {
+        it.hearings.first().dateTimeOfHearing = LocalDateTime.now().plusDays(1)
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
             consecutiveChargeNumber = "12345",
             schedule = mutableListOf(
               PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
@@ -2556,6 +2616,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       assertThatThrownBy {
         punishmentsService.getReportsWithAdditionalDays(
+          chargeNumber = "",
           prisonerNumber = "",
           punishmentType = punishmentType,
         )
@@ -2570,7 +2631,14 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudications,
       )
 
+      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(
+        entityBuilder.reportedAdjudication(chargeNumber = "12345").also {
+          it.hearings.first().dateTimeOfHearing = LocalDateTime.now()
+        },
+      )
+
       val additionalDaysReports = punishmentsService.getReportsWithAdditionalDays(
+        chargeNumber = "12345",
         prisonerNumber = "AE1234",
         punishmentType = punishmentType,
       )
