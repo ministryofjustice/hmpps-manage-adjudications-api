@@ -7,9 +7,11 @@ import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.BAD_REQUEST
+import org.springframework.http.HttpStatus.CONFLICT
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
+import org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.ExistingRecordConflictException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.UnableToMigrateException
 
 @RestControllerAdvice
 class ApiExceptionHandler {
@@ -141,6 +145,34 @@ class ApiExceptionHandler {
       .body(
         ErrorResponse(
           status = BAD_REQUEST,
+          userMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(ExistingRecordConflictException::class)
+  fun handleExistingRecordConflictException(e: ExistingRecordConflictException): ResponseEntity<ErrorResponse?>? {
+    log.info("ExistingRecordConflictException: {}", e.message)
+
+    return ResponseEntity
+      .status(CONFLICT)
+      .body(
+        ErrorResponse(
+          status = CONFLICT,
+          userMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(UnableToMigrateException::class)
+  fun handleUnableToMigrateException(e: UnableToMigrateException): ResponseEntity<ErrorResponse?>? {
+    log.info("UnableToMigrateException: {}", e.message)
+
+    return ResponseEntity
+      .status(UNPROCESSABLE_ENTITY)
+      .body(
+        ErrorResponse(
+          status = UNPROCESSABLE_ENTITY,
           userMessage = e.message,
         ),
       )

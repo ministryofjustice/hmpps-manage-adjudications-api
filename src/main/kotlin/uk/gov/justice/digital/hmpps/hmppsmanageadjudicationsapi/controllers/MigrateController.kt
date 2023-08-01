@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationBaseController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.MigrateService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateService
 
 @Schema(description = "adjudication migrate response")
 data class MigrateResponse(
@@ -78,9 +78,7 @@ class MigrateController(
   )
   @PostMapping(value = ["/migrate"])
   @ResponseStatus(HttpStatus.CREATED)
-  fun migrate(@RequestBody adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse = MigrateResponse(
-    chargeNumberMapping = ChargeNumberMapping(chargeNumber = "", oicIncidentId = 1, chargeSequence = 1),
-  )
+  fun migrate(@RequestBody adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse = migrateService.accept(adjudicationMigrateDto)
 
   @Operation(summary = "resets the migration and removes all migrated records from database")
   @DeleteMapping(value = ["/migrate/reset"])

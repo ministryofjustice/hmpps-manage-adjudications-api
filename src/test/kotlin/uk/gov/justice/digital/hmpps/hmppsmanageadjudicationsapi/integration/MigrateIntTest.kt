@@ -4,8 +4,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrateFixtures
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrationEntityBuilder
 import java.util.stream.Stream
 
 class MigrateIntTest : SqsIntegrationTestBase() {
@@ -15,7 +17,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
   }
 
   @ParameterizedTest
-  @MethodSource("getAllAdjudications")
+  @MethodSource("getAllNewAdjudications")
   fun `migrate all the new records`(adjudicationMigrateDto: AdjudicationMigrateDto) {
     val body = objectMapper.writeValueAsString(adjudicationMigrateDto)
     webTestClient.post()
@@ -26,6 +28,22 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.chargeNumberMapping.chargeNumber").exists()
+  }
+
+  @Test
+  fun `migrate existing record throws custom exception`() {
+    val body = objectMapper.writeValueAsString(
+      getConflictRecord(oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong()),
+    )
+
+    initDataForHearings()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/migrate")
+      .headers(setHeaders())
+      .bodyValue(body)
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.CONFLICT)
   }
 
   @Test
@@ -60,6 +78,8 @@ class MigrateIntTest : SqsIntegrationTestBase() {
     fun getAdjudicationForReset(): AdjudicationMigrateDto = migrateFixtures.ADULT_SINGLE_OFFENCE
 
     @JvmStatic
-    fun getAllAdjudications(): Stream<AdjudicationMigrateDto> = migrateFixtures.getAll().stream()
+    fun getAllNewAdjudications(): Stream<AdjudicationMigrateDto> = migrateFixtures.getAll().stream()
+
+    fun getConflictRecord(oicIncidentId: Long) = MigrationEntityBuilder().createAdjudication(oicIncidentId = oicIncidentId)
   }
 }
