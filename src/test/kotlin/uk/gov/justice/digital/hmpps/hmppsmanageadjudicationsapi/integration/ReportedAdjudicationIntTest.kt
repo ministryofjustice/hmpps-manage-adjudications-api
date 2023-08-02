@@ -178,7 +178,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
-      .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.withOthersNomisCode").isEqualTo(OffenceCodes.ADULT_51_2A.withOthers)
+      .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.withOthersNomisCode").isEqualTo(OffenceCodes.ADULT_51_2A.getNomisCodeWithOthers())
   }
 
   @Test
