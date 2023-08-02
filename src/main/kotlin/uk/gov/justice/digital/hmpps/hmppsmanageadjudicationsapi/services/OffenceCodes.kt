@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import jakarta.validation.ValidationException
 
-enum class OffenceCodes(val paragraph: String, val withOthers: String? = null, val uniqueOffenceCodes: List<Int>, val paragraphDescription: Descriptions) {
+enum class OffenceCodes(val paragraph: String, private val withOthers: String? = null, val uniqueOffenceCodes: List<Int>, val paragraphDescription: Descriptions) {
   ADULT_51_1A(paragraph = "1(a)", uniqueOffenceCodes = listOf(1001, 1003, 1005, 1021, 1007), paragraphDescription = Descriptions.YOI_2_ADULT_1A),
   ADULT_51_1B(paragraph = "1", withOthers = "51:25D", uniqueOffenceCodes = listOf(1002, 1022), paragraphDescription = Descriptions.YOI_1_ADULT_1),
   ADULT_51_1J(paragraph = "1", withOthers = "51:25F", uniqueOffenceCodes = listOf(1004), paragraphDescription = Descriptions.YOI_1_ADULT_1),

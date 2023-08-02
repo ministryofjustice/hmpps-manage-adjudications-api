@@ -300,7 +300,7 @@ open class ReportedDtoService(
         paragraphNumber = offenceCode?.paragraph ?: OffenceCodes.DEFAULT.paragraph,
         paragraphDescription = (offenceCode?.paragraphDescription ?: OffenceCodes.DEFAULT.paragraphDescription).getParagraphDescription(gender),
         nomisCode = offenceCode?.getNomisCode(),
-        withOthersNomisCode = offenceCode?.withOthers,
+        withOthersNomisCode = offenceCode?.getNomisCodeWithOthers(),
       ),
       victimPrisonersNumber = offence.victimPrisonersNumber,
       victimStaffUsername = offence.victimStaffUsername,
