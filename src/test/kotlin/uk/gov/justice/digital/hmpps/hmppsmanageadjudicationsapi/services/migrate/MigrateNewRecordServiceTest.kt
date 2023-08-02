@@ -66,7 +66,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.chargeNumberMapping.oicIncidentId).isEqualTo(dto.oicIncidentId)
     }
 
-
     @Disabled
     @Test
     fun `process with others offence`() {
@@ -218,7 +217,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(copyOfVictims.firstOrNull { it.victimIdentifier == victim2 }).isNotNull
       assertThat(copyOfVictims.firstOrNull { it.victimIdentifier == victim3 }).isNotNull
     }
-
 
     @Disabled
     @Test
