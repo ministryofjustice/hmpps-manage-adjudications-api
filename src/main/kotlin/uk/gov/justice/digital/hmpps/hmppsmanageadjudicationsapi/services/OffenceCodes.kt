@@ -102,5 +102,16 @@ enum class OffenceCodes(val paragraph: String, private val withOthers: String? =
 
     fun validateOffenceCode(offenceCode: Int) =
       OffenceCodes.values().flatMap { it.uniqueOffenceCodes }.firstOrNull { it == offenceCode } ?: throw ValidationException("Invalid offence code $offenceCode")
+
+    fun findByNomisCode(nomisCode: String): Int {
+      val match = OffenceCodes.values().firstOrNull { it.getNomisCode() == nomisCode }
+      val matchOthers = OffenceCodes.values().firstOrNull { it.getNomisCodeWithOthers() == nomisCode }
+
+      // yeah we will have an issue here.
+
+      return 0
+
+      // return match ?: matchOthers ?: throw UnableToMigrateException("the offence code $nomisCode is unknown")
+    }
   }
 }

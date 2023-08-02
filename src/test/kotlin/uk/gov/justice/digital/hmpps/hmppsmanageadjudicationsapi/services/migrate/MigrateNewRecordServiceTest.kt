@@ -9,6 +9,7 @@ import org.mockito.kotlin.verify
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 
 class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
@@ -28,18 +29,20 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.agencyIncidentId).isEqualTo(dto.agencyIncidentId)
-      assertThat(argumentCaptor.value.chargeNumber).isEqualTo(dto.oicIncidentId.toString())
+      assertThat(argumentCaptor.value.chargeNumber).isEqualTo("${dto.oicIncidentId}-${dto.offenceSequence}")
       assertThat(argumentCaptor.value.originatingAgencyId).isEqualTo(dto.agencyId)
       assertThat(argumentCaptor.value.overrideAgencyId).isNull()
       assertThat(argumentCaptor.value.locationId).isEqualTo(dto.locationId)
       assertThat(argumentCaptor.value.dateTimeOfIncident).isEqualTo(dto.incidentDateTime)
       assertThat(argumentCaptor.value.dateTimeOfDiscovery).isEqualTo(dto.incidentDateTime)
+      assertThat(argumentCaptor.value.draftCreatedOn).isEqualTo(dto.incidentDateTime)
       assertThat(argumentCaptor.value.prisonerNumber).isEqualTo(dto.prisoner.prisonerNumber)
       assertThat(argumentCaptor.value.gender).isEqualTo(Gender.MALE)
       assertThat(argumentCaptor.value.isYouthOffender).isEqualTo(false)
+      assertThat(argumentCaptor.value.statement).isEqualTo(dto.statement)
       assertThat(argumentCaptor.value.migrated).isEqualTo(true)
       assertThat(argumentCaptor.value.lastModifiedAgencyId).isNull()
-      assertThat(argumentCaptor.value.handoverDeadline).isNull()
+      assertThat(argumentCaptor.value.handoverDeadline).isEqualTo(DraftAdjudicationService.daysToActionFromIncident(dto.incidentDateTime))
       assertThat(argumentCaptor.value.dateTimeOfIssue).isNull()
       assertThat(argumentCaptor.value.statusDetails).isNull()
       assertThat(argumentCaptor.value.statusReason).isNull()
@@ -57,21 +60,9 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.witnesses).isEmpty()
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
 
-      assertThat(response.chargeNumberMapping.chargeNumber).isEqualTo(dto.oicIncidentId.toString())
-      assertThat(response.chargeNumberMapping.chargeSequence).isEqualTo(dto.offenceSequence)
-      assertThat(response.chargeNumberMapping.oicIncidentId).isEqualTo(dto.oicIncidentId)
-    }
-
-    @Test
-    fun `process multiple offences on adjudication`() {
-      val dto = migrationFixtures.ADULT_MULITPLE_OFFENCES.first()
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      val response = migrateNewRecordService.accept(dto)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.chargeNumber).isEqualTo("${dto.oicIncidentId}-${dto.offenceSequence}")
       assertThat(response.chargeNumberMapping.chargeNumber).isEqualTo("${dto.oicIncidentId}-${dto.offenceSequence}")
+      assertThat(response.chargeNumberMapping.offenceSequence).isEqualTo(dto.offenceSequence)
+      assertThat(response.chargeNumberMapping.oicIncidentId).isEqualTo(dto.oicIncidentId)
     }
 
     @Test
@@ -202,22 +193,26 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersName).isNull()
       assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersNumber).isEqualTo(dto.associates.first().associatedPrisoner)
       assertThat(argumentCaptor.value.additionalAssociates.size).isEqualTo(dto.associates.size - 1)
-      assertThat(argumentCaptor.value.additionalAssociates.first()).isEqualTo(dto.associates.last().associatedPrisoner)
+      assertThat(argumentCaptor.value.additionalAssociates.first().incidentRoleAssociatedPrisonersNumber).isEqualTo(dto.associates.last().associatedPrisoner)
     }
 
     @Test
     fun `process multiple victims`() {
       val dto = migrationFixtures.ADDITIONAL_VICTIMS
+      val copyOfVictims = dto.victims
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       migrateNewRecordService.accept(dto)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.offenceDetails.first().victimPrisonersNumber).isEqualTo(dto.victims.first().victimIdentifier)
-      assertThat(argumentCaptor.value.offenceDetails.first().victimStaffUsername).isNull()
+      assertThat(argumentCaptor.value.offenceDetails.first().victimStaffUsername).isEqualTo(copyOfVictims.first().victimIdentifier)
+      assertThat(argumentCaptor.value.offenceDetails.first().victimPrisonersNumber).isNull()
       assertThat(argumentCaptor.value.offenceDetails.first().victimOtherPersonsName).isNull()
       assertThat(argumentCaptor.value.offenceDetails.first().additionalVictims.size).isEqualTo(dto.victims.size - 1)
-      assertThat(argumentCaptor.value.offenceDetails.first().additionalVictims).isEqualTo(dto.victims.last().victimIdentifier)
+      val victim2 = argumentCaptor.value.offenceDetails.first().additionalVictims[0].victimPrisonersNumber
+      val victim3 = argumentCaptor.value.offenceDetails.first().additionalVictims[1].victimPrisonersNumber
+      assertThat(copyOfVictims.firstOrNull { it.victimIdentifier == victim2 }).isNotNull
+      assertThat(copyOfVictims.firstOrNull { it.victimIdentifier == victim3 }).isNotNull
     }
 
     @Test
