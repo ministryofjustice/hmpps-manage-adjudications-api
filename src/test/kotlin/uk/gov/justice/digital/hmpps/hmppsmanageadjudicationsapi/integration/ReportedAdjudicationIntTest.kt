@@ -165,6 +165,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .isEqualTo("B_MILLS")
       .jsonPath("$.reportedAdjudication.gender").isEqualTo(Gender.MALE.name)
       .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.nomisCode").isEqualTo(OffenceCodes.ADULT_51_4.getNomisCode())
+      .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.withOthersNomisCode").isEqualTo(OffenceCodes.ADULT_51_4.getNomisCode())
   }
 
   @Test
