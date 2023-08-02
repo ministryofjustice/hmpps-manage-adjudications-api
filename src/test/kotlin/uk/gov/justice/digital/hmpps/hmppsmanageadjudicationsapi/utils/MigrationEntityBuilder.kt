@@ -65,7 +65,7 @@ class MigrationEntityBuilder {
 
   fun createPrisoner(
     prisonerNumber: String = "AE12345",
-    currentAgencyId: String? = null,
+    currentAgencyId: String? = "MDI",
     gender: String = NomisGender.M.name,
   ): MigratePrisoner =
     MigratePrisoner(
