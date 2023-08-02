@@ -8,6 +8,7 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.verify
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 
 class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
@@ -32,14 +33,55 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.dateTimeOfDiscovery).isEqualTo(dto.incidentDateTime)
       assertThat(argumentCaptor.value.prisonerNumber).isEqualTo(dto.prisoner.prisonerNumber)
       assertThat(argumentCaptor.value.gender).isEqualTo(Gender.MALE)
+      assertThat(argumentCaptor.value.isYouthOffender).isEqualTo(false)
+      assertThat(argumentCaptor.value.migrated).isEqualTo(true)
+      assertThat(argumentCaptor.value.lastModifiedAgencyId).isNull()
+      assertThat(argumentCaptor.value.handoverDeadline).isNull()
+      assertThat(argumentCaptor.value.dateTimeOfIssue).isNull()
+      assertThat(argumentCaptor.value.statusDetails).isNull()
+      assertThat(argumentCaptor.value.statusReason).isNull()
+      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(17002)
+      assertThat(argumentCaptor.value.offenceDetails.first().victimStaffUsername).isNull()
+      assertThat(argumentCaptor.value.offenceDetails.first().victimOtherPersonsName).isNull()
+      assertThat(argumentCaptor.value.offenceDetails.first().victimPrisonersNumber).isNull()
+      assertThat(argumentCaptor.value.offenceDetails.first().additionalVictims).isEmpty()
+      assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersName).isNull()
+      assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersNumber).isNull()
+      assertThat(argumentCaptor.value.additionalAssociates).isEmpty()
+      assertThat(argumentCaptor.value.incidentRoleCode).isNull()
+      assertThat(argumentCaptor.value.damages).isEmpty()
+      assertThat(argumentCaptor.value.evidence).isEmpty()
+      assertThat(argumentCaptor.value.witnesses).isEmpty()
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
     }
 
     @Test
-    fun `process multiple offences on adjudication` () {
+    fun `process multiple offences on adjudication`() {
       val dto = migrationFixtures.ADULT_MULITPLE_OFFENCES.first()
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
+      assertThat(argumentCaptor.value.chargeNumber).isEqualTo("${dto.oicIncidentId}-${dto.offenceSequence}")
+    }
+
+    @Test
+    fun `process with others offence`() {
+      val dto = migrationFixtures.OFFENCE_WITH_OTHERS
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(1002)
+      assertThat(argumentCaptor.value.incidentRoleCode).isEqualTo("25b")
+    }
+
+    @Test
+    fun `process with others and same offence code for all roles`() {
+      val dto = migrationFixtures.OFFENCE_WITH_OTHERS_AND_SAME_CODE
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(1001)
+      assertThat(argumentCaptor.value.incidentRoleCode).isEqualTo("25b")
     }
 
     @Test
@@ -47,6 +89,8 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       val dto = migrationFixtures.YOUTH_SINGLE_OFFENCE
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.isYouthOffender).isEqualTo(true)
     }
 
     @Test
@@ -54,6 +98,8 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       val dto = migrationFixtures.ADULT_TRANSFER
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.overrideAgencyId).isEqualTo(dto.prisoner.currentAgencyId)
     }
 
     @Test
@@ -61,6 +107,8 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       val dto = migrationFixtures.NON_BINARY_GENDER
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.gender).isEqualTo(Gender.MALE)
     }
 
     @Test
@@ -68,6 +116,17 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       val dto = migrationFixtures.UNKNOWN_GENDER
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.gender).isEqualTo(Gender.MALE)
+    }
+
+    @Test
+    fun `process female`() {
+      val dto = migrationFixtures.FEMALE
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.gender).isEqualTo(Gender.FEMALE)
     }
 
     @Test
@@ -75,6 +134,10 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       val dto = migrationFixtures.WITH_STAFF_VICTIM
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails.first().victimStaffUsername).isEqualTo(dto.victims.first().victimIdentifier)
+      assertThat(argumentCaptor.value.offenceDetails.first().victimOtherPersonsName).isNull()
+      assertThat(argumentCaptor.value.offenceDetails.first().victimPrisonersNumber).isNull()
     }
 
     @Test
@@ -82,6 +145,10 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       val dto = migrationFixtures.WITH_PRISONER_VICTIM
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails.first().victimPrisonersNumber).isEqualTo(dto.victims.first().victimIdentifier)
+      assertThat(argumentCaptor.value.offenceDetails.first().victimStaffUsername).isNull()
+      assertThat(argumentCaptor.value.offenceDetails.first().victimOtherPersonsName).isNull()
     }
 
     @Test
@@ -89,6 +156,9 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       val dto = migrationFixtures.WITH_ASSOCIATE
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersName).isNull()
+      assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersNumber).isEqualTo(dto.associates.first().associatedPrisoner)
     }
 
     @Test
@@ -96,6 +166,11 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       val dto = migrationFixtures.ADDITIONAL_ASSOCIATES
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersName).isNull()
+      assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersNumber).isEqualTo(dto.associates.first().associatedPrisoner)
+      assertThat(argumentCaptor.value.additionalAssociates.size).isEqualTo(dto.associates.size - 1)
+      assertThat(argumentCaptor.value.additionalAssociates.first()).isEqualTo(dto.associates.last().associatedPrisoner)
     }
 
     @Test
@@ -103,13 +178,21 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       val dto = migrationFixtures.ADDITIONAL_VICTIMS
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails.first().victimPrisonersNumber).isEqualTo(dto.victims.first().victimIdentifier)
+      assertThat(argumentCaptor.value.offenceDetails.first().victimStaffUsername).isNull()
+      assertThat(argumentCaptor.value.offenceDetails.first().victimOtherPersonsName).isNull()
+      assertThat(argumentCaptor.value.offenceDetails.first().additionalVictims.size).isEqualTo(dto.victims.size - 1)
+      assertThat(argumentCaptor.value.offenceDetails.first().additionalVictims).isEqualTo(dto.victims.last().victimIdentifier)
     }
 
     @Test
     fun `process offence not on file throws exception`() {
       val dto = migrationFixtures.OFFENCE_NOT_ON_FILE
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      Assertions.assertThatThrownBy {
+        migrateNewRecordService.accept(dto)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+        .hasMessageContaining("the offence code ${dto.offence.offenceCode} is unknown")
     }
 
     @Test
@@ -117,6 +200,23 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       val dto = migrationFixtures.WITH_DAMAGES
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.damages).isNotEmpty
+      assertThat(argumentCaptor.value.damages.first().code).isEqualTo(dto.damages.first().damageType)
+      assertThat(argumentCaptor.value.damages.first().details).isEqualTo(dto.damages.first().details)
+      assertThat(argumentCaptor.value.damages.first().reporter).isEqualTo(dto.damages.first().createdBy)
+    }
+
+    @Test
+    fun `process with damages and no details`() {
+      val dto = migrationFixtures.WITH_DAMAGES_AND_NO_DETAIL
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.damages).isNotEmpty
+      assertThat(argumentCaptor.value.damages.first().code).isEqualTo(dto.damages.first().damageType)
+      assertThat(argumentCaptor.value.damages.first().details).isEqualTo("No recorded details")
+      assertThat(argumentCaptor.value.damages.first().reporter).isEqualTo(dto.damages.first().createdBy)
     }
 
     @Test
@@ -124,6 +224,11 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       val dto = migrationFixtures.WITH_WITNESSES
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.witnesses).isNotEmpty
+      assertThat(argumentCaptor.value.witnesses.first().firstName).isEqualTo(dto.witnesses.first().firstName)
+      assertThat(argumentCaptor.value.witnesses.first().lastName).isEqualTo(dto.witnesses.first().lastName)
+      assertThat(argumentCaptor.value.witnesses.first().reporter).isEqualTo(dto.witnesses.first().createdBy)
     }
 
     @Test
@@ -131,6 +236,11 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       val dto = migrationFixtures.WITH_EVIDENCE
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.evidence).isNotEmpty
+      assertThat(argumentCaptor.value.evidence.first().code).isEqualTo(dto.evidence.first().evidenceCode)
+      assertThat(argumentCaptor.value.evidence.first().details).isEqualTo(dto.evidence.first().details)
+      assertThat(argumentCaptor.value.evidence.first().reporter).isEqualTo(dto.evidence.first().reporter)
     }
   }
 

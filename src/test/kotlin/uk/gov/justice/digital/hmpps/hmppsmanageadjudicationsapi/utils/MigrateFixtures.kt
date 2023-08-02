@@ -17,6 +17,15 @@ class MigrateFixtures {
     offence = migrationEntityBuilder.createOffence(offenceCode = "1234"),
   )
 
+  val OFFENCE_WITH_OTHERS = migrationEntityBuilder.createAdjudication(
+    offence = migrationEntityBuilder.createOffence(offenceCode = "51:25D"),
+  )
+
+  val OFFENCE_WITH_OTHERS_AND_SAME_CODE = migrationEntityBuilder.createAdjudication(
+    offence = migrationEntityBuilder.createOffence(offenceCode = "51:1A"),
+    associates = listOf(migrationEntityBuilder.createAssociate()),
+  )
+
   val WITH_ASSOCIATE = migrationEntityBuilder.createAdjudication(
     associates = listOf(migrationEntityBuilder.createAssociate()),
   )
@@ -41,6 +50,9 @@ class MigrateFixtures {
     prisoner = migrationEntityBuilder.createPrisoner(gender = "?"),
   )
 
+  val FEMALE = migrationEntityBuilder.createAdjudication(
+    prisoner = migrationEntityBuilder.createPrisoner(gender = NomisGender.F.name),
+  )
   val ADULT_MULITPLE_OFFENCES = listOf(
     migrationEntityBuilder.createAdjudication(),
     migrationEntityBuilder.createAdjudication(offenceSequence = 2),
@@ -282,6 +294,7 @@ class MigrateFixtures {
   fun getAll(): List<AdjudicationMigrateDto> = listOf(
     ADULT_SINGLE_OFFENCE, WITH_ASSOCIATE, WITH_STAFF_VICTIM, WITH_PRISONER_VICTIM, YOUTH_SINGLE_OFFENCE, NON_BINARY_GENDER, UNKNOWN_GENDER,
     WITH_HEARINGS_AND_RESULTS_MUDDLED, WITH_HEARINGS_AND_SOME_RESULTS, WITH_HEARINGS_AND_RESULTS, WITH_HEARING, WITH_NO_ADJUDICATOR,
-    WITH_HEARINGS, WITH_HEARING_AND_RESULT, WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED,
+    WITH_HEARINGS, WITH_HEARING_AND_RESULT, WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED, OFFENCE_WITH_OTHERS, OFFENCE_WITH_OTHERS_AND_SAME_CODE,
+    FEMALE,
   )
 }
