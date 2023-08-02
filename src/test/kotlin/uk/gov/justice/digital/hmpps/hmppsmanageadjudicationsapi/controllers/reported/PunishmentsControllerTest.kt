@@ -230,6 +230,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         punishmentsService.getReportsWithAdditionalDays(
           any(),
           any(),
+          any(),
         ),
       ).thenReturn(ADDITIONAL_DAYS_DTO)
     }
@@ -257,13 +258,13 @@ class PunishmentsControllerTest : TestControllerBase() {
       getReportsWithAdditionalDaysRequest()
         .andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(punishmentsService).getReportsWithAdditionalDays("AE1234", PunishmentType.ADDITIONAL_DAYS)
+      verify(punishmentsService).getReportsWithAdditionalDays("12345", "AE1234", PunishmentType.ADDITIONAL_DAYS)
     }
 
     private fun getReportsWithAdditionalDaysRequest(): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/punishments/AE1234/for-consecutive?type=ADDITIONAL_DAYS")
+          MockMvcRequestBuilders.get("/reported-adjudications/punishments/AE1234/for-consecutive?type=ADDITIONAL_DAYS&chargeNumber=12345")
             .header("Content-Type", "application/json"),
         )
     }

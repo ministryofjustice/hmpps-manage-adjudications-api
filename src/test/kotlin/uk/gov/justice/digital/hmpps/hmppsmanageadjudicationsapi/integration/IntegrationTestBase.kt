@@ -157,7 +157,7 @@ abstract class IntegrationTestBase : TestBase() {
       .addEvidence()
       .addWitnesses()
       .completeDraft()
-      .acceptReport(testData.chargeNumber.toString(), testData.agencyId)
+      .acceptReport(testData.chargeNumber, testData.agencyId)
   }
 
   protected fun initDataForOutcome(adjudication: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION): IntegrationTestScenario {
@@ -181,6 +181,6 @@ abstract class IntegrationTestBase : TestBase() {
       .addEvidence()
       .addWitnesses()
       .completeDraft()
-      .acceptReport(adjudication.chargeNumber.toString())
+      .acceptReport(adjudication.chargeNumber)
   }
 }

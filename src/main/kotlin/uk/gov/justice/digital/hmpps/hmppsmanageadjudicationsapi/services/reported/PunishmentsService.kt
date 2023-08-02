@@ -306,30 +306,33 @@ class PunishmentsService(
     }.flatten()
   }
 
-  fun getReportsWithAdditionalDays(prisonerNumber: String, punishmentType: PunishmentType): List<AdditionalDaysDto> {
+  fun getReportsWithAdditionalDays(chargeNumber: String, prisonerNumber: String, punishmentType: PunishmentType): List<AdditionalDaysDto> {
     if (!PunishmentType.additionalDays().contains(punishmentType)) throw ValidationException("Punishment type must be ADDITIONAL_DAYS or PROSPECTIVE_DAYS")
+
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
 
     return getReportsWithActiveAdditionalDays(
       prisonerNumber = prisonerNumber,
       punishmentType = punishmentType,
-    ).map {
-      it.getPunishments().filter { punishment -> punishment.type == punishmentType }.map { punishment ->
-        val schedule = punishment.schedule.latestSchedule()
+    ).filter { it.includeAdaWithSameHearingDateAndSeparateCharge(reportedAdjudication) }
+      .map {
+        it.getPunishments().filter { punishment -> punishment.type == punishmentType }.map { punishment ->
+          val schedule = punishment.schedule.latestSchedule()
 
-        AdditionalDaysDto(
-          reportNumber = it.chargeNumber.toLong(),
-          chargeNumber = it.chargeNumber,
-          chargeProvedDate = it.getLatestHearing()?.dateTimeOfHearing?.toLocalDate()!!,
-          punishment = PunishmentDto(
-            id = punishment.id,
-            type = punishment.type,
-            consecutiveReportNumber = punishment.consecutiveChargeNumber?.toLong(),
-            consecutiveChargeNumber = punishment.consecutiveChargeNumber,
-            schedule = PunishmentScheduleDto(days = schedule.days),
-          ),
-        )
-      }
-    }.flatten()
+          AdditionalDaysDto(
+            reportNumber = it.chargeNumber.toLong(),
+            chargeNumber = it.chargeNumber,
+            chargeProvedDate = it.getLatestHearing()?.dateTimeOfHearing?.toLocalDate()!!,
+            punishment = PunishmentDto(
+              id = punishment.id,
+              type = punishment.type,
+              consecutiveReportNumber = punishment.consecutiveChargeNumber?.toLong(),
+              consecutiveChargeNumber = punishment.consecutiveChargeNumber,
+              schedule = PunishmentScheduleDto(days = schedule.days),
+            ),
+          )
+        }
+      }.flatten()
   }
 
   fun createPunishmentComment(
@@ -741,5 +744,9 @@ class PunishmentsService(
         }
       }
     }
+
+    fun ReportedAdjudication.includeAdaWithSameHearingDateAndSeparateCharge(currentAdjudication: ReportedAdjudication): Boolean =
+      this.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() == currentAdjudication.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() &&
+        this.chargeNumber != currentAdjudication.chargeNumber
   }
 }
