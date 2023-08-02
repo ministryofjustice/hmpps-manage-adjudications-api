@@ -1,0 +1,1 @@
+ALTER TABLE reported_adjudications ADD COLUMN offender_booking_id bigint null;

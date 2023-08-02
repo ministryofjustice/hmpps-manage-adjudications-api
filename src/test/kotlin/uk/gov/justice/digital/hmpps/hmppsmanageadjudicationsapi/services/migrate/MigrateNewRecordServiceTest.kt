@@ -38,6 +38,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.dateTimeOfDiscovery).isEqualTo(dto.incidentDateTime)
       assertThat(argumentCaptor.value.draftCreatedOn).isEqualTo(dto.incidentDateTime)
       assertThat(argumentCaptor.value.prisonerNumber).isEqualTo(dto.prisoner.prisonerNumber)
+      assertThat(argumentCaptor.value.offenderBookingId).isEqualTo(dto.bookingId)
       assertThat(argumentCaptor.value.gender).isEqualTo(Gender.MALE)
       assertThat(argumentCaptor.value.isYouthOffender).isEqualTo(false)
       assertThat(argumentCaptor.value.statement).isEqualTo(dto.statement)
@@ -47,7 +48,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.dateTimeOfIssue).isNull()
       assertThat(argumentCaptor.value.statusDetails).isNull()
       assertThat(argumentCaptor.value.statusReason).isNull()
-      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(17002)
       assertThat(argumentCaptor.value.offenceDetails.first().victimStaffUsername).isNull()
       assertThat(argumentCaptor.value.offenceDetails.first().victimOtherPersonsName).isNull()
       assertThat(argumentCaptor.value.offenceDetails.first().victimPrisonersNumber).isNull()
@@ -66,33 +66,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.chargeNumberMapping.oicIncidentId).isEqualTo(dto.oicIncidentId)
     }
 
-    @Disabled
-    @Test
-    fun `process with others offence`() {
-      val dto = migrationFixtures.OFFENCE_WITH_OTHERS
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      migrateNewRecordService.accept(dto)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(1002)
-      assertThat(argumentCaptor.value.incidentRoleCode).isEqualTo("25b")
-    }
-
-    @Disabled
-    @Test
-    fun `process with others and same offence code for all roles`() {
-      val dto = migrationFixtures.OFFENCE_WITH_OTHERS_AND_SAME_CODE
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      migrateNewRecordService.accept(dto)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(1001)
-      assertThat(argumentCaptor.value.incidentRoleCode).isEqualTo("25b")
-    }
-
-    @Disabled
     @Test
     fun `process yoi`() {
       val dto = migrationFixtures.YOUTH_SINGLE_OFFENCE
@@ -220,16 +193,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `process offence not on file throws exception`() {
-      val dto = migrationFixtures.OFFENCE_NOT_ON_FILE
-
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("the offence code ${dto.offence.offenceCode} is unknown")
-    }
-
-    @Test
     fun `process with damages`() {
       val dto = migrationFixtures.WITH_DAMAGES
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -283,6 +246,57 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.evidence.first().code).isEqualTo(dto.evidence.first().evidenceCode)
       assertThat(argumentCaptor.value.evidence.first().details).isEqualTo(dto.evidence.first().details)
       assertThat(argumentCaptor.value.evidence.first().reporter).isEqualTo(dto.evidence.first().reporter)
+    }
+  }
+
+  @Disabled
+  @Nested
+  inner class OffenceCodes {
+
+    @Test
+    fun `process adult`() {
+      val dto = migrationFixtures.ADULT_SINGLE_OFFENCE
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(17002)
+    }
+
+    @Test
+    fun `process with others offence`() {
+      val dto = migrationFixtures.OFFENCE_WITH_OTHERS
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(1002)
+      assertThat(argumentCaptor.value.incidentRoleCode).isEqualTo("25b")
+    }
+
+    @Test
+    fun `process with others and same offence code for all roles`() {
+      val dto = migrationFixtures.OFFENCE_WITH_OTHERS_AND_SAME_CODE
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(1001)
+      assertThat(argumentCaptor.value.incidentRoleCode).isEqualTo("25b")
+    }
+
+    @Test
+    fun `process offence not on file throws exception`() {
+      val dto = migrationFixtures.OFFENCE_NOT_ON_FILE
+
+      Assertions.assertThatThrownBy {
+        migrateNewRecordService.accept(dto)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+        .hasMessageContaining("the offence code ${dto.offence.offenceCode} is unknown")
     }
   }
 

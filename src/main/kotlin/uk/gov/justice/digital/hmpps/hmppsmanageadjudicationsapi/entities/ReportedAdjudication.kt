@@ -20,6 +20,7 @@ import java.time.LocalDateTime
 data class ReportedAdjudication(
   override val id: Long? = null,
   var prisonerNumber: String,
+  var offenderBookingId: Long? = null,
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var gender: Gender,

@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 
 @Transactional
@@ -39,6 +38,7 @@ class MigrateNewRecordService(
       chargeNumber = chargeNumber,
       agencyIncidentId = adjudicationMigrateDto.agencyIncidentId,
       prisonerNumber = adjudicationMigrateDto.prisoner.prisonerNumber,
+      offenderBookingId = adjudicationMigrateDto.bookingId,
       originatingAgencyId = adjudicationMigrateDto.agencyId,
       overrideAgencyId = adjudicationMigrateDto.getOverrideAgencyId(),
       dateTimeOfDiscovery = adjudicationMigrateDto.incidentDateTime,
@@ -132,7 +132,7 @@ class MigrateNewRecordService(
       val victims = this.victims.toVictims()
       val firstVictim = victims.removeFirstOrNull()
       return ReportedOffence(
-        offenceCode = OffenceCodes.findByNomisCode(this.offence.offenceCode),
+        offenceCode = 0,
         victimPrisonersNumber = firstVictim?.victimPrisonersNumber,
         victimStaffUsername = firstVictim?.victimStaffUsername,
         additionalVictims = victims,
