@@ -51,7 +51,6 @@ class MigrateNewRecordService(
       evidence = adjudicationMigrateDto.evidence.toEvidence(),
       witnesses = adjudicationMigrateDto.witnesses.toWitnesses(),
       disIssueHistory = mutableListOf(),
-      draftCreatedOn = adjudicationMigrateDto.incidentDateTime,
       status = ReportedAdjudicationStatus.UNSCHEDULED,
       handoverDeadline = DraftAdjudicationService.daysToActionFromIncident(adjudicationMigrateDto.incidentDateTime),
       gender = adjudicationMigrateDto.getGender(),

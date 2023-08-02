@@ -36,7 +36,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.locationId).isEqualTo(dto.locationId)
       assertThat(argumentCaptor.value.dateTimeOfIncident).isEqualTo(dto.incidentDateTime)
       assertThat(argumentCaptor.value.dateTimeOfDiscovery).isEqualTo(dto.incidentDateTime)
-      assertThat(argumentCaptor.value.draftCreatedOn).isEqualTo(dto.incidentDateTime)
       assertThat(argumentCaptor.value.prisonerNumber).isEqualTo(dto.prisoner.prisonerNumber)
       assertThat(argumentCaptor.value.offenderBookingId).isEqualTo(dto.bookingId)
       assertThat(argumentCaptor.value.gender).isEqualTo(Gender.MALE)

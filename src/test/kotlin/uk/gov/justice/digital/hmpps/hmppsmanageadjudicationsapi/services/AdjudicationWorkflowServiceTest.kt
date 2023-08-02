@@ -270,7 +270,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           "incidentRoleAssociatedPrisonersNumber",
           "incidentRoleAssociatedPrisonersName",
           "statement",
-          "draftCreatedOn",
         )
         .contains(
           1L,
@@ -280,7 +279,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
           INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
           "test",
-          now,
         )
 
       assertThat(reportedAdjudicationArgumentCaptor.value.offenceDetails)
