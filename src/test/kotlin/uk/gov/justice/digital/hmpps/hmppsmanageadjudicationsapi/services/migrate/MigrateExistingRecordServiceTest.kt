@@ -1,6 +1,5 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateExistingRecordService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 
 class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
