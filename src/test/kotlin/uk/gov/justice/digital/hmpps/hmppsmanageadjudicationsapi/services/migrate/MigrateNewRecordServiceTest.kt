@@ -55,7 +55,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersName).isNull()
       assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersNumber).isNull()
       assertThat(argumentCaptor.value.additionalAssociates).isEmpty()
-      // assertThat(argumentCaptor.value.incidentRoleCode).isNull()
+      assertThat(argumentCaptor.value.incidentRoleCode).isNull()
       assertThat(argumentCaptor.value.damages).isEmpty()
       assertThat(argumentCaptor.value.evidence).isEmpty()
       assertThat(argumentCaptor.value.witnesses).isEmpty()
