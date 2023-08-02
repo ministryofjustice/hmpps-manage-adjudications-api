@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import jakarta.validation.ValidationException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.UnableToMigrateException
 
 enum class OffenceCodes(val paragraph: String, private val withOthers: String? = null, val uniqueOffenceCodes: List<Int>, val paragraphDescription: Descriptions) {
   ADULT_51_1A(paragraph = "1(a)", uniqueOffenceCodes = listOf(1001, 1003, 1005, 1021, 1007), paragraphDescription = Descriptions.YOI_2_ADULT_1A),
@@ -107,11 +108,17 @@ enum class OffenceCodes(val paragraph: String, private val withOthers: String? =
       val match = OffenceCodes.values().firstOrNull { it.getNomisCode() == nomisCode }
       val matchOthers = OffenceCodes.values().firstOrNull { it.getNomisCodeWithOthers() == nomisCode }
 
-      // yeah we will have an issue here.
+      if (match == null && matchOthers == null) throw UnableToMigrateException("the offence code $nomisCode is unknown")
 
-      return 0
+      if (match != null && match.getNomisCode() == matchOthers?.getNomisCodeWithOthers()) {
+        if (match.uniqueOffenceCodes.size == 1) return match.uniqueOffenceCodes.first()
+      }
 
-      // return match ?: matchOthers ?: throw UnableToMigrateException("the offence code $nomisCode is unknown")
+      if (matchOthers != null) {
+        if (matchOthers.uniqueOffenceCodes.size == 1) return matchOthers.uniqueOffenceCodes.first()
+      }
+
+      throw UnableToMigrateException("the offence code $nomisCode has multiple mappings")
     }
   }
 }

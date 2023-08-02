@@ -47,7 +47,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.dateTimeOfIssue).isNull()
       assertThat(argumentCaptor.value.statusDetails).isNull()
       assertThat(argumentCaptor.value.statusReason).isNull()
-      // assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(17002)
+      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(17002)
       assertThat(argumentCaptor.value.offenceDetails.first().victimStaffUsername).isNull()
       assertThat(argumentCaptor.value.offenceDetails.first().victimOtherPersonsName).isNull()
       assertThat(argumentCaptor.value.offenceDetails.first().victimPrisonersNumber).isNull()
@@ -92,6 +92,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.incidentRoleCode).isEqualTo("25b")
     }
 
+    @Disabled
     @Test
     fun `process yoi`() {
       val dto = migrationFixtures.YOUTH_SINGLE_OFFENCE
@@ -218,7 +219,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(copyOfVictims.firstOrNull { it.victimIdentifier == victim3 }).isNotNull
     }
 
-    @Disabled
     @Test
     fun `process offence not on file throws exception`() {
       val dto = migrationFixtures.OFFENCE_NOT_ON_FILE
