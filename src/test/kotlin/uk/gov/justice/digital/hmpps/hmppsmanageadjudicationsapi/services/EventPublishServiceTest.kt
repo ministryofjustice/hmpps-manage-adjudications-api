@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
@@ -28,7 +31,7 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
   )
 
   @Test
-  fun `create adjudication event sends chargeNumber and prisonId`() {
+  fun `create adjudication event sends chargeNumber and prisonId when async is true`() {
     whenever(featureFlagsConfig.adjudications).thenReturn(true)
     eventPublishService.publishEvent(AdjudicationDomainEventType.ADJUDICATION_CREATED, REPORTED_ADJUDICATION_DTO)
 
@@ -41,6 +44,14 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
         prisonId = REPORTED_ADJUDICATION_DTO.originatingAgencyId,
       ),
     )
+  }
+
+  @Test
+  fun `create adjudication event is not sent when async is false`() {
+    whenever(featureFlagsConfig.adjudications).thenReturn(false)
+    eventPublishService.publishEvent(AdjudicationDomainEventType.ADJUDICATION_CREATED, REPORTED_ADJUDICATION_DTO)
+
+    verify(snsService, never()).publishDomainEvent(any(), any(), any(), anyOrNull())
   }
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
