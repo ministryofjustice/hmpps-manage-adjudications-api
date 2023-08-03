@@ -77,7 +77,7 @@ data class MigrateVictim(
 @Schema(description = "incident associate")
 data class MigrateAssociate(
   @Schema(description = "associate prisoner number")
-  val associatedPrisoner: String?,
+  val associatedPrisoner: String,
 )
 
 @Schema(description = "reporting officer")

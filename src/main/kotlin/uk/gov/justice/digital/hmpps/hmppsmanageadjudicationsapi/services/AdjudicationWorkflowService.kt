@@ -182,7 +182,6 @@ class AdjudicationWorkflowService(
         damages = toReportedDamages(draftAdjudication.damages),
         evidence = toReportedEvidence(draftAdjudication.evidence),
         witnesses = toReportedWitnesses(draftAdjudication.witnesses),
-        draftCreatedOn = draftAdjudication.createDateTime!!,
         hearings = mutableListOf(),
         outcomes = mutableListOf(),
         disIssueHistory = mutableListOf(),

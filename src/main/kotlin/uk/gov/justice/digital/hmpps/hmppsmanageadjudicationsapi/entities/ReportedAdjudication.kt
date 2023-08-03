@@ -20,6 +20,7 @@ import java.time.LocalDateTime
 data class ReportedAdjudication(
   override val id: Long? = null,
   var prisonerNumber: String,
+  var offenderBookingId: Long? = null,
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var gender: Gender,
@@ -61,7 +62,6 @@ data class ReportedAdjudication(
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "reported_adjudication_fk_id")
   var hearings: MutableList<Hearing>,
-  var draftCreatedOn: LocalDateTime,
   var issuingOfficer: String? = null,
   var dateTimeOfIssue: LocalDateTime? = null,
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)

@@ -20,7 +20,7 @@ class IncidentRoleRuleLookup {
     )
 
     fun associatedPrisonerInformationRequired(incidentRoleCode: String?): Boolean {
-      return INCITES_OTHER_TO_COMMIT_OFFENCE.equals(incidentRoleCode) || ASSISTS_OTHER_TO_COMMIT_OFFENCE.equals(incidentRoleCode)
+      return INCITES_OTHER_TO_COMMIT_OFFENCE == incidentRoleCode || ASSISTS_OTHER_TO_COMMIT_OFFENCE == incidentRoleCode
     }
 
     fun getOffenceRuleDetails(incidentRoleCode: String?, isYouthOffender: Boolean): OffenceRuleDetailsDto? {

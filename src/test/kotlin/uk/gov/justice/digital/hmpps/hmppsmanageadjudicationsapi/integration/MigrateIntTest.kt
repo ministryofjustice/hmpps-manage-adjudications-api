@@ -22,7 +22,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
     val body = objectMapper.writeValueAsString(adjudicationMigrateDto)
     webTestClient.post()
       .uri("/reported-adjudications/migrate")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = null))
       .bodyValue(body)
       .exchange()
       .expectStatus().isCreated
@@ -40,7 +40,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
 
     webTestClient.post()
       .uri("/reported-adjudications/migrate")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = null))
       .bodyValue(body)
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.CONFLICT)
@@ -54,14 +54,14 @@ class MigrateIntTest : SqsIntegrationTestBase() {
 
     webTestClient.post()
       .uri("/reported-adjudications/migrate")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = null))
       .bodyValue(body)
       .exchange()
       .expectStatus().isCreated
 
     webTestClient.delete()
       .uri("/reported-adjudications/migrate/reset")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = null))
       .exchange()
       .expectStatus().isOk
 

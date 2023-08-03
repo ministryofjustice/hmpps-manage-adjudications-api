@@ -71,7 +71,6 @@ class EntityBuilder {
           reporter = "Fred",
         ),
       ),
-      draftCreatedOn = dateTime,
       hearings = mutableListOf(
         createHearing(chargeNumber, dateTime, agencyId, hearingId),
       ),

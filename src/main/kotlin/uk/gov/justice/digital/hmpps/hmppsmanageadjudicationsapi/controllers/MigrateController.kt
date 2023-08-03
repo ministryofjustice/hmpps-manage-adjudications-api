@@ -30,8 +30,8 @@ data class ChargeNumberMapping(
   val chargeNumber: String,
   @Schema(description = "oic incident id")
   val oicIncidentId: Long,
-  @Schema(description = "charge sequence")
-  val chargeSequence: Long,
+  @Schema(description = "offence sequence")
+  val offenceSequence: Long,
 )
 
 @Schema(description = "hearing mapping")
