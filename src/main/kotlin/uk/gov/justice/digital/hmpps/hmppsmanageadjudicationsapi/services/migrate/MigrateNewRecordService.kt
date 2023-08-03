@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateAsso
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePrisoner
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateVictim
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
@@ -53,7 +54,7 @@ class MigrateNewRecordService(
       disIssueHistory = mutableListOf(),
       status = ReportedAdjudicationStatus.UNSCHEDULED,
       handoverDeadline = DraftAdjudicationService.daysToActionFromIncident(adjudicationMigrateDto.incidentDateTime),
-      gender = adjudicationMigrateDto.getGender(),
+      gender = adjudicationMigrateDto.prisoner.getGender(),
       hearings = mutableListOf(),
       punishments = mutableListOf(),
       punishmentComments = mutableListOf(),
@@ -84,8 +85,8 @@ class MigrateNewRecordService(
 
     fun AdjudicationMigrateDto.getIncidentRole(): String? = null
 
-    fun AdjudicationMigrateDto.getGender(): Gender =
-      when (this.prisoner.gender) {
+    fun MigratePrisoner.getGender(): Gender =
+      when (this.gender) {
         NomisGender.F.name -> Gender.FEMALE
         else -> Gender.MALE
       }
