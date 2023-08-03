@@ -1,6 +1,7 @@
 ---
 generic-service:
   nameOverride: hmpps-manage-adjudications-api
+  productId: "DPS001"
 
   serviceAccountName: hmpps-manage-adjudications-api
 
