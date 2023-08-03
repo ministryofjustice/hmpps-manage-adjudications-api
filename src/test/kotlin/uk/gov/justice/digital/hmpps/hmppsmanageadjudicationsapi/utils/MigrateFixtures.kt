@@ -4,6 +4,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudicatio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -102,6 +104,54 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_PUNISHMENT = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(),
+    ),
+  )
+
+  val WITH_PUNISHMENT_CC = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.CC.name),
+    ),
+  )
+
+  val WITH_PUNISHMENT_EXTRA_WORK = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.EXTW.name),
+    ),
+  )
+
+  val WITH_PUNISHMENT_EXCLUSION_WORK = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.EXTRA_WORK.name),
+    ),
+  )
+
+  val WITH_PUNISHMENT_REMOVAL_WING = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.REMWIN.name),
+    ),
+  )
+
+  val WITH_PUNISHMENT_REMOVAL_ACTIVITY = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.REMACT.name),
+    ),
+  )
+
+  val WITH_PUNISHMENT_PRIVILEGES = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.FORFEIT.name),
+    ),
+  )
+
+  val WITH_PUNISHMENT_SUSPENDED = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.FORFEIT.name, days = 10, effectiveDate = LocalDateTime.now(), status = Status.SUSPENDED.name),
+    ),
+  )
+
   val WITH_PUNISHMENT_ADA = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
       migrationEntityBuilder.createPunishment(code = "ADA", status = "IMMEDIATE", days = 10),
@@ -120,6 +170,24 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_PUNISHMENT_DAMAGES_NO_AMOUNT = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = "OTHER"),
+    ),
+  )
+
+  val WITH_PUNISHMENT_STOPPAGE_PERCENTAGE = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.STOP_PCT.name, amount = BigDecimal(10.50)),
+    ),
+  )
+
+  val WITH_PUNISHMENT_EARNINGS_NO_STOPPAGE_PERCENTAGE = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.STOP_PCT.name,),
+    ),
+  )
+
   val WITH_PUNISHMENT_COMMENT = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
       migrationEntityBuilder.createPunishment(comment = "some notes"),
@@ -132,6 +200,12 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_PUNISHMENT_CONSECUTIVE_INVALID = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.OTHER.name, status = "IMMEDIATE", consecutiveChargeNumber = 12345),
+    ),
+  )
+
   val WITH_PUNISHMENT_INVALID_CODE = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
       migrationEntityBuilder.createPunishment(code = "?"),
@@ -141,6 +215,12 @@ class MigrateFixtures {
   val WITH_PUNISHMENT_INVALID_STATUS = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
       migrationEntityBuilder.createPunishment(status = "?"),
+    ),
+  )
+
+  val WITH_PUNISHMENT_START_DATE = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(status = OicSanctionCode.CC.name),
     ),
   )
 
@@ -291,10 +371,11 @@ class MigrateFixtures {
     ),
   )
 
-  fun getAll(): List<AdjudicationMigrateDto> = listOf(
+  fun getAll(): List<AdjudicationMigrateDto> = setOf(
     ADULT_SINGLE_OFFENCE, WITH_ASSOCIATE, WITH_STAFF_VICTIM, WITH_PRISONER_VICTIM, YOUTH_SINGLE_OFFENCE, NON_BINARY_GENDER, UNKNOWN_GENDER,
     WITH_HEARINGS_AND_RESULTS_MUDDLED, WITH_HEARINGS_AND_SOME_RESULTS, WITH_HEARINGS_AND_RESULTS, WITH_HEARING, WITH_NO_ADJUDICATOR,
     WITH_HEARINGS, WITH_HEARING_AND_RESULT, WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED, OFFENCE_WITH_OTHERS, OFFENCE_WITH_OTHERS_AND_SAME_CODE,
-    FEMALE,
-  )
+    FEMALE, WITH_PUNISHMENT, WITH_PUNISHMENT_DAMAGES_AMOUNT, WITH_PUNISHMENT_ADA, WITH_PUNISHMENT_DAMAGES_AMOUNT, WITH_PUNISHMENT_COMMENT,
+    WITH_PUNISHMENT_STOPPAGE_PERCENTAGE, WITH_PUNISHMENT_CONSECUTIVE, WITH_PUNISHMENT_SUSPENDED,WITH_PUNISHMENT_START_DATE,
+  ).toList()
 }
