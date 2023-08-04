@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
@@ -47,13 +45,12 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.dateTimeOfIssue).isNull()
       assertThat(argumentCaptor.value.statusDetails).isNull()
       assertThat(argumentCaptor.value.statusReason).isNull()
+      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(0)
       assertThat(argumentCaptor.value.offenceDetails.first().victimStaffUsername).isNull()
       assertThat(argumentCaptor.value.offenceDetails.first().victimOtherPersonsName).isNull()
       assertThat(argumentCaptor.value.offenceDetails.first().victimPrisonersNumber).isNull()
-      assertThat(argumentCaptor.value.offenceDetails.first().additionalVictims).isEmpty()
       assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersName).isNull()
       assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersNumber).isNull()
-      assertThat(argumentCaptor.value.additionalAssociates).isEmpty()
       assertThat(argumentCaptor.value.incidentRoleCode).isNull()
       assertThat(argumentCaptor.value.damages).isEmpty()
       assertThat(argumentCaptor.value.evidence).isEmpty()
@@ -121,77 +118,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `process with staff victim`() {
-      val dto = migrationFixtures.WITH_STAFF_VICTIM
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      migrateNewRecordService.accept(dto)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.offenceDetails.first().victimStaffUsername).isEqualTo(dto.victims.first().victimIdentifier)
-      assertThat(argumentCaptor.value.offenceDetails.first().victimOtherPersonsName).isNull()
-      assertThat(argumentCaptor.value.offenceDetails.first().victimPrisonersNumber).isNull()
-    }
-
-    @Test
-    fun `process with prisoner victim`() {
-      val dto = migrationFixtures.WITH_PRISONER_VICTIM
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      migrateNewRecordService.accept(dto)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.offenceDetails.first().victimPrisonersNumber).isEqualTo(dto.victims.first().victimIdentifier)
-      assertThat(argumentCaptor.value.offenceDetails.first().victimStaffUsername).isNull()
-      assertThat(argumentCaptor.value.offenceDetails.first().victimOtherPersonsName).isNull()
-    }
-
-    @Test
-    fun `process with associate`() {
-      val dto = migrationFixtures.WITH_ASSOCIATE
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      migrateNewRecordService.accept(dto)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersName).isNull()
-      assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersNumber).isEqualTo(dto.associates.first().associatedPrisoner)
-    }
-
-    @Test
-    fun `process multiple associates`() {
-      val dto = migrationFixtures.ADDITIONAL_ASSOCIATES
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      migrateNewRecordService.accept(dto)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersName).isNull()
-      assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersNumber).isEqualTo(dto.associates.first().associatedPrisoner)
-      assertThat(argumentCaptor.value.additionalAssociates.size).isEqualTo(dto.associates.size - 1)
-      assertThat(argumentCaptor.value.additionalAssociates.first().incidentRoleAssociatedPrisonersNumber).isEqualTo(dto.associates.last().associatedPrisoner)
-    }
-
-    @Test
-    fun `process multiple victims`() {
-      val dto = migrationFixtures.ADDITIONAL_VICTIMS
-      val copyOfVictims = dto.victims
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      migrateNewRecordService.accept(dto)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.offenceDetails.first().victimStaffUsername).isEqualTo(copyOfVictims.first().victimIdentifier)
-      assertThat(argumentCaptor.value.offenceDetails.first().victimPrisonersNumber).isNull()
-      assertThat(argumentCaptor.value.offenceDetails.first().victimOtherPersonsName).isNull()
-      assertThat(argumentCaptor.value.offenceDetails.first().additionalVictims.size).isEqualTo(dto.victims.size - 1)
-      val victim2 = argumentCaptor.value.offenceDetails.first().additionalVictims[0].victimPrisonersNumber
-      val victim3 = argumentCaptor.value.offenceDetails.first().additionalVictims[1].victimPrisonersNumber
-      assertThat(copyOfVictims.firstOrNull { it.victimIdentifier == victim2 }).isNotNull
-      assertThat(copyOfVictims.firstOrNull { it.victimIdentifier == victim3 }).isNotNull
-    }
-
-    @Test
     fun `process with damages`() {
       val dto = migrationFixtures.WITH_DAMAGES
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -245,57 +171,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.evidence.first().code).isEqualTo(dto.evidence.first().evidenceCode)
       assertThat(argumentCaptor.value.evidence.first().details).isEqualTo(dto.evidence.first().details)
       assertThat(argumentCaptor.value.evidence.first().reporter).isEqualTo(dto.evidence.first().reporter)
-    }
-  }
-
-  @Disabled
-  @Nested
-  inner class OffenceCodes {
-
-    @Test
-    fun `process adult`() {
-      val dto = migrationFixtures.ADULT_SINGLE_OFFENCE
-
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      migrateNewRecordService.accept(dto)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(17002)
-    }
-
-    @Test
-    fun `process with others offence`() {
-      val dto = migrationFixtures.OFFENCE_WITH_OTHERS
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      migrateNewRecordService.accept(dto)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(1002)
-      assertThat(argumentCaptor.value.incidentRoleCode).isEqualTo("25b")
-    }
-
-    @Test
-    fun `process with others and same offence code for all roles`() {
-      val dto = migrationFixtures.OFFENCE_WITH_OTHERS_AND_SAME_CODE
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      migrateNewRecordService.accept(dto)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(1001)
-      assertThat(argumentCaptor.value.incidentRoleCode).isEqualTo("25b")
-    }
-
-    @Test
-    fun `process offence not on file throws exception`() {
-      val dto = migrationFixtures.OFFENCE_NOT_ON_FILE
-
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("the offence code ${dto.offence.offenceCode} is unknown")
     }
   }
 

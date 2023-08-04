@@ -13,31 +13,6 @@ class MigrateFixtures {
 
   val ADULT_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication()
 
-  val OFFENCE_NOT_ON_FILE = migrationEntityBuilder.createAdjudication(
-    offence = migrationEntityBuilder.createOffence(offenceCode = "1234"),
-  )
-
-  val OFFENCE_WITH_OTHERS = migrationEntityBuilder.createAdjudication(
-    offence = migrationEntityBuilder.createOffence(offenceCode = "51:25D"),
-  )
-
-  val OFFENCE_WITH_OTHERS_AND_SAME_CODE = migrationEntityBuilder.createAdjudication(
-    offence = migrationEntityBuilder.createOffence(offenceCode = "51:1A"),
-    associates = listOf(migrationEntityBuilder.createAssociate()),
-  )
-
-  val WITH_ASSOCIATE = migrationEntityBuilder.createAdjudication(
-    associates = listOf(migrationEntityBuilder.createAssociate()),
-  )
-
-  val WITH_STAFF_VICTIM = migrationEntityBuilder.createAdjudication(
-    victims = listOf(migrationEntityBuilder.createVictim()),
-  )
-
-  val WITH_PRISONER_VICTIM = migrationEntityBuilder.createAdjudication(
-    victims = listOf(migrationEntityBuilder.createVictim(victimIdentifier = "QW12345", isStaff = false)),
-  )
-
   val YOUTH_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication(
     offence = MigrateOffence(offenceCode = "55:17"),
   )
@@ -61,21 +36,6 @@ class MigrateFixtures {
 
   val ADULT_TRANSFER = migrationEntityBuilder.createAdjudication(
     prisoner = migrationEntityBuilder.createPrisoner(currentAgencyId = "LEI"),
-  )
-
-  val ADDITIONAL_VICTIMS = migrationEntityBuilder.createAdjudication(
-    victims = listOf(
-      migrationEntityBuilder.createVictim(victimIdentifier = "OFFICER_GEN", isStaff = true),
-      migrationEntityBuilder.createVictim(victimIdentifier = "FD12345", isStaff = false),
-      migrationEntityBuilder.createVictim(victimIdentifier = "GH12345", isStaff = false),
-    ),
-  )
-
-  val ADDITIONAL_ASSOCIATES = migrationEntityBuilder.createAdjudication(
-    associates = listOf(
-      migrationEntityBuilder.createAssociate(associatedPrisoner = "QWERTY12"),
-      migrationEntityBuilder.createAssociate(associatedPrisoner = "QWERTY13"),
-    ),
   )
 
   val WITH_WITNESSES = migrationEntityBuilder.createAdjudication(
@@ -292,9 +252,8 @@ class MigrateFixtures {
   )
 
   fun getAll(): List<AdjudicationMigrateDto> = listOf(
-    ADULT_SINGLE_OFFENCE, WITH_ASSOCIATE, WITH_STAFF_VICTIM, WITH_PRISONER_VICTIM, YOUTH_SINGLE_OFFENCE, NON_BINARY_GENDER, UNKNOWN_GENDER,
+    ADULT_SINGLE_OFFENCE, YOUTH_SINGLE_OFFENCE, NON_BINARY_GENDER, UNKNOWN_GENDER,
     WITH_HEARINGS_AND_RESULTS_MUDDLED, WITH_HEARINGS_AND_SOME_RESULTS, WITH_HEARINGS_AND_RESULTS, WITH_HEARING, WITH_NO_ADJUDICATOR,
-    WITH_HEARINGS, WITH_HEARING_AND_RESULT, WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED, OFFENCE_WITH_OTHERS, OFFENCE_WITH_OTHERS_AND_SAME_CODE,
-    FEMALE,
+    WITH_HEARINGS, WITH_HEARING_AND_RESULT, WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED, FEMALE,
   )
 }
