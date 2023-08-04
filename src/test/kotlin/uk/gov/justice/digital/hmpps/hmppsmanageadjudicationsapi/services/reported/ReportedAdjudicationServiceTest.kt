@@ -160,7 +160,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       val offenceDetails = mutableListOf(
         ReportedOffence(
           offenceCode = 1002,
-          additionalVictims = mutableListOf(),
         ),
       )
 
@@ -411,7 +410,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       val offenceDetails = mutableListOf(
         ReportedOffence(
           offenceCode = 1002,
-          additionalVictims = mutableListOf(),
         ),
       )
       val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
@@ -839,12 +837,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             victimPrisonersNumber = "A1234AA",
             victimStaffUsername = "ABC12D",
             victimOtherPersonsName = "A name",
-            additionalVictims = mutableListOf(),
           ),
         )
       } else {
         mutableListOf(
-          ReportedOffence(offenceCode = 1002, additionalVictims = mutableListOf()),
+          ReportedOffence(offenceCode = 1002),
         )
       }
 
