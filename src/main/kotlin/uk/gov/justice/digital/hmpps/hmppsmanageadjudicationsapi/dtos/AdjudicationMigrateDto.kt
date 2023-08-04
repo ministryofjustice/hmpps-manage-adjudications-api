@@ -68,7 +68,7 @@ data class ReportingOfficer(
   val username: String,
 )
 
-@Schema(description = "witnesses")
+@Schema(description = "witnesses -these can include victims and associates")
 data class MigrateWitness(
   @Schema(description = "first name")
   val firstName: String,
