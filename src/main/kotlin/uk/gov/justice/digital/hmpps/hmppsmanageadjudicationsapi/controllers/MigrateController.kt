@@ -52,7 +52,7 @@ data class PunishmentMapping(
   val sanctionSeq: Long,
 )
 
-@PreAuthorize("hasAuthority('SCOPE_write')")
+@PreAuthorize("hasRole('MIGRATE_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
 @RestController
 @Tag(name = "99. Migrate")
 class MigrateController(

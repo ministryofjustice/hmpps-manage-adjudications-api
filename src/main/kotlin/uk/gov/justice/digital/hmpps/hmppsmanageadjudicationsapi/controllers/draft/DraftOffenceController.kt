@@ -43,7 +43,7 @@ class DraftOffenceController(
 
   @PutMapping(value = ["/{id}/offence-details"])
   @Operation(summary = "Set the offence details for the draft adjudication.", description = "At least one set of offence details must be supplied")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun setOffenceDetails(
     @PathVariable(name = "id") id: Long,
@@ -62,6 +62,7 @@ class DraftOffenceController(
 
   @GetMapping("/offence-rule/{offenceCode}")
   @Operation(summary = "Returns details of the offence rule relating to this offence code.")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   fun getOffenceRule(
     @PathVariable(name = "offenceCode") offenceCode: Int,
     @RequestParam(value = "youthOffender") isYouthOffender: Boolean,

@@ -34,6 +34,7 @@ data class AgencyReportCountsDto(
   val transferReviewTotal: Long,
 )
 
+@PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
 @RestController
 @Tag(name = "40. Reports")
 class ReportsController(
@@ -75,7 +76,6 @@ class ReportsController(
       description = "optional filter for transferred reports only",
     ),
   )
-  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
   @GetMapping("/reports")
   fun getReportedAdjudications(
     @RequestParam(name = "startDate")

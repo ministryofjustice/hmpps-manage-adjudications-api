@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessesRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.WitnessesService
 
-@PreAuthorize("hasAuthority('SCOPE_write')")
+@PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
 @Tag(name = "25. Witnesses")
 class WitnessesController(

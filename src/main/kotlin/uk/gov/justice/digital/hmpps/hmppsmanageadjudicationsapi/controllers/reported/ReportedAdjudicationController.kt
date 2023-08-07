@@ -52,16 +52,18 @@ class ReportedAdjudicationController(
 
   @Deprecated("to remove on completion of NN-5319")
   @GetMapping(value = ["/{chargeNumber}"])
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   fun getReportedAdjudicationDetails(@PathVariable(name = "chargeNumber") chargeNumber: String): ReportedAdjudicationResponse =
     reportedAdjudicationService.getReportedAdjudicationDetails(chargeNumber).toResponse()
 
   @GetMapping(value = ["/{chargeNumber}/v2"])
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   fun getReportedAdjudicationDetailsV2(@PathVariable(name = "chargeNumber") chargeNumber: String): ReportedAdjudicationResponseV2 =
     reportedAdjudicationService.getReportedAdjudicationDetailsV2(chargeNumber).toResponseV2()
 
   @PutMapping(value = ["/{chargeNumber}/status"])
   @Operation(summary = "Set the status for the reported adjudication.")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.OK)
   fun setStatus(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
@@ -83,7 +85,7 @@ class ReportedAdjudicationController(
 
   @PutMapping(value = ["/{chargeNumber}/issue"])
   @Operation(summary = "Issue DIS Form")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   fun setIssued(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
