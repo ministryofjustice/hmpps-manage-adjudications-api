@@ -236,8 +236,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         )
         .contains(
           1002,
-          offenceCodeLookupService.getOffenceDetails(1002, isYouthOffender).paragraph,
-          offenceCodeLookupService.getOffenceDetails(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
+          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraph,
+          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
           null,
           null,
           null,
@@ -454,13 +454,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(reportedAdjudicationDto)
         .extracting(
-          "adjudicationNumber",
+          "chargeNumber",
           "prisonerNumber",
           "createdByUserId",
           "createdDateTime",
           "isYouthOffender",
         )
-        .contains(1235L, "A12345", "A_SMITH", REPORTED_DATE_TIME, isYouthOffender)
+        .contains("1235", "A12345", "A_SMITH", REPORTED_DATE_TIME, isYouthOffender)
 
       assertThat(reportedAdjudicationDto.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
@@ -485,8 +485,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         )
         .contains(
           1002,
-          offenceCodeLookupService.getOffenceDetails(1002, isYouthOffender).paragraph,
-          offenceCodeLookupService.getOffenceDetails(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
+          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraph,
+          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
           null,
           null,
           null,
@@ -727,9 +727,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         incidentTime = DATE_TIME_OF_INCIDENT.plusDays(1),
         statement = INCIDENT_STATEMENT,
         offenceCodes = if (committedOnOwn) {
-          listOf(offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(1002, true))
+          listOf(offenceCodeLookupService.getOffenceCode(1002, true).getNomisCode())
         } else {
-          listOf(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(1002, true))
+          listOf(offenceCodeLookupService.getOffenceCode(1002, true).getNomisCodeWithOthers())
         },
         victimOffenderIds = expectedVictimOffenderIds,
         victimStaffUsernames = expectedVictimStaffUsernames,
@@ -773,7 +773,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         incidentLocationId = 2L,
         incidentTime = DATE_TIME_OF_INCIDENT.plusDays(1),
         statement = INCIDENT_STATEMENT,
-        offenceCodes = listOf(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(1002, isYouthOffender)),
+        offenceCodes = listOf(offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).getNomisCodeWithOthers()),
         victimOffenderIds = expectedVictimOffenderIds,
         victimStaffUsernames = expectedVictimStaffUsernames,
         connectedOffenderIds = expectedConnectedOffenderIds,
@@ -808,7 +808,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           incidentLocationId = reportedAdjudication.locationId,
           incidentTime = reportedAdjudication.dateTimeOfDiscovery,
           statement = reportedAdjudication.statement,
-          offenceCodes = listOf(offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(1002, false)),
+          offenceCodes = listOf(offenceCodeLookupService.getOffenceCode(1002, false).getNomisCodeWithOthers()),
           victimStaffUsernames = emptyList(),
           victimOffenderIds = emptyList(),
           connectedOffenderIds = emptyList(),

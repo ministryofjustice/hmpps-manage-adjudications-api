@@ -53,7 +53,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       )
       makeGetAdjudicationRequest(1)
         .andExpect(status().isOk)
-        .andExpect(jsonPath("$.reportedAdjudication.adjudicationNumber").value(1))
+        .andExpect(jsonPath("$.reportedAdjudication.chargeNumber").value("1"))
       verify(reportedAdjudicationService).getReportedAdjudicationDetailsV2("1")
     }
 

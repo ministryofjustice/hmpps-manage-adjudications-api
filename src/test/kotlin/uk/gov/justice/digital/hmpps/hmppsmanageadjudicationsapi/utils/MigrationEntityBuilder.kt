@@ -68,7 +68,8 @@ class MigrationEntityBuilder {
       gender = gender,
     )
 
-  fun createOffence(offenceCode: String = "51:17"): MigrateOffence = MigrateOffence(offenceCode = offenceCode)
+  fun createOffence(offenceCode: String = "51:17", offenceDescription: String = "description"): MigrateOffence =
+    MigrateOffence(offenceCode = offenceCode, offenceDescription = offenceDescription)
 
   fun createWitness(): MigrateWitness = MigrateWitness(firstName = "first", lastName = "last", createdBy = "OFFICER_GEN", witnessType = WitnessCode.OFFICER)
 

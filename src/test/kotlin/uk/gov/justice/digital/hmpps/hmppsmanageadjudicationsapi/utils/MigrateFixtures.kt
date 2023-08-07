@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils
 
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import java.math.BigDecimal
@@ -14,7 +13,7 @@ class MigrateFixtures {
   val ADULT_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication()
 
   val YOUTH_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication(
-    offence = MigrateOffence(offenceCode = "55:17"),
+    offence = migrationEntityBuilder.createOffence(offenceCode = "55:12"),
   )
 
   val NON_BINARY_GENDER = migrationEntityBuilder.createAdjudication(

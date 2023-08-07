@@ -207,8 +207,8 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         )
         .contains(
           1002,
-          offenceCodeLookupService.getOffenceDetails(1002, isYouthOffender).paragraph,
-          offenceCodeLookupService.getOffenceDetails(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
+          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraph,
+          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
           "x",
           "y",
           "z",
@@ -1019,8 +1019,8 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       )
       .contains(
         1002,
-        offenceCodeLookupService.getOffenceDetails(1002, false).paragraph,
-        offenceCodeLookupService.getOffenceDetails(1002, false).paragraphDescription.getParagraphDescription(Gender.MALE),
+        offenceCodeLookupService.getOffenceCode(1002, false).paragraph,
+        offenceCodeLookupService.getOffenceCode(1002, false).paragraphDescription.getParagraphDescription(Gender.MALE),
       )
 
     assertThat(draftAdjudicationDto.incidentStatement)
