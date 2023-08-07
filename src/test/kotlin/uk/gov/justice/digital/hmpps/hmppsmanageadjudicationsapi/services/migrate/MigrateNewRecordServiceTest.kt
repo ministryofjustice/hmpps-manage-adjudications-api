@@ -182,7 +182,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
-
   @Nested
   inner class Punishments {
 
@@ -294,6 +293,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first().privilegeType).isEqualTo(PrivilegeType.OTHER)
       assertThat(argumentCaptor.value.getPunishments().first().otherPrivilege).isEqualTo("see comment")
     }
+
     @Test
     fun `process punishments - ADA`() {
       val dto = migrationFixtures.WITH_PUNISHMENT_ADA
@@ -389,9 +389,11 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.getPunishments().first().schedule.first().startDate).isEqualTo(dto.punishments.first().effectiveDate)
-      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().endDate).isEqualTo(dto.punishments.first().effectiveDate.plusDays(
-        dto.punishments.first().days!!.toLong()
-      ))
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().endDate).isEqualTo(
+        dto.punishments.first().effectiveDate.plusDays(
+          dto.punishments.first().days!!.toLong(),
+        ),
+      )
     }
 
     @Test
@@ -440,8 +442,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `what to do with OTHER cases` () {
-
+    fun `what to do with OTHER cases`() {
     }
   }
 

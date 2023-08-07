@@ -14,6 +14,10 @@ class MigrateFixtures {
 
   val ADULT_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication()
 
+  fun ADULT_WITH_REPORTED_DATE_TIME(reportedDateTime: LocalDateTime) = migrationEntityBuilder.createAdjudication(
+    reportedDateTime = reportedDateTime,
+  )
+
   val YOUTH_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication(
     offence = migrationEntityBuilder.createOffence(offenceCode = "55:12"),
   )
@@ -143,7 +147,7 @@ class MigrateFixtures {
 
   val WITH_PUNISHMENT_EARNINGS_NO_STOPPAGE_PERCENTAGE = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
-      migrationEntityBuilder.createPunishment(code = OicSanctionCode.STOP_PCT.name,),
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.STOP_PCT.name),
     ),
   )
 
@@ -334,7 +338,6 @@ class MigrateFixtures {
     WITH_HEARINGS_AND_RESULTS_MUDDLED, WITH_HEARINGS_AND_SOME_RESULTS, WITH_HEARINGS_AND_RESULTS, WITH_HEARING, WITH_NO_ADJUDICATOR,
     WITH_HEARINGS, WITH_HEARING_AND_RESULT, WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED, FEMALE,
     FEMALE, WITH_PUNISHMENT, WITH_PUNISHMENT_DAMAGES_AMOUNT, WITH_PUNISHMENT_ADA, WITH_PUNISHMENT_DAMAGES_AMOUNT, WITH_PUNISHMENT_COMMENT,
-    WITH_PUNISHMENT_STOPPAGE_PERCENTAGE, WITH_PUNISHMENT_CONSECUTIVE, WITH_PUNISHMENT_SUSPENDED,WITH_PUNISHMENT_START_DATE,
+    WITH_PUNISHMENT_STOPPAGE_PERCENTAGE, WITH_PUNISHMENT_CONSECUTIVE, WITH_PUNISHMENT_SUSPENDED, WITH_PUNISHMENT_START_DATE,
   )
-
 }

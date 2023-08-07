@@ -12,6 +12,7 @@ enum class EvidenceCode {
   BODY_WORN_CAMERA,
   CCTV,
   BAGGED_AND_TAGGED,
+  OTHER,
 }
 
 @Entity

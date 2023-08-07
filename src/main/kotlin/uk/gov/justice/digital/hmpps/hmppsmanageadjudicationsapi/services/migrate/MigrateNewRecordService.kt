@@ -59,7 +59,10 @@ class MigrateNewRecordService(
       migrated = true,
     )
 
-    reportedAdjudicationRepository.save(reportedAdjudication)
+    reportedAdjudicationRepository.save(reportedAdjudication).also {
+      it.createDateTime = adjudicationMigrateDto.reportedDateTime
+      it.createdByUserId = adjudicationMigrateDto.reportingOfficer.username
+    }
 
     return MigrateResponse(
       chargeNumberMapping = ChargeNumberMapping(

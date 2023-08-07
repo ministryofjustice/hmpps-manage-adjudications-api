@@ -22,6 +22,8 @@ data class AdjudicationMigrateDto(
   val agencyId: String,
   @Schema(description = "the date and time of the incident")
   val incidentDateTime: LocalDateTime,
+  @Schema(description = "the reported dated time")
+  val reportedDateTime: LocalDateTime,
   @Schema(description = "the internal location id of the incident")
   val locationId: Long,
   @Schema(description = "the incident statement")

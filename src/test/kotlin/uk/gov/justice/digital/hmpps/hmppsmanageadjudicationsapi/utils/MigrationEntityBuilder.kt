@@ -36,6 +36,7 @@ class MigrationEntityBuilder {
     evidence: List<MigrateEvidence> = emptyList(),
     punishments: List<MigratePunishment> = emptyList(),
     hearings: List<MigrateHearing> = emptyList(),
+    reportedDateTime: LocalDateTime = LocalDateTime.now(),
   ): AdjudicationMigrateDto =
     AdjudicationMigrateDto(
       agencyIncidentId = agencyIncidentId,
@@ -48,13 +49,14 @@ class MigrationEntityBuilder {
       statement = "some details",
       prisoner = prisoner,
       offence = offence,
-      reportingOfficer = ReportingOfficer(username = "dave"),
+      reportingOfficer = ReportingOfficer(username = "OFFICER_RO"),
       createdByUsername = "alo",
       witnesses = witnesses,
       damages = damages,
       evidence = evidence,
       punishments = punishments,
       hearings = hearings,
+      reportedDateTime = reportedDateTime,
     )
 
   fun createPrisoner(

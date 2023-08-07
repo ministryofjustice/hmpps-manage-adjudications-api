@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrateFixtures
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrationEntityBuilder
+import java.time.LocalDateTime
 import java.util.stream.Stream
 
 class MigrateIntTest : SqsIntegrationTestBase() {
@@ -37,6 +38,30 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.paragraphNumber").isEqualTo(adjudicationMigrateDto.offence.offenceCode)
       .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.paragraphDescription").isEqualTo(adjudicationMigrateDto.offence.offenceDescription)
+  }
+
+  @Test
+  fun `with reported date time and reporting officer overrides audit`() {
+    val reportedDateTime = LocalDateTime.of(2017, 10, 12, 10, 0)
+
+    val dto = getWithReportedDateTime(reportedDateTime)
+    val body = objectMapper.writeValueAsString(dto)
+
+    webTestClient.post()
+      .uri("/reported-adjudications/migrate")
+      .headers(setHeaders(activeCaseload = null))
+      .bodyValue(body)
+      .exchange()
+      .expectStatus().isCreated
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${dto.oicIncidentId}-${dto.offenceSequence}/v2")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.createdDateTime").isEqualTo("2017-10-12T10:00:00")
+      .jsonPath("$.reportedAdjudication.createdByUserId").isEqualTo("OFFICER_RO")
   }
 
   @Test
@@ -83,6 +108,10 @@ class MigrateIntTest : SqsIntegrationTestBase() {
 
   companion object {
     private val migrateFixtures = MigrateFixtures()
+
+    fun getWithReportedDateTime(reportedDateTime: LocalDateTime): AdjudicationMigrateDto = migrateFixtures.ADULT_WITH_REPORTED_DATE_TIME(
+      reportedDateTime = reportedDateTime,
+    )
 
     fun getAdjudicationForReset(): AdjudicationMigrateDto = migrateFixtures.ADULT_SINGLE_OFFENCE
 
