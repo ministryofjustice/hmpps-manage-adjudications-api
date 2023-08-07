@@ -804,8 +804,8 @@ class IntegrationTestData(
   fun setHeaders(
     contentType: MediaType = MediaType.APPLICATION_JSON,
     username: String? = "ITAG_USER",
+    roles: List<String> = listOf("ROLE_ADJUDICATIONS_REVIEWER", "ROLE_VIEW_ADJUDICATIONS"),
     activeCaseload: String? = "MDI",
-    roles: List<String> = emptyList(),
   ): (HttpHeaders) -> Unit = {
     it.setBearerAuth(jwtAuthHelper.createJwt(subject = username, roles = roles, scope = listOf("write")))
     it.set("Active-Caseload", activeCaseload)

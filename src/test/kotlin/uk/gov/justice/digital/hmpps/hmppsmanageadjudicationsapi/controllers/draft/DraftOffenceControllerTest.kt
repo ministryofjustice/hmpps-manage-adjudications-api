@@ -40,7 +40,7 @@ class DraftOffenceControllerTest : TestControllerBase() {
   }
 
   @Test
-  @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+  @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
   fun `makes a call to set the offence details to the draft adjudication`() {
     makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
       .andExpect(MockMvcResultMatchers.status().isCreated)
@@ -54,7 +54,7 @@ class DraftOffenceControllerTest : TestControllerBase() {
   }
 
   @Test
-  @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+  @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
   fun `returns the draft adjudication including the new offence details`() {
     makeSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
       .andExpect(MockMvcResultMatchers.status().isCreated)

@@ -241,7 +241,7 @@ class HearingControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `responds with a forbidden status code for non ALO`() {
       allHearingsRequest(LocalDate.now()).andExpect(MockMvcResultMatchers.status().isForbidden)
     }

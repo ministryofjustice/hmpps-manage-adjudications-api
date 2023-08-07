@@ -32,7 +32,7 @@ class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `make a call to complete a draft adjudication`() {
       whenever(adjudicationWorkflowService.completeDraftAdjudication(1)).thenReturn(REPORTED_ADJUDICATION_DTO)
       completeDraftAdjudication(1)
@@ -62,7 +62,7 @@ class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["i"])
     fun `responds with a unauthorised status code as missing write role`() {
       makeAloSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isForbidden)
