@@ -168,7 +168,7 @@ data class OffenceRuleDto(
   val paragraphDescription: String,
   @Schema(description = "nomis code - not set if migrated data")
   val nomisCode: String? = null,
-  @Schema(description = "with others nomis code, not set if migrated date")
+  @Schema(description = "with others nomis code, not set if migrated data")
   val withOthersNomisCode: String? = null,
 )
 
