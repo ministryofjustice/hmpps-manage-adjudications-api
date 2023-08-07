@@ -34,10 +34,6 @@ data class AdjudicationMigrateDto(
   val prisoner: MigratePrisoner,
   @Schema(description = "offence details")
   val offence: MigrateOffence,
-  @Schema(description = "optional victims", required = false)
-  val victims: List<MigrateVictim> = emptyList(),
-  @Schema(description = "optional associates", required = false)
-  val associates: List<MigrateAssociate> = emptyList(),
   @Schema(description = "witnesses", required = false)
   val witnesses: List<MigrateWitness> = emptyList(),
   @Schema(description = "damages / repairs", required = false)
@@ -64,20 +60,8 @@ data class MigratePrisoner(
 data class MigrateOffence(
   @Schema(description = "the nomis offence code")
   val offenceCode: String,
-)
-
-@Schema(description = "victim")
-data class MigrateVictim(
-  @Schema(description = "victims staff username or prisoner number")
-  val victimIdentifier: String,
-  @Schema(description = "flag to indicate if staff, false means prisoner")
-  val isStaff: Boolean,
-)
-
-@Schema(description = "incident associate")
-data class MigrateAssociate(
-  @Schema(description = "associate prisoner number")
-  val associatedPrisoner: String,
+  @Schema(description = "the nomis offence description, ie rule, paragraph as displayed in nomis")
+  val offenceDescription: String,
 )
 
 @Schema(description = "reporting officer")
@@ -86,7 +70,7 @@ data class ReportingOfficer(
   val username: String,
 )
 
-@Schema(description = "witnesses")
+@Schema(description = "witnesses -these can include victims and associates")
 data class MigrateWitness(
   @Schema(description = "first name")
   val firstName: String,

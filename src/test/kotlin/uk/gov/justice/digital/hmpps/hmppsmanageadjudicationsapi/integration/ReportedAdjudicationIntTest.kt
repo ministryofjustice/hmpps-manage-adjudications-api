@@ -106,8 +106,6 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
-      .jsonPath("$.reportedAdjudication.adjudicationNumber")
-      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
       .jsonPath("$.reportedAdjudication.chargeNumber")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
       .jsonPath("$.reportedAdjudication.overrideAgencyId").isEqualTo("TJW")

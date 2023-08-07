@@ -97,7 +97,6 @@ open class TestControllerBase {
 
     val REPORTED_ADJUDICATION_DTO_V2 =
       ReportedAdjudicationDtoV2(
-        adjudicationNumber = 1,
         chargeNumber = "1",
         prisonerNumber = "A12345",
         incidentDetails = IncidentDetailsDto(

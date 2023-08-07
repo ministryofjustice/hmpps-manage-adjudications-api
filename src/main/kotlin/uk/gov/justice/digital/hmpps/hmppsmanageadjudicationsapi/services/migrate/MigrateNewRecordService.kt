@@ -5,16 +5,12 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.ChargeNumberMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.MigrateResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateAssociate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePrisoner
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateVictim
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.AdditionalAssociate
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.AdditionalVictim
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -32,8 +28,6 @@ class MigrateNewRecordService(
 ) {
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse {
     val chargeNumber = adjudicationMigrateDto.getChargeNumber()
-    val associates = adjudicationMigrateDto.associates.toAssociates()
-    val firstAssociate = associates.removeFirstOrNull()
 
     val reportedAdjudication = ReportedAdjudication(
       chargeNumber = chargeNumber,
@@ -44,10 +38,9 @@ class MigrateNewRecordService(
       overrideAgencyId = adjudicationMigrateDto.getOverrideAgencyId(),
       dateTimeOfDiscovery = adjudicationMigrateDto.incidentDateTime,
       dateTimeOfIncident = adjudicationMigrateDto.incidentDateTime,
-      incidentRoleCode = adjudicationMigrateDto.getIncidentRole(),
-      incidentRoleAssociatedPrisonersNumber = firstAssociate?.incidentRoleAssociatedPrisonersNumber,
+      incidentRoleCode = null,
+      incidentRoleAssociatedPrisonersNumber = null,
       incidentRoleAssociatedPrisonersName = null,
-      additionalAssociates = associates,
       damages = adjudicationMigrateDto.damages.toDamages(),
       evidence = adjudicationMigrateDto.evidence.toEvidence(),
       witnesses = adjudicationMigrateDto.witnesses.toWitnesses(),
@@ -62,7 +55,7 @@ class MigrateNewRecordService(
       locationId = adjudicationMigrateDto.locationId,
       outcomes = mutableListOf(),
       statement = adjudicationMigrateDto.statement,
-      offenceDetails = mutableListOf(adjudicationMigrateDto.getOffenceDetails()),
+      offenceDetails = mutableListOf(adjudicationMigrateDto.offence.getOffenceDetails()),
       migrated = true,
     )
 
@@ -83,8 +76,6 @@ class MigrateNewRecordService(
 
     fun MigrateOffence.getIsYouthOffender(): Boolean = this.offenceCode.startsWith("55:")
 
-    fun AdjudicationMigrateDto.getIncidentRole(): String? = null
-
     fun MigratePrisoner.getGender(): Gender =
       when (this.gender) {
         NomisGender.F.name -> Gender.FEMALE
@@ -96,9 +87,6 @@ class MigrateNewRecordService(
 
       return if (this.agencyId != this.prisoner.currentAgencyId) this.prisoner.currentAgencyId else null
     }
-
-    fun List<MigrateAssociate>.toAssociates(): MutableList<AdditionalAssociate> =
-      this.map { AdditionalAssociate(incidentRoleAssociatedPrisonersNumber = it.associatedPrisoner) }.toMutableList()
 
     fun List<MigrateDamage>.toDamages(): MutableList<ReportedDamage> =
       this.map {
@@ -128,23 +116,14 @@ class MigrateNewRecordService(
         )
       }.toMutableList()
 
-    fun AdjudicationMigrateDto.getOffenceDetails(): ReportedOffence {
-      val victims = this.victims.toVictims()
-      val firstVictim = victims.removeFirstOrNull()
+    fun MigrateOffence.getOffenceDetails(): ReportedOffence {
       return ReportedOffence(
         offenceCode = 0,
-        victimPrisonersNumber = firstVictim?.victimPrisonersNumber,
-        victimStaffUsername = firstVictim?.victimStaffUsername,
-        additionalVictims = victims,
+        victimPrisonersNumber = null,
+        victimStaffUsername = null,
+        nomisOffenceCode = this.offenceCode,
+        nomisOffenceDescription = this.offenceDescription,
       )
     }
-
-    private fun List<MigrateVictim>.toVictims(): MutableList<AdditionalVictim> =
-      this.map {
-        AdditionalVictim(
-          victimStaffUsername = if (it.isStaff) it.victimIdentifier else null,
-          victimPrisonersNumber = if (!it.isStaff) it.victimIdentifier else null,
-        )
-      }.toMutableList()
   }
 }

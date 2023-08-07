@@ -11,6 +11,8 @@ enum class WitnessCode {
   OFFICER,
   STAFF,
   OTHER_PERSON,
+  VICTIM,
+  PRISONER,
 }
 
 @Entity

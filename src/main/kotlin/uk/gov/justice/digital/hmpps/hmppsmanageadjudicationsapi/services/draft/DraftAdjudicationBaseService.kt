@@ -113,7 +113,7 @@ open class DraftAdjudicationBaseService(
     isYouthOffender: Boolean,
     gender: Gender,
   ): OffenceDetailsDto {
-    val offenceDetails = offenceCodeLookupService.getOffenceDetails(
+    val offenceDetails = offenceCodeLookupService.getOffenceCode(
       offenceCode = offenceCode,
       isYouthOffender = isYouthOffender,
     )
