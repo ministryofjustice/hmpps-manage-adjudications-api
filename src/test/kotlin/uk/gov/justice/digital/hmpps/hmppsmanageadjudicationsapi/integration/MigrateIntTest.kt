@@ -27,7 +27,16 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isCreated
       .expectBody()
-      .jsonPath("$.chargeNumberMapping.chargeNumber").exists()
+      .jsonPath("$.chargeNumberMapping.chargeNumber").isEqualTo("${adjudicationMigrateDto.oicIncidentId}-${adjudicationMigrateDto.offenceSequence}")
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${adjudicationMigrateDto.oicIncidentId}-${adjudicationMigrateDto.offenceSequence}/v2")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.paragraphNumber").isEqualTo(adjudicationMigrateDto.offence.offenceCode)
+      .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.paragraphDescription").isEqualTo(adjudicationMigrateDto.offence.offenceDescription)
   }
 
   @Test
@@ -66,7 +75,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
 
     webTestClient.get()
-      .uri("/reported-adjudications/${adjudicationMigrateDto.oicIncidentId}")
+      .uri("/reported-adjudications/${adjudicationMigrateDto.oicIncidentId}/v2")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isNotFound

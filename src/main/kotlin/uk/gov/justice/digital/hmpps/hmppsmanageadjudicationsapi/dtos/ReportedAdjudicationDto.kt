@@ -86,9 +86,6 @@ data class ReportedAdjudicationDto(
 
 @Schema(description = "Reported adjudication details")
 data class ReportedAdjudicationDtoV2(
-  @Deprecated("to remove on completion of NN-5319")
-  @Schema(description = "The number for the reported adjudication")
-  val adjudicationNumber: Long,
   @Schema(description = "The charge number for the reported adjudication")
   val chargeNumber: String,
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
@@ -169,10 +166,10 @@ data class OffenceRuleDto(
   val paragraphNumber: String,
   @Schema(description = "The name relating to the paragraph description", example = "Committed an assault")
   val paragraphDescription: String,
-  @Schema(description = "nomis code")
-  val nomisCode: String?,
-  @Schema(description = "with others nomis code")
-  val withOthersNomisCode: String?,
+  @Schema(description = "nomis code - not set if migrated data")
+  val nomisCode: String? = null,
+  @Schema(description = "with others nomis code, not set if migrated date")
+  val withOthersNomisCode: String? = null,
 )
 
 @Schema(description = "Reported damages")

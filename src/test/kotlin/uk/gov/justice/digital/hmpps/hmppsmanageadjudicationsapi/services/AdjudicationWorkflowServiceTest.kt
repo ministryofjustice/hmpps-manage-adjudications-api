@@ -21,9 +21,6 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDetailsDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
@@ -173,8 +170,8 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         )
         .contains(
           1002,
-          offenceCodeLookupService.getOffenceDetails(1002, false).paragraph,
-          offenceCodeLookupService.getOffenceDetails(1002, false).paragraphDescription.getParagraphDescription(Gender.MALE),
+          offenceCodeLookupService.getOffenceCode(1002, false).paragraph,
+          offenceCodeLookupService.getOffenceCode(1002, false).paragraphDescription.getParagraphDescription(Gender.MALE),
           "A1234AA",
           "ABC12D",
           "A Person",
@@ -228,8 +225,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         incidentDetails = incidentDetails(1L, INCIDENT_TIME),
         incidentRole = incidentRoleWithAllValuesSet(),
         offenceDetails = mutableListOf(
-          BASIC_OFFENCE_DETAILS_DB_ENTITY,
-          FULL_OFFENCE_DETAILS_DB_ENTITY,
+          Offence(offenceCode = 1002),
         ),
         incidentStatement = IncidentStatement(statement = "test"),
         isYouthOffender = false,
@@ -290,16 +286,10 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         )
         .contains(
           Tuple(
-            BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
-            BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-            BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
-            BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName,
-          ),
-          Tuple(
-            FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
-            FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-            FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
-            FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName,
+            1002,
+            null,
+            null,
+            null,
           ),
         )
 
@@ -380,7 +370,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
               ValidationChecks.INCIDENT_STATEMENT -> {
                 it.isYouthOffender = false
                 it.incidentRole = incidentRoleWithAllValuesSet()
-                it.offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY)
+                it.offenceDetails = mutableListOf(Offence(offenceCode = 1002))
               }
 
               else -> {}
@@ -415,7 +405,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             agencyId = "MDI",
             incidentDetails = incidentDetails(2L, INCIDENT_TIME),
             incidentRole = incidentRoleWithNoValuesSet(),
-            offenceDetails = mutableListOf(BASIC_OFFENCE_DETAILS_DB_ENTITY, FULL_OFFENCE_DETAILS_DB_ENTITY),
+            offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
             incidentStatement = IncidentStatement(statement = "test"),
             isYouthOffender = true,
           ),
@@ -484,10 +474,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             agencyId = "MDI",
             incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, clock),
             incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
-            offenceDetails = mutableListOf(
-              BASIC_OFFENCE_DETAILS_DB_ENTITY,
-              FULL_OFFENCE_DETAILS_DB_ENTITY,
-            ),
+            offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
             incidentStatement = IncidentStatement(statement = "test"),
             isYouthOffender = false,
             damages = mutableListOf(
@@ -578,16 +565,10 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         )
         .contains(
           Tuple(
-            BASIC_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
-            BASIC_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-            BASIC_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
-            BASIC_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName,
-          ),
-          Tuple(
-            FULL_OFFENCE_DETAILS_DB_ENTITY.offenceCode,
-            FULL_OFFENCE_DETAILS_DB_ENTITY.victimPrisonersNumber,
-            FULL_OFFENCE_DETAILS_DB_ENTITY.victimStaffUsername,
-            FULL_OFFENCE_DETAILS_DB_ENTITY.victimOtherPersonsName,
+            1002,
+            null,
+            null,
+            null,
           ),
         )
       assertThat(reportedAdjudicationArgumentCaptor.value.damages.size).isEqualTo(2)
@@ -687,7 +668,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, clock),
             incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
             offenceDetails = mutableListOf(
-              BASIC_OFFENCE_DETAILS_DB_ENTITY,
+              Offence(offenceCode = 1002),
             ),
             incidentStatement = IncidentStatement(statement = "test"),
             isYouthOffender = false,
@@ -733,64 +714,18 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     private val entityBuilder: EntityBuilder = EntityBuilder()
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
     private const val INCIDENT_STATEMENT = "Example statement"
-    const val OFFENCE_CODE_3_PARAGRAPH_NUMBER = "6(a)"
-    const val OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION = "Another paragraph description"
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private const val INCIDENT_ROLE_CODE = "25a"
     private const val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
     private const val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
-    private const val OFFENCE_CODE_2_PARAGRAPH_NUMBER = "5(b)"
-    private const val OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION = "A paragraph description"
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
-
-    private val BASIC_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(offenceCode = 2)
-
-    private val FULL_OFFENCE_DETAILS_REQUEST = OffenceDetailsRequestItem(
-      offenceCode = 3,
-      victimPrisonersNumber = "A1234AA",
-      victimStaffUsername = "ABC12D",
-      victimOtherPersonsName = "A name",
-    )
-
-    private val FULL_OFFENCE_DETAILS_RESPONSE_DTO = OffenceDetailsDto(
-      offenceCode = FULL_OFFENCE_DETAILS_REQUEST.offenceCode,
-      offenceRule = OffenceRuleDetailsDto(
-        paragraphNumber = OFFENCE_CODE_3_PARAGRAPH_NUMBER,
-        paragraphDescription = OFFENCE_CODE_3_PARAGRAPH_DESCRIPTION,
-      ),
-      victimPrisonersNumber = FULL_OFFENCE_DETAILS_REQUEST.victimPrisonersNumber,
-      victimStaffUsername = FULL_OFFENCE_DETAILS_REQUEST.victimStaffUsername,
-      victimOtherPersonsName = FULL_OFFENCE_DETAILS_REQUEST.victimOtherPersonsName,
-    )
-    private val FULL_OFFENCE_DETAILS_DB_ENTITY = Offence(
-      offenceCode = FULL_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-      victimPrisonersNumber = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimPrisonersNumber,
-      victimStaffUsername = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimStaffUsername,
-      victimOtherPersonsName = FULL_OFFENCE_DETAILS_RESPONSE_DTO.victimOtherPersonsName,
-    )
-    private val BASIC_OFFENCE_DETAILS_RESPONSE_DTO = OffenceDetailsDto(
-      offenceCode = BASIC_OFFENCE_DETAILS_REQUEST.offenceCode,
-      offenceRule = OffenceRuleDetailsDto(
-        paragraphNumber = OFFENCE_CODE_2_PARAGRAPH_NUMBER,
-        paragraphDescription = OFFENCE_CODE_2_PARAGRAPH_DESCRIPTION,
-      ),
-    )
-    private val BASIC_OFFENCE_DETAILS_DB_ENTITY = Offence(
-      offenceCode = BASIC_OFFENCE_DETAILS_RESPONSE_DTO.offenceCode,
-    )
-
-    fun incidentRoleDtoWithNoValuesSet(): IncidentRoleDto =
-      IncidentRoleDto(null, null, null, null)
 
     fun incidentRoleWithAllValuesSet(): IncidentRole =
       IncidentRole(null, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME)
 
     fun incidentRoleWithNoValuesSet(): IncidentRole =
       IncidentRole(null, null, null, null)
-
-    fun incidentRoleWithValuesSetForRoleCode(roleCode: String?): IncidentRole =
-      IncidentRole(null, roleCode, "2", "3")
 
     fun incidentDetails(locationId: Long, clock: Clock) = IncidentDetails(
       locationId = locationId,

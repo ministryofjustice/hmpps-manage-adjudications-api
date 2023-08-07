@@ -49,6 +49,8 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.offenceDetails.first().victimStaffUsername).isNull()
       assertThat(argumentCaptor.value.offenceDetails.first().victimOtherPersonsName).isNull()
       assertThat(argumentCaptor.value.offenceDetails.first().victimPrisonersNumber).isNull()
+      assertThat(argumentCaptor.value.offenceDetails.first().nomisOffenceCode).isEqualTo(dto.offence.offenceCode)
+      assertThat(argumentCaptor.value.offenceDetails.first().nomisOffenceDescription).isEqualTo(dto.offence.offenceDescription)
       assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersName).isNull()
       assertThat(argumentCaptor.value.incidentRoleAssociatedPrisonersNumber).isNull()
       assertThat(argumentCaptor.value.incidentRoleCode).isNull()

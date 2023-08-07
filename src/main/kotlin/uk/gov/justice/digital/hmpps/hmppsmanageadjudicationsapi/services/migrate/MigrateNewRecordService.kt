@@ -55,7 +55,7 @@ class MigrateNewRecordService(
       locationId = adjudicationMigrateDto.locationId,
       outcomes = mutableListOf(),
       statement = adjudicationMigrateDto.statement,
-      offenceDetails = mutableListOf(adjudicationMigrateDto.getOffenceDetails()),
+      offenceDetails = mutableListOf(adjudicationMigrateDto.offence.getOffenceDetails()),
       migrated = true,
     )
 
@@ -116,11 +116,13 @@ class MigrateNewRecordService(
         )
       }.toMutableList()
 
-    fun AdjudicationMigrateDto.getOffenceDetails(): ReportedOffence {
+    fun MigrateOffence.getOffenceDetails(): ReportedOffence {
       return ReportedOffence(
         offenceCode = 0,
         victimPrisonersNumber = null,
         victimStaffUsername = null,
+        nomisOffenceCode = this.offenceCode,
+        nomisOffenceDescription = this.offenceDescription,
       )
     }
   }

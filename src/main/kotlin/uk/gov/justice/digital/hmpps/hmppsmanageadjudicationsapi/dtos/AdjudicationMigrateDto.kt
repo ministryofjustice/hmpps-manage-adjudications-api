@@ -60,6 +60,8 @@ data class MigratePrisoner(
 data class MigrateOffence(
   @Schema(description = "the nomis offence code")
   val offenceCode: String,
+  @Schema(description = "the nomis offence description, ie rule, paragraph as displayed in nomis")
+  val offenceDescription: String,
 )
 
 @Schema(description = "reporting officer")
