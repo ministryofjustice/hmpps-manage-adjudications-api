@@ -225,7 +225,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         incidentDetails = incidentDetails(1L, INCIDENT_TIME),
         incidentRole = incidentRoleWithAllValuesSet(),
         offenceDetails = mutableListOf(
-          Offence(offenceCode = 1002),
+          Offence(offenceCode = 1002, victimOtherPersonsName = "person", victimPrisonersNumber = "prisoner", victimStaffUsername = "staff"),
         ),
         incidentStatement = IncidentStatement(statement = "test"),
         isYouthOffender = false,
@@ -287,9 +287,9 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         .contains(
           Tuple(
             1002,
-            null,
-            null,
-            null,
+            "prisoner",
+            "staff",
+            "person",
           ),
         )
 
@@ -474,7 +474,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             agencyId = "MDI",
             incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, clock),
             incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
-            offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
+            offenceDetails = mutableListOf(Offence(offenceCode = 1002, victimStaffUsername = "staff", victimPrisonersNumber = "prisoner", victimOtherPersonsName = "person")),
             incidentStatement = IncidentStatement(statement = "test"),
             isYouthOffender = false,
             damages = mutableListOf(
@@ -566,9 +566,9 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         .contains(
           Tuple(
             1002,
-            null,
-            null,
-            null,
+            "prisoner",
+            "staff",
+            "person",
           ),
         )
       assertThat(reportedAdjudicationArgumentCaptor.value.damages.size).isEqualTo(2)
