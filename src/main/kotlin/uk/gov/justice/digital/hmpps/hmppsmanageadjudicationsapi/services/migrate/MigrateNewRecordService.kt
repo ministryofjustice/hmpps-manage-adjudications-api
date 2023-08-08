@@ -4,20 +4,29 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.ChargeNumberMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.MigrateResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.PunishmentMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePrisoner
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePunishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 
@@ -28,6 +37,9 @@ class MigrateNewRecordService(
 ) {
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse {
     val chargeNumber = adjudicationMigrateDto.getChargeNumber()
+    val punishmentsAndComments = adjudicationMigrateDto.punishments.toPunishments()
+    val punishments = punishmentsAndComments.first
+    val punishmentComments = punishmentsAndComments.second
 
     val reportedAdjudication = ReportedAdjudication(
       chargeNumber = chargeNumber,
@@ -49,17 +61,17 @@ class MigrateNewRecordService(
       handoverDeadline = DraftAdjudicationService.daysToActionFromIncident(adjudicationMigrateDto.incidentDateTime),
       gender = adjudicationMigrateDto.prisoner.getGender(),
       hearings = mutableListOf(),
-      punishments = mutableListOf(),
-      punishmentComments = mutableListOf(),
       isYouthOffender = adjudicationMigrateDto.offence.getIsYouthOffender(),
       locationId = adjudicationMigrateDto.locationId,
       outcomes = mutableListOf(),
       statement = adjudicationMigrateDto.statement,
       offenceDetails = mutableListOf(adjudicationMigrateDto.offence.getOffenceDetails()),
       migrated = true,
+      punishments = punishments.toMutableList(),
+      punishmentComments = punishmentComments.toMutableList(),
     )
 
-    reportedAdjudicationRepository.save(reportedAdjudication).also {
+    val saved = reportedAdjudicationRepository.save(reportedAdjudication).also {
       it.createDateTime = adjudicationMigrateDto.reportedDateTime
       it.createdByUserId = adjudicationMigrateDto.reportingOfficer.username
     }
@@ -70,6 +82,9 @@ class MigrateNewRecordService(
         chargeNumber = chargeNumber,
         offenceSequence = adjudicationMigrateDto.offenceSequence,
       ),
+      punishmentMappings = saved.getPunishments().map {
+        PunishmentMapping(punishmentId = it.id!!, sanctionSeq = it.sanctionSeq!!, bookingId = adjudicationMigrateDto.bookingId)
+      },
     )
   }
 
@@ -126,6 +141,81 @@ class MigrateNewRecordService(
         victimStaffUsername = null,
         nomisOffenceCode = this.offenceCode,
         nomisOffenceDescription = this.offenceDescription,
+      )
+    }
+
+    fun List<MigratePunishment>.toPunishments(): Pair<List<Punishment>, List<PunishmentComment>> {
+      val punishments = mutableListOf<Punishment>()
+      val punishmentComments = mutableListOf<PunishmentComment>()
+
+      this.forEach { sanction ->
+
+        punishments.add(sanction.mapToPunishment())
+
+        sanction.comment?.let {
+          punishmentComments.add(PunishmentComment(comment = it))
+        }
+      }
+
+      return Pair(punishments, punishmentComments)
+    }
+
+    private fun MigratePunishment.mapToPunishment(): Punishment {
+      val prospectiveStatuses = listOf(Status.PROSPECTIVE.name, Status.SUSP_PROSP.name)
+      val typesWithoutDates = PunishmentType.additionalDays().plus(PunishmentType.CAUTION)
+      val type = when (this.sanctionCode) {
+        OicSanctionCode.ADA.name -> if (prospectiveStatuses.contains(this.sanctionStatus)) PunishmentType.PROSPECTIVE_DAYS else PunishmentType.ADDITIONAL_DAYS
+        OicSanctionCode.EXTRA_WORK.name -> PunishmentType.EXCLUSION_WORK
+        OicSanctionCode.EXTW.name -> PunishmentType.EXTRA_WORK
+        OicSanctionCode.CAUTION.name -> PunishmentType.CAUTION
+        OicSanctionCode.CC.name -> PunishmentType.CONFINEMENT
+        OicSanctionCode.REMACT.name -> PunishmentType.REMOVAL_ACTIVITY
+        OicSanctionCode.REMWIN.name -> PunishmentType.REMOVAL_WING
+        OicSanctionCode.STOP_PCT.name -> PunishmentType.EARNINGS
+        else -> PunishmentType.PRIVILEGE
+      }
+
+      val suspendedUntil = when (this.sanctionStatus) {
+        Status.SUSPENDED.name, Status.SUSP_PROSP.name -> this.effectiveDate
+        else -> null
+      }
+
+      val startDate = when (this.sanctionStatus) {
+        Status.SUSPENDED.name, Status.SUSP_PROSP.name -> null
+        else -> if (typesWithoutDates.contains(type)) null else this.effectiveDate
+      }
+
+      val endDate = when (this.sanctionStatus) {
+        Status.SUSPENDED.name, Status.SUSP_PROSP.name -> null
+        else -> if (typesWithoutDates.contains(type)) null else this.effectiveDate.plusDays((this.days ?: 0).toLong())
+      }
+
+      val stoppagePercentage = when (type) {
+        PunishmentType.EARNINGS -> this.compensationAmount
+        else -> null
+      }
+
+      val privilegeType = when (type) {
+        PunishmentType.PRIVILEGE -> PrivilegeType.OTHER
+        else -> null
+      }
+
+      val otherPrivilege = when (type) {
+        PunishmentType.PRIVILEGE -> this.sanctionCode
+        else -> null
+      }
+
+      return Punishment(
+        type = type,
+        consecutiveChargeNumber = this.consecutiveChargeNumber,
+        stoppagePercentage = stoppagePercentage?.toInt(),
+        sanctionSeq = this.sanctionSeq,
+        suspendedUntil = suspendedUntil,
+        privilegeType = privilegeType,
+        otherPrivilege = otherPrivilege,
+        schedule = mutableListOf(
+          PunishmentSchedule(days = this.days ?: 0, startDate = startDate, endDate = endDate, suspendedUntil = suspendedUntil),
+        ),
       )
     }
   }

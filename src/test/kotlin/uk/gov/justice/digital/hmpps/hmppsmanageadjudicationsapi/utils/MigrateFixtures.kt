@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class MigrateFixtures {
@@ -73,6 +74,12 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_CAUTION = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.CAUTION.name, days = 0),
+    ),
+  )
+
   val WITH_PUNISHMENT_CC = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
       migrationEntityBuilder.createPunishment(code = OicSanctionCode.CC.name),
@@ -111,7 +118,7 @@ class MigrateFixtures {
 
   val WITH_PUNISHMENT_SUSPENDED = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
-      migrationEntityBuilder.createPunishment(code = OicSanctionCode.FORFEIT.name, days = 10, effectiveDate = LocalDateTime.now(), status = Status.SUSPENDED.name),
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.FORFEIT.name, days = 10, effectiveDate = LocalDate.now(), status = Status.SUSPENDED.name),
     ),
   )
 
@@ -124,6 +131,12 @@ class MigrateFixtures {
   val WITH_PUNISHMENT_PROSPECITVE_ADA = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
       migrationEntityBuilder.createPunishment(code = "ADA", status = "PROSPECTIVE", days = 10),
+    ),
+  )
+
+  val WITH_PUNISHMENT_PROSPECITVE_ADA_SUSPENDED = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = "ADA", status = Status.SUSP_PROSP.name, days = 10, effectiveDate = LocalDate.now()),
     ),
   )
 
@@ -159,25 +172,13 @@ class MigrateFixtures {
 
   val WITH_PUNISHMENT_CONSECUTIVE = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
-      migrationEntityBuilder.createPunishment(code = "ADA", status = "IMMEDIATE", consecutiveChargeNumber = 12345),
+      migrationEntityBuilder.createPunishment(code = "ADA", status = "IMMEDIATE", consecutiveChargeNumber = "12345"),
     ),
   )
 
-  val WITH_PUNISHMENT_CONSECUTIVE_INVALID = migrationEntityBuilder.createAdjudication(
+  val WITH_PUNISHMENT_UNKNOWN_CODE = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
-      migrationEntityBuilder.createPunishment(code = OicSanctionCode.OTHER.name, status = "IMMEDIATE", consecutiveChargeNumber = 12345),
-    ),
-  )
-
-  val WITH_PUNISHMENT_INVALID_CODE = migrationEntityBuilder.createAdjudication(
-    punishments = listOf(
-      migrationEntityBuilder.createPunishment(code = "?"),
-    ),
-  )
-
-  val WITH_PUNISHMENT_INVALID_STATUS = migrationEntityBuilder.createAdjudication(
-    punishments = listOf(
-      migrationEntityBuilder.createPunishment(status = "?"),
+      migrationEntityBuilder.createPunishment(code = "BONUS_PNTS"),
     ),
   )
 

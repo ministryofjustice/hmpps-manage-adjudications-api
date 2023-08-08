@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidenc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Schema(description = "Adjudication to migrate into service")
@@ -114,13 +115,13 @@ data class MigratePunishment(
   @Schema(description = "sanction sequence")
   val sanctionSeq: Long,
   @Schema(description = "effective date")
-  val effectiveDate: LocalDateTime,
+  val effectiveDate: LocalDate,
   @Schema(description = "comment text")
   val comment: String?,
   @Schema(description = "compensation amount")
   val compensationAmount: BigDecimal?,
-  @Schema(description = "consecutive charge number - for nomis this needs to be the oic_incident_id for the consecutiveOffenderBookId/consecutiveSanctionSeq")
-  val consecutiveChargeNumber: Long?,
+  @Schema(description = "consecutive charge number - for nomis this needs to be the oic_incident_id for the consecutiveOffenderBookId/consecutiveSanctionSeq. Note,  this will also need to include the chargeSequence, ie oic_incident_id-charge_seq")
+  val consecutiveChargeNumber: String?,
   @Schema(description = "days applied - note we do not support months, should be converted to days if present TBC")
   val days: Int?,
 )

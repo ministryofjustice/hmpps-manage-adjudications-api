@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrat
 
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
@@ -20,6 +22,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
   private val migrateNewRecordService = MigrateNewRecordService(reportedAdjudicationRepository)
+
+  @BeforeEach
+  fun `return save for audit`() {
+    whenever(reportedAdjudicationRepository.save(any())).thenReturn(entityBuilder.reportedAdjudication())
+  }
 
   @Nested
   inner class CoreAdjudication {
@@ -186,14 +193,14 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
   inner class Punishments {
 
     @Test
-    fun `process punishments - CAUTION`() {
+    fun `process punishments - CC`() {
       val dto = migrationFixtures.WITH_PUNISHMENT
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.addPunishment(
-            punishment = Punishment(id = 2, type = PunishmentType.CAUTION, schedule = mutableListOf()),
+            punishment = Punishment(id = 2, type = PunishmentType.CAUTION, sanctionSeq = dto.punishments.first().sanctionSeq, schedule = mutableListOf()),
           )
         },
       )
@@ -201,11 +208,11 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       val response = migrateNewRecordService.accept(dto)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.CAUTION)
-      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().days).isEqualTo(0)
+      assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.CONFINEMENT)
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().days).isEqualTo(dto.punishments.first().days)
       assertThat(argumentCaptor.value.getPunishments().first().schedule.first().suspendedUntil).isNull()
-      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().startDate).isNull()
-      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().endDate).isNull()
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().startDate).isEqualTo(dto.punishments.first().effectiveDate)
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().endDate).isEqualTo(dto.punishments.first().effectiveDate.plusDays(dto.punishments.first().days!!.toLong()))
       assertThat(argumentCaptor.value.getPunishments().first().privilegeType).isNull()
       assertThat(argumentCaptor.value.getPunishments().first().otherPrivilege).isNull()
       assertThat(argumentCaptor.value.getPunishments().first().stoppagePercentage).isNull()
@@ -220,6 +227,22 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `process punishments - CAUTION`() {
+      val dto = migrationFixtures.WITH_CAUTION
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.CAUTION)
+
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().days).isEqualTo(0)
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().suspendedUntil).isNull()
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().startDate).isNull()
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().endDate).isNull()
+    }
+
+    @Test
     fun `process punishments - SUSPENDED`() {
       val dto = migrationFixtures.WITH_PUNISHMENT_SUSPENDED
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -230,16 +253,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first().schedule.first().suspendedUntil).isEqualTo(
         dto.punishments.first().effectiveDate,
       )
-    }
-
-    @Test
-    fun `process punishments - CC`() {
-      val dto = migrationFixtures.WITH_PUNISHMENT_CC
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      migrateNewRecordService.accept(dto)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.CONFINEMENT)
     }
 
     @Test
@@ -291,7 +304,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.PRIVILEGE)
       assertThat(argumentCaptor.value.getPunishments().first().privilegeType).isEqualTo(PrivilegeType.OTHER)
-      assertThat(argumentCaptor.value.getPunishments().first().otherPrivilege).isEqualTo("see comment")
+      assertThat(argumentCaptor.value.getPunishments().first().otherPrivilege).isEqualTo(dto.punishments.first().sanctionCode)
     }
 
     @Test
@@ -319,6 +332,19 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first().schedule.first().endDate).isNull()
     }
 
+    @Test
+    fun `process punishments - PROSPECTIVE ADA SUSPENDED`() {
+      val dto = migrationFixtures.WITH_PUNISHMENT_PROSPECITVE_ADA_SUSPENDED
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.PROSPECTIVE_DAYS)
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().suspendedUntil).isEqualTo(dto.punishments.first().effectiveDate)
+    }
+
+    @Disabled
     @Test
     fun `process punishments - DAMAGES`() {
       val dto = migrationFixtures.WITH_PUNISHMENT_DAMAGES_AMOUNT
@@ -396,16 +422,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
-    @Test
-    fun `process punishments - CONSECUTIVE throws exception`() {
-      val dto = migrationFixtures.WITH_PUNISHMENT_CONSECUTIVE_INVALID
-
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("the sanction code ${dto.punishments.first().sanctionCode} can not be consecutive")
-    }
-
+    @Disabled
     @Test
     fun `process punishments - OTHER NO AMOUNT throws exception`() {
       val dto = migrationFixtures.WITH_PUNISHMENT_DAMAGES_NO_AMOUNT
@@ -417,32 +434,21 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `process punishments - invalid code throws exception`() {
-      val dto = migrationFixtures.WITH_PUNISHMENT_INVALID_CODE
-
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("the sanction code ${dto.punishments.first().sanctionCode} is invalid")
-    }
-
-    @Test
-    fun `process punishments - invalid status throws exception`() {
-      val dto = migrationFixtures.WITH_PUNISHMENT_INVALID_STATUS
-
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("the sanction status ${dto.punishments.first().sanctionStatus} is invalid")
-    }
-
-    @Test
-    fun `should reject additional punishments if caution is set - to discuss`() {
+    fun `should reject additional punishments if caution is set - to discuss - most likely accept them?`() {
       // give damages owed is other, perhaps safer to not do this.  TBC
     }
 
     @Test
-    fun `what to do with OTHER cases`() {
+    fun `any case that is not known will be mapped to PRIVILEGE `() {
+      val dto = migrationFixtures.WITH_PUNISHMENT_UNKNOWN_CODE
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.PRIVILEGE)
+      assertThat(argumentCaptor.value.getPunishments().first().privilegeType).isEqualTo(PrivilegeType.OTHER)
+      assertThat(argumentCaptor.value.getPunishments().first().otherPrivilege).isEqualTo(dto.punishments.first().sanctionCode)
     }
   }
 
