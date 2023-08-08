@@ -62,7 +62,7 @@ class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["i"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a unauthorised status code as missing write role`() {
       makeAloSetOffenceDetailsRequest(1, BASIC_OFFENCE_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isForbidden)
