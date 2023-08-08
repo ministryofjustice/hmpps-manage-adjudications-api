@@ -3,17 +3,20 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrat
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.ChargeNumberMapping
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.HearingMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.MigrateResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.PunishmentMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateEvidence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateHearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePrisoner
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePunishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
@@ -41,6 +44,11 @@ class MigrateNewRecordService(
     val punishments = punishmentsAndComments.first
     val punishmentComments = punishmentsAndComments.second
 
+    val hearingsAndResults = adjudicationMigrateDto.hearings.toHearingsAndResults(
+      agencyId = adjudicationMigrateDto.agencyId,
+      chargeNumber = chargeNumber,
+    )
+
     val reportedAdjudication = ReportedAdjudication(
       chargeNumber = chargeNumber,
       agencyIncidentId = adjudicationMigrateDto.agencyIncidentId,
@@ -60,7 +68,7 @@ class MigrateNewRecordService(
       status = ReportedAdjudicationStatus.UNSCHEDULED,
       handoverDeadline = DraftAdjudicationService.daysToActionFromIncident(adjudicationMigrateDto.incidentDateTime),
       gender = adjudicationMigrateDto.prisoner.getGender(),
-      hearings = mutableListOf(),
+      hearings = hearingsAndResults.toMutableList(),
       isYouthOffender = adjudicationMigrateDto.offence.getIsYouthOffender(),
       locationId = adjudicationMigrateDto.locationId,
       outcomes = mutableListOf(),
@@ -82,6 +90,9 @@ class MigrateNewRecordService(
         chargeNumber = chargeNumber,
         offenceSequence = adjudicationMigrateDto.offenceSequence,
       ),
+      hearingMappings = saved.hearings.map {
+        HearingMapping(hearingId = it.id!!, oicHearingId = it.oicHearingId!!)
+      },
       punishmentMappings = saved.getPunishments().map {
         PunishmentMapping(punishmentId = it.id!!, sanctionSeq = it.sanctionSeq!!, bookingId = adjudicationMigrateDto.bookingId)
       },
@@ -142,6 +153,26 @@ class MigrateNewRecordService(
         nomisOffenceCode = this.offenceCode,
         nomisOffenceDescription = this.offenceDescription,
       )
+    }
+
+    fun List<MigrateHearing>.toHearingsAndResults(agencyId: String, chargeNumber: String): List<Hearing> {
+      val hearingsAndResults = mutableListOf<Hearing>()
+
+      this.forEach {
+          oicHearing ->
+        hearingsAndResults.add(
+          Hearing(
+            dateTimeOfHearing = oicHearing.hearingDateTime,
+            locationId = oicHearing.locationId,
+            oicHearingType = oicHearing.oicHearingType,
+            oicHearingId = oicHearing.oicHearingId,
+            agencyId = agencyId,
+            chargeNumber = chargeNumber,
+          ),
+        )
+      }
+
+      return hearingsAndResults
     }
 
     fun List<MigratePunishment>.toPunishments(): Pair<List<Punishment>, List<PunishmentComment>> {

@@ -11,13 +11,16 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
+import java.time.LocalDateTime
 
 class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
@@ -25,7 +28,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
   @BeforeEach
   fun `return save for audit`() {
-    whenever(reportedAdjudicationRepository.save(any())).thenReturn(entityBuilder.reportedAdjudication())
+    whenever(reportedAdjudicationRepository.save(any())).thenReturn(entityBuilder.reportedAdjudication().also { it.hearings.clear() })
   }
 
   @Nested
@@ -451,6 +454,74 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.PRIVILEGE)
       assertThat(argumentCaptor.value.getPunishments().first().privilegeType).isEqualTo(PrivilegeType.OTHER)
       assertThat(argumentCaptor.value.getPunishments().first().otherPrivilege).isEqualTo(dto.punishments.first().sanctionCode)
+    }
+  }
+
+  @Nested
+  inner class HearingsAndResults {
+
+    @Test
+    fun `single hearing no result`() {
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.hearings.clear()
+          it.hearings.add(
+            Hearing(id = 2, dateTimeOfHearing = LocalDateTime.now(), locationId = 1, oicHearingType = OicHearingType.GOV_ADULT, agencyId = "", chargeNumber = "", oicHearingId = 1),
+          )
+        },
+      )
+
+      val dto = migrationFixtures.WITH_HEARING
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(dto.hearings.first().hearingDateTime)
+      assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(dto.hearings.first().locationId)
+      assertThat(argumentCaptor.value.hearings.first().chargeNumber).isEqualTo("${dto.oicIncidentId}-${dto.offenceSequence}")
+      assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(dto.agencyId)
+      assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(dto.hearings.first().oicHearingId)
+      assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(dto.hearings.first().oicHearingType)
+
+      assertThat(response.hearingMappings).isNotEmpty
+      assertThat(response.hearingMappings!!.first().hearingId).isEqualTo(2)
+      assertThat(response.hearingMappings!!.first().oicHearingId).isEqualTo(1)
+    }
+
+    @Test
+    fun `single hearing with result - CHARGE_PROVED `() {
+    }
+
+    @Test
+    fun `single hearing with result - DISMISSED `() {
+    }
+
+    @Test
+    fun `single hearing with result - NOT PROCEED `() {
+    }
+
+    @Test
+    fun `single hearing with result - REFER POLICE `() {
+    }
+
+    @Test
+    fun `single hearing with result - PROSECUTION `() {
+    }
+
+    @Test
+    fun `multiple hearings and no results`() {
+    }
+
+    /*
+       for the below, really need to get some stats together for prod queries.  ideally get Andy to run them.
+     */
+    @Test
+    fun `multiple hearings and multiple results`() {
+    }
+
+    @Test
+    fun `multiple hearing with results - REFER_POLICE,PROSECUTION `() {
     }
   }
 
