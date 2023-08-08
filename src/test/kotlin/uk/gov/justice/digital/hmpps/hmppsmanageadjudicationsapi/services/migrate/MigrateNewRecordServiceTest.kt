@@ -212,7 +212,9 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first().schedule.first().days).isEqualTo(dto.punishments.first().days)
       assertThat(argumentCaptor.value.getPunishments().first().schedule.first().suspendedUntil).isNull()
       assertThat(argumentCaptor.value.getPunishments().first().schedule.first().startDate).isEqualTo(dto.punishments.first().effectiveDate)
-      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().endDate).isEqualTo(dto.punishments.first().effectiveDate.plusDays(dto.punishments.first().days!!.toLong()))
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().endDate).isEqualTo(
+        dto.punishments.first().effectiveDate.plusDays(dto.punishments.first().days!!.toLong()),
+      )
       assertThat(argumentCaptor.value.getPunishments().first().privilegeType).isNull()
       assertThat(argumentCaptor.value.getPunishments().first().otherPrivilege).isNull()
       assertThat(argumentCaptor.value.getPunishments().first().stoppagePercentage).isNull()
