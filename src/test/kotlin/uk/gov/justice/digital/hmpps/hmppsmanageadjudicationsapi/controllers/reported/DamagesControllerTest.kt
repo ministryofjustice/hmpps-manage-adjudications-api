@@ -46,7 +46,7 @@ class DamagesControllerTest : TestControllerBase() {
   }
 
   @Test
-  @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+  @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
   fun `makes a call to set the damages`() {
     setDamagesRequest(1, DAMAGES_REQUEST)
       .andExpect(MockMvcResultMatchers.status().isOk)

@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ErrorResp
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationWorkflowService
 
-@PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
 @Validated
 @Tag(name = "11. Draft Adjudication Workflow")
@@ -43,6 +42,7 @@ class DraftAdjudicationWorkflowController(
       ),
     ],
   )
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun completeDraftAdjudication(@PathVariable(name = "id") id: Long): ReportedAdjudicationDto =
     adjudicationWorkflowService.completeDraftAdjudication(id)
@@ -67,6 +67,7 @@ class DraftAdjudicationWorkflowController(
       ),
     ],
   )
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.OK)
   fun aloOffenceUpdate(
     @PathVariable(name = "id") id: Long,

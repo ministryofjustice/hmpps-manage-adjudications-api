@@ -40,7 +40,7 @@ class DraftWitnessesController(
 
   @PutMapping(value = ["/{id}/witnesses"])
   @Operation(summary = "Set the witnesses for the draft adjudication.", description = "0 or more witnesses to be supplied")
-  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun setWitnesses(
     @PathVariable(name = "id") id: Long,
