@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudicatio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateHearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateHearingResult
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePrisoner
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePunishment
@@ -17,6 +18,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateWitn
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
@@ -28,10 +34,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToOutcomeCode
 
 @Transactional
 @Service
@@ -44,10 +53,13 @@ class MigrateNewRecordService(
     val punishments = punishmentsAndComments.first
     val punishmentComments = punishmentsAndComments.second
 
-    val hearingsAndResults = adjudicationMigrateDto.hearings.toHearingsAndResults(
+    val hearingsAndResultsAndOutcomes = adjudicationMigrateDto.hearings.toHearingsAndResultsAndOutcomes(
       agencyId = adjudicationMigrateDto.agencyId,
       chargeNumber = chargeNumber,
     )
+
+    val hearingsAndResults = hearingsAndResultsAndOutcomes.first
+    val outcomes = hearingsAndResultsAndOutcomes.second
 
     val reportedAdjudication = ReportedAdjudication(
       chargeNumber = chargeNumber,
@@ -71,7 +83,7 @@ class MigrateNewRecordService(
       hearings = hearingsAndResults.toMutableList(),
       isYouthOffender = adjudicationMigrateDto.offence.getIsYouthOffender(),
       locationId = adjudicationMigrateDto.locationId,
-      outcomes = mutableListOf(),
+      outcomes = outcomes.toMutableList(),
       statement = adjudicationMigrateDto.statement,
       offenceDetails = mutableListOf(adjudicationMigrateDto.offence.getOffenceDetails()),
       migrated = true,
@@ -155,11 +167,34 @@ class MigrateNewRecordService(
       )
     }
 
-    fun List<MigrateHearing>.toHearingsAndResults(agencyId: String, chargeNumber: String): List<Hearing> {
+    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String): Pair<List<Hearing>, List<Outcome>> {
       val hearingsAndResults = mutableListOf<Hearing>()
+      val outcomes = mutableListOf<Outcome>()
 
       this.forEach {
           oicHearing ->
+        val hearingOutcomeAndOutcome = when (oicHearing.hearingResult) {
+          null -> null
+          else -> {
+            val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode()
+
+            Pair(
+              HearingOutcome(
+                code = hearingOutcomeCode,
+                adjudicator = oicHearing.adjudicator ?: "",
+                plea = oicHearing.hearingResult.plea.mapToPlea(),
+              ),
+              oicHearing.hearingResult.mapToOutcome(hearingOutcomeCode),
+            )
+          }
+        }
+
+        hearingOutcomeAndOutcome?.second.let {
+          it?.let { outcome ->
+            outcomes.add(outcome)
+          }
+        }
+
         hearingsAndResults.add(
           Hearing(
             dateTimeOfHearing = oicHearing.hearingDateTime,
@@ -168,11 +203,41 @@ class MigrateNewRecordService(
             oicHearingId = oicHearing.oicHearingId,
             agencyId = agencyId,
             chargeNumber = chargeNumber,
+            hearingOutcome = hearingOutcomeAndOutcome?.first,
           ),
         )
       }
 
-      return hearingsAndResults
+      return Pair(hearingsAndResults, outcomes)
+    }
+
+    private fun MigrateHearingResult.mapToOutcome(hearingOutcomeCode: HearingOutcomeCode): Outcome? =
+      when (hearingOutcomeCode) {
+        HearingOutcomeCode.ADJOURN, HearingOutcomeCode.NOMIS -> null
+        else -> Outcome(code = this.finding.mapToOutcomeCode(), actualCreatedDate = this.createdDateTime)
+      }
+
+    private fun String.mapToOutcomeCode(): OutcomeCode = when (this) {
+      Finding.PROVED.name -> OutcomeCode.CHARGE_PROVED
+      Finding.D.name -> OutcomeCode.DISMISSED
+      Finding.NOT_PROCEED.name -> OutcomeCode.NOT_PROCEED
+      Finding.REF_POLICE.name -> OutcomeCode.REFER_POLICE
+      else -> throw UnableToMigrateException("issue with outcome code mapping $this")
+    }
+
+    private fun String.mapToHearingOutcomeCode(): HearingOutcomeCode = when (this) {
+      Finding.PROVED.name, Finding.QUASHED.name, Finding.D.name, Finding.NOT_PROCEED.name -> HearingOutcomeCode.COMPLETE
+      Finding.PROSECUTED.name, Finding.REF_POLICE.name -> HearingOutcomeCode.REFER_POLICE
+      else -> HearingOutcomeCode.ADJOURN // for now we adjourn.  not appeal and so on.
+    }
+
+    private fun String.mapToPlea(): HearingOutcomePlea = when (this) {
+      Plea.NOT_GUILTY.name -> HearingOutcomePlea.NOT_GUILTY
+      Plea.GUILTY.name -> HearingOutcomePlea.GUILTY
+      Plea.NOT_ASKED.name -> HearingOutcomePlea.NOT_ASKED
+      Plea.UNFIT.name -> HearingOutcomePlea.UNFIT
+      Plea.REFUSED.name -> HearingOutcomePlea.ABSTAIN
+      else -> HearingOutcomePlea.NOT_ASKED // TO confirm with John
     }
 
     fun List<MigratePunishment>.toPunishments(): Pair<List<Punishment>, List<PunishmentComment>> {
