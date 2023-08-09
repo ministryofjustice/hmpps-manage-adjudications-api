@@ -80,12 +80,6 @@ class MigrateFixtures {
     ),
   )
 
-  val WITH_PUNISHMENT_CC = migrationEntityBuilder.createAdjudication(
-    punishments = listOf(
-      migrationEntityBuilder.createPunishment(code = OicSanctionCode.CC.name),
-    ),
-  )
-
   val WITH_PUNISHMENT_EXTRA_WORK = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
       migrationEntityBuilder.createPunishment(code = OicSanctionCode.EXTW.name),
@@ -420,7 +414,7 @@ class MigrateFixtures {
       ),
     ),
   )
-  fun getAll(): List<AdjudicationMigrateDto> = listOf(
+  fun getSelection(): List<AdjudicationMigrateDto> = listOf(
     ADULT_SINGLE_OFFENCE, YOUTH_SINGLE_OFFENCE, NON_BINARY_GENDER, UNKNOWN_GENDER,
     WITH_HEARINGS_AND_RESULTS_MUDDLED, WITH_HEARINGS_AND_SOME_RESULTS, WITH_HEARINGS_AND_RESULTS, WITH_HEARING, WITH_NO_ADJUDICATOR,
     WITH_HEARINGS, WITH_HEARING_AND_RESULT, WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED, FEMALE,
