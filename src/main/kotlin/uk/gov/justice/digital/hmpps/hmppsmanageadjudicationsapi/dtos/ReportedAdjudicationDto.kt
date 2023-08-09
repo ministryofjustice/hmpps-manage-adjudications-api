@@ -386,7 +386,7 @@ data class PunishmentDtoV2(
   @Schema(description = "optional consecutive report number is available to view in adjudications service")
   val consecutiveReportAvailable: Boolean? = null,
   @Schema(description = "optional amount - money being recovered for damages")
-  val amount: Double? = null,
+  val damagesOwedAmount: Double? = null,
 )
 
 @Schema(description = "punishment schedule")

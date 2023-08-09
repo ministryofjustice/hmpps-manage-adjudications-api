@@ -417,7 +417,7 @@ open class ReportedDtoService(
         privilegeType = it.privilegeType,
         otherPrivilege = it.otherPrivilege,
         stoppagePercentage = it.stoppagePercentage,
-        amount = it.amount,
+        damagesOwedAmount = it.amount,
         activatedFrom = it.activatedFromChargeNumber,
         activatedBy = it.activatedByChargeNumber,
         consecutiveReportNumber = it.consecutiveChargeNumber?.toLong(),
