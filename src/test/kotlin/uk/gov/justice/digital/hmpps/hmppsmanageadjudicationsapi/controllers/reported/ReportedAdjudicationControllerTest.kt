@@ -131,7 +131,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
 
     @CsvSource("RETURNED,false", "REJECTED,false", "UNSCHEDULED,true")
     @ParameterizedTest
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to set the status of the reported adjudication`(status: ReportedAdjudicationStatus, eventCalled: Boolean) {
       whenever(reportedAdjudicationService.setStatus("123", status, "reason", "details")).thenReturn(
         reportedAdjudicationDto(status),

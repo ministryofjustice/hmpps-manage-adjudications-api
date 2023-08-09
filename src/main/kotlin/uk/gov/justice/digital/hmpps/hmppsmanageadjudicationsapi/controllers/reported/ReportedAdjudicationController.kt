@@ -63,7 +63,7 @@ class ReportedAdjudicationController(
 
   @PutMapping(value = ["/{chargeNumber}/status"])
   @Operation(summary = "Set the status for the reported adjudication.")
-  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.OK)
   fun setStatus(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
