@@ -108,7 +108,8 @@ data class ReportedAdjudication(
         if (this.getLatestHearing().isAdjourn()) {
           ReportedAdjudicationStatus.ADJOURNED
         } else {
-          this.getOutcomes().sortedByDescending { it.createDateTime }.first().code.status
+          // TODO need to add tests around actualCreatedDate (migrated records)
+          this.getOutcomes().sortedByDescending { it.actualCreatedDate ?: it.createDateTime }.first().code.status
         }
       }
     }

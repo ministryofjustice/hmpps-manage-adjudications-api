@@ -278,6 +278,61 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_HEARING_AND_PROSCUTION = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROSECUTED.name),
+      ),
+    ),
+  )
+
+  val POLICE_REFERRAL_NEW_HEARING = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name),
+      ),
+      migrationEntityBuilder.createHearing(),
+    ),
+  )
+
+  val MULITPLE_POLICE_REEER_TO_PROSECUTION = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name, createdDateTime = LocalDateTime.now().plusDays(1)),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROSECUTED.name, createdDateTime = LocalDateTime.now().plusDays(2)),
+      ),
+    ),
+  )
+
+  val WITH_HEARING_AND_REFER_POLICE = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name),
+      ),
+    ),
+  )
+
+  val WITH_HEARING_AND_DISMISSED = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name),
+      ),
+    ),
+  )
+
+  val WITH_HEARING_AND_NOT_PROCEED = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.NOT_PROCEED.name),
+      ),
+    ),
+  )
+
   val WITH_HEARINGS_AND_RESULTS = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(

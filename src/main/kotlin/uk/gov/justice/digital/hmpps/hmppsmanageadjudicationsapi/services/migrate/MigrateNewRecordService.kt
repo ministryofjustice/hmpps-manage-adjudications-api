@@ -170,11 +170,20 @@ class MigrateNewRecordService(
     fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String): Pair<List<Hearing>, List<Outcome>> {
       val hearingsAndResults = mutableListOf<Hearing>()
       val outcomes = mutableListOf<Outcome>()
-
-      this.forEach {
-          oicHearing ->
+      for ((index, oicHearing) in this.withIndex()) {
         val hearingOutcomeAndOutcome = when (oicHearing.hearingResult) {
-          null -> null
+          null -> if (index < this.size - 1) {
+            Pair(
+              HearingOutcome(
+                code = HearingOutcomeCode.ADJOURN,
+                adjudicator = oicHearing.adjudicator ?: "",
+                plea = HearingOutcomePlea.NOT_ASKED,
+              ),
+              null,
+            )
+          } else {
+            null
+          }
           else -> {
             val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode()
 
@@ -192,6 +201,9 @@ class MigrateNewRecordService(
         hearingOutcomeAndOutcome?.second.let {
           it?.let { outcome ->
             outcomes.add(outcome)
+            oicHearing.hearingResult!!.createAdditionalOutcome(index < this.size - 1)?.let { additionalOutcome ->
+              outcomes.add(additionalOutcome)
+            }
           }
         }
 
@@ -218,11 +230,18 @@ class MigrateNewRecordService(
       }
 
     private fun String.mapToOutcomeCode(): OutcomeCode = when (this) {
-      Finding.PROVED.name -> OutcomeCode.CHARGE_PROVED
+      Finding.PROVED.name, Finding.QUASHED.name -> OutcomeCode.CHARGE_PROVED
       Finding.D.name -> OutcomeCode.DISMISSED
       Finding.NOT_PROCEED.name -> OutcomeCode.NOT_PROCEED
-      Finding.REF_POLICE.name -> OutcomeCode.REFER_POLICE
+      Finding.REF_POLICE.name, Finding.PROSECUTED.name -> OutcomeCode.REFER_POLICE
       else -> throw UnableToMigrateException("issue with outcome code mapping $this")
+    }
+
+    private fun MigrateHearingResult.createAdditionalOutcome(anotherHearing: Boolean): Outcome? = when (this.finding) {
+      Finding.QUASHED.name -> null
+      Finding.PROSECUTED.name -> Outcome(code = OutcomeCode.PROSECUTION, actualCreatedDate = this.createdDateTime.plusMinutes(1))
+      Finding.REF_POLICE.name -> if (anotherHearing) Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = this.createdDateTime.plusMinutes(1)) else null
+      else -> null
     }
 
     private fun String.mapToHearingOutcomeCode(): HearingOutcomeCode = when (this) {
