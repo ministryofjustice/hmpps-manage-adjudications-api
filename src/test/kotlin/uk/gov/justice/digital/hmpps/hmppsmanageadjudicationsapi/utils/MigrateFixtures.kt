@@ -278,10 +278,21 @@ class MigrateFixtures {
     ),
   )
 
-  val WITH_HEARING_AND_PROSCUTION = migrationEntityBuilder.createAdjudication(
+  val HEARING_WITH_PROSCUTION = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROSECUTED.name),
+      ),
+    ),
+  )
+
+  val POLICE_REF_NOT_PROCEED = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.NOT_PROCEED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
     ),
   )

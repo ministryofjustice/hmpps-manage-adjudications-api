@@ -557,7 +557,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `single hearing with result - PROSECUTION `() {
-      val dto = migrationFixtures.WITH_HEARING_AND_PROSCUTION
+      val dto = migrationFixtures.HEARING_WITH_PROSCUTION
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       migrateNewRecordService.accept(dto)
@@ -570,6 +570,18 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.PROSECUTION)
       assertThat(argumentCaptor.value.getOutcomes().last().actualCreatedDate).isEqualTo(dto.hearings.first().hearingResult!!.createdDateTime.plusMinutes(1))
+    }
+
+    @Test
+    fun `REFER POLICE - NOT PROCEED `() {
+      val dto = migrationFixtures.POLICE_REF_NOT_PROCEED
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.NOT_PROCEED)
     }
 
     @Test

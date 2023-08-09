@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrateFixtures
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrationEntityBuilder
@@ -97,6 +98,26 @@ class MigrateIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `police referral to not proceed returns a schedule hearing rather than not proceed referral outcome`() {
+    val dto = getPoliceReferToNotProceed()
+    migrateRecord(dto)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${dto.oicIncidentId}-${dto.offenceSequence}/v2")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(2)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome").exists()
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
+      .jsonPath("$.reportedAdjudication.outcomes[1].hearing.outcome.code").isEqualTo(HearingOutcomeCode.COMPLETE.name)
+      .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
+  }
+
+  @Test
   fun `multiple refers to prosecution`() {
     val dto = getMultipleRefersToProsecution()
     migrateRecord(dto)
@@ -179,10 +200,12 @@ class MigrateIntTest : SqsIntegrationTestBase() {
 
     fun getConflictRecord(oicIncidentId: Long) = MigrationEntityBuilder().createAdjudication(oicIncidentId = oicIncidentId)
 
-    fun getPoliceProsecutionFromHearing() = migrateFixtures.WITH_HEARING_AND_PROSCUTION
+    fun getPoliceProsecutionFromHearing() = migrateFixtures.HEARING_WITH_PROSCUTION
 
     fun getPoliceReferralScheduleNewHearing() = migrateFixtures.POLICE_REFERRAL_NEW_HEARING
 
     fun getMultipleRefersToProsecution() = migrateFixtures.MULITPLE_POLICE_REEER_TO_PROSECUTION
+
+    fun getPoliceReferToNotProceed() = migrateFixtures.POLICE_REF_NOT_PROCEED
   }
 }
