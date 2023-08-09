@@ -286,6 +286,26 @@ class MigrateFixtures {
     ),
   )
 
+  val QUASHED_FIRST_HEARING = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.QUASHED.name),
+      ),
+    ),
+  )
+
+  // confirm this with SQL
+  val QUASHED_SECOND_HEARING = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.QUASHED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
+      ),
+    ),
+  )
+
   val POLICE_REFERRAL_NEW_HEARING = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(

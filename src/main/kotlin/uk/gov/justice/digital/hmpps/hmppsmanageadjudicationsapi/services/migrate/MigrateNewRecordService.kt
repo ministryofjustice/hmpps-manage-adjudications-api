@@ -238,7 +238,7 @@ class MigrateNewRecordService(
     }
 
     private fun MigrateHearingResult.createAdditionalOutcome(anotherHearing: Boolean): Outcome? = when (this.finding) {
-      Finding.QUASHED.name -> null
+      Finding.QUASHED.name -> Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = this.createdDateTime.plusMinutes(1))
       Finding.PROSECUTED.name -> Outcome(code = OutcomeCode.PROSECUTION, actualCreatedDate = this.createdDateTime.plusMinutes(1))
       Finding.REF_POLICE.name -> if (anotherHearing) Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = this.createdDateTime.plusMinutes(1)) else null
       else -> null

@@ -6,10 +6,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -24,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHear
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 import java.time.LocalDateTime
+import java.util.stream.Stream
 
 class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
@@ -602,19 +606,38 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.last().hearingOutcome).isNull()
     }
 
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getQuashed")
+    @ParameterizedTest
+    fun `quashed outcomes`(adjudicationMigrateDto: AdjudicationMigrateDto) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(adjudicationMigrateDto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(adjudicationMigrateDto.hearings.size)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(adjudicationMigrateDto.hearings.size + 1)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.QUASHED)
+      assertThat(argumentCaptor.value.getOutcomes().last().actualCreatedDate).isEqualTo(adjudicationMigrateDto.hearings.last().hearingResult!!.createdDateTime.plusMinutes(1))
+    }
+
     /*
        for the below, really need to get some stats together for prod queries.  ideally get Andy to run them.
      */
     @Test
     fun `multiple hearings and multiple results`() {
     }
-
-    @Test
-    fun `multiple hearing with results - REFER_POLICE,PROSECUTION `() {
-    }
   }
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // na
+  }
+
+  companion object {
+    @JvmStatic
+    fun getQuashed(): Stream<AdjudicationMigrateDto> =
+      listOf(migrationFixtures.QUASHED_FIRST_HEARING, migrationFixtures.QUASHED_SECOND_HEARING).stream()
   }
 }
