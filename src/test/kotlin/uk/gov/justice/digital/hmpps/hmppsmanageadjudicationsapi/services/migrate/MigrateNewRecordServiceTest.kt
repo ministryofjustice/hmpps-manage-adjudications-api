@@ -635,12 +635,26 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().actualCreatedDate).isEqualTo(adjudicationMigrateDto.hearings.last().hearingResult!!.createdDateTime.plusMinutes(1))
     }
 
-    /*
-       for the below, really need to get some stats together for prod queries.  ideally get Andy to run them.
-     */
     @Test
-    fun `multiple hearings and multiple results`() {
+    fun `starting point for bad data cases - multiple hearings with same results `() {
+      val dto = migrationFixtures.WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(dto.hearings.size)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
+      argumentCaptor.value.hearings.subList(0, dto.hearings.size - 2).forEach {
+        assertThat(it.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      }
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
     }
+
+    // TODO lots of bad data setups based on Nomis
+
+    // TODO further mappings around unsupported codes
   }
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {

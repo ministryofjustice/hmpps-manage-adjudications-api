@@ -40,7 +40,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToOutcomeCode
 
 @Transactional
 @Service
@@ -53,7 +52,7 @@ class MigrateNewRecordService(
     val punishments = punishmentsAndComments.first
     val punishmentComments = punishmentsAndComments.second
 
-    val hearingsAndResultsAndOutcomes = adjudicationMigrateDto.hearings.toHearingsAndResultsAndOutcomes(
+    val hearingsAndResultsAndOutcomes = adjudicationMigrateDto.hearings.sortedBy { it.hearingDateTime }.toHearingsAndResultsAndOutcomes(
       agencyId = adjudicationMigrateDto.agencyId,
       chargeNumber = chargeNumber,
     )
@@ -167,12 +166,18 @@ class MigrateNewRecordService(
       )
     }
 
+    private fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index: Int): Boolean =
+      index < this.size - 1 && this.none { it.hearingResult == null } && this.last().hearingResult?.finding != Finding.QUASHED.name
+
     fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String): Pair<List<Hearing>, List<Outcome>> {
       val hearingsAndResults = mutableListOf<Hearing>()
       val outcomes = mutableListOf<Outcome>()
       for ((index, oicHearing) in this.withIndex()) {
+        val hasAdditionalHearings = index < this.size - 1
+        val hasAdditionalHearingOutcomes = this.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
+
         val hearingOutcomeAndOutcome = when (oicHearing.hearingResult) {
-          null -> if (index < this.size - 1) {
+          null -> if (hasAdditionalHearings) {
             Pair(
               HearingOutcome(
                 code = HearingOutcomeCode.ADJOURN,
@@ -185,7 +190,7 @@ class MigrateNewRecordService(
             null
           }
           else -> {
-            val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode()
+            val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes)
 
             Pair(
               HearingOutcome(
@@ -201,7 +206,7 @@ class MigrateNewRecordService(
         hearingOutcomeAndOutcome?.second.let {
           it?.let { outcome ->
             outcomes.add(outcome)
-            oicHearing.hearingResult!!.createAdditionalOutcome(index < this.size - 1)?.let { additionalOutcome ->
+            oicHearing.hearingResult!!.createAdditionalOutcome(hasAdditionalHearings)?.let { additionalOutcome ->
               outcomes.add(additionalOutcome)
             }
           }
@@ -237,15 +242,17 @@ class MigrateNewRecordService(
       else -> throw UnableToMigrateException("issue with outcome code mapping $this")
     }
 
-    private fun MigrateHearingResult.createAdditionalOutcome(anotherHearing: Boolean): Outcome? = when (this.finding) {
+    private fun MigrateHearingResult.createAdditionalOutcome(hasAdditionalHearings: Boolean): Outcome? = when (this.finding) {
       Finding.QUASHED.name -> Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = this.createdDateTime.plusMinutes(1))
       Finding.PROSECUTED.name -> Outcome(code = OutcomeCode.PROSECUTION, actualCreatedDate = this.createdDateTime.plusMinutes(1))
-      Finding.REF_POLICE.name -> if (anotherHearing) Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = this.createdDateTime.plusMinutes(1)) else null
+      Finding.REF_POLICE.name -> if (hasAdditionalHearings) Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = this.createdDateTime.plusMinutes(1)) else null
       else -> null
     }
 
-    private fun String.mapToHearingOutcomeCode(): HearingOutcomeCode = when (this) {
-      Finding.PROVED.name, Finding.QUASHED.name, Finding.D.name, Finding.NOT_PROCEED.name -> HearingOutcomeCode.COMPLETE
+    private fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean): HearingOutcomeCode = when (this) {
+      Finding.QUASHED.name -> HearingOutcomeCode.COMPLETE // TODO find out how things are unquashed.  in our system we remove quashed.
+      Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name ->
+        if (hasAdditionalHearingOutcomes) HearingOutcomeCode.ADJOURN else HearingOutcomeCode.COMPLETE
       Finding.PROSECUTED.name, Finding.REF_POLICE.name -> HearingOutcomeCode.REFER_POLICE
       else -> HearingOutcomeCode.ADJOURN // for now we adjourn.  not appeal and so on.
     }

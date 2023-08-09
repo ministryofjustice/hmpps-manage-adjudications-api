@@ -379,6 +379,10 @@ class MigrateFixtures {
         hearingDateTime = LocalDateTime.now().plusDays(1),
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(2),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(2)),
+      ),
     ),
   )
 
