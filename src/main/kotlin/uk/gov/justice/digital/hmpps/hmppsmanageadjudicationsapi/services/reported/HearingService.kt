@@ -51,7 +51,7 @@ class HearingService(
     }
 
     val oicHearingId = legacySyncService.createHearing(
-      adjudicationNumber = chargeNumber.toLong(),
+      adjudicationNumber = chargeNumber,
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = dateTimeOfHearing,
         hearingLocationId = locationId,

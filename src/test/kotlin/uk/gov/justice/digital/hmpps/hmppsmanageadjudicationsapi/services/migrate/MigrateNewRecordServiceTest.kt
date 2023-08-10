@@ -557,7 +557,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `single hearing with result - PROSECUTION `() {
-      val dto = migrationFixtures.HEARING_WITH_PROSCUTION
+      val dto = migrationFixtures.HEARING_WITH_PROSECUTION
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       migrateNewRecordService.accept(dto)
@@ -664,6 +664,21 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class Status {
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExpectedStatus")
+    @ParameterizedTest
+    fun `expected statuses`(testData: Pair<AdjudicationMigrateDto, ReportedAdjudicationStatus>) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(testData.first)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.status).isEqualTo(testData.second)
+    }
+  }
+
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // na
   }
@@ -679,6 +694,22 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
         migrationFixtures.EXCEPTION_CASE,
         migrationFixtures.EXCEPTION_CASE_2,
         migrationFixtures.EXCEPTION_CASE_3,
+      ).stream()
+
+    @JvmStatic
+    fun getExpectedStatus(): Stream<Pair<AdjudicationMigrateDto, ReportedAdjudicationStatus>> =
+      listOf(
+        Pair(migrationFixtures.ADULT_SINGLE_OFFENCE, ReportedAdjudicationStatus.UNSCHEDULED),
+        Pair(migrationFixtures.WITH_HEARING, ReportedAdjudicationStatus.SCHEDULED),
+        Pair(migrationFixtures.QUASHED_FIRST_HEARING, ReportedAdjudicationStatus.QUASHED),
+        Pair(migrationFixtures.WITH_HEARING_AND_NOT_PROCEED, ReportedAdjudicationStatus.NOT_PROCEED),
+        Pair(migrationFixtures.WITH_HEARING_AND_REFER_POLICE, ReportedAdjudicationStatus.REFER_POLICE),
+        Pair(migrationFixtures.POLICE_REF_NOT_PROCEED, ReportedAdjudicationStatus.NOT_PROCEED),
+        Pair(migrationFixtures.POLICE_REFERRAL_NEW_HEARING, ReportedAdjudicationStatus.SCHEDULED),
+        Pair(migrationFixtures.WITH_HEARING_AND_DISMISSED, ReportedAdjudicationStatus.DISMISSED),
+        Pair(migrationFixtures.HEARING_WITH_PROSECUTION, ReportedAdjudicationStatus.PROSECUTION),
+        Pair(migrationFixtures.MULITPLE_POLICE_REFER_TO_PROSECUTION, ReportedAdjudicationStatus.PROSECUTION),
+        Pair(migrationFixtures.WITH_HEARING_AND_RESULT, ReportedAdjudicationStatus.CHARGE_PROVED),
       ).stream()
   }
 }
