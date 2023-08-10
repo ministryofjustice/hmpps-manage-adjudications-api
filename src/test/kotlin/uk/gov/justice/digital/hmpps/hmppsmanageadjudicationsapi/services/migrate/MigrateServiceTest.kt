@@ -40,4 +40,12 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
 
     verify(migrateExistingRecordService, atLeastOnce()).accept(any(), any())
   }
+
+  @Test
+  fun `accept redirects existing report to new record migration service is the offence sequence is greater than 1`() {
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
+    migrateService.accept(migrationFixtures.ADULT_MULITPLE_OFFENCES.last())
+
+    verify(migrateNewRecordService, atLeastOnce()).accept(any())
+  }
 }
