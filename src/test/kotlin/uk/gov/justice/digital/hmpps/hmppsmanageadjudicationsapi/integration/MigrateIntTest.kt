@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -235,6 +236,29 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
+  }
+
+  @Test
+  fun `existing record conflict exception`() {
+    initDataForAccept().acceptReport(
+      reportNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
+      activeCaseLoad = IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
+      status = ReportedAdjudicationStatus.ACCEPTED,
+    )
+
+    val body = objectMapper.writeValueAsString(
+      getExistingRecord(
+        oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong(),
+        prisonerNumber = "XYZ",
+      ),
+    )
+
+    webTestClient.post()
+      .uri("/reported-adjudications/migrate")
+      .headers(setHeaders(activeCaseload = null, roles = listOf("ROLE_MIGRATE_ADJUDICATIONS")))
+      .bodyValue(body)
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.CONFLICT)
   }
 
   private fun migrateRecord(dto: AdjudicationMigrateDto) {

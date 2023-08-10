@@ -20,8 +20,8 @@ class MigrateExistingRecordService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto, existingAdjudication: ReportedAdjudication): MigrateResponse {
-    if (adjudicationMigrateDto.prisoner.prisonerNumber != existingAdjudication.prisonerNumber) throw UnableToMigrateException("Prisoner different between nomis and adjudications")
-    if (adjudicationMigrateDto.agencyId != existingAdjudication.originatingAgencyId) throw UnableToMigrateException("agency different between nomis and adjudications")
+    if (adjudicationMigrateDto.prisoner.prisonerNumber != existingAdjudication.prisonerNumber) throw ExistingRecordConflictException("Prisoner different between nomis and adjudications")
+    if (adjudicationMigrateDto.agencyId != existingAdjudication.originatingAgencyId) throw ExistingRecordConflictException("agency different between nomis and adjudications")
 
     existingAdjudication.offenderBookingId = adjudicationMigrateDto.bookingId
 

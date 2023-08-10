@@ -37,7 +37,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing)
-      }.isInstanceOf(UnableToMigrateException::class.java)
+      }.isInstanceOf(ExistingRecordConflictException::class.java)
         .hasMessageContaining("Prisoner different between nomis and adjudications")
     }
 
@@ -48,7 +48,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing)
-      }.isInstanceOf(UnableToMigrateException::class.java)
+      }.isInstanceOf(ExistingRecordConflictException::class.java)
         .hasMessageContaining("agency different between nomis and adjudications")
     }
 
