@@ -22,10 +22,11 @@ class EntityBuilder {
     dateTime: LocalDateTime = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
     agencyId: String = "MDI",
     hearingId: Long? = 1L,
+    prisonerNumber: String = "A12345",
   ): ReportedAdjudication {
     return ReportedAdjudication(
       chargeNumber = chargeNumber,
-      prisonerNumber = "A12345",
+      prisonerNumber = prisonerNumber,
       gender = Gender.MALE,
       originatingAgencyId = agencyId,
       locationId = 2,
