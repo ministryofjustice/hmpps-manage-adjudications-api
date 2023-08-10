@@ -257,7 +257,8 @@ open class ReportedDtoService(
     if (this.isEmpty()) return emptyList()
 
     val combinedOutcomes = mutableListOf<CombinedOutcomeDtoV2>()
-    val orderedOutcomes = this.sortedBy { it.createDateTime }.toMutableList()
+    // TODO when v1 is removed, add some tests to combine new and old logic
+    val orderedOutcomes = this.sortedBy { it.actualCreatedDate ?: it.createDateTime }.toMutableList()
 
     do {
       val outcome = orderedOutcomes.removeFirst()

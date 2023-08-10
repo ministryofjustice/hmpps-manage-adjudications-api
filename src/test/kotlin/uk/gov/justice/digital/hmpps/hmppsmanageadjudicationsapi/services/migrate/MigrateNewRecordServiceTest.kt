@@ -6,18 +6,28 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
+import java.time.LocalDateTime
+import java.util.stream.Stream
 
 class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
@@ -25,7 +35,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
   @BeforeEach
   fun `return save for audit`() {
-    whenever(reportedAdjudicationRepository.save(any())).thenReturn(entityBuilder.reportedAdjudication())
+    whenever(reportedAdjudicationRepository.save(any())).thenReturn(entityBuilder.reportedAdjudication().also { it.hearings.clear() })
   }
 
   @Nested
@@ -454,7 +464,221 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class HearingsAndResults {
+
+    @Test
+    fun `single hearing no result`() {
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.hearings.clear()
+          it.hearings.add(
+            Hearing(id = 2, dateTimeOfHearing = LocalDateTime.now(), locationId = 1, oicHearingType = OicHearingType.GOV_ADULT, agencyId = "", chargeNumber = "", oicHearingId = 1),
+          )
+        },
+      )
+
+      val dto = migrationFixtures.WITH_HEARING
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(dto.hearings.first().hearingDateTime)
+      assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(dto.hearings.first().locationId)
+      assertThat(argumentCaptor.value.hearings.first().chargeNumber).isEqualTo("${dto.oicIncidentId}-${dto.offenceSequence}")
+      assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(dto.agencyId)
+      assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(dto.hearings.first().oicHearingId)
+      assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(dto.hearings.first().oicHearingType)
+
+      assertThat(response.hearingMappings).isNotEmpty
+      assertThat(response.hearingMappings!!.first().hearingId).isEqualTo(2)
+      assertThat(response.hearingMappings!!.first().oicHearingId).isEqualTo(1)
+    }
+
+    @Test
+    fun `single hearing with result - CHARGE_PROVED `() {
+      val dto = migrationFixtures.WITH_HEARING_AND_RESULT
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo(dto.hearings.first().adjudicator)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.NOT_GUILTY)
+
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().first().actualCreatedDate).isEqualTo(dto.hearings.first().hearingResult!!.createdDateTime)
+    }
+
+    @Test
+    fun `single hearing with result - DISMISSED `() {
+      val dto = migrationFixtures.WITH_HEARING_AND_DISMISSED
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.DISMISSED)
+    }
+
+    @Test
+    fun `single hearing with result - NOT PROCEED `() {
+      val dto = migrationFixtures.WITH_HEARING_AND_NOT_PROCEED
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.NOT_PROCEED)
+    }
+
+    @Test
+    fun `single hearing with result - REFER POLICE `() {
+      val dto = migrationFixtures.WITH_HEARING_AND_REFER_POLICE
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
+
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.REFER_POLICE)
+    }
+
+    @Test
+    fun `single hearing with result - PROSECUTION `() {
+      val dto = migrationFixtures.HEARING_WITH_PROSCUTION
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
+
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.REFER_POLICE)
+
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.PROSECUTION)
+      assertThat(argumentCaptor.value.getOutcomes().last().actualCreatedDate).isEqualTo(dto.hearings.first().hearingResult!!.createdDateTime.plusMinutes(1))
+    }
+
+    @Test
+    fun `REFER POLICE - NOT PROCEED `() {
+      val dto = migrationFixtures.POLICE_REF_NOT_PROCEED
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.NOT_PROCEED)
+    }
+
+    @Test
+    fun `REFER_POLICE - SCHEDULE HEARING `() {
+      val dto = migrationFixtures.POLICE_REFERRAL_NEW_HEARING
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.hearings.last()).isNotNull
+
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
+      assertThat(argumentCaptor.value.getOutcomes().last().actualCreatedDate).isEqualTo(dto.hearings.first().hearingResult!!.createdDateTime.plusMinutes(1))
+    }
+
+    @Test
+    fun `multiple hearings and no results will adjourn hearing`() {
+      val dto = migrationFixtures.WITH_HEARINGS
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo(dto.hearings.first().adjudicator)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.NOT_ASKED)
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome).isNull()
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getQuashed")
+    @ParameterizedTest
+    fun `quashed outcomes`(adjudicationMigrateDto: AdjudicationMigrateDto) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(adjudicationMigrateDto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(adjudicationMigrateDto.hearings.size)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(adjudicationMigrateDto.hearings.size + 1)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.QUASHED)
+      assertThat(argumentCaptor.value.getOutcomes().last().actualCreatedDate).isEqualTo(adjudicationMigrateDto.hearings.last().hearingResult!!.createdDateTime.plusMinutes(1))
+    }
+
+    @Test
+    fun `starting point for repeat data cases - multiple hearings with same results `() {
+      val dto = migrationFixtures.WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(dto.hearings.size)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
+      argumentCaptor.value.hearings.subList(0, dto.hearings.size - 2).forEach {
+        assertThat(it.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      }
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      // assert out of order hearings
+      assertThat(argumentCaptor.value.hearings.last().dateTimeOfHearing).isEqualTo(dto.hearings.first().hearingDateTime)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
+    @ParameterizedTest
+    fun `anything that doesnt make sense should throw an exception for now - to replace with logic once agreed`(dto: AdjudicationMigrateDto) {
+      Assertions.assertThatThrownBy {
+        migrateNewRecordService.accept(dto)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+        .hasMessageContaining("Currently unable to migrate due to results structure")
+    }
+  }
+
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // na
+  }
+
+  companion object {
+    @JvmStatic
+    fun getQuashed(): Stream<AdjudicationMigrateDto> =
+      listOf(migrationFixtures.QUASHED_FIRST_HEARING, migrationFixtures.QUASHED_SECOND_HEARING).stream()
+
+    @JvmStatic
+    fun getExceptionCases(): Stream<AdjudicationMigrateDto> =
+      listOf(
+        migrationFixtures.EXCEPTION_CASE,
+        migrationFixtures.EXCEPTION_CASE_2,
+        migrationFixtures.EXCEPTION_CASE_3,
+      ).stream()
   }
 }
