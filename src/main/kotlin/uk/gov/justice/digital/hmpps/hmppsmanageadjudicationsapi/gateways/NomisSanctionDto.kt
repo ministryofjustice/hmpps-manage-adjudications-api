@@ -12,7 +12,7 @@ enum class OicSanctionCode {
 }
 
 enum class Status {
-  IMMEDIATE, PROSPECTIVE, QUASHED, SUSPENDED
+  IMMEDIATE, PROSPECTIVE, QUASHED, SUSPENDED, SUSP_PROSP
 }
 
 data class OffenderOicSanctionRequest(
@@ -44,7 +44,7 @@ data class OffenderOicSanctionRequest(
       when (this.startDate) {
         null -> when (this.suspendedUntil) {
           null -> if (prospectiveDays) Status.PROSPECTIVE else Status.IMMEDIATE
-          else -> Status.SUSPENDED
+          else -> if (prospectiveDays) Status.SUSP_PROSP else Status.SUSPENDED
         }
         else -> Status.IMMEDIATE
       }

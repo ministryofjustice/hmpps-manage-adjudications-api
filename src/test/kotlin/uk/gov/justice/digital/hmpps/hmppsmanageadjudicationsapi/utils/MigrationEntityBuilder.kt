@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.random.Random
 
@@ -36,6 +37,7 @@ class MigrationEntityBuilder {
     evidence: List<MigrateEvidence> = emptyList(),
     punishments: List<MigratePunishment> = emptyList(),
     hearings: List<MigrateHearing> = emptyList(),
+    reportedDateTime: LocalDateTime = LocalDateTime.now(),
   ): AdjudicationMigrateDto =
     AdjudicationMigrateDto(
       agencyIncidentId = agencyIncidentId,
@@ -48,13 +50,14 @@ class MigrationEntityBuilder {
       statement = "some details",
       prisoner = prisoner,
       offence = offence,
-      reportingOfficer = ReportingOfficer(username = "dave"),
+      reportingOfficer = ReportingOfficer(username = "OFFICER_RO"),
       createdByUsername = "alo",
       witnesses = witnesses,
       damages = damages,
       evidence = evidence,
       punishments = punishments,
       hearings = hearings,
+      reportedDateTime = reportedDateTime,
     )
 
   fun createPrisoner(
@@ -68,7 +71,8 @@ class MigrationEntityBuilder {
       gender = gender,
     )
 
-  fun createOffence(offenceCode: String = "51:17"): MigrateOffence = MigrateOffence(offenceCode = offenceCode)
+  fun createOffence(offenceCode: String = "51:17", offenceDescription: String = "description"): MigrateOffence =
+    MigrateOffence(offenceCode = offenceCode, offenceDescription = offenceDescription)
 
   fun createWitness(): MigrateWitness = MigrateWitness(firstName = "first", lastName = "last", createdBy = "OFFICER_GEN", witnessType = WitnessCode.OFFICER)
 
@@ -77,13 +81,13 @@ class MigrationEntityBuilder {
   fun createEvidence(): MigrateEvidence = MigrateEvidence(evidenceCode = EvidenceCode.PHOTO, details = "details", reporter = "OFFICER_GEN")
 
   fun createPunishment(
-    code: String = OicSanctionCode.CAUTION.name,
+    code: String = OicSanctionCode.CC.name,
     status: String = Status.IMMEDIATE.name,
     comment: String? = null,
     amount: BigDecimal? = null,
     days: Int? = 1,
-    effectiveDate: LocalDateTime = LocalDateTime.now(),
-    consecutiveChargeNumber: Long? = null,
+    effectiveDate: LocalDate = LocalDate.now(),
+    consecutiveChargeNumber: String? = null,
   ): MigratePunishment =
     MigratePunishment(
       sanctionCode = code,

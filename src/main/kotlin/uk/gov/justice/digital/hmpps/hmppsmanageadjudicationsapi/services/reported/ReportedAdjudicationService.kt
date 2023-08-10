@@ -144,10 +144,10 @@ class ReportedAdjudicationService(
 
   private fun getNomisCodes(roleCode: String?, offenceDetails: MutableList<ReportedOffence>?, isYouthOffender: Boolean): List<String> {
     if (roleCode != null) { // Null means committed on own
-      return offenceDetails?.map { offenceCodeLookupService.getNotCommittedOnOwnNomisOffenceCode(it.offenceCode, isYouthOffender) }
+      return offenceDetails?.map { offenceCodeLookupService.getOffenceCode(it.offenceCode, isYouthOffender).getNomisCodeWithOthers() }
         ?: emptyList()
     }
-    return offenceDetails?.map { offenceCodeLookupService.getCommittedOnOwnNomisOffenceCodes(it.offenceCode, isYouthOffender) }
+    return offenceDetails?.map { offenceCodeLookupService.getOffenceCode(it.offenceCode, isYouthOffender).getNomisCode() }
       ?: emptyList()
   }
 

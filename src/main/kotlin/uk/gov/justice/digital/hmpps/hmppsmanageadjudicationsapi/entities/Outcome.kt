@@ -7,6 +7,7 @@ import jakarta.persistence.Table
 import jakarta.validation.ValidationException
 import org.hibernate.validator.constraints.Length
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "outcome")
@@ -22,6 +23,7 @@ data class Outcome(
   var quashedReason: QuashedReason? = null,
   var oicHearingId: Long? = null,
   var deleted: Boolean? = null,
+  var actualCreatedDate: LocalDateTime? = null,
 ) : BaseEntity()
 
 enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Finding? = null) {

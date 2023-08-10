@@ -3,21 +3,41 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrat
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.ChargeNumberMapping
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.HearingMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.MigrateResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.PunishmentMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateEvidence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateHearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateHearingResult
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePrisoner
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePunishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 
@@ -28,6 +48,17 @@ class MigrateNewRecordService(
 ) {
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse {
     val chargeNumber = adjudicationMigrateDto.getChargeNumber()
+    val punishmentsAndComments = adjudicationMigrateDto.punishments.toPunishments()
+    val punishments = punishmentsAndComments.first
+    val punishmentComments = punishmentsAndComments.second
+
+    val hearingsAndResultsAndOutcomes = adjudicationMigrateDto.hearings.sortedBy { it.hearingDateTime }.toHearingsAndResultsAndOutcomes(
+      agencyId = adjudicationMigrateDto.agencyId,
+      chargeNumber = chargeNumber,
+    )
+
+    val hearingsAndResults = hearingsAndResultsAndOutcomes.first
+    val outcomes = hearingsAndResultsAndOutcomes.second
 
     val reportedAdjudication = ReportedAdjudication(
       chargeNumber = chargeNumber,
@@ -48,18 +79,21 @@ class MigrateNewRecordService(
       status = ReportedAdjudicationStatus.UNSCHEDULED,
       handoverDeadline = DraftAdjudicationService.daysToActionFromIncident(adjudicationMigrateDto.incidentDateTime),
       gender = adjudicationMigrateDto.prisoner.getGender(),
-      hearings = mutableListOf(),
-      punishments = mutableListOf(),
-      punishmentComments = mutableListOf(),
+      hearings = hearingsAndResults.toMutableList(),
       isYouthOffender = adjudicationMigrateDto.offence.getIsYouthOffender(),
       locationId = adjudicationMigrateDto.locationId,
-      outcomes = mutableListOf(),
+      outcomes = outcomes.toMutableList(),
       statement = adjudicationMigrateDto.statement,
-      offenceDetails = mutableListOf(adjudicationMigrateDto.getOffenceDetails()),
+      offenceDetails = mutableListOf(adjudicationMigrateDto.offence.getOffenceDetails()),
       migrated = true,
+      punishments = punishments.toMutableList(),
+      punishmentComments = punishmentComments.toMutableList(),
     )
 
-    reportedAdjudicationRepository.save(reportedAdjudication)
+    val saved = reportedAdjudicationRepository.save(reportedAdjudication).also {
+      it.createDateTime = adjudicationMigrateDto.reportedDateTime
+      it.createdByUserId = adjudicationMigrateDto.reportingOfficer.username
+    }
 
     return MigrateResponse(
       chargeNumberMapping = ChargeNumberMapping(
@@ -67,6 +101,12 @@ class MigrateNewRecordService(
         chargeNumber = chargeNumber,
         offenceSequence = adjudicationMigrateDto.offenceSequence,
       ),
+      hearingMappings = saved.hearings.map {
+        HearingMapping(hearingId = it.id!!, oicHearingId = it.oicHearingId!!)
+      },
+      punishmentMappings = saved.getPunishments().map {
+        PunishmentMapping(punishmentId = it.id!!, sanctionSeq = it.sanctionSeq!!, bookingId = adjudicationMigrateDto.bookingId)
+      },
     )
   }
 
@@ -116,11 +156,208 @@ class MigrateNewRecordService(
         )
       }.toMutableList()
 
-    fun AdjudicationMigrateDto.getOffenceDetails(): ReportedOffence {
+    fun MigrateOffence.getOffenceDetails(): ReportedOffence {
       return ReportedOffence(
         offenceCode = 0,
         victimPrisonersNumber = null,
         victimStaffUsername = null,
+        nomisOffenceCode = this.offenceCode,
+        nomisOffenceDescription = this.offenceDescription,
+      )
+    }
+
+    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String): Pair<List<Hearing>, List<Outcome>> {
+      this.validate()
+
+      val hearingsAndResults = mutableListOf<Hearing>()
+      val outcomes = mutableListOf<Outcome>()
+      for ((index, oicHearing) in this.withIndex()) {
+        val hasAdditionalHearings = index < this.size - 1
+        val hasAdditionalHearingOutcomes = this.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
+
+        val hearingOutcomeAndOutcome = when (oicHearing.hearingResult) {
+          null -> if (hasAdditionalHearings) {
+            Pair(
+              HearingOutcome(
+                code = HearingOutcomeCode.ADJOURN,
+                adjudicator = oicHearing.adjudicator ?: "",
+                plea = HearingOutcomePlea.NOT_ASKED,
+              ),
+              null,
+            )
+          } else {
+            null
+          }
+          else -> {
+            val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes)
+
+            Pair(
+              HearingOutcome(
+                code = hearingOutcomeCode,
+                adjudicator = oicHearing.adjudicator ?: "",
+                plea = oicHearing.hearingResult.plea.mapToPlea(),
+              ),
+              oicHearing.hearingResult.mapToOutcome(hearingOutcomeCode),
+            )
+          }
+        }
+
+        hearingOutcomeAndOutcome?.second.let {
+          it?.let { outcome ->
+            outcomes.add(outcome)
+            oicHearing.hearingResult!!.createAdditionalOutcome(hasAdditionalHearings)?.let { additionalOutcome ->
+              outcomes.add(additionalOutcome)
+            }
+          }
+        }
+
+        hearingsAndResults.add(
+          Hearing(
+            dateTimeOfHearing = oicHearing.hearingDateTime,
+            locationId = oicHearing.locationId,
+            oicHearingType = oicHearing.oicHearingType,
+            oicHearingId = oicHearing.oicHearingId,
+            agencyId = agencyId,
+            chargeNumber = chargeNumber,
+            hearingOutcome = hearingOutcomeAndOutcome?.first,
+          ),
+        )
+      }
+
+      return Pair(hearingsAndResults, outcomes)
+    }
+
+    fun List<MigratePunishment>.toPunishments(): Pair<List<Punishment>, List<PunishmentComment>> {
+      val punishments = mutableListOf<Punishment>()
+      val punishmentComments = mutableListOf<PunishmentComment>()
+
+      this.forEach { sanction ->
+
+        punishments.add(sanction.mapToPunishment())
+
+        sanction.comment?.let {
+          punishmentComments.add(PunishmentComment(comment = it))
+        }
+      }
+
+      return Pair(punishments, punishmentComments)
+    }
+
+    private fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index: Int): Boolean =
+      index < this.size - 1 && this.none { it.hearingResult == null } && this.last().hearingResult?.finding != Finding.QUASHED.name
+
+    /*
+       Note: this is a placeholder, awaiting further discovery of nomis data to expand on rules
+       Currently allows REF_POLICE and QUASHED to be processed, pending discovery
+     */
+    private fun List<MigrateHearing>.validate() {
+      val listOfExceptionStatus = listOf(Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name).toMutableList()
+      if (this.count { it.hearingResult != null } < 2) return
+      if (this.filter { it.hearingResult != null }.any { listOf(Finding.REF_POLICE.name, Finding.QUASHED.name).contains(it.hearingResult!!.finding) }) return
+
+      val firstResult = this.first { it.hearingResult != null }
+
+      listOfExceptionStatus.removeIf { it == firstResult.hearingResult!!.finding }
+
+      if (this.filter { it.hearingResult != null }.any { listOfExceptionStatus.contains(it.hearingResult!!.finding) }) {
+        throw UnableToMigrateException("Currently unable to migrate due to results structure")
+      }
+    }
+
+    private fun MigrateHearingResult.mapToOutcome(hearingOutcomeCode: HearingOutcomeCode): Outcome? =
+      when (hearingOutcomeCode) {
+        HearingOutcomeCode.ADJOURN, HearingOutcomeCode.NOMIS -> null
+        else -> Outcome(code = this.finding.mapToOutcomeCode(), actualCreatedDate = this.createdDateTime)
+      }
+
+    private fun String.mapToOutcomeCode(): OutcomeCode = when (this) {
+      Finding.PROVED.name, Finding.QUASHED.name -> OutcomeCode.CHARGE_PROVED
+      Finding.D.name -> OutcomeCode.DISMISSED
+      Finding.NOT_PROCEED.name -> OutcomeCode.NOT_PROCEED
+      Finding.REF_POLICE.name, Finding.PROSECUTED.name -> OutcomeCode.REFER_POLICE
+      else -> throw UnableToMigrateException("issue with outcome code mapping $this")
+    }
+
+    private fun MigrateHearingResult.createAdditionalOutcome(hasAdditionalHearings: Boolean): Outcome? = when (this.finding) {
+      Finding.QUASHED.name -> Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = this.createdDateTime.plusMinutes(1))
+      Finding.PROSECUTED.name -> Outcome(code = OutcomeCode.PROSECUTION, actualCreatedDate = this.createdDateTime.plusMinutes(1))
+      Finding.REF_POLICE.name -> if (hasAdditionalHearings) Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = this.createdDateTime.plusMinutes(1)) else null
+      else -> null
+    }
+
+    private fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean): HearingOutcomeCode = when (this) {
+      Finding.QUASHED.name -> HearingOutcomeCode.COMPLETE // TODO further discovery around nomis UNGUASHED
+      Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name ->
+        if (hasAdditionalHearingOutcomes) HearingOutcomeCode.ADJOURN else HearingOutcomeCode.COMPLETE
+      Finding.PROSECUTED.name, Finding.REF_POLICE.name -> HearingOutcomeCode.REFER_POLICE
+      else -> TODO("To confirm default with John, given appeals and other such statuses")
+    }
+
+    private fun String.mapToPlea(): HearingOutcomePlea = when (this) {
+      Plea.NOT_GUILTY.name -> HearingOutcomePlea.NOT_GUILTY
+      Plea.GUILTY.name -> HearingOutcomePlea.GUILTY
+      Plea.NOT_ASKED.name -> HearingOutcomePlea.NOT_ASKED
+      Plea.UNFIT.name -> HearingOutcomePlea.UNFIT
+      Plea.REFUSED.name -> HearingOutcomePlea.ABSTAIN
+      else -> TODO("TO confirm with John default case, and issue where result can also be a plea")
+    }
+
+    private fun MigratePunishment.mapToPunishment(): Punishment {
+      val prospectiveStatuses = listOf(Status.PROSPECTIVE.name, Status.SUSP_PROSP.name)
+      val typesWithoutDates = PunishmentType.additionalDays().plus(PunishmentType.CAUTION)
+      val type = when (this.sanctionCode) {
+        OicSanctionCode.ADA.name -> if (prospectiveStatuses.contains(this.sanctionStatus)) PunishmentType.PROSPECTIVE_DAYS else PunishmentType.ADDITIONAL_DAYS
+        OicSanctionCode.EXTRA_WORK.name -> PunishmentType.EXCLUSION_WORK
+        OicSanctionCode.EXTW.name -> PunishmentType.EXTRA_WORK
+        OicSanctionCode.CAUTION.name -> PunishmentType.CAUTION
+        OicSanctionCode.CC.name -> PunishmentType.CONFINEMENT
+        OicSanctionCode.REMACT.name -> PunishmentType.REMOVAL_ACTIVITY
+        OicSanctionCode.REMWIN.name -> PunishmentType.REMOVAL_WING
+        OicSanctionCode.STOP_PCT.name -> PunishmentType.EARNINGS
+        else -> PunishmentType.PRIVILEGE
+      }
+
+      val suspendedUntil = when (this.sanctionStatus) {
+        Status.SUSPENDED.name, Status.SUSP_PROSP.name -> this.effectiveDate
+        else -> null
+      }
+
+      val startDate = when (this.sanctionStatus) {
+        Status.SUSPENDED.name, Status.SUSP_PROSP.name -> null
+        else -> if (typesWithoutDates.contains(type)) null else this.effectiveDate
+      }
+
+      val endDate = when (this.sanctionStatus) {
+        Status.SUSPENDED.name, Status.SUSP_PROSP.name -> null
+        else -> if (typesWithoutDates.contains(type)) null else this.effectiveDate.plusDays((this.days ?: 0).toLong())
+      }
+
+      val stoppagePercentage = when (type) {
+        PunishmentType.EARNINGS -> this.compensationAmount
+        else -> null
+      }
+
+      val privilegeType = when (type) {
+        PunishmentType.PRIVILEGE -> PrivilegeType.OTHER
+        else -> null
+      }
+
+      val otherPrivilege = when (type) {
+        PunishmentType.PRIVILEGE -> this.sanctionCode
+        else -> null
+      }
+
+      return Punishment(
+        type = type,
+        consecutiveChargeNumber = this.consecutiveChargeNumber,
+        stoppagePercentage = stoppagePercentage?.toInt(),
+        sanctionSeq = this.sanctionSeq,
+        suspendedUntil = suspendedUntil,
+        privilegeType = privilegeType,
+        otherPrivilege = otherPrivilege,
+        schedule = mutableListOf(
+          PunishmentSchedule(days = this.days ?: 0, startDate = startDate, endDate = endDate, suspendedUntil = suspendedUntil),
+        ),
       )
     }
   }

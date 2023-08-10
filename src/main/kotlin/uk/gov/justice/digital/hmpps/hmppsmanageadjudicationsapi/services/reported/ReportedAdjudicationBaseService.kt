@@ -25,7 +25,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedDam
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedEvidenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedWitnessDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssueHistory
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -39,7 +38,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedEvidence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -74,7 +72,7 @@ open class ReportedDtoService(
         associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
         associatedPrisonersName = incidentRoleAssociatedPrisonersName,
       ),
-      offenceDetails = toReportedOffence(offenceDetails.first(), isYouthOffender, gender, offenceCodeLookupService),
+      offenceDetails = this.toReportedOffence(offenceCodeLookupService),
       incidentStatement = IncidentStatementDto(
         statement = statement,
         completed = true,
@@ -108,7 +106,6 @@ open class ReportedDtoService(
     val hearings = this.hearings.toHearings()
     val outcomes = this.getOutcomes().createCombinedOutcomesV2()
     return ReportedAdjudicationDtoV2(
-      adjudicationNumber = chargeNumber.toLong(),
       chargeNumber = chargeNumber,
       prisonerNumber = prisonerNumber,
       incidentDetails = IncidentDetailsDto(
@@ -124,7 +121,7 @@ open class ReportedDtoService(
         associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
         associatedPrisonersName = incidentRoleAssociatedPrisonersName,
       ),
-      offenceDetails = toReportedOffence(offenceDetails.first(), isYouthOffender, gender, offenceCodeLookupService),
+      offenceDetails = this.toReportedOffence(offenceCodeLookupService),
       incidentStatement = IncidentStatementDto(
         statement = statement,
         completed = true,
@@ -260,7 +257,8 @@ open class ReportedDtoService(
     if (this.isEmpty()) return emptyList()
 
     val combinedOutcomes = mutableListOf<CombinedOutcomeDtoV2>()
-    val orderedOutcomes = this.sortedBy { it.createDateTime }.toMutableList()
+    // TODO when v1 is removed, add some tests to combine new and old logic
+    val orderedOutcomes = this.sortedBy { it.actualCreatedDate ?: it.createDateTime }.toMutableList()
 
     do {
       val outcome = orderedOutcomes.removeFirst()
@@ -287,21 +285,27 @@ open class ReportedDtoService(
     return combinedOutcomes
   }
 
-  private fun toReportedOffence(
-    offence: ReportedOffence,
-    isYouthOffender: Boolean,
-    gender: Gender,
+  private fun ReportedAdjudication.toReportedOffence(
     offenceCodeLookupService: OffenceCodeLookupService,
   ): OffenceDto {
-    val offenceCode = offenceCodeLookupService.getOffenceCode(offenceCode = offence.offenceCode, isYouthOffender = isYouthOffender)
+    val offence = this.offenceDetails.first()
+
+    val offenceRuleDto = when (val offenceCode = offenceCodeLookupService.getOffenceCode(offenceCode = offence.offenceCode, isYouthOffender = this.isYouthOffender)) {
+      OffenceCodes.MIGRATED_OFFENCE -> OffenceRuleDto(
+        paragraphNumber = offence.nomisOffenceCode!!,
+        paragraphDescription = offence.nomisOffenceDescription!!,
+      )
+      else -> OffenceRuleDto(
+        paragraphNumber = offenceCode.paragraph,
+        paragraphDescription = offenceCode.paragraphDescription.getParagraphDescription(this.gender),
+        nomisCode = offenceCode.getNomisCode(),
+        withOthersNomisCode = offenceCode.getNomisCodeWithOthers(),
+      )
+    }
+
     return OffenceDto(
       offenceCode = offence.offenceCode,
-      offenceRule = OffenceRuleDto(
-        paragraphNumber = offenceCode?.paragraph ?: OffenceCodes.DEFAULT.paragraph,
-        paragraphDescription = (offenceCode?.paragraphDescription ?: OffenceCodes.DEFAULT.paragraphDescription).getParagraphDescription(gender),
-        nomisCode = offenceCode?.getNomisCode(),
-        withOthersNomisCode = offenceCode?.getNomisCodeWithOthers(),
-      ),
+      offenceRule = offenceRuleDto,
       victimPrisonersNumber = offence.victimPrisonersNumber,
       victimStaffUsername = offence.victimStaffUsername,
       victimOtherPersonsName = offence.victimOtherPersonsName,
@@ -414,7 +418,7 @@ open class ReportedDtoService(
         privilegeType = it.privilegeType,
         otherPrivilege = it.otherPrivilege,
         stoppagePercentage = it.stoppagePercentage,
-        amount = it.amount,
+        damagesOwedAmount = it.amount,
         activatedFrom = it.activatedFromChargeNumber,
         activatedBy = it.activatedByChargeNumber,
         consecutiveReportNumber = it.consecutiveChargeNumber?.toLong(),

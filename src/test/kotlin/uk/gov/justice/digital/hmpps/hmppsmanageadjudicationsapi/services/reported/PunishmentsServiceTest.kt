@@ -2670,7 +2670,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       val oicSanctionRequest = punishment.mapPunishmentToSanction()
 
-      assertThat(oicSanctionRequest.status).isEqualTo(Status.SUSPENDED)
+      assertThat(oicSanctionRequest.status).isEqualTo(if (punishmentType == PunishmentType.PROSPECTIVE_DAYS) Status.SUSP_PROSP else Status.SUSPENDED)
     }
 
     @EnumSource(PunishmentType::class)
@@ -2760,7 +2760,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(oicSanctionRequest.effectiveDate).isEqualTo(LocalDate.now())
       assertThat(oicSanctionRequest.sanctionDays).isEqualTo(10)
-      assertThat(oicSanctionRequest.status).isEqualTo(Status.SUSPENDED)
+      assertThat(oicSanctionRequest.status).isEqualTo(if (punishmentType == PunishmentType.ADDITIONAL_DAYS) Status.SUSPENDED else Status.SUSP_PROSP)
       assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.ADA)
     }
 
