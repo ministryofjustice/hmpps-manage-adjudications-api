@@ -531,13 +531,14 @@ class IntegrationTestData(
   fun acceptReport(
     reportNumber: String,
     activeCaseLoad: String,
+    status: ReportedAdjudicationStatus = ReportedAdjudicationStatus.UNSCHEDULED,
   ): WebTestClient.ResponseSpec {
     return webTestClient.put()
       .uri("/reported-adjudications/$reportNumber/status")
       .headers(setHeaders(username = "ITAG_ALO", activeCaseload = activeCaseLoad))
       .bodyValue(
         mapOf(
-          "status" to ReportedAdjudicationStatus.UNSCHEDULED.name,
+          "status" to status.name,
           "statusReason" to "status reason",
           "statusDetails" to "status details",
         ),

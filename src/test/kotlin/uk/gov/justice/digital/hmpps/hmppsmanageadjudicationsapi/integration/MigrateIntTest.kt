@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -197,22 +196,6 @@ class MigrateIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
-  fun `migrate existing record throws custom exception`() {
-    val body = objectMapper.writeValueAsString(
-      getConflictRecord(oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong()),
-    )
-
-    initDataForHearings()
-
-    webTestClient.post()
-      .uri("/reported-adjudications/migrate")
-      .headers(setHeaders(activeCaseload = null, roles = listOf("ROLE_MIGRATE_ADJUDICATIONS")))
-      .bodyValue(body)
-      .exchange()
-      .expectStatus().isEqualTo(HttpStatus.CONFLICT)
-  }
-
-  @Test
   fun `reset migration removes records`() {
     val adjudicationMigrateDto = getAdjudicationForReset()
     migrateRecord(adjudicationMigrateDto)
@@ -228,6 +211,30 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .headers(setHeaders())
       .exchange()
       .expectStatus().isNotFound
+  }
+
+  @Test
+  fun `existing record phase 1 updates status to CHARGE_PROVED`() {
+    initDataForAccept().acceptReport(
+      reportNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
+      activeCaseLoad = IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
+      status = ReportedAdjudicationStatus.ACCEPTED,
+    )
+
+    migrateRecord(
+      dto = getExistingRecord(
+        oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong(),
+        prisonerNumber = IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
+      ),
+    )
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
   }
 
   private fun migrateRecord(dto: AdjudicationMigrateDto) {
@@ -253,7 +260,18 @@ class MigrateIntTest : SqsIntegrationTestBase() {
     @JvmStatic
     fun getAllNewAdjudications(): Stream<AdjudicationMigrateDto> = migrateFixtures.getSelection().stream()
 
-    fun getConflictRecord(oicIncidentId: Long) = MigrationEntityBuilder().createAdjudication(oicIncidentId = oicIncidentId)
+    fun getExistingRecord(oicIncidentId: Long, prisonerNumber: String) = MigrationEntityBuilder().createAdjudication(
+      oicIncidentId = oicIncidentId,
+      prisoner = MigrationEntityBuilder().createPrisoner(prisonerNumber = prisonerNumber),
+      hearings = listOf(
+        MigrationEntityBuilder().createHearing(
+          hearingResult = MigrationEntityBuilder().createHearingResult(),
+        ),
+      ),
+      punishments = listOf(
+        MigrationEntityBuilder().createPunishment(),
+      ),
+    )
 
     fun getPoliceProsecutionFromHearing() = migrateFixtures.HEARING_WITH_PROSECUTION
 

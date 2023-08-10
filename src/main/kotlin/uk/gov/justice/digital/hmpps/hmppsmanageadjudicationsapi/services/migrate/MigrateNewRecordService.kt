@@ -98,21 +98,27 @@ class MigrateNewRecordService(
     }
 
     return MigrateResponse(
-      chargeNumberMapping = ChargeNumberMapping(
-        oicIncidentId = adjudicationMigrateDto.oicIncidentId,
-        chargeNumber = chargeNumber,
-        offenceSequence = adjudicationMigrateDto.offenceSequence,
-      ),
-      hearingMappings = saved.hearings.map {
-        HearingMapping(hearingId = it.id!!, oicHearingId = it.oicHearingId!!)
-      },
-      punishmentMappings = saved.getPunishments().map {
-        PunishmentMapping(punishmentId = it.id!!, sanctionSeq = it.sanctionSeq!!, bookingId = adjudicationMigrateDto.bookingId)
-      },
+      chargeNumberMapping = adjudicationMigrateDto.toChargeMapping(chargeNumber),
+      hearingMappings = saved.hearings.toHearingMappings(),
+      punishmentMappings = saved.getPunishments().toPunishmentMappings(adjudicationMigrateDto.bookingId),
     )
   }
 
   companion object {
+
+    fun AdjudicationMigrateDto.toChargeMapping(chargeNumber: String) = ChargeNumberMapping(
+      oicIncidentId = this.oicIncidentId,
+      chargeNumber = chargeNumber,
+      offenceSequence = this.offenceSequence,
+    )
+
+    fun List<Hearing>.toHearingMappings() = this.map {
+      HearingMapping(hearingId = it.id!!, oicHearingId = it.oicHearingId!!)
+    }
+
+    fun List<Punishment>.toPunishmentMappings(offenderBookingId: Long) = this.map {
+      PunishmentMapping(punishmentId = it.id!!, sanctionSeq = it.sanctionSeq!!, bookingId = offenderBookingId)
+    }
 
     fun AdjudicationMigrateDto.getChargeNumber(): String = "${this.oicIncidentId}-${this.offenceSequence}"
 

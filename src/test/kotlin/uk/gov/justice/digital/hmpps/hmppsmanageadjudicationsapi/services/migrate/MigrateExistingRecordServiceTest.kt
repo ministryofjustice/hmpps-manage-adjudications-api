@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrat
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
@@ -123,24 +122,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `witnesses are updated`() {
-    }
-
-    @Disabled
-    @Test // note can only be tested at integration level as requires audit data.
-    fun `updates status`() {
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-      val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
-      val existing = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId).also {
-        it.hearings.clear()
-        it.clearPunishments()
-        it.clearOutcomes()
-        it.status = ReportedAdjudicationStatus.ACCEPTED
-      }
-
-      migrateExistingRecordService.accept(dto, existing)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED)
     }
   }
 
