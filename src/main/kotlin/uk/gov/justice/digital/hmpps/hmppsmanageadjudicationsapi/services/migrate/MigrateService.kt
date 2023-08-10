@@ -27,13 +27,14 @@ class MigrateService(
       chargeNumber = adjudicationMigrateDto.oicIncidentId.toString(),
     )
 
-    return when (reportedAdjudication) {
-      null -> migrateNewRecordService.accept(
-        adjudicationMigrateDto = adjudicationMigrateDto,
-      )
-      else -> migrateExistingRecordService.accept(
+    return if (reportedAdjudication != null && adjudicationMigrateDto.offenceSequence == 1L) {
+      migrateExistingRecordService.accept(
         adjudicationMigrateDto = adjudicationMigrateDto,
         existingAdjudication = reportedAdjudication,
+      )
+    } else {
+      migrateNewRecordService.accept(
+        adjudicationMigrateDto = adjudicationMigrateDto,
       )
     }
   }
