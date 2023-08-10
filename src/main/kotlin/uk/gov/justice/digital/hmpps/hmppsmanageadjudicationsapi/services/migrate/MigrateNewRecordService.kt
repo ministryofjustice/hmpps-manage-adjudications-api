@@ -166,10 +166,9 @@ class MigrateNewRecordService(
       )
     }
 
-    private fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index: Int): Boolean =
-      index < this.size - 1 && this.none { it.hearingResult == null } && this.last().hearingResult?.finding != Finding.QUASHED.name
-
     fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String): Pair<List<Hearing>, List<Outcome>> {
+      this.validate()
+
       val hearingsAndResults = mutableListOf<Hearing>()
       val outcomes = mutableListOf<Outcome>()
       for ((index, oicHearing) in this.withIndex()) {
@@ -228,6 +227,43 @@ class MigrateNewRecordService(
       return Pair(hearingsAndResults, outcomes)
     }
 
+    fun List<MigratePunishment>.toPunishments(): Pair<List<Punishment>, List<PunishmentComment>> {
+      val punishments = mutableListOf<Punishment>()
+      val punishmentComments = mutableListOf<PunishmentComment>()
+
+      this.forEach { sanction ->
+
+        punishments.add(sanction.mapToPunishment())
+
+        sanction.comment?.let {
+          punishmentComments.add(PunishmentComment(comment = it))
+        }
+      }
+
+      return Pair(punishments, punishmentComments)
+    }
+
+    private fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index: Int): Boolean =
+      index < this.size - 1 && this.none { it.hearingResult == null } && this.last().hearingResult?.finding != Finding.QUASHED.name
+
+    /*
+       Note: this is a placeholder, awaiting further discovery of nomis data to expand on rules
+       Currently allows REF_POLICE and QUASHED to be processed, pending discovery
+     */
+    private fun List<MigrateHearing>.validate() {
+      val listOfExceptionStatus = listOf(Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name).toMutableList()
+      if (this.count { it.hearingResult != null } < 2) return
+      if (this.filter { it.hearingResult != null }.any { listOf(Finding.REF_POLICE.name, Finding.QUASHED.name).contains(it.hearingResult!!.finding) }) return
+
+      val firstResult = this.first { it.hearingResult != null }
+
+      listOfExceptionStatus.removeIf { it == firstResult.hearingResult!!.finding }
+
+      if (this.filter { it.hearingResult != null }.any { listOfExceptionStatus.contains(it.hearingResult!!.finding) }) {
+        throw UnableToMigrateException("Currently unable to migrate due to results structure")
+      }
+    }
+
     private fun MigrateHearingResult.mapToOutcome(hearingOutcomeCode: HearingOutcomeCode): Outcome? =
       when (hearingOutcomeCode) {
         HearingOutcomeCode.ADJOURN, HearingOutcomeCode.NOMIS -> null
@@ -250,11 +286,11 @@ class MigrateNewRecordService(
     }
 
     private fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean): HearingOutcomeCode = when (this) {
-      Finding.QUASHED.name -> HearingOutcomeCode.COMPLETE // TODO find out how things are unquashed.  in our system we remove quashed.
+      Finding.QUASHED.name -> HearingOutcomeCode.COMPLETE // TODO further discovery around nomis UNGUASHED
       Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name ->
         if (hasAdditionalHearingOutcomes) HearingOutcomeCode.ADJOURN else HearingOutcomeCode.COMPLETE
       Finding.PROSECUTED.name, Finding.REF_POLICE.name -> HearingOutcomeCode.REFER_POLICE
-      else -> HearingOutcomeCode.ADJOURN // for now we adjourn.  not appeal and so on.
+      else -> TODO("To confirm default with John, given appeals and other such statuses")
     }
 
     private fun String.mapToPlea(): HearingOutcomePlea = when (this) {
@@ -263,23 +299,7 @@ class MigrateNewRecordService(
       Plea.NOT_ASKED.name -> HearingOutcomePlea.NOT_ASKED
       Plea.UNFIT.name -> HearingOutcomePlea.UNFIT
       Plea.REFUSED.name -> HearingOutcomePlea.ABSTAIN
-      else -> HearingOutcomePlea.NOT_ASKED // TO confirm with John
-    }
-
-    fun List<MigratePunishment>.toPunishments(): Pair<List<Punishment>, List<PunishmentComment>> {
-      val punishments = mutableListOf<Punishment>()
-      val punishmentComments = mutableListOf<PunishmentComment>()
-
-      this.forEach { sanction ->
-
-        punishments.add(sanction.mapToPunishment())
-
-        sanction.comment?.let {
-          punishmentComments.add(PunishmentComment(comment = it))
-        }
-      }
-
-      return Pair(punishments, punishmentComments)
+      else -> TODO("TO confirm with John default case, and issue where result can also be a plea")
     }
 
     private fun MigratePunishment.mapToPunishment(): Punishment {

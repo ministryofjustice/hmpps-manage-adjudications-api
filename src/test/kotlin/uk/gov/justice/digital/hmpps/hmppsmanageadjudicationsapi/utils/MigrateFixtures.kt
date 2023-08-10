@@ -373,15 +373,15 @@ class MigrateFixtures {
   val WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(2),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(2)),
+      ),
+      migrationEntityBuilder.createHearing(
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
       ),
       migrationEntityBuilder.createHearing(
         hearingDateTime = LocalDateTime.now().plusDays(1),
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
-      ),
-      migrationEntityBuilder.createHearing(
-        hearingDateTime = LocalDateTime.now().plusDays(2),
-        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(2)),
       ),
     ),
   )
@@ -401,26 +401,45 @@ class MigrateFixtures {
     ),
   )
 
-  val WITH_HEARINGS_AND_RESULTS_MUDDLED = migrationEntityBuilder.createAdjudication(
+  val EXCEPTION_CASE = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
+      ),
+    ),
+  )
+
+  val EXCEPTION_CASE_2 = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
       ),
       migrationEntityBuilder.createHearing(
         hearingDateTime = LocalDateTime.now().plusDays(1),
-      ),
-      migrationEntityBuilder.createHearing(
-        hearingDateTime = LocalDateTime.now().plusDays(2),
-        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
-      ),
-      migrationEntityBuilder.createHearing(
-        hearingDateTime = LocalDateTime.now().plusDays(3),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
     ),
   )
+
+  val EXCEPTION_CASE_3 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.NOT_PROCEED.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name, createdDateTime = LocalDateTime.now().plusDays(1)),
+      ),
+    ),
+  )
+
   fun getSelection(): List<AdjudicationMigrateDto> = listOf(
     ADULT_SINGLE_OFFENCE, YOUTH_SINGLE_OFFENCE, NON_BINARY_GENDER, UNKNOWN_GENDER,
-    WITH_HEARINGS_AND_RESULTS_MUDDLED, WITH_HEARINGS_AND_SOME_RESULTS, WITH_HEARINGS_AND_RESULTS, WITH_HEARING, WITH_NO_ADJUDICATOR,
+    WITH_HEARINGS_AND_SOME_RESULTS, WITH_HEARINGS_AND_RESULTS, WITH_HEARING, WITH_NO_ADJUDICATOR,
     WITH_HEARINGS, WITH_HEARING_AND_RESULT, WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED, FEMALE,
     FEMALE, WITH_PUNISHMENT, WITH_PUNISHMENT_DAMAGES_AMOUNT, WITH_PUNISHMENT_ADA, WITH_PUNISHMENT_DAMAGES_AMOUNT, WITH_PUNISHMENT_COMMENT,
     WITH_PUNISHMENT_STOPPAGE_PERCENTAGE, WITH_PUNISHMENT_CONSECUTIVE, WITH_PUNISHMENT_SUSPENDED, WITH_PUNISHMENT_START_DATE,

@@ -636,7 +636,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `starting point for bad data cases - multiple hearings with same results `() {
+    fun `starting point for repeat data cases - multiple hearings with same results `() {
       val dto = migrationFixtures.WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
@@ -649,12 +649,19 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
         assertThat(it.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
       }
       assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      // assert out of order hearings
+      assertThat(argumentCaptor.value.hearings.last().dateTimeOfHearing).isEqualTo(dto.hearings.first().hearingDateTime)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
     }
 
-    // TODO lots of bad data setups based on Nomis
-
-    // TODO further mappings around unsupported codes
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
+    @ParameterizedTest
+    fun `anything that doesnt make sense should throw an exception for now - to replace with logic once agreed`(dto: AdjudicationMigrateDto) {
+      Assertions.assertThatThrownBy {
+        migrateNewRecordService.accept(dto)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+        .hasMessageContaining("Currently unable to migrate due to results structure")
+    }
   }
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
@@ -665,5 +672,13 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     @JvmStatic
     fun getQuashed(): Stream<AdjudicationMigrateDto> =
       listOf(migrationFixtures.QUASHED_FIRST_HEARING, migrationFixtures.QUASHED_SECOND_HEARING).stream()
+
+    @JvmStatic
+    fun getExceptionCases(): Stream<AdjudicationMigrateDto> =
+      listOf(
+        migrationFixtures.EXCEPTION_CASE,
+        migrationFixtures.EXCEPTION_CASE_2,
+        migrationFixtures.EXCEPTION_CASE_3,
+      ).stream()
   }
 }

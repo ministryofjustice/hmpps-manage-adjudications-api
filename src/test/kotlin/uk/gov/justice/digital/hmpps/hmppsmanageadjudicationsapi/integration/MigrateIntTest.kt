@@ -142,6 +142,26 @@ class MigrateIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `multiple hearings same outcomes returns correct structure`() {
+    val dto = getMultipleResultsSameOutcome()
+    migrateRecord(dto)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${dto.oicIncidentId}-${dto.offenceSequence}/v2")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(3)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(HearingOutcomeCode.ADJOURN.name)
+      .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome").doesNotExist()
+      .jsonPath("$.reportedAdjudication.outcomes[1].hearing.outcome.code").isEqualTo(HearingOutcomeCode.ADJOURN.name)
+      .jsonPath("$.reportedAdjudication.outcomes[2].hearing.outcome.code").isEqualTo(HearingOutcomeCode.COMPLETE.name)
+      .jsonPath("$.reportedAdjudication.outcomes[2].outcome.outcome.code").isEqualTo(OutcomeCode.CHARGE_PROVED.name)
+  }
+
+  @Test
   fun `migrate existing record throws custom exception`() {
     val body = objectMapper.writeValueAsString(
       getConflictRecord(oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong()),
@@ -207,5 +227,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
     fun getMultipleRefersToProsecution() = migrateFixtures.MULITPLE_POLICE_REEER_TO_PROSECUTION
 
     fun getPoliceReferToNotProceed() = migrateFixtures.POLICE_REF_NOT_PROCEED
+
+    fun getMultipleResultsSameOutcome() = migrateFixtures.WITH_HEARINGS_AND_RESULTS_MULTIPLE_PROVED
   }
 }
