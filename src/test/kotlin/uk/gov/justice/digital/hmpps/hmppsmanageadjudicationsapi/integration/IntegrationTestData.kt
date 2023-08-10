@@ -534,7 +534,7 @@ class IntegrationTestData(
   ): WebTestClient.ResponseSpec {
     return webTestClient.put()
       .uri("/reported-adjudications/$reportNumber/status")
-      .headers(setHeaders(username = "ITAG_ALO", activeCaseload = activeCaseLoad, roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO", activeCaseload = activeCaseLoad))
       .bodyValue(
         mapOf(
           "status" to ReportedAdjudicationStatus.UNSCHEDULED.name,
@@ -566,7 +566,7 @@ class IntegrationTestData(
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/refer-police")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
           "details" to "details",
@@ -580,7 +580,7 @@ class IntegrationTestData(
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/prosecution")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO"))
       .exchange()
   }
 
@@ -589,7 +589,7 @@ class IntegrationTestData(
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/not-proceed")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
           "details" to "details",
@@ -606,7 +606,7 @@ class IntegrationTestData(
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/hearing/v2")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
           "locationId" to testDataSet.locationId,
@@ -622,7 +622,7 @@ class IntegrationTestData(
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/hearing/outcome/adjourn")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
           "details" to "details",
@@ -642,7 +642,7 @@ class IntegrationTestData(
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/quashed")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
           "reason" to QuashedReason.APPEAL_UPHELD,
@@ -662,7 +662,7 @@ class IntegrationTestData(
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/complete-hearing/charge-proved")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
           "adjudicator" to "test",
@@ -682,7 +682,7 @@ class IntegrationTestData(
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/complete-hearing/charge-proved/v2")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
           "adjudicator" to "test",
@@ -700,7 +700,7 @@ class IntegrationTestData(
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/punishments")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
           "punishments" to
@@ -721,7 +721,7 @@ class IntegrationTestData(
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/complete-hearing/not-proceed")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
           "adjudicator" to "test",
@@ -741,7 +741,7 @@ class IntegrationTestData(
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/complete-hearing/dismissed")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
           "adjudicator" to "test",
@@ -761,7 +761,7 @@ class IntegrationTestData(
   ): ReportedAdjudicationResponse {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/hearing/outcome/referral")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
           "code" to code,
@@ -804,8 +804,8 @@ class IntegrationTestData(
   fun setHeaders(
     contentType: MediaType = MediaType.APPLICATION_JSON,
     username: String? = "ITAG_USER",
+    roles: List<String> = listOf("ROLE_ADJUDICATIONS_REVIEWER", "ROLE_VIEW_ADJUDICATIONS"),
     activeCaseload: String? = "MDI",
-    roles: List<String> = emptyList(),
   ): (HttpHeaders) -> Unit = {
     it.setBearerAuth(jwtAuthHelper.createJwt(subject = username, roles = roles, scope = listOf("write")))
     it.set("Active-Caseload", activeCaseload)

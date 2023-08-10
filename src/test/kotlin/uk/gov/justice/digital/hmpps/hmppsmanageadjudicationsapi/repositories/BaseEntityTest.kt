@@ -18,7 +18,7 @@ import java.time.LocalDateTime
 
 @DataJpaTest
 @ActiveProfiles("test")
-@WithMockUser(username = "ITAG_USER")
+@WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
 @Import(AuditConfiguration::class, UserDetails::class)
 class BaseEntityTest {
   @Autowired

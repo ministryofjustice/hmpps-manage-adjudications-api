@@ -143,6 +143,7 @@ class DraftAdjudicationController(
     ),
   )
   @GetMapping("/my-reports")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   @Operation(summary = "Returns all the in progress draft adjudications created by the current user")
   fun getCurrentUsersInProgressDraftAdjudications(
     @RequestParam(name = "startDate")
@@ -160,7 +161,7 @@ class DraftAdjudicationController(
     )
 
   @PostMapping
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   @Operation(
     summary = "Starts a new draft adjudication.",
     responses = [
@@ -199,6 +200,7 @@ class DraftAdjudicationController(
   }
 
   @GetMapping(value = ["/{id}"])
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   @Operation(summary = "Returns the draft adjudication details.")
   fun getDraftAdjudicationDetails(@PathVariable(name = "id") id: Long): DraftAdjudicationResponse {
     val draftAdjudication = draftAdjudicationService.getDraftAdjudicationDetails(id)
@@ -228,7 +230,7 @@ class DraftAdjudicationController(
       ),
     ],
   )
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun addIncidentStatement(
     @PathVariable(name = "id") id: Long,
@@ -248,7 +250,7 @@ class DraftAdjudicationController(
 
   @PutMapping(value = ["/{id}/incident-details"])
   @Operation(summary = "Edit the incident details for a draft adjudication.")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   fun editIncidentDetails(
     @PathVariable(name = "id") id: Long,
     @RequestBody @Valid
@@ -268,7 +270,7 @@ class DraftAdjudicationController(
 
   @PutMapping(value = ["/{id}/incident-role"])
   @Operation(summary = "Edit the incident role for a draft adjudication.")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   fun editIncidentRole(
     @PathVariable(name = "id") id: Long,
     @RequestBody @Valid
@@ -287,7 +289,7 @@ class DraftAdjudicationController(
 
   @PutMapping(value = ["/{id}/associated-prisoner"])
   @Operation(summary = "Set the associated prisoner for a draft adjudication.")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   fun setIncidentRoleAssociatedPrisoner(
     @PathVariable(name = "id") id: Long,
     @RequestBody @Valid
@@ -305,7 +307,7 @@ class DraftAdjudicationController(
 
   @PutMapping(value = ["/{id}/incident-statement"])
   @Operation(summary = "Edit the incident statement for a draft adjudication.")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   fun editIncidentStatement(
     @PathVariable(name = "id") id: Long,
     @RequestBody @Valid
@@ -323,7 +325,7 @@ class DraftAdjudicationController(
 
   @PutMapping(value = ["/{id}/applicable-rules"])
   @Operation(summary = "Set applicable rules for incident")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   fun setApplicableRules(
     @PathVariable(name = "id") id: Long,
     @RequestBody @Valid
@@ -342,7 +344,7 @@ class DraftAdjudicationController(
 
   @PutMapping(value = ["/{id}/gender"])
   @Operation(summary = "Set gender")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   fun setGender(
     @PathVariable(name = "id") id: Long,
     @RequestBody @Valid
@@ -360,7 +362,7 @@ class DraftAdjudicationController(
 
   @DeleteMapping(value = ["/{id}"])
   @Operation(summary = "Delete by Id. Only owner can delete.")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   fun deleteDraftAdjudication(
     @PathVariable(name = "id") id: Long,
   ) {

@@ -42,7 +42,7 @@ class DraftAdjudicationWorkflowController(
       ),
     ],
   )
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun completeDraftAdjudication(@PathVariable(name = "id") id: Long): ReportedAdjudicationDto =
     adjudicationWorkflowService.completeDraftAdjudication(id)

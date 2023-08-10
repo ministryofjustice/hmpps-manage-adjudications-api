@@ -38,7 +38,7 @@ class DraftDamagesController(
 
   @PutMapping(value = ["/{id}/damages"])
   @Operation(summary = "Set the damages for the draft adjudication.", description = "0 or more damages to be supplied")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun setDamages(
     @PathVariable(name = "id") id: Long,

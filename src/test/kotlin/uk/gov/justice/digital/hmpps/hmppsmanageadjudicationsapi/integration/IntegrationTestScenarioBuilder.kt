@@ -12,7 +12,7 @@ class IntegrationTestScenarioBuilder(
   private val intTestData: IntegrationTestData,
   private val intTestBase: IntegrationTestBase,
   private val activeCaseload: String? = "MDI",
-  private val headers: ((HttpHeaders) -> Unit) = intTestBase.setHeaders(activeCaseload = activeCaseload),
+  private val headers: ((HttpHeaders) -> Unit) = intTestBase.setHeaders(activeCaseload = activeCaseload, roles = listOf("ROLE_ADJUDICATIONS_REVIEWER", "ROLE_VIEW_ADJUDICATIONS")),
 ) {
   fun startDraft(testAdjudication: AdjudicationIntTestDataSet): IntegrationTestScenario {
     val draftCreationResponse = intTestData.startNewAdjudication(testAdjudication)

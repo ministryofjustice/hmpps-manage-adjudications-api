@@ -40,7 +40,7 @@ class DraftEvidenceController(
 
   @PutMapping(value = ["/{id}/evidence"])
   @Operation(summary = "Set the evidence for the draft adjudication.", description = "0 or more evidence to be supplied")
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun setEvidence(
     @PathVariable(name = "id") id: Long,

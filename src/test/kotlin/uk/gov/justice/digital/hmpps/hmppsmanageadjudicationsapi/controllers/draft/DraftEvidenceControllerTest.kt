@@ -43,7 +43,7 @@ class DraftEvidenceControllerTest : TestControllerBase() {
   }
 
   @Test
-  @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+  @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
   fun `makes a call to update the evidence`() {
     setEvidenceRequest(1, EVIDENCE_REQUEST)
       .andExpect(MockMvcResultMatchers.status().isCreated)

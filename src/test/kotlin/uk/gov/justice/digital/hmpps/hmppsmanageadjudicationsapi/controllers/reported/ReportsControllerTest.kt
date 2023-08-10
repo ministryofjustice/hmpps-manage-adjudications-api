@@ -69,7 +69,7 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `makes a call to return my reported adjudications`() {
       getMyAdjudications().andExpect(MockMvcResultMatchers.status().isOk)
       verify(reportsService).getMyReportedAdjudications(
@@ -81,7 +81,7 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `returns my reported adjudications`() {
       getMyAdjudications()
         .andExpect(MockMvcResultMatchers.status().isOk)
@@ -92,7 +92,7 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `returns my reported adjudications with date and status filter`() {
       getMyAdjudicationsWithFilter(LocalDate.now().plusDays(5))
         .andExpect(MockMvcResultMatchers.status().isOk)
@@ -153,7 +153,7 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `paged responds with a unauthorised status code for all adjudications without role for ALO`() {
       getAllAdjudications().andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -175,7 +175,7 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `get adjudications for issue with defaulted dates`() {
       whenever(reportsService.getAdjudicationsForIssue(LocalDate.now().minusDays(2), LocalDate.now()))
         .thenReturn(emptyList())
@@ -201,7 +201,7 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `get adjudications for print with defaulted dates`() {
       whenever(reportsService.getAdjudicationsForPrint(LocalDate.now(), LocalDate.now().plusDays(2), IssuedStatus.values().toList()))
         .thenReturn(emptyList())
@@ -238,7 +238,7 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `responds with report counts `() {
       getCounters().andExpect(MockMvcResultMatchers.status().isOk)
 

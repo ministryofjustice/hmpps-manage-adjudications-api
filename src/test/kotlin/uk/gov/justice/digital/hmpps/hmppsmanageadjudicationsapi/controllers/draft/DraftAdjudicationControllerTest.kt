@@ -74,7 +74,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `calls the service to start a new adjudication for a prisoner`() {
       startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT, null, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isCreated)
@@ -91,7 +91,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `returns the newly created draft adjudication`() {
       startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT, null, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isCreated)
@@ -104,13 +104,13 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `returns a bad request when sent an empty body`() {
       startANewAdjudication().andExpect(status().isBadRequest)
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `returns a bad request when required fields are missing`() {
       startANewAdjudication(prisonerNumber = "A12345").andExpect(status().isBadRequest)
     }
@@ -153,7 +153,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class DeleteDraftAdjudication {
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `responds with a unauthorised status code if authorities missing`() {
       deleteDraftAdjudication().andExpect(status().isForbidden)
     }
@@ -169,7 +169,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `calls the service to delete draft adjudication`() {
       val argumentCaptor = ArgumentCaptor.forClass(Long::class.java)
       doNothing().`when`(draftAdjudicationService).deleteDraftAdjudications(argumentCaptor.capture())
@@ -207,7 +207,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `returns the draft adjudication for a given id`() {
       whenever(draftAdjudicationService.getDraftAdjudicationDetails(any())).thenReturn(
         DraftAdjudicationDto(
@@ -247,7 +247,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `returns the draft adjudication for a given id and without optional information`() {
       whenever(draftAdjudicationService.getDraftAdjudicationDetails(any())).thenReturn(
         DraftAdjudicationDto(
@@ -275,7 +275,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `responds with an not found status code`() {
       whenever(draftAdjudicationService.getDraftAdjudicationDetails(anyLong())).thenThrow(EntityNotFoundException::class.java)
 
@@ -306,7 +306,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `makes a call to add the incident statement to the draft adjudication`() {
       makeAddIncidentStatementRequest(1, "test")
         .andExpect(status().isCreated)
@@ -315,7 +315,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `returns the draft adjudication including the new statement`() {
       makeAddIncidentStatementRequest(1, "test")
         .andExpect(status().isCreated)
@@ -325,7 +325,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `returns a bad request when the maximum statement length has been exceeded`() {
       val largeStatement = IntRange(0, 40000).joinToString("") { "A" }
 
@@ -373,7 +373,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `makes a call to edit the incident details`() {
       editIncidentDetailsRequest(
         1,
@@ -393,7 +393,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `returns the incident details`() {
       editIncidentDetailsRequest(
         1,
@@ -422,7 +422,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `handles a bad request when an IllegalSateException is thrown`() {
       whenever(
         draftAdjudicationService.editIncidentDetails(
@@ -479,7 +479,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `makes a call to update the incident statement`() {
       editIncidentStatement(1, "test")
         .andExpect(status().isOk)
@@ -488,7 +488,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `returns the incident statement`() {
       editIncidentStatement(1, "new statement")
         .andExpect(status().isOk)
@@ -559,7 +559,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `makes a call to return all mny in progress draft adjudications`() {
       getInProgressDraftAdjudications()
         .andExpect(status().isOk)
@@ -594,7 +594,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `makes a call to set the applicable rule`() {
       setApplicableRules(1, true)
         .andExpect(status().isOk)
@@ -633,7 +633,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `makes a call to edit the incident role`() {
       editIncidentRoleRequest(1, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isOk)
@@ -684,7 +684,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `makes a call to set the associated prisoner information`() {
       setAssociatedPrisonerRequest(1, ASSOCIATED_PRISONER_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isOk)
@@ -729,7 +729,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `makes a call to set the gender`() {
       setGenderRequest(1, GENDER_REQUEST)
         .andExpect(status().isOk)

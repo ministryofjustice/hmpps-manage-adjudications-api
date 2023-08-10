@@ -128,6 +128,7 @@ class ReportsController(
       description = "list of status filter for reports",
     ),
   )
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   @GetMapping("/my-reports")
   fun getMyReportedAdjudications(
     @RequestParam(name = "startDate")
@@ -160,6 +161,7 @@ class ReportsController(
       description = "optional inclusive end date for results, default is today",
     ),
   )
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   @GetMapping("/for-issue")
   fun getReportedAdjudicationsForIssue(
     @RequestParam(name = "startDate")
@@ -195,6 +197,7 @@ class ReportsController(
       description = "list of issue status, as comma separated String",
     ),
   )
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   @GetMapping("/for-print")
   fun getReportedAdjudicationsForPrint(
     @RequestParam(name = "startDate")
@@ -215,6 +218,7 @@ class ReportsController(
   }
 
   @Operation(summary = "Get report counts by agency")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   @GetMapping("/report-counts")
   fun getReportCounts(): AgencyReportCountsDto = reportsService.getReportCounts()
 }

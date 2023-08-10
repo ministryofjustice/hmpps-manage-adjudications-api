@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.SummaryAdjudicationService
 import java.time.LocalDate
 
+@PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
 @RestController
 @Tag(name = "01. Adjudication Summary")
 @RequestMapping("/adjudications")
@@ -72,7 +73,6 @@ class AdjudicationSummaryController(
       ),
     ],
   )
-  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   @PostMapping("/proven-adjudications")
   fun getProvenAdjudicationCounts(
     @RequestParam(

@@ -40,7 +40,7 @@ class MigrateControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_MIGRATE_ADJUDICATIONS", "SCOPE_write"])
     fun `responds with a 201`() {
       createMigrationRequest(
         migrateFixtures.ADULT_SINGLE_OFFENCE,
@@ -71,7 +71,7 @@ class MigrateControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_MIGRATE_ADJUDICATIONS", "SCOPE_write"])
     fun `responds with a 200`() {
       createResetRequest().andExpect(MockMvcResultMatchers.status().isOk)
       verify(migrateService, atLeastOnce()).reset()

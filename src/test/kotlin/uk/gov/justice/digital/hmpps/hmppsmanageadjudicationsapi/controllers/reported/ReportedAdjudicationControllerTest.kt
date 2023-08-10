@@ -46,7 +46,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `returns the adjudication for a given id`() {
       whenever(reportedAdjudicationService.getReportedAdjudicationDetailsV2(anyString())).thenReturn(
         REPORTED_ADJUDICATION_DTO_V2,
@@ -58,7 +58,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER")
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `responds with an not found status code`() {
       whenever(reportedAdjudicationService.getReportedAdjudicationDetailsV2(anyString())).thenThrow(EntityNotFoundException::class.java)
 
@@ -92,7 +92,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `returns a bad request when the maximum details length has been exceeded`() {
       val largeStatement = IntRange(0, 4001).joinToString("") { "A" }
       makeReportedAdjudicationSetStatusRequest(
@@ -103,7 +103,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `returns a bad request when the maximum reason length has been exceeded`() {
       val largeStatement = IntRange(0, 128).joinToString("") { "A" }
       makeReportedAdjudicationSetStatusRequest(
@@ -117,7 +117,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `does not call event service on exception`() {
       whenever(reportedAdjudicationService.setStatus("123", ReportedAdjudicationStatus.RETURNED, "reason", "details")).thenThrow(RuntimeException())
 
@@ -131,7 +131,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
 
     @CsvSource("RETURNED,false", "REJECTED,false", "UNSCHEDULED,true")
     @ParameterizedTest
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to set the status of the reported adjudication`(status: ReportedAdjudicationStatus, eventCalled: Boolean) {
       whenever(reportedAdjudicationService.setStatus("123", status, "reason", "details")).thenReturn(
         reportedAdjudicationDto(status),
@@ -179,7 +179,7 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `responds successfully from issued details request `() {
       whenever(
         reportedAdjudicationService.setIssued(anyString(), any()),

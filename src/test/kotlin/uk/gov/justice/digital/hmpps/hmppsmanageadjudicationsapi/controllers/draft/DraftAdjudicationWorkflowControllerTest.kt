@@ -32,7 +32,7 @@ class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `make a call to complete a draft adjudication`() {
       whenever(adjudicationWorkflowService.completeDraftAdjudication(1)).thenReturn(REPORTED_ADJUDICATION_DTO)
       completeDraftAdjudication(1)

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamagesRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.DamagesService
 
-@PreAuthorize("hasAuthority('SCOPE_write')")
+@PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
 @RestController
 @Tag(name = "22. Damages")
 class DamagesController(

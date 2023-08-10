@@ -38,7 +38,7 @@ class ReportedAdjudicationWorkflowController(
       ),
     ],
   )
-  @PreAuthorize("hasAuthority('SCOPE_write')")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun createDraftAdjudication(@PathVariable(name = "chargeNumber") chargeNumber: String): DraftAdjudicationResponse {
     val draftAdjudication = adjudicationWorkflowService.createDraftFromReportedAdjudication(chargeNumber)
