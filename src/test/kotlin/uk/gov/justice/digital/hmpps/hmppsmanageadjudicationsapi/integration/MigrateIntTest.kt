@@ -200,7 +200,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
 
     webTestClient.post()
       .uri("/reported-adjudications/migrate")
-      .headers(setHeaders(activeCaseload = null))
+      .headers(setHeaders(activeCaseload = null, roles = listOf("ROLE_MIGRATE_ADJUDICATIONS")))
       .bodyValue(body)
       .exchange()
       .expectStatus().isCreated
