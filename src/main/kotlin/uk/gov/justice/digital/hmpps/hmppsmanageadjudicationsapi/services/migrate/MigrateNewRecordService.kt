@@ -88,7 +88,9 @@ class MigrateNewRecordService(
       migrated = true,
       punishments = punishments.toMutableList(),
       punishmentComments = punishmentComments.toMutableList(),
-    )
+    ).also {
+      it.calculateStatus()
+    }
 
     val saved = reportedAdjudicationRepository.save(reportedAdjudication).also {
       it.createDateTime = adjudicationMigrateDto.reportedDateTime

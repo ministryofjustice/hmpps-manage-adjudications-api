@@ -23,9 +23,9 @@ class LegacySyncService(
     }
   }
 
-  fun createHearing(adjudicationNumber: Long, oicHearingRequest: OicHearingRequest): Long? {
+  fun createHearing(adjudicationNumber: String, oicHearingRequest: OicHearingRequest): Long? {
     return if (!featureFlagsConfig.hearings) {
-      legacyNomisGateway.createHearing(adjudicationNumber, oicHearingRequest)
+      legacyNomisGateway.createHearing(adjudicationNumber.toLong(), oicHearingRequest)
     } else {
       null
     }

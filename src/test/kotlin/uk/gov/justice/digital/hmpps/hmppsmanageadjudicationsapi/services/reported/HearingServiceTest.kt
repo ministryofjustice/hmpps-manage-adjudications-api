@@ -162,7 +162,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       verify(legacySyncService, atLeastOnce()).createHearing(
-        1235L,
+        "1235",
         OicHearingRequest(
           dateTimeOfHearing = now,
           hearingLocationId = 1,

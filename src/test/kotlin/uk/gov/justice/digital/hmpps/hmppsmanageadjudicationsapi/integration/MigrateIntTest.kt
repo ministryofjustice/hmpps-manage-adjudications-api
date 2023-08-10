@@ -1,18 +1,23 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.http.HttpStatus
+import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrateFixtures
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrationEntityBuilder
 import java.time.LocalDateTime
 import java.util.stream.Stream
 
+@ActiveProfiles("sync")
 class MigrateIntTest : SqsIntegrationTestBase() {
   @BeforeEach
   fun setUp() {
@@ -161,6 +166,36 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[2].outcome.outcome.code").isEqualTo(OutcomeCode.CHARGE_PROVED.name)
   }
 
+  @Disabled("this can only be turned on once v1 endpoints removed, due to change number.toLong")
+  @Test
+  fun `status is correct - SCHEDULED when UNSCHEDULED migrated record is updated via UI`() {
+    val dto = getAdjudicationForReset()
+    migrateRecord(dto)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${dto.oicIncidentId}-${dto.offenceSequence}/v2")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED.name)
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${dto.oicIncidentId}-${dto.offenceSequence}/hearing/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "locationId" to 1,
+          "dateTimeOfHearing" to LocalDateTime.now().plusDays(1),
+          "oicHearingType" to OicHearingType.GOV.name,
+        ),
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
+  }
+
   @Test
   fun `migrate existing record throws custom exception`() {
     val body = objectMapper.writeValueAsString(
@@ -220,11 +255,11 @@ class MigrateIntTest : SqsIntegrationTestBase() {
 
     fun getConflictRecord(oicIncidentId: Long) = MigrationEntityBuilder().createAdjudication(oicIncidentId = oicIncidentId)
 
-    fun getPoliceProsecutionFromHearing() = migrateFixtures.HEARING_WITH_PROSCUTION
+    fun getPoliceProsecutionFromHearing() = migrateFixtures.HEARING_WITH_PROSECUTION
 
     fun getPoliceReferralScheduleNewHearing() = migrateFixtures.POLICE_REFERRAL_NEW_HEARING
 
-    fun getMultipleRefersToProsecution() = migrateFixtures.MULITPLE_POLICE_REEER_TO_PROSECUTION
+    fun getMultipleRefersToProsecution() = migrateFixtures.MULITPLE_POLICE_REFER_TO_PROSECUTION
 
     fun getPoliceReferToNotProceed() = migrateFixtures.POLICE_REF_NOT_PROCEED
 

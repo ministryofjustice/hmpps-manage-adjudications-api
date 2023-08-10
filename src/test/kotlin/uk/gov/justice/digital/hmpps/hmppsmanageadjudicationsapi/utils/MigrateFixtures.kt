@@ -272,7 +272,7 @@ class MigrateFixtures {
     ),
   )
 
-  val HEARING_WITH_PROSCUTION = migrationEntityBuilder.createAdjudication(
+  val HEARING_WITH_PROSECUTION = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROSECUTED.name),
@@ -320,7 +320,7 @@ class MigrateFixtures {
     ),
   )
 
-  val MULITPLE_POLICE_REEER_TO_PROSECUTION = migrationEntityBuilder.createAdjudication(
+  val MULITPLE_POLICE_REFER_TO_PROSECUTION = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name),

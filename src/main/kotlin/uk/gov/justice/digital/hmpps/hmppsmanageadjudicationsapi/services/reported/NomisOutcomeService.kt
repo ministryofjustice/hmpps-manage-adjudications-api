@@ -28,7 +28,7 @@ class NomisOutcomeService(
     hearing?.let {
       if (outcome.createHearingAndOutcome() || isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)) {
         val oicHearingId = legacySyncService.createHearing(
-          adjudicationNumber = adjudicationNumber,
+          adjudicationNumber = adjudicationNumber.toString(),
           oicHearingRequest = OicHearingRequest(
             dateTimeOfHearing = LocalDateTime.now(),
             oicHearingType = it.oicHearingType,
