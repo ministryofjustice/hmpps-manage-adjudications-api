@@ -182,6 +182,20 @@ class MigrateFixtures {
     ),
   )
 
+  val COMPLETE_CHARGE_PROVED = migrationEntityBuilder.createAdjudication(
+    damages = listOf(migrationEntityBuilder.createDamage()),
+    evidence = listOf(migrationEntityBuilder.createEvidence()),
+    witnesses = listOf(migrationEntityBuilder.createWitness()),
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(),
+    ),
+  )
+
   val MULTIPLE_OFFENDERS = listOf(
     migrationEntityBuilder.createAdjudication(
       oicIncidentId = 2,

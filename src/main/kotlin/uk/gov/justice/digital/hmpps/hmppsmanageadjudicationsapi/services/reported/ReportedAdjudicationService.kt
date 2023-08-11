@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import com.microsoft.applicationinsights.TelemetryClient
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
-import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDtoV2
@@ -58,8 +57,6 @@ class ReportedAdjudicationService(
     findByChargeNumber(chargeNumber).getOutcomeHistory().lastOrNull()?.outcome?.referralOutcome != null
 
   fun setStatus(chargeNumber: String, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
-    if (status == ReportedAdjudicationStatus.ACCEPTED) throw ValidationException("ACCEPTED is deprecated use UNSCHEDULED")
-
     val username = if (status == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername
     val reportedAdjudication = findByChargeNumber(chargeNumber)
     val reportedAdjudicationToReturn = reportedAdjudication.let {
@@ -73,7 +70,7 @@ class ReportedAdjudicationService(
     telemetryClient.trackEvent(
       TELEMETRY_EVENT,
       mapOf(
-        "reportNumber" to reportedAdjudication.chargeNumber.toString(),
+        "reportNumber" to reportedAdjudication.chargeNumber,
         "agencyId" to reportedAdjudication.originatingAgencyId,
         "status" to status.name,
         "reason" to statusReason,

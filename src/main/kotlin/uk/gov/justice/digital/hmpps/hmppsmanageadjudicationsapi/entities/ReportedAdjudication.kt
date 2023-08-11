@@ -139,12 +139,12 @@ data class ReportedAdjudication(
 }
 
 enum class ReportedAdjudicationStatus {
-  @Deprecated("this is no longer used and remains for historic purposes")
+  @Deprecated("this is no longer used and remains for historic purposes - enabling for int tests phase 1")
   ACCEPTED,
   REJECTED,
   AWAITING_REVIEW {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(UNSCHEDULED, REJECTED, RETURNED, AWAITING_REVIEW)
+      return listOf(UNSCHEDULED, REJECTED, RETURNED, AWAITING_REVIEW, ACCEPTED) // Accepted re-enabled for phase 1 testing
     }
   },
   RETURNED {

@@ -552,13 +552,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class ReportedAdjudicationSetReportedAdjudicationStatus {
 
-    @Test
-    fun `use of accepted throws validation error `() {
-      Assertions.assertThrows(ValidationException::class.java) {
-        reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.ACCEPTED)
-      }
-    }
-
     @ParameterizedTest
     @EnumSource(ReportedAdjudicationStatus::class)
     fun `setting status for a reported adjudication throws an illegal state exception for invalid transitions`(
@@ -1967,15 +1960,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     private const val INCIDENT_STATEMENT = "Example statement"
-
-    private const val OFFENCE_CODE_2_NOMIS_CODE_ON_OWN = "5b"
-    private const val OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "25z"
-
-    private const val OFFENCE_CODE_3_NOMIS_CODE_ON_OWN = "5f"
-    private const val OFFENCE_CODE_3_NOMIS_CODE_ASSISTED = "25f"
-
-    private const val YOUTH_OFFENCE_CODE_2_NOMIS_CODE_ASSISTED = "29z"
-
     private val INCIDENT_ROLE_CODE = "25a"
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
     private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
