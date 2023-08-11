@@ -215,7 +215,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
-  fun `existing record phase 1 updates status to CHARGE_PROVED`() {
+  fun `existing record phase 1 updates status to CHARGE_PROVED and collections updated`() {
     initDataForAccept().acceptReport(
       reportNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
       activeCaseLoad = IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
@@ -236,6 +236,11 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
+      .jsonPath("$.reportedAdjudication.damages.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.evidence.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.witnesses.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
   }
 
   @Test

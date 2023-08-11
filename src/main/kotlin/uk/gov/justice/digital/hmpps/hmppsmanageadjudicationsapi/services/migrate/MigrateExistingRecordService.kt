@@ -9,10 +9,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toChargeMapping
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toDamages
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toHearingMappings
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toHearingsAndResultsAndOutcomes
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toPunishmentMappings
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toPunishments
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toWitnesses
 
 @Transactional
 @Service
@@ -33,6 +36,18 @@ class MigrateExistingRecordService(
 
     if (existingAdjudication.status == ReportedAdjudicationStatus.ACCEPTED) {
       existingAdjudication.processPhase1(adjudicationMigrateDto)
+    }
+
+    adjudicationMigrateDto.damages.toDamages().forEach {
+      existingAdjudication.damages.add(it)
+    }
+
+    adjudicationMigrateDto.evidence.toEvidence().forEach {
+      existingAdjudication.evidence.add(it)
+    }
+
+    adjudicationMigrateDto.witnesses.toWitnesses().forEach {
+      existingAdjudication.witnesses.add(it)
     }
 
     val saved = reportedAdjudicationRepository.save(existingAdjudication).also { it.calculateStatus() }
