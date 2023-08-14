@@ -13,4 +13,6 @@ data class ReportedOffence(
   var victimOtherPersonsName: String? = null,
   var nomisOffenceCode: String? = null,
   var nomisOffenceDescription: String? = null,
+  var migrated: Boolean = false,
+  var actualOffenceCode: Int? = null,
 ) : BaseEntity()

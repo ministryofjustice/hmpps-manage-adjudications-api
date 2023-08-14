@@ -61,9 +61,11 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       migrateExistingRecordService.accept(dto, existing)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
+      assertThat(argumentCaptor.value.offenceDetails.first().actualOffenceCode).isEqualTo(1002)
       assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(0)
       assertThat(argumentCaptor.value.offenceDetails.first().nomisOffenceCode).isEqualTo(dto.offence.offenceCode)
       assertThat(argumentCaptor.value.offenceDetails.first().nomisOffenceDescription).isEqualTo(dto.offence.offenceDescription)
+      assertThat(argumentCaptor.value.offenceDetails.first().migrated).isTrue
     }
 
     @Test
@@ -95,8 +97,13 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.offenderBookingId).isEqualTo(dto.bookingId)
       assertThat(argumentCaptor.value.getPunishments()).isNotEmpty
+      assertThat(argumentCaptor.value.getPunishments().first().migrated).isTrue
       assertThat(argumentCaptor.value.getOutcomes()).isNotEmpty
+      assertThat(argumentCaptor.value.getOutcomes().first().migrated).isTrue
       assertThat(argumentCaptor.value.hearings).isNotEmpty
+      assertThat(argumentCaptor.value.hearings.first().migrated).isTrue
+      assertThat(argumentCaptor.value.punishmentComments).isNotEmpty
+      assertThat(argumentCaptor.value.punishmentComments.first().migrated).isTrue
 
       assertThat(response.chargeNumberMapping.chargeNumber).isEqualTo(dto.oicIncidentId.toString())
       assertThat(response.chargeNumberMapping.offenceSequence).isEqualTo(dto.offenceSequence)
@@ -122,6 +129,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.damages.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.damages.last().migrated).isTrue
     }
 
     @Test
@@ -134,6 +142,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.evidence.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.evidence.last().migrated).isTrue
     }
 
     @Test
@@ -146,6 +155,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.witnesses.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.witnesses.last().migrated).isTrue
     }
   }
 

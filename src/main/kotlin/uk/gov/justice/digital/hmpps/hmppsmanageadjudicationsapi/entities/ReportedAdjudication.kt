@@ -41,6 +41,8 @@ data class ReportedAdjudication(
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var status: ReportedAdjudicationStatus,
+  @Enumerated(EnumType.STRING)
+  var statusBeforeMigration: ReportedAdjudicationStatus? = null,
   @field:Length(max = 128)
   var statusReason: String? = null,
   @field:Length(max = 4000)
@@ -125,11 +127,15 @@ data class ReportedAdjudication(
   @TestOnly
   fun clearOutcomes() = this.outcomes.clear()
 
+  fun removeOutcome(outcome: Outcome) = this.outcomes.remove(outcome)
+
   fun getPunishments() = this.punishments.filter { it.deleted != true }
 
   fun addPunishment(punishment: Punishment) = this.punishments.add(punishment)
 
   fun clearPunishments() = this.punishments.clear()
+
+  fun removePunishment(punishment: Punishment) = this.punishments.remove(punishment)
 
   private fun Hearing?.isAdjourn() = this?.hearingOutcome?.code == HearingOutcomeCode.ADJOURN
 
