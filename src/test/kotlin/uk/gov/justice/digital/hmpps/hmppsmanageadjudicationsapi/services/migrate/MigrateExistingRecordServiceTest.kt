@@ -61,7 +61,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       migrateExistingRecordService.accept(dto, existing)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.offenceDetails.first().actualOffenceCode).isEqualTo(existing.offenceDetails.first().offenceCode)
+      assertThat(argumentCaptor.value.offenceDetails.first().actualOffenceCode).isEqualTo(1002)
       assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(0)
       assertThat(argumentCaptor.value.offenceDetails.first().nomisOffenceCode).isEqualTo(dto.offence.offenceCode)
       assertThat(argumentCaptor.value.offenceDetails.first().nomisOffenceDescription).isEqualTo(dto.offence.offenceDescription)
