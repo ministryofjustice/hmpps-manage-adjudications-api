@@ -18,14 +18,6 @@ data class AdjudicationSummary(
   val awards: List<Award>,
 )
 
-data class ProvenAdjudicationsSummary(
-  @Schema(required = true, description = "Offender Booking Id")
-  val bookingId: Long,
-
-  @Schema(required = true, description = "Number of proven adjudications")
-  val provenAdjudicationCount: Int = 0,
-)
-
 @Schema(description = "Adjudication award / sanction")
 data class Award(
   @Schema(required = true, description = "Id of booking")
