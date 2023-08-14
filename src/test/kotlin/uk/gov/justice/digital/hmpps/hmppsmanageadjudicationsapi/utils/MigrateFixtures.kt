@@ -196,6 +196,24 @@ class MigrateFixtures {
     ),
   )
 
+  val PHASE2_HEARINGS_NO_RESULTS = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(oicHearingId = 1, hearingDateTime = LocalDate.now().atStartOfDay()),
+      migrationEntityBuilder.createHearing(oicHearingId = 2, hearingDateTime = LocalDate.now().atStartOfDay().plusDays(1)),
+      migrationEntityBuilder.createHearing(oicHearingId = 3, hearingDateTime = LocalDate.now().atStartOfDay().plusDays(2)),
+    ),
+  )
+
+  val PHASE2_HEARINGS_AND_NOMIS = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 1,
+        hearingDateTime = LocalDate.now().atStartOfDay(),
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+    ),
+  )
+
   val MULTIPLE_OFFENDERS = listOf(
     migrationEntityBuilder.createAdjudication(
       oicIncidentId = 2,

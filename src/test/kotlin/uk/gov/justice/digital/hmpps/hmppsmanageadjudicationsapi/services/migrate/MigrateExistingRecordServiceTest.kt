@@ -10,12 +10,16 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
@@ -146,6 +150,52 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.witnesses.size).isEqualTo(2)
+    }
+  }
+
+  @Nested
+  inner class Phase2 {
+    @Test
+    fun `existing hearing outcome with code NOMIS will add corresponding result`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.PHASE2_HEARINGS_AND_NOMIS
+      val existing = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId).also {
+        it.hearings.clear()
+        it.hearings.add(
+          Hearing(
+            oicHearingId = 1,
+            dateTimeOfHearing = LocalDate.now().atStartOfDay(),
+            oicHearingType = OicHearingType.GOV_ADULT,
+            agencyId = "MDI",
+            locationId = 1,
+            chargeNumber = dto.oicIncidentId.toString(),
+            hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = ""),
+          ),
+        )
+      }
+
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+    }
+
+    @Test
+    fun `lots of tests to manage phase 2 specific things`() {
+      // key is any adjudication in our system with multiple hearings and no results
+    }
+  }
+
+  @Nested
+  inner class Phase3 {
+    // these tests are applicable to all (phase 2 and 3)
+    @Test
+    fun `hearing no longer exists in and should be removed`() {
+    }
+
+    @Test
+    fun `hearing data matches id and has been altered - update hearing`() {
     }
   }
 
