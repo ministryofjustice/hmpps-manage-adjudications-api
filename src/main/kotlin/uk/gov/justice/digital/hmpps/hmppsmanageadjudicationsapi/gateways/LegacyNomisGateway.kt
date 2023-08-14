@@ -7,12 +7,10 @@ import org.springframework.stereotype.Service
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
-import org.springframework.web.reactive.function.client.toEntity
 import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ProvenAdjudicationsSummary
 import java.time.LocalDate
 import java.util.*
 
@@ -216,24 +214,6 @@ class LegacyNomisGateway(private val prisonApiClientCreds: WebClient) {
       }
       .retrieve()
       .bodyToMono(object : ParameterizedTypeReference<AdjudicationSummary>() {})
-      .block()!!
-
-  fun getProvenAdjudicationsForBookings(
-    bookingIds: List<Long>,
-    awardCutoffDate: LocalDate?,
-    adjudicationCutoffDate: LocalDate?,
-  ) =
-    prisonApiClientCreds
-      .post()
-      .uri { uriBuilder ->
-        uriBuilder.path("/bookings/proven-adjudications")
-          .queryParamIfPresent("awardCutoffDate", Optional.ofNullable(awardCutoffDate))
-          .queryParamIfPresent("adjudicationCutoffDate", Optional.ofNullable(adjudicationCutoffDate))
-          .build()
-      }
-      .bodyValue(bookingIds)
-      .retrieve()
-      .bodyToMono(object : ParameterizedTypeReference<List<ProvenAdjudicationsSummary>>() {})
       .block()!!
 }
 
