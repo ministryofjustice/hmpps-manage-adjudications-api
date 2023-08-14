@@ -35,6 +35,7 @@ data class Punishment(
   var deleted: Boolean? = null,
   @field:Length(max = 16)
   var consecutiveChargeNumber: String? = null,
+  var migrated: Boolean = false,
 ) : BaseEntity()
 
 enum class PunishmentType {

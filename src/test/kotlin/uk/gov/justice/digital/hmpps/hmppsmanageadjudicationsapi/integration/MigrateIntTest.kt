@@ -197,7 +197,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
-  fun `reset migration removes records`() {
+  fun `reset migration removes new records`() {
     val adjudicationMigrateDto = getAdjudicationForReset()
     migrateRecord(adjudicationMigrateDto)
 
@@ -212,6 +212,44 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .headers(setHeaders())
       .exchange()
       .expectStatus().isNotFound
+  }
+
+  @Test
+  fun `reset migration removes existing record updates - phase 1`() {
+    initDataForAccept(incDamagesEvidenceWitnesses = false).acceptReport(
+      reportNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
+      activeCaseLoad = IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
+      status = ReportedAdjudicationStatus.ACCEPTED,
+    )
+
+    migrateRecord(
+      dto = getExistingRecordForReset(
+        oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong(),
+        prisonerNumber = IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
+        offenceCode = "51:5",
+      ),
+    )
+    webTestClient.delete()
+      .uri("/reported-adjudications/migrate/reset")
+      .headers(setHeaders(activeCaseload = null, roles = listOf("ROLE_MIGRATE_ADJUDICATIONS")))
+      .exchange()
+      .expectStatus().isOk
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.ACCEPTED.name)
+      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
+      .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(0)
+      .jsonPath("$.reportedAdjudication.punishmentComments.size()").isEqualTo(0)
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(0)
+      .jsonPath("$.reportedAdjudication.damages.size()").isEqualTo(0)
+      .jsonPath("$.reportedAdjudication.evidence.size()").isEqualTo(0)
+      .jsonPath("$.reportedAdjudication.witnesses.size()").isEqualTo(0)
+      .jsonPath("$.reportedAdjudication.offenceDetails.offenceCode").isEqualTo(4001)
   }
 
   @Test
@@ -329,6 +367,23 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       punishments = listOf(
         MigrationEntityBuilder().createPunishment(),
       ),
+    )
+
+    fun getExistingRecordForReset(oicIncidentId: Long, prisonerNumber: String, offenceCode: String = "51:4") = MigrationEntityBuilder().createAdjudication(
+      oicIncidentId = oicIncidentId,
+      offence = MigrationEntityBuilder().createOffence(offenceCode = offenceCode, offenceDescription = "updated desc"),
+      prisoner = MigrationEntityBuilder().createPrisoner(prisonerNumber = prisonerNumber),
+      hearings = listOf(
+        MigrationEntityBuilder().createHearing(
+          hearingResult = MigrationEntityBuilder().createHearingResult(),
+        ),
+      ),
+      punishments = listOf(
+        MigrationEntityBuilder().createPunishment(),
+      ),
+      damages = listOf(MigrationEntityBuilder().createDamage()),
+      evidence = listOf(MigrationEntityBuilder().createEvidence()),
+      witnesses = listOf(MigrationEntityBuilder().createWitness()),
     )
 
     fun getPoliceProsecutionFromHearing() = migrateFixtures.HEARING_WITH_PROSECUTION

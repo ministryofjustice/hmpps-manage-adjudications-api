@@ -102,7 +102,7 @@ abstract class IntegrationTestBase : TestBase() {
     return IntegrationTestData(webTestClient, jwtAuthHelper, prisonApiMockServer)
   }
 
-  protected fun initDataForAccept(overrideAgencyId: String? = null, testData: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION): IntegrationTestData {
+  protected fun initDataForAccept(overrideAgencyId: String? = null, testData: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION, incDamagesEvidenceWitnesses: Boolean = true): IntegrationTestData {
     oAuthMockServer.stubGrantToken()
     prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
 
@@ -119,17 +119,28 @@ abstract class IntegrationTestBase : TestBase() {
       headers = draftUserHeaders,
     )
 
-    draftIntTestScenarioBuilder
-      .startDraft(testData)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setAssociatedPrisoner()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
+    if (incDamagesEvidenceWitnesses) {
+      draftIntTestScenarioBuilder
+        .startDraft(testData)
+        .setApplicableRules()
+        .setIncidentRole()
+        .setAssociatedPrisoner()
+        .setOffenceData()
+        .addIncidentStatement()
+        .addDamages()
+        .addEvidence()
+        .addWitnesses()
+        .completeDraft()
+    } else {
+      draftIntTestScenarioBuilder
+        .startDraft(testData)
+        .setApplicableRules()
+        .setIncidentRole()
+        .setAssociatedPrisoner()
+        .setOffenceData()
+        .addIncidentStatement()
+        .completeDraft()
+    }
 
     return intTestData
   }

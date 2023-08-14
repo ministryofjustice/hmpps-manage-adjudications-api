@@ -27,11 +27,10 @@ class MigrateExistingRecordService(
     if (adjudicationMigrateDto.agencyId != existingAdjudication.originatingAgencyId) throw ExistingRecordConflictException("agency different between nomis and adjudications")
 
     existingAdjudication.offenderBookingId = adjudicationMigrateDto.bookingId
+    existingAdjudication.statusBeforeMigration = existingAdjudication.status
 
     if (OffenceCodes.findByNomisCode(adjudicationMigrateDto.offence.offenceCode).none { it.uniqueOffenceCodes.contains(existingAdjudication.offenceDetails.first().offenceCode) }) {
-      existingAdjudication.offenceDetails.first().nomisOffenceCode = adjudicationMigrateDto.offence.offenceCode
-      existingAdjudication.offenceDetails.first().nomisOffenceDescription = adjudicationMigrateDto.offence.offenceDescription
-      existingAdjudication.offenceDetails.first().offenceCode = OffenceCodes.MIGRATED_OFFENCE.uniqueOffenceCodes.first()
+      existingAdjudication.updateOffence(adjudicationMigrateDto)
     }
 
     if (existingAdjudication.status == ReportedAdjudicationStatus.ACCEPTED) {
@@ -39,15 +38,15 @@ class MigrateExistingRecordService(
     }
 
     adjudicationMigrateDto.damages.toDamages().forEach {
-      existingAdjudication.damages.add(it)
+      existingAdjudication.damages.add(it.also { reportedDamage -> reportedDamage.migrated = true })
     }
 
     adjudicationMigrateDto.evidence.toEvidence().forEach {
-      existingAdjudication.evidence.add(it)
+      existingAdjudication.evidence.add(it.also { reportedEvidence -> reportedEvidence.migrated = true })
     }
 
     adjudicationMigrateDto.witnesses.toWitnesses().forEach {
-      existingAdjudication.witnesses.add(it)
+      existingAdjudication.witnesses.add(it.also { reportedWitness -> reportedWitness.migrated = true })
     }
 
     val saved = reportedAdjudicationRepository.save(existingAdjudication).also { it.calculateStatus() }
@@ -72,9 +71,17 @@ class MigrateExistingRecordService(
     val hearingsAndResults = hearingsAndResultsAndOutcomes.first
     val outcomes = hearingsAndResultsAndOutcomes.second
 
-    hearingsAndResults.forEach { this.hearings.add(it) }
-    punishmentComments.forEach { this.punishmentComments.add(it) }
-    punishments.forEach { this.addPunishment(it) }
-    outcomes.forEach { this.addOutcome(it) }
+    hearingsAndResults.forEach { this.hearings.add(it.also { hearing -> hearing.migrated = true }) }
+    punishmentComments.forEach { this.punishmentComments.add(it.also { punishmentComment -> punishmentComment.migrated = true }) }
+    punishments.forEach { this.addPunishment(it.also { punishment -> punishment.migrated = true }) }
+    outcomes.forEach { this.addOutcome(it.also { outcome -> outcome.migrated = true }) }
+  }
+
+  private fun ReportedAdjudication.updateOffence(adjudicationMigrateDto: AdjudicationMigrateDto) {
+    this.offenceDetails.first().nomisOffenceCode = adjudicationMigrateDto.offence.offenceCode
+    this.offenceDetails.first().nomisOffenceDescription = adjudicationMigrateDto.offence.offenceDescription
+    this.offenceDetails.first().actualOffenceCode = this.offenceDetails.first().offenceCode
+    this.offenceDetails.first().offenceCode = OffenceCodes.MIGRATED_OFFENCE.uniqueOffenceCodes.first()
+    this.offenceDetails.first().migrated = true
   }
 }

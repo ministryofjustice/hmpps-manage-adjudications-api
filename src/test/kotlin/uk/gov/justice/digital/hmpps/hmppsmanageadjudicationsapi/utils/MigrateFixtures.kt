@@ -192,7 +192,7 @@ class MigrateFixtures {
       ),
     ),
     punishments = listOf(
-      migrationEntityBuilder.createPunishment(),
+      migrationEntityBuilder.createPunishment(comment = "something"),
     ),
   )
 
