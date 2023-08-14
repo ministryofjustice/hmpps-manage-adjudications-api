@@ -24,6 +24,7 @@ data class Outcome(
   var oicHearingId: Long? = null,
   var deleted: Boolean? = null,
   var actualCreatedDate: LocalDateTime? = null,
+  var migrated: Boolean = false,
 ) : BaseEntity()
 
 enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Finding? = null) {
