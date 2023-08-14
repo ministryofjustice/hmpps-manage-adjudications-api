@@ -22,7 +22,6 @@ data class HearingOutcome(
   var code: HearingOutcomeCode,
   @Enumerated(EnumType.STRING)
   var plea: HearingOutcomePlea? = null,
-  var migrated: Boolean = false,
 ) : BaseEntity()
 
 enum class HearingOutcomeCode(val outcomeCode: OutcomeCode? = null) {
