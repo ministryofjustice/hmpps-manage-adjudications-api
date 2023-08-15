@@ -13,15 +13,12 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSearchResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ProvenAdjudicationsSummary
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.SummaryAdjudicationService
 import java.time.LocalDate
@@ -61,42 +58,6 @@ class AdjudicationSummaryController(
     chargeId: Long,
   ): AdjudicationDetail {
     return summaryAdjudicationService.getAdjudication(prisonerNumber, chargeId)
-  }
-
-  @Operation(
-    summary = "Proven adjudications summary count.",
-    description = "Need VIEW_ADJUDICATIONS role",
-    responses = [
-      ApiResponse(
-        responseCode = "200",
-        description = "Proven adjudication summary count returned",
-      ),
-    ],
-  )
-  @PostMapping("/proven-adjudications")
-  fun getProvenAdjudicationCounts(
-    @RequestParam(
-      value = "awardCutoffDate",
-      required = false,
-    )
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @Parameter(description = "Only awards ending on or after this date (in YYYY-MM-DD format) will be considered.")
-    awardCutoffDate: LocalDate?,
-    @RequestParam(
-      value = "adjudicationCutoffDate",
-      required = false,
-    )
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @Parameter(description = "Only proved adjudications ending on or after this date (in YYYY-MM-DD format) will be counted.")
-    adjudicationCutoffDate: LocalDate?,
-    @NotNull @RequestBody
-    bookingIds: List<Long>,
-  ): List<ProvenAdjudicationsSummary> {
-    return summaryAdjudicationService.getProvenAdjudicationsForBookings(
-      bookingIds,
-      awardCutoffDate,
-      adjudicationCutoffDate,
-    )
   }
 
   @Operation(
