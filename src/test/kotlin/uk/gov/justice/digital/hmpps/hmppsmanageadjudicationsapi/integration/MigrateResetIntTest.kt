@@ -104,7 +104,7 @@ class MigrateResetIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
-  fun  `reset migration - phase 2-5 hearing outcomes removed ` () {
-    //TODO need code implement first.  different ticket.
+  fun `reset migration - phase 2-5 hearing outcomes removed `() {
+    // TODO need code implement first.  different ticket.
   }
 }
