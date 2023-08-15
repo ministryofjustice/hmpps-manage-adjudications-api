@@ -14,6 +14,7 @@ generic-service:
     PRISON_API_ENDPOINT_URL: https://api-dev.prison.service.justice.gov.uk
     FEATURE_ASYNC_ADJUDICATIONS: true
     FEATURE_NOMIS_SOURCE_OF_TRUTH: true
+    FEATURE_SKIP_EXISTING: true
 
   allowlist: null
 
