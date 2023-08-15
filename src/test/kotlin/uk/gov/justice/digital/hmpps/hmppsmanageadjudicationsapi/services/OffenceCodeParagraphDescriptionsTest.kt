@@ -39,7 +39,7 @@ class OffenceCodeParagraphDescriptionsTest {
     "55:21C,YOI_21",
     "55:21A,YOI_21",
     "55:23,YOI_23_ADULT_20A",
-    "55:20,YOI_22_ADULT_20",
+    "55:22,YOI_22_ADULT_20",
     "55:25,YOI_25_ADULT_22",
     "55:26,YOI_26_ADULT_23",
     "55:3A,YOI_3_ADULT_2",

@@ -76,7 +76,7 @@ enum class OffenceCodes(val paragraph: String, private val withOthers: String? =
   YOI_55_21C(paragraph = "21", withOthers = "55:29AF", uniqueOffenceCodes = listOf(19002), paragraphDescription = Descriptions.YOI_21),
   YOI_55_21A(paragraph = "21", withOthers = "55:29AD", uniqueOffenceCodes = listOf(19003), paragraphDescription = Descriptions.YOI_21),
   YOI_55_23(paragraph = "23", uniqueOffenceCodes = listOf(20001), paragraphDescription = Descriptions.YOI_23_ADULT_20A),
-  YOI_55_20(paragraph = "22", withOthers = "55:29AC", uniqueOffenceCodes = listOf(20002), paragraphDescription = Descriptions.YOI_22_ADULT_20),
+  YOI_55_22(paragraph = "22", withOthers = "55:29AC", uniqueOffenceCodes = listOf(20002), paragraphDescription = Descriptions.YOI_22_ADULT_20),
   YOI_55_25(paragraph = "25", withOthers = "55:29W", uniqueOffenceCodes = listOf(22001), paragraphDescription = Descriptions.YOI_25_ADULT_22),
   YOI_55_26(paragraph = "26", withOthers = "55:29AI", uniqueOffenceCodes = listOf(23101), paragraphDescription = Descriptions.YOI_26_ADULT_23),
   YOI_55_3A(paragraph = "3", withOthers = "55:29K", uniqueOffenceCodes = listOf(2001, 2021), paragraphDescription = Descriptions.YOI_3_ADULT_2),
