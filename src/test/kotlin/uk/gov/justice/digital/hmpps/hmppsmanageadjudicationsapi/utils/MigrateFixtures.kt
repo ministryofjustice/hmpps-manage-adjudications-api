@@ -204,12 +204,12 @@ class MigrateFixtures {
     ),
   )
 
-  val PHASE2_HEARINGS_AND_NOMIS = migrationEntityBuilder.createAdjudication(
+  fun PHASE2_HEARINGS_AND_NOMIS(finding: Finding) = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         oicHearingId = 1,
         hearingDateTime = LocalDate.now().atStartOfDay(),
-        hearingResult = migrationEntityBuilder.createHearingResult(),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = finding.name),
       ),
     ),
   )
@@ -338,6 +338,7 @@ class MigrateFixtures {
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
       ),
       migrationEntityBuilder.createHearing(
+        oicHearingId = 2L,
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.QUASHED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
     ),
@@ -348,7 +349,7 @@ class MigrateFixtures {
       migrationEntityBuilder.createHearing(
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name),
       ),
-      migrationEntityBuilder.createHearing(),
+      migrationEntityBuilder.createHearing(oicHearingId = 2L),
     ),
   )
 

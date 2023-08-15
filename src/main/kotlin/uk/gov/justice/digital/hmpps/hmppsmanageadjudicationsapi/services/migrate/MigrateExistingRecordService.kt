@@ -10,6 +10,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.createAdditionalOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToHearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toChargeMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toDamages
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toEvidence
@@ -37,7 +41,7 @@ class MigrateExistingRecordService(
 
     if (existingAdjudication.status == ReportedAdjudicationStatus.ACCEPTED) {
       existingAdjudication.processPhase1(adjudicationMigrateDto)
-    } else if (existingAdjudication.hearings.multipleHearingsWithoutOutcomes() || existingAdjudication.hearings.containsNomisHearingOutcomeCode()) {
+    } else if (existingAdjudication.hearings.containsNomisHearingOutcomeCode()) {
       existingAdjudication.processPhase2(adjudicationMigrateDto)
     }
 
@@ -78,8 +82,23 @@ class MigrateExistingRecordService(
   }
 
   private fun ReportedAdjudication.processPhase2(adjudicationMigrateDto: AdjudicationMigrateDto) {
-    this.hearings.filter { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }.forEach { nomisCode ->
-      adjudicationMigrateDto.hearings.firstOrNull { nomisCode.oicHearingId == it.oicHearingId && it.hearingResult != null }?.let {
+    this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }.forEach { nomisCode ->
+      val nomisHearingResult = adjudicationMigrateDto.hearings.firstOrNull { nomisCode.oicHearingId == it.oicHearingId && it.hearingResult != null }
+        ?: throw ExistingRecordConflictException("${this.chargeNumber} has a NOMIS hearing outcome, and record no longer exists in NOMIS")
+
+      val index = adjudicationMigrateDto.hearings.indexOf(nomisHearingResult)
+      val hasAdditionalOutcomes = adjudicationMigrateDto.hearings.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
+      val hasAdditionalHearings = index < adjudicationMigrateDto.hearings.size - 1
+
+      val hearingOutcomeCode = nomisHearingResult.hearingResult!!.finding.mapToHearingOutcomeCode(hasAdditionalOutcomes)
+
+      nomisCode.hearingOutcome!!.adjudicator = nomisHearingResult.adjudicator ?: ""
+      nomisCode.hearingOutcome!!.code = hearingOutcomeCode
+      nomisHearingResult.hearingResult.mapToOutcome(hearingOutcomeCode)?.let {
+        this.addOutcome(it)
+        nomisHearingResult.hearingResult.createAdditionalOutcome(hasAdditionalHearings)?.let { outcome ->
+          this.addOutcome(outcome)
+        }
       }
     }
   }

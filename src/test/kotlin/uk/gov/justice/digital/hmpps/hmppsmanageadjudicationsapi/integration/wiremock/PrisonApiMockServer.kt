@@ -308,4 +308,23 @@ class PrisonApiMockServer : WireMockServer {
         ),
     )
   }
+
+    fun stubNomisHearingResult(chargeNumber: String, oicHearingId: Long) {
+      stubFor(
+        get(urlEqualTo("/adjudications/adjudication/$chargeNumber/hearing/$oicHearingId/result"))
+          .willReturn(
+            aResponse()
+              .withHeader("Content-Type", "application/json")
+              .withBody(
+                """
+               {
+                  "pleaFindingCode": "",
+                  "findingCode": ""
+               }
+              """.trimIndent()
+              )
+              .withStatus(200),
+          ),
+      )
+  }
 }
