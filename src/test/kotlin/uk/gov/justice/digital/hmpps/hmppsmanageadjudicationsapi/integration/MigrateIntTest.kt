@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -196,8 +195,6 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
   }
 
-
-
   companion object {
     private val migrateFixtures = MigrateFixtures()
 
@@ -209,7 +206,6 @@ class MigrateIntTest : SqsIntegrationTestBase() {
 
     @JvmStatic
     fun getAllNewAdjudications(): Stream<AdjudicationMigrateDto> = migrateFixtures.getSelection().stream()
-
 
     fun getExistingRecordForReset(oicIncidentId: Long, prisonerNumber: String, offenceCode: String = "51:4") = MigrationEntityBuilder().createAdjudication(
       oicIncidentId = oicIncidentId,

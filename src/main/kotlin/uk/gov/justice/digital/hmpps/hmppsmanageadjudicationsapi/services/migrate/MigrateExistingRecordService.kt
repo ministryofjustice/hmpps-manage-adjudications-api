@@ -83,20 +83,20 @@ class MigrateExistingRecordService(
 
   private fun ReportedAdjudication.processPhase2(adjudicationMigrateDto: AdjudicationMigrateDto) {
     this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }.forEach { nomisCode ->
-      val nomisHearingResult = adjudicationMigrateDto.hearings.firstOrNull { nomisCode.oicHearingId == it.oicHearingId && it.hearingResult != null }
+      val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { nomisCode.oicHearingId == it.oicHearingId && it.hearingResult != null }
         ?: throw ExistingRecordConflictException("${this.chargeNumber} has a NOMIS hearing outcome, and record no longer exists in NOMIS")
 
-      val index = adjudicationMigrateDto.hearings.indexOf(nomisHearingResult)
+      val index = adjudicationMigrateDto.hearings.indexOf(nomisHearing)
       val hasAdditionalOutcomes = adjudicationMigrateDto.hearings.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
       val hasAdditionalHearings = index < adjudicationMigrateDto.hearings.size - 1
 
-      val hearingOutcomeCode = nomisHearingResult.hearingResult!!.finding.mapToHearingOutcomeCode(hasAdditionalOutcomes)
+      val hearingOutcomeCode = nomisHearing.hearingResult!!.finding.mapToHearingOutcomeCode(hasAdditionalOutcomes)
 
-      nomisCode.hearingOutcome!!.adjudicator = nomisHearingResult.adjudicator ?: ""
+      nomisCode.hearingOutcome!!.adjudicator = nomisHearing.adjudicator ?: ""
       nomisCode.hearingOutcome!!.code = hearingOutcomeCode
-      nomisHearingResult.hearingResult.mapToOutcome(hearingOutcomeCode)?.let {
+      nomisHearing.hearingResult.mapToOutcome(hearingOutcomeCode)?.let {
         this.addOutcome(it)
-        nomisHearingResult.hearingResult.createAdditionalOutcome(hasAdditionalHearings)?.let { outcome ->
+        nomisHearing.hearingResult.createAdditionalOutcome(hasAdditionalHearings)?.let { outcome ->
           this.addOutcome(outcome)
         }
       }

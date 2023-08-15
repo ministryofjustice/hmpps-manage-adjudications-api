@@ -67,5 +67,4 @@ class MigrateResetIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.witnesses.size()").isEqualTo(0)
       .jsonPath("$.reportedAdjudication.offenceDetails.offenceCode").isEqualTo(4001)
   }
-
 }

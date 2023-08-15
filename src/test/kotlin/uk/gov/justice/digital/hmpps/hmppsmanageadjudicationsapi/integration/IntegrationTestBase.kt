@@ -206,5 +206,4 @@ abstract class IntegrationTestBase : TestBase() {
       .exchange()
       .expectStatus().isCreated
   }
-
 }
