@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus.CONFLICT
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
+import org.springframework.http.HttpStatus.NOT_MODIFIED
 import org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.ExistingRecordConflictException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.SkipExistingRecordException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.UnableToMigrateException
 
 @RestControllerAdvice
@@ -173,6 +175,20 @@ class ApiExceptionHandler {
       .body(
         ErrorResponse(
           status = UNPROCESSABLE_ENTITY,
+          userMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(SkipExistingRecordException::class)
+  fun handleSkipExistingRecordsException(e: SkipExistingRecordException): ResponseEntity<ErrorResponse?>? {
+    log.info("SkipExistingRecordException: {}", e.message)
+
+    return ResponseEntity
+      .status(NOT_MODIFIED)
+      .body(
+        ErrorResponse(
+          status = NOT_MODIFIED,
           userMessage = e.message,
         ),
       )

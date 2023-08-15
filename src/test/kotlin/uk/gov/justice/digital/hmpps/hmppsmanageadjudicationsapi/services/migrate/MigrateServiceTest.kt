@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -7,6 +8,7 @@ import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
@@ -30,8 +32,9 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
 
   private val migrateExistingRecordService: MigrateExistingRecordService = mock()
   private val migrateNewRecordService: MigrateNewRecordService = mock()
+  private val featureFlagsConfig: FeatureFlagsConfig = mock()
 
-  private val migrateService = MigrateService(reportedAdjudicationRepository, migrateNewRecordService, migrateExistingRecordService)
+  private val migrateService = MigrateService(reportedAdjudicationRepository, migrateNewRecordService, migrateExistingRecordService, featureFlagsConfig)
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // na
@@ -189,5 +192,16 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
     assertThat(existing.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)
     assertThat(existing.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("")
     assertThat(existing.hearings.first().hearingOutcome!!.nomisOutcome).isEqualTo(false)
+  }
+
+  @Test
+  fun `throws exception when skip is true`() {
+    whenever(featureFlagsConfig.skipExistingRecords).thenReturn(true)
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
+
+    Assertions.assertThatThrownBy {
+      migrateService.accept(migrationFixtures.ADULT_SINGLE_OFFENCE)
+    }.isInstanceOf(SkipExistingRecordException::class.java)
+      .hasMessageContaining("Skip existing record flag is true")
   }
 }

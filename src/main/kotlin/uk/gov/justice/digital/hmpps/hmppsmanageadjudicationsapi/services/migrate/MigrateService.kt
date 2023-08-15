@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrat
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.MigrateResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -12,12 +13,15 @@ class ExistingRecordConflictException(message: String) : Exception(message)
 
 class UnableToMigrateException(message: String) : Exception(message)
 
+class SkipExistingRecordException : Exception("Skip existing record flag is true")
+
 @Transactional
 @Service
 class MigrateService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   private val migrateNewRecordService: MigrateNewRecordService,
   private val migrateExistingRecordService: MigrateExistingRecordService,
+  private val featureFlagsConfig: FeatureFlagsConfig,
 ) {
 
   fun reset() {
@@ -31,6 +35,8 @@ class MigrateService(
     )
 
     return if (reportedAdjudication != null && adjudicationMigrateDto.offenceSequence == 1L) {
+      if (featureFlagsConfig.skipExistingRecords) throw SkipExistingRecordException()
+
       migrateExistingRecordService.accept(
         adjudicationMigrateDto = adjudicationMigrateDto,
         existingAdjudication = reportedAdjudication,

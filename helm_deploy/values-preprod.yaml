@@ -14,6 +14,7 @@ generic-service:
     PRISON_API_ENDPOINT_URL: https://api-preprod.prison.service.justice.gov.uk
     FEATURE_ASYNC_ADJUDICATIONS: true
     FEATURE_NOMIS_SOURCE_OF_TRUTH: true
+    FEATURE_SKIP_EXISTING: true
 
 # CloudPlatform AlertManager receiver to route promethues alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts

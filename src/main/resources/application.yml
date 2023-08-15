@@ -103,5 +103,7 @@ feature:
       hearings: false
       outcomes: false
       punishments: false
+  skip:
+     existing: ${FEATURE_SKIP_EXISTING:false}
 
 
