@@ -204,4 +204,15 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
     }.isInstanceOf(SkipExistingRecordException::class.java)
       .hasMessageContaining("Skip existing record flag is true")
   }
+
+  @Test
+  fun `reset an existing migration hearing outcome`() {
+    val existing = entityBuilder.reportedAdjudication().also {
+      it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "", migrated = true)
+    }
+    whenever(reportedAdjudicationRepository.findAll()).thenReturn(listOf(existing))
+    migrateService.reset()
+
+    assertThat(existing.hearings.first().hearingOutcome).isNull()
+  }
 }
