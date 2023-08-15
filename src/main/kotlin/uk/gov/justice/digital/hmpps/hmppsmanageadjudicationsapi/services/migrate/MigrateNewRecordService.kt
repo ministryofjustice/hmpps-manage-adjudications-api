@@ -251,7 +251,7 @@ class MigrateNewRecordService(
       return Pair(punishments, punishmentComments)
     }
 
-    private fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index: Int): Boolean =
+    fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index: Int): Boolean =
       index < this.size - 1 && this.none { it.hearingResult == null } && this.last().hearingResult?.finding != Finding.QUASHED.name
 
     /*
@@ -272,7 +272,7 @@ class MigrateNewRecordService(
       }
     }
 
-    private fun MigrateHearingResult.mapToOutcome(hearingOutcomeCode: HearingOutcomeCode): Outcome? =
+    fun MigrateHearingResult.mapToOutcome(hearingOutcomeCode: HearingOutcomeCode): Outcome? =
       when (hearingOutcomeCode) {
         HearingOutcomeCode.ADJOURN, HearingOutcomeCode.NOMIS -> null
         else -> Outcome(code = this.finding.mapToOutcomeCode(), actualCreatedDate = this.createdDateTime)
@@ -286,15 +286,15 @@ class MigrateNewRecordService(
       else -> throw UnableToMigrateException("issue with outcome code mapping $this")
     }
 
-    private fun MigrateHearingResult.createAdditionalOutcome(hasAdditionalHearings: Boolean): Outcome? = when (this.finding) {
+    fun MigrateHearingResult.createAdditionalOutcome(hasAdditionalHearings: Boolean): Outcome? = when (this.finding) {
       Finding.QUASHED.name -> Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = this.createdDateTime.plusMinutes(1))
       Finding.PROSECUTED.name -> Outcome(code = OutcomeCode.PROSECUTION, actualCreatedDate = this.createdDateTime.plusMinutes(1))
       Finding.REF_POLICE.name -> if (hasAdditionalHearings) Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = this.createdDateTime.plusMinutes(1)) else null
       else -> null
     }
 
-    private fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean): HearingOutcomeCode = when (this) {
-      Finding.QUASHED.name -> HearingOutcomeCode.COMPLETE // TODO further discovery around nomis UNGUASHED
+    fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean): HearingOutcomeCode = when (this) {
+      Finding.QUASHED.name -> HearingOutcomeCode.COMPLETE // TODO further discovery around nomis UNQUASHED
       Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name ->
         if (hasAdditionalHearingOutcomes) HearingOutcomeCode.ADJOURN else HearingOutcomeCode.COMPLETE
       Finding.PROSECUTED.name, Finding.REF_POLICE.name -> HearingOutcomeCode.REFER_POLICE

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -196,153 +195,6 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
   }
 
-  @Test
-  fun `reset migration removes new records`() {
-    val adjudicationMigrateDto = getAdjudicationForReset()
-    migrateRecord(adjudicationMigrateDto)
-
-    webTestClient.delete()
-      .uri("/reported-adjudications/migrate/reset")
-      .headers(setHeaders(activeCaseload = null, roles = listOf("ROLE_MIGRATE_ADJUDICATIONS")))
-      .exchange()
-      .expectStatus().isOk
-
-    webTestClient.get()
-      .uri("/reported-adjudications/${adjudicationMigrateDto.oicIncidentId}/v2")
-      .headers(setHeaders())
-      .exchange()
-      .expectStatus().isNotFound
-  }
-
-  @Test
-  fun `reset migration removes existing record updates - phase 1`() {
-    initDataForAccept(incDamagesEvidenceWitnesses = false).acceptReport(
-      reportNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
-      activeCaseLoad = IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
-      status = ReportedAdjudicationStatus.ACCEPTED,
-    )
-
-    migrateRecord(
-      dto = getExistingRecordForReset(
-        oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong(),
-        prisonerNumber = IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
-        offenceCode = "51:5",
-      ),
-    )
-    webTestClient.delete()
-      .uri("/reported-adjudications/migrate/reset")
-      .headers(setHeaders(activeCaseload = null, roles = listOf("ROLE_MIGRATE_ADJUDICATIONS")))
-      .exchange()
-      .expectStatus().isOk
-
-    webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
-      .headers(setHeaders())
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.ACCEPTED.name)
-      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
-      .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(0)
-      .jsonPath("$.reportedAdjudication.punishmentComments.size()").isEqualTo(0)
-      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(0)
-      .jsonPath("$.reportedAdjudication.damages.size()").isEqualTo(0)
-      .jsonPath("$.reportedAdjudication.evidence.size()").isEqualTo(0)
-      .jsonPath("$.reportedAdjudication.witnesses.size()").isEqualTo(0)
-      .jsonPath("$.reportedAdjudication.offenceDetails.offenceCode").isEqualTo(4001)
-  }
-
-  @Test
-  fun `existing record phase 1 updates status to CHARGE_PROVED and collections updated`() {
-    initDataForAccept().acceptReport(
-      reportNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
-      activeCaseLoad = IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
-      status = ReportedAdjudicationStatus.ACCEPTED,
-    )
-
-    migrateRecord(
-      dto = getExistingRecord(
-        oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong(),
-        prisonerNumber = IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
-      ),
-    )
-
-    webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
-      .headers(setHeaders())
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
-      .jsonPath("$.reportedAdjudication.offenceDetails.offenceCode").isEqualTo(4001)
-      .jsonPath("$.reportedAdjudication.damages.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.evidence.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.witnesses.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
-  }
-
-  @Test
-  fun `existing record conflict exception`() {
-    initDataForAccept().acceptReport(
-      reportNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
-      activeCaseLoad = IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
-      status = ReportedAdjudicationStatus.ACCEPTED,
-    )
-
-    val body = objectMapper.writeValueAsString(
-      getExistingRecord(
-        oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong(),
-        prisonerNumber = "XYZ",
-      ),
-    )
-
-    webTestClient.post()
-      .uri("/reported-adjudications/migrate")
-      .headers(setHeaders(activeCaseload = null, roles = listOf("ROLE_MIGRATE_ADJUDICATIONS")))
-      .bodyValue(body)
-      .exchange()
-      .expectStatus().isEqualTo(HttpStatus.CONFLICT)
-  }
-
-  @Test
-  fun `existing record offence code has changed`() {
-    initDataForAccept().acceptReport(
-      reportNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
-      activeCaseLoad = IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
-      status = ReportedAdjudicationStatus.ACCEPTED,
-    )
-
-    migrateRecord(
-      dto = getExistingRecord(
-        oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong(),
-        prisonerNumber = IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
-        offenceCode = "51:5",
-      ),
-    )
-
-    webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
-      .headers(setHeaders())
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.offenceDetails.offenceCode").isEqualTo(0)
-      .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.paragraphNumber").isEqualTo("51:5")
-      .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.paragraphDescription").isEqualTo("updated desc")
-  }
-
-  private fun migrateRecord(dto: AdjudicationMigrateDto) {
-    val body = objectMapper.writeValueAsString(dto)
-
-    webTestClient.post()
-      .uri("/reported-adjudications/migrate")
-      .headers(setHeaders(activeCaseload = null, roles = listOf("ROLE_MIGRATE_ADJUDICATIONS")))
-      .bodyValue(body)
-      .exchange()
-      .expectStatus().isCreated
-  }
-
   companion object {
     private val migrateFixtures = MigrateFixtures()
 
@@ -354,20 +206,6 @@ class MigrateIntTest : SqsIntegrationTestBase() {
 
     @JvmStatic
     fun getAllNewAdjudications(): Stream<AdjudicationMigrateDto> = migrateFixtures.getSelection().stream()
-
-    fun getExistingRecord(oicIncidentId: Long, prisonerNumber: String, offenceCode: String = "51:4") = MigrationEntityBuilder().createAdjudication(
-      oicIncidentId = oicIncidentId,
-      offence = MigrationEntityBuilder().createOffence(offenceCode = offenceCode, offenceDescription = "updated desc"),
-      prisoner = MigrationEntityBuilder().createPrisoner(prisonerNumber = prisonerNumber),
-      hearings = listOf(
-        MigrationEntityBuilder().createHearing(
-          hearingResult = MigrationEntityBuilder().createHearingResult(),
-        ),
-      ),
-      punishments = listOf(
-        MigrationEntityBuilder().createPunishment(),
-      ),
-    )
 
     fun getExistingRecordForReset(oicIncidentId: Long, prisonerNumber: String, offenceCode: String = "51:4") = MigrationEntityBuilder().createAdjudication(
       oicIncidentId = oicIncidentId,

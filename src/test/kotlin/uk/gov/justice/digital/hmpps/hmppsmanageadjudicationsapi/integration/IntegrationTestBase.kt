@@ -17,6 +17,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.OAuthMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
@@ -193,5 +194,16 @@ abstract class IntegrationTestBase : TestBase() {
       .addWitnesses()
       .completeDraft()
       .acceptReport(adjudication.chargeNumber)
+  }
+
+  fun migrateRecord(dto: AdjudicationMigrateDto) {
+    val body = objectMapper.writeValueAsString(dto)
+
+    webTestClient.post()
+      .uri("/reported-adjudications/migrate")
+      .headers(setHeaders(activeCaseload = null, roles = listOf("ROLE_MIGRATE_ADJUDICATIONS")))
+      .bodyValue(body)
+      .exchange()
+      .expectStatus().isCreated
   }
 }

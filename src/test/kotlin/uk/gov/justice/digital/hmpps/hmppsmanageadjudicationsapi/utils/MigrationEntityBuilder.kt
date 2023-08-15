@@ -105,8 +105,9 @@ class MigrationEntityBuilder {
     adjudicator: String? = "ALO_GEN",
     hearingDateTime: LocalDateTime = LocalDateTime.now(),
     hearingResult: MigrateHearingResult? = null,
+    oicHearingId: Long = 1,
   ): MigrateHearing = MigrateHearing(
-    oicHearingId = 1,
+    oicHearingId = oicHearingId,
     oicHearingType = OicHearingType.GOV_ADULT,
     hearingDateTime = hearingDateTime,
     commentText = comment,

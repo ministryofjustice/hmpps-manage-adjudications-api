@@ -13,6 +13,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.http.Request
 import com.github.tomakehurst.wiremock.http.Response
+import com.github.tomakehurst.wiremock.stubbing.Scenario
 import org.json.JSONObject
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.AdjudicationIntTestDataSet
 
@@ -130,16 +131,19 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubCreateHearing(chargeNumber: String) {
+  fun stubCreateHearing(chargeNumber: String, currentState: String = Scenario.STARTED, nextState: String = Scenario.STARTED, oicHearingId: Long = 100) {
     stubFor(
       post(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/hearing"))
+        .inScenario("oic ids")
+        .whenScenarioStateIs(currentState)
+        .willSetStateTo(nextState)
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withStatus(201)
             .withBody(
               JSONObject()
-                .put("oicHearingId", "100")
+                .put("oicHearingId", "$oicHearingId")
                 .put("dateTimeOfHearing", "2022-10-24T10:10:10")
                 .put("hearingLocationId", "100")
                 .toString(),
@@ -304,6 +308,25 @@ class PrisonApiMockServer : WireMockServer {
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
+            .withStatus(200),
+        ),
+    )
+  }
+
+  fun stubNomisHearingResult(chargeNumber: String, oicHearingId: Long) {
+    stubFor(
+      get(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/hearing/$oicHearingId/result"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withBody(
+              """
+               [{
+                  "pleaFindingCode": "",
+                  "findingCode": ""
+               }]
+              """.trimIndent(),
+            )
             .withStatus(200),
         ),
     )
