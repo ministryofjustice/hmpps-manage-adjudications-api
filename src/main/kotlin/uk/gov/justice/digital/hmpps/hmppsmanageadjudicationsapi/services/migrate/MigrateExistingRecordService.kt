@@ -94,6 +94,7 @@ class MigrateExistingRecordService(
 
       nomisCode.hearingOutcome!!.adjudicator = nomisHearing.adjudicator ?: ""
       nomisCode.hearingOutcome!!.code = hearingOutcomeCode
+      nomisCode.hearingOutcome!!.nomisOutcome = true
       nomisHearing.hearingResult.mapToOutcome(hearingOutcomeCode)?.let {
         this.addOutcome(it)
         nomisHearing.hearingResult.createAdditionalOutcome(hasAdditionalHearings)?.let { outcome ->

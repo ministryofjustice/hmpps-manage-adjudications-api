@@ -10,6 +10,8 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
@@ -170,5 +172,22 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
     assertThat(existing.offenceDetails.first().nomisOffenceCode).isNull()
     assertThat(existing.offenceDetails.first().nomisOffenceDescription).isNull()
     assertThat(existing.offenceDetails.first().actualOffenceCode).isNull()
+  }
+
+  @Test
+  fun `resets a nomis hearing outcome`() {
+    val existing = entityBuilder.reportedAdjudication().also {
+      it.hearings.first().hearingOutcome = HearingOutcome(
+        nomisOutcome = true,
+        adjudicator = "adjudicator",
+        code = HearingOutcomeCode.COMPLETE,
+      )
+    }
+    whenever(reportedAdjudicationRepository.findAll()).thenReturn(listOf(existing))
+    migrateService.reset()
+
+    assertThat(existing.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)
+    assertThat(existing.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("")
+    assertThat(existing.hearings.first().hearingOutcome!!.nomisOutcome).isEqualTo(false)
   }
 }

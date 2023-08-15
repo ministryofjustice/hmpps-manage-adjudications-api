@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.MigrateResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 
@@ -47,6 +48,12 @@ class MigrateService(
     this.damages.removeIf { it.migrated }
     this.evidence.removeIf { it.migrated }
     this.witnesses.removeIf { it.migrated }
+
+    this.hearings.filter { it.hearingOutcome?.nomisOutcome == true }.forEach {
+      it.hearingOutcome!!.nomisOutcome = false
+      it.hearingOutcome!!.adjudicator = ""
+      it.hearingOutcome!!.code = HearingOutcomeCode.NOMIS
+    }
 
     this.getPunishments().forEach {
       if (it.migrated) this.removePunishment(it)
