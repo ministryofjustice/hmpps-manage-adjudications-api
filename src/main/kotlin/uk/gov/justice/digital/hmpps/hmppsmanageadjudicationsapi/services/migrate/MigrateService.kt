@@ -61,6 +61,10 @@ class MigrateService(
       it.hearingOutcome!!.code = HearingOutcomeCode.NOMIS
     }
 
+    this.hearings.filter { it.hearingOutcome?.migrated == true }.forEach {
+      it.hearingOutcome = null
+    }
+
     this.getPunishments().forEach {
       if (it.migrated) this.removePunishment(it)
     }
