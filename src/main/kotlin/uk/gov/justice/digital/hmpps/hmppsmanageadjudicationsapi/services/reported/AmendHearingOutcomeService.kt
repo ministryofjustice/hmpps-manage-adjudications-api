@@ -18,7 +18,6 @@ class AmendHearingOutcomeService(
   private val referralService: ReferralService,
   private val completedHearingService: CompletedHearingService,
   private val reportedAdjudicationService: ReportedAdjudicationService,
-  private val punishmentsService: PunishmentsService,
 ) {
 
   fun amendHearingOutcome(

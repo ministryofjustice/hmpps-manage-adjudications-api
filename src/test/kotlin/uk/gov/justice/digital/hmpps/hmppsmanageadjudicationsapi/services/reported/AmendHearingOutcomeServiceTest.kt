@@ -30,14 +30,12 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   private val referralService: ReferralService = mock()
   private val completedHearingService: CompletedHearingService = mock()
   private val reportedAdjudicationService: ReportedAdjudicationService = mock()
-  private val punishmentsService: PunishmentsService = mock()
   private val amendHearingOutcomeService = AmendHearingOutcomeService(
     hearingOutcomeService,
     outcomeService,
     referralService,
     completedHearingService,
     reportedAdjudicationService,
-    punishmentsService,
   )
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
