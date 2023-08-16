@@ -656,29 +656,7 @@ class IntegrationTestData(
       .blockFirst()!!
   }
 
-  @Deprecated("to remove on completion of NN-5319")
   fun createChargeProved(
-    testDataSet: AdjudicationIntTestDataSet,
-    caution: Boolean? = true,
-  ): ReportedAdjudicationResponse {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/complete-hearing/charge-proved")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "adjudicator" to "test",
-          "plea" to HearingOutcomePlea.NOT_GUILTY,
-          "amount" to 100.50,
-          "caution" to caution,
-        ),
-      )
-      .exchange()
-      .returnResult(ReportedAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
-
-  fun createChargeProvedV2(
     testDataSet: AdjudicationIntTestDataSet,
   ): ReportedAdjudicationResponse {
     return webTestClient.post()

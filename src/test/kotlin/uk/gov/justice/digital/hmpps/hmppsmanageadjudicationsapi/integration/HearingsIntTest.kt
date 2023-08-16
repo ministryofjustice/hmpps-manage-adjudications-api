@@ -90,7 +90,7 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .expectStatus().is5xxServerError
 
     webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -173,7 +173,7 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .expectStatus().is5xxServerError
 
     webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -216,7 +216,7 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .expectStatus().is5xxServerError
 
     webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -329,7 +329,7 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isBadRequest
 
     webTestClient.get()
-      .uri("/reported-adjudications/1524242")
+      .uri("/reported-adjudications/1524242/v2")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -355,7 +355,7 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber)
       .jsonPath("$.hearings[0].status")
       .isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
-      .jsonPath("$.hearings[0].adjudicationNumber")
+      .jsonPath("$.hearings[0].chargeNumber")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
       .jsonPath("$.hearings[0].chargeNumber")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)

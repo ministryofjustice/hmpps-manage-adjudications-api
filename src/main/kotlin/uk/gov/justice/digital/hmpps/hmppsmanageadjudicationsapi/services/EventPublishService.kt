@@ -24,17 +24,17 @@ class EventPublishService(
   private fun publish(event: AdjudicationDomainEventType, adjudication: ReportedAdjudicationDto) {
     snsService.publishDomainEvent(
       event,
-      "${event.description} ${adjudication.adjudicationNumber}",
+      "${event.description} ${adjudication.chargeNumber}",
       occurredAt = LocalDateTime.now(clock),
       AdditionalInformation(
-        chargeNumber = adjudication.adjudicationNumber.toString(),
+        chargeNumber = adjudication.chargeNumber,
         prisonId = adjudication.originatingAgencyId,
       ),
     )
 
     auditService.sendMessage(
       event.auditType,
-      adjudication.adjudicationNumber.toString(),
+      adjudication.chargeNumber,
       adjudication,
     )
   }

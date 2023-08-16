@@ -81,13 +81,13 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
   inner class CreateChargeProved {
     @Test
     fun `creates a charge proved outcome and hearing outcome of completed `() {
-      completedHearingService.createChargeProvedV2(
+      completedHearingService.createChargeProved(
         chargeNumber = "1",
         adjudicator = "test",
         plea = HearingOutcomePlea.UNFIT,
       )
 
-      verify(outcomeService, atLeastOnce()).createChargeProvedV2(
+      verify(outcomeService, atLeastOnce()).createChargeProved(
         chargeNumber = "1",
       )
 

@@ -22,48 +22,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService
 import java.time.LocalDate
 
-@Deprecated("to remove on completion of NN-5319")
 @Schema(description = "punishments request")
 data class PunishmentsRequest(
   @Schema(description = "list of punishments")
   val punishments: List<PunishmentRequest>,
 )
 
-@Schema(description = "punishments request")
-data class PunishmentsRequestV2(
-  @Schema(description = "list of punishments")
-  val punishments: List<PunishmentRequestV2>,
-)
-
-@Deprecated("to remove on completion of NN-5319")
 @Schema(description = "punishment request")
 data class PunishmentRequest(
-  @Schema(description = "id of punishment")
-  val id: Long? = null,
-  @Schema(description = "punishment type")
-  val type: PunishmentType,
-  @Schema(description = "privilege type - only use if punishment type is PRIVILEGE")
-  val privilegeType: PrivilegeType? = null,
-  @Schema(description = "other privilege type - only use if privilege type is OTHER")
-  val otherPrivilege: String? = null,
-  @Schema(description = "stoppage percentage - use if punishment type is EARNINGS")
-  val stoppagePercentage: Int? = null,
-  @Schema(description = "days punishment to last")
-  val days: Int,
-  @Schema(description = "punishment start date, required if punishment is not suspended")
-  val startDate: LocalDate? = null,
-  @Schema(description = "punishment end date, required if punishment is not suspended")
-  val endDate: LocalDate? = null,
-  @Schema(description = "punishment suspended until date, required if punishment is suspended")
-  val suspendedUntil: LocalDate? = null,
-  @Schema(description = "optional activated from report number")
-  val activatedFrom: String? = null,
-  @Schema(description = "optional consecutive report number")
-  val consecutiveReportNumber: String? = null,
-)
-
-@Schema(description = "punishment request")
-data class PunishmentRequestV2(
   @Schema(description = "id of punishment")
   val id: Long? = null,
   @Schema(description = "punishment type")
@@ -105,70 +71,23 @@ class PunishmentsController(
   private val punishmentsService: PunishmentsService,
 ) : ReportedAdjudicationBaseController() {
 
-  @Deprecated("to remove on completion of NN-5319")
-  @Operation(
-    summary = "create a set of punishments",
-    responses = [
-      io.swagger.v3.oas.annotations.responses.ApiResponse(
-        responseCode = "201",
-        description = "Punishment created",
-      ),
-      io.swagger.v3.oas.annotations.responses.ApiResponse(
-        responseCode = "415",
-        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
-        content = [
-          io.swagger.v3.oas.annotations.media.Content(
-            mediaType = "application/json",
-            schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  @PostMapping(value = ["/{chargeNumber}/punishments"])
-  @ResponseStatus(HttpStatus.CREATED)
-  fun create(
-    @PathVariable(name = "chargeNumber") chargeNumber: String,
-    @RequestBody punishmentsRequest: PunishmentsRequest,
-  ): ReportedAdjudicationResponse =
-    punishmentsService.create(
-      chargeNumber = chargeNumber,
-      punishments = punishmentsRequest.punishments,
-    ).toResponse()
-
   @PostMapping(value = ["/{chargeNumber}/punishments/v2"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createV2(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-    @RequestBody punishmentsRequest: PunishmentsRequestV2,
-  ): ReportedAdjudicationResponse = punishmentsService.createV2(
+    @RequestBody punishmentsRequest: PunishmentsRequest,
+  ): ReportedAdjudicationResponse = punishmentsService.create(
     chargeNumber = chargeNumber,
     punishments = punishmentsRequest.punishments,
   ).toResponse()
-
-  @Deprecated("to remove on completion of NN-5319")
-  @Operation(summary = "updates a set of punishments")
-  @PutMapping(value = ["/{chargeNumber}/punishments"])
-  @ResponseStatus(HttpStatus.OK)
-  fun update(
-    @PathVariable(name = "chargeNumber") chargeNumber: String,
-    @RequestBody punishmentsRequest: PunishmentsRequest,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = punishmentsService.update(
-      chargeNumber = chargeNumber,
-      punishments = punishmentsRequest.punishments,
-    )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
 
   @Operation(summary = "updates a set of punishments")
   @PutMapping(value = ["/{chargeNumber}/punishments/v2"])
   @ResponseStatus(HttpStatus.OK)
   fun updateV2(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-    @RequestBody punishmentsRequest: PunishmentsRequestV2,
-  ): ReportedAdjudicationResponse = punishmentsService.updateV2(
+    @RequestBody punishmentsRequest: PunishmentsRequest,
+  ): ReportedAdjudicationResponse = punishmentsService.update(
     chargeNumber = chargeNumber,
     punishments = punishmentsRequest.punishments,
   ).toResponse()

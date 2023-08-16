@@ -80,7 +80,6 @@ open class DraftAdjudicationBaseService(
       incidentRole = this.incidentRole?.toDto(this.isYouthOffender!!),
       offenceDetails = this.offenceDetails.firstOrNull()
         ?.toDto(offenceCodeLookupService, this.isYouthOffender!!, this.gender),
-      adjudicationNumber = this.chargeNumber?.toLong(),
       chargeNumber = this.chargeNumber,
       startedByUserId = this.chargeNumber?.let { this.reportByUserId } ?: this.createdByUserId,
       isYouthOffender = this.isYouthOffender,

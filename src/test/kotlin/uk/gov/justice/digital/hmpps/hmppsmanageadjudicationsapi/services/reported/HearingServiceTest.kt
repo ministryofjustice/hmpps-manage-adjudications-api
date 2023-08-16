@@ -572,7 +572,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response).isNotNull
       assertThat(response.size).isEqualTo(3)
-      assertThat(response.first().adjudicationNumber).isEqualTo(reportedAdjudication.chargeNumber.toLong())
+      assertThat(response.first().chargeNumber).isEqualTo(reportedAdjudication.chargeNumber)
       assertThat(response.first().prisonerNumber).isEqualTo(reportedAdjudication.prisonerNumber)
       assertThat(response.first().dateTimeOfHearing).isEqualTo(reportedAdjudication.hearings.first().dateTimeOfHearing)
       assertThat(response.first().dateTimeOfDiscovery).isEqualTo(reportedAdjudication.dateTimeOfDiscovery)

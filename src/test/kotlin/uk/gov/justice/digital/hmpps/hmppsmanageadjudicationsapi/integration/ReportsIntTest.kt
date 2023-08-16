@@ -35,7 +35,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.content.size()").isEqualTo(expectedCount)
-      .jsonPath("$.content[0].adjudicationNumber").isEqualTo(adjudicationNumber)
+      .jsonPath("$.content[0].chargeNumber").isEqualTo(adjudicationNumber)
   }
 
   @ParameterizedTest
@@ -59,7 +59,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.content.size()").isEqualTo(expectedCount)
-      .jsonPath("$.content[0].adjudicationNumber").isEqualTo(adjudicationNumber)
+      .jsonPath("$.content[0].chargeNumber").isEqualTo(adjudicationNumber)
   }
 
   @Test
@@ -76,8 +76,8 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.content[0].adjudicationNumber").isEqualTo(IntegrationTestData.ADJUDICATION_4.chargeNumber)
-      .jsonPath("$.content[1].adjudicationNumber").isEqualTo(IntegrationTestData.ADJUDICATION_2.chargeNumber)
+      .jsonPath("$.content[0].chargeNumber").isEqualTo(IntegrationTestData.ADJUDICATION_4.chargeNumber)
+      .jsonPath("$.content[1].chargeNumber").isEqualTo(IntegrationTestData.ADJUDICATION_2.chargeNumber)
   }
 
   @Test
@@ -137,8 +137,8 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.content[0].adjudicationNumber").isEqualTo(IntegrationTestData.ADJUDICATION_3.chargeNumber)
-      .jsonPath("$.content[1].adjudicationNumber").isEqualTo(IntegrationTestData.ADJUDICATION_2.chargeNumber)
+      .jsonPath("$.content[0].chargeNumber").isEqualTo(IntegrationTestData.ADJUDICATION_3.chargeNumber)
+      .jsonPath("$.content[1].chargeNumber").isEqualTo(IntegrationTestData.ADJUDICATION_2.chargeNumber)
   }
 
   @Test

@@ -55,7 +55,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   fun `test access for single report`(agencyId: String, allowed: Boolean) {
     Thread.sleep(1000)
     val response = webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}")
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
       .headers(setHeaders(activeCaseload = agencyId))
       .exchange()
 

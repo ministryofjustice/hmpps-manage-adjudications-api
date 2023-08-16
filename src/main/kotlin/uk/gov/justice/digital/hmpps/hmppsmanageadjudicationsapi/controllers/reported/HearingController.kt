@@ -69,29 +69,8 @@ data class AdjournRequest(
   val plea: HearingOutcomePlea,
 )
 
-@Deprecated("to remove on completion of NN-5319")
 @Schema(description = "amend hearing outcome request")
 data class AmendHearingOutcomeRequest(
-  @Schema(description = "the name of the adjudicator")
-  val adjudicator: String? = null,
-  @Schema(description = "the adjourn reason")
-  val adjournReason: HearingOutcomeAdjournReason? = null,
-  @Schema(description = "not proceed reason")
-  val notProceedReason: NotProceedReason? = null,
-  @Schema(description = "details")
-  val details: String? = null,
-  @Schema(description = "plea")
-  val plea: HearingOutcomePlea? = null,
-  @Schema(description = "caution")
-  val caution: Boolean? = null,
-  @Schema(description = "damages owed - set this if the user has made an edit action on this field")
-  val damagesOwed: Boolean? = null,
-  @Schema(description = "amount of damages")
-  val amount: Double? = null,
-)
-
-@Schema(description = "amend hearing outcome request")
-data class AmendHearingOutcomeRequestV2(
   @Schema(description = "the name of the adjudicator")
   val adjudicator: String? = null,
   @Schema(description = "the adjourn reason")
@@ -253,30 +232,15 @@ class HearingController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse = hearingOutcomeService.removeAdjourn(chargeNumber = chargeNumber).toResponse()
 
-  @Deprecated("to remove on completion of NN-5319")
-  @Operation(summary = "amends a hearing outcome and associated outcome")
-  @PutMapping(value = ["/{chargeNumber}/hearing/outcome/{status}"])
-  @ResponseStatus(HttpStatus.OK)
-  fun amendHearingOutcome(
-    @PathVariable(name = "chargeNumber") chargeNumber: String,
-    @PathVariable(name = "status") status: ReportedAdjudicationStatus,
-    @RequestBody amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
-  ): ReportedAdjudicationResponse =
-    amendHearingOutcomeService.amendHearingOutcome(
-      chargeNumber = chargeNumber,
-      status = status,
-      amendHearingOutcomeRequest = amendHearingOutcomeRequest,
-    ).toResponse()
-
   @Operation(summary = "amends a hearing outcome and associated outcome")
   @PutMapping(value = ["/{chargeNumber}/hearing/outcome/{status}/v2"])
   @ResponseStatus(HttpStatus.OK)
   fun amendHearingOutcomeV2(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @PathVariable(name = "status") status: ReportedAdjudicationStatus,
-    @RequestBody amendHearingOutcomeRequest: AmendHearingOutcomeRequestV2,
+    @RequestBody amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
   ): ReportedAdjudicationResponse =
-    amendHearingOutcomeService.amendHearingOutcomeV2(
+    amendHearingOutcomeService.amendHearingOutcome(
       chargeNumber = chargeNumber,
       status = status,
       amendHearingOutcomeRequest = amendHearingOutcomeRequest,

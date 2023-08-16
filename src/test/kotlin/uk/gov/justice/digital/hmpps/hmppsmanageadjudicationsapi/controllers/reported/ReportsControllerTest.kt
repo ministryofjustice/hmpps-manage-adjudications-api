@@ -88,7 +88,7 @@ class ReportsControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").value(1))
         .andExpect(MockMvcResultMatchers.jsonPath("$.size").value(20))
         .andExpect(MockMvcResultMatchers.jsonPath("$.number").value(0))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].adjudicationNumber").value(1))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].chargeNumber").value("1"))
     }
 
     @Test
@@ -99,7 +99,7 @@ class ReportsControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").value(1))
         .andExpect(MockMvcResultMatchers.jsonPath("$.size").value(20))
         .andExpect(MockMvcResultMatchers.jsonPath("$.number").value(0))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].adjudicationNumber").value(1))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].chargeNumber").value("1"))
 
       verify(reportsService).getMyReportedAdjudications(
         LocalDate.now().plusDays(5),

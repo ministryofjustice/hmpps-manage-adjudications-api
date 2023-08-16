@@ -107,24 +107,6 @@ class LegacyNomisGateway(private val prisonApiClientCreds: WebClient) {
       .bodyToMono<Void>()
       .block()
 
-  @Deprecated("to remove on completion of NN-5319")
-  fun createSanction(adjudicationNumber: Long, sanction: OffenderOicSanctionRequest): Long =
-    prisonApiClientCreds
-      .post()
-      .uri("/adjudications/adjudication/$adjudicationNumber/sanction")
-      .bodyValue(sanction)
-      .retrieve()
-      .bodyToMono(object : ParameterizedTypeReference<OffenderOicSanctionResponse>() {})
-      .block()!!.sanctionSeq
-
-  @Deprecated("to remove on completion of NN-5319")
-  fun deleteSanction(adjudicationNumber: Long, sanctionSeq: Long): Void? = prisonApiClientCreds
-    .delete()
-    .uri("/adjudications/adjudication/$adjudicationNumber/sanction/$sanctionSeq")
-    .retrieve()
-    .bodyToMono<Void>()
-    .block()
-
   fun createSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>): Void? =
     prisonApiClientCreds
       .post()
