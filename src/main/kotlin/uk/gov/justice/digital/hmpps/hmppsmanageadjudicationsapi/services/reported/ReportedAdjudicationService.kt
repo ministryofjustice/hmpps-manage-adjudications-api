@@ -5,7 +5,6 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDtoV2
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssueHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -34,20 +33,10 @@ class ReportedAdjudicationService(
     const val TELEMETRY_EVENT = "ReportedAdjudicationStatusEvent"
   }
 
-  @Deprecated("to remove on completion of NN-5319")
   fun getReportedAdjudicationDetails(chargeNumber: String): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
 
     return reportedAdjudication.toDto(
-      activeCaseload = authenticationFacade.activeCaseload,
-      consecutiveReportsAvailable = reportedAdjudication.getConsecutiveReportsAvailable(),
-    )
-  }
-
-  fun getReportedAdjudicationDetailsV2(chargeNumber: String): ReportedAdjudicationDtoV2 {
-    val reportedAdjudication = findByChargeNumber(chargeNumber)
-
-    return reportedAdjudication.toDtoV2(
       activeCaseload = authenticationFacade.activeCaseload,
       consecutiveReportsAvailable = reportedAdjudication.getConsecutiveReportsAvailable(),
     )

@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDtoV2
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPublishService
@@ -51,52 +50,8 @@ open class TestControllerBase {
       "Associated Prisoner",
     )
 
-    @Deprecated("to remove on completion of NN-5319")
     val REPORTED_ADJUDICATION_DTO =
       ReportedAdjudicationDto(
-        adjudicationNumber = 1,
-        chargeNumber = "1",
-        prisonerNumber = "A12345",
-        incidentDetails = IncidentDetailsDto(
-          locationId = 2,
-          dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-          dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
-        ),
-        isYouthOffender = false,
-        incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
-        offenceDetails =
-        OffenceDto(
-          offenceCode = 2,
-          OffenceRuleDto(
-            paragraphNumber = "3",
-            paragraphDescription = "A paragraph description",
-            nomisCode = null,
-            withOthersNomisCode = null,
-          ),
-        ),
-        incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
-        createdByUserId = "A_SMITH",
-        createdDateTime = REPORTED_DATE_TIME,
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-        reviewedByUserId = null,
-        statusReason = null,
-        statusDetails = null,
-        damages = listOf(),
-        evidence = listOf(),
-        witnesses = listOf(),
-        hearings = listOf(),
-        disIssueHistory = listOf(),
-        gender = Gender.MALE,
-        outcomes = listOf(),
-        punishments = listOf(),
-        punishmentComments = listOf(),
-        overrideAgencyId = null,
-        originatingAgencyId = "MDI",
-      )
-
-    val REPORTED_ADJUDICATION_DTO_V2 =
-      ReportedAdjudicationDtoV2(
         chargeNumber = "1",
         prisonerNumber = "A12345",
         incidentDetails = IncidentDetailsDto(
@@ -139,7 +94,6 @@ open class TestControllerBase {
 
     fun reportedAdjudicationDto(status: ReportedAdjudicationStatus) =
       ReportedAdjudicationDto(
-        adjudicationNumber = 1,
         chargeNumber = "1",
         prisonerNumber = "A12345",
         incidentDetails = IncidentDetailsDto(
@@ -192,7 +146,6 @@ open class TestControllerBase {
     )
     fun draftAdjudicationDto(statement: String = "test") = DraftAdjudicationDto(
       id = 1L,
-      adjudicationNumber = null,
       chargeNumber = null,
       prisonerNumber = "A12345",
       gender = Gender.MALE,

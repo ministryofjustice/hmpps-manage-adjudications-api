@@ -57,21 +57,8 @@ data class HearingCompletedDismissedRequest(
   val details: String,
 )
 
-@Deprecated("to remove on completion of NN-5319")
 @Schema(description = "Request to add charge proved - hearing completed")
 data class HearingCompletedChargeProvedRequest(
-  @Schema(description = "the name of the adjudicator")
-  val adjudicator: String,
-  @Schema(description = "plea")
-  val plea: HearingOutcomePlea,
-  @Schema(description = "optional amount - money being recovered for damages ", required = false)
-  val amount: Double? = null,
-  @Schema(description = "is this a caution")
-  val caution: Boolean,
-)
-
-@Schema(description = "Request to add charge proved - hearing completed")
-data class HearingCompletedChargeProvedRequestV2(
   @Schema(description = "the name of the adjudicator")
   val adjudicator: String,
   @Schema(description = "plea")
@@ -291,28 +278,13 @@ class OutcomeController(
       details = completedNotProceedRequest.details,
     ).toResponse()
 
-  @Deprecated("to remove on completion of NN-5319")
-  @PostMapping(value = ["/{chargeNumber}/complete-hearing/charge-proved"])
-  @ResponseStatus(HttpStatus.CREATED)
-  fun createChargeProvedFromHearing(
-    @PathVariable(name = "chargeNumber") chargeNumber: String,
-    @RequestBody chargeProvedRequest: HearingCompletedChargeProvedRequest,
-  ): ReportedAdjudicationResponse =
-    completedHearingService.createChargeProved(
-      chargeNumber = chargeNumber,
-      adjudicator = chargeProvedRequest.adjudicator,
-      plea = chargeProvedRequest.plea,
-      amount = chargeProvedRequest.amount,
-      caution = chargeProvedRequest.caution,
-    ).toResponse()
-
   @PostMapping(value = ["/{chargeNumber}/complete-hearing/charge-proved/v2"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createChargeProvedFromHearingV2(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-    @RequestBody chargeProvedRequest: HearingCompletedChargeProvedRequestV2,
+    @RequestBody chargeProvedRequest: HearingCompletedChargeProvedRequest,
   ): ReportedAdjudicationResponse =
-    completedHearingService.createChargeProvedV2(
+    completedHearingService.createChargeProved(
       chargeNumber = chargeNumber,
       adjudicator = chargeProvedRequest.adjudicator,
       plea = chargeProvedRequest.plea,

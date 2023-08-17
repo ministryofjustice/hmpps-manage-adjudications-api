@@ -73,21 +73,7 @@ class OutcomeService(
     validate = validate,
   )
 
-  @Deprecated("to remove on completion of NN-5319")
   fun createChargeProved(
-    chargeNumber: String,
-    amount: Double? = null,
-    caution: Boolean,
-    validate: Boolean = true,
-  ): ReportedAdjudicationDto = createOutcome(
-    chargeNumber = chargeNumber,
-    code = OutcomeCode.CHARGE_PROVED,
-    amount = amount,
-    caution = caution,
-    validate = validate,
-  )
-
-  fun createChargeProvedV2(
     chargeNumber: String,
     validate: Boolean = true,
   ): ReportedAdjudicationDto = createOutcome(
@@ -182,16 +168,6 @@ class OutcomeService(
 
     reportedAdjudication.addOutcome(outcomeToCreate)
 
-    if (outcomeToCreate.code == OutcomeCode.CHARGE_PROVED) {
-      caution?.let {
-        punishmentsService.createPunishmentsFromChargeProvedIfApplicable(
-          reportedAdjudication = reportedAdjudication,
-          caution = it,
-          amount = amount,
-        )
-      }
-    }
-
     return saveToDto(reportedAdjudication)
   }
 
@@ -261,7 +237,7 @@ class OutcomeService(
 
   fun getOutcomes(chargeNumber: String): List<CombinedOutcomeDto> {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
-    return reportedAdjudication.getOutcomes().createCombinedOutcomes(reportedAdjudication.getPunishments())
+    return reportedAdjudication.getOutcomes().createCombinedOutcomes()
   }
 
   fun getLatestOutcome(chargeNumber: String): Outcome? = findByChargeNumber(chargeNumber).latestOutcome()

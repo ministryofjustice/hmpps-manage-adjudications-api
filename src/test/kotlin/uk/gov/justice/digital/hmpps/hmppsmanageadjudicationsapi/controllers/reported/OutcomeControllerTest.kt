@@ -449,7 +449,7 @@ class OutcomeControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        completedHearingService.createChargeProvedV2(
+        completedHearingService.createChargeProved(
           anyString(),
           any(),
           any(),
@@ -489,7 +489,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun `makes a call to create a proven outcome`() {
       createChargeProvedRequest(1, CHARGE_PROVED_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(completedHearingService).createChargeProvedV2(
+      verify(completedHearingService).createChargeProved(
         "1",
         CHARGE_PROVED_REQUEST.adjudicator,
         CHARGE_PROVED_REQUEST.plea,
@@ -498,7 +498,7 @@ class OutcomeControllerTest : TestControllerBase() {
 
     private fun createChargeProvedRequest(
       id: Long,
-      proven: HearingCompletedChargeProvedRequestV2,
+      proven: HearingCompletedChargeProvedRequest,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(proven)
 
@@ -717,7 +717,7 @@ class OutcomeControllerTest : TestControllerBase() {
     private val NOT_PROCEED_REQUEST = NotProceedRequest(reason = NotProceedReason.NOT_FAIR, details = "details")
     private val COMPLETED_NOT_PROCEED_REQUEST = HearingCompletedNotProceedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, reason = NotProceedReason.NOT_FAIR, details = "details")
     private val COMPLETED_DISMISSED_REQUEST = HearingCompletedDismissedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, details = "details")
-    private val CHARGE_PROVED_REQUEST = HearingCompletedChargeProvedRequestV2(adjudicator = "test", plea = HearingOutcomePlea.GUILTY)
+    private val CHARGE_PROVED_REQUEST = HearingCompletedChargeProvedRequest(adjudicator = "test", plea = HearingOutcomePlea.GUILTY)
     private val QUASHED_REQUEST = QuashedRequest(reason = QuashedReason.APPEAL_UPHELD, details = "details")
     private val AMEND_REFER_POLICE_REQUEST = AmendOutcomeRequest(details = "details")
     private val AMEND_NOT_PROCEED_REQUEST = AmendOutcomeRequest(details = "details", reason = NotProceedReason.NOT_FAIR)

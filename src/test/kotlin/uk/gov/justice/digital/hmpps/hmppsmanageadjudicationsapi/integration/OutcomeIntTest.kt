@@ -134,38 +134,6 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.DISMISSED.name)
   }
 
-  @Deprecated("to remove on completion of NN-5319")
-  @Test
-  fun `create completed hearing outcome - charge proved`() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    initDataForOutcome().createHearing()
-
-    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
-    webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/complete-hearing/charge-proved")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .bodyValue(
-        mapOf(
-          "adjudicator" to "test",
-          "plea" to HearingOutcomePlea.NOT_GUILTY,
-          "amount" to 100.50,
-          "caution" to true,
-        ),
-      )
-      .exchange()
-      .expectStatus().isCreated
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.status")
-      .isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator").isEqualTo("test")
-      .jsonPath("$.reportedAdjudication.hearings[0].outcome.plea").isEqualTo(HearingOutcomePlea.NOT_GUILTY.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.id").isNotEmpty
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.amount").isEqualTo(100.50)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.caution").isEqualTo(true)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.CHARGE_PROVED.name)
-  }
-
   @Test
   fun `create completed hearing outcome - charge proved v2`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
@@ -298,8 +266,6 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.quashedReason").isEqualTo(QuashedReason.APPEAL_UPHELD.name)
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.details").isEqualTo("details")
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.code").isEqualTo(OutcomeCode.QUASHED.name)
-      .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.amount").isEqualTo(100.50)
-      .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.caution").isEqualTo(true)
   }
 
   @Test

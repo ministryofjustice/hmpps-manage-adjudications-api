@@ -151,7 +151,6 @@ class HearingService(
         dateTimeOfHearing = it.dateTimeOfHearing,
         dateTimeOfDiscovery = adjudication.dateTimeOfDiscovery,
         prisonerNumber = adjudication.prisonerNumber,
-        adjudicationNumber = it.chargeNumber.toLong(),
         chargeNumber = it.chargeNumber,
         oicHearingType = it.oicHearingType,
         status = adjudication.status,

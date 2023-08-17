@@ -44,7 +44,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        punishmentsService.createV2(
+        punishmentsService.create(
           ArgumentMatchers.anyString(),
           any(),
         ),
@@ -83,18 +83,18 @@ class PunishmentsControllerTest : TestControllerBase() {
       createPunishmentsRequest(1, PUNISHMENT_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(punishmentsService).createV2(
+      verify(punishmentsService).create(
         chargeNumber = "1",
-        listOf(PunishmentRequestV2(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
+        listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
       )
     }
 
     private fun createPunishmentsRequest(
       id: Long,
-      punishmentRequest: PunishmentRequestV2,
+      punishmentRequest: PunishmentRequest,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(
-        PunishmentsRequestV2(
+        PunishmentsRequest(
           punishments = listOf(punishmentRequest),
         ),
       )
@@ -112,7 +112,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(
-        punishmentsService.updateV2(
+        punishmentsService.update(
           ArgumentMatchers.anyString(),
           any(),
         ),
@@ -151,18 +151,18 @@ class PunishmentsControllerTest : TestControllerBase() {
       updatePunishmentsRequest(1, PUNISHMENT_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(punishmentsService).updateV2(
+      verify(punishmentsService).update(
         chargeNumber = "1",
-        listOf(PunishmentRequestV2(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
+        listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
       )
     }
 
     private fun updatePunishmentsRequest(
       id: Long,
-      punishmentRequest: PunishmentRequestV2,
+      punishmentRequest: PunishmentRequest,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(
-        PunishmentsRequestV2(
+        PunishmentsRequest(
           punishments = listOf(punishmentRequest),
         ),
       )
@@ -512,11 +512,10 @@ class PunishmentsControllerTest : TestControllerBase() {
   }
 
   companion object {
-    val PUNISHMENT_REQUEST = PunishmentRequestV2(type = PunishmentType.REMOVAL_ACTIVITY, days = 10)
+    val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 10)
     val PUNISHMENT_COMMENT_REQUEST = PunishmentCommentRequest(comment = "some text")
     val SUSPENDED_PUNISHMENTS_DTO = listOf(
       SuspendedPunishmentDto(
-        reportNumber = 1,
         chargeNumber = "1",
         punishment =
         PunishmentDto(
@@ -530,7 +529,6 @@ class PunishmentsControllerTest : TestControllerBase() {
     )
     val ADDITIONAL_DAYS_DTO = listOf(
       AdditionalDaysDto(
-        reportNumber = 1,
         chargeNumber = "1",
         chargeProvedDate = LocalDate.now(),
         punishment = PunishmentDto(

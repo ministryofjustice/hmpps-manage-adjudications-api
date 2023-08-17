@@ -49,7 +49,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       telemetryClient,
     )
 
-  @Deprecated("to remove on completion of NN-5319")
   @Nested
   inner class ReportedAdjudicationDetails {
 
@@ -69,7 +68,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `filter out caution and damages owed from dto if present in punishments `() {
+    fun `caution and damages owed should be in punishments`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.createDateTime = LocalDateTime.now()
@@ -92,7 +91,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           )
         },
       )
-      assertThat(reportedAdjudicationService.getReportedAdjudicationDetails("1").punishments).isEmpty()
+      assertThat(reportedAdjudicationService.getReportedAdjudicationDetails("1").punishments.size).isEqualTo(2)
     }
 
     @Test
@@ -162,7 +161,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           offenceCode = 1002,
         ),
       )
-
       val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
         it.hearings[0].dateTimeOfHearing = LocalDateTime.now().plusWeeks(1)
 
@@ -202,255 +200,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetails("1")
-
-      assertThat(reportedAdjudicationDto)
-        .extracting(
-          "adjudicationNumber",
-          "prisonerNumber",
-          "createdByUserId",
-          "createdDateTime",
-          "isYouthOffender",
-        )
-        .contains(1235L, "A12345", "A_SMITH", REPORTED_DATE_TIME, isYouthOffender)
-
-      assertThat(reportedAdjudicationDto.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
-        .contains(2L, DATE_TIME_OF_INCIDENT, DATE_TIME_REPORTED_ADJUDICATION_EXPIRES)
-
-      assertThat(reportedAdjudicationDto.incidentRole)
-        .extracting("roleCode", "offenceRule", "associatedPrisonersNumber")
-        .contains("25a", IncidentRoleRuleLookup.getOffenceRuleDetails("25a", isYouthOffender), "B23456")
-
-      assertThat(reportedAdjudicationDto)
-        .extracting("status", "reviewedByUserId", "statusReason", "statusDetails")
-        .contains(ReportedAdjudicationStatus.REJECTED, "A_REVIEWER", "Status Reason", "Status Reason String")
-
-      assertThat(reportedAdjudicationDto.offenceDetails)
-        .extracting(
-          "offenceCode",
-          "offenceRule.paragraphNumber",
-          "offenceRule.paragraphDescription",
-          "victimPrisonersNumber",
-          "victimStaffUsername",
-          "victimOtherPersonsName",
-        )
-        .contains(
-          1002,
-          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraph,
-          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
-          null,
-          null,
-          null,
-        )
-
-      assertThat(reportedAdjudicationDto.incidentStatement)
-        .extracting("statement", "completed")
-        .contains(INCIDENT_STATEMENT, true)
-
-      // test order is correct
-      assertThat(reportedAdjudicationDto.hearings.size).isEqualTo(3)
-      assertThat(reportedAdjudicationDto.hearings[0].oicHearingType).isEqualTo(OicHearingType.GOV_ADULT)
-      assertThat(reportedAdjudicationDto.hearings[1].oicHearingType).isEqualTo(OicHearingType.GOV)
-      assertThat(reportedAdjudicationDto.hearings[2].oicHearingType).isEqualTo(OicHearingType.INAD_YOI)
-    }
-
-    @Test
-    fun `get reported adjudication details with flag to indicate consecutive report is available to view `() {
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.createDateTime = LocalDateTime.now()
-          it.createdByUserId = ""
-          it.addPunishment(
-            Punishment(
-              type = PunishmentType.ADDITIONAL_DAYS,
-              consecutiveChargeNumber = "999",
-              schedule = mutableListOf(
-                PunishmentSchedule(days = 10),
-              ),
-            ),
-          )
-          it.addPunishment(
-            Punishment(
-              type = PunishmentType.ADDITIONAL_DAYS,
-              schedule = mutableListOf(
-                PunishmentSchedule(days = 10),
-              ),
-            ),
-          )
-          it.addPunishment(
-            Punishment(
-              type = PunishmentType.ADDITIONAL_DAYS,
-              consecutiveChargeNumber = "9999",
-              schedule = mutableListOf(
-                PunishmentSchedule(days = 10),
-              ),
-            ),
-          )
-        },
-      )
-
-      whenever(reportedAdjudicationRepository.findByChargeNumberIn(any())).thenReturn(listOf(entityBuilder.reportedAdjudication(chargeNumber = "999")))
-
-      val dto = reportedAdjudicationService.getReportedAdjudicationDetails("1")
-
-      verify(reportedAdjudicationRepository, atLeastOnce()).findByChargeNumberIn(listOf("999", "9999"))
-      assertThat(dto.punishments.first { it.consecutiveReportNumber == 999L }.consecutiveReportAvailable).isTrue
-      assertThat(dto.punishments.first { it.consecutiveReportNumber == 9999L }.consecutiveReportAvailable).isFalse
-      assertThat(dto.punishments.first { it.consecutiveReportNumber == null }.consecutiveReportAvailable).isNull()
-    }
-  }
-
-  @Nested
-  inner class ReportedAdjudicationDetailsV2 {
-
-    @Test
-    fun `outcome entered in nomis flag is set `() {
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.createDateTime = LocalDateTime.now()
-          it.createdByUserId = ""
-          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
-        },
-      )
-
-      val result = reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
-
-      assertThat(result.outcomeEnteredInNomis).isTrue
-    }
-
-    @Test
-    fun `caution and damages owed should be in punishments`() {
-      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.createDateTime = LocalDateTime.now()
-          it.createdByUserId = ""
-          it.addPunishment(
-            Punishment(
-              type = PunishmentType.DAMAGES_OWED,
-              schedule = mutableListOf(
-                PunishmentSchedule(days = 0),
-              ),
-            ),
-          )
-          it.addPunishment(
-            Punishment(
-              type = PunishmentType.CAUTION,
-              schedule = mutableListOf(
-                PunishmentSchedule(days = 0),
-              ),
-            ),
-          )
-        },
-      )
-      assertThat(reportedAdjudicationService.getReportedAdjudicationDetailsV2("1").punishments.size).isEqualTo(2)
-    }
-
-    @Test
-    fun `adjudication is not part of active case load throws exception `() {
-      whenever(authenticationFacade.activeCaseload).thenReturn("OTHER")
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
-
-      assertThatThrownBy {
-        reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
-    }
-
-    @Test
-    fun `override agency is not found throws exception `() {
-      whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.overrideAgencyId = "XXX"
-        },
-      )
-
-      assertThatThrownBy {
-        reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
-    }
-
-    @Test
-    fun `override agency is not found throws exception when no case load or override set `() {
-      whenever(authenticationFacade.activeCaseload).thenReturn(null)
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication(),
-      )
-
-      assertThatThrownBy {
-        reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("ReportedAdjudication not found for 1")
-    }
-
-    @Test
-    fun `override caseload allows access`() {
-      whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.overrideAgencyId = "TJW"
-          it.createDateTime = LocalDateTime.now()
-          it.createdByUserId = ""
-        },
-      )
-
-      val result = reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
-      assertThat(result).isNotNull
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-      "true",
-      "false",
-    )
-    fun `returns the reported adjudication`(
-      isYouthOffender: Boolean,
-    ) {
-      val offenceDetails = mutableListOf(
-        ReportedOffence(
-          offenceCode = 1002,
-        ),
-      )
-      val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
-        it.hearings[0].dateTimeOfHearing = LocalDateTime.now().plusWeeks(1)
-
-        val newFirstHearing = Hearing(
-          dateTimeOfHearing = LocalDateTime.now().plusDays(1),
-          oicHearingType = OicHearingType.GOV_ADULT,
-          locationId = 1,
-          agencyId = "MDI",
-          oicHearingId = 1,
-          chargeNumber = "1235",
-        )
-
-        val thirdHearing = Hearing(
-          dateTimeOfHearing = LocalDateTime.now().plusWeeks(3),
-          oicHearingType = OicHearingType.INAD_YOI,
-          locationId = 1,
-          agencyId = "MDI",
-          oicHearingId = 1,
-          chargeNumber = "1235",
-        )
-
-        it.hearings.add(newFirstHearing)
-        it.hearings.add(thirdHearing)
-      }
-      reportedAdjudication.createdByUserId = "A_SMITH" // Add audit information
-      reportedAdjudication.createDateTime = REPORTED_DATE_TIME
-
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-        reportedAdjudication.also {
-          it.isYouthOffender = isYouthOffender
-          it.offenceDetails = offenceDetails
-          it.status = ReportedAdjudicationStatus.REJECTED
-          it.statusReason = "Status Reason"
-          it.statusDetails = "Status Reason String"
-          it.reviewUserId = "A_REVIEWER"
-        },
-      )
-
-      val reportedAdjudicationDto = reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
 
       assertThat(reportedAdjudicationDto)
         .extracting(
@@ -540,12 +289,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       whenever(reportedAdjudicationRepository.findByChargeNumberIn(any())).thenReturn(listOf(entityBuilder.reportedAdjudication(chargeNumber = "999")))
 
-      val dto = reportedAdjudicationService.getReportedAdjudicationDetailsV2("1")
+      val dto = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
       verify(reportedAdjudicationRepository, atLeastOnce()).findByChargeNumberIn(listOf("999", "9999"))
-      assertThat(dto.punishments.first { it.consecutiveReportNumber == 999L }.consecutiveReportAvailable).isTrue
-      assertThat(dto.punishments.first { it.consecutiveReportNumber == 9999L }.consecutiveReportAvailable).isFalse
-      assertThat(dto.punishments.first { it.consecutiveReportNumber == null }.consecutiveReportAvailable).isNull()
+      assertThat(dto.punishments.first { it.consecutiveChargeNumber == "999" }.consecutiveReportAvailable).isTrue
+      assertThat(dto.punishments.first { it.consecutiveChargeNumber == "9999" }.consecutiveReportAvailable).isFalse
+      assertThat(dto.punishments.first { it.consecutiveChargeNumber == null }.consecutiveReportAvailable).isNull()
     }
   }
 

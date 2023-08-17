@@ -87,7 +87,7 @@ class AdjudicationWorkflowService(
 
     val isNew = draftAdjudication.chargeNumber == null
     val generatedReportedAdjudication = saveAdjudication(draftAdjudication, isNew)
-    telemetryCapture(draftAdjudication, generatedReportedAdjudication.adjudicationNumber)
+    telemetryCapture(draftAdjudication, generatedReportedAdjudication.chargeNumber)
 
     draftAdjudicationService.remove(draftAdjudication)
 
@@ -320,13 +320,13 @@ class AdjudicationWorkflowService(
     }.toMutableList()
   }
 
-  private fun telemetryCapture(draftAdjudication: DraftAdjudication, reportNumber: Long?) {
+  private fun telemetryCapture(draftAdjudication: DraftAdjudication, chargeNumber: String?) {
     telemetryClient.trackEvent(
       DraftAdjudicationService.TELEMETRY_EVENT,
       mapOf(
         "adjudicationNumber" to draftAdjudication.id.toString(),
         "agencyId" to draftAdjudication.agencyId,
-        "reportNumber" to reportNumber.toString(),
+        "reportNumber" to chargeNumber,
       ),
       null,
     )

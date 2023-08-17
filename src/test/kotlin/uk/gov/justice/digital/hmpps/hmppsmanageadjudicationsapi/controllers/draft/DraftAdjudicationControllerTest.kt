@@ -212,7 +212,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       whenever(draftAdjudicationService.getDraftAdjudicationDetails(any())).thenReturn(
         DraftAdjudicationDto(
           id = 1,
-          adjudicationNumber = null,
           chargeNumber = null,
           prisonerNumber = "A12345",
           gender = Gender.MALE,
@@ -252,7 +251,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       whenever(draftAdjudicationService.getDraftAdjudicationDetails(any())).thenReturn(
         DraftAdjudicationDto(
           id = 1,
-          adjudicationNumber = null,
           chargeNumber = null,
           prisonerNumber = "A12345",
           gender = Gender.MALE,
@@ -517,7 +515,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           listOf(
             DraftAdjudicationDto(
               id = 1,
-              adjudicationNumber = null,
               chargeNumber = null,
               prisonerNumber = "A12345",
               gender = Gender.MALE,
@@ -533,7 +530,6 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
             ),
             DraftAdjudicationDto(
               id = 2,
-              adjudicationNumber = null,
               chargeNumber = null,
               prisonerNumber = "A12346",
               gender = Gender.MALE,

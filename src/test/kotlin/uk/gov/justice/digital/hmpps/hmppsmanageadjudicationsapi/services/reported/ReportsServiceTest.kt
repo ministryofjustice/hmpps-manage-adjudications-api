@@ -86,10 +86,10 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(myReportedAdjudications.content)
-        .extracting("adjudicationNumber", "prisonerNumber", "createdByUserId", "createdDateTime")
+        .extracting("chargeNumber", "prisonerNumber", "createdByUserId", "createdDateTime")
         .contains(
-          Tuple.tuple(1L, "A12345", "A_SMITH", REPORTED_DATE_TIME),
-          Tuple.tuple(2L, "A12345", "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
+          Tuple.tuple("1", "A12345", "A_SMITH", REPORTED_DATE_TIME),
+          Tuple.tuple("2", "A12345", "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
         )
     }
 
@@ -159,10 +159,10 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(myReportedAdjudications.content)
-        .extracting("adjudicationNumber", "prisonerNumber", "createdByUserId", "createdDateTime")
+        .extracting("chargeNumber", "prisonerNumber", "createdByUserId", "createdDateTime")
         .contains(
-          Tuple.tuple(1L, "A12345", "A_SMITH", REPORTED_DATE_TIME),
-          Tuple.tuple(2L, "A12345", "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
+          Tuple.tuple("1", "A12345", "A_SMITH", REPORTED_DATE_TIME),
+          Tuple.tuple("2", "A12345", "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
         )
     }
   }
@@ -191,10 +191,10 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(response)
-        .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
+        .extracting("chargeNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
         .contains(
-          Tuple.tuple(3L, "A12345", "testing", now),
-          Tuple.tuple(2L, "A12345", null, null),
+          Tuple.tuple("3", "A12345", "testing", now),
+          Tuple.tuple("2", "A12345", null, null),
         )
 
       assertThat(response.first().incidentDetails)
@@ -231,14 +231,14 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.size).isEqualTo(3)
 
       assertThat(response)
-        .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
+        .extracting("chargeNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
         .contains(
-          Tuple.tuple(3L, "A12345", "testing", now),
-          Tuple.tuple(4L, "A12345", "testing", now),
-          Tuple.tuple(2L, "A12345", null, null),
+          Tuple.tuple("3", "A12345", "testing", now),
+          Tuple.tuple("4", "A12345", "testing", now),
+          Tuple.tuple("2", "A12345", null, null),
         )
 
-      assertThat(response.first { it.adjudicationNumber == 3L }.incidentDetails)
+      assertThat(response.first { it.chargeNumber == "3" }.incidentDetails)
         .extracting("dateTimeOfDiscovery", "locationId")
         .contains(first.dateTimeOfDiscovery, 2L)
     }
@@ -254,9 +254,9 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.size).isEqualTo(2)
 
       assertThat(response)
-        .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
+        .extracting("chargeNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
         .contains(
-          Tuple.tuple(4L, "A12345", "testing", now),
+          Tuple.tuple("4", "A12345", "testing", now),
         )
 
       assertThat(response.first().incidentDetails)
@@ -275,9 +275,9 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.size).isEqualTo(1)
 
       assertThat(response)
-        .extracting("adjudicationNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
+        .extracting("chargeNumber", "prisonerNumber", "issuingOfficer", "dateTimeOfIssue")
         .contains(
-          Tuple.tuple(2L, "A12345", null, null),
+          Tuple.tuple("2", "A12345", null, null),
         )
 
       assertThat(response.first().incidentDetails)

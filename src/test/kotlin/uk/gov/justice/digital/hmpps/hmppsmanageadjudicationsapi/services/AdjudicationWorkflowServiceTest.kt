@@ -142,8 +142,8 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       val createdDraft = adjudicationWorkflowService.createDraftFromReportedAdjudication("123")
 
       assertThat(createdDraft)
-        .extracting("prisonerNumber", "id", "adjudicationNumber", "startedByUserId", "gender")
-        .contains("A12345", 1L, 1235L, "A_SMITH", Gender.MALE)
+        .extracting("prisonerNumber", "id", "chargeNumber", "startedByUserId", "gender")
+        .contains("A12345", 1L, "1235", "A_SMITH", Gender.MALE)
       assertThat(createdDraft.incidentDetails)
         .extracting("dateTimeOfIncident", "handoverDeadline", "locationId")
         .contains(

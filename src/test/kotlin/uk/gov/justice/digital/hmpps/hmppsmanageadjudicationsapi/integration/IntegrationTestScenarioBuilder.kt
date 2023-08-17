@@ -96,22 +96,10 @@ class IntegrationTestScenario(
     return this
   }
 
-  @Deprecated("to remove on completion of NN-5319")
   fun createChargeProved(
     overrideTestDataSet: AdjudicationIntTestDataSet = testAdjudicationDataSet,
-    caution: Boolean? = true,
   ): IntegrationTestScenario {
     intTestData.createChargeProved(
-      overrideTestDataSet,
-      caution,
-    )
-    return this
-  }
-
-  fun createChargeProvedV2(
-    overrideTestDataSet: AdjudicationIntTestDataSet = testAdjudicationDataSet,
-  ): IntegrationTestScenario {
-    intTestData.createChargeProvedV2(
       overrideTestDataSet,
     )
     return this

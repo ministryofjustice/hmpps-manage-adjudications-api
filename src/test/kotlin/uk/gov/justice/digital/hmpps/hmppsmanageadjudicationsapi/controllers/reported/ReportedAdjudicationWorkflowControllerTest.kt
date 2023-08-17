@@ -34,7 +34,6 @@ class ReportedAdjudicationWorkflowControllerTest : TestControllerBase() {
     whenever(adjudicationWorkflowService.createDraftFromReportedAdjudication(any())).thenReturn(
       DraftAdjudicationDto(
         id = 1,
-        adjudicationNumber = 123L,
         chargeNumber = "123",
         prisonerNumber = "A12345",
         gender = Gender.MALE,
