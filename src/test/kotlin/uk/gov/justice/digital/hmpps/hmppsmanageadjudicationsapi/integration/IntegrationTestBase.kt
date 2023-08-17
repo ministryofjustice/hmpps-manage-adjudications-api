@@ -201,7 +201,7 @@ abstract class IntegrationTestBase : TestBase() {
 
     webTestClient.post()
       .uri("/reported-adjudications/migrate")
-      .headers(setHeaders(activeCaseload = null, roles = listOf("ROLE_MIGRATE_ADJUDICATIONS")))
+      .headers(setHeaders(username = "hmpps-prisoner-from-nomis-migration-adjudications-1", activeCaseload = null, roles = listOf("ROLE_MIGRATE_ADJUDICATIONS")))
       .bodyValue(body)
       .exchange()
       .expectStatus().isCreated

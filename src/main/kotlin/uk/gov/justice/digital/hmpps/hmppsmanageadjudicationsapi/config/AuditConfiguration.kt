@@ -16,5 +16,10 @@ class AuditConfiguration {
 }
 
 class AuditorAware(private val authenticationFacade: AuthenticationFacade) : AuditorAware<String> {
-  override fun getCurrentAuditor(): Optional<String> = Optional.ofNullable(authenticationFacade.currentUsername)
+  override fun getCurrentAuditor(): Optional<String> {
+    authenticationFacade.currentUsername?.let {
+      return if (it.length > 32) Optional.of(it.substring(0, 32)) else Optional.of(it)
+    }
+    return Optional.empty()
+  }
 }
