@@ -26,7 +26,7 @@ class MigrateService(
 
   fun reset() {
     reportedAdjudicationRepository.deleteByMigratedIsTrue()
-    reportedAdjudicationRepository.findAll().forEach { it.resetExistingRecord() }
+    if (!featureFlagsConfig.skipExistingRecords) reportedAdjudicationRepository.findAll().forEach { it.resetExistingRecord() }
   }
 
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse {

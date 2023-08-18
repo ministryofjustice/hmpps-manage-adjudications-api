@@ -1,0 +1,1 @@
+ALTER TABLE reported_offence ALTER COLUMN nomis_offence_description type varchar(350);
