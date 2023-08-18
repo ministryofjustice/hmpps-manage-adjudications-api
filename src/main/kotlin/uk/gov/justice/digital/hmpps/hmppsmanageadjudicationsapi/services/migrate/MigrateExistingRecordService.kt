@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.createAdditionalOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.createAdjourn
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToHearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToOutcome
@@ -46,6 +47,11 @@ class MigrateExistingRecordService(
     }
 
     if (existingAdjudication.hearings.hasHearingWithoutResult()) {
+      existingAdjudication.hearings.sortedBy { it.dateTimeOfHearing }.forEachIndexed { index, hearing ->
+        if (index != existingAdjudication.hearings.size - 1 && hearing.hearingOutcome == null) {
+          hearing.hearingOutcome = createAdjourn(null)
+        }
+      }
     }
 
     adjudicationMigrateDto.damages.toDamages().forEach {

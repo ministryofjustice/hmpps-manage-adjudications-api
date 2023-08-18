@@ -1039,6 +1039,31 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
+    private val reportedAdjudicationWithMigratedAndUIDate = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+      it.hearings.clear()
+      it.clearOutcomes()
+
+      it.hearings.add(
+        Hearing(
+          locationId = 1,
+          agencyId = "",
+          chargeNumber = "1",
+          oicHearingType = OicHearingType.INAD_ADULT,
+          dateTimeOfHearing = LocalDateTime.now().plusDays(2),
+          oicHearingId = 1L,
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
+        ),
+      )
+
+      it.addOutcome(
+        Outcome(code = OutcomeCode.REFER_POLICE, actualCreatedDate = LocalDateTime.now()),
+      )
+
+      it.addOutcome(Outcome(code = OutcomeCode.NOT_PROCEED).also { it.createDateTime = LocalDateTime.now().plusDays(1) })
+    }
+
     @Test
     fun `no data`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("0")).thenReturn(

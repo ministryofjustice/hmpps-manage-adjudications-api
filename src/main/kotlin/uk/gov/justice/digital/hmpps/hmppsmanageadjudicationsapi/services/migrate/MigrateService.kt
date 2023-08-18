@@ -57,10 +57,10 @@ class MigrateService(
   }
 
   private fun resetExistingRecords() {
-    log.info("reset existing reset")
     if (!featureFlagsConfig.skipExistingRecords) {
       reportedAdjudicationRepository.findAll()
         .forEach { it.resetExistingRecord() }
+      log.info("finished reset existing")
     }
   }
 

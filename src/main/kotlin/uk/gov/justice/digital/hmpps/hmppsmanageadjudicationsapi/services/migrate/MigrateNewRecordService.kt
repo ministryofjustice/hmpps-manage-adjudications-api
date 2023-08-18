@@ -107,10 +107,10 @@ class MigrateNewRecordService(
 
   companion object {
 
-    fun MigrateHearing.createAdjourn(): HearingOutcome =
+    fun createAdjourn(adjudicator: String?): HearingOutcome =
       HearingOutcome(
         code = HearingOutcomeCode.ADJOURN,
-        adjudicator = this.adjudicator ?: "",
+        adjudicator = adjudicator ?: "",
         plea = HearingOutcomePlea.NOT_ASKED,
         reason = HearingOutcomeAdjournReason.OTHER,
         details = "No hearing result created in NOMIS",
@@ -194,7 +194,7 @@ class MigrateNewRecordService(
         val hasAdditionalHearingOutcomes = this.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
 
         val hearingOutcomeAndOutcome = when (oicHearing.hearingResult) {
-          null -> if (hasAdditionalHearings) Pair(oicHearing.createAdjourn(), null) else null
+          null -> if (hasAdditionalHearings) Pair(createAdjourn(oicHearing.adjudicator), null) else null
           else -> {
             val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes)
 
