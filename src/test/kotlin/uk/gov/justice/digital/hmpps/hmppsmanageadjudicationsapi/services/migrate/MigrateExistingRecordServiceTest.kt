@@ -14,6 +14,7 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
@@ -291,6 +292,60 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.QUASHED)
+    }
+  }
+
+  @Nested
+  inner class Phase2point5 {
+
+    private fun existing(dto: AdjudicationMigrateDto) = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId).also {
+      it.hearings.clear()
+      it.hearings.add(
+        Hearing(
+          oicHearingId = 1,
+          dateTimeOfHearing = LocalDate.now().atStartOfDay(),
+          oicHearingType = OicHearingType.GOV_ADULT,
+          agencyId = "MDI",
+          locationId = 1,
+          chargeNumber = dto.oicIncidentId.toString(),
+        ),
+      )
+      it.hearings.add(
+        Hearing(
+          oicHearingId = 2,
+          dateTimeOfHearing = LocalDate.now().plusDays(1).atStartOfDay(),
+          oicHearingType = OicHearingType.GOV_ADULT,
+          agencyId = "MDI",
+          locationId = 1,
+          chargeNumber = dto.oicIncidentId.toString(),
+        ),
+      )
+      it.hearings.add(
+        Hearing(
+          oicHearingId = 3,
+          dateTimeOfHearing = LocalDate.now().plusDays(2).atStartOfDay(),
+          oicHearingType = OicHearingType.GOV_ADULT,
+          agencyId = "MDI",
+          locationId = 1,
+          chargeNumber = dto.oicIncidentId.toString(),
+        ),
+      )
+    }
+
+    @Test
+    fun `multiple hearings without results will adjourn each hearing except the final one`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.PHASE2_HEARINGS_NO_RESULTS
+      val existing = existing(dto)
+
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isEqualTo(HearingOutcomeAdjournReason.OTHER)
+      assertThat(argumentCaptor.value.hearings[1].hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings[1].hearingOutcome!!.reason).isEqualTo(HearingOutcomeAdjournReason.OTHER)
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome).isNull()
     }
   }
 

@@ -102,9 +102,4 @@ class MigrateResetIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.NOMIS.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
   }
-
-  @Test
-  fun `reset migration - phase 2-5 hearing outcomes removed `() {
-    // TODO need code implement first.  different ticket.
-  }
 }

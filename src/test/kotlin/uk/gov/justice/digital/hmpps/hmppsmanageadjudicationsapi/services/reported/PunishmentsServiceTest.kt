@@ -404,7 +404,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `clone suspended punishment `() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       whenever(reportedAdjudicationRepository.findByChargeNumber("2")).thenReturn(
-        entityBuilder.reportedAdjudication("2").also {
+        entityBuilder.reportedAdjudication(chargeNumber = "2").also {
           it.addPunishment(
             Punishment(
               id = 1,

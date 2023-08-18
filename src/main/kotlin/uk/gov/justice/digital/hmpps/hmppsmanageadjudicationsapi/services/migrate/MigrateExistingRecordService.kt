@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.createAdditionalOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.createAdjourn
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToHearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToOutcome
@@ -43,6 +44,14 @@ class MigrateExistingRecordService(
       existingAdjudication.processPhase1(adjudicationMigrateDto)
     } else if (existingAdjudication.hearings.containsNomisHearingOutcomeCode()) {
       existingAdjudication.processPhase2(adjudicationMigrateDto)
+    }
+
+    if (existingAdjudication.hearings.hasHearingWithoutResult()) {
+      existingAdjudication.hearings.sortedBy { it.dateTimeOfHearing }.forEachIndexed { index, hearing ->
+        if (index != existingAdjudication.hearings.size - 1 && hearing.hearingOutcome == null) {
+          hearing.hearingOutcome = createAdjourn(null)
+        }
+      }
     }
 
     adjudicationMigrateDto.damages.toDamages().forEach {
@@ -122,7 +131,12 @@ class MigrateExistingRecordService(
   }
 
   companion object {
-    fun List<Hearing>.multipleHearingsWithoutOutcomes(): Boolean = this.all { it.hearingOutcome == null }
+    fun List<Hearing>.hasHearingWithoutResult(): Boolean {
+      val hearingsWithoutLast = this.sortedBy { it.dateTimeOfHearing }
+      hearingsWithoutLast.toMutableList().removeLast()
+
+      return hearingsWithoutLast.any { it.hearingOutcome == null }
+    }
 
     fun List<Hearing>.containsNomisHearingOutcomeCode(): Boolean =
       this.any { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }

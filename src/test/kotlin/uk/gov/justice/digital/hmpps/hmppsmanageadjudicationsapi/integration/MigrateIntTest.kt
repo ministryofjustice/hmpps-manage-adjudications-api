@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -165,7 +164,6 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[2].outcome.outcome.code").isEqualTo(OutcomeCode.CHARGE_PROVED.name)
   }
 
-  @Disabled("this can only be turned on once v1 endpoints removed, due to change number.toLong")
   @Test
   fun `status is correct - SCHEDULED when UNSCHEDULED migrated record is updated via UI`() {
     val dto = getAdjudicationForReset()

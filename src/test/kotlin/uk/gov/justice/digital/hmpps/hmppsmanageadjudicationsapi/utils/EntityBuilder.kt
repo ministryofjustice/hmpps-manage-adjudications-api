@@ -18,6 +18,7 @@ import java.time.LocalDateTime
 class EntityBuilder {
 
   fun reportedAdjudication(
+    id: Long? = null,
     chargeNumber: String = "1235",
     dateTime: LocalDateTime = DraftAdjudicationRepositoryTest.DEFAULT_DATE_TIME,
     agencyId: String = "MDI",
@@ -25,6 +26,7 @@ class EntityBuilder {
     prisonerNumber: String = "A12345",
   ): ReportedAdjudication {
     return ReportedAdjudication(
+      id = id,
       chargeNumber = chargeNumber,
       prisonerNumber = prisonerNumber,
       gender = Gender.MALE,

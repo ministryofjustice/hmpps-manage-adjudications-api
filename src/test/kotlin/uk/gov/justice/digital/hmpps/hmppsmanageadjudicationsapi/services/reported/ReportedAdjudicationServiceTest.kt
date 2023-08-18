@@ -606,13 +606,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   inner class Issued {
 
     private val now = LocalDateTime.now()
-    private val reportedAdjudication = entityBuilder.reportedAdjudication("1")
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(chargeNumber = "1")
       .also {
         it.createdByUserId = "A_SMITH"
         it.createDateTime = LocalDateTime.now()
       }
 
-    private val reportedAdjudicationDisIssued = entityBuilder.reportedAdjudication("1")
+    private val reportedAdjudicationDisIssued = entityBuilder.reportedAdjudication(chargeNumber = "1")
       .also {
         it.createdByUserId = "A_SMITH"
         it.createDateTime = now.minusHours(2)
@@ -1039,6 +1039,31 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
+    private val reportedAdjudicationWithMigratedAndUIDate = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+      it.hearings.clear()
+      it.clearOutcomes()
+
+      it.hearings.add(
+        Hearing(
+          locationId = 1,
+          agencyId = "",
+          chargeNumber = "1",
+          oicHearingType = OicHearingType.INAD_ADULT,
+          dateTimeOfHearing = LocalDateTime.now().plusDays(2),
+          oicHearingId = 1L,
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
+        ),
+      )
+
+      it.addOutcome(
+        Outcome(code = OutcomeCode.REFER_POLICE, actualCreatedDate = LocalDateTime.now()),
+      )
+
+      it.addOutcome(Outcome(code = OutcomeCode.NOT_PROCEED).also { it.createDateTime = LocalDateTime.now().plusDays(1) })
+    }
+
     @Test
     fun `no data`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("0")).thenReturn(
@@ -1305,6 +1330,16 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(result.outcomes.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.NOT_PROCEED)
       assertThat(result.outcomes.last().outcome!!.outcome.code).isEqualTo(OutcomeCode.QUASHED)
+    }
+
+    @Test
+    fun `outcome history DTO - orders migrated and UI data correctly`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationWithMigratedAndUIDate)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("19")
+      assertThat(result.outcomes.size).isEqualTo(1)
+
+      assertThat(result.outcomes.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(result.outcomes.first().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.NOT_PROCEED)
     }
 
     @Test
