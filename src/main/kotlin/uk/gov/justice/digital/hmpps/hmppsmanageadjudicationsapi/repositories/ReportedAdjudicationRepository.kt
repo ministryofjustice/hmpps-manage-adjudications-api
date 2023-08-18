@@ -101,7 +101,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByPunishmentsConsecutiveChargeNumberAndPunishmentsType(consecutiveChargeNumber: String, type: PunishmentType): List<ReportedAdjudication>
 
-  fun deleteByMigratedIsTrue()
+  fun findByMigratedIsTrue(): List<ReportedAdjudication>
 
   companion object {
 

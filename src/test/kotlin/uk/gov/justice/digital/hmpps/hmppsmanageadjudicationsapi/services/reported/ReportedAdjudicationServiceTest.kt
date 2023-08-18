@@ -606,13 +606,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   inner class Issued {
 
     private val now = LocalDateTime.now()
-    private val reportedAdjudication = entityBuilder.reportedAdjudication("1")
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(chargeNumber = "1")
       .also {
         it.createdByUserId = "A_SMITH"
         it.createDateTime = LocalDateTime.now()
       }
 
-    private val reportedAdjudicationDisIssued = entityBuilder.reportedAdjudication("1")
+    private val reportedAdjudicationDisIssued = entityBuilder.reportedAdjudication(chargeNumber = "1")
       .also {
         it.createdByUserId = "A_SMITH"
         it.createDateTime = now.minusHours(2)
