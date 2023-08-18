@@ -1333,6 +1333,16 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `outcome history DTO - orders migrated and UI data correctly`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationWithMigratedAndUIDate)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("19")
+      assertThat(result.outcomes.size).isEqualTo(1)
+
+      assertThat(result.outcomes.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(result.outcomes.first().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.NOT_PROCEED)
+    }
+
+    @Test
     fun `outcome history DTO - multiple same outcomes `() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
