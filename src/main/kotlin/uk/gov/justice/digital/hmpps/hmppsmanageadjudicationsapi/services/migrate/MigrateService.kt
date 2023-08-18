@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudicatio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
-import kotlin.concurrent.thread
 
 class ExistingRecordConflictException(message: String) : Exception(message)
 
@@ -29,16 +28,8 @@ class MigrateService(
 
   fun reset() {
     log.info("starting migration reset")
-    thread(start = true) {
-      reportedAdjudicationRepository.deleteByMigratedIsTrue()
-      log.info("finishing migration reset")
-    }
-
-    log.info("reset existing reset")
-    if (!featureFlagsConfig.skipExistingRecords) {
-      reportedAdjudicationRepository.findAll()
-        .forEach { it.resetExistingRecord() }
-    }
+    removeNewRecords()
+    resetExistingRecords()
   }
 
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse {
@@ -57,6 +48,19 @@ class MigrateService(
       migrateNewRecordService.accept(
         adjudicationMigrateDto = adjudicationMigrateDto,
       )
+    }
+  }
+
+  private fun removeNewRecords() {
+    reportedAdjudicationRepository.deleteByMigratedIsTrue()
+    log.info("finishing migration reset")
+  }
+
+  private fun resetExistingRecords() {
+    log.info("reset existing reset")
+    if (!featureFlagsConfig.skipExistingRecords) {
+      reportedAdjudicationRepository.findAll()
+        .forEach { it.resetExistingRecord() }
     }
   }
 
