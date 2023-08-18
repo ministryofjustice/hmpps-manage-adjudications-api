@@ -43,7 +43,6 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
   @Test
   fun `reset migration calls database reset`() {
     migrateService.reset()
-    Thread.sleep(1000)
     verify(reportedAdjudicationRepository, atLeastOnce()).deleteByMigratedIsTrue()
   }
 
