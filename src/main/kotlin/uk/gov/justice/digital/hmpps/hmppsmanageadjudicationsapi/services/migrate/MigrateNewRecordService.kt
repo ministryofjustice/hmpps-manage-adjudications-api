@@ -297,7 +297,7 @@ class MigrateNewRecordService(
       Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name ->
         if (hasAdditionalHearingOutcomes) HearingOutcomeCode.ADJOURN else HearingOutcomeCode.COMPLETE
       Finding.PROSECUTED.name, Finding.REF_POLICE.name -> HearingOutcomeCode.REFER_POLICE
-      else -> TODO("To confirm default with John, given appeals and other such statuses")
+      else -> throw UnableToMigrateException("To confirm default with John, given appeals and other such statuses")
     }
 
     private fun String.mapToPlea(): HearingOutcomePlea = when (this) {
