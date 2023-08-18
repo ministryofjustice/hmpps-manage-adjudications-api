@@ -194,7 +194,7 @@ class MigrateNewRecordService(
         val hasAdditionalHearingOutcomes = this.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
 
         val hearingOutcomeAndOutcome = when (oicHearing.hearingResult) {
-          null -> if (hasAdditionalHearings) Pair(oicHearing.createAdjourn(),null,) else null
+          null -> if (hasAdditionalHearings) Pair(oicHearing.createAdjourn(), null) else null
           else -> {
             val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes)
 

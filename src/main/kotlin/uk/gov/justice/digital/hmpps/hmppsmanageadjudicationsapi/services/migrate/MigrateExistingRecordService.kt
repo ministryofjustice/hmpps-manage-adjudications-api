@@ -45,8 +45,7 @@ class MigrateExistingRecordService(
       existingAdjudication.processPhase2(adjudicationMigrateDto)
     }
 
-    if(existingAdjudication.hearings.hasHearingWithoutResult()) {
-
+    if (existingAdjudication.hearings.hasHearingWithoutResult()) {
     }
 
     adjudicationMigrateDto.damages.toDamages().forEach {

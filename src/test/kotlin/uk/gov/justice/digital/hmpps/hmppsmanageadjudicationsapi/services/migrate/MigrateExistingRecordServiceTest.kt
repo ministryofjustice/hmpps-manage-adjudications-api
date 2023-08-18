@@ -333,7 +333,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `multiple hearings without results will adjourn each hearing except the final one` () {
+    fun `multiple hearings without results will adjourn each hearing except the final one`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.PHASE2_HEARINGS_NO_RESULTS
       val existing = existing(dto)
@@ -347,7 +347,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings[1].hearingOutcome!!.reason).isEqualTo(HearingOutcomeAdjournReason.OTHER)
       assertThat(argumentCaptor.value.hearings.last().hearingOutcome).isNull()
     }
-
   }
 
   @Nested
