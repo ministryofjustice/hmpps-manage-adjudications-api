@@ -45,6 +45,10 @@ class MigrateExistingRecordService(
       existingAdjudication.processPhase2(adjudicationMigrateDto)
     }
 
+    if(existingAdjudication.hearings.hasHearingWithoutResult()) {
+
+    }
+
     adjudicationMigrateDto.damages.toDamages().forEach {
       existingAdjudication.damages.add(it.also { reportedDamage -> reportedDamage.migrated = true })
     }
@@ -122,7 +126,12 @@ class MigrateExistingRecordService(
   }
 
   companion object {
-    fun List<Hearing>.multipleHearingsWithoutOutcomes(): Boolean = this.all { it.hearingOutcome == null }
+    fun List<Hearing>.hasHearingWithoutResult(): Boolean {
+      val hearingsWithoutLast = this.sortedBy { it.dateTimeOfHearing }
+      hearingsWithoutLast.toMutableList().removeLast()
+
+      return hearingsWithoutLast.any { it.hearingOutcome == null }
+    }
 
     fun List<Hearing>.containsNomisHearingOutcomeCode(): Boolean =
       this.any { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }

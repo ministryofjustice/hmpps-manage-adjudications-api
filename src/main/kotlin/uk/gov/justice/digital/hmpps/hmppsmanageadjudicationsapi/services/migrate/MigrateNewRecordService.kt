@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
@@ -106,6 +107,15 @@ class MigrateNewRecordService(
 
   companion object {
 
+    fun MigrateHearing.createAdjourn(): HearingOutcome =
+      HearingOutcome(
+        code = HearingOutcomeCode.ADJOURN,
+        adjudicator = this.adjudicator ?: "",
+        plea = HearingOutcomePlea.NOT_ASKED,
+        reason = HearingOutcomeAdjournReason.OTHER,
+        details = "No hearing result created in NOMIS",
+      )
+
     fun AdjudicationMigrateDto.toChargeMapping(chargeNumber: String) = ChargeNumberMapping(
       oicIncidentId = this.oicIncidentId,
       chargeNumber = chargeNumber,
@@ -184,18 +194,7 @@ class MigrateNewRecordService(
         val hasAdditionalHearingOutcomes = this.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
 
         val hearingOutcomeAndOutcome = when (oicHearing.hearingResult) {
-          null -> if (hasAdditionalHearings) {
-            Pair(
-              HearingOutcome(
-                code = HearingOutcomeCode.ADJOURN,
-                adjudicator = oicHearing.adjudicator ?: "",
-                plea = HearingOutcomePlea.NOT_ASKED,
-              ),
-              null,
-            )
-          } else {
-            null
-          }
+          null -> if (hasAdditionalHearings) Pair(oicHearing.createAdjourn(),null,) else null
           else -> {
             val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes)
 

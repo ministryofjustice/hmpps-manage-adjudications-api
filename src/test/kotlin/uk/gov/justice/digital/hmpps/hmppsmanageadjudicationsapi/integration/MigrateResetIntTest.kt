@@ -105,6 +105,6 @@ class MigrateResetIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `reset migration - phase 2-5 hearing outcomes removed `() {
-    // TODO need code implement first.  different ticket.
+    // TODO need code implement first.  also issue around cant create multiple empty hearings.  therefore can not test this at int level
   }
 }
