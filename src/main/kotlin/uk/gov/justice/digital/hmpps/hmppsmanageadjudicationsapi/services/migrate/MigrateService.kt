@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
@@ -8,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudicatio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
+import kotlin.concurrent.thread
 
 class ExistingRecordConflictException(message: String) : Exception(message)
 
@@ -25,8 +28,17 @@ class MigrateService(
 ) {
 
   fun reset() {
-    reportedAdjudicationRepository.deleteByMigratedIsTrue()
-    if (!featureFlagsConfig.skipExistingRecords) reportedAdjudicationRepository.findAll().forEach { it.resetExistingRecord() }
+    log.info("starting migration reset")
+    thread(start = true) {
+      reportedAdjudicationRepository.deleteByMigratedIsTrue()
+      log.info("finishing migration reset")
+    }
+
+    log.info("reset existing reset")
+    if (!featureFlagsConfig.skipExistingRecords) {
+      reportedAdjudicationRepository.findAll()
+        .forEach { it.resetExistingRecord() }
+    }
   }
 
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse {
@@ -86,5 +98,9 @@ class MigrateService(
     this.statusBeforeMigration?.let {
       this.status = it
     }
+  }
+
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 }

@@ -8,7 +8,7 @@ generic-service:
     host: manage-adjudications-api-preprod.hmpps.service.justice.gov.uk
 
   env:
-    APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
+    APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
     OAUTH_ENDPOINT_URL: https://sign-in-preprod.hmpps.service.justice.gov.uk/auth
     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: https://sign-in-preprod.hmpps.service.justice.gov.uk/auth/.well-known/jwks.json
     PRISON_API_ENDPOINT_URL: https://api-preprod.prison.service.justice.gov.uk
