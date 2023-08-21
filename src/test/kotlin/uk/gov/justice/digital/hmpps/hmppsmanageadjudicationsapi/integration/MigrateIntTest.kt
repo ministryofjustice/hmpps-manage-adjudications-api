@@ -166,7 +166,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `status is correct - SCHEDULED when UNSCHEDULED migrated record is updated via UI`() {
-    val dto = getAdjudicationForReset()
+    val dto = getAdjudication()
     migrateRecord(dto)
 
     webTestClient.get()
@@ -200,7 +200,9 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       reportedDateTime = reportedDateTime,
     )
 
-    fun getAdjudicationForReset(): AdjudicationMigrateDto = migrateFixtures.ADULT_SINGLE_OFFENCE
+    fun getAdjudication(): AdjudicationMigrateDto = migrateFixtures.ADULT_SINGLE_OFFENCE
+
+    fun getAdjudicationForReset(): AdjudicationMigrateDto = migrateFixtures.WITH_HEARING_AND_RESULT
 
     @JvmStatic
     fun getAllNewAdjudications(): Stream<AdjudicationMigrateDto> = migrateFixtures.getSelection().stream()

@@ -18,14 +18,14 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
   private val migrateExistingRecordService: MigrateExistingRecordService = mock()
   private val migrateNewRecordService: MigrateNewRecordService = mock()
   private val featureFlagsConfig: FeatureFlagsConfig = mock()
-  private val resetExistingRecordService: ResetExistingRecordService = mock()
+  private val resetRecordService: ResetRecordService = mock()
 
   private val migrateService = MigrateService(
     reportedAdjudicationRepository,
     migrateNewRecordService,
     migrateExistingRecordService,
     featureFlagsConfig,
-    resetExistingRecordService,
+    resetRecordService,
   )
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
@@ -36,13 +36,9 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
   @ParameterizedTest
   fun `reset migration calls database reset`(skip: Boolean) {
     whenever(featureFlagsConfig.skipExistingRecords).thenReturn(skip)
-    whenever(reportedAdjudicationRepository.findAll()).thenReturn(listOf(entityBuilder.reportedAdjudication(id = 1)))
-    whenever(reportedAdjudicationRepository.findByMigratedIsTrue()).thenReturn(listOf(entityBuilder.reportedAdjudication(id = 1)))
-
     migrateService.reset()
-    verify(reportedAdjudicationRepository, atLeastOnce()).findByMigratedIsTrue()
-    verify(reportedAdjudicationRepository, atLeastOnce()).deleteById(any())
-    verify(resetExistingRecordService, if (skip) never() else atLeastOnce()).reset(any())
+    verify(resetRecordService, atLeastOnce()).remove()
+    verify(resetRecordService, if (skip) never() else atLeastOnce()).reset()
   }
 
   @Test
