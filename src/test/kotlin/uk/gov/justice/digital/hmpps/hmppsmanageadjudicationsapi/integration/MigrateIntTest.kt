@@ -200,7 +200,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
       reportedDateTime = reportedDateTime,
     )
 
-    fun getAdjudicationForReset(): AdjudicationMigrateDto = migrateFixtures.ADULT_SINGLE_OFFENCE
+    fun getAdjudicationForReset(): AdjudicationMigrateDto = migrateFixtures.WITH_HEARING_AND_RESULT
 
     @JvmStatic
     fun getAllNewAdjudications(): Stream<AdjudicationMigrateDto> = migrateFixtures.getSelection().stream()
