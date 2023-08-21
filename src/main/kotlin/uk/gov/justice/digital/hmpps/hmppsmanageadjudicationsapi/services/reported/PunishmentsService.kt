@@ -214,6 +214,7 @@ class PunishmentsService(
     reportedAdjudication.punishmentComments.add(
       PunishmentComment(
         comment = punishmentComment.comment,
+        reasonForChange = punishmentComment.reasonForChange,
       ),
     )
 

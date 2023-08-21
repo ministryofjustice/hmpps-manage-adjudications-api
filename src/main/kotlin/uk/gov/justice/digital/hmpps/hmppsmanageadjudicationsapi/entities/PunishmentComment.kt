@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
 
@@ -11,4 +13,10 @@ data class PunishmentComment(
   @field:Length(max = 4000)
   var comment: String,
   var migrated: Boolean = false,
+  @Enumerated(EnumType.STRING)
+  var reasonForChange: ReasonForChange? = null,
 ) : BaseEntity()
+
+enum class ReasonForChange {
+  APPEAL, CORRECTION, OTHER, GOV_OR_DIRECTOR
+}

@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.repo
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReasonForChange
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -319,6 +320,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishmentComments[0].comment").isEqualTo("some text")
+      .jsonPath("$.reportedAdjudication.punishmentComments[0].reasonForChange").isEqualTo(ReasonForChange.APPEAL.name)
       .jsonPath("$.reportedAdjudication.punishmentComments[0].createdByUserId").isEqualTo("ITAG_ALO")
       .jsonPath("$.reportedAdjudication.punishmentComments[0].dateTime").value<String> { assertThat(it).startsWith(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE)) }
   }
@@ -419,6 +421,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .bodyValue(
         PunishmentCommentRequest(
           comment = "some text",
+          reasonForChange = ReasonForChange.APPEAL,
         ),
       )
       .exchange()

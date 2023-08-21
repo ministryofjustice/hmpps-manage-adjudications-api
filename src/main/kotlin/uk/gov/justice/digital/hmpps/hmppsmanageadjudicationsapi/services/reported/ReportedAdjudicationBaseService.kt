@@ -293,6 +293,7 @@ open class ReportedDtoService(
       PunishmentCommentDto(
         id = it.id,
         comment = it.comment,
+        reasonForChange = it.reasonForChange,
         createdByUserId = it.createdByUserId,
         dateTime = it.modifiedDateTime ?: it.createDateTime,
       )

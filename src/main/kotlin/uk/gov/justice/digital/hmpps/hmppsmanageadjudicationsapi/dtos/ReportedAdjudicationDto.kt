@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReasonForChange
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
@@ -288,6 +289,8 @@ data class PunishmentCommentDto(
   val id: Long? = null,
   @Schema(description = "comment on punishment")
   val comment: String,
+  @Schema(description = "punishment reason for change")
+  val reasonForChange: ReasonForChange? = null,
   @Schema(description = "username of the person created or updated the comment")
   val createdByUserId: String? = null,
   @Schema(description = "date and time comment was created or updated")
