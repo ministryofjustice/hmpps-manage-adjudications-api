@@ -1,19 +1,35 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 
+import org.hibernate.ScrollMode
+import org.hibernate.SessionFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 
-@Transactional
 @Service
-class ResetExistingRecordService(
+class ResetRecordService(
+  private val sessionFactory: SessionFactory,
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
 
-  fun reset(id: Long) {
-    reportedAdjudicationRepository.findById(id).get().resetExistingRecord()
+  fun remove() {
+    val session = sessionFactory.openStatelessSession()
+    val scrollable = session.createNamedQuery("findMigratedRecordsToDelete", ReportedAdjudication::class.java).scroll(ScrollMode.FORWARD_ONLY)
+
+    while (scrollable.next()) {
+      reportedAdjudicationRepository.deleteById(scrollable.get().id!!)
+    }
+
+    session.close()
+  }
+
+  @Transactional
+  fun reset() {
+    reportedAdjudicationRepository.findByMigratedIsFalse().forEach {
+      it.resetExistingRecord()
+    }
   }
 
   private fun ReportedAdjudication.resetExistingRecord() {

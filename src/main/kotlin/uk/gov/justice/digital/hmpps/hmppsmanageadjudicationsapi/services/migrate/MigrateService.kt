@@ -21,13 +21,13 @@ class MigrateService(
   private val migrateNewRecordService: MigrateNewRecordService,
   private val migrateExistingRecordService: MigrateExistingRecordService,
   private val featureFlagsConfig: FeatureFlagsConfig,
-  private val resetExistingRecordService: ResetExistingRecordService,
+  private val resetRecordService: ResetRecordService,
 ) {
 
   fun reset() {
     log.info("starting migration reset")
-    removeNewRecords()
-    resetExistingRecords()
+    resetRecordService.remove()
+    if (!featureFlagsConfig.skipExistingRecords) resetRecordService.reset()
   }
 
   @Transactional
@@ -47,24 +47,6 @@ class MigrateService(
       migrateNewRecordService.accept(
         adjudicationMigrateDto = adjudicationMigrateDto,
       )
-    }
-  }
-
-  private fun removeNewRecords() {
-    reportedAdjudicationRepository.findByMigratedIsTrue().forEach { deleteRecord(it.id!!) }
-    log.info("finishing migration reset")
-  }
-
-  @Transactional
-  private fun deleteRecord(id: Long) {
-    reportedAdjudicationRepository.deleteById(id)
-  }
-
-  private fun resetExistingRecords() {
-    if (!featureFlagsConfig.skipExistingRecords) {
-      reportedAdjudicationRepository.findAll()
-        .forEach { resetExistingRecordService.reset(it.id!!) }
-      log.info("finished reset existing")
     }
   }
 

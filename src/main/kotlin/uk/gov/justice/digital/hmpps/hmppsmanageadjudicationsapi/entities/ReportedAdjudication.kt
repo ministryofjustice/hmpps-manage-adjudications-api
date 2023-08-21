@@ -7,6 +7,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.NamedQuery
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import jakarta.validation.ValidationException
@@ -15,6 +16,10 @@ import org.jetbrains.annotations.TestOnly
 import java.lang.IllegalStateException
 import java.time.LocalDateTime
 
+@NamedQuery(
+  name = "findMigratedRecordsToDelete",
+  query = "SELECT ra FROM ReportedAdjudication ra WHERE ra.migrated = true",
+)
 @Entity
 @Table(name = "reported_adjudications")
 data class ReportedAdjudication(

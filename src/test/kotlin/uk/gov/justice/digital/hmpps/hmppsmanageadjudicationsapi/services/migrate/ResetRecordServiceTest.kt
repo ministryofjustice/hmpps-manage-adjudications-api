@@ -1,8 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 
 import org.assertj.core.api.Assertions
+import org.hibernate.SessionFactory
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
@@ -22,11 +23,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 import java.time.LocalDateTime
-import java.util.Optional
 
-class ResetExistingRecordServiceTest : ReportedAdjudicationTestBase() {
+class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
 
-  private val resetExistingRecordService = ResetExistingRecordService(reportedAdjudicationRepository)
+  private val sessionFactory: SessionFactory = mock()
+  private val resetRecordService = ResetRecordService(sessionFactory, reportedAdjudicationRepository)
 
   @Test
   fun `resets an exiting migration damages`() {
@@ -35,8 +36,8 @@ class ResetExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       it.damages.add(ReportedDamage(id = 1, code = DamageCode.CLEANING, details = "", reporter = ""))
       it.damages.add(ReportedDamage(id = 2, code = DamageCode.CLEANING, details = "", reporter = "", migrated = true))
     }
-    whenever(reportedAdjudicationRepository.findById(any())).thenReturn(Optional.of(existing))
-    resetExistingRecordService.reset(existing.id!!)
+    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
+    resetRecordService.reset()
 
     Assertions.assertThat(existing.damages.size).isEqualTo(1)
   }
@@ -56,8 +57,8 @@ class ResetExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
     }
-    whenever(reportedAdjudicationRepository.findById(any())).thenReturn(Optional.of(existing))
-    resetExistingRecordService.reset(existing.id!!)
+    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
+    resetRecordService.reset()
 
     Assertions.assertThat(existing.evidence.size).isEqualTo(1)
   }
@@ -86,8 +87,8 @@ class ResetExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
     }
-    whenever(reportedAdjudicationRepository.findById(any())).thenReturn(Optional.of(existing))
-    resetExistingRecordService.reset(existing.id!!)
+    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
+    resetRecordService.reset()
 
     Assertions.assertThat(existing.witnesses.size).isEqualTo(1)
   }
@@ -118,8 +119,8 @@ class ResetExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
     }
-    whenever(reportedAdjudicationRepository.findById(any())).thenReturn(Optional.of(existing))
-    resetExistingRecordService.reset(existing.id!!)
+    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
+    resetRecordService.reset()
 
     Assertions.assertThat(existing.hearings.size).isEqualTo(1)
   }
@@ -131,8 +132,8 @@ class ResetExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       it.addPunishment(Punishment(id = 1, type = PunishmentType.CAUTION, schedule = mutableListOf()))
       it.addPunishment(Punishment(id = 2, type = PunishmentType.CAUTION, schedule = mutableListOf(), migrated = true))
     }
-    whenever(reportedAdjudicationRepository.findById(any())).thenReturn(Optional.of(existing))
-    resetExistingRecordService.reset(existing.id!!)
+    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
+    resetRecordService.reset()
 
     Assertions.assertThat(existing.getPunishments().size).isEqualTo(1)
   }
@@ -144,8 +145,8 @@ class ResetExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       it.punishmentComments.add(PunishmentComment(id = 1, comment = ""))
       it.punishmentComments.add(PunishmentComment(id = 2, comment = "", migrated = true))
     }
-    whenever(reportedAdjudicationRepository.findById(any())).thenReturn(Optional.of(existing))
-    resetExistingRecordService.reset(existing.id!!)
+    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
+    resetRecordService.reset()
 
     Assertions.assertThat(existing.punishmentComments.size).isEqualTo(1)
   }
@@ -157,8 +158,8 @@ class ResetExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       it.addOutcome(Outcome(id = 1, code = OutcomeCode.QUASHED))
       it.addOutcome(Outcome(id = 2, code = OutcomeCode.QUASHED, migrated = true))
     }
-    whenever(reportedAdjudicationRepository.findById(any())).thenReturn(Optional.of(existing))
-    resetExistingRecordService.reset(existing.id!!)
+    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
+    resetRecordService.reset()
 
     Assertions.assertThat(existing.getOutcomes().size).isEqualTo(1)
   }
@@ -178,8 +179,8 @@ class ResetExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
     }
-    whenever(reportedAdjudicationRepository.findById(any())).thenReturn(Optional.of(existing))
-    resetExistingRecordService.reset(existing.id!!)
+    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
+    resetRecordService.reset()
 
     Assertions.assertThat(existing.offenceDetails.first().offenceCode).isEqualTo(100)
     Assertions.assertThat(existing.offenceDetails.first().migrated).isEqualTo(false)
@@ -197,8 +198,8 @@ class ResetExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         code = HearingOutcomeCode.COMPLETE,
       )
     }
-    whenever(reportedAdjudicationRepository.findById(any())).thenReturn(Optional.of(existing))
-    resetExistingRecordService.reset(existing.id!!)
+    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
+    resetRecordService.reset()
 
     Assertions.assertThat(existing.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)
     Assertions.assertThat(existing.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("")
@@ -211,8 +212,8 @@ class ResetExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.first().hearingOutcome =
         HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "", migrated = true)
     }
-    whenever(reportedAdjudicationRepository.findById(any())).thenReturn(Optional.of(existing))
-    resetExistingRecordService.reset(existing.id!!)
+    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
+    resetRecordService.reset()
 
     Assertions.assertThat(existing.hearings.first().hearingOutcome).isNull()
   }
