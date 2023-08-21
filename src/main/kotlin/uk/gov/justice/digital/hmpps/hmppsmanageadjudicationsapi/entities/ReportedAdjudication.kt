@@ -170,7 +170,7 @@ enum class ReportedAdjudicationStatus {
   },
   SCHEDULED {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(UNSCHEDULED, REFER_POLICE, REFER_INAD, DISMISSED, NOT_PROCEED, CHARGE_PROVED, ADJOURNED)
+      return listOf(UNSCHEDULED, REFER_POLICE, REFER_INAD, REFER_GOV, DISMISSED, NOT_PROCEED, CHARGE_PROVED, ADJOURNED)
     }
   },
   REFER_POLICE {
@@ -179,6 +179,11 @@ enum class ReportedAdjudicationStatus {
     }
   },
   REFER_INAD {
+    override fun nextStates(): List<ReportedAdjudicationStatus> {
+      return listOf(NOT_PROCEED, SCHEDULED, REFER_GOV)
+    }
+  },
+  REFER_GOV {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
       return listOf(NOT_PROCEED, SCHEDULED)
     }

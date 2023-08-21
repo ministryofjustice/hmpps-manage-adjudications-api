@@ -19,6 +19,7 @@ enum class OicHearingType {
 
   companion object {
     fun inadTypes() = listOf(INAD_ADULT, INAD_YOI)
+    fun govTypes() = listOf(GOV_ADULT, GOV_YOI)
   }
 }
 

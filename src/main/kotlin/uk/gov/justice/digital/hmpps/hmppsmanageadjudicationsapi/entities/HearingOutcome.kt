@@ -27,7 +27,7 @@ data class HearingOutcome(
 ) : BaseEntity()
 
 enum class HearingOutcomeCode(val outcomeCode: OutcomeCode? = null) {
-  COMPLETE, REFER_POLICE(OutcomeCode.REFER_POLICE), REFER_INAD(OutcomeCode.REFER_INAD), ADJOURN, NOMIS;
+  COMPLETE, REFER_POLICE(OutcomeCode.REFER_POLICE), REFER_INAD(OutcomeCode.REFER_INAD), ADJOURN, NOMIS, REFER_GOV(OutcomeCode.REFER_GOV);
   fun validateReferral(): HearingOutcomeCode {
     this.outcomeCode ?: throw ValidationException("invalid referral type")
     return this

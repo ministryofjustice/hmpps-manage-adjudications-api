@@ -35,6 +35,11 @@ enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Find
   },
   REFER_INAD(ReportedAdjudicationStatus.REFER_INAD) {
     override fun nextStates(): List<OutcomeCode> {
+      return listOf(NOT_PROCEED, SCHEDULE_HEARING, REFER_GOV)
+    }
+  },
+  REFER_GOV(ReportedAdjudicationStatus.REFER_GOV) {
+    override fun nextStates(): List<OutcomeCode> {
       return listOf(NOT_PROCEED, SCHEDULE_HEARING)
     }
   },
@@ -59,7 +64,7 @@ enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Find
   }
 
   companion object {
-    fun referrals() = listOf(REFER_POLICE, REFER_INAD)
+    fun referrals() = listOf(REFER_POLICE, REFER_INAD, REFER_GOV)
     fun completedHearings() = listOf(CHARGE_PROVED, DISMISSED, NOT_PROCEED)
   }
 }

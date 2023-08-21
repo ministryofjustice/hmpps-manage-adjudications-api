@@ -310,7 +310,7 @@ class HearingControllerTest : TestControllerBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REFER_POLICE", "REFER_INAD")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "REFER_GOV")
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create a hearing outcome`(code: HearingOutcomeCode) {
       createReferralRequest(1, referralRequest(code))

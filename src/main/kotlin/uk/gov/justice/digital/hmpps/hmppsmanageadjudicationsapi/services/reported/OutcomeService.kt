@@ -139,8 +139,6 @@ class OutcomeService(
     code: OutcomeCode,
     details: String? = null,
     reason: NotProceedReason? = null,
-    amount: Double? = null,
-    caution: Boolean? = null,
     quashedReason: QuashedReason? = null,
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
@@ -191,7 +189,7 @@ class OutcomeService(
           quashedReason?.let { updated -> it.quashedReason = updated }
         }
 
-        OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD, OutcomeCode.DISMISSED -> details?.let { updated -> it.details = updated }
+        OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD, OutcomeCode.REFER_GOV, OutcomeCode.DISMISSED -> details?.let { updated -> it.details = updated }
         else -> {}
       }
     }

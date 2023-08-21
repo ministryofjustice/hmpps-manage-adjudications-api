@@ -45,7 +45,7 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class AmendHearingOutcomeWhenTypeSame {
 
-    @CsvSource("REFER_POLICE, REFER_POLICE", "REFER_INAD, REFER_INAD", "ADJOURNED, ADJOURN", "CHARGE_PROVED, COMPLETE", "DISMISSED, COMPLETE", "NOT_PROCEED, COMPLETE")
+    @CsvSource("REFER_POLICE, REFER_POLICE", "REFER_INAD, REFER_INAD", "ADJOURNED, ADJOURN", "CHARGE_PROVED, COMPLETE", "DISMISSED, COMPLETE", "NOT_PROCEED, COMPLETE", "REFER_GOV, REFER_GOV")
     @ParameterizedTest
     fun `updating the same type calls correct services for simple updates `(status: ReportedAdjudicationStatus, code: HearingOutcomeCode) {
       whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome("1")).thenReturn(
@@ -182,7 +182,7 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
-  @CsvSource("REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "ADJOURNED", "DISMISSED")
+  @CsvSource("REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "ADJOURNED", "DISMISSED", "REFER_GOV")
   @ParameterizedTest
   fun `throws missing details exception `(to: ReportedAdjudicationStatus) {
     whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome("1")).thenReturn(
@@ -256,7 +256,7 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       .hasMessageContaining("missing reason")
   }
 
-  @CsvSource("REFER_INAD, ADJOURNED", "REFER_POLICE, ADJOURNED", "ADJOURNED, REFER_INAD", "ADJOURNED, REFER_POLICE")
+  @CsvSource("REFER_INAD, ADJOURNED", "REFER_POLICE, ADJOURNED", "ADJOURNED, REFER_INAD", "ADJOURNED, REFER_POLICE", "REFER_GOV, ADJOURNED", "ADJOURNED, REFER_GOV")
   @ParameterizedTest
   fun `throws validation exception if referral has outcome `(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
     whenever(hearingOutcomeService.getCurrentStatusAndLatestOutcome("1")).thenReturn(
@@ -282,7 +282,7 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     fun createRequest(status: ReportedAdjudicationStatus): AmendHearingOutcomeRequest =
       when (status) {
-        ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD -> AmendHearingOutcomeRequest(adjudicator = "test", details = "details")
+        ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV -> AmendHearingOutcomeRequest(adjudicator = "test", details = "details")
         ReportedAdjudicationStatus.DISMISSED -> AmendHearingOutcomeRequest(adjudicator = "test", details = "details", plea = HearingOutcomePlea.GUILTY)
         ReportedAdjudicationStatus.NOT_PROCEED -> AmendHearingOutcomeRequest(adjudicator = "test", details = "details", notProceedReason = NotProceedReason.NOT_FAIR, plea = HearingOutcomePlea.GUILTY)
         ReportedAdjudicationStatus.ADJOURNED -> AmendHearingOutcomeRequest(adjudicator = "test", details = "details", adjournReason = HearingOutcomeAdjournReason.HELP, plea = HearingOutcomePlea.GUILTY)

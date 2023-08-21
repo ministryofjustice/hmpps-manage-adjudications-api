@@ -214,6 +214,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
     "DISMISSED, REFER_POLICE", "DISMISSED, REFER_INAD", "DISMISSED, ADJOURNED", "DISMISSED, NOT_PROCEED", "DISMISSED, CHARGE_PROVED",
     "NOT_PROCEED, REFER_POLICE", "NOT_PROCEED, REFER_INAD", "NOT_PROCEED, ADJOURNED", "NOT_PROCEED, DISMISSED", "NOT_PROCEED, CHARGE_PROVED",
     "CHARGE_PROVED, REFER_POLICE", "CHARGE_PROVED, REFER_INAD", "CHARGE_PROVED, ADJOURNED", "CHARGE_PROVED, DISMISSED", "CHARGE_PROVED, NOT_PROCEED",
+    "REFER_GOV, REFER_POLICE", "REFER_GOV, ADJOURNED", "REFER_GOV, DISMISSED", "REFER_GOV, NOT_PROCEED", "REFER_GOV, CHARGE_PROVED",
   )
   @ParameterizedTest
   fun `amend hearing outcome v2 from {0} to {1}`(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
@@ -226,7 +227,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
 
     initDataForHearings().createHearing().also {
       when (from) {
-        ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD -> it.createReferral(HearingOutcomeCode.valueOf(from.name))
+        ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV -> it.createReferral(HearingOutcomeCode.valueOf(from.name))
         ReportedAdjudicationStatus.DISMISSED -> it.createDismissed()
         ReportedAdjudicationStatus.NOT_PROCEED -> it.createNotProceed()
         ReportedAdjudicationStatus.ADJOURNED -> it.createAdjourn()
@@ -236,7 +237,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
     }
 
     when (to) {
-      ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD -> amendOutcomeRequest(
+      ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV -> amendOutcomeRequest(
         AmendHearingOutcomeRequest(
           adjudicator = "updated",
           details = "updated details",
@@ -283,7 +284,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.status")
       .isEqualTo(to.name).also {
         when (to) {
-          ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
+          ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV ->
             it.jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.details").isEqualTo("updated details")
               .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(to.name)
               .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(to.name)

@@ -172,7 +172,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @CsvSource(
       "ADJOURNED", "REFER_POLICE", "REFER_INAD", "SCHEDULED", "UNSCHEDULED", "AWAITING_REVIEW", "PROSECUTION",
-      "NOT_PROCEED", "DISMISSED", "REJECTED", "RETURNED",
+      "NOT_PROCEED", "DISMISSED", "REJECTED", "RETURNED", "REFER_GOV",
     )
     @ParameterizedTest
     fun `validation error - wrong status code - must be CHARGE_PROVED `(status: ReportedAdjudicationStatus) {
@@ -577,7 +577,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @CsvSource(
       "ADJOURNED", "REFER_POLICE", "REFER_INAD", "SCHEDULED", "UNSCHEDULED", "AWAITING_REVIEW", "PROSECUTION",
-      "NOT_PROCEED", "DISMISSED", "REJECTED", "RETURNED",
+      "NOT_PROCEED", "DISMISSED", "REJECTED", "RETURNED", "REFER_GOV",
     )
     @ParameterizedTest
     fun `validation error - wrong status code - must be CHARGE_PROVED `(status: ReportedAdjudicationStatus) {

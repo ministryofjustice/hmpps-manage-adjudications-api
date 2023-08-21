@@ -183,7 +183,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
 
-    @CsvSource("REFER_POLICE", "REFER_INAD")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "REFER_GOV")
     @ParameterizedTest
     fun `create a SCHEDULE_HEARING outcome when creating a hearing if the previous outcome is a REFER_POLICE`(code: OutcomeCode) {
       val reportedAdjudicationReferPolice = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
@@ -486,7 +486,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.REFER_POLICE)
     }
 
-    @CsvSource("COMPLETE", "REFER_POLICE", "REFER_INAD")
+    @CsvSource("COMPLETE", "REFER_POLICE", "REFER_INAD", "REFER_GOV")
     @ParameterizedTest
     fun `delete hearing throws validation exception if linked to specific outcome `(code: HearingOutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
