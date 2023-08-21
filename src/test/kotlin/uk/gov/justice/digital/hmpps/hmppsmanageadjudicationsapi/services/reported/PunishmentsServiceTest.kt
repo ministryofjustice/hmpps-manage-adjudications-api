@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReasonForChange
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
@@ -1588,6 +1589,27 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       assertThat(argumentCaptor.value.punishmentComments[0].comment).isEqualTo("some text")
+    }
+
+    @Test
+    fun `punishment comment with reason for change`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+        },
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      punishmentsService.createPunishmentComment(
+        chargeNumber = "1",
+        punishmentComment = PunishmentCommentRequest(comment = "some text", reasonForChange = ReasonForChange.APPEAL),
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.punishmentComments[0].reasonForChange).isEqualTo(ReasonForChange.APPEAL)
     }
   }
 

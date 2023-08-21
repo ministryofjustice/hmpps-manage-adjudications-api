@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdditionalD
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReasonForChange
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService
 import java.time.LocalDate
 
@@ -62,6 +63,8 @@ data class PunishmentCommentRequest(
   val id: Long? = null,
   @Schema(description = "punishment comment")
   val comment: String,
+  @Schema(description = "punishment reason for change")
+  val reasonForChange: ReasonForChange? = null,
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
