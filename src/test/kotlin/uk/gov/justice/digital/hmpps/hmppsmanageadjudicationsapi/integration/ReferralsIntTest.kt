@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -422,6 +423,33 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `REFER_INAD referral outcome REFER_GOV next steps SCHEDULE_HEARING - CHARGE_PROVED`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+
+    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
+      .createOutcomeReferGov().expectStatus().isCreated
+      .expectBody()
+
+    integrationTestData().createHearing(testDataSet = IntegrationTestData.DEFAULT_ADJUDICATION, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingType = OicHearingType.GOV_ADULT)
+      .expectStatus().isCreated
+      .expectBody()
+
+    val response = integrationTestData().createChargeProved(testDataSet = IntegrationTestData.DEFAULT_ADJUDICATION).reportedAdjudication
+
+    assertThat(response.outcomes.size).isEqualTo(3)
+    assertThat(response.outcomes.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_INAD)
+    assertThat(response.outcomes.first().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.REFER_GOV)
+    assertThat(response.outcomes[1].outcome!!.referralOutcome).isNull()
+    assertThat(response.outcomes[1].hearing).isNull()
+    assertThat(response.outcomes[1].outcome!!.outcome.code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
+    assertThat(response.outcomes.last().hearing).isNotNull
+    assertThat(response.outcomes.last().outcome!!.outcome.code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+    assertThat(response.outcomes.last().outcome!!.referralOutcome).isNull()
+  }
+
+  @Test
   fun `REFER_INAD - SCHEDULE_HEARING - REFER_GOV - SCHEDULE_HEARING`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
@@ -479,6 +507,53 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
       .isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
       .jsonPath("$.reportedAdjudication.outcomes[2].outcome").doesNotExist()
       .jsonPath("$.reportedAdjudication.outcomes[2].hearing").exists()
+  }
+
+  @Test
+  fun `REFER_INAD - SCHEDULE_HEARING - REFER_GOV - SCHEDULE_HEARING - CHARGE_PROVED`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+
+    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+      .createReferral(HearingOutcomeCode.REFER_INAD)
+
+    integrationTestData().createHearing(
+      IntegrationTestData.DEFAULT_ADJUDICATION,
+      LocalDateTime.now().plusDays(1),
+      oicHearingType = OicHearingType.INAD_ADULT,
+    )
+      .expectStatus().isCreated
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/referral")
+      .headers(setHeaders(username = "ITAG_ALO"))
+      .bodyValue(
+        mapOf(
+          "code" to HearingOutcomeCode.REFER_GOV,
+          "details" to "details",
+          "adjudicator" to "testing",
+        ),
+      )
+      .exchange()
+      .expectStatus().isCreated
+
+    integrationTestData().createHearing(
+      testDataSet = IntegrationTestData.DEFAULT_ADJUDICATION,
+      dateTimeOfHearing = LocalDateTime.now().plusDays(2),
+      oicHearingType = OicHearingType.GOV_ADULT,
+    )
+      .expectStatus().isCreated
+      .expectBody()
+
+    val response = integrationTestData().createChargeProved(testDataSet = IntegrationTestData.DEFAULT_ADJUDICATION).reportedAdjudication
+
+    assertThat(response.outcomes.size).isEqualTo(3)
+    assertThat(response.outcomes.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_INAD)
+    assertThat(response.outcomes.first().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
+    assertThat(response.outcomes[1].outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
+    assertThat(response.outcomes[1].outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_GOV)
+    assertThat(response.outcomes.last().outcome!!.outcome.code).isEqualTo(OutcomeCode.CHARGE_PROVED)
   }
 
   @Test
