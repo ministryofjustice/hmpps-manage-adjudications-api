@@ -40,7 +40,7 @@ class SummaryAdjudicationServiceTest {
     val today = LocalDate.now()
 
     val offenceId = 1L
-    val prisonId = "MDI"
+    val agencyId = "MDI"
     val finding = Finding.PROVED
     val fromDate = today.minusDays(30)
     val toDate = today.minusDays(1)
@@ -60,7 +60,7 @@ class SummaryAdjudicationServiceTest {
       legacyNomisGateway.getAdjudicationsForPrisoner(
         prisonerNumber,
         offenceId,
-        prisonId,
+        agencyId,
         finding,
         fromDate,
         toDate,
@@ -81,7 +81,7 @@ class SummaryAdjudicationServiceTest {
     val adjudications = summaryAdjudicationService.getAdjudications(
       prisonerNumber = prisonerNumber,
       offenceId = offenceId,
-      prisonId = prisonId,
+      agencyId = agencyId,
       finding = finding,
       fromDate = fromDate,
       toDate = toDate,
