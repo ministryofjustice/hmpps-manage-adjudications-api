@@ -125,11 +125,11 @@ class AdjudicationSummaryController(
     @Parameter(description = "An offence id to allow optionally filtering by type of offence")
     offenceId: Long?,
     @RequestParam(
-      value = "prisonId",
+      value = "agencyId",
       required = false,
     )
     @Parameter(description = "An agency id to allow optionally filtering by the prison in which the offence occurred")
-    prisonId: String?,
+    agencyId: String?,
     @RequestParam(
       value = "finding",
       required = false,
@@ -160,7 +160,7 @@ class AdjudicationSummaryController(
     return summaryAdjudicationService.getAdjudications(
       prisonerNumber = prisonerNumber,
       offenceId = offenceId,
-      prisonId = prisonId,
+      agencyId = agencyId,
       finding = finding,
       fromDate = fromDate,
       toDate = toDate,

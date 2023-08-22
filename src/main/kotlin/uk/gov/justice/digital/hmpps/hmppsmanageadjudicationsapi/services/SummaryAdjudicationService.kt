@@ -33,7 +33,7 @@ class SummaryAdjudicationService(
   fun getAdjudications(
     prisonerNumber: String,
     offenceId: Long?,
-    prisonId: String?,
+    agencyId: String?,
     finding: Finding?,
     fromDate: LocalDate?,
     toDate: LocalDate?,
@@ -43,7 +43,7 @@ class SummaryAdjudicationService(
       val response = legacyNomisGateway.getAdjudicationsForPrisoner(
         prisonerNumber,
         offenceId,
-        prisonId,
+        agencyId,
         finding,
         fromDate,
         toDate,
