@@ -121,7 +121,7 @@ open class ReportedDtoService(
       )
     } while (hearings.isNotEmpty())
 
-    // quashed will be left if it is present
+    // quashed or referral when removing a next steps scheduled hearing, due to 1 more outcome than hearing
     outcomes.removeFirstOrNull()?.let {
       history.add(
         OutcomeHistoryDto(outcome = it),
