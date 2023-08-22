@@ -199,7 +199,7 @@ class HearingOutcomeService(
   companion object {
     fun HearingOutcome?.hearingOutcomeExists() = this ?: throw EntityNotFoundException("outcome not found for hearing")
 
-    fun HearingOutcomeCode.updateOicHearingDetails(): Boolean = listOf(HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.ADJOURN).contains(this)
+    fun HearingOutcomeCode.updateOicHearingDetails(): Boolean = listOf(HearingOutcomeCode.REFER_GOV, HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.ADJOURN).contains(this)
 
     fun ReportedAdjudication.latestOutcomeIsAdjourn() {
       val latest = this.latestHearingOutcome()
