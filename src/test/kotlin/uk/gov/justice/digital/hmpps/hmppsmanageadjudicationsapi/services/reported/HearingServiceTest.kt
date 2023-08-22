@@ -183,9 +183,9 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
 
-    @CsvSource("REFER_POLICE", "REFER_INAD", "REFER_GOV")
+    @CsvSource("REFER_POLICE", "REFER_INAD, REFER_GOV")
     @ParameterizedTest
-    fun `create a SCHEDULE_HEARING outcome when creating a hearing if the previous outcome is a REFER_POLICE`(code: OutcomeCode) {
+    fun `create a SCHEDULE_HEARING outcome when creating a hearing if the previous outcome is a REFER `(code: OutcomeCode) {
       val reportedAdjudicationReferPolice = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
         .also {
           it.createdByUserId = ""
@@ -257,6 +257,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
+      assertThat(argumentCaptor.value.getOutcomes().any { it.code == OutcomeCode.SCHEDULE_HEARING }).isFalse
     }
   }
 
@@ -484,6 +485,32 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(3)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.REFER_POLICE)
+    }
+
+    @Test
+    fun `delete hearing removes SCHEDULED_HEARING if its an outcome via REFER_GOV`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication()
+          .also {
+            it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
+            it.hearings.add(
+              Hearing(agencyId = "", locationId = 1L, oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(5), oicHearingId = 1L, chargeNumber = "1"),
+            )
+            it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD).also { o -> o.createDateTime = LocalDateTime.now() })
+            it.addOutcome(Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(2) })
+            it.addOutcome(Outcome(code = OutcomeCode.REFER_GOV).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) })
+          },
+      )
+
+      hearingService.deleteHearing(
+        "1235",
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(2)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.REFER_GOV)
     }
 
     @CsvSource("COMPLETE", "REFER_POLICE", "REFER_INAD", "REFER_GOV")

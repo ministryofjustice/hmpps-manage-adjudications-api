@@ -37,6 +37,15 @@ class OutcomeService(
     code = OutcomeCode.PROSECUTION,
   )
 
+  fun createReferGov(
+    chargeNumber: String,
+    details: String,
+  ): ReportedAdjudicationDto = createOutcome(
+    chargeNumber = chargeNumber,
+    details = details,
+    code = OutcomeCode.REFER_GOV,
+  )
+
   fun createDismissed(
     chargeNumber: String,
     details: String,

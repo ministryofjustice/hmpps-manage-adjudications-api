@@ -164,6 +164,70 @@ class OutcomeControllerTest : TestControllerBase() {
   }
 
   @Nested
+  inner class CreateReferGov {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        outcomeService.createReferGov(
+          anyString(),
+          anyString(),
+        ),
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      createOutcomeRequest(
+        1,
+        POLICE_REFER_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      createOutcomeRequest(
+        1,
+        POLICE_REFER_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      createOutcomeRequest(
+        1,
+        POLICE_REFER_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to create an outcome`() {
+      createOutcomeRequest(
+        1,
+        POLICE_REFER_REQUEST,
+      )
+        .andExpect(MockMvcResultMatchers.status().isCreated)
+
+      verify(outcomeService).createReferGov("1", "details")
+    }
+
+    private fun createOutcomeRequest(
+      id: Long,
+      referGovRequest: ReferralDetailsRequest,
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(referGovRequest)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.post("/reported-adjudications/$id/outcome/refer-gov")
+            .header("Content-Type", "application/json")
+            .content(body),
+        )
+    }
+  }
+
+  @Nested
   inner class CreateReferPolice {
     @BeforeEach
     fun beforeEach() {
@@ -216,7 +280,7 @@ class OutcomeControllerTest : TestControllerBase() {
 
     private fun createOutcomeRequest(
       id: Long,
-      policeReferralRequest: PoliceReferralRequest,
+      policeReferralRequest: ReferralDetailsRequest,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(policeReferralRequest)
       return mockMvc
@@ -713,7 +777,7 @@ class OutcomeControllerTest : TestControllerBase() {
   }
 
   companion object {
-    private val POLICE_REFER_REQUEST = PoliceReferralRequest(details = "details")
+    private val POLICE_REFER_REQUEST = ReferralDetailsRequest(details = "details")
     private val NOT_PROCEED_REQUEST = NotProceedRequest(reason = NotProceedReason.NOT_FAIR, details = "details")
     private val COMPLETED_NOT_PROCEED_REQUEST = HearingCompletedNotProceedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, reason = NotProceedReason.NOT_FAIR, details = "details")
     private val COMPLETED_DISMISSED_REQUEST = HearingCompletedDismissedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, details = "details")

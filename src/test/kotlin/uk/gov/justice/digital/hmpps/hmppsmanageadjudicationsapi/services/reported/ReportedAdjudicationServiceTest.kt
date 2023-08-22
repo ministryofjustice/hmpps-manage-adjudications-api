@@ -749,6 +749,27 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
     }
 
+    private val reportedAdjudicationReferGovNotProceed = entityBuilder.reportedAdjudication().also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+
+      it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_GOV, adjudicator = "")
+
+      it.addOutcome(
+        Outcome(code = OutcomeCode.REFER_GOV).also {
+            o ->
+          o.createDateTime = LocalDateTime.now().plusDays(2)
+        },
+      )
+
+      it.addOutcome(
+        Outcome(code = OutcomeCode.NOT_PROCEED).also {
+            o ->
+          o.createDateTime = LocalDateTime.now().plusDays(3)
+        },
+      )
+    }
+
     private val reportedAdjudicationInadHearing = entityBuilder.reportedAdjudication().also {
       it.hearings.clear()
       it.createDateTime = LocalDateTime.now()
@@ -1136,6 +1157,18 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `outcome history DTO - Refer gov, not proceed`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationReferGovNotProceed)
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("4")
+
+      assertThat(result.outcomes.size).isEqualTo(1)
+
+      assertThat(result.outcomes.first().hearing).isNotNull
+      assertThat(result.outcomes.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_GOV)
+      assertThat(result.outcomes.first().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.NOT_PROCEED)
+    }
+
+    @Test
     fun `outcome history DTO - Refer police, No prosecution, schedule hearing, refer to INAD`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationReferInad)
       val result = reportedAdjudicationService.getReportedAdjudicationDetails("5").validateFirstItem().validateSecondItem()
@@ -1487,6 +1520,34 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.outcomes.last().outcome).isNull()
       assertThat(result.outcomes.last().hearing!!.outcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)
       assertThat(result.outcomeEnteredInNomis).isTrue
+    }
+
+    @Test
+    fun `outcome history DTO - REFER_GOV SCHEDULE_HEARING as outcome`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
+          it.hearings.add(
+            Hearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingType = OicHearingType.GOV_ADULT, locationId = 1, agencyId = "", chargeNumber = ""),
+          )
+          it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD).also { o -> o.createDateTime = LocalDateTime.now() })
+          it.addOutcome(Outcome(code = OutcomeCode.REFER_GOV).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) })
+          it.addOutcome(Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(2) })
+        },
+      )
+
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("1")
+
+      assertThat(result.outcomes.size).isEqualTo(3)
+      assertThat(result.outcomes.first().outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_INAD)
+      assertThat(result.outcomes.first().outcome!!.referralOutcome!!.code).isEqualTo(OutcomeCode.REFER_GOV)
+      assertThat(result.outcomes[1].outcome!!.referralOutcome).isNull()
+      assertThat(result.outcomes[1].hearing).isNull()
+      assertThat(result.outcomes[1].outcome!!.outcome.code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
+      assertThat(result.outcomes.last().outcome).isNull()
+      assertThat(result.outcomes.last().hearing).isNotNull
     }
 
     private fun ReportedAdjudicationDto.validateFirstItem(): ReportedAdjudicationDto {
