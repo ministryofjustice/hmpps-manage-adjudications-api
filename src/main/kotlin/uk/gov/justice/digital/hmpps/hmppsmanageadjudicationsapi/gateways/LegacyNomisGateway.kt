@@ -142,7 +142,7 @@ class LegacyNomisGateway(private val prisonApiClientCreds: WebClient) {
   fun getAdjudicationsForPrisoner(
     prisonerNumber: String,
     offenceId: Long?,
-    prisonId: String?,
+    agencyId: String?,
     finding: Finding?,
     fromDate: LocalDate?,
     toDate: LocalDate?,
@@ -153,7 +153,7 @@ class LegacyNomisGateway(private val prisonApiClientCreds: WebClient) {
       .uri { uriBuilder ->
         uriBuilder.path("/offenders/$prisonerNumber/adjudications")
           .queryParamIfPresent("offenceId", Optional.ofNullable(offenceId))
-          .queryParamIfPresent("agencyId", Optional.ofNullable(prisonId))
+          .queryParamIfPresent("agencyId", Optional.ofNullable(agencyId))
           .queryParamIfPresent("finding", Optional.ofNullable(finding))
           .queryParamIfPresent("fromDate", Optional.ofNullable(fromDate))
           .queryParamIfPresent("toDate", Optional.ofNullable(toDate))
