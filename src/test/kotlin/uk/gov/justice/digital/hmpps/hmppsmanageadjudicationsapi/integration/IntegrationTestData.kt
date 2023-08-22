@@ -600,6 +600,20 @@ class IntegrationTestData(
       .exchange()
   }
 
+  fun createOutcomeReferGov(
+    testDataSet: AdjudicationIntTestDataSet,
+  ): WebTestClient.ResponseSpec {
+    return webTestClient.post()
+      .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/refer-gov")
+      .headers(setHeaders(username = "ITAG_ALO"))
+      .bodyValue(
+        mapOf(
+          "details" to "details",
+        ),
+      )
+      .exchange()
+  }
+
   fun createHearing(
     testDataSet: AdjudicationIntTestDataSet,
     dateTimeOfHearing: LocalDateTime? = null,

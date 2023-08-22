@@ -252,6 +252,27 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `create refer gov `() {
+      reportedAdjudication.status = ReportedAdjudicationStatus.REFER_INAD
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.createReferGov(
+        "1235",
+        "details",
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      verify(nomisOutcomeService, atLeastOnce()).createHearingResultIfApplicable(any(), anyOrNull(), any())
+
+      assertThat(argumentCaptor.value.getOutcomes().first()).isNotNull
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.REFER_GOV)
+      assertThat(argumentCaptor.value.getOutcomes().first().details).isEqualTo("details")
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.valueOf(OutcomeCode.REFER_GOV.name))
+      assertThat(response).isNotNull
+    }
+
+    @Test
     fun `create quashed`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {

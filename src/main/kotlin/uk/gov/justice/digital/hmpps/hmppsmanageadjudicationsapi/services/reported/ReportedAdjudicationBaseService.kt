@@ -113,8 +113,8 @@ open class ReportedDtoService(
     }
 
     do {
-      val hearing = hearings.removeFirst()
-      val outcome = if (hearing.hearingHasNoAssociatedOutcome()) null else outcomes.removeFirstOrNull()
+      val hearing = if (outcomes.firstOrNull().isScheduleHearing()) null else hearings.removeFirst()
+      val outcome = if (hearing != null && hearing.hearingHasNoAssociatedOutcome()) null else outcomes.removeFirstOrNull()
 
       history.add(
         OutcomeHistoryDto(hearing = hearing, outcome = outcome),
@@ -140,7 +140,7 @@ open class ReportedDtoService(
     do {
       val outcome = orderedOutcomes.removeFirst()
       when (outcome.code) {
-        OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD -> {
+        OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD, OutcomeCode.REFER_GOV -> {
           // a referral can only ever be followed by a referral outcome, or nothing (ie referral is current final state)
           val referralOutcome = orderedOutcomes.removeFirstOrNull()
 
@@ -311,12 +311,10 @@ open class ReportedDtoService(
   }
 
   companion object {
-    val outcomesToDisplayPunishments = listOf(OutcomeCode.CHARGE_PROVED, OutcomeCode.QUASHED)
     fun HearingDto.hearingHasNoAssociatedOutcome() =
       this.outcome == null || this.outcome.code == HearingOutcomeCode.ADJOURN
 
-    fun List<Punishment>.filterOutChargeProvedPunishments() =
-      this.filter { !listOf(PunishmentType.CAUTION, PunishmentType.DAMAGES_OWED).contains(it.type) }
+    fun CombinedOutcomeDto?.isScheduleHearing() = this?.outcome?.code == OutcomeCode.SCHEDULE_HEARING
   }
 }
 

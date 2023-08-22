@@ -173,8 +173,8 @@ class HearingService(
 
     fun List<OutcomeHistoryDto>.shouldRemoveLastScheduleHearing(): Boolean {
       val lastItem = this.lastOrNull() ?: return false
-      val referralOutcome = lastItem.outcome?.referralOutcome ?: return false
-      return referralOutcome.code == OutcomeCode.SCHEDULE_HEARING
+      val outcome = lastItem.outcome?.referralOutcome ?: lastItem.outcome?.outcome ?: return false
+      return outcome.code == OutcomeCode.SCHEDULE_HEARING
     }
 
     fun ReportedAdjudication.getHearing(): Hearing = this.getLatestHearing() ?: throwHearingNotFoundException()

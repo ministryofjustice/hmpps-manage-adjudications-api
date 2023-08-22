@@ -154,12 +154,12 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun createOutcomeProsecution(): WebTestClient.ResponseSpec {
-    return intTestData.createOutcomeProsecution(testAdjudicationDataSet)
-  }
-
   fun createOutcomeNotProceed(): WebTestClient.ResponseSpec {
     return intTestData.createOutcomeNotProceed(testAdjudicationDataSet)
+  }
+
+  fun createOutcomeReferGov(): WebTestClient.ResponseSpec {
+    return intTestData.createOutcomeReferGov(testAdjudicationDataSet)
   }
 
   fun issueReport(reportNumber: String): IntegrationTestScenario {

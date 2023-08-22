@@ -21,8 +21,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 
-@Schema(description = "Request to add a police referral")
-data class PoliceReferralRequest(
+@Schema(description = "Request to add a police referral, or refer gov request")
+data class ReferralDetailsRequest(
   @Schema(description = "details")
   val details: String,
 )
@@ -152,6 +152,36 @@ class OutcomeController(
     ).toResponse()
 
   @Operation(
+    summary = "create a referral outcome for refer gov",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "201",
+        description = "Refer Gov Created",
+      ),
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "415",
+        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
+        content = [
+          io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
+          ),
+        ],
+      ),
+    ],
+  )
+  @PostMapping(value = ["/{chargeNumber}/outcome/refer-gov"])
+  @ResponseStatus(HttpStatus.CREATED)
+  fun createReferGov(
+    @PathVariable(name = "chargeNumber") chargeNumber: String,
+    @RequestBody referGovRequest: ReferralDetailsRequest,
+  ): ReportedAdjudicationResponse =
+    outcomeService.createReferGov(
+      chargeNumber = chargeNumber,
+      details = referGovRequest.details,
+    ).toResponse()
+
+  @Operation(
     summary = "quash an outcome",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -205,7 +235,7 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createRefPolice(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-    @RequestBody policeReferralRequest: PoliceReferralRequest,
+    @RequestBody policeReferralRequest: ReferralDetailsRequest,
   ): ReportedAdjudicationResponse =
     outcomeService.createReferral(
       chargeNumber = chargeNumber,
