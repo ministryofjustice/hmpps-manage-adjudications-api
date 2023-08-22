@@ -1674,7 +1674,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.transferableActionsAllowed).isFalse
     }
 
-    @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED", "UNSCHEDULED")
+    @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED", "UNSCHEDULED", "REFER_GOV")
     @ParameterizedTest
     fun `for other states it is always not actionable for originating agency`(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
@@ -1691,7 +1691,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.transferableActionsAllowed).isFalse
     }
 
-    @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED", "UNSCHEDULED")
+    @CsvSource("CHARGE_PROVED", "QUASHED", "REFER_POLICE", "REFER_INAD", "NOT_PROCEED", "PROSECUTION", "DISMISSED", "ADJOURNED", "UNSCHEDULED", "REFER_GOV")
     @ParameterizedTest
     fun `for other states it is always actionable for override agency`(status: ReportedAdjudicationStatus) {
       whenever(authenticationFacade.activeCaseload).thenReturn("LEI")

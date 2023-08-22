@@ -5,6 +5,7 @@ import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -14,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -89,7 +91,9 @@ class HearingOutcomeService(
     details: String? = null,
     plea: HearingOutcomePlea? = null,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByChargeNumber(chargeNumber)
+    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
+      it.getHearing().validateCanRefer(code)
+    }
 
     reportedAdjudication.getHearing().hearingOutcome = HearingOutcome(
       code = code,
@@ -139,7 +143,7 @@ class HearingOutcomeService(
 
     when (outcomeCodeToAmend) {
       HearingOutcomeCode.COMPLETE -> plea?.let { hearingOutcomeToAmend.plea = it }
-      HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_INAD -> details?.let { hearingOutcomeToAmend.details = it }
+      HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV -> details?.let { hearingOutcomeToAmend.details = it }
       HearingOutcomeCode.ADJOURN -> {
         details?.let { hearingOutcomeToAmend.details = it }
         plea?.let { hearingOutcomeToAmend.plea = it }
@@ -195,7 +199,7 @@ class HearingOutcomeService(
   companion object {
     fun HearingOutcome?.hearingOutcomeExists() = this ?: throw EntityNotFoundException("outcome not found for hearing")
 
-    fun HearingOutcomeCode.updateOicHearingDetails(): Boolean = listOf(HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.ADJOURN).contains(this)
+    fun HearingOutcomeCode.updateOicHearingDetails(): Boolean = listOf(HearingOutcomeCode.REFER_GOV, HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.ADJOURN).contains(this)
 
     fun ReportedAdjudication.latestOutcomeIsAdjourn() {
       val latest = this.latestHearingOutcome()
@@ -214,4 +218,13 @@ class HearingOutcomeService(
   }
 
   fun HearingOutcomeCode.shouldRecalculateStatus() = this == HearingOutcomeCode.ADJOURN
+
+  fun Hearing.validateCanRefer(hearingOutcomeCode: HearingOutcomeCode) {
+    val exceptionMsg = "hearing type ${this.oicHearingType} can not $hearingOutcomeCode"
+    when (hearingOutcomeCode) {
+      HearingOutcomeCode.REFER_INAD -> if (OicHearingType.inadTypes().contains(this.oicHearingType)) throw ValidationException(exceptionMsg)
+      HearingOutcomeCode.REFER_GOV -> if (OicHearingType.govTypes().contains(this.oicHearingType)) throw ValidationException(exceptionMsg)
+      else -> {}
+    }
+  }
 }

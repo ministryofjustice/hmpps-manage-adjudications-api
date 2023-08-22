@@ -121,7 +121,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REJECTED", "AWAITING_REVIEW", "NOT_PROCEED", "REFER_INAD", "REFER_POLICE", "UNSCHEDULED", "CHARGE_PROVED", "QUASHED")
+    @CsvSource("REJECTED", "AWAITING_REVIEW", "NOT_PROCEED", "REFER_INAD", "REFER_POLICE", "UNSCHEDULED", "CHARGE_PROVED", "QUASHED", "REFER_GOV")
     fun `create outcome throws exception if invalid state `(status: ReportedAdjudicationStatus) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
@@ -155,9 +155,15 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REFER_INAD", "REFER_POLICE")
+    @CsvSource("REFER_INAD", "REFER_POLICE", "REFER_GOV")
     fun `create outcome throws exception if police referral outcome invalid state `(code: OutcomeCode) {
       assertTransition(code, OutcomeCode.REFER_POLICE)
+    }
+
+    @ParameterizedTest
+    @CsvSource("REFER_POLICE", "REFER_GOV")
+    fun `create outcome throws exception if gov referral outcome invalid state `(code: OutcomeCode) {
+      assertTransition(code, OutcomeCode.REFER_GOV)
     }
 
     @ParameterizedTest
@@ -277,7 +283,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
 
-    @CsvSource("REFER_POLICE", "REFER_INAD", "DISMISSED", "SCHEDULE_HEARING", "PROSECUTION", "NOT_PROCEED", "QUASHED")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "DISMISSED", "SCHEDULE_HEARING", "PROSECUTION", "NOT_PROCEED", "QUASHED", "REFER_GOV")
     @ParameterizedTest
     fun `create quashed throws exception if previous outcome is not a charge proved `(code: OutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
@@ -441,7 +447,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REFER_POLICE", "REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "NOT_PROCEED", "CHARGE_PROVED")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "NOT_PROCEED", "CHARGE_PROVED", "REFER_GOV")
     fun `throws invalid state if delete latest outcome is invalid type `(code: OutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         reportedAdjudication
@@ -717,7 +723,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
 
-    @CsvSource("REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
+    @CsvSource("REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED", "REFER_GOV")
     @ParameterizedTest
     fun `throws validation exception if invalid outcome type for amend `(code: OutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
@@ -771,7 +777,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("no latest outcome to amend")
     }
 
-    @CsvSource("REFER_POLICE", "REFER_INAD", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED", "REFER_GOV")
     @ParameterizedTest
     fun `throws validation exception if the latest outcome is not of the correct type `(code: OutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
@@ -804,7 +810,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("unable to amend via this function")
     }
 
-    @CsvSource("REFER_INAD", "REFER_POLICE")
+    @CsvSource("REFER_INAD", "REFER_POLICE", "REFER_GOV")
     @ParameterizedTest
     fun `amends referral successfully `(code: HearingOutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(

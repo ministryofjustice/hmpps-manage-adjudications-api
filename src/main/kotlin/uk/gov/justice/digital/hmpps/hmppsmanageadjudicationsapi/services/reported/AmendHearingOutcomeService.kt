@@ -90,7 +90,7 @@ class AmendHearingOutcomeService(
     }
 
     when (currentStatus) {
-      ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
+      ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV ->
         referralService.removeReferral(
           chargeNumber = chargeNumber,
         )
@@ -107,7 +107,7 @@ class AmendHearingOutcomeService(
     }
 
     return when (toStatus) {
-      ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
+      ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV ->
         referralService.createReferral(
           chargeNumber = chargeNumber,
           code = HearingOutcomeCode.valueOf(toStatus.name),
@@ -153,7 +153,7 @@ class AmendHearingOutcomeService(
 
   companion object {
 
-    val referrals = listOf(ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD)
+    val referrals = listOf(ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV)
 
     fun ReportedAdjudicationStatus.mapStatusToHearingOutcomeCode() =
       when (this) {
@@ -163,6 +163,7 @@ class AmendHearingOutcomeService(
         ReportedAdjudicationStatus.NOT_PROCEED -> HearingOutcomeCode.COMPLETE
         ReportedAdjudicationStatus.ADJOURNED -> HearingOutcomeCode.ADJOURN
         ReportedAdjudicationStatus.CHARGE_PROVED -> HearingOutcomeCode.COMPLETE
+        ReportedAdjudicationStatus.REFER_GOV -> HearingOutcomeCode.REFER_GOV
         else -> throw ValidationException("unable to amend from this status")
       }
 
@@ -172,6 +173,7 @@ class AmendHearingOutcomeService(
         ReportedAdjudicationStatus.REFER_INAD -> OutcomeCode.REFER_INAD
         ReportedAdjudicationStatus.DISMISSED -> OutcomeCode.DISMISSED
         ReportedAdjudicationStatus.NOT_PROCEED -> OutcomeCode.NOT_PROCEED
+        ReportedAdjudicationStatus.REFER_GOV -> OutcomeCode.REFER_GOV
         else -> null
       }
 
@@ -180,6 +182,7 @@ class AmendHearingOutcomeService(
       when (this) {
         ReportedAdjudicationStatus.REFER_POLICE,
         ReportedAdjudicationStatus.REFER_INAD,
+        ReportedAdjudicationStatus.REFER_GOV,
         ReportedAdjudicationStatus.DISMISSED,
         ReportedAdjudicationStatus.NOT_PROCEED,
         ReportedAdjudicationStatus.ADJOURNED,

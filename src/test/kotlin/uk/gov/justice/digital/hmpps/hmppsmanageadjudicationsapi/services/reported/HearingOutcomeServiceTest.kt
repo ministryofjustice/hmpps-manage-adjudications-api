@@ -110,9 +110,37 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
     }
 
-    @CsvSource("REFER_POLICE", "REFER_INAD")
+    @CsvSource("GOV_ADULT", "GOV_YOI")
     @ParameterizedTest
-    fun `create a referral outcome`(code: HearingOutcomeCode) {
+    fun `exception thrown if REFER_GOV used when hearing is GOV_`(oicHearingType: OicHearingType) {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        reportedAdjudication
+          .also { it.hearings.first().oicHearingType = oicHearingType },
+      )
+
+      Assertions.assertThatThrownBy {
+        hearingOutcomeService.createReferral("1", HearingOutcomeCode.REFER_GOV, "testing", "")
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("hearing type $oicHearingType can not REFER_GOV")
+    }
+
+    @CsvSource("INAD_YOI", "INAD_ADULT")
+    @ParameterizedTest
+    fun `exception thrown if REFER_INAD used when hearing is INAD_`(oicHearingType: OicHearingType) {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        reportedAdjudication
+          .also { it.hearings.first().oicHearingType = oicHearingType },
+      )
+
+      Assertions.assertThatThrownBy {
+        hearingOutcomeService.createReferral("1", HearingOutcomeCode.REFER_INAD, "testing", "")
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("hearing type $oicHearingType can not REFER_INAD")
+    }
+
+    @CsvSource("REFER_POLICE", "REFER_INAD", "REFER_GOV")
+    @ParameterizedTest
+    fun `create a referral `(code: HearingOutcomeCode) {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = hearingOutcomeService.createReferral(
@@ -124,7 +152,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      if (code == HearingOutcomeCode.REFER_INAD) {
+      if (listOf(HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV).contains(code)) {
         verify(legacySyncService, atLeastOnce()).amendHearing(
           reportedAdjudication.chargeNumber.toLong(),
           reportedAdjudication.hearings.first().oicHearingId,
@@ -133,7 +161,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
             reportedAdjudication.hearings.first().oicHearingType,
             reportedAdjudication.hearings.first().locationId,
             "test",
-            "REFER_INAD",
+            code.name,
           ),
         )
       }
@@ -248,7 +276,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
-    @CsvSource("REFER_POLICE", "REFER_INAD", "COMPLETE")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "COMPLETE", "REFER_GOV")
     @ParameterizedTest
     fun `delete hearing outcome`(code: HearingOutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber("2")).thenReturn(
@@ -312,7 +340,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("outcome not found for hearing")
     }
 
-    @CsvSource("REFER_POLICE", "REFER_INAD", "COMPLETE")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "COMPLETE", "REFER_GOV")
     @ParameterizedTest
     fun `remove adjourn throws exception if latest outcome is not an adjourn `(code: HearingOutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
@@ -536,7 +564,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("outcome not found for hearing")
     }
 
-    @CsvSource("ADJOURN", "REFER_POLICE", "REFER_INAD", "COMPLETE")
+    @CsvSource("ADJOURN", "REFER_POLICE", "REFER_INAD", "COMPLETE", "REFER_GOV")
     @ParameterizedTest
     fun `throws validation exception if the latest outcome is not of the correct type `(code: HearingOutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
@@ -550,7 +578,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("latest outcome is not of same type")
     }
 
-    @CsvSource("REFER_POLICE", "REFER_INAD")
+    @CsvSource("REFER_POLICE", "REFER_INAD", "REFER_GOV")
     @ParameterizedTest
     fun `amend referrals `(code: HearingOutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
