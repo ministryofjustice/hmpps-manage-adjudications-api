@@ -1,4 +1,4 @@
-prison.api.endpoint.url: https://api-dev.prison.service.justice.gov.uk
+prison.api.endpoint.url: https://prison-api-dev.prison.service.justice.gov.uk
 oauth.endpoint.url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
 spring:
   security:
