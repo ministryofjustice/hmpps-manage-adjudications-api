@@ -26,10 +26,8 @@ class ResetRecordService(
   }
 
   @Transactional
-  fun reset() {
-    reportedAdjudicationRepository.findByMigratedIsFalse().forEach {
-      it.resetExistingRecord()
-    }
+  fun reset(chargeNumber: String) {
+    reportedAdjudicationRepository.findByChargeNumber(chargeNumber)!!.resetExistingRecord()
   }
 
   private fun ReportedAdjudication.resetExistingRecord() {

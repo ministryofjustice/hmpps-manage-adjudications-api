@@ -101,7 +101,11 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByPunishmentsConsecutiveChargeNumberAndPunishmentsType(consecutiveChargeNumber: String, type: PunishmentType): List<ReportedAdjudication>
 
-  fun findByMigratedIsFalse(): List<ReportedAdjudication>
+  @Query(
+    value = "select ra.charge_number from reported_adjudications ra where ra.migrated is false",
+    nativeQuery = true,
+  )
+  fun findByMigratedIsFalse(): List<String>
 
   companion object {
 

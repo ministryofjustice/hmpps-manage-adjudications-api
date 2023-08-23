@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.hibernate.SessionFactory
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
@@ -42,8 +43,8 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
       it.damages.add(ReportedDamage(id = 1, code = DamageCode.CLEANING, details = "", reporter = ""))
       it.damages.add(ReportedDamage(id = 2, code = DamageCode.CLEANING, details = "", reporter = "", migrated = true))
     }
-    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
-    resetRecordService.reset()
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existing)
+    resetRecordService.reset(existing.chargeNumber)
 
     assertThat(existing.damages.size).isEqualTo(1)
   }
@@ -63,8 +64,8 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
     }
-    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
-    resetRecordService.reset()
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existing)
+    resetRecordService.reset(existing.chargeNumber)
 
     assertThat(existing.evidence.size).isEqualTo(1)
   }
@@ -93,8 +94,8 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
     }
-    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
-    resetRecordService.reset()
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existing)
+    resetRecordService.reset(existing.chargeNumber)
 
     assertThat(existing.witnesses.size).isEqualTo(1)
   }
@@ -125,8 +126,8 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
     }
-    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
-    resetRecordService.reset()
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existing)
+    resetRecordService.reset(existing.chargeNumber)
 
     assertThat(existing.hearings.size).isEqualTo(1)
   }
@@ -138,8 +139,8 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
       it.addPunishment(Punishment(id = 1, type = PunishmentType.CAUTION, schedule = mutableListOf()))
       it.addPunishment(Punishment(id = 2, type = PunishmentType.CAUTION, schedule = mutableListOf(), migrated = true))
     }
-    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
-    resetRecordService.reset()
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existing)
+    resetRecordService.reset(existing.chargeNumber)
 
     assertThat(existing.getPunishments().size).isEqualTo(1)
   }
@@ -151,8 +152,8 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
       it.punishmentComments.add(PunishmentComment(id = 1, comment = ""))
       it.punishmentComments.add(PunishmentComment(id = 2, comment = "", migrated = true))
     }
-    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
-    resetRecordService.reset()
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existing)
+    resetRecordService.reset(existing.chargeNumber)
 
     assertThat(existing.punishmentComments.size).isEqualTo(1)
   }
@@ -164,8 +165,8 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
       it.addOutcome(Outcome(id = 1, code = OutcomeCode.QUASHED))
       it.addOutcome(Outcome(id = 2, code = OutcomeCode.QUASHED, migrated = true))
     }
-    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
-    resetRecordService.reset()
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existing)
+    resetRecordService.reset(existing.chargeNumber)
 
     assertThat(existing.getOutcomes().size).isEqualTo(1)
   }
@@ -185,8 +186,8 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
     }
-    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
-    resetRecordService.reset()
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existing)
+    resetRecordService.reset(existing.chargeNumber)
 
     assertThat(existing.offenceDetails.first().offenceCode).isEqualTo(100)
     assertThat(existing.offenceDetails.first().migrated).isEqualTo(false)
@@ -204,8 +205,8 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
         code = HearingOutcomeCode.COMPLETE,
       )
     }
-    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
-    resetRecordService.reset()
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existing)
+    resetRecordService.reset(existing.chargeNumber)
 
     assertThat(existing.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.NOMIS)
     assertThat(existing.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("")
@@ -218,8 +219,8 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.first().hearingOutcome =
         HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "", migrated = true)
     }
-    whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
-    resetRecordService.reset()
+    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existing)
+    resetRecordService.reset(existing.chargeNumber)
 
     assertThat(existing.hearings.first().hearingOutcome).isNull()
   }
@@ -236,8 +237,8 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
           oicHearingType = OicHearingType.INAD_YOI,
         )
       }
-      whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
-      resetRecordService.reset()
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existing)
+      resetRecordService.reset(existing.chargeNumber)
 
       assertThat(existing.hearings.first().hearingPreMigrate).isNull()
       assertThat(existing.hearings.first().locationId).isEqualTo(100)
@@ -255,8 +256,8 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
           HearingOutcomePreMigrate(code = HearingOutcomeCode.COMPLETE, adjudicator = "another"),
         )
       }
-      whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
-      resetRecordService.reset()
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existing)
+      resetRecordService.reset(existing.chargeNumber)
 
       assertThat(existing.hearings.first().hearingOutcome!!.hearingOutcomePreMigrate).isNull()
       assertThat(existing.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
@@ -283,8 +284,8 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
           ),
         )
       }
-      whenever(reportedAdjudicationRepository.findByMigratedIsFalse()).thenReturn(listOf(existing))
-      resetRecordService.reset()
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existing)
+      resetRecordService.reset(existing.chargeNumber)
 
       assertThat(existing.getPunishments().first().punishmentPreMigrate).isNull()
       assertThat(existing.getPunishments().first().schedule.last().days).isEqualTo(1)
