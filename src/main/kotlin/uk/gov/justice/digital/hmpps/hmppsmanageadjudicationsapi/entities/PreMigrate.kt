@@ -53,4 +53,5 @@ data class PunishmentPreMigrate(
   var stoppagePercentage: Int? = null,
   @field:Length(max = 16)
   var consecutiveChargeNumber: String? = null,
+  var amount: Double? = null,
 )

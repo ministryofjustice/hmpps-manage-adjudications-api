@@ -1,9 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_LOCATION_ID
 
 class MigrateResetIntTest : SqsIntegrationTestBase() {
   @BeforeEach
@@ -101,5 +104,34 @@ class MigrateResetIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.code").isEqualTo(HearingOutcomeCode.NOMIS.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
+  }
+
+  @Disabled("disabled for now, as punishment mapper for sanction seq not implemented for existing yet")
+  @Test
+  fun `reset migration - phase 3 resets hearings, hearing outcomes and punishments to original data`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+
+    initDataForHearings().createHearing().createChargeProved()
+    integrationTestData().createPunishments(testDataSet = IntegrationTestData.DEFAULT_ADJUDICATION).expectStatus().isCreated
+
+    migrateRecord(
+      dto = MigrateExistingIntTest.getExistingRecord(
+        oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong(),
+        prisonerNumber = IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
+      ),
+    )
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.days").isEqualTo(10)
+      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.CONFINEMENT.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].locationId").isEqualTo(UPDATED_LOCATION_ID)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator").isEqualTo("test")
   }
 }

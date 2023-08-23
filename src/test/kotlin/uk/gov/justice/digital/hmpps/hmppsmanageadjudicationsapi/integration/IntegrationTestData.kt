@@ -692,7 +692,7 @@ class IntegrationTestData(
     testDataSet: AdjudicationIntTestDataSet,
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/punishments")
+      .uri("/reported-adjudications/${testDataSet.chargeNumber}/punishments/v2")
       .headers(setHeaders(username = "ITAG_ALO"))
       .bodyValue(
         mapOf(
