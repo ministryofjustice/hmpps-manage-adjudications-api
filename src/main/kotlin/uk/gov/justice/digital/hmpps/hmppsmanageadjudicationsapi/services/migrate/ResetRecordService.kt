@@ -26,10 +26,8 @@ class ResetRecordService(
   }
 
   @Transactional
-  fun reset() {
-    reportedAdjudicationRepository.findByMigratedIsFalse().forEach {
-      it.resetExistingRecord()
-    }
+  fun reset(chargeNumber: String) {
+    reportedAdjudicationRepository.findByChargeNumber(chargeNumber)!!.resetExistingRecord()
   }
 
   private fun ReportedAdjudication.resetExistingRecord() {
@@ -49,8 +47,33 @@ class ResetRecordService(
       it.hearingOutcome = null
     }
 
+    this.hearings.forEach {
+      if (it.hearingPreMigrate != null) {
+        it.oicHearingType = it.hearingPreMigrate!!.oicHearingType
+        it.dateTimeOfHearing = it.hearingPreMigrate!!.dateTimeOfHearing
+        it.locationId = it.hearingPreMigrate!!.locationId
+        it.hearingPreMigrate = null
+      }
+      if (it.hearingOutcome?.hearingOutcomePreMigrate != null) {
+        it.hearingOutcome!!.code = it.hearingOutcome!!.hearingOutcomePreMigrate!!.code
+        it.hearingOutcome!!.adjudicator = it.hearingOutcome!!.hearingOutcomePreMigrate!!.adjudicator
+        it.hearingOutcome!!.hearingOutcomePreMigrate = null
+      }
+    }
+
     this.getPunishments().forEach {
+      it.nomisStatus = null
       if (it.migrated) this.removePunishment(it)
+      it.schedule.removeIf { ps -> ps.migrated }
+      if (it.punishmentPreMigrate != null) {
+        it.amount = it.punishmentPreMigrate!!.amount
+        it.stoppagePercentage = it.punishmentPreMigrate!!.stoppagePercentage
+        it.consecutiveChargeNumber = it.punishmentPreMigrate!!.consecutiveChargeNumber
+        it.type = it.punishmentPreMigrate!!.type
+        it.privilegeType = it.punishmentPreMigrate!!.privilegeType
+        it.otherPrivilege = it.punishmentPreMigrate!!.otherPrivilege
+        it.punishmentPreMigrate = null
+      }
     }
 
     this.getOutcomes().forEach {

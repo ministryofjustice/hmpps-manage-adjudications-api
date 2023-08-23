@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
 import java.time.LocalDate
@@ -36,6 +37,12 @@ data class Punishment(
   @field:Length(max = 16)
   var consecutiveChargeNumber: String? = null,
   var migrated: Boolean = false,
+  @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+  @JoinColumn(name = "punishment_pre_migrate_id")
+  var punishmentPreMigrate: PunishmentPreMigrate? = null,
+  @field:Length(max = 32)
+  var nomisStatus: String? = null,
+
 ) : BaseEntity()
 
 enum class PunishmentType {
