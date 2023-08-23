@@ -351,13 +351,105 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
   @Nested
   inner class Phase3 {
-    // these tests are applicable to all (phase 2 and 3)
-    @Test
-    fun `hearing no longer exists in and should be removed`() {
+    private fun existing(dto: AdjudicationMigrateDto) = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId).also {
+      it.hearings.clear()
+      it.hearings.add(
+        Hearing(
+          oicHearingId = 1,
+          dateTimeOfHearing = LocalDate.now().atStartOfDay(),
+          oicHearingType = OicHearingType.GOV_ADULT,
+          agencyId = "MDI",
+          locationId = 1,
+          chargeNumber = dto.oicIncidentId.toString(),
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
+        ),
+      )
     }
 
     @Test
-    fun `hearing data matches id and has been altered - update hearing`() {
+    fun `hearing no longer exists in nomis throws exception`() {
+      val dto = migrationFixtures.ADULT_SINGLE_OFFENCE
+
+      Assertions.assertThatThrownBy {
+        migrateExistingRecordService.accept(dto, existing(dto))
+      }.isInstanceOf(ExistingRecordConflictException::class.java)
+        .hasMessageContaining("${dto.oicIncidentId} hearing no longer exists in nomis")
+    }
+
+    @Test
+    fun `hearing location id, date time and type changed in nomis`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.WITH_HEARING
+      val existing = existing(dto).also {
+        it.hearings.first().oicHearingId = dto.hearings.first().oicHearingId
+        it.hearings.first().hearingOutcome = null
+        it.hearings.first().locationId = 100
+        it.hearings.first().oicHearingType = OicHearingType.INAD_YOI
+      }
+
+      val locationId = existing.hearings.first().locationId
+      val dt = existing.hearings.first().dateTimeOfHearing
+      val type = existing.hearings.first().oicHearingType
+
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(dto.hearings.first().locationId)
+      assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(dto.hearings.first().oicHearingType)
+      assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(dto.hearings.first().hearingDateTime)
+      assertThat(argumentCaptor.value.hearings.first().hearingPreMigrate).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingPreMigrate!!.locationId).isEqualTo(locationId)
+      assertThat(argumentCaptor.value.hearings.first().hearingPreMigrate!!.oicHearingType).isEqualTo(type)
+      assertThat(argumentCaptor.value.hearings.first().hearingPreMigrate!!.dateTimeOfHearing).isEqualTo(dt)
+    }
+
+    @Test
+    fun `hearing result no longer exists in nomis throws exception`() {
+      val dto = migrationFixtures.WITH_HEARING
+
+      Assertions.assertThatThrownBy {
+        migrateExistingRecordService.accept(dto, existing(dto))
+      }.isInstanceOf(ExistingRecordConflictException::class.java)
+        .hasMessageContaining("${dto.oicIncidentId} hearing result no longer exists in nomis")
+    }
+
+    @Test
+    fun `hearing result adjudicator has changed`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.WITH_HEARING_AND_RESULT
+      val existing = existing(dto).also {
+        it.hearings.first().oicHearingId = dto.hearings.first().oicHearingId
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "someone")
+      }
+
+      val adjudicator = existing.hearings.first().hearingOutcome!!.adjudicator
+
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo(dto.hearings.first().adjudicator)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.hearingOutcomePreMigrate).isNotNull
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.hearingOutcomePreMigrate!!.adjudicator).isEqualTo(adjudicator)
+    }
+
+    @Test
+    fun `hearing result code has changed throws exception`() {
+      val dto = migrationFixtures.WITH_HEARING_AND_RESULT
+
+      Assertions.assertThatThrownBy {
+        migrateExistingRecordService.accept(dto, existing(dto))
+      }.isInstanceOf(ExistingRecordConflictException::class.java)
+        .hasMessageContaining("${dto.oicIncidentId} hearing result code has changed")
+    }
+
+    @Test
+    fun `hearings and results exist in nomis but not in DPS`() {
+      TODO("this will be painful")
+    }
+
+    @Test
+    fun `punishments`() {
+      TODO("various cases to consider")
     }
   }
 

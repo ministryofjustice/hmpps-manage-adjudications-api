@@ -4,10 +4,17 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.MigrateResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateHearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePunishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePreMigrate
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingPreMigrate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.createAdditionalOutcome
@@ -37,7 +44,7 @@ class MigrateExistingRecordService(
     existingAdjudication.statusBeforeMigration = existingAdjudication.status
 
     if (OffenceCodes.findByNomisCode(adjudicationMigrateDto.offence.offenceCode).none { it.uniqueOffenceCodes.contains(existingAdjudication.offenceDetails.first().offenceCode) }) {
-      existingAdjudication.updateOffence(adjudicationMigrateDto)
+      existingAdjudication.offenceDetails.first().update(adjudicationMigrateDto)
     }
 
     if (existingAdjudication.status == ReportedAdjudicationStatus.ACCEPTED) {
@@ -52,6 +59,10 @@ class MigrateExistingRecordService(
           hearing.hearingOutcome = createAdjourn(null)
         }
       }
+    }
+
+    if (existingAdjudication.status != ReportedAdjudicationStatus.ACCEPTED) {
+      existingAdjudication.processPhase3(adjudicationMigrateDto)
     }
 
     adjudicationMigrateDto.damages.toDamages().forEach {
@@ -87,7 +98,7 @@ class MigrateExistingRecordService(
     hearingsAndResults.forEach { this.hearings.add(it.also { hearing -> hearing.migrated = true }) }
     outcomes.forEach { this.addOutcome(it.also { outcome -> outcome.migrated = true }) }
 
-    this.processPunishments(adjudicationMigrateDto)
+    this.processPunishments(adjudicationMigrateDto.punishments)
   }
 
   private fun ReportedAdjudication.processPhase2(adjudicationMigrateDto: AdjudicationMigrateDto) {
@@ -113,16 +124,56 @@ class MigrateExistingRecordService(
     }
   }
 
-  private fun ReportedAdjudication.updateOffence(adjudicationMigrateDto: AdjudicationMigrateDto) {
-    this.offenceDetails.first().nomisOffenceCode = adjudicationMigrateDto.offence.offenceCode
-    this.offenceDetails.first().nomisOffenceDescription = adjudicationMigrateDto.offence.offenceDescription
-    this.offenceDetails.first().actualOffenceCode = this.offenceDetails.first().offenceCode
-    this.offenceDetails.first().offenceCode = OffenceCodes.MIGRATED_OFFENCE.uniqueOffenceCodes.first()
-    this.offenceDetails.first().migrated = true
+  private fun ReportedAdjudication.processPhase3(adjudicationMigrateDto: AdjudicationMigrateDto) {
+    this.hearings.forEach { hearing ->
+      val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { it.oicHearingId == hearing.oicHearingId }
+        ?: throw ExistingRecordConflictException("${adjudicationMigrateDto.oicIncidentId} hearing no longer exists in nomis")
+      val nomisHearingResult = nomisHearing.hearingResult
+        ?: if (hearing.hearingOutcome != null) throw ExistingRecordConflictException("${adjudicationMigrateDto.oicIncidentId} hearing result no longer exists in nomis") else null
+      hearing.hearingOutcome?.let {
+        nomisHearingResult?.let { nhr ->
+          it.code.mapFinding(nhr.finding, adjudicationMigrateDto.oicIncidentId)
+        }
+      }
+      hearing.update(nomisHearing)
+      nomisHearingResult?.let {
+        hearing.hearingOutcome?.update(nomisHearing)
+      }
+    }
+
+    adjudicationMigrateDto.hearings.forEach { nomisHearing ->
+      if (this.hearings.none { it.oicHearingId == nomisHearing.oicHearingId }) {
+        TODO("need to consider the case, where we dont know about hearings / results in our system.")
+      }
+    }
   }
 
-  private fun ReportedAdjudication.processPunishments(adjudicationMigrateDto: AdjudicationMigrateDto) {
-    val punishmentsAndComments = adjudicationMigrateDto.punishments.toPunishments()
+  private fun Hearing.update(nomisHearing: MigrateHearing) {
+    if (this.locationId != nomisHearing.locationId || this.dateTimeOfHearing != nomisHearing.hearingDateTime || this.oicHearingType != nomisHearing.oicHearingType) {
+      this.hearingPreMigrate = HearingPreMigrate(dateTimeOfHearing = this.dateTimeOfHearing, locationId = this.locationId, oicHearingType = this.oicHearingType)
+      this.locationId = nomisHearing.locationId
+      this.dateTimeOfHearing = nomisHearing.hearingDateTime
+      this.oicHearingType = nomisHearing.oicHearingType
+    }
+  }
+
+  private fun HearingOutcome.update(nomisHearing: MigrateHearing) {
+    if (this.adjudicator != nomisHearing.adjudicator) {
+      this.hearingOutcomePreMigrate = HearingOutcomePreMigrate(code = this.code, adjudicator = this.adjudicator)
+      this.adjudicator = nomisHearing.adjudicator ?: ""
+    }
+  }
+
+  private fun ReportedOffence.update(adjudicationMigrateDto: AdjudicationMigrateDto) {
+    this.nomisOffenceCode = adjudicationMigrateDto.offence.offenceCode
+    this.nomisOffenceDescription = adjudicationMigrateDto.offence.offenceDescription
+    this.actualOffenceCode = this.offenceCode
+    this.offenceCode = OffenceCodes.MIGRATED_OFFENCE.uniqueOffenceCodes.first()
+    this.migrated = true
+  }
+
+  private fun ReportedAdjudication.processPunishments(punishments: List<MigratePunishment>) {
+    val punishmentsAndComments = punishments.toPunishments()
     val punishments = punishmentsAndComments.first
     val punishmentComments = punishmentsAndComments.second
 
@@ -140,5 +191,15 @@ class MigrateExistingRecordService(
 
     fun List<Hearing>.containsNomisHearingOutcomeCode(): Boolean =
       this.any { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }
+
+    fun HearingOutcomeCode.mapFinding(finding: String, id: Long) {
+      val msg = "$id hearing result code has changed"
+      when (finding) {
+        Finding.D.name, Finding.PROVED.name, Finding.QUASHED.name -> if (this != HearingOutcomeCode.COMPLETE) throw ExistingRecordConflictException(msg)
+        Finding.REF_POLICE.name, Finding.PROSECUTED.name -> if (this != HearingOutcomeCode.REFER_POLICE) throw ExistingRecordConflictException(msg)
+        Finding.NOT_PROCEED.name -> if (!listOf(HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.COMPLETE).contains(this)) throw ExistingRecordConflictException(msg)
+        else -> {} // to review later...
+      }
+    }
   }
 }

@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrationEntityBuilder
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class MigrateExistingIntTest : SqsIntegrationTestBase() {
   @BeforeEach
@@ -217,6 +218,39 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.CHARGE_PROVED.name)
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.code").isEqualTo(OutcomeCode.CHARGE_PROVED.name)
       .jsonPath("$.reportedAdjudication.outcomes[2].outcome.outcome.code").isEqualTo(OutcomeCode.QUASHED.name)
+  }
+
+  @Test
+  fun `existing record amends hearing and adjudicator`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+
+    initDataForHearings().createHearing().createChargeProved()
+    val dto = getExistingRecord(
+      oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong(),
+      prisonerNumber = IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
+    )
+    migrateRecord(dto = dto)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing").isEqualTo(
+        dto.hearings.first().hearingDateTime.format(
+          DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS"),
+        ),
+      )
+      .jsonPath("$.reportedAdjudication.hearings[0].locationId").isEqualTo(dto.hearings.first().locationId)
+      .jsonPath("$.reportedAdjudication.hearings[0].oicHearingType").isEqualTo(dto.hearings.first().oicHearingType.name)
+      .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator").isEqualTo(dto.hearings.first().adjudicator!!)
+  }
+
+  @Test
+  fun `existing record amends punishments`() {
+    TODO("need to work out cases")
   }
 
   companion object {

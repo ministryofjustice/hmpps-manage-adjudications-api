@@ -356,6 +356,7 @@ class MigrateNewRecordService(
 
       return Punishment(
         type = type,
+        nomisStatus = this.sanctionStatus,
         consecutiveChargeNumber = this.consecutiveChargeNumber,
         stoppagePercentage = stoppagePercentage?.toInt(),
         sanctionSeq = this.sanctionSeq,
