@@ -34,6 +34,8 @@ create table punishment_pre_migrate
 
 ALTER TABLE punishment_schedule ADD COLUMN migrated boolean not null DEFAULT false;
 
+ALTER TABLE punishment ADD COLUMN nomis_status varchar(32) null;
+
 alter table hearing
     add column hearing_pre_migrate_id integer null;
 alter table hearing

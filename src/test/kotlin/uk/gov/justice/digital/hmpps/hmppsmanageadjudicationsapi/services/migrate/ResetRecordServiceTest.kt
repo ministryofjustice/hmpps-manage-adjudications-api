@@ -279,6 +279,7 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
             ),
             stoppagePercentage = 1,
             amount = 10.0,
+            nomisStatus = "SUSP",
           ),
         )
       }
@@ -293,6 +294,7 @@ class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(existing.getPunishments().first().consecutiveChargeNumber).isNull()
       assertThat(existing.getPunishments().first().amount).isNull()
       assertThat(existing.getPunishments().first().stoppagePercentage).isNull()
+      assertThat(existing.getPunishments().first().nomisStatus).isNull()
     }
   }
 

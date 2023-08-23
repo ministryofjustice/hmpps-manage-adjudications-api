@@ -40,6 +40,9 @@ data class Punishment(
   @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
   @JoinColumn(name = "punishment_pre_migrate_id")
   var punishmentPreMigrate: PunishmentPreMigrate? = null,
+  @field:Length(max = 32)
+  var nomisStatus: String? = null,
+
 ) : BaseEntity()
 
 enum class PunishmentType {
