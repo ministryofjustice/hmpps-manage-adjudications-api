@@ -128,7 +128,7 @@ class MigrateNewRecordService(
     }
 
     fun List<Punishment>.toPunishmentMappings(offenderBookingId: Long) = this.map {
-      PunishmentMapping(punishmentId = it.id!!, sanctionSeq = it.sanctionSeq!!, bookingId = offenderBookingId)
+      PunishmentMapping(punishmentId = it.id!!, sanctionSeq = it.sanctionSeq, bookingId = offenderBookingId)
     }
 
     fun AdjudicationMigrateDto.getChargeNumber(): String = "${this.oicIncidentId}-${this.offenceSequence}"
