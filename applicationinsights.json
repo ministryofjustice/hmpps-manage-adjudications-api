@@ -15,6 +15,7 @@
   },
   "preview": {
     "sampling": {
+      "percentage": 100,
       "overrides": [
         {
           "attributes": [

@@ -220,6 +220,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.CONFINEMENT)
+      assertThat(argumentCaptor.value.getPunishments().first().nomisStatus).isEqualTo(dto.punishments.first().sanctionStatus)
       assertThat(argumentCaptor.value.getPunishments().first().schedule.first().days).isEqualTo(dto.punishments.first().days)
       assertThat(argumentCaptor.value.getPunishments().first().schedule.first().suspendedUntil).isNull()
       assertThat(argumentCaptor.value.getPunishments().first().schedule.first().startDate).isEqualTo(dto.punishments.first().effectiveDate)

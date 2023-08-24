@@ -114,6 +114,7 @@ class MigrateNewRecordService(
         plea = HearingOutcomePlea.NOT_ASKED,
         reason = HearingOutcomeAdjournReason.OTHER,
         details = "No hearing result created in NOMIS",
+        migrated = true,
       )
 
     fun AdjudicationMigrateDto.toChargeMapping(chargeNumber: String) = ChargeNumberMapping(
@@ -356,6 +357,7 @@ class MigrateNewRecordService(
 
       return Punishment(
         type = type,
+        nomisStatus = this.sanctionStatus,
         consecutiveChargeNumber = this.consecutiveChargeNumber,
         stoppagePercentage = stoppagePercentage?.toInt(),
         sanctionSeq = this.sanctionSeq,
