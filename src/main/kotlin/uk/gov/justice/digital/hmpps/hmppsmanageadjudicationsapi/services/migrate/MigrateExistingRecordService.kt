@@ -11,10 +11,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePreMigrate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingPreMigrate
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.createAdditionalOutcome
@@ -143,9 +148,28 @@ class MigrateExistingRecordService(
 
     adjudicationMigrateDto.hearings.forEach { nomisHearing ->
       if (this.hearings.none { it.oicHearingId == nomisHearing.oicHearingId }) {
-        TODO("need to consider the case, where we dont know about hearings / results in our system.")
+        throw ExistingRecordConflictException("${adjudicationMigrateDto.oicIncidentId} has additional hearings and results in nomis")
       }
     }
+
+    when (this.getPunishments().isEmpty()) {
+      true -> this.processPunishments(adjudicationMigrateDto.punishments)
+      false -> this.processPunishments(this.getPunishments().update(adjudicationMigrateDto.punishments))
+    }
+  }
+
+  private fun List<Punishment>.update(sanctions: List<MigratePunishment>): List<MigratePunishment> {
+    val newPunishments = mutableListOf<MigratePunishment>()
+
+    sanctions.forEach { sanction ->
+      if (this.none { it.type == sanction.mapToPunishmentType() }) {
+        newPunishments.add(sanction)
+      } else {
+        // TODO("need to update punishment scheduled - part of discovery with John")
+      }
+    }
+
+    return newPunishments
   }
 
   private fun Hearing.update(nomisHearing: MigrateHearing) {
@@ -201,5 +225,24 @@ class MigrateExistingRecordService(
         else -> {} // to review later...
       }
     }
+
+    fun MigratePunishment.mapToPunishmentType(otherPrivilege: String? = null): PunishmentType? =
+      when (this.sanctionCode) {
+        OicSanctionCode.CAUTION.name -> PunishmentType.CAUTION
+        OicSanctionCode.REMACT.name -> PunishmentType.REMOVAL_ACTIVITY
+        OicSanctionCode.EXTW.name -> PunishmentType.EXTRA_WORK
+        OicSanctionCode.EXTRA_WORK.name -> PunishmentType.EXCLUSION_WORK
+        OicSanctionCode.CC.name -> PunishmentType.CONFINEMENT
+        OicSanctionCode.STOP_PCT.name -> PunishmentType.EARNINGS
+        OicSanctionCode.REMWIN.name -> PunishmentType.REMOVAL_WING
+        OicSanctionCode.ADA.name -> when (this.sanctionStatus) {
+          Status.IMMEDIATE.name -> PunishmentType.ADDITIONAL_DAYS
+          Status.PROSPECTIVE.name -> PunishmentType.PROSPECTIVE_DAYS
+          else -> null
+        }
+        OicSanctionCode.OTHER.name -> if (this.compensationAmount != null) PunishmentType.DAMAGES_OWED else null
+        OicSanctionCode.FORFEIT.name -> if (PrivilegeType.entries.map { it.name }.contains(this.comment) || this.comment == otherPrivilege) PunishmentType.PRIVILEGE else null
+        else -> null
+      }
   }
 }

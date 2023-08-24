@@ -248,11 +248,6 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator").isEqualTo(dto.hearings.first().adjudicator!!)
   }
 
-  @Test
-  fun `existing record amends punishments`() {
-    TODO("need to work out cases")
-  }
-
   companion object {
     fun getExistingRecord(oicIncidentId: Long, prisonerNumber: String, offenceCode: String = "51:4") = MigrationEntityBuilder().createAdjudication(
       oicIncidentId = oicIncidentId,

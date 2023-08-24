@@ -470,6 +470,13 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_ADDITIONAL_HEARINGS_IN_NOMIS = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(oicHearingId = 1, hearingResult = migrationEntityBuilder.createHearingResult()),
+      migrationEntityBuilder.createHearing(oicHearingId = 100),
+    ),
+  )
+
   fun getSelection(): List<AdjudicationMigrateDto> = listOf(
     ADULT_SINGLE_OFFENCE, YOUTH_SINGLE_OFFENCE, NON_BINARY_GENDER, UNKNOWN_GENDER,
     WITH_HEARINGS_AND_SOME_RESULTS, WITH_HEARINGS_AND_RESULTS, WITH_HEARING, WITH_NO_ADJUDICATOR,

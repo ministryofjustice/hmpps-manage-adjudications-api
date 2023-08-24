@@ -3,10 +3,12 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrat
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
@@ -17,15 +19,23 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateExistingRecordService.Companion.mapToPunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrationEntityBuilder
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.stream.Stream
 
 class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
@@ -435,25 +445,148 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `hearing result code has changed throws exception`() {
       val dto = migrationFixtures.WITH_HEARING_AND_RESULT
+      val existing = existing(dto).also {
+        it.hearings.first().oicHearingId = dto.hearings.first().oicHearingId
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "someone")
+      }
 
       Assertions.assertThatThrownBy {
-        migrateExistingRecordService.accept(dto, existing(dto))
+        migrateExistingRecordService.accept(dto, existing)
       }.isInstanceOf(ExistingRecordConflictException::class.java)
         .hasMessageContaining("${dto.oicIncidentId} hearing result code has changed")
     }
 
     @Test
-    fun `hearings and results exist in nomis but not in DPS`() {
-      TODO("this will be painful")
+    fun `throws exception if additional hearings and results found - note this will need to be addressed with more data available`() {
+      val dto = migrationFixtures.WITH_ADDITIONAL_HEARINGS_IN_NOMIS
+      val existing = existing(dto).also {
+        it.hearings.first().oicHearingId = dto.hearings.first().oicHearingId
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "someone")
+      }
+
+      Assertions.assertThatThrownBy {
+        migrateExistingRecordService.accept(dto, existing)
+      }.isInstanceOf(ExistingRecordConflictException::class.java)
+        .hasMessageContaining("${dto.oicIncidentId} has additional hearings and results in nomis")
     }
 
     @Test
-    fun `punishments`() {
-      TODO("various cases to consider")
+    fun `punishments created if they exist in nomis only`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
+      val existing = existing(dto).also {
+        it.hearings.first().oicHearingId = dto.hearings.first().oicHearingId
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
+        it.clearPunishments()
+      }
+
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.CONFINEMENT)
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateExistingRecordServiceTest#sanctionMappings")
+    @ParameterizedTest
+    fun `sanction to punishment mapper maps correctly `(toTest: Triple<OicSanctionCode, Status, PunishmentType>) {
+      assertThat(
+        MigrationEntityBuilder().createPunishment(
+          code = toTest.first.name,
+          status = toTest.second.name,
+        ).mapToPunishmentType(),
+      ).isEqualTo(toTest.third)
+    }
+
+    @Test
+    fun `damages owed mapping`() {
+      assertThat(
+        MigrationEntityBuilder().createPunishment(
+          code = OicSanctionCode.OTHER.name,
+          amount = BigDecimal.ONE,
+        ).mapToPunishmentType(),
+      ).isEqualTo(PunishmentType.DAMAGES_OWED)
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateExistingRecordServiceTest#privilegeMappings")
+    @ParameterizedTest
+    fun `forfeit ot privilege mapping`(toTest: Triple<OicSanctionCode, String, PunishmentType>) {
+      assertThat(
+        MigrationEntityBuilder().createPunishment(
+          code = toTest.first.name,
+          comment = toTest.second,
+        ).mapToPunishmentType(),
+      ).isEqualTo(toTest.third)
+    }
+
+    @Test
+    fun `forfeit other mapping`() {
+      assertThat(
+        MigrationEntityBuilder().createPunishment(
+          code = OicSanctionCode.FORFEIT.name,
+          comment = "other",
+        ).mapToPunishmentType("other"),
+      ).isEqualTo(PunishmentType.PRIVILEGE)
+    }
+
+    @Test
+    fun `punishments created if they are not matched with adjudications`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
+      val existing = existing(dto).also {
+        it.hearings.first().oicHearingId = dto.hearings.first().oicHearingId
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
+        it.clearPunishments()
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.EXTRA_WORK,
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 0),
+            ),
+          ),
+        )
+      }
+
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.EXTRA_WORK)
+      assertThat(argumentCaptor.value.getPunishments().last().type).isEqualTo(PunishmentType.CONFINEMENT)
+    }
+
+    @Disabled
+    @Test
+    fun `punishments are matched in adjudications - add latest schedule`() {
+      // this will be captured during discovery with John
     }
   }
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // na
+  }
+
+  companion object {
+    @JvmStatic
+    fun sanctionMappings(): Stream<Triple<OicSanctionCode, Status, PunishmentType>> =
+      listOf(
+        Triple(OicSanctionCode.REMACT, Status.IMMEDIATE, PunishmentType.REMOVAL_ACTIVITY),
+        Triple(OicSanctionCode.REMWIN, Status.IMMEDIATE, PunishmentType.REMOVAL_WING),
+        Triple(OicSanctionCode.CC, Status.IMMEDIATE, PunishmentType.CONFINEMENT),
+        Triple(OicSanctionCode.CAUTION, Status.IMMEDIATE, PunishmentType.CAUTION),
+        Triple(OicSanctionCode.ADA, Status.IMMEDIATE, PunishmentType.ADDITIONAL_DAYS),
+        Triple(OicSanctionCode.ADA, Status.PROSPECTIVE, PunishmentType.PROSPECTIVE_DAYS),
+        Triple(OicSanctionCode.STOP_PCT, Status.IMMEDIATE, PunishmentType.EARNINGS),
+        Triple(OicSanctionCode.EXTW, Status.IMMEDIATE, PunishmentType.EXTRA_WORK),
+        Triple(OicSanctionCode.EXTRA_WORK, Status.IMMEDIATE, PunishmentType.EXCLUSION_WORK),
+      ).stream()
+
+    @JvmStatic
+    fun privilegeMappings(): Stream<Triple<OicSanctionCode, String, PunishmentType>> =
+      listOf(
+        Triple(OicSanctionCode.FORFEIT, PrivilegeType.CANTEEN.name, PunishmentType.PRIVILEGE),
+        Triple(OicSanctionCode.FORFEIT, PrivilegeType.ASSOCIATION.name, PunishmentType.PRIVILEGE),
+        Triple(OicSanctionCode.FORFEIT, PrivilegeType.FACILITIES.name, PunishmentType.PRIVILEGE),
+        Triple(OicSanctionCode.FORFEIT, PrivilegeType.MONEY.name, PunishmentType.PRIVILEGE),
+        Triple(OicSanctionCode.FORFEIT, PrivilegeType.TV.name, PunishmentType.PRIVILEGE),
+      ).stream()
   }
 }

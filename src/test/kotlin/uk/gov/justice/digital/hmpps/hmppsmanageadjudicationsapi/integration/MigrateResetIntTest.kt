@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
@@ -106,7 +105,6 @@ class MigrateResetIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
   }
 
-  @Disabled("disabled for now, as punishment mapper for sanction seq not implemented for existing yet")
   @Test
   fun `reset migration - phase 3 resets hearings, hearing outcomes and punishments to original data`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
