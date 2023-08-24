@@ -121,6 +121,12 @@ class MigrateResetIntTest : SqsIntegrationTestBase() {
       ),
     )
 
+    webTestClient.delete()
+      .uri("/reported-adjudications/migrate/reset")
+      .headers(setHeaders(activeCaseload = null, roles = listOf("ROLE_MIGRATE_ADJUDICATIONS")))
+      .exchange()
+      .expectStatus().isOk
+
     webTestClient.get()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
       .headers(setHeaders())

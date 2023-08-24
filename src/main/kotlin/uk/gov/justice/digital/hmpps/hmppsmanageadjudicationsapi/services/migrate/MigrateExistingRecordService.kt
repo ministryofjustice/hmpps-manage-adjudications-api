@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePreMigrate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingPreMigrate
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
@@ -91,18 +92,21 @@ class MigrateExistingRecordService(
     )
   }
 
+  private fun ReportedAdjudication.addHearingsAndOutcomes(hearingsAndResultsAndOutcomes: Pair<List<Hearing>, List<Outcome>>) {
+    val hearingsAndResults = hearingsAndResultsAndOutcomes.first
+    val outcomes = hearingsAndResultsAndOutcomes.second
+
+    hearingsAndResults.forEach { this.hearings.add(it.also { hearing -> hearing.migrated = true }) }
+    outcomes.forEach { this.addOutcome(it.also { outcome -> outcome.migrated = true }) }
+  }
+
   private fun ReportedAdjudication.processPhase1(adjudicationMigrateDto: AdjudicationMigrateDto) {
     val hearingsAndResultsAndOutcomes = adjudicationMigrateDto.hearings.sortedBy { it.hearingDateTime }.toHearingsAndResultsAndOutcomes(
       agencyId = adjudicationMigrateDto.agencyId,
       chargeNumber = this.chargeNumber,
     )
 
-    val hearingsAndResults = hearingsAndResultsAndOutcomes.first
-    val outcomes = hearingsAndResultsAndOutcomes.second
-
-    hearingsAndResults.forEach { this.hearings.add(it.also { hearing -> hearing.migrated = true }) }
-    outcomes.forEach { this.addOutcome(it.also { outcome -> outcome.migrated = true }) }
-
+    this.addHearingsAndOutcomes(hearingsAndResultsAndOutcomes)
     this.processPunishments(adjudicationMigrateDto.punishments)
   }
 
@@ -130,7 +134,7 @@ class MigrateExistingRecordService(
   }
 
   private fun ReportedAdjudication.processPhase3(adjudicationMigrateDto: AdjudicationMigrateDto) {
-    this.hearings.forEach { hearing ->
+    this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.filterOutPreviousPhases() }.forEach { hearing ->
       val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { it.oicHearingId == hearing.oicHearingId }
         ?: throw ExistingRecordConflictException("${adjudicationMigrateDto.oicIncidentId} hearing no longer exists in nomis")
       val nomisHearingResult = nomisHearing.hearingResult
@@ -146,9 +150,19 @@ class MigrateExistingRecordService(
       }
     }
 
-    adjudicationMigrateDto.hearings.forEach { nomisHearing ->
+    adjudicationMigrateDto.hearings.sortedBy { it.hearingDateTime }.forEach { nomisHearing ->
       if (this.hearings.none { it.oicHearingId == nomisHearing.oicHearingId }) {
-        throw ExistingRecordConflictException("${adjudicationMigrateDto.oicIncidentId} has additional hearings and results in nomis")
+        if (listOf(HearingOutcomeCode.ADJOURN, HearingOutcomeCode.REFER_POLICE).contains(this.getLatestHearing()?.hearingOutcome?.code)) {
+          this.addHearingsAndOutcomes(
+            listOf(nomisHearing).toHearingsAndResultsAndOutcomes(
+              agencyId = adjudicationMigrateDto.agencyId,
+              chargeNumber = this.chargeNumber,
+            ),
+          )
+        } else {
+          // need to attempt to add, if its possible to add the new hearing(s)
+          throw ExistingRecordConflictException("${adjudicationMigrateDto.oicIncidentId} has additional hearings and results in nomis")
+        }
       }
     }
 
@@ -162,9 +176,12 @@ class MigrateExistingRecordService(
     val newPunishments = mutableListOf<MigratePunishment>()
 
     sanctions.forEach { sanction ->
-      if (this.none { it.type == sanction.mapToPunishmentType() }) {
+      if (this.none { it.type == sanction.mapToPunishmentType(it.otherPrivilege) }) {
         newPunishments.add(sanction)
       } else {
+        val matches = this.filter { it.type == sanction.mapToPunishmentType(it.otherPrivilege) }
+        if (matches.size > 1) throw ExistingRecordConflictException("${sanction.sanctionCode} matches more than one punishment")
+        matches.first().sanctionSeq = sanction.sanctionSeq
         // TODO("need to update punishment scheduled - part of discovery with John")
       }
     }
@@ -206,6 +223,7 @@ class MigrateExistingRecordService(
   }
 
   companion object {
+    fun Hearing.filterOutPreviousPhases(): Boolean = this.hearingOutcome?.nomisOutcome != true && this.hearingOutcome?.migrated != true
     fun List<Hearing>.hasHearingWithoutResult(): Boolean {
       val hearingsWithoutLast = this.sortedBy { it.dateTimeOfHearing }
       hearingsWithoutLast.toMutableList().removeLast()
