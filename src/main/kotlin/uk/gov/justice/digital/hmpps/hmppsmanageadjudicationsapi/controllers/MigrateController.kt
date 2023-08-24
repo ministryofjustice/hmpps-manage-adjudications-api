@@ -48,8 +48,8 @@ data class PunishmentMapping(
   val punishmentId: Long,
   @Schema(description = "offender book id")
   val bookingId: Long,
-  @Schema(description = "sanction sequence")
-  val sanctionSeq: Long,
+  @Schema(description = "sanction sequence - optional due to nomis records being deleted when created via adjudications")
+  val sanctionSeq: Long? = null,
 )
 
 @PreAuthorize("hasRole('MIGRATE_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
