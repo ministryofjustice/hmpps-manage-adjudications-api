@@ -74,7 +74,7 @@ class MigrateResetIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubNomisHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber, 100)
 
-    initDataForHearings().createHearing()
+    initDataForUnScheduled().createHearing()
 
     webTestClient.put()
       .uri("/scheduled-tasks/check-nomis-created-hearing-outcomes-for-locking")
@@ -111,7 +111,7 @@ class MigrateResetIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing().createChargeProved()
+    initDataForUnScheduled().createHearing().createChargeProved()
     integrationTestData().createPunishments(testDataSet = IntegrationTestData.DEFAULT_ADJUDICATION).expectStatus().isCreated
 
     migrateRecord(

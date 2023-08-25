@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamagesRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.DamagesService
 
 @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
@@ -27,12 +28,14 @@ class DamagesController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     damagesRequest: DamagesRequest,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = damagesService.updateDamages(
-      chargeNumber,
-      damagesRequest.damages,
+  ): ReportedAdjudicationResponse =
+    eventPublishWrapper(
+      event = AdjudicationDomainEventType.DAMAGES_UPDATED,
+      controllerAction = {
+        damagesService.updateDamages(
+          chargeNumber,
+          damagesRequest.damages,
+        )
+      },
     )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
 }

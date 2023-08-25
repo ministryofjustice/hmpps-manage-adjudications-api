@@ -22,7 +22,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   fun setUp() {
     setAuditTime()
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    initDataForHearings().createHearing()
+    initDataForUnScheduled().createHearing()
 
     domainEventsTopicSnsClient.publish(
       PublishRequest.builder()
@@ -178,7 +178,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   fun `get all reports for transfers only `() {
     Thread.sleep(1000)
 
-    initDataForHearings()
+    initDataForUnScheduled()
 
     webTestClient.get()
       .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2010-11-13&status=SCHEDULED,UNSCHEDULED&transfersOnly=true&page=0&size=20")

@@ -226,7 +226,7 @@ class MigrateExistingRecordService(
     fun Hearing.filterOutPreviousPhases(): Boolean = this.hearingOutcome?.nomisOutcome != true && this.hearingOutcome?.migrated != true
     fun List<Hearing>.hasHearingWithoutResult(): Boolean {
       val hearingsWithoutLast = this.sortedBy { it.dateTimeOfHearing }
-      hearingsWithoutLast.toMutableList().removeLast()
+      hearingsWithoutLast.toMutableList().removeLastOrNull()
 
       return hearingsWithoutLast.any { it.hearingOutcome == null }
     }

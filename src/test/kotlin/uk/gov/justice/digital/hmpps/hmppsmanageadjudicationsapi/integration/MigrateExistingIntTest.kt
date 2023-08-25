@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrationEntityBuilder
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class MigrateExistingIntTest : SqsIntegrationTestBase() {
   @BeforeEach
@@ -102,7 +101,7 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubNomisHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber, 100)
 
-    initDataForHearings().createHearing()
+    initDataForUnScheduled().createHearing()
 
     webTestClient.put()
       .uri("/scheduled-tasks/check-nomis-created-hearing-outcomes-for-locking")
@@ -137,7 +136,7 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubNomisHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber, 100)
 
-    initDataForHearings().createHearing()
+    initDataForUnScheduled().createHearing()
 
     webTestClient.put()
       .uri("/scheduled-tasks/check-nomis-created-hearing-outcomes-for-locking")
@@ -171,7 +170,7 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubNomisHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber, 100)
     prisonApiMockServer.stubNomisHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber, 101)
 
-    initDataForHearings().createHearing()
+    initDataForUnScheduled().createHearing()
 
     // note: need to run this, as cant create 2 hearings without results
     webTestClient.put()
@@ -225,11 +224,14 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing().createChargeProved()
+    val dateTimeOfHearing = LocalDateTime.of(2023, 8, 1, 1, 1, 0)
+    initDataForUnScheduled().createHearing().createChargeProved()
     val dto = getExistingRecord(
       oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong(),
       prisonerNumber = IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
+      dateTimeOfHearing = dateTimeOfHearing,
     )
+
     migrateRecord(dto = dto)
 
     webTestClient.get()
@@ -238,23 +240,20 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing").isEqualTo(
-        dto.hearings.first().hearingDateTime.format(
-          DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS"),
-        ),
-      )
+      .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing").isEqualTo("2023-08-01T01:01:00")
       .jsonPath("$.reportedAdjudication.hearings[0].locationId").isEqualTo(dto.hearings.first().locationId)
       .jsonPath("$.reportedAdjudication.hearings[0].oicHearingType").isEqualTo(dto.hearings.first().oicHearingType.name)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator").isEqualTo(dto.hearings.first().adjudicator!!)
   }
 
   companion object {
-    fun getExistingRecord(oicIncidentId: Long, prisonerNumber: String, offenceCode: String = "51:4") = MigrationEntityBuilder().createAdjudication(
+    fun getExistingRecord(oicIncidentId: Long, prisonerNumber: String, offenceCode: String = "51:4", dateTimeOfHearing: LocalDateTime = LocalDateTime.now()) = MigrationEntityBuilder().createAdjudication(
       oicIncidentId = oicIncidentId,
       offence = MigrationEntityBuilder().createOffence(offenceCode = offenceCode, offenceDescription = "updated desc"),
       prisoner = MigrationEntityBuilder().createPrisoner(prisonerNumber = prisonerNumber),
       hearings = listOf(
         MigrationEntityBuilder().createHearing(
+          hearingDateTime = dateTimeOfHearing,
           oicHearingId = 100,
           hearingResult = MigrationEntityBuilder().createHearingResult(),
         ),

@@ -146,33 +146,7 @@ abstract class IntegrationTestBase : TestBase() {
     return intTestData
   }
 
-  protected fun initDataForHearings(): IntegrationTestScenario {
-    val testData = IntegrationTestData.DEFAULT_ADJUDICATION
-    prisonApiMockServer.stubPostAdjudication(testData)
-
-    val intTestData = integrationTestData()
-    val draftUserHeaders = setHeaders(username = testData.createdByUserId)
-
-    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
-      intTestData = intTestData,
-      intTestBase = this,
-      headers = draftUserHeaders,
-    )
-
-    return draftIntTestScenarioBuilder
-      .startDraft(testData)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-      .addDamages()
-      .addEvidence()
-      .addWitnesses()
-      .completeDraft()
-      .acceptReport(testData.chargeNumber, testData.agencyId)
-  }
-
-  protected fun initDataForOutcome(adjudication: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION): IntegrationTestScenario {
+  protected fun initDataForUnScheduled(adjudication: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION): IntegrationTestScenario {
     prisonApiMockServer.stubPostAdjudication(adjudication)
 
     val intTestData = integrationTestData()
