@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 
-import org.hibernate.ScrollMode
-import org.hibernate.SessionFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -10,19 +8,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 
 @Service
 class ResetRecordService(
-  private val sessionFactory: SessionFactory,
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
 
-  fun remove() {
-    val session = sessionFactory.openStatelessSession()
-    val scrollable = session.createNamedQuery("findMigratedRecordsToDelete", ReportedAdjudication::class.java).scroll(ScrollMode.FORWARD_ONLY)
-
-    while (scrollable.next()) {
-      reportedAdjudicationRepository.deleteById(scrollable.get().id!!)
+  fun remove(agency: String) {
+    reportedAdjudicationRepository.findRecordsToDelete(agency).forEach {
+      reportedAdjudicationRepository.deleteById(it)
     }
-
-    session.close()
   }
 
   @Transactional

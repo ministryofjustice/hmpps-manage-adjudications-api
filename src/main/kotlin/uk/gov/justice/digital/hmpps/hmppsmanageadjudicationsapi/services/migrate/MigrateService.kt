@@ -26,9 +26,11 @@ class MigrateService(
 
   fun reset() {
     log.info("starting migration reset")
-    resetRecordService.remove()
-    if (!featureFlagsConfig.skipExistingRecords) {
-      reportedAdjudicationRepository.findByMigratedIsFalse().forEach { resetRecordService.reset(it) }
+    reportedAdjudicationRepository.getDistinctAgencies().forEach {
+      resetRecordService.remove(it)
+      if (!featureFlagsConfig.skipExistingRecords) {
+        reportedAdjudicationRepository.findRecordsToReset(it).forEach { resetRecordService.reset(it) }
+      }
     }
   }
 
