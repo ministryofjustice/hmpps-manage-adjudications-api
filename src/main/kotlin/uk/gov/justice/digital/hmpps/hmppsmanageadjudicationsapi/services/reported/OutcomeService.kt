@@ -279,7 +279,7 @@ class OutcomeService(
 
     fun Outcome?.canAmendViaApi(hasHearings: Boolean, isReferralOutcome: Boolean) {
       if ((hasHearings && !isReferralOutcome && this?.code != OutcomeCode.QUASHED) ||
-        (hasHearings && isReferralOutcome && this?.code != OutcomeCode.NOT_PROCEED) ||
+        (hasHearings && isReferralOutcome && !listOf(OutcomeCode.NOT_PROCEED, OutcomeCode.REFER_GOV).contains(this?.code)) ||
         (!hasHearings && !listOf(OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED).contains(this?.code))
       ) {
         throw ValidationException("unable to amend this outcome")

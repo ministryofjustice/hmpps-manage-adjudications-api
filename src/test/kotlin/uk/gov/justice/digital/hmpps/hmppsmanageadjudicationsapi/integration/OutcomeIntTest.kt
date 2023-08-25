@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDateTime
 
 class OutcomeIntTest : SqsIntegrationTestBase() {
@@ -395,6 +396,30 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
       .isEqualTo("updated")
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.reason")
       .isEqualTo(NotProceedReason.WITNESS_NOT_ATTEND.name)
+  }
+
+  @Test
+  fun `amend outcome - refer gov when its a referral outcome`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+
+    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD).createOutcomeReferGov()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "details" to "updated",
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.REFER_GOV.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.details")
+      .isEqualTo("updated")
   }
 
   @Test

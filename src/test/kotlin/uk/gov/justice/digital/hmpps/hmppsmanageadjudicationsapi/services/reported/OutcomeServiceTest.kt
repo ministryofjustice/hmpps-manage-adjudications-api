@@ -744,7 +744,39 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response).isNotNull
     }
 
-    @CsvSource("REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED", "REFER_GOV")
+    @Test
+    fun `amend refer gov succeeds`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
+          it.status = OutcomeCode.REFER_GOV.status
+          it.addOutcome(
+            Outcome(code = OutcomeCode.REFER_INAD, details = "previous").also {
+                o ->
+              o.createDateTime = LocalDateTime.now()
+            },
+          )
+          it.addOutcome(
+            Outcome(code = OutcomeCode.REFER_GOV, details = "previous").also {
+                o ->
+              o.createDateTime = LocalDateTime.now().plusDays(1)
+            },
+          )
+        },
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      outcomeService.amendOutcomeViaApi("1235", "updated")
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().first()).isNotNull
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.REFER_INAD)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.REFER_GOV)
+      assertThat(argumentCaptor.value.getOutcomes().last().details).isEqualTo("updated")
+    }
+
+    @CsvSource("REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
     @ParameterizedTest
     fun `throws validation exception if invalid outcome type for amend `(code: OutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(

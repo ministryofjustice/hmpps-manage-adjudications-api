@@ -141,7 +141,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateSanction(IntegrationTestData.ADJUDICATION_2.chargeNumber)
 
     initDataForOutcome().createHearing().createChargeProved()
-    initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
+    initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(oicHearingType = OicHearingType.INAD_YOI, dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
       .createChargeProved(overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
 
     val result = createPunishments(type = PunishmentType.REMOVAL_WING)
@@ -196,7 +196,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateSanction(IntegrationTestData.ADJUDICATION_2.chargeNumber)
 
     initDataForOutcome().createHearing().createChargeProved()
-    initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
+    initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(oicHearingType = OicHearingType.INAD_YOI, dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
       .createChargeProved(overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
 
     val result = createPunishments(type = PunishmentType.REMOVAL_WING)
@@ -280,7 +280,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.ADJUDICATION_2.chargeNumber)
 
     initDataForOutcome().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved()
-    initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(dateTimeOfHearing = IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing, overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
+    initDataForOutcome(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(oicHearingType = OicHearingType.INAD_YOI, dateTimeOfHearing = IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing, overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
 
     webTestClient.post()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/v2")
