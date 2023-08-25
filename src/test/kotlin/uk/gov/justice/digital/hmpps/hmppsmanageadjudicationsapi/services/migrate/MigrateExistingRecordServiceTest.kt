@@ -366,6 +366,20 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings[1].hearingOutcome!!.reason).isEqualTo(HearingOutcomeAdjournReason.OTHER)
       assertThat(argumentCaptor.value.hearings.last().hearingOutcome).isNull()
     }
+
+    @Test
+    fun `ignores empty hearings list`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.ADULT_SINGLE_OFFENCE
+      val existing = existing(dto).also {
+        it.hearings.clear()
+      }
+
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.isEmpty()).isTrue
+    }
   }
 
   @Nested

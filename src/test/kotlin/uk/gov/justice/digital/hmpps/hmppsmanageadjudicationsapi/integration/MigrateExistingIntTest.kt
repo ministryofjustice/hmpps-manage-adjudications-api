@@ -102,7 +102,7 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubNomisHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber, 100)
 
-    initDataForHearings().createHearing()
+    initDataForOutcome().createHearing()
 
     webTestClient.put()
       .uri("/scheduled-tasks/check-nomis-created-hearing-outcomes-for-locking")
@@ -137,7 +137,7 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubNomisHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber, 100)
 
-    initDataForHearings().createHearing()
+    initDataForOutcome().createHearing()
 
     webTestClient.put()
       .uri("/scheduled-tasks/check-nomis-created-hearing-outcomes-for-locking")
@@ -171,7 +171,7 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubNomisHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber, 100)
     prisonApiMockServer.stubNomisHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber, 101)
 
-    initDataForHearings().createHearing()
+    initDataForOutcome().createHearing()
 
     // note: need to run this, as cant create 2 hearings without results
     webTestClient.put()
@@ -225,7 +225,7 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing().createChargeProved()
+    initDataForOutcome().createHearing().createChargeProved()
     val dto = getExistingRecord(
       oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong(),
       prisonerNumber = IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,

@@ -27,7 +27,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = if (hearingOutcomeCode == HearingOutcomeCode.REFER_GOV) OicHearingType.INAD_ADULT else OicHearingType.GOV_ADULT).createReferral(hearingOutcomeCode)
+    initDataForOutcome().createHearing(oicHearingType = if (hearingOutcomeCode == HearingOutcomeCode.REFER_GOV) OicHearingType.INAD_ADULT else OicHearingType.GOV_ADULT).createReferral(hearingOutcomeCode)
 
     webTestClient.delete()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/remove-referral")
@@ -45,7 +45,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = if (hearingOutcomeCode == HearingOutcomeCode.REFER_GOV) OicHearingType.INAD_ADULT else OicHearingType.GOV_ADULT).createReferral(hearingOutcomeCode)
+    initDataForOutcome().createHearing(oicHearingType = if (hearingOutcomeCode == HearingOutcomeCode.REFER_GOV) OicHearingType.INAD_ADULT else OicHearingType.GOV_ADULT).createReferral(hearingOutcomeCode)
       .createOutcomeNotProceed().expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
@@ -336,7 +336,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
       .createOutcomeReferGov().expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
@@ -350,7 +350,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createReferral(HearingOutcomeCode.REFER_GOV)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createReferral(HearingOutcomeCode.REFER_GOV)
       .createOutcomeNotProceed().expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
@@ -364,7 +364,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createReferral(HearingOutcomeCode.REFER_GOV)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createReferral(HearingOutcomeCode.REFER_GOV)
 
     integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, LocalDateTime.now().plusDays(1))
       .expectStatus().isCreated
@@ -381,7 +381,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
       .createOutcomeReferGov().expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
@@ -403,7 +403,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
       .createOutcomeReferGov().expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
@@ -428,7 +428,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
       .createOutcomeReferGov().expectStatus().isCreated
       .expectBody()
 
@@ -456,7 +456,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubQuashSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
       .createOutcomeReferGov().expectStatus().isCreated
       .expectBody()
 
@@ -486,7 +486,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.GOV_ADULT)
       .createReferral(HearingOutcomeCode.REFER_INAD)
 
     integrationTestData().createHearing(
@@ -546,7 +546,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.GOV_ADULT)
       .createReferral(HearingOutcomeCode.REFER_INAD)
 
     integrationTestData().createHearing(
@@ -594,7 +594,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubQuashSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.GOV_ADULT)
       .createReferral(HearingOutcomeCode.REFER_INAD)
 
     integrationTestData().createHearing(
@@ -646,7 +646,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.GOV_ADULT)
       .createReferral(HearingOutcomeCode.REFER_INAD)
 
     integrationTestData().createHearing(
@@ -695,7 +695,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
       .createOutcomeReferGov().expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
@@ -721,7 +721,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
+    initDataForOutcome().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
       .createOutcomeReferGov().expectStatus().isCreated
 
     integrationTestData().createHearing(testDataSet = IntegrationTestData.DEFAULT_ADJUDICATION, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(3))
