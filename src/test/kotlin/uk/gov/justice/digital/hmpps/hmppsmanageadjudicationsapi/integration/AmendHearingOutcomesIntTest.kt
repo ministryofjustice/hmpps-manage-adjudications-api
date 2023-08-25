@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 
 class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
 
@@ -225,7 +226,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubDeleteSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForHearings().createHearing().also {
+    initDataForHearings().createHearing(oicHearingType = if (from == ReportedAdjudicationStatus.REFER_GOV) OicHearingType.INAD_ADULT else OicHearingType.GOV_ADULT).also {
       when (from) {
         ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV -> it.createReferral(HearingOutcomeCode.valueOf(from.name))
         ReportedAdjudicationStatus.DISMISSED -> it.createDismissed()

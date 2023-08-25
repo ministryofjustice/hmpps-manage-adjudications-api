@@ -86,7 +86,7 @@ class IntegrationTestScenario(
   fun createHearing(
     overrideTestDataSet: AdjudicationIntTestDataSet = testAdjudicationDataSet,
     dateTimeOfHearing: LocalDateTime? = null,
-    oicHearingType: OicHearingType? = OicHearingType.GOV,
+    oicHearingType: OicHearingType? = OicHearingType.GOV_ADULT,
   ): IntegrationTestScenario {
     intTestData.createHearing(
       overrideTestDataSet,
