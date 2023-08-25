@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.EvidenceService
 
 @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
@@ -27,12 +28,14 @@ class EvidenceController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     evidenceRequest: EvidenceRequest,
-  ): ReportedAdjudicationResponse {
-    val reportedAdjudication = evidenceService.updateEvidence(
-      chargeNumber,
-      evidenceRequest.evidence,
+  ): ReportedAdjudicationResponse =
+    eventPublishWrapper(
+      event = AdjudicationDomainEventType.EVIDENCE_UPDATED,
+      controllerAction = {
+        evidenceService.updateEvidence(
+          chargeNumber,
+          evidenceRequest.evidence,
+        )
+      },
     )
-
-    return ReportedAdjudicationResponse(reportedAdjudication)
-  }
 }
