@@ -1,11 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 
 import org.assertj.core.api.Assertions.assertThat
-import org.hibernate.SessionFactory
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
@@ -33,8 +31,7 @@ import java.time.LocalDateTime
 
 class ResetRecordServiceTest : ReportedAdjudicationTestBase() {
 
-  private val sessionFactory: SessionFactory = mock()
-  private val resetRecordService = ResetRecordService(sessionFactory, reportedAdjudicationRepository)
+  private val resetRecordService = ResetRecordService(reportedAdjudicationRepository)
 
   @Test
   fun `resets an exiting migration damages`() {

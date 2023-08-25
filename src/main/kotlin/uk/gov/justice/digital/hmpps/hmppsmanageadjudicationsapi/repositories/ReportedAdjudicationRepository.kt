@@ -102,10 +102,22 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   fun findByPunishmentsConsecutiveChargeNumberAndPunishmentsType(consecutiveChargeNumber: String, type: PunishmentType): List<ReportedAdjudication>
 
   @Query(
-    value = "select ra.charge_number from reported_adjudications ra where ra.migrated is false",
+    value = "select ra.charge_number from reported_adjudications ra where ra.migrated is false and ra.originating_agency_id = :agency",
     nativeQuery = true,
   )
-  fun findByMigratedIsFalse(): List<String>
+  fun findRecordsToReset(@Param("agency") agency: String): List<String>
+
+  @Query(
+    value = "select ra.id from reported_adjudications ra where ra.migrated is true and ra.originating_agency_id = :agency",
+    nativeQuery = true,
+  )
+  fun findRecordsToDelete(@Param("agency") agency: String): List<Long>
+
+  @Query(
+    value = "select distinct ra.originating_agency_id from reported_adjudications ra",
+    nativeQuery = true,
+  )
+  fun getDistinctAgencies(): List<String>
 
   companion object {
 
