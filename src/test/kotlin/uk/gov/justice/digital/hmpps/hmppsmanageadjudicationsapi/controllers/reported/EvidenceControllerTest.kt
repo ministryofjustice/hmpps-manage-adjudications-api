@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.EvidenceService
 
 @WebMvcTest(
@@ -55,6 +57,7 @@ class EvidenceControllerTest : TestControllerBase() {
       .andExpect(MockMvcResultMatchers.status().isOk)
 
     verify(evidenceService).updateEvidence("1", EVIDENCE_REQUEST.evidence)
+    verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.EVIDENCE_UPDATED, REPORTED_ADJUDICATION_DTO)
   }
 
   private fun setEvidenceRequest(
