@@ -36,6 +36,7 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
   @ParameterizedTest
   fun `reset migration calls database reset`(skip: Boolean) {
     whenever(featureFlagsConfig.skipExistingRecords).thenReturn(skip)
+    whenever(reportedAdjudicationRepository.getDistinctAgencies()).thenReturn(listOf("1"))
     whenever(reportedAdjudicationRepository.findRecordsToReset(any())).thenReturn(listOf("1"))
     migrateService.reset()
     verify(resetRecordService, atLeastOnce()).remove(any())
