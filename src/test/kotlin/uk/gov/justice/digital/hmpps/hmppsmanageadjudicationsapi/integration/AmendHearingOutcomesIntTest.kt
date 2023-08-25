@@ -27,7 +27,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForOutcome().createHearing().createReferral(code = HearingOutcomeCode.REFER_POLICE)
+    initDataForUnScheduled().createHearing().createReferral(code = HearingOutcomeCode.REFER_POLICE)
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/${ReportedAdjudicationStatus.REFER_POLICE.name}/v2")
@@ -55,7 +55,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
   fun `amend hearing outcome test - before - refer inad, after - refer inad`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    initDataForOutcome().createHearing().createReferral(code = HearingOutcomeCode.REFER_INAD)
+    initDataForUnScheduled().createHearing().createReferral(code = HearingOutcomeCode.REFER_INAD)
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/${ReportedAdjudicationStatus.REFER_INAD.name}/v2")
@@ -84,7 +84,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForOutcome().createHearing().createAdjourn()
+    initDataForUnScheduled().createHearing().createAdjourn()
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/${ReportedAdjudicationStatus.ADJOURNED.name}/v2")
@@ -120,7 +120,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubDeleteSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForOutcome().createHearing().createChargeProved()
+    initDataForUnScheduled().createHearing().createChargeProved()
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/${ReportedAdjudicationStatus.CHARGE_PROVED.name}/v2")
@@ -149,7 +149,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForOutcome().createHearing().createNotProceed()
+    initDataForUnScheduled().createHearing().createNotProceed()
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/${ReportedAdjudicationStatus.NOT_PROCEED.name}/v2")
@@ -183,7 +183,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubAmendHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForOutcome().createHearing().createDismissed()
+    initDataForUnScheduled().createHearing().createDismissed()
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/${ReportedAdjudicationStatus.DISMISSED.name}/v2")
@@ -226,7 +226,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubDeleteSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForOutcome().createHearing(oicHearingType = if (from == ReportedAdjudicationStatus.REFER_GOV) OicHearingType.INAD_ADULT else OicHearingType.GOV_ADULT).also {
+    initDataForUnScheduled().createHearing(oicHearingType = if (from == ReportedAdjudicationStatus.REFER_GOV) OicHearingType.INAD_ADULT else OicHearingType.GOV_ADULT).also {
       when (from) {
         ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV -> it.createReferral(HearingOutcomeCode.valueOf(from.name))
         ReportedAdjudicationStatus.DISMISSED -> it.createDismissed()
@@ -322,7 +322,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForOutcome().createOutcomeReferPolice().createHearing().createAdjourn()
+    initDataForUnScheduled().createOutcomeReferPolice().createHearing().createAdjourn()
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/${ReportedAdjudicationStatus.DISMISSED.name}/v2")
@@ -345,7 +345,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForOutcome().createHearing().createReferral(HearingOutcomeCode.REFER_POLICE).createOutcomeNotProceed()
+    initDataForUnScheduled().createHearing().createReferral(HearingOutcomeCode.REFER_POLICE).createOutcomeNotProceed()
 
     webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/${ReportedAdjudicationStatus.REFER_POLICE.name}/v2")
@@ -368,7 +368,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubDeleteSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    initDataForOutcome().createHearing().createChargeProved().createPunishments()
+    initDataForUnScheduled().createHearing().createChargeProved().createPunishments()
 
     amendOutcomeRequest(
       request = AmendHearingOutcomeRequest(adjudicator = "", plea = HearingOutcomePlea.GUILTY, details = ""),

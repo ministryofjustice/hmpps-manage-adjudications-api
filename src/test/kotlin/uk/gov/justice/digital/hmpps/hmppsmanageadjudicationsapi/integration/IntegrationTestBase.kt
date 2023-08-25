@@ -146,7 +146,7 @@ abstract class IntegrationTestBase : TestBase() {
     return intTestData
   }
 
-  protected fun initDataForOutcome(adjudication: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION): IntegrationTestScenario {
+  protected fun initDataForUnScheduled(adjudication: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION): IntegrationTestScenario {
     prisonApiMockServer.stubPostAdjudication(adjudication)
 
     val intTestData = integrationTestData()
