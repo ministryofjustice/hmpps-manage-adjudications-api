@@ -287,7 +287,7 @@ class OutcomeService(
     }
 
     fun Outcome?.canAmendViaApi(hasHearings: Boolean, isReferralOutcome: Boolean) {
-      if ((hasHearings && !isReferralOutcome && this?.code != OutcomeCode.QUASHED) ||
+      if ((hasHearings && !isReferralOutcome && !listOf(OutcomeCode.QUASHED, OutcomeCode.NOT_PROCEED).contains(this?.code)) ||
         (hasHearings && isReferralOutcome && !listOf(OutcomeCode.NOT_PROCEED, OutcomeCode.REFER_GOV).contains(this?.code)) ||
         (!hasHearings && !listOf(OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED).contains(this?.code))
       ) {
