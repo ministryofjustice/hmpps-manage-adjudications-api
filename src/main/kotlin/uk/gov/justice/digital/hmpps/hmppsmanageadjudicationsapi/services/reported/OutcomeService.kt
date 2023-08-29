@@ -214,9 +214,15 @@ class OutcomeService(
 
   fun deleteOutcome(chargeNumber: String, id: Long? = null): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
+    val outcomeHistory = reportedAdjudication.getOutcomeHistory()
+    val indexOfReferralOutcome = outcomeHistory.indexOfLast { it.outcome?.referralOutcome?.code == OutcomeCode.REFER_GOV }
+    val previousOutcomeIsReferGovReferral = indexOfReferralOutcome != -1 && indexOfReferralOutcome == outcomeHistory.size - 2
 
     val outcomeToDelete = when (id) {
-      null -> reportedAdjudication.latestOutcome()?.canDelete(reportedAdjudication.hearings.isNotEmpty()) ?: throw EntityNotFoundException("Outcome not found for $chargeNumber")
+      null -> reportedAdjudication.latestOutcome()?.canDelete(
+        hasHearings = reportedAdjudication.hearings.isNotEmpty(),
+        outcomeReferGovReferral = previousOutcomeIsReferGovReferral,
+      ) ?: throw EntityNotFoundException("Outcome not found for $chargeNumber")
       else -> reportedAdjudication.getOutcome(id)
     }.also {
       it.deleted = true
@@ -261,8 +267,8 @@ class OutcomeService(
       }
     }
 
-    fun Outcome.canDelete(hasHearings: Boolean): Outcome {
-      val acceptableItems = if (!hasHearings) listOf(OutcomeCode.NOT_PROCEED) else listOf(OutcomeCode.QUASHED)
+    fun Outcome.canDelete(hasHearings: Boolean, outcomeReferGovReferral: Boolean): Outcome {
+      val acceptableItems = if (!hasHearings || outcomeReferGovReferral) listOf(OutcomeCode.NOT_PROCEED) else listOf(OutcomeCode.QUASHED)
       if (acceptableItems.none { it == this.code }) throw ValidationException("Unable to delete via api - DEL/outcome")
 
       return this
