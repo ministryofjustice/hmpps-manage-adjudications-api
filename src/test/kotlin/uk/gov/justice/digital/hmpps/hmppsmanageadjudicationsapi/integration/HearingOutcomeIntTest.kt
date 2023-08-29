@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
@@ -11,6 +12,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHear
 import java.time.LocalDateTime
 
 class HearingOutcomeIntTest : SqsIntegrationTestBase() {
+
+  @BeforeEach
+  fun setUp() {
+    setAuditTime(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME)
+  }
 
   @Nested
   inner class Adjourn {
