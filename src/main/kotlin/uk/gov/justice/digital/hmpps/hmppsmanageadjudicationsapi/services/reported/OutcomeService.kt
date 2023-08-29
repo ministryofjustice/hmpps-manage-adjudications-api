@@ -215,9 +215,8 @@ class OutcomeService(
   fun deleteOutcome(chargeNumber: String, id: Long? = null): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
     val outcomeHistory = reportedAdjudication.getOutcomeHistory()
-    val previousOutcomeIsReferGovReferral = outcomeHistory.indexOfLast {
-      it.outcome?.referralOutcome?.code == OutcomeCode.REFER_GOV
-    } == outcomeHistory.size - 2
+    val indexOfReferralOutcome = outcomeHistory.indexOfLast { it.outcome?.referralOutcome?.code == OutcomeCode.REFER_GOV }
+    val previousOutcomeIsReferGovReferral = indexOfReferralOutcome != -1 && indexOfReferralOutcome == outcomeHistory.size - 2
 
     val outcomeToDelete = when (id) {
       null -> reportedAdjudication.latestOutcome()?.canDelete(
