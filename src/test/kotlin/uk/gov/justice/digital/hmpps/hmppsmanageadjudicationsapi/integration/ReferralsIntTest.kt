@@ -398,6 +398,31 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `REFER_INAD referral outcome REFER_GOV next steps NOT_PROCEED - remove NOT PROCEED`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubDeleteHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+
+    initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+      .createReferral(HearingOutcomeCode.REFER_INAD)
+      .createOutcomeReferGov().expectStatus().isCreated
+
+    integrationTestData().createOutcomeNotProceed(testDataSet = IntegrationTestData.DEFAULT_ADJUDICATION)
+      .expectStatus().isCreated
+
+    webTestClient.delete()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.REFER_GOV.name)
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
+  }
+
+  @Test
   fun `REFER_INAD referral outcome REFER_GOV next steps SCHEDULE_HEARING`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)

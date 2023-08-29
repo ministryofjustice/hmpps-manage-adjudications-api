@@ -557,6 +557,26 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response).isNotNull
     }
+
+    @Test
+    fun `deletes NOT_PROCEED from REFER_GOV`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
+        reportedAdjudication
+          .also {
+            it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
+            it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD).also { o -> o.createDateTime = LocalDateTime.now() })
+            it.addOutcome(Outcome(code = OutcomeCode.REFER_GOV).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) })
+            it.addOutcome(Outcome(code = OutcomeCode.NOT_PROCEED).also { o -> o.createDateTime = LocalDateTime.now().plusDays(2) })
+          },
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      outcomeService.deleteOutcome(chargeNumber = "1")
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.REFER_GOV)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.REFER_GOV)
+    }
   }
 
   @Nested

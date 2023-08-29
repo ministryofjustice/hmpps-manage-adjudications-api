@@ -330,7 +330,7 @@ class OutcomeController(
       chargeNumber = chargeNumber,
     ).toResponse()
 
-  @Operation(summary = "remove a not proceed without a referral or hearing, or a quashed outcome")
+  @Operation(summary = "remove a not proceed without a referral outcome, or a quashed outcome")
   @DeleteMapping(value = ["/{chargeNumber}/outcome"])
   @ResponseStatus(HttpStatus.OK)
   fun removeNotProceedWithoutReferralOrQuashed(
