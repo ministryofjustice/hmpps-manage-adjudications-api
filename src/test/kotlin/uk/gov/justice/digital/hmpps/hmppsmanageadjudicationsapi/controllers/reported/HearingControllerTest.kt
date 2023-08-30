@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -26,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.AmendHearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
@@ -97,6 +99,7 @@ class HearingControllerTest : TestControllerBase() {
       createHearingRequest(1, HEARING_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
       verify(hearingService).createHearing("1", HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
+      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_CREATED, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun createHearingRequest(
@@ -148,6 +151,7 @@ class HearingControllerTest : TestControllerBase() {
       deleteHearingRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(hearingService).deleteHearing("1")
+      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_DELETED, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun deleteHearingRequest(
@@ -207,6 +211,7 @@ class HearingControllerTest : TestControllerBase() {
       amendHearingRequest(1, HEARING_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(hearingService).amendHearing("1", HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
+      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_UPDATED, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun amendHearingRequest(

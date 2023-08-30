@@ -95,6 +95,9 @@ enum class AdjudicationDomainEventType(val value: String, val description: Strin
   ADJUDICATION_CREATED("adjudication.report.created", "An adjudication has been created: ", AuditType.ADJUDICATION_CREATED),
   DAMAGES_UPDATED("adjudication.damages.updated", "Adjudication damages updated: ", AuditType.DAMAGES_UPDATED),
   EVIDENCE_UPDATED("adjudication.evidence.updated", "Adjudication evidence updated: ", AuditType.EVIDENCE_UPDATED),
+  HEARING_CREATED("adjudication.hearing.created", "Adjudication hearing created: ", AuditType.HEARING_CREATED),
+  HEARING_UPDATED("adjudication.hearing.updated", "Adjudication hearing updated: ", AuditType.HEARING_UPDATED),
+  HEARING_DELETED("adjudication.hearing.deleted", "Adjudication hearing deleted: ", AuditType.HEARING_DELETED),
 }
 
 fun Instant.toOffsetDateFormat(): String =
