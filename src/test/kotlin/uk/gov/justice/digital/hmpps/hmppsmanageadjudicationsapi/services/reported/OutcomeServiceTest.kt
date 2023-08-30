@@ -765,6 +765,39 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `amend not proceed from referral outcome refer gov succeeds `() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
+          it.status = OutcomeCode.NOT_PROCEED.status
+          it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD).also { o -> o.createDateTime = LocalDateTime.now() })
+          it.addOutcome(Outcome(code = OutcomeCode.REFER_GOV).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) })
+          it.addOutcome(
+            Outcome(code = OutcomeCode.NOT_PROCEED, details = "previous", reason = NotProceedReason.NOT_FAIR).also {
+                o ->
+              o.createDateTime = LocalDateTime.now().plusDays(2)
+            },
+          )
+        },
+      )
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val response = outcomeService.amendOutcomeViaApi(
+        chargeNumber = "1235",
+        details = "updated",
+        reason = NotProceedReason.WITNESS_NOT_ATTEND,
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().last()).isNotNull
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.NOT_PROCEED)
+      assertThat(argumentCaptor.value.getOutcomes().last().details).isEqualTo("updated")
+
+      assertThat(response).isNotNull
+    }
+
+    @Test
     fun `amend refer gov succeeds`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
@@ -796,7 +829,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().details).isEqualTo("updated")
     }
 
-    @CsvSource("REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
+    @CsvSource("REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "CHARGE_PROVED", "DISMISSED")
     @ParameterizedTest
     fun `throws validation exception if invalid outcome type for amend `(code: OutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(

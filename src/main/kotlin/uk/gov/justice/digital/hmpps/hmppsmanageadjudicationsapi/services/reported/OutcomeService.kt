@@ -114,7 +114,11 @@ class OutcomeService(
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
     val isReferralOutcome = if (reportedAdjudication.hearings.isNotEmpty()) getOutcomes(chargeNumber).isLatestReferralOutcome() else false
-    reportedAdjudication.latestOutcome().canAmendViaApi(reportedAdjudication.hearings.isNotEmpty(), isReferralOutcome)
+    reportedAdjudication.latestOutcome().canAmendViaApi(
+      hasHearings = reportedAdjudication.hearings.isNotEmpty(),
+      isReferralOutcome = isReferralOutcome,
+      outcomeReferGovReferral = reportedAdjudication.previousOutcomeIsReferGovReferral(),
+    )
 
     return amendOutcome(
       chargeNumber = chargeNumber,
@@ -217,13 +221,9 @@ class OutcomeService(
 
     val outcomeToDelete = when (id) {
       null -> {
-        val outcomeHistory = reportedAdjudication.getOutcomeHistory()
-        val indexOfReferralOutcome = outcomeHistory.indexOfLast { it.outcome?.referralOutcome?.code == OutcomeCode.REFER_GOV }
-        val previousOutcomeIsReferGovReferral = indexOfReferralOutcome != -1 && indexOfReferralOutcome == outcomeHistory.size - 2
-
         reportedAdjudication.latestOutcome()?.canDelete(
           hasHearings = reportedAdjudication.hearings.isNotEmpty(),
-          outcomeReferGovReferral = previousOutcomeIsReferGovReferral,
+          outcomeReferGovReferral = reportedAdjudication.previousOutcomeIsReferGovReferral(),
         ) ?: throw EntityNotFoundException("Outcome not found for $chargeNumber")
       }
       else -> reportedAdjudication.getOutcome(id)
@@ -258,6 +258,12 @@ class OutcomeService(
 
   fun getLatestOutcome(chargeNumber: String): Outcome? = findByChargeNumber(chargeNumber).latestOutcome()
 
+  private fun ReportedAdjudication.previousOutcomeIsReferGovReferral(): Boolean {
+    val outcomeHistory = this.getOutcomeHistory()
+    val indexOfReferralOutcome = outcomeHistory.indexOfLast { it.outcome?.referralOutcome?.code == OutcomeCode.REFER_GOV }
+    return indexOfReferralOutcome != -1 && indexOfReferralOutcome == outcomeHistory.size - 2
+  }
+
   companion object {
     fun ReportedAdjudication.latestOutcome(): Outcome? = this.getOutcomes().maxByOrNull { it.createDateTime!! }
 
@@ -286,8 +292,9 @@ class OutcomeService(
       }
     }
 
-    fun Outcome?.canAmendViaApi(hasHearings: Boolean, isReferralOutcome: Boolean) {
-      if ((hasHearings && !isReferralOutcome && this?.code != OutcomeCode.QUASHED) ||
+    fun Outcome?.canAmendViaApi(hasHearings: Boolean, isReferralOutcome: Boolean, outcomeReferGovReferral: Boolean) {
+      if ((hasHearings && !isReferralOutcome && !outcomeReferGovReferral && OutcomeCode.QUASHED != this?.code) ||
+        (hasHearings && !isReferralOutcome && outcomeReferGovReferral && OutcomeCode.NOT_PROCEED != this?.code) ||
         (hasHearings && isReferralOutcome && !listOf(OutcomeCode.NOT_PROCEED, OutcomeCode.REFER_GOV).contains(this?.code)) ||
         (!hasHearings && !listOf(OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED).contains(this?.code))
       ) {
