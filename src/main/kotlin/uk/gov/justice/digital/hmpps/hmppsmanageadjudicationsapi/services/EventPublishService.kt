@@ -29,6 +29,7 @@ class EventPublishService(
       AdditionalInformation(
         chargeNumber = adjudication.chargeNumber,
         prisonId = adjudication.originatingAgencyId,
+        prisonerNumber = adjudication.prisonerNumber,
       ),
     )
 
