@@ -42,6 +42,7 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
       AdditionalInformation(
         chargeNumber = REPORTED_ADJUDICATION_DTO.chargeNumber,
         prisonId = REPORTED_ADJUDICATION_DTO.originatingAgencyId,
+        prisonerNumber = REPORTED_ADJUDICATION_DTO.prisonerNumber,
       ),
     )
   }
