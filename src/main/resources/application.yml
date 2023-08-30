@@ -100,7 +100,7 @@ feature:
   async:
       chargeNumbers: false
       adjudications: ${FEATURE_ASYNC_ADJUDICATIONS:false}
-      hearings: false
+      hearings:  ${FEATURE_ASYNC_HEARINGS:false}
       outcomes: false
       punishments: false
   skip:

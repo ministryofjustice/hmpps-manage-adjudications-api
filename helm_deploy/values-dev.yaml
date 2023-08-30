@@ -15,6 +15,7 @@ generic-service:
     FEATURE_ASYNC_ADJUDICATIONS: true
     FEATURE_NOMIS_SOURCE_OF_TRUTH: true
     FEATURE_SKIP_EXISTING: true
+    FEATURE_ASYNC_HEARINGS: true
 
   allowlist: null
 

@@ -17,6 +17,7 @@ class EventPublishService(
   fun publishEvent(event: AdjudicationDomainEventType, adjudication: ReportedAdjudicationDto) {
     when (event) {
       AdjudicationDomainEventType.ADJUDICATION_CREATED -> if (featureFlagsConfig.adjudications) publish(event, adjudication)
+      // TODO enable once ready to switch over in dev AdjudicationDomainEventType.HEARING_CREATED, AdjudicationDomainEventType.HEARING_UPDATED, AdjudicationDomainEventType.HEARING_DELETED -> if (featureFlagsConfig.hearings) publish(event, adjudication)
       else -> publish(event, adjudication)
     }
   }
