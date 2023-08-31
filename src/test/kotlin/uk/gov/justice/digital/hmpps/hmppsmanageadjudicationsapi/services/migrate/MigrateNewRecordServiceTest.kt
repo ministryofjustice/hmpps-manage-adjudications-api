@@ -82,9 +82,9 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.witnesses).isEmpty()
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
 
-      assertThat(argumentCaptor.value.disIssueHistory).isNotEmpty
-      assertThat(argumentCaptor.value.dateTimeOfIssue).isEqualTo(dto.disIssued.first().dateTimeOfIssue)
-      assertThat(argumentCaptor.value.issuingOfficer).isEqualTo(dto.disIssued.first().issuingOfficer)
+      assertThat(argumentCaptor.value.disIssueHistory.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.dateTimeOfIssue).isEqualTo(dto.disIssued.last().dateTimeOfIssue)
+      assertThat(argumentCaptor.value.issuingOfficer).isEqualTo(dto.disIssued.last().issuingOfficer)
 
       assertThat(response.chargeNumberMapping.chargeNumber).isEqualTo("${dto.oicIncidentId}-${dto.offenceSequence}")
       assertThat(response.chargeNumberMapping.offenceSequence).isEqualTo(dto.offenceSequence)

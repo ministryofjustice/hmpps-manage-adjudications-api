@@ -115,13 +115,15 @@ class MigrateNewRecordService(
   companion object {
 
     fun List<DisIssued>.toDisIssue(): Triple<String?, LocalDateTime?, MutableList<DisIssueHistory>> {
-      val issuedBy = this.maxByOrNull { it.dateTimeOfIssue }?.issuingOfficer
-      val issuedOn = this.maxByOrNull { it.dateTimeOfIssue }?.dateTimeOfIssue
+      val history = this.sortedByDescending { it.dateTimeOfIssue }.toMutableList()
+      val latest = history.removeFirstOrNull()
+      val issuedBy = latest?.issuingOfficer
+      val issuedOn = latest?.dateTimeOfIssue
 
       return Triple(
         issuedBy,
         issuedOn,
-        this.sortedByDescending { it.dateTimeOfIssue }.map {
+        history.map {
           DisIssueHistory(issuingOfficer = it.issuingOfficer, dateTimeOfIssue = it.dateTimeOfIssue)
         }.toMutableList(),
       )

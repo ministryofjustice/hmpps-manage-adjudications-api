@@ -15,7 +15,10 @@ class MigrateFixtures {
   private val migrationEntityBuilder = MigrationEntityBuilder()
 
   val ADULT_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication(
-    disIssued = listOf(DisIssued(issuingOfficer = "officer", dateTimeOfIssue = LocalDateTime.now())),
+    disIssued = listOf(
+      DisIssued(issuingOfficer = "officer", dateTimeOfIssue = LocalDateTime.now()),
+      DisIssued(issuingOfficer = "officer2", dateTimeOfIssue = LocalDateTime.now().plusDays(1)),
+    ),
   )
 
   fun ADULT_WITH_REPORTED_DATE_TIME(reportedDateTime: LocalDateTime) = migrationEntityBuilder.createAdjudication(
