@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
@@ -55,10 +56,12 @@ class MigrateNewRecordService(
     val punishmentsAndComments = adjudicationMigrateDto.punishments.toPunishments()
     val punishments = punishmentsAndComments.first
     val punishmentComments = punishmentsAndComments.second
+    val isYoi = adjudicationMigrateDto.offence.getIsYouthOffender()
 
     val hearingsAndResultsAndOutcomes = adjudicationMigrateDto.hearings.sortedBy { it.hearingDateTime }.toHearingsAndResultsAndOutcomes(
       agencyId = adjudicationMigrateDto.agencyId,
       chargeNumber = chargeNumber,
+      isYoi = isYoi,
     )
 
     val hearingsAndResults = hearingsAndResultsAndOutcomes.first
@@ -88,7 +91,7 @@ class MigrateNewRecordService(
       handoverDeadline = DraftAdjudicationService.daysToActionFromIncident(adjudicationMigrateDto.incidentDateTime),
       gender = adjudicationMigrateDto.prisoner.getGender(),
       hearings = hearingsAndResults.toMutableList(),
-      isYouthOffender = adjudicationMigrateDto.offence.getIsYouthOffender(),
+      isYouthOffender = isYoi,
       locationId = adjudicationMigrateDto.locationId,
       outcomes = outcomes.toMutableList(),
       statement = adjudicationMigrateDto.statement,
@@ -213,7 +216,13 @@ class MigrateNewRecordService(
       )
     }
 
-    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String): Pair<List<Hearing>, List<Outcome>> {
+    private fun OicHearingType.handleGov(isYoi: Boolean): OicHearingType =
+      when (this) {
+        OicHearingType.GOV -> if (isYoi) OicHearingType.GOV_YOI else OicHearingType.GOV_ADULT
+        else -> this
+      }
+
+    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String, isYoi: Boolean): Pair<List<Hearing>, List<Outcome>> {
       this.validate()
 
       val hearingsAndResults = mutableListOf<Hearing>()
@@ -251,7 +260,7 @@ class MigrateNewRecordService(
           Hearing(
             dateTimeOfHearing = oicHearing.hearingDateTime,
             locationId = oicHearing.locationId,
-            oicHearingType = oicHearing.oicHearingType,
+            oicHearingType = oicHearing.oicHearingType.handleGov(isYoi),
             oicHearingId = oicHearing.oicHearingId,
             agencyId = agencyId,
             chargeNumber = chargeNumber,

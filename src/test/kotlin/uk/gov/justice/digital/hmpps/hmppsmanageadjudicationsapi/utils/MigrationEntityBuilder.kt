@@ -109,9 +109,10 @@ class MigrationEntityBuilder {
     hearingDateTime: LocalDateTime = LocalDateTime.now(),
     hearingResult: MigrateHearingResult? = null,
     oicHearingId: Long = 1,
+    oicHearingType: OicHearingType = OicHearingType.GOV_ADULT,
   ): MigrateHearing = MigrateHearing(
     oicHearingId = oicHearingId,
-    oicHearingType = OicHearingType.GOV_ADULT,
+    oicHearingType = oicHearingType,
     hearingDateTime = hearingDateTime,
     commentText = comment,
     locationId = 1,

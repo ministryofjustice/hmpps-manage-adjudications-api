@@ -4,6 +4,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudicatio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DisIssued
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import java.math.BigDecimal
@@ -281,6 +282,19 @@ class MigrateFixtures {
       prisoner = migrationEntityBuilder.createPrisoner(
         prisonerNumber = "AD12345",
       ),
+    ),
+  )
+
+  val WITH_HEARING_GOV_TO_YOI = migrationEntityBuilder.createAdjudication(
+    offence = migrationEntityBuilder.createOffence(offenceCode = "55:12"),
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(oicHearingType = OicHearingType.GOV),
+    ),
+  )
+
+  val WITH_HEARING_GOV_TO_ADULT = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(oicHearingType = OicHearingType.GOV),
     ),
   )
 

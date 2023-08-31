@@ -510,6 +510,34 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `hearing with GOV and YOI offence maps to GOV_YOI`() {
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        entityBuilder.reportedAdjudication(),
+      )
+
+      val dto = migrationFixtures.WITH_HEARING_GOV_TO_YOI
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(OicHearingType.GOV_YOI)
+    }
+
+    @Test
+    fun `hearing with GOV and Adult offence maps to ADULT_YOI`() {
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+        entityBuilder.reportedAdjudication(),
+      )
+
+      val dto = migrationFixtures.WITH_HEARING_GOV_TO_ADULT
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(OicHearingType.GOV_ADULT)
+    }
+
+    @Test
     fun `single hearing with result - CHARGE_PROVED `() {
       val dto = migrationFixtures.WITH_HEARING_AND_RESULT
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)

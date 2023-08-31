@@ -105,6 +105,7 @@ class MigrateExistingRecordService(
     val hearingsAndResultsAndOutcomes = adjudicationMigrateDto.hearings.sortedBy { it.hearingDateTime }.toHearingsAndResultsAndOutcomes(
       agencyId = adjudicationMigrateDto.agencyId,
       chargeNumber = this.chargeNumber,
+      isYoi = this.isYouthOffender,
     )
 
     val disIssued = adjudicationMigrateDto.disIssued.toDisIssue()
@@ -166,6 +167,7 @@ class MigrateExistingRecordService(
             listOf(nomisHearing).toHearingsAndResultsAndOutcomes(
               agencyId = adjudicationMigrateDto.agencyId,
               chargeNumber = this.chargeNumber,
+              isYoi = this.isYouthOffender,
             ),
           )
         } else {
