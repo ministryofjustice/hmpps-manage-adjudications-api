@@ -216,9 +216,9 @@ class MigrateNewRecordService(
       )
     }
 
-    private fun OicHearingType.handleGov(isYoi: Boolean): OicHearingType =
+    private fun OicHearingType.handleGov(isYouthOffender: Boolean): OicHearingType =
       when (this) {
-        OicHearingType.GOV -> if (isYoi) OicHearingType.GOV_YOI else OicHearingType.GOV_ADULT
+        OicHearingType.GOV -> if (isYouthOffender) OicHearingType.GOV_YOI else OicHearingType.GOV_ADULT
         else -> this
       }
 
