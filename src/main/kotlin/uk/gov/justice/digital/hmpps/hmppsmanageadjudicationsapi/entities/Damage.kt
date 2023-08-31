@@ -6,6 +6,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
+import java.time.LocalDateTime
 
 enum class DamageCode {
   ELECTRICAL_REPAIR,
@@ -42,4 +43,6 @@ data class ReportedDamage(
   @field:Length(max = 32)
   var reporter: String,
   var migrated: Boolean = false,
+  var dateAdded: LocalDateTime? = null,
+  var repairCost: Double? = null,
 ) : BaseEntity()

@@ -66,7 +66,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.migrated).isEqualTo(true)
       assertThat(argumentCaptor.value.lastModifiedAgencyId).isNull()
       assertThat(argumentCaptor.value.handoverDeadline).isEqualTo(DraftAdjudicationService.daysToActionFromIncident(dto.incidentDateTime))
-      assertThat(argumentCaptor.value.dateTimeOfIssue).isNull()
       assertThat(argumentCaptor.value.statusDetails).isNull()
       assertThat(argumentCaptor.value.statusReason).isNull()
       assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(0)
@@ -82,6 +81,10 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.evidence).isEmpty()
       assertThat(argumentCaptor.value.witnesses).isEmpty()
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
+
+      assertThat(argumentCaptor.value.disIssueHistory.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.dateTimeOfIssue).isEqualTo(dto.disIssued.last().dateTimeOfIssue)
+      assertThat(argumentCaptor.value.issuingOfficer).isEqualTo(dto.disIssued.last().issuingOfficer)
 
       assertThat(response.chargeNumberMapping.chargeNumber).isEqualTo("${dto.oicIncidentId}-${dto.offenceSequence}")
       assertThat(response.chargeNumberMapping.offenceSequence).isEqualTo(dto.offenceSequence)
@@ -154,6 +157,8 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.damages).isNotEmpty
       assertThat(argumentCaptor.value.damages.first().code).isEqualTo(dto.damages.first().damageType)
       assertThat(argumentCaptor.value.damages.first().details).isEqualTo(dto.damages.first().details)
+      assertThat(argumentCaptor.value.damages.first().dateAdded).isNotNull
+      assertThat(argumentCaptor.value.damages.first().repairCost).isEqualTo(dto.damages.first().repairCost?.toDouble())
       assertThat(argumentCaptor.value.damages.first().reporter).isEqualTo(dto.damages.first().createdBy)
     }
 
@@ -183,6 +188,9 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.witnesses.first().firstName).isEqualTo(dto.witnesses.first().firstName)
       assertThat(argumentCaptor.value.witnesses.first().lastName).isEqualTo(dto.witnesses.first().lastName)
       assertThat(argumentCaptor.value.witnesses.first().reporter).isEqualTo(dto.witnesses.first().createdBy)
+      assertThat(argumentCaptor.value.witnesses.first().comment).isEqualTo(dto.witnesses.first().comment)
+      assertThat(argumentCaptor.value.witnesses.first().username).isEqualTo(dto.witnesses.first().username)
+      assertThat(argumentCaptor.value.witnesses.first().dateAdded).isNotNull
     }
 
     @Test
@@ -197,6 +205,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.evidence.first().code).isEqualTo(dto.evidence.first().evidenceCode)
       assertThat(argumentCaptor.value.evidence.first().details).isEqualTo(dto.evidence.first().details)
       assertThat(argumentCaptor.value.evidence.first().reporter).isEqualTo(dto.evidence.first().reporter)
+      assertThat(argumentCaptor.value.evidence.first().dateAdded).isNotNull
     }
   }
 
@@ -492,6 +501,8 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(dto.agencyId)
       assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(dto.hearings.first().oicHearingId)
       assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(dto.hearings.first().oicHearingType)
+      assertThat(argumentCaptor.value.hearings.first().representative).isEqualTo(dto.hearings.first().representative)
+      assertThat(argumentCaptor.value.hearings.first().comment).isEqualTo(dto.hearings.first().commentText)
 
       assertThat(response.hearingMappings).isNotEmpty
       assertThat(response.hearingMappings!!.first().hearingId).isEqualTo(2)

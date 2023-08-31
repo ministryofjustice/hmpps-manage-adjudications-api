@@ -28,6 +28,7 @@ class ResetRecordService(
     this.damages.removeIf { it.migrated }
     this.evidence.removeIf { it.migrated }
     this.witnesses.removeIf { it.migrated }
+    this.disIssueHistory.removeIf { it.migrated }
 
     this.hearings.filter { it.hearingOutcome?.nomisOutcome == true }.forEach {
       it.hearingOutcome!!.nomisOutcome = false

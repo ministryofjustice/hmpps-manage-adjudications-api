@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Hear
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.MigrateResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.PunishmentMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DisIssued
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateHearing
@@ -16,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePris
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePunishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssueHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
@@ -41,6 +43,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
+import java.time.LocalDateTime
 
 @Transactional
 @Service
@@ -61,6 +64,8 @@ class MigrateNewRecordService(
     val hearingsAndResults = hearingsAndResultsAndOutcomes.first
     val outcomes = hearingsAndResultsAndOutcomes.second
 
+    val disIssued = adjudicationMigrateDto.disIssued.toDisIssue()
+
     val reportedAdjudication = ReportedAdjudication(
       chargeNumber = chargeNumber,
       agencyIncidentId = adjudicationMigrateDto.agencyIncidentId,
@@ -76,7 +81,9 @@ class MigrateNewRecordService(
       damages = adjudicationMigrateDto.damages.toDamages(),
       evidence = adjudicationMigrateDto.evidence.toEvidence(),
       witnesses = adjudicationMigrateDto.witnesses.toWitnesses(),
-      disIssueHistory = mutableListOf(),
+      disIssueHistory = disIssued.third,
+      dateTimeOfIssue = disIssued.second,
+      issuingOfficer = disIssued.first,
       status = ReportedAdjudicationStatus.UNSCHEDULED,
       handoverDeadline = DraftAdjudicationService.daysToActionFromIncident(adjudicationMigrateDto.incidentDateTime),
       gender = adjudicationMigrateDto.prisoner.getGender(),
@@ -106,6 +113,21 @@ class MigrateNewRecordService(
   }
 
   companion object {
+
+    fun List<DisIssued>.toDisIssue(): Triple<String?, LocalDateTime?, MutableList<DisIssueHistory>> {
+      val history = this.sortedByDescending { it.dateTimeOfIssue }.toMutableList()
+      val latest = history.removeFirstOrNull()
+      val issuedBy = latest?.issuingOfficer
+      val issuedOn = latest?.dateTimeOfIssue
+
+      return Triple(
+        issuedBy,
+        issuedOn,
+        history.map {
+          DisIssueHistory(issuingOfficer = it.issuingOfficer, dateTimeOfIssue = it.dateTimeOfIssue)
+        }.toMutableList(),
+      )
+    }
 
     fun createAdjourn(adjudicator: String?): HearingOutcome =
       HearingOutcome(
@@ -153,6 +175,8 @@ class MigrateNewRecordService(
           code = it.damageType,
           details = it.details ?: "No recorded details",
           reporter = it.createdBy,
+          repairCost = it.repairCost?.toDouble(),
+          dateAdded = it.dateAdded,
         )
       }.toMutableList()
 
@@ -162,6 +186,7 @@ class MigrateNewRecordService(
           code = it.evidenceCode,
           details = it.details,
           reporter = it.reporter,
+          dateAdded = it.dateAdded,
         )
       }.toMutableList()
 
@@ -172,6 +197,9 @@ class MigrateNewRecordService(
           lastName = it.lastName,
           reporter = it.createdBy,
           code = it.witnessType,
+          username = it.username,
+          comment = it.comment,
+          dateAdded = it.dateAdded,
         )
       }.toMutableList()
 
@@ -228,6 +256,8 @@ class MigrateNewRecordService(
             agencyId = agencyId,
             chargeNumber = chargeNumber,
             hearingOutcome = hearingOutcomeAndOutcome?.first,
+            representative = oicHearing.representative,
+            comment = oicHearing.commentText,
           ),
         )
       }

@@ -33,6 +33,7 @@ class DraftWitnessesService(
           firstName = it.firstName,
           lastName = it.lastName,
           reporter = reporter,
+          username = it.username,
         )
       },
     )

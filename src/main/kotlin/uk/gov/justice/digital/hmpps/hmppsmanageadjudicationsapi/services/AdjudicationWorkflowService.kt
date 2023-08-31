@@ -274,6 +274,7 @@ class AdjudicationWorkflowService(
         firstName = it.firstName,
         lastName = it.lastName,
         reporter = it.reporter,
+        username = it.username,
       )
     }.toMutableList()
 
@@ -316,6 +317,7 @@ class AdjudicationWorkflowService(
         firstName = it.firstName,
         lastName = it.lastName,
         reporter = it.reporter,
+        username = it.username,
       )
     }.toMutableList()
   }

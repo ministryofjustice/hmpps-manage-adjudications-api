@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toChargeMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toDamages
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toDisIssue
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toHearingMappings
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toHearingsAndResultsAndOutcomes
@@ -105,6 +106,14 @@ class MigrateExistingRecordService(
       agencyId = adjudicationMigrateDto.agencyId,
       chargeNumber = this.chargeNumber,
     )
+
+    val disIssued = adjudicationMigrateDto.disIssued.toDisIssue()
+
+    this.issuingOfficer = disIssued.first
+    this.dateTimeOfIssue = disIssued.second
+    disIssued.third.forEach {
+      this.disIssueHistory.add(it.also { disIssueHistory -> disIssueHistory.migrated = true })
+    }
 
     this.addHearingsAndOutcomes(hearingsAndResultsAndOutcomes)
     this.processPunishments(adjudicationMigrateDto.punishments)
