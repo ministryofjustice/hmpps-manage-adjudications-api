@@ -61,7 +61,7 @@ class MigrateNewRecordService(
     val hearingsAndResultsAndOutcomes = adjudicationMigrateDto.hearings.sortedBy { it.hearingDateTime }.toHearingsAndResultsAndOutcomes(
       agencyId = adjudicationMigrateDto.agencyId,
       chargeNumber = chargeNumber,
-      isYoi = isYouthOffender,
+      isYouthOffender = isYouthOffender,
     )
 
     val hearingsAndResults = hearingsAndResultsAndOutcomes.first
@@ -222,7 +222,7 @@ class MigrateNewRecordService(
         else -> this
       }
 
-    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String, isYoi: Boolean): Pair<List<Hearing>, List<Outcome>> {
+    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String, isYouthOffender: Boolean): Pair<List<Hearing>, List<Outcome>> {
       this.validate()
 
       val hearingsAndResults = mutableListOf<Hearing>()
@@ -260,7 +260,7 @@ class MigrateNewRecordService(
           Hearing(
             dateTimeOfHearing = oicHearing.hearingDateTime,
             locationId = oicHearing.locationId,
-            oicHearingType = oicHearing.oicHearingType.handleGov(isYoi),
+            oicHearingType = oicHearing.oicHearingType.handleGov(isYouthOffender),
             oicHearingId = oicHearing.oicHearingId,
             agencyId = agencyId,
             chargeNumber = chargeNumber,
