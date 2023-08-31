@@ -47,6 +47,14 @@ data class AdjudicationMigrateDto(
   val punishments: List<MigratePunishment> = emptyList(),
   @Schema(description = "hearings", required = false)
   val hearings: List<MigrateHearing> = emptyList(),
+  @Schema(description = "dis issued")
+  val disIssued: List<DisIssued> = emptyList(),
+)
+
+@Schema(description = "dis issued")
+data class DisIssued(
+  var issuingOfficer: String,
+  var dateTimeOfIssue: LocalDateTime,
 )
 
 @Schema(description = "prisoner details")
@@ -83,6 +91,12 @@ data class MigrateWitness(
   val createdBy: String,
   @Schema(description = "type of witness")
   val witnessType: WitnessCode,
+  @Schema(description = "date added")
+  val dateAdded: LocalDateTime,
+  @Schema(description = "comment")
+  val comment: String?,
+  @Schema(description = "username")
+  val username: String?,
 )
 
 @Schema(description = "damages recorded on adjudication - repair in nomis")
@@ -93,7 +107,10 @@ data class MigrateDamage(
   val details: String?,
   @Schema(description = "created by username")
   val createdBy: String,
-
+  @Schema(description = "date added")
+  val dateAdded: LocalDateTime,
+  @Schema(description = "repair cost")
+  val repairCost: BigDecimal?,
 )
 
 @Schema(description = "evidence related to adjudication")
@@ -104,6 +121,8 @@ data class MigrateEvidence(
   val details: String,
   @Schema(description = "this is the reporter, we could use the investigator in this field, or createdBy user")
   val reporter: String,
+  @Schema(description = "date added")
+  val dateAdded: LocalDateTime,
 )
 
 @Schema(description = "punishment / sanction")
@@ -142,6 +161,8 @@ data class MigrateHearing(
   val commentText: String?,
   @Schema(description = "hearing result", required = false)
   val hearingResult: MigrateHearingResult? = null,
+  @Schema(description = "representative")
+  val representative: String?,
 )
 
 @Schema(description = "hearing result")

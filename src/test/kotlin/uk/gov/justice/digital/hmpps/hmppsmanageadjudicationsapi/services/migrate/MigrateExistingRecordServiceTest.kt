@@ -136,6 +136,10 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.punishmentMappings!!.first().sanctionSeq).isEqualTo(dto.punishments.first().sanctionSeq)
       assertThat(response.punishmentMappings!!.first().bookingId).isEqualTo(dto.bookingId)
 
+      assertThat(argumentCaptor.value.disIssueHistory).isNotEmpty
+      assertThat(argumentCaptor.value.dateTimeOfIssue).isEqualTo(dto.disIssued.first().dateTimeOfIssue)
+      assertThat(argumentCaptor.value.issuingOfficer).isEqualTo(dto.disIssued.first().issuingOfficer)
+
       assertThat(response.hearingMappings).isNotEmpty
       assertThat(response.hearingMappings!!.first().hearingId).isEqualTo(2)
       assertThat(response.hearingMappings!!.first().oicHearingId).isEqualTo(1)

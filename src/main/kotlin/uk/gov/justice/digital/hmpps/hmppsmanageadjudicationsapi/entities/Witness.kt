@@ -6,6 +6,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
+import java.time.LocalDateTime
 
 enum class WitnessCode {
   OFFICER,
@@ -28,6 +29,8 @@ data class Witness(
   var lastName: String,
   @field:Length(max = 32)
   var reporter: String,
+  @field:Length(max = 32)
+  var username: String? = null,
 ) : BaseEntity()
 
 @Entity
@@ -44,4 +47,9 @@ data class ReportedWitness(
   @field:Length(max = 32)
   var reporter: String,
   var migrated: Boolean = false,
+  @field:Length(max = 32)
+  var username: String? = null,
+  var dateAdded: LocalDateTime? = null,
+  @field:Length(max = 240)
+  var comment: String? = null,
 ) : BaseEntity()

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils
 
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DisIssued
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.NomisGender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
@@ -13,7 +14,9 @@ class MigrateFixtures {
 
   private val migrationEntityBuilder = MigrationEntityBuilder()
 
-  val ADULT_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication()
+  val ADULT_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication(
+    disIssued = listOf(DisIssued(issuingOfficer = "officer", dateTimeOfIssue = LocalDateTime.now())),
+  )
 
   fun ADULT_WITH_REPORTED_DATE_TIME(reportedDateTime: LocalDateTime) = migrationEntityBuilder.createAdjudication(
     reportedDateTime = reportedDateTime,
@@ -183,6 +186,7 @@ class MigrateFixtures {
   )
 
   val COMPLETE_CHARGE_PROVED = migrationEntityBuilder.createAdjudication(
+    disIssued = listOf(DisIssued(issuingOfficer = "officer", dateTimeOfIssue = LocalDateTime.now())),
     damages = listOf(migrationEntityBuilder.createDamage()),
     evidence = listOf(migrationEntityBuilder.createEvidence()),
     witnesses = listOf(migrationEntityBuilder.createWitness()),
@@ -279,7 +283,7 @@ class MigrateFixtures {
 
   val WITH_HEARING = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
-      migrationEntityBuilder.createHearing(),
+      migrationEntityBuilder.createHearing(comment = "comment"),
     ),
   )
 

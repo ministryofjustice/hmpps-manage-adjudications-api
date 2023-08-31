@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils
 
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DisIssued
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateEvidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateHearing
@@ -38,6 +39,7 @@ class MigrationEntityBuilder {
     punishments: List<MigratePunishment> = emptyList(),
     hearings: List<MigrateHearing> = emptyList(),
     reportedDateTime: LocalDateTime = LocalDateTime.now(),
+    disIssued: List<DisIssued> = emptyList(),
   ): AdjudicationMigrateDto =
     AdjudicationMigrateDto(
       agencyIncidentId = agencyIncidentId,
@@ -58,6 +60,7 @@ class MigrationEntityBuilder {
       punishments = punishments,
       hearings = hearings,
       reportedDateTime = reportedDateTime,
+      disIssued = disIssued,
     )
 
   fun createPrisoner(
@@ -74,11 +77,11 @@ class MigrationEntityBuilder {
   fun createOffence(offenceCode: String = "51:17", offenceDescription: String = "description"): MigrateOffence =
     MigrateOffence(offenceCode = offenceCode, offenceDescription = offenceDescription)
 
-  fun createWitness(): MigrateWitness = MigrateWitness(firstName = "first", lastName = "last", createdBy = "OFFICER_GEN", witnessType = WitnessCode.OFFICER)
+  fun createWitness(): MigrateWitness = MigrateWitness(firstName = "first", lastName = "last", createdBy = "OFFICER_GEN", witnessType = WitnessCode.OFFICER, comment = "comment", dateAdded = LocalDateTime.now(), username = "AE12345")
 
-  fun createDamage(details: String? = "something"): MigrateDamage = MigrateDamage(damageType = DamageCode.CLEANING, details = details, createdBy = "OFFICER_GEN")
+  fun createDamage(details: String? = "something"): MigrateDamage = MigrateDamage(damageType = DamageCode.CLEANING, details = details, createdBy = "OFFICER_GEN", repairCost = BigDecimal(10.0), dateAdded = LocalDateTime.now())
 
-  fun createEvidence(): MigrateEvidence = MigrateEvidence(evidenceCode = EvidenceCode.PHOTO, details = "details", reporter = "OFFICER_GEN")
+  fun createEvidence(): MigrateEvidence = MigrateEvidence(evidenceCode = EvidenceCode.PHOTO, details = "details", reporter = "OFFICER_GEN", dateAdded = LocalDateTime.now())
 
   fun createPunishment(
     code: String = OicSanctionCode.CC.name,
@@ -114,6 +117,7 @@ class MigrationEntityBuilder {
     locationId = 1,
     adjudicator = adjudicator,
     hearingResult = hearingResult,
+    representative = "test",
   )
 
   fun createHearingResult(

@@ -30,6 +30,8 @@ data class WitnessRequestItem(
   val lastName: String,
   @Schema(description = "optional reporter as per token, used when editing", example = "A_USER")
   val reporter: String? = null,
+  @Schema(description = "username")
+  val username: String? = null,
 )
 
 @RestController
