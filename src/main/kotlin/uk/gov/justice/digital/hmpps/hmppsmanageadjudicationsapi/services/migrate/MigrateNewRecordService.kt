@@ -56,12 +56,12 @@ class MigrateNewRecordService(
     val punishmentsAndComments = adjudicationMigrateDto.punishments.toPunishments()
     val punishments = punishmentsAndComments.first
     val punishmentComments = punishmentsAndComments.second
-    val isYoi = adjudicationMigrateDto.offence.getIsYouthOffender()
+    val isYouthOffender = adjudicationMigrateDto.offence.getIsYouthOffender()
 
     val hearingsAndResultsAndOutcomes = adjudicationMigrateDto.hearings.sortedBy { it.hearingDateTime }.toHearingsAndResultsAndOutcomes(
       agencyId = adjudicationMigrateDto.agencyId,
       chargeNumber = chargeNumber,
-      isYoi = isYoi,
+      isYoi = isYouthOffender,
     )
 
     val hearingsAndResults = hearingsAndResultsAndOutcomes.first
@@ -91,7 +91,7 @@ class MigrateNewRecordService(
       handoverDeadline = DraftAdjudicationService.daysToActionFromIncident(adjudicationMigrateDto.incidentDateTime),
       gender = adjudicationMigrateDto.prisoner.getGender(),
       hearings = hearingsAndResults.toMutableList(),
-      isYouthOffender = isYoi,
+      isYouthOffender = isYouthOffender,
       locationId = adjudicationMigrateDto.locationId,
       outcomes = outcomes.toMutableList(),
       statement = adjudicationMigrateDto.statement,
