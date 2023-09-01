@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -26,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentS
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService
 import java.time.LocalDate
 
@@ -87,6 +89,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         chargeNumber = "1",
         listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
       )
+      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.PUNISHMENTS_CREATED, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun createPunishmentsRequest(
@@ -155,6 +158,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         chargeNumber = "1",
         listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
       )
+      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.PUNISHMENTS_UPDATED, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun updatePunishmentsRequest(

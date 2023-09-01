@@ -157,8 +157,6 @@ data class HearingDto(
   val outcome: HearingOutcomeDto? = null,
   @Schema(description = "agency id of hearing")
   val agencyId: String,
-  @Schema(description = "oic hearing id")
-  val oicHearingId: Long? = null,
 )
 
 @Schema(description = "hearing outcome")

@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPu
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReasonForChange
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService
 import java.time.LocalDate
 
@@ -79,10 +80,16 @@ class PunishmentsController(
   fun createV2(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody punishmentsRequest: PunishmentsRequest,
-  ): ReportedAdjudicationResponse = punishmentsService.create(
-    chargeNumber = chargeNumber,
-    punishments = punishmentsRequest.punishments,
-  ).toResponse()
+  ): ReportedAdjudicationResponse =
+    eventPublishWrapper(
+      event = AdjudicationDomainEventType.PUNISHMENTS_CREATED,
+      controllerAction = {
+        punishmentsService.create(
+          chargeNumber = chargeNumber,
+          punishments = punishmentsRequest.punishments,
+        )
+      },
+    )
 
   @Operation(summary = "updates a set of punishments")
   @PutMapping(value = ["/{chargeNumber}/punishments/v2"])
@@ -90,10 +97,16 @@ class PunishmentsController(
   fun updateV2(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody punishmentsRequest: PunishmentsRequest,
-  ): ReportedAdjudicationResponse = punishmentsService.update(
-    chargeNumber = chargeNumber,
-    punishments = punishmentsRequest.punishments,
-  ).toResponse()
+  ): ReportedAdjudicationResponse =
+    eventPublishWrapper(
+      event = AdjudicationDomainEventType.PUNISHMENTS_UPDATED,
+      controllerAction = {
+        punishmentsService.update(
+          chargeNumber = chargeNumber,
+          punishments = punishmentsRequest.punishments,
+        )
+      },
+    )
 
   @Operation(summary = "get a list of suspended punishments by prisoner")
   @GetMapping(value = ["/punishments/{prisonerNumber}/suspended"])

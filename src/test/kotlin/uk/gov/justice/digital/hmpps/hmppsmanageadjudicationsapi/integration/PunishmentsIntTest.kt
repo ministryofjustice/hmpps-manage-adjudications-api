@@ -26,7 +26,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `create punishments v2`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     initDataForUnScheduled().createHearing().createChargeProved()
 
@@ -45,7 +45,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `create punishments - additional days v2`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved()
 
@@ -59,7 +59,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `update punishments - amends one record, removes a record, and creates a record v2`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubUpdateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     initDataForUnScheduled().createHearing().createChargeProved()
@@ -137,8 +137,6 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.ADJUDICATION_2.chargeNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.ADJUDICATION_2.chargeNumber)
 
     initDataForUnScheduled().createHearing().createChargeProved()
     initDataForUnScheduled(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(oicHearingType = OicHearingType.INAD_YOI, dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
@@ -192,8 +190,6 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.ADJUDICATION_2.chargeNumber)
     prisonApiMockServer.stubUpdateSanctions(IntegrationTestData.ADJUDICATION_2.chargeNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.ADJUDICATION_2.chargeNumber)
 
     initDataForUnScheduled().createHearing().createChargeProved()
     initDataForUnScheduled(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(oicHearingType = OicHearingType.INAD_YOI, dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
@@ -245,7 +241,6 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   fun `get suspended punishments `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
     initDataForUnScheduled().createHearing().createChargeProved()
@@ -275,7 +270,6 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   fun `get additional days punishments `(punishmentType: PunishmentType) {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    prisonApiMockServer.stubCreateSanction(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.ADJUDICATION_2.chargeNumber)
 

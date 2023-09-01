@@ -102,7 +102,7 @@ feature:
       adjudications: ${FEATURE_ASYNC_ADJUDICATIONS:false}
       hearings:  ${FEATURE_ASYNC_HEARINGS:false}
       outcomes: false
-      punishments: false
+      punishments: ${FEATURE_ASYNC_PUNISHMENTS:false}
   skip:
      existing: ${FEATURE_SKIP_EXISTING:false}
 
