@@ -79,6 +79,8 @@ data class ReportedAdjudicationDto(
   val originatingAgencyId: String,
   @Schema(description = "optional actions flag to indicate if an ALO can carry out actions against a transferable adjudication, null if not transferable")
   val transferableActionsAllowed: Boolean? = null,
+  @Schema(description = "hearing id action carried out on")
+  var hearingIdActioned: Long? = null,
 )
 
 @Schema(description = "Details of an offence")

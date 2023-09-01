@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
@@ -53,6 +55,24 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
     eventPublishService.publishEvent(AdjudicationDomainEventType.ADJUDICATION_CREATED, REPORTED_ADJUDICATION_DTO)
 
     verify(snsService, never()).publishDomainEvent(any(), any(), any(), anyOrNull())
+  }
+
+  @CsvSource("HEARING_CREATED", "HEARING_UPDATED", "HEARING_DELETED")
+  @ParameterizedTest
+  fun `hearing event provides hearing id`(event: AdjudicationDomainEventType) {
+    eventPublishService.publishEvent(event, REPORTED_ADJUDICATION_DTO.also { it.hearingIdActioned = 1 })
+
+    verify(snsService, atLeastOnce()).publishDomainEvent(
+      event,
+      "${event.description} ${REPORTED_ADJUDICATION_DTO.chargeNumber}",
+      LocalDateTime.now(clock),
+      AdditionalInformation(
+        chargeNumber = REPORTED_ADJUDICATION_DTO.chargeNumber,
+        prisonId = REPORTED_ADJUDICATION_DTO.originatingAgencyId,
+        prisonerNumber = REPORTED_ADJUDICATION_DTO.prisonerNumber,
+        hearingId = 1,
+      ),
+    )
   }
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
