@@ -312,7 +312,10 @@ class MigrateNewRecordService(
        Currently allows REF_POLICE and QUASHED to be processed, pending discovery
      */
     private fun List<MigrateHearing>.validate() {
-      val listOfExceptionStatus = listOf(Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name).toMutableList()
+      val listOfExceptionStatus = listOf(
+        Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name, Finding.GUILTY.name, Finding.NOT_GUILTY.name,
+        Finding.DISMISSED.name, Finding.UNFIT.name, Finding.REFUSED.name, Finding.NOT_PROVEN.name,
+      ).toMutableList()
       if (this.count { it.hearingResult != null } < 2) return
       if (this.filter { it.hearingResult != null }.any { listOf(Finding.REF_POLICE.name, Finding.QUASHED.name).contains(it.hearingResult!!.finding) }) return
 
