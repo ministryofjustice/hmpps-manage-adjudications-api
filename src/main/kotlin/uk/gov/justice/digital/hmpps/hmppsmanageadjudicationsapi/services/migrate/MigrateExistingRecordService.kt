@@ -63,7 +63,7 @@ class MigrateExistingRecordService(
     if (existingAdjudication.hearings.hasHearingWithoutResult()) {
       existingAdjudication.hearings.sortedBy { it.dateTimeOfHearing }.forEachIndexed { index, hearing ->
         if (index != existingAdjudication.hearings.size - 1 && hearing.hearingOutcome == null) {
-          hearing.hearingOutcome = createAdjourn(null)
+          hearing.hearingOutcome = createAdjourn()
         }
       }
     }
@@ -129,7 +129,10 @@ class MigrateExistingRecordService(
       val hasAdditionalOutcomes = adjudicationMigrateDto.hearings.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
       val hasAdditionalHearings = index < adjudicationMigrateDto.hearings.size - 1
 
-      val hearingOutcomeCode = nomisHearing.hearingResult!!.finding.mapToHearingOutcomeCode(hasAdditionalOutcomes)
+      val hearingOutcomeCode = nomisHearing.hearingResult!!.finding.mapToHearingOutcomeCode(
+        hasAdditionalHearingOutcomes = hasAdditionalOutcomes,
+        hasAdditionalHearings = hasAdditionalHearings,
+      )
 
       nomisCode.hearingOutcome!!.adjudicator = nomisHearing.adjudicator ?: ""
       nomisCode.hearingOutcome!!.code = hearingOutcomeCode
@@ -148,7 +151,12 @@ class MigrateExistingRecordService(
       val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { it.oicHearingId == hearing.oicHearingId }
         ?: throw ExistingRecordConflictException("${adjudicationMigrateDto.oicIncidentId} hearing no longer exists in nomis")
       val nomisHearingResult = nomisHearing.hearingResult
-        ?: if (hearing.hearingOutcome != null) throw ExistingRecordConflictException("${adjudicationMigrateDto.oicIncidentId} hearing result no longer exists in nomis") else null
+        ?: if (hearing.hearingOutcome != null && hearing.hearingOutcome!!.code.shouldExistInNomis()) {
+          throw ExistingRecordConflictException("${adjudicationMigrateDto.oicIncidentId} hearing result no longer exists in nomis")
+        } else {
+          null
+        }
+
       hearing.hearingOutcome?.let {
         nomisHearingResult?.let { nhr ->
           it.code.mapFinding(nhr.finding, adjudicationMigrateDto.oicIncidentId)
@@ -162,7 +170,7 @@ class MigrateExistingRecordService(
 
     adjudicationMigrateDto.hearings.sortedBy { it.hearingDateTime }.forEach { nomisHearing ->
       if (this.hearings.none { it.oicHearingId == nomisHearing.oicHearingId }) {
-        if (listOf(HearingOutcomeCode.ADJOURN, HearingOutcomeCode.REFER_POLICE).contains(this.getLatestHearing()?.hearingOutcome?.code)) {
+        if (listOf(HearingOutcomeCode.ADJOURN, HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV).contains(this.getLatestHearing()?.hearingOutcome?.code)) {
           this.addHearingsAndOutcomes(
             listOf(nomisHearing).toHearingsAndResultsAndOutcomes(
               agencyId = adjudicationMigrateDto.agencyId,
@@ -272,6 +280,12 @@ class MigrateExistingRecordService(
         OicSanctionCode.OTHER.name -> if (this.compensationAmount != null) PunishmentType.DAMAGES_OWED else null
         OicSanctionCode.FORFEIT.name -> if (PrivilegeType.entries.map { it.name }.contains(this.comment) || this.comment == otherPrivilege) PunishmentType.PRIVILEGE else null
         else -> null
+      }
+
+    fun HearingOutcomeCode.shouldExistInNomis(): Boolean =
+      when (this) {
+        HearingOutcomeCode.ADJOURN, HearingOutcomeCode.REFER_GOV, HearingOutcomeCode.REFER_INAD -> false
+        else -> true
       }
   }
 }

@@ -36,6 +36,4 @@ data class Hearing(
   var hearingPreMigrate: HearingPreMigrate? = null,
   @field:Length(max = 240)
   var representative: String? = null,
-  @field:Length(max = 240)
-  var comment: String? = null,
 ) : BaseEntity()
