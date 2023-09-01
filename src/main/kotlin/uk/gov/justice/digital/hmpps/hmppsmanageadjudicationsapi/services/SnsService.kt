@@ -98,6 +98,13 @@ enum class AdjudicationDomainEventType(val value: String, val description: Strin
   HEARING_CREATED("adjudication.hearing.created", "Adjudication hearing created: ", AuditType.HEARING_CREATED),
   HEARING_UPDATED("adjudication.hearing.updated", "Adjudication hearing updated: ", AuditType.HEARING_UPDATED),
   HEARING_DELETED("adjudication.hearing.deleted", "Adjudication hearing deleted: ", AuditType.HEARING_DELETED),
+  HEARING_COMPLETED_CREATED("adjudication.hearingCompleted.created", "Adjudication hearing completed created: ", AuditType.HEARING_COMPLETED_CREATED),
+  HEARING_COMPLETED_DELETED("adjudication.hearingCompleted.deleted", "Adjudication hearing completed deleted: ", AuditType.HEARING_COMPLETED_DELETED),
+  HEARING_REFERRAL_CREATED("adjudication.hearingReferral.created", "Adjudication hearing referral created: ", AuditType.HEARING_REFERRAL_CREATED),
+  HEARING_REFERRAL_DELETED("adjudication.hearingReferral.deleted", "Adjudication hearing referral deleted: ", AuditType.HEARING_REFERRAL_DELETED),
+  HEARING_ADJOURN_CREATED("adjudication.hearingAdjourn.created", "Adjudication hearing adjourn created: ", AuditType.HEARING_ADJOURN_CREATED),
+  HEARING_ADJOURN_DELETED("adjudication.hearingAdjourn.deleted", "Adjudication hearing adjourn deleted: ", AuditType.HEARING_ADJOURN_DELETED),
+  HEARING_OUTCOME_UPDATED("adjudication.hearingOutcome.updated", "Adjudication hearing outcome updated: ", AuditType.HEARING_OUTCOME_UPDATED),
   PUNISHMENTS_CREATED("adjudication.punishments.created", "Adjudication punishments created: ", AuditType.PUNISHMENTS_CREATED),
   PUNISHMENTS_UPDATED("adjudication.punishments.updated", "Adjudication punishments updated: ", AuditType.PUNISHMENTS_UPDATED),
 }

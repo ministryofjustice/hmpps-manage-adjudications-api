@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getLatestHearingId
 
 @Transactional
 @Service
@@ -36,7 +37,9 @@ class AmendHearingOutcomeService(
         chargeNumber = chargeNumber,
         currentStatus = currentStatus,
         amendHearingOutcomeRequest = amendHearingOutcomeRequest,
-      )
+      ).also {
+        it.hearingIdActioned = it.hearings.getLatestHearingId()
+      }
     } else {
       removeAndCreate(
         chargeNumber = chargeNumber,
@@ -44,7 +47,9 @@ class AmendHearingOutcomeService(
         currentStatus = currentStatus,
         latestHearingOutcome = latestHearingOutcome,
         amendHearingOutcomeRequest = amendHearingOutcomeRequest,
-      )
+      ).also {
+        it.hearingIdActioned = it.hearings.getLatestHearingId()
+      }
     }
   }
 

@@ -3,11 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -22,16 +19,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.AmendHearingOutcomeService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingOutcomeService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -43,15 +34,6 @@ class HearingControllerTest : TestControllerBase() {
 
   @MockBean
   lateinit var hearingService: HearingService
-
-  @MockBean
-  lateinit var hearingOutcomeService: HearingOutcomeService
-
-  @MockBean
-  lateinit var referralService: ReferralService
-
-  @MockBean
-  lateinit var amendHearingOutcomeService: AmendHearingOutcomeService
 
   @Nested
   inner class CreateHearing {
@@ -271,249 +253,8 @@ class HearingControllerTest : TestControllerBase() {
     }
   }
 
-  @Nested
-  inner class CreateReferral {
-
-    @BeforeEach
-    fun beforeEach() {
-      whenever(
-        referralService.createReferral(
-          ArgumentMatchers.anyString(),
-          any(),
-          any(),
-          any(),
-          any(),
-        ),
-      ).thenReturn(REPORTED_ADJUDICATION_DTO)
-    }
-
-    @Test
-    fun `responds with a unauthorised status code`() {
-      createReferralRequest(
-        1,
-        referralRequest(),
-      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `responds with a forbidden status code for non ALO`() {
-      createReferralRequest(
-        1,
-        referralRequest(),
-      ).andExpect(MockMvcResultMatchers.status().isForbidden)
-    }
-
-    @CsvSource("ADJOURN", "COMPLETE")
-    @ParameterizedTest
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `returns bad request if not a referral `(code: HearingOutcomeCode) {
-      createReferralRequest(
-        1,
-        referralRequest(code),
-      ).andExpect(MockMvcResultMatchers.status().isBadRequest)
-    }
-
-    @ParameterizedTest
-    @CsvSource("REFER_POLICE", "REFER_INAD", "REFER_GOV")
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to create a hearing outcome`(code: HearingOutcomeCode) {
-      createReferralRequest(1, referralRequest(code))
-        .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(referralService).createReferral(
-        chargeNumber = "1",
-        code = code,
-        adjudicator = "test",
-        details = "details",
-      )
-    }
-
-    private fun createReferralRequest(
-      id: Long,
-      referralRequest: ReferralRequest,
-    ): ResultActions {
-      val body = objectMapper.writeValueAsString(referralRequest)
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.post("/reported-adjudications/$id/hearing/outcome/referral")
-            .header("Content-Type", "application/json")
-            .content(body),
-        )
-    }
-  }
-
-  @Nested
-  inner class CreateAdjourn {
-    @BeforeEach
-    fun beforeEach() {
-      whenever(
-        hearingOutcomeService.createAdjourn(
-          ArgumentMatchers.anyString(),
-          any(),
-          anyOrNull(),
-          anyOrNull(),
-          anyOrNull(),
-        ),
-      ).thenReturn(REPORTED_ADJUDICATION_DTO)
-    }
-
-    @Test
-    fun `responds with a unauthorised status code`() {
-      createAdjournRequest(
-        1,
-        adjournRequest,
-      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `responds with a forbidden status code for non ALO`() {
-      createAdjournRequest(
-        1,
-        adjournRequest,
-      ).andExpect(MockMvcResultMatchers.status().isForbidden)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to create an adjourn`() {
-      createAdjournRequest(1, adjournRequest)
-        .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(hearingOutcomeService).createAdjourn(
-        chargeNumber = "1",
-        adjudicator = "test",
-        reason = HearingOutcomeAdjournReason.HELP,
-        plea = HearingOutcomePlea.ABSTAIN,
-        details = "details",
-      )
-    }
-
-    private fun createAdjournRequest(
-      id: Long,
-      adjournRequest: AdjournRequest,
-    ): ResultActions {
-      val body = objectMapper.writeValueAsString(adjournRequest)
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.post("/reported-adjudications/$id/hearing/outcome/adjourn")
-            .header("Content-Type", "application/json")
-            .content(body),
-        )
-    }
-  }
-
-  @Nested
-  inner class DeleteAdjourn {
-    @BeforeEach
-    fun beforeEach() {
-      whenever(
-        hearingOutcomeService.removeAdjourn(
-          chargeNumber = ArgumentMatchers.anyString(),
-          recalculateStatus = any(),
-
-        ),
-      ).thenReturn(REPORTED_ADJUDICATION_DTO)
-    }
-
-    @Test
-    fun `responds with a unauthorised status code`() {
-      deleteAdjournRequest(
-        1,
-      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `responds with a forbidden status code for non ALO`() {
-      deleteAdjournRequest(
-        1,
-      ).andExpect(MockMvcResultMatchers.status().isForbidden)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to delete an adjourn`() {
-      deleteAdjournRequest(1)
-        .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingOutcomeService).removeAdjourn(
-        chargeNumber = "1",
-      )
-    }
-
-    private fun deleteAdjournRequest(
-      id: Long,
-    ): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing/outcome/adjourn")
-            .header("Content-Type", "application/json"),
-        )
-    }
-  }
-
-  @Nested
-  inner class AmendHearingOutcome {
-    @BeforeEach
-    fun beforeEach() {
-      whenever(
-        amendHearingOutcomeService.amendHearingOutcome(
-          ArgumentMatchers.anyString(),
-          any(),
-          any(),
-        ),
-      ).thenReturn(REPORTED_ADJUDICATION_DTO)
-    }
-
-    @Test
-    fun `responds with a unauthorised status code`() {
-      amendHearingOutcomeRequest(
-        1,
-        AMEND_OUTCOME_REQUEST,
-        ReportedAdjudicationStatus.REFER_POLICE,
-      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
-    fun `responds with a forbidden status code for non ALO`() {
-      amendHearingOutcomeRequest(
-        1,
-        AMEND_OUTCOME_REQUEST,
-        ReportedAdjudicationStatus.REFER_POLICE,
-      ).andExpect(MockMvcResultMatchers.status().isForbidden)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to amend a hearing outcome`() {
-      amendHearingOutcomeRequest(1, AMEND_OUTCOME_REQUEST, ReportedAdjudicationStatus.REFER_POLICE)
-        .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(amendHearingOutcomeService).amendHearingOutcome(
-        chargeNumber = "1",
-        status = ReportedAdjudicationStatus.REFER_POLICE,
-        AMEND_OUTCOME_REQUEST,
-      )
-    }
-
-    private fun amendHearingOutcomeRequest(
-      id: Long,
-      amendRequest: AmendHearingOutcomeRequest,
-      status: ReportedAdjudicationStatus,
-    ): ResultActions {
-      val body = objectMapper.writeValueAsString(amendRequest)
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.put("/reported-adjudications/$id/hearing/outcome/$status/v2")
-            .header("Content-Type", "application/json")
-            .content(body),
-        )
-    }
-  }
-
   companion object {
     private val HEARING_REQUEST = HearingRequest(locationId = 1L, dateTimeOfHearing = LocalDateTime.now(), oicHearingType = OicHearingType.GOV)
-    private fun referralRequest(code: HearingOutcomeCode? = HearingOutcomeCode.REFER_POLICE) = ReferralRequest(adjudicator = "test", code = code!!, details = "details")
-    private val adjournRequest = AdjournRequest(adjudicator = "test", details = "details", reason = HearingOutcomeAdjournReason.HELP, plea = HearingOutcomePlea.ABSTAIN)
 
     private val ALL_HEARINGS_DTO =
       listOf(
@@ -527,7 +268,5 @@ class HearingControllerTest : TestControllerBase() {
           status = ReportedAdjudicationStatus.SCHEDULED,
         ),
       )
-
-    private val AMEND_OUTCOME_REQUEST = AmendHearingOutcomeRequest()
   }
 }

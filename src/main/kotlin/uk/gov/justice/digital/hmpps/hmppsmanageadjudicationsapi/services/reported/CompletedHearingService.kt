@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getLatestHearingId
 
 @Transactional
 @Service
@@ -33,7 +34,9 @@ class CompletedHearingService(
       chargeNumber = chargeNumber,
       details = details,
       validate = validate,
-    )
+    ).also {
+      it.hearingIdActioned = it.hearings.getLatestHearingId()
+    }
   }
 
   fun createNotProceed(
@@ -55,7 +58,9 @@ class CompletedHearingService(
       reason = reason,
       details = details,
       validate = validate,
-    )
+    ).also {
+      it.hearingIdActioned = it.hearings.getLatestHearingId()
+    }
   }
 
   fun createChargeProved(
@@ -73,7 +78,9 @@ class CompletedHearingService(
     return outcomeService.createChargeProved(
       chargeNumber = chargeNumber,
       validate = validate,
-    )
+    ).also {
+      it.hearingIdActioned = it.hearings.getLatestHearingId()
+    }
   }
 
   fun removeOutcome(
@@ -88,7 +95,9 @@ class CompletedHearingService(
 
     return hearingOutcomeService.deleteHearingOutcome(
       chargeNumber = chargeNumber,
-    )
+    ).also {
+      it.hearingIdActioned = it.hearings.getLatestHearingId()
+    }
   }
 
   companion object {

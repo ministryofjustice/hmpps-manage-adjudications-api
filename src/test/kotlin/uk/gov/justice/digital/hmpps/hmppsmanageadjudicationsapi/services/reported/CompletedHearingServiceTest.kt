@@ -4,11 +4,13 @@ import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase.Companion.REPORTED_ADJUDICATION_DTO
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
@@ -30,6 +32,8 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `creates a dismissed outcome and hearing outcome of completed `() {
+      whenever(outcomeService.createDismissed(any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
+
       completedHearingService.createDismissed(
         chargeNumber = "1",
         adjudicator = "test",
@@ -55,6 +59,8 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `creates a not proceed outcome and hearing outcome of completed `() {
+      whenever(outcomeService.createNotProceed(any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
+
       completedHearingService.createNotProceed(
         chargeNumber = "1",
         adjudicator = "test",
@@ -81,6 +87,7 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
   inner class CreateChargeProved {
     @Test
     fun `creates a charge proved outcome and hearing outcome of completed `() {
+      whenever(outcomeService.createChargeProved(any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
       completedHearingService.createChargeProved(
         chargeNumber = "1",
         adjudicator = "test",
@@ -104,6 +111,7 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `remove a completed hearing outcome removes outcome and hearing outcome `() {
+      whenever(hearingOutcomeService.deleteHearingOutcome(any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
       whenever(outcomeService.getLatestOutcome("1")).thenReturn(Outcome(id = 1L, code = OutcomeCode.CHARGE_PROVED))
       completedHearingService.removeOutcome(chargeNumber = "1")
 

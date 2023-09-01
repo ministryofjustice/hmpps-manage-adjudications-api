@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOut
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getLatestHearingId
 
 @Transactional
 @Service
@@ -33,7 +34,9 @@ class ReferralService(
       code = code.outcomeCode!!,
       details = details,
       validate = validate,
-    )
+    ).also {
+      it.hearingIdActioned = it.hearings.getLatestHearingId()
+    }
   }
 
   fun removeReferral(chargeNumber: String): ReportedAdjudicationDto {
@@ -42,7 +45,9 @@ class ReferralService(
     val outcomeIndex = outcomes.filter { it.outcome.code == outcomeToRemove.outcome.code }.indexOf(outcomeToRemove)
 
     if (outcomeToRemove.referralOutcome != null) {
-      return outcomeService.deleteOutcome(chargeNumber = chargeNumber, id = outcomeToRemove.referralOutcome.id!!)
+      return outcomeService.deleteOutcome(chargeNumber = chargeNumber, id = outcomeToRemove.referralOutcome.id!!).also {
+        it.hearingIdActioned = it.hearings.getLatestHearingId()
+      }
     }
 
     hearingOutcomeService.getHearingOutcomeForReferral(
@@ -56,7 +61,9 @@ class ReferralService(
     return outcomeService.deleteOutcome(
       chargeNumber = chargeNumber,
       id = outcomeToRemove.outcome.id!!,
-    )
+    ).also {
+      it.hearingIdActioned = it.hearings.getLatestHearingId()
+    }
   }
 
   companion object {
