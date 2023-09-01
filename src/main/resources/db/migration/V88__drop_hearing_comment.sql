@@ -1,0 +1,1 @@
+ALTER TABLE hearing DROP COLUMN comment;

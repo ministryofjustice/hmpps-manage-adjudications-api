@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
@@ -234,13 +235,14 @@ class MigrateNewRecordService(
         val hearingOutcomeAndOutcome = when (oicHearing.hearingResult) {
           null -> if (hasAdditionalHearings) Pair(createAdjourn(oicHearing.adjudicator), null) else null
           else -> {
-            val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes)
+            val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes, hasAdditionalHearings)
 
             Pair(
               HearingOutcome(
                 code = hearingOutcomeCode,
                 adjudicator = oicHearing.adjudicator ?: "",
                 plea = oicHearing.hearingResult.plea.mapToPlea(),
+                details = oicHearing.commentText,
               ),
               oicHearing.hearingResult.mapToOutcome(hearingOutcomeCode),
             )
@@ -266,7 +268,6 @@ class MigrateNewRecordService(
             chargeNumber = chargeNumber,
             hearingOutcome = hearingOutcomeAndOutcome?.first,
             representative = oicHearing.representative,
-            comment = oicHearing.commentText,
           ),
         )
       }
@@ -314,13 +315,24 @@ class MigrateNewRecordService(
     fun MigrateHearingResult.mapToOutcome(hearingOutcomeCode: HearingOutcomeCode): Outcome? =
       when (hearingOutcomeCode) {
         HearingOutcomeCode.ADJOURN, HearingOutcomeCode.NOMIS -> null
-        else -> Outcome(code = this.finding.mapToOutcomeCode(), actualCreatedDate = this.createdDateTime)
+        else -> Outcome(
+          code = this.finding.mapToOutcomeCode(),
+          actualCreatedDate = this.createdDateTime,
+          reason = this.finding.notProceedReason(),
+        )
+      }
+
+    private fun String.notProceedReason(): NotProceedReason? =
+      when (this) {
+        Finding.DISMISSED.name -> NotProceedReason.RELEASED
+        Finding.NOT_PROCEED.name -> NotProceedReason.OTHER
+        else -> null
       }
 
     private fun String.mapToOutcomeCode(): OutcomeCode = when (this) {
-      Finding.PROVED.name, Finding.QUASHED.name -> OutcomeCode.CHARGE_PROVED
-      Finding.D.name -> OutcomeCode.DISMISSED
-      Finding.NOT_PROCEED.name -> OutcomeCode.NOT_PROCEED
+      Finding.PROVED.name, Finding.QUASHED.name, Finding.GUILTY.name -> OutcomeCode.CHARGE_PROVED
+      Finding.D.name, Finding.NOT_PROVEN.name, Finding.NOT_GUILTY.name, Finding.UNFIT.name, Finding.REFUSED.name -> OutcomeCode.DISMISSED
+      Finding.NOT_PROCEED.name, Finding.DISMISSED.name -> OutcomeCode.NOT_PROCEED
       Finding.REF_POLICE.name, Finding.PROSECUTED.name -> OutcomeCode.REFER_POLICE
       else -> throw UnableToMigrateException("issue with outcome code mapping $this")
     }
@@ -332,11 +344,14 @@ class MigrateNewRecordService(
       else -> null
     }
 
-    fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean): HearingOutcomeCode = when (this) {
+    fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean, hasAdditionalHearings: Boolean): HearingOutcomeCode = when (this) {
       Finding.QUASHED.name -> HearingOutcomeCode.COMPLETE // TODO further discovery around nomis UNQUASHED
       Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name ->
         if (hasAdditionalHearingOutcomes) HearingOutcomeCode.ADJOURN else HearingOutcomeCode.COMPLETE
       Finding.PROSECUTED.name, Finding.REF_POLICE.name -> HearingOutcomeCode.REFER_POLICE
+      Finding.GUILTY.name, Finding.NOT_GUILTY.name, Finding.UNFIT.name, Finding.REFUSED.name, Finding.NOT_PROVEN.name, Finding.DISMISSED.name ->
+        if (hasAdditionalHearings) throw UnableToMigrateException("Currently unable to migrate due to results structure") else HearingOutcomeCode.COMPLETE
+      Finding.S.name -> HearingOutcomeCode.ADJOURN
       else -> throw UnableToMigrateException("To confirm default with John, given appeals and other such statuses")
     }
 

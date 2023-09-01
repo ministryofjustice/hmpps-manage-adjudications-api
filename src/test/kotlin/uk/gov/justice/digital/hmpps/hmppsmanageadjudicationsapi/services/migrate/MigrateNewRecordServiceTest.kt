@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
@@ -502,7 +503,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(dto.hearings.first().oicHearingId)
       assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(dto.hearings.first().oicHearingType)
       assertThat(argumentCaptor.value.hearings.first().representative).isEqualTo(dto.hearings.first().representative)
-      assertThat(argumentCaptor.value.hearings.first().comment).isEqualTo(dto.hearings.first().commentText)
 
       assertThat(response.hearingMappings).isNotEmpty
       assertThat(response.hearingMappings!!.first().hearingId).isEqualTo(2)
@@ -704,6 +704,68 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       }.isInstanceOf(UnableToMigrateException::class.java)
         .hasMessageContaining("Currently unable to migrate due to results structure")
     }
+
+    @Test
+    fun `hearing result DISMISSED maps to NOT PROCEED, released`() {
+      val dto = migrationFixtures.WITH_FINDING_DISMISSED
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.NOT_PROCEED)
+      assertThat(argumentCaptor.value.getOutcomes().last().reason).isEqualTo(NotProceedReason.RELEASED)
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.details).isEqualTo(dto.hearings.first().commentText)
+    }
+
+    @Test
+    fun `hearing result S maps to ADJOURN`() {
+      val dto = migrationFixtures.WITH_FINDING_S
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+    }
+
+    @Test
+    fun `hearing result NOT_PROVEN maps to DISMISSED`() {
+      val dto = migrationFixtures.WITH_FINDING_NOT_PROVEN
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.DISMISSED)
+    }
+
+    @Test
+    fun `hearing result GUILTY maps to CHARGE_PROVED`() {
+      val dto = migrationFixtures.WITH_FINDING_GUILTY
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getPleaAsFindingDismissed")
+    @ParameterizedTest
+    fun `hearing result maps to DISMISSED`(dto: AdjudicationMigrateDto) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.DISMISSED)
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getPleaAsFindingException")
+    @ParameterizedTest
+    fun `hearing result throws exception as plea as finding is not the latest hearing`(dto: AdjudicationMigrateDto) {
+      Assertions.assertThatThrownBy {
+        migrateNewRecordService.accept(dto)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+        .hasMessageContaining("Currently unable to migrate due to results structure")
+    }
   }
 
   @Nested
@@ -752,6 +814,22 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
         Pair(migrationFixtures.HEARING_WITH_PROSECUTION, ReportedAdjudicationStatus.PROSECUTION),
         Pair(migrationFixtures.MULITPLE_POLICE_REFER_TO_PROSECUTION, ReportedAdjudicationStatus.PROSECUTION),
         Pair(migrationFixtures.WITH_HEARING_AND_RESULT, ReportedAdjudicationStatus.CHARGE_PROVED),
+      ).stream()
+
+    @JvmStatic
+    fun getPleaAsFindingDismissed(): Stream<AdjudicationMigrateDto> =
+      listOf(
+        migrationFixtures.WITH_FINDING_NOT_GUILTY,
+        migrationFixtures.WITH_FINDING_UNFIT,
+        migrationFixtures.WITH_FINDING_REFUSED,
+      ).stream()
+
+    @JvmStatic
+    fun getPleaAsFindingException(): Stream<AdjudicationMigrateDto> =
+      listOf(
+        migrationFixtures.WITH_FINDING_NOT_GUILTY_NOT_LAST,
+        migrationFixtures.WITH_FINDING_UNFIT_NOT_LAST,
+        migrationFixtures.WITH_FINDING_REFUSED_NOT_LAST,
       ).stream()
   }
 }
