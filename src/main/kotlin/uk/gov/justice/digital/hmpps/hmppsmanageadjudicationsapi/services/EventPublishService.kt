@@ -16,13 +16,14 @@ class EventPublishService(
 
   fun publishEvent(event: AdjudicationDomainEventType, adjudication: ReportedAdjudicationDto) {
     when (event) {
-      AdjudicationDomainEventType.ADJUDICATION_CREATED -> if (featureFlagsConfig.adjudications) publish(event, adjudication)
-      // TODO enable once ready to switch over in dev AdjudicationDomainEventType.HEARING_CREATED, AdjudicationDomainEventType.HEARING_UPDATED, AdjudicationDomainEventType.HEARING_DELETED -> if (featureFlagsConfig.hearings) publish(event, adjudication)
-      else -> publish(event, adjudication)
+      AdjudicationDomainEventType.ADJUDICATION_CREATED -> if (featureFlagsConfig.adjudications) publish(event = event, adjudication = adjudication)
+      AdjudicationDomainEventType.HEARING_CREATED, AdjudicationDomainEventType.HEARING_UPDATED, AdjudicationDomainEventType.HEARING_DELETED ->
+        /*if (featureFlagsConfig.hearings)*/ publish(event = event, adjudication = adjudication, hearingId = adjudication.hearingIdActioned)
+      else -> publish(event = event, adjudication = adjudication)
     }
   }
 
-  private fun publish(event: AdjudicationDomainEventType, adjudication: ReportedAdjudicationDto) {
+  private fun publish(event: AdjudicationDomainEventType, adjudication: ReportedAdjudicationDto, hearingId: Long? = null) {
     snsService.publishDomainEvent(
       event,
       "${event.description} ${adjudication.chargeNumber}",
@@ -31,6 +32,7 @@ class EventPublishService(
         chargeNumber = adjudication.chargeNumber,
         prisonId = adjudication.originatingAgencyId,
         prisonerNumber = adjudication.prisonerNumber,
+        hearingId = hearingId,
       ),
     )
 

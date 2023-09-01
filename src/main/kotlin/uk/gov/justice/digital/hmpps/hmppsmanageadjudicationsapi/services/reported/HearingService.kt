@@ -77,7 +77,9 @@ class HearingService(
       it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
     }
 
-    return saveToDto(reportedAdjudication)
+    return saveToDto(reportedAdjudication).also {
+      it.hearingIdActioned = it.hearings.maxByOrNull { h -> h.dateTimeOfHearing }?.id
+    }
   }
 
   fun amendHearing(chargeNumber: String, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
@@ -107,7 +109,9 @@ class HearingService(
 
     reportedAdjudication.dateTimeOfFirstHearing = reportedAdjudication.calcFirstHearingDate()
 
-    return saveToDto(reportedAdjudication)
+    return saveToDto(reportedAdjudication).also {
+      it.hearingIdActioned = hearingToEdit.id
+    }
   }
 
   fun deleteHearing(chargeNumber: String): ReportedAdjudicationDto {
@@ -126,7 +130,9 @@ class HearingService(
       if (it.getOutcomeHistory().shouldRemoveLastScheduleHearing()) it.getOutcomeToRemove().deleted = true
     }.calculateStatus()
 
-    return saveToDto(reportedAdjudication)
+    return saveToDto(reportedAdjudication).also {
+      it.hearingIdActioned = hearingToRemove.id
+    }
   }
 
   fun getAllHearingsByAgencyIdAndDate(dateOfHearing: LocalDate): List<HearingSummaryDto> {
