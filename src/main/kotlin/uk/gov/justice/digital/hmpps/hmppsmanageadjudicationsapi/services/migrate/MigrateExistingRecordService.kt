@@ -63,7 +63,7 @@ class MigrateExistingRecordService(
     if (existingAdjudication.hearings.hasHearingWithoutResult()) {
       existingAdjudication.hearings.sortedBy { it.dateTimeOfHearing }.forEachIndexed { index, hearing ->
         if (index != existingAdjudication.hearings.size - 1 && hearing.hearingOutcome == null) {
-          hearing.hearingOutcome = createAdjourn(null)
+          hearing.hearingOutcome = createAdjourn()
         }
       }
     }
@@ -129,7 +129,10 @@ class MigrateExistingRecordService(
       val hasAdditionalOutcomes = adjudicationMigrateDto.hearings.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
       val hasAdditionalHearings = index < adjudicationMigrateDto.hearings.size - 1
 
-      val hearingOutcomeCode = nomisHearing.hearingResult!!.finding.mapToHearingOutcomeCode(hasAdditionalOutcomes, hasAdditionalHearings)
+      val hearingOutcomeCode = nomisHearing.hearingResult!!.finding.mapToHearingOutcomeCode(
+        hasAdditionalHearingOutcomes = hasAdditionalOutcomes,
+        hasAdditionalHearings = hasAdditionalHearings,
+      )
 
       nomisCode.hearingOutcome!!.adjudicator = nomisHearing.adjudicator ?: ""
       nomisCode.hearingOutcome!!.code = hearingOutcomeCode
