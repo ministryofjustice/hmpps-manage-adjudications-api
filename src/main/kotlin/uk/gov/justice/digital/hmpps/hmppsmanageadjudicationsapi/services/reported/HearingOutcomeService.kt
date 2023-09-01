@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getHearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getLatestHearingId
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.NomisOutcomeService.Companion.getAdjudicator
 
 @Service
@@ -61,7 +62,9 @@ class HearingOutcomeService(
       reason = reason,
       plea = plea,
       details = details,
-    )
+    ).also {
+      it.hearingIdActioned = it.hearings.getLatestHearingId()
+    }
 
   fun createCompletedHearing(
     chargeNumber: String,
@@ -80,7 +83,9 @@ class HearingOutcomeService(
   ): ReportedAdjudicationDto {
     findByChargeNumber(chargeNumber).latestOutcomeIsAdjourn()
 
-    return deleteHearingOutcome(chargeNumber = chargeNumber, recalculateStatus = recalculateStatus)
+    return deleteHearingOutcome(chargeNumber = chargeNumber, recalculateStatus = recalculateStatus).also {
+      it.hearingIdActioned = it.hearings.getLatestHearingId()
+    }
   }
 
   private fun createHearingOutcome(

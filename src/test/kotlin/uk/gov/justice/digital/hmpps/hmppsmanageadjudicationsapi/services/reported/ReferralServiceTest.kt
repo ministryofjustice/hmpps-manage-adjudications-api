@@ -3,12 +3,14 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeast
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase.Companion.REPORTED_ADJUDICATION_DTO
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
@@ -28,6 +30,8 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
 
   @Test
   fun `create outcome and hearing outcome for referral`() {
+    whenever(outcomeService.createReferral(any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
+
     referralService.createReferral(
       "1",
       HearingOutcomeCode.REFER_POLICE,
@@ -57,6 +61,7 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
         ),
       ),
     )
+    whenever(outcomeService.deleteOutcome(any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
 
     referralService.removeReferral("1")
 
@@ -76,6 +81,7 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
         ),
       ),
     )
+    whenever(outcomeService.deleteOutcome(any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
 
     whenever(hearingOutcomeService.getHearingOutcomeForReferral("1", OutcomeCode.REFER_POLICE, 0)).thenReturn(
       HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
@@ -113,6 +119,8 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
     whenever(hearingOutcomeService.getHearingOutcomeForReferral("1", OutcomeCode.REFER_POLICE, 0)).thenReturn(
       HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
     )
+
+    whenever(outcomeService.deleteOutcome(any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
 
     referralService.removeReferral("1")
 

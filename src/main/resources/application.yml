@@ -101,7 +101,7 @@ feature:
       chargeNumbers: false
       adjudications: ${FEATURE_ASYNC_ADJUDICATIONS:false}
       hearings:  ${FEATURE_ASYNC_HEARINGS:false}
-      outcomes: false
+      outcomes: ${FEATURE_ASYNC_OUTCOMES:false}
       punishments: ${FEATURE_ASYNC_PUNISHMENTS:false}
   skip:
      existing: ${FEATURE_SKIP_EXISTING:false}

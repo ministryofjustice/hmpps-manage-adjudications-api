@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -78,7 +79,7 @@ class HearingService(
     }
 
     return saveToDto(reportedAdjudication).also {
-      it.hearingIdActioned = it.hearings.maxByOrNull { h -> h.dateTimeOfHearing }?.id
+      it.hearingIdActioned = it.hearings.getLatestHearingId()
     }
   }
 
@@ -193,6 +194,9 @@ class HearingService(
       }
       return this
     }
+
+    fun List<HearingDto>.getLatestHearingId(): Long? =
+      this?.maxByOrNull { h -> h.dateTimeOfHearing }?.id
 
     private fun throwHearingNotFoundException(): Nothing = throw EntityNotFoundException("Hearing not found")
   }

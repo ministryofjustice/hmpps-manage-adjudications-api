@@ -17,6 +17,7 @@ generic-service:
     FEATURE_SKIP_EXISTING: true
     FEATURE_ASYNC_HEARINGS: false
     FEATURE_ASYNC_PUNISHMENTS: false
+    FEATURE_ASYNC_OUTCOMES: false
 
   allowlist: null
 

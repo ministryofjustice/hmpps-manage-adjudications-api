@@ -13,13 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ErrorResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.CompletedHearingService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReferralService
 
 @Schema(description = "Request to add a police referral, or refer gov request")
 data class ReferralDetailsRequest(
@@ -33,36 +30,6 @@ data class NotProceedRequest(
   val details: String,
   @Schema(description = "reason")
   val reason: NotProceedReason,
-)
-
-@Schema(description = "Request to add a not proceed - hearing completed")
-data class HearingCompletedNotProceedRequest(
-  @Schema(description = "the name of the adjudicator")
-  val adjudicator: String,
-  @Schema(description = "plea")
-  val plea: HearingOutcomePlea,
-  @Schema(description = "reason")
-  val reason: NotProceedReason,
-  @Schema(description = "details")
-  val details: String,
-)
-
-@Schema(description = "Request to add dismissed - hearing completed")
-data class HearingCompletedDismissedRequest(
-  @Schema(description = "the name of the adjudicator")
-  val adjudicator: String,
-  @Schema(description = "plea")
-  val plea: HearingOutcomePlea,
-  @Schema(description = "details")
-  val details: String,
-)
-
-@Schema(description = "Request to add charge proved - hearing completed")
-data class HearingCompletedChargeProvedRequest(
-  @Schema(description = "the name of the adjudicator")
-  val adjudicator: String,
-  @Schema(description = "plea")
-  val plea: HearingOutcomePlea,
 )
 
 @Schema(description = "Request to quash charge")
@@ -88,8 +55,6 @@ data class AmendOutcomeRequest(
 @Tag(name = "31. Outcomes")
 class OutcomeController(
   private val outcomeService: OutcomeService,
-  private val referralService: ReferralService,
-  private val completedHearingService: CompletedHearingService,
 ) : ReportedAdjudicationBaseController() {
 
   @Operation(
@@ -243,93 +208,6 @@ class OutcomeController(
       details = policeReferralRequest.details,
     ).toResponse()
 
-  @Operation(
-    summary = "create a dismissed from hearing outcome",
-    responses = [
-      io.swagger.v3.oas.annotations.responses.ApiResponse(
-        responseCode = "201",
-        description = "Charge Dismissed Created",
-      ),
-      io.swagger.v3.oas.annotations.responses.ApiResponse(
-        responseCode = "415",
-        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
-        content = [
-          io.swagger.v3.oas.annotations.media.Content(
-            mediaType = "application/json",
-            schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  @PostMapping(value = ["/{chargeNumber}/complete-hearing/dismissed"])
-  @ResponseStatus(HttpStatus.CREATED)
-  fun createDismissed(
-    @PathVariable(name = "chargeNumber") chargeNumber: String,
-    @RequestBody completedDismissedRequest: HearingCompletedDismissedRequest,
-  ): ReportedAdjudicationResponse =
-    completedHearingService.createDismissed(
-      chargeNumber = chargeNumber,
-      adjudicator = completedDismissedRequest.adjudicator,
-      plea = completedDismissedRequest.plea,
-      details = completedDismissedRequest.details,
-    ).toResponse()
-
-  @Operation(
-    summary = "create a not proceed from hearing outcome",
-    responses = [
-      io.swagger.v3.oas.annotations.responses.ApiResponse(
-        responseCode = "201",
-        description = "Not Proceeded Created",
-      ),
-      io.swagger.v3.oas.annotations.responses.ApiResponse(
-        responseCode = "415",
-        description = "Not able to process the request because the payload is in a format not supported by this endpoint.",
-        content = [
-          io.swagger.v3.oas.annotations.media.Content(
-            mediaType = "application/json",
-            schema = io.swagger.v3.oas.annotations.media.Schema(implementation = ErrorResponse::class),
-          ),
-        ],
-      ),
-    ],
-  )
-  @PostMapping(value = ["/{chargeNumber}/complete-hearing/not-proceed"])
-  @ResponseStatus(HttpStatus.CREATED)
-  fun createNotProceedFromHearing(
-    @PathVariable(name = "chargeNumber") chargeNumber: String,
-    @RequestBody completedNotProceedRequest: HearingCompletedNotProceedRequest,
-  ): ReportedAdjudicationResponse =
-    completedHearingService.createNotProceed(
-      chargeNumber = chargeNumber,
-      adjudicator = completedNotProceedRequest.adjudicator,
-      plea = completedNotProceedRequest.plea,
-      reason = completedNotProceedRequest.reason,
-      details = completedNotProceedRequest.details,
-    ).toResponse()
-
-  @PostMapping(value = ["/{chargeNumber}/complete-hearing/charge-proved/v2"])
-  @ResponseStatus(HttpStatus.CREATED)
-  fun createChargeProvedFromHearingV2(
-    @PathVariable(name = "chargeNumber") chargeNumber: String,
-    @RequestBody chargeProvedRequest: HearingCompletedChargeProvedRequest,
-  ): ReportedAdjudicationResponse =
-    completedHearingService.createChargeProved(
-      chargeNumber = chargeNumber,
-      adjudicator = chargeProvedRequest.adjudicator,
-      plea = chargeProvedRequest.plea,
-    ).toResponse()
-
-  @Operation(summary = "remove a referral")
-  @DeleteMapping(value = ["/{chargeNumber}/remove-referral"])
-  @ResponseStatus(HttpStatus.OK)
-  fun removeReferral(
-    @PathVariable(name = "chargeNumber") chargeNumber: String,
-  ): ReportedAdjudicationResponse =
-    referralService.removeReferral(
-      chargeNumber = chargeNumber,
-    ).toResponse()
-
   @Operation(summary = "remove a not proceed without a referral outcome, or a quashed outcome")
   @DeleteMapping(value = ["/{chargeNumber}/outcome"])
   @ResponseStatus(HttpStatus.OK)
@@ -337,16 +215,6 @@ class OutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse =
     outcomeService.deleteOutcome(
-      chargeNumber = chargeNumber,
-    ).toResponse()
-
-  @Operation(summary = "remove a completed hearing outcome")
-  @DeleteMapping(value = ["/{chargeNumber}/remove-completed-hearing"])
-  @ResponseStatus(HttpStatus.OK)
-  fun removeCompletedHearingOutcome(
-    @PathVariable(name = "chargeNumber") chargeNumber: String,
-  ): ReportedAdjudicationResponse =
-    completedHearingService.removeOutcome(
       chargeNumber = chargeNumber,
     ).toResponse()
 

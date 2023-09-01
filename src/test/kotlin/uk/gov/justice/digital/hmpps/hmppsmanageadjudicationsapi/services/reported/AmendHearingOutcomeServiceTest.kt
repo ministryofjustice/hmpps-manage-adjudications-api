@@ -7,10 +7,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase.Companion.REPORTED_ADJUDICATION_DTO
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.AmendHearingOutcomeRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDto
@@ -53,6 +55,9 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val request = createRequest(status)
+
+      whenever(outcomeService.amendOutcomeViaService(any(), any(), anyOrNull(), anyOrNull())).thenReturn(REPORTED_ADJUDICATION_DTO)
+      whenever(hearingOutcomeService.amendHearingOutcome(any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(REPORTED_ADJUDICATION_DTO)
 
       amendHearingOutcomeService.amendHearingOutcome(
         chargeNumber = "1",
@@ -122,6 +127,12 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
           ),
         ),
       )
+
+      whenever(referralService.createReferral(any(), any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
+      whenever(hearingOutcomeService.createAdjourn(any(), any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
+      whenever(completedHearingService.createDismissed(any(), any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
+      whenever(completedHearingService.createChargeProved(any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
+      whenever(completedHearingService.createNotProceed(any(), any(), any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
 
       val request = createRequest(to)
 
