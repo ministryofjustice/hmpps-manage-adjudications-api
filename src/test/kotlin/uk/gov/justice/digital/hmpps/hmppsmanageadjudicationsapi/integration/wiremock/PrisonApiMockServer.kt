@@ -253,22 +253,6 @@ class PrisonApiMockServer : WireMockServer {
     )
   }
 
-  fun stubCreateSanction(chargeNumber: String) {
-    stubFor(
-      post(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/sanction"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(200)
-            .withBody(
-              JSONObject()
-                .put("sanctionSeq", "1")
-                .toString(),
-            ),
-        ),
-    )
-  }
-
   fun stubUpdateSanctions(chargeNumber: String) {
     stubFor(
       put(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/sanctions"))
@@ -294,17 +278,6 @@ class PrisonApiMockServer : WireMockServer {
   fun stubDeleteSanctions(chargeNumber: String) {
     stubFor(
       delete(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/sanctions"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(200),
-        ),
-    )
-  }
-
-  fun stubDeleteSanction(chargeNumber: String) {
-    stubFor(
-      delete(urlEqualTo("/api/adjudications/adjudication/$chargeNumber/sanction/1"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

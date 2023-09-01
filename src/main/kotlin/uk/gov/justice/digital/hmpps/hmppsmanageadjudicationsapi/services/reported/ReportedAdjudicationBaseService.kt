@@ -227,7 +227,6 @@ open class ReportedDtoService(
         oicHearingType = it.oicHearingType,
         outcome = it.hearingOutcome?.toHearingOutcomeDto(),
         agencyId = it.agencyId,
-        oicHearingId = it.oicHearingId,
       )
     }.sortedBy { it.dateTimeOfHearing }.toList()
 

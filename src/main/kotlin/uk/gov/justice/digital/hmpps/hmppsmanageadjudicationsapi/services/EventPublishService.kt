@@ -19,6 +19,8 @@ class EventPublishService(
       AdjudicationDomainEventType.ADJUDICATION_CREATED -> if (featureFlagsConfig.adjudications) publish(event = event, adjudication = adjudication)
       AdjudicationDomainEventType.HEARING_CREATED, AdjudicationDomainEventType.HEARING_UPDATED, AdjudicationDomainEventType.HEARING_DELETED ->
         /*if (featureFlagsConfig.hearings)*/ publish(event = event, adjudication = adjudication, hearingId = adjudication.hearingIdActioned)
+      AdjudicationDomainEventType.PUNISHMENTS_CREATED, AdjudicationDomainEventType.PUNISHMENTS_UPDATED ->
+        /*if(featureFlagsConfig.punishments)*/ publish(event = event, adjudication = adjudication)
       else -> publish(event = event, adjudication = adjudication)
     }
   }
