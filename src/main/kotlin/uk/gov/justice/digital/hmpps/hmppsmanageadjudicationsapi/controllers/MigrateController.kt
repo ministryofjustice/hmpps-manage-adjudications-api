@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationBaseController
@@ -83,5 +84,5 @@ class MigrateController(
   @Operation(summary = "resets the migration and removes all migrated records from database")
   @DeleteMapping(value = ["/migrate/reset"])
   @ResponseStatus(HttpStatus.OK)
-  fun reset() = migrateService.reset()
+  fun reset(@RequestParam(value = "agency", required = false) agency: String? = null) = migrateService.reset(agency)
 }
