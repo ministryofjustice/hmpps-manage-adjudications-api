@@ -308,23 +308,24 @@ class MigrateNewRecordService(
     fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index: Int): Boolean =
       index < this.size - 1 && this.none { it.hearingResult == null } && this.last().hearingResult?.finding != Finding.QUASHED.name
 
-    /*
-       Note: this is a placeholder, awaiting further discovery of nomis data to expand on rules
-       Currently allows REF_POLICE and QUASHED to be processed, pending discovery
-     */
     private fun List<MigrateHearing>.validate(chargeNumber: String) {
-      val listOfExceptionStatus = listOf(
-        Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name, Finding.GUILTY.name, Finding.NOT_GUILTY.name,
-        Finding.DISMISSED.name, Finding.UNFIT.name, Finding.REFUSED.name, Finding.NOT_PROVEN.name,
-      ).toMutableList()
       if (this.count { it.hearingResult != null } < 2) return
-      if (this.filter { it.hearingResult != null }.any { listOf(Finding.REF_POLICE.name, Finding.QUASHED.name).contains(it.hearingResult!!.finding) }) return
-
-      val firstResult = this.first { it.hearingResult != null }
-
-      listOfExceptionStatus.removeIf { it == firstResult.hearingResult!!.finding }
-
-      if (this.filter { it.hearingResult != null }.any { listOfExceptionStatus.contains(it.hearingResult!!.finding) }) {
+      val last = this.last()
+      if (last.hearingResult?.finding == Finding.QUASHED.name) return
+      val first = this.first { it.hearingResult != null }
+      if (listOf(Finding.S.name, Finding.REF_POLICE.name).contains(first.hearingResult?.finding)) return
+      if (this.map { it.hearingResult?.finding }.distinct().count {
+        listOf(
+            Finding.NOT_PROCEED.name,
+            Finding.D.name,
+            Finding.DISMISSED.name,
+            Finding.PROVED.name,
+            Finding.GUILTY.name,
+            Finding.NOT_GUILTY.name,
+            Finding.NOT_PROVEN.name,
+          ).contains(it)
+      } > 1
+      ) {
         throw UnableToMigrateException("record structure: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
       }
     }
