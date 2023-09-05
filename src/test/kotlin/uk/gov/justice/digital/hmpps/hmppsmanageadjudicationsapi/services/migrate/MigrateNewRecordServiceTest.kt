@@ -702,7 +702,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         migrateNewRecordService.accept(dto)
       }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("Currently unable to migrate due to results structure")
     }
 
     @Test
@@ -764,7 +763,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         migrateNewRecordService.accept(dto)
       }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("Currently unable to migrate due to results structure")
     }
   }
 

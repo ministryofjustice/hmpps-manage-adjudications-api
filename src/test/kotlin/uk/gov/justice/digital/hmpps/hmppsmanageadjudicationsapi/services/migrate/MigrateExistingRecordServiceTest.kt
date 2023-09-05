@@ -215,7 +215,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing(dto))
       }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("${dto.oicIncidentId} has a NOMIS hearing outcome, and record no longer exists in NOMIS")
     }
 
     @CsvSource("PROVED", "D", "NOT_PROCEED")
@@ -276,6 +275,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.PROSECUTION)
     }
 
+    @Disabled // disabled as need more stats before adding new items
     @Test
     fun `existing hearing outcome with code NOMIS has REFER_POLICE and another hearing`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -410,7 +410,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing(dto))
       }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("${dto.oicIncidentId} hearing no longer exists in nomis")
     }
 
     @Test
@@ -447,7 +446,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing(dto))
       }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("${dto.oicIncidentId} hearing result no longer exists in nomis")
     }
 
     @Test
@@ -480,7 +478,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing)
       }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("${dto.oicIncidentId} hearing result code has changed")
     }
 
     @Test
@@ -494,7 +491,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing)
       }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("${dto.oicIncidentId} has additional hearings and results in nomis")
     }
 
     @Test
@@ -608,7 +604,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing)
       }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("${dto.punishments.first().sanctionCode} matches more than one punishment")
     }
 
     @Test

@@ -224,7 +224,7 @@ class MigrateNewRecordService(
       }
 
     fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String, isYouthOffender: Boolean): Pair<List<Hearing>, List<Outcome>> {
-      this.validate()
+      this.validate(chargeNumber)
 
       val hearingsAndResults = mutableListOf<Hearing>()
       val outcomes = mutableListOf<Outcome>()
@@ -248,6 +248,7 @@ class MigrateNewRecordService(
             val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(
               hasAdditionalHearingOutcomes = hasAdditionalHearingOutcomes,
               hasAdditionalHearings = hasAdditionalHearings,
+              chargeNumber = chargeNumber,
             )
 
             Pair(
@@ -311,7 +312,7 @@ class MigrateNewRecordService(
        Note: this is a placeholder, awaiting further discovery of nomis data to expand on rules
        Currently allows REF_POLICE and QUASHED to be processed, pending discovery
      */
-    private fun List<MigrateHearing>.validate() {
+    private fun List<MigrateHearing>.validate(chargeNumber: String) {
       val listOfExceptionStatus = listOf(
         Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name, Finding.GUILTY.name, Finding.NOT_GUILTY.name,
         Finding.DISMISSED.name, Finding.UNFIT.name, Finding.REFUSED.name, Finding.NOT_PROVEN.name,
@@ -324,7 +325,7 @@ class MigrateNewRecordService(
       listOfExceptionStatus.removeIf { it == firstResult.hearingResult!!.finding }
 
       if (this.filter { it.hearingResult != null }.any { listOfExceptionStatus.contains(it.hearingResult!!.finding) }) {
-        throw UnableToMigrateException("Currently unable to migrate due to results structure")
+        throw UnableToMigrateException("record structure: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
       }
     }
 
@@ -360,15 +361,15 @@ class MigrateNewRecordService(
       else -> null
     }
 
-    fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean, hasAdditionalHearings: Boolean): HearingOutcomeCode = when (this) {
+    fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean, hasAdditionalHearings: Boolean, chargeNumber: String): HearingOutcomeCode = when (this) {
       Finding.QUASHED.name -> HearingOutcomeCode.COMPLETE // TODO further discovery around nomis UNQUASHED
       Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name ->
         if (hasAdditionalHearingOutcomes) HearingOutcomeCode.ADJOURN else HearingOutcomeCode.COMPLETE
       Finding.PROSECUTED.name, Finding.REF_POLICE.name -> HearingOutcomeCode.REFER_POLICE
       Finding.GUILTY.name, Finding.NOT_GUILTY.name, Finding.UNFIT.name, Finding.REFUSED.name, Finding.NOT_PROVEN.name, Finding.DISMISSED.name ->
-        if (hasAdditionalHearings) throw UnableToMigrateException("Currently unable to migrate due to results structure") else HearingOutcomeCode.COMPLETE
+        if (hasAdditionalHearings) throw UnableToMigrateException("$chargeNumber: $this has additional hearings") else HearingOutcomeCode.COMPLETE
       Finding.S.name -> HearingOutcomeCode.ADJOURN
-      else -> throw UnableToMigrateException("To confirm default with John, given appeals and other such statuses")
+      else -> throw UnableToMigrateException("unsupported mapping $this")
     }
 
     private fun String.mapToPlea(): HearingOutcomePlea = when (this) {
@@ -377,7 +378,7 @@ class MigrateNewRecordService(
       Plea.NOT_ASKED.name -> HearingOutcomePlea.NOT_ASKED
       Plea.UNFIT.name -> HearingOutcomePlea.UNFIT
       Plea.REFUSED.name -> HearingOutcomePlea.ABSTAIN
-      else -> TODO("TO confirm with John default case, and issue where result can also be a plea")
+      else -> throw UnableToMigrateException("$this plea is not mapped currently")
     }
 
     private fun MigratePunishment.mapToPunishment(): Punishment {

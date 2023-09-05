@@ -24,12 +24,16 @@ class MigrateService(
   private val resetRecordService: ResetRecordService,
 ) {
 
-  fun reset() {
+  fun reset(agency: String? = null) {
     log.info("starting migration reset")
-    reportedAdjudicationRepository.getDistinctAgencies().forEach {
-      resetRecordService.remove(it)
-      if (!featureFlagsConfig.skipExistingRecords) {
-        reportedAdjudicationRepository.findRecordsToReset(it).forEach { resetRecordService.reset(it) }
+    if (agency != null) {
+      listOf(agency)
+    } else {
+      reportedAdjudicationRepository.getDistinctAgencies().forEach {
+        resetRecordService.remove(it)
+        if (!featureFlagsConfig.skipExistingRecords) {
+          reportedAdjudicationRepository.findRecordsToReset(it).forEach { record -> resetRecordService.reset(record) }
+        }
       }
     }
   }
