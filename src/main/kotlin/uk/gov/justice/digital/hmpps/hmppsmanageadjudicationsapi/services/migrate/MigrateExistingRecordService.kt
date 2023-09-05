@@ -170,10 +170,27 @@ class MigrateExistingRecordService(
     }
 
     adjudicationMigrateDto.hearings.sortedBy { it.hearingDateTime }.forEach { nomisHearing ->
+
       if (this.hearings.none { it.oicHearingId == nomisHearing.oicHearingId } &&
         this.getOutcomes().none { it.oicHearingId == nomisHearing.oicHearingId }
       ) {
-        throw ExistingRecordConflictException("$chargeNumber has a new hearing ${nomisHearing.oicHearingId} ${nomisHearing.hearingResult?.finding}")
+        if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(nomisHearing.hearingDateTime) == true) {
+          throw ExistingRecordConflictException("$chargeNumber has a new hearing before latest")
+        }
+
+        if (listOf(HearingOutcomeCode.COMPLETE).contains(this.getLatestHearing()?.hearingOutcome?.code) &&
+          nomisHearing.hearingResult?.finding != Finding.QUASHED.name
+        ) {
+          throw ExistingRecordConflictException("$chargeNumber has a new hearing after completed ${nomisHearing.hearingResult?.finding}")
+        }
+
+        this.addHearingsAndOutcomes(
+          listOf(nomisHearing).toHearingsAndResultsAndOutcomes(
+            agencyId = adjudicationMigrateDto.agencyId,
+            chargeNumber = this.chargeNumber,
+            isYouthOffender = this.isYouthOffender,
+          ),
+        )
       }
     }
 
