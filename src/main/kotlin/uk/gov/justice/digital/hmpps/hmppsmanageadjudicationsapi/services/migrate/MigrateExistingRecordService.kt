@@ -178,7 +178,7 @@ class MigrateExistingRecordService(
           throw ExistingRecordConflictException("$chargeNumber has a new hearing before latest")
         }
 
-        if (listOf(HearingOutcomeCode.COMPLETE).contains(this.getLatestHearing()?.hearingOutcome?.code) &&
+        if (HearingOutcomeCode.COMPLETE == this.getLatestHearing()?.hearingOutcome?.code &&
           nomisHearing.hearingResult?.finding != Finding.QUASHED.name
         ) {
           throw ExistingRecordConflictException("$chargeNumber has a new hearing after completed ${nomisHearing.hearingResult?.finding}")

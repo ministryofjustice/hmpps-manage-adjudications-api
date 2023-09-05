@@ -322,6 +322,7 @@ class MigrateNewRecordService(
             Finding.PROVED.name,
             Finding.GUILTY.name,
             Finding.NOT_GUILTY.name,
+            Finding.NOT_PROVEN.name,
           ).contains(it)
       } > 1
       ) {
