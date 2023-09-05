@@ -174,7 +174,7 @@ class MigrateExistingRecordService(
       if (this.hearings.none { it.oicHearingId == nomisHearing.oicHearingId } &&
         this.getOutcomes().none { it.oicHearingId == nomisHearing.oicHearingId }
       ) {
-        if (this.getLatestHearing()?.dateTimeOfHearing?.isBefore(nomisHearing.hearingDateTime) == true) {
+        if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(nomisHearing.hearingDateTime) == true) {
           throw ExistingRecordConflictException("$chargeNumber has a new hearing before latest")
         }
 
