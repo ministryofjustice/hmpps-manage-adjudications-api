@@ -924,6 +924,41 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class SetCreatedOnBehalfOf {
+
+    private val draftAdjudication =
+      DraftAdjudication(
+        id = 1,
+        prisonerNumber = "A12345",
+        gender = Gender.MALE,
+        agencyId = "MDI",
+        incidentDetails = incidentDetails(2L, now),
+        incidentRole = incidentRoleWithAllValuesSet(),
+        incidentStatement = IncidentStatement(
+          statement = "Example statement",
+          completed = false,
+        ),
+        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
+        isYouthOffender = true,
+      )
+
+    @Test
+    fun `sets created on behalf of`() {
+      whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
+      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+
+      val response = draftAdjudicationService.setCreatedOnBehalfOf(1, "officer", "some reason")
+
+      val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+      verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.createdOnBehalfOfOfficer).isEqualTo("officer")
+      assertThat(argumentCaptor.value.createdOnBehalfOfReason).isEqualTo("some reason")
+      assertThat(response).isNotNull
+    }
+  }
+
   companion object {
 
     val pageable = Pageable.ofSize(20).withPage(0)

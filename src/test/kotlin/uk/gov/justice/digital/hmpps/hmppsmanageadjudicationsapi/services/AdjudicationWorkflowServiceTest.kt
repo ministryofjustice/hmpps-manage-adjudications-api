@@ -116,6 +116,8 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       damagesSaved = true,
       evidenceSaved = true,
       witnessesSaved = true,
+      createdOnBehalfOfOfficer = "officer",
+      createdOnBehalfOfReason = "some reason",
     )
 
     private val savedDraftAdjudication = expectedSavedDraftAdjudication.copy(

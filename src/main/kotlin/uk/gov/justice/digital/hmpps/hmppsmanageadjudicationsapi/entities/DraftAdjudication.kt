@@ -52,6 +52,8 @@ data class DraftAdjudication(
   var damagesSaved: Boolean? = null,
   var evidenceSaved: Boolean? = null,
   var witnessesSaved: Boolean? = null,
+  var createdOnBehalfOfOfficer: String? = null,
+  var createdOnBehalfOfReason: String? = null,
 ) : BaseEntity()
 
 enum class Gender(

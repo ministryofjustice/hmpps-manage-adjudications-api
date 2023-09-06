@@ -92,6 +92,8 @@ open class ReportedDtoService(
       overrideAgencyId = this.overrideAgencyId,
       originatingAgencyId = this.originatingAgencyId,
       transferableActionsAllowed = this.isActionable(activeCaseload),
+      createdOnBehalfOfOfficer = this.createdOnBehalfOfOfficer,
+      createdOnBehalfOfReason = this.createdOnBehalfOfReason,
     )
   }
 

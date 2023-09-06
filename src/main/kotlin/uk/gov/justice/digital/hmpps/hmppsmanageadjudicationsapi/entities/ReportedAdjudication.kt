@@ -79,6 +79,8 @@ data class ReportedAdjudication(
   @JoinColumn(name = "reported_adjudication_fk_id")
   var punishmentComments: MutableList<PunishmentComment>,
   var migrated: Boolean = false,
+  var createdOnBehalfOfOfficer: String? = null,
+  var createdOnBehalfOfReason: String? = null,
 ) :
   BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reason: String? = null, details: String? = null, reviewUserId: String? = null) {

@@ -79,6 +79,8 @@ class EntityBuilder {
       disIssueHistory = mutableListOf(),
       punishments = mutableListOf(),
       punishmentComments = mutableListOf(),
+      createdOnBehalfOfOfficer = "officer",
+      createdOnBehalfOfReason = "some reason",
     )
   }
 
