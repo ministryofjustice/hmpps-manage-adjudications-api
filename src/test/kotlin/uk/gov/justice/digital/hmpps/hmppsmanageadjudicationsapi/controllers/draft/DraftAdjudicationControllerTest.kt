@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyLong
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doNothing
@@ -744,6 +745,59 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           put("/draft-adjudications/$id/gender")
+            .header("Content-Type", "application/json")
+            .content(body),
+        )
+    }
+  }
+
+  @Nested
+  inner class SetCreatedOnBehalfOf {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        draftAdjudicationService.setCreatedOnBehalfOf(
+          anyLong(),
+          anyString(),
+          anyString(),
+        ),
+      ).thenReturn(draftAdjudicationDto())
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      setCreatedOnBehalfOfRequest(1, "offender", "some reason")
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
+    fun `makes a call to set the created on behalf of`() {
+      setCreatedOnBehalfOfRequest(1, "offender", "some reason")
+        .andExpect(status().isOk)
+
+      verify(draftAdjudicationService).setCreatedOnBehalfOf(
+        1,
+        "offender",
+        "some reason",
+      )
+    }
+
+    private fun setCreatedOnBehalfOfRequest(
+      id: Long,
+      createdOnBehalfOfOfficer: String,
+      createdOnBehalfOfReason: String,
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(
+        mapOf(
+          "createdOnBehalfOfOfficer" to createdOnBehalfOfOfficer,
+          "createdOnBehalfOfReason" to createdOnBehalfOfReason,
+        ),
+      )
+      return mockMvc
+        .perform(
+          put("/draft-adjudications/$id/created-on-behalf-of")
             .header("Content-Type", "application/json")
             .content(body),
         )

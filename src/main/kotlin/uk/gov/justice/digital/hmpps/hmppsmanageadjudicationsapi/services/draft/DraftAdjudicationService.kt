@@ -263,6 +263,15 @@ class DraftAdjudicationService(
     return getInProgress(authenticationFacade.activeCaseload, username, startDate, endDate, pageable)
   }
 
+  fun setCreatedOnBehalfOf(id: Long, createdOnBehalfOfOfficer: String, createdOnBehalfOfReason: String): DraftAdjudicationDto {
+    val draftAdjudication = find(id).also {
+      it.createdOnBehalfOfOfficer = createdOnBehalfOfOfficer
+      it.createdOnBehalfOfReason = createdOnBehalfOfReason
+    }
+
+    return saveToDto(draftAdjudication)
+  }
+
   private fun throwIfStatementAndCompletedIsNull(statement: String?, completed: Boolean?) {
     if (statement == null && completed == null) {
       throw IllegalArgumentException("Please supply either a statement or the completed value")

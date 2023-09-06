@@ -719,6 +719,32 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `set created on behalf of`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+
+    val draftAdjudicationResponse = intTestData.startNewAdjudication(testAdjudication)
+    val officer = "officer"
+    val reason = "some reason"
+
+    webTestClient.put()
+      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/created-on-behalf-of")
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
+      .bodyValue(
+        mapOf(
+          "createdOnBehalfOfOfficer" to officer,
+          "createdOnBehalfOfReason" to reason,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.draftAdjudication.id").isNumber
+      .jsonPath("$.draftAdjudication.createdOnBehalfOfOfficer").isEqualTo(officer)
+      .jsonPath("$.draftAdjudication.createdOnBehalfOfReason").isEqualTo(reason)
+  }
+
+  @Test
   fun `delete draft adjudication`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()

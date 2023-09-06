@@ -110,6 +110,14 @@ data class GenderRequest(
   val gender: Gender,
 )
 
+@Schema(description = "Request to update created on behalf of")
+data class CreatedOnBehalfOfRequest(
+  @Schema(description = "Name the officer the report was created on behalf of")
+  var createdOnBehalfOfOfficer: String,
+  @Schema(description = "Reason why the report was created on behalf of another officer")
+  var createdOnBehalfOfReason: String,
+)
+
 @RestController
 @Validated
 @Tag(name = "10. Draft Adjudication Management")
@@ -353,6 +361,25 @@ class DraftAdjudicationController(
     val draftAdjudication = draftAdjudicationService.setGender(
       id,
       genderRequest.gender,
+    )
+
+    return DraftAdjudicationResponse(
+      draftAdjudication,
+    )
+  }
+
+  @PutMapping(value = ["/{id}/created-on-behalf-of"])
+  @Operation(summary = "Set created on behalf of")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
+  fun setCreatedOnBehalfOf(
+    @PathVariable(name = "id") id: Long,
+    @RequestBody @Valid
+    createdOnBehalfOfRequest: CreatedOnBehalfOfRequest,
+  ): DraftAdjudicationResponse {
+    val draftAdjudication = draftAdjudicationService.setCreatedOnBehalfOf(
+      id,
+      createdOnBehalfOfRequest.createdOnBehalfOfOfficer,
+      createdOnBehalfOfRequest.createdOnBehalfOfReason,
     )
 
     return DraftAdjudicationResponse(

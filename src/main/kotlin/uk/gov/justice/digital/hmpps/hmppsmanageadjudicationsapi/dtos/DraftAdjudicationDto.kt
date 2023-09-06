@@ -46,6 +46,10 @@ data class DraftAdjudicationDto(
   val overrideAgencyId: String? = null,
   @Schema(description = "agency id where report was created")
   val originatingAgencyId: String,
+  @Schema(description = "Name the officer the report was created on behalf of")
+  var createdOnBehalfOfOfficer: String? = null,
+  @Schema(description = "Reason why the report was created on behalf of another officer")
+  var createdOnBehalfOfReason: String? = null,
 )
 
 @Schema(description = "Incident details")

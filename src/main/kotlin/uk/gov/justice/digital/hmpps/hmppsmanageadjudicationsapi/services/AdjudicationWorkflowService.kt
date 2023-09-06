@@ -128,6 +128,8 @@ class AdjudicationWorkflowService(
       damagesSaved = true,
       evidenceSaved = true,
       witnessesSaved = true,
+      createdOnBehalfOfOfficer = reportedAdjudication.createdOnBehalfOfOfficer,
+      createdOnBehalfOfReason = reportedAdjudication.createdOnBehalfOfReason,
     )
 
     return draftAdjudicationService
@@ -187,6 +189,8 @@ class AdjudicationWorkflowService(
         disIssueHistory = mutableListOf(),
         punishments = mutableListOf(),
         punishmentComments = mutableListOf(),
+        createdOnBehalfOfOfficer = draftAdjudication.createdOnBehalfOfOfficer,
+        createdOnBehalfOfReason = draftAdjudication.createdOnBehalfOfReason,
       ),
     )
   }
@@ -233,6 +237,8 @@ class AdjudicationWorkflowService(
       it.damages.addAll(toReportedDamages(draftAdjudication.damages.filter { d -> d.reporter == reporter }.toMutableList()))
       it.evidence.addAll(toReportedEvidence(draftAdjudication.evidence.filter { e -> e.reporter == reporter }.toMutableList()))
       it.witnesses.addAll(toReportedWitnesses(draftAdjudication.witnesses.filter { w -> w.reporter == reporter }.toMutableList()))
+      it.createdOnBehalfOfOfficer = draftAdjudication.createdOnBehalfOfOfficer
+      it.createdOnBehalfOfReason = draftAdjudication.createdOnBehalfOfReason
 
       return reportedAdjudicationService.save(it)
     }
