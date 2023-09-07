@@ -802,6 +802,15 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
         migrateNewRecordService.accept(dto)
       }.isInstanceOf(UnableToMigrateException::class.java)
     }
+
+    @Test
+    fun `appeal throws exception if it also contains quashed`() {
+      val dto = migrationFixtures.WITH_FINDING_APPEAL_AND_QUASHED
+
+      Assertions.assertThatThrownBy {
+        migrateNewRecordService.accept(dto)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+    }
   }
 
   @Nested

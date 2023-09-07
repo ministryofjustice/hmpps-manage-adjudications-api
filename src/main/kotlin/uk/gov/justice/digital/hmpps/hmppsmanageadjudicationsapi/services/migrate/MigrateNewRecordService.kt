@@ -310,15 +310,10 @@ class MigrateNewRecordService(
 
     private fun List<MigrateHearing>.validate(chargeNumber: String) {
       val shouldBeFinal = listOf(Finding.APPEAL.name, Finding.QUASHED.name)
-      if (this.count { it.hearingResult != null } < 2) return
+      if (this.none { it.hearingResult != null }) return
       val last = this.last()
-      if (shouldBeFinal.contains(last.hearingResult?.finding)) return
       val first = this.first { it.hearingResult != null }
       if (listOf(Finding.S.name, Finding.REF_POLICE.name).contains(first.hearingResult?.finding)) return
-      if (this.any { shouldBeFinal.contains(it.hearingResult?.finding) }) {
-        val indexOf = this.indexOfLast { shouldBeFinal.contains(it.hearingResult?.finding) }
-        if (indexOf != -1 && indexOf < this.size - 1) throw UnableToMigrateException("record structure: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
-      }
       if (this.map { it.hearingResult?.finding }.distinct().count {
         listOf(
             Finding.NOT_PROCEED.name,
@@ -329,9 +324,14 @@ class MigrateNewRecordService(
             Finding.NOT_GUILTY.name,
             Finding.NOT_PROVEN.name,
           ).contains(it)
-      } > 1
+      } > 1 || this.map { it.hearingResult?.finding }.containsAll(shouldBeFinal)
       ) {
         throw UnableToMigrateException("record structure: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+      }
+      if (shouldBeFinal.contains(last.hearingResult?.finding)) return
+      if (this.any { shouldBeFinal.contains(it.hearingResult?.finding) }) {
+        val indexOf = this.indexOfLast { shouldBeFinal.contains(it.hearingResult?.finding) }
+        if (indexOf != -1 && indexOf < this.size - 1) throw UnableToMigrateException("record structure: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
       }
     }
 

@@ -577,9 +577,15 @@ class MigrateFixtures {
 
   val WITH_FINDING_APPEAL_NOT_LATEST = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
-      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().minusDays(1), hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name)),
       migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name)),
       migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1)),
+    ),
+  )
+
+  val WITH_FINDING_APPEAL_AND_QUASHED = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().minusDays(1), hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name)),
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.QUASHED.name)),
     ),
   )
 
