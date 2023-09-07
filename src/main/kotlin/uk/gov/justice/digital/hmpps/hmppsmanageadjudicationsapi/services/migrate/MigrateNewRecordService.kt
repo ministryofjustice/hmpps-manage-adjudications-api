@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
@@ -308,9 +309,9 @@ class MigrateNewRecordService(
       index < this.size - 1 && this.none { it.hearingResult == null } && this.last().hearingResult?.finding != Finding.QUASHED.name
 
     private fun List<MigrateHearing>.validate(chargeNumber: String) {
-      if (this.count { it.hearingResult != null } < 2) return
+      val shouldBeFinal = listOf(Finding.APPEAL.name, Finding.QUASHED.name)
+      if (this.none { it.hearingResult != null }) return
       val last = this.last()
-      if (last.hearingResult?.finding == Finding.QUASHED.name) return
       val first = this.first { it.hearingResult != null }
       if (listOf(Finding.S.name, Finding.REF_POLICE.name).contains(first.hearingResult?.finding)) return
       if (this.map { it.hearingResult?.finding }.distinct().count {
@@ -323,9 +324,14 @@ class MigrateNewRecordService(
             Finding.NOT_GUILTY.name,
             Finding.NOT_PROVEN.name,
           ).contains(it)
-      } > 1
+      } > 1 || this.map { it.hearingResult?.finding }.containsAll(shouldBeFinal)
       ) {
         throw UnableToMigrateException("record structure: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+      }
+      if (shouldBeFinal.contains(last.hearingResult?.finding)) return
+      if (this.any { shouldBeFinal.contains(it.hearingResult?.finding) }) {
+        val indexOf = this.indexOfLast { shouldBeFinal.contains(it.hearingResult?.finding) }
+        if (indexOf != -1 && indexOf < this.size - 1) throw UnableToMigrateException("record structure: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
       }
     }
 
@@ -347,7 +353,7 @@ class MigrateNewRecordService(
       }
 
     private fun String.mapToOutcomeCode(): OutcomeCode = when (this) {
-      Finding.PROVED.name, Finding.QUASHED.name, Finding.GUILTY.name -> OutcomeCode.CHARGE_PROVED
+      Finding.PROVED.name, Finding.QUASHED.name, Finding.GUILTY.name, Finding.APPEAL.name -> OutcomeCode.CHARGE_PROVED
       Finding.D.name, Finding.NOT_PROVEN.name, Finding.NOT_GUILTY.name, Finding.UNFIT.name, Finding.REFUSED.name -> OutcomeCode.DISMISSED
       Finding.NOT_PROCEED.name, Finding.DISMISSED.name -> OutcomeCode.NOT_PROCEED
       Finding.REF_POLICE.name, Finding.PROSECUTED.name -> OutcomeCode.REFER_POLICE
@@ -355,14 +361,15 @@ class MigrateNewRecordService(
     }
 
     fun MigrateHearingResult.createAdditionalOutcome(hasAdditionalHearings: Boolean): Outcome? = when (this.finding) {
-      Finding.QUASHED.name -> Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = this.createdDateTime.plusMinutes(1))
+      Finding.QUASHED.name -> Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = this.createdDateTime.plusMinutes(1), quashedReason = QuashedReason.OTHER)
+      Finding.APPEAL.name -> Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = this.createdDateTime.plusMinutes(1), quashedReason = QuashedReason.APPEAL_UPHELD)
       Finding.PROSECUTED.name -> Outcome(code = OutcomeCode.PROSECUTION, actualCreatedDate = this.createdDateTime.plusMinutes(1))
       Finding.REF_POLICE.name -> if (hasAdditionalHearings) Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = this.createdDateTime.plusMinutes(1)) else null
       else -> null
     }
 
     fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean, hasAdditionalHearings: Boolean, chargeNumber: String): HearingOutcomeCode = when (this) {
-      Finding.QUASHED.name -> HearingOutcomeCode.COMPLETE // TODO further discovery around nomis UNQUASHED
+      Finding.QUASHED.name, Finding.APPEAL.name -> HearingOutcomeCode.COMPLETE
       Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name ->
         if (hasAdditionalHearingOutcomes) HearingOutcomeCode.ADJOURN else HearingOutcomeCode.COMPLETE
       Finding.PROSECUTED.name, Finding.REF_POLICE.name -> HearingOutcomeCode.REFER_POLICE

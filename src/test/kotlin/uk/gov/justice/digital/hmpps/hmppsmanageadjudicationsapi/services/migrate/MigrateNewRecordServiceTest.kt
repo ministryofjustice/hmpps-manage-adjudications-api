@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
@@ -484,7 +485,15 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
         entityBuilder.reportedAdjudication().also {
           it.hearings.clear()
           it.hearings.add(
-            Hearing(id = 2, dateTimeOfHearing = LocalDateTime.now(), locationId = 1, oicHearingType = OicHearingType.GOV_ADULT, agencyId = "", chargeNumber = "", oicHearingId = 1),
+            Hearing(
+              id = 2,
+              dateTimeOfHearing = LocalDateTime.now(),
+              locationId = 1,
+              oicHearingType = OicHearingType.GOV_ADULT,
+              agencyId = "",
+              chargeNumber = "",
+              oicHearingId = 1,
+            ),
           )
         },
       )
@@ -550,7 +559,9 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.NOT_GUILTY)
 
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
-      assertThat(argumentCaptor.value.getOutcomes().first().actualCreatedDate).isEqualTo(dto.hearings.first().hearingResult!!.createdDateTime)
+      assertThat(
+        argumentCaptor.value.getOutcomes().first().actualCreatedDate,
+      ).isEqualTo(dto.hearings.first().hearingResult!!.createdDateTime)
     }
 
     @Test
@@ -609,7 +620,9 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.REFER_POLICE)
 
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.PROSECUTION)
-      assertThat(argumentCaptor.value.getOutcomes().last().actualCreatedDate).isEqualTo(dto.hearings.first().hearingResult!!.createdDateTime.plusMinutes(1))
+      assertThat(
+        argumentCaptor.value.getOutcomes().last().actualCreatedDate,
+      ).isEqualTo(dto.hearings.first().hearingResult!!.createdDateTime.plusMinutes(1))
     }
 
     @Test
@@ -639,7 +652,9 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.REFER_POLICE)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
-      assertThat(argumentCaptor.value.getOutcomes().last().actualCreatedDate).isEqualTo(dto.hearings.first().hearingResult!!.createdDateTime.plusMinutes(1))
+      assertThat(
+        argumentCaptor.value.getOutcomes().last().actualCreatedDate,
+      ).isEqualTo(dto.hearings.first().hearingResult!!.createdDateTime.plusMinutes(1))
     }
 
     @Test
@@ -673,7 +688,10 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(adjudicationMigrateDto.hearings.size + 1)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.QUASHED)
-      assertThat(argumentCaptor.value.getOutcomes().last().actualCreatedDate).isEqualTo(adjudicationMigrateDto.hearings.last().hearingResult!!.createdDateTime.plusMinutes(1))
+      assertThat(argumentCaptor.value.getOutcomes().last().quashedReason).isEqualTo(QuashedReason.OTHER)
+      assertThat(
+        argumentCaptor.value.getOutcomes().last().actualCreatedDate,
+      ).isEqualTo(adjudicationMigrateDto.hearings.last().hearingResult!!.createdDateTime.plusMinutes(1))
     }
 
     @Test
@@ -759,6 +777,36 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getPleaAsFindingException")
     @ParameterizedTest
     fun `hearing result throws exception as plea as finding is not the latest hearing`(dto: AdjudicationMigrateDto) {
+      Assertions.assertThatThrownBy {
+        migrateNewRecordService.accept(dto)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+    }
+
+    @Test
+    fun `appeal maps to QUASHED reason APPEAL`() {
+      val dto = migrationFixtures.WITH_FINDING_APPEAL
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.QUASHED)
+      assertThat(argumentCaptor.value.getOutcomes().last().quashedReason).isEqualTo(QuashedReason.APPEAL_UPHELD)
+    }
+
+    @Test
+    fun `appeal throws exception if its not the latest result`() {
+      val dto = migrationFixtures.WITH_FINDING_APPEAL_NOT_LATEST
+
+      Assertions.assertThatThrownBy {
+        migrateNewRecordService.accept(dto)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+    }
+
+    @Test
+    fun `appeal throws exception if it also contains quashed`() {
+      val dto = migrationFixtures.WITH_FINDING_APPEAL_AND_QUASHED
+
       Assertions.assertThatThrownBy {
         migrateNewRecordService.accept(dto)
       }.isInstanceOf(UnableToMigrateException::class.java)
