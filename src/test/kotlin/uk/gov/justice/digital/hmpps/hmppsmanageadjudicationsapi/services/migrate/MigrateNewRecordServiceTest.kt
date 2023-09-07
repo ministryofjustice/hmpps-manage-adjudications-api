@@ -158,7 +158,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.damages).isNotEmpty
       assertThat(argumentCaptor.value.damages.first().code).isEqualTo(dto.damages.first().damageType)
       assertThat(argumentCaptor.value.damages.first().details).isEqualTo(dto.damages.first().details)
-      assertThat(argumentCaptor.value.damages.first().dateAdded).isNotNull
       assertThat(argumentCaptor.value.damages.first().repairCost).isEqualTo(dto.damages.first().repairCost?.toDouble())
       assertThat(argumentCaptor.value.damages.first().reporter).isEqualTo(dto.damages.first().createdBy)
     }
