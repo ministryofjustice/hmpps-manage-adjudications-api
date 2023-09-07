@@ -568,6 +568,21 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_FINDING_APPEAL = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name)),
+      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1), hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name)),
+    ),
+  )
+
+  val WITH_FINDING_APPEAL_NOT_LATEST = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().minusDays(1), hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name)),
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name)),
+      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1)),
+    ),
+  )
+
   fun getSelection(): List<AdjudicationMigrateDto> = listOf(
     ADULT_SINGLE_OFFENCE, YOUTH_SINGLE_OFFENCE, NON_BINARY_GENDER, UNKNOWN_GENDER,
     WITH_HEARINGS_AND_SOME_RESULTS, WITH_HEARINGS_AND_RESULTS, WITH_HEARING, WITH_NO_ADJUDICATOR,
