@@ -180,7 +180,6 @@ class MigrateNewRecordService(
           details = it.details ?: "No recorded details",
           reporter = it.createdBy,
           repairCost = it.repairCost?.toDouble(),
-          dateAdded = it.dateAdded,
         )
       }.toMutableList()
 

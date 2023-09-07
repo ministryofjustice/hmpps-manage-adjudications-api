@@ -107,8 +107,6 @@ data class MigrateDamage(
   val details: String?,
   @Schema(description = "created by username")
   val createdBy: String,
-  @Schema(description = "date added")
-  val dateAdded: LocalDateTime,
   @Schema(description = "repair cost")
   val repairCost: BigDecimal?,
 )

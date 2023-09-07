@@ -79,7 +79,7 @@ class MigrationEntityBuilder {
 
   fun createWitness(): MigrateWitness = MigrateWitness(firstName = "first", lastName = "last", createdBy = "OFFICER_GEN", witnessType = WitnessCode.OFFICER, comment = "comment", dateAdded = LocalDateTime.now(), username = "AE12345")
 
-  fun createDamage(details: String? = "something"): MigrateDamage = MigrateDamage(damageType = DamageCode.CLEANING, details = details, createdBy = "OFFICER_GEN", repairCost = BigDecimal(10.0), dateAdded = LocalDateTime.now())
+  fun createDamage(details: String? = "something"): MigrateDamage = MigrateDamage(damageType = DamageCode.CLEANING, details = details, createdBy = "OFFICER_GEN", repairCost = BigDecimal(10.0))
 
   fun createEvidence(): MigrateEvidence = MigrateEvidence(evidenceCode = EvidenceCode.PHOTO, details = "details", reporter = "OFFICER_GEN", dateAdded = LocalDateTime.now())
 
