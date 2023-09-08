@@ -190,7 +190,7 @@ class MigrateNewRecordService(
           code = it.evidenceCode,
           details = it.details,
           reporter = it.reporter,
-          dateAdded = it.dateAdded,
+          dateAdded = it.dateAdded.atStartOfDay(),
         )
       }.toMutableList()
 
@@ -203,7 +203,7 @@ class MigrateNewRecordService(
           code = it.witnessType,
           username = it.username,
           comment = it.comment,
-          dateAdded = it.dateAdded,
+          dateAdded = it.dateAdded.atStartOfDay(),
         )
       }.toMutableList()
 

@@ -92,7 +92,7 @@ data class MigrateWitness(
   @Schema(description = "type of witness")
   val witnessType: WitnessCode,
   @Schema(description = "date added")
-  val dateAdded: LocalDateTime,
+  val dateAdded: LocalDate,
   @Schema(description = "comment")
   val comment: String?,
   @Schema(description = "username")
@@ -120,7 +120,7 @@ data class MigrateEvidence(
   @Schema(description = "this is the reporter, we could use the investigator in this field, or createdBy user")
   val reporter: String,
   @Schema(description = "date added")
-  val dateAdded: LocalDateTime,
+  val dateAdded: LocalDate,
 )
 
 @Schema(description = "punishment / sanction")
