@@ -491,4 +491,48 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.disIssueHistory[0].issuingOfficer").isEqualTo("ITAG_USER")
       .jsonPath("$.reportedAdjudication.disIssueHistory[0].dateTimeOfIssue").isEqualTo("2022-11-29T10:00:00")
   }
+
+  @Test
+  fun `set created on behalf of`() {
+    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
+
+    val intTestData = integrationTestData()
+
+    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = draftUserHeaders,
+    )
+
+    draftIntTestScenarioBuilder
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addIncidentStatement()
+      .addDamages()
+      .addEvidence()
+      .addWitnesses()
+      .completeDraft()
+      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toString())
+
+    val officer = "officer"
+    val reason = "some reason"
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/created-on-behalf-of")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "createdOnBehalfOfOfficer" to officer,
+          "createdOnBehalfOfReason" to reason,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.createdOnBehalfOfOfficer").isEqualTo(officer)
+      .jsonPath("$.reportedAdjudication.createdOnBehalfOfReason").isEqualTo(reason)
+  }
 }

@@ -88,6 +88,15 @@ class ReportedAdjudicationService(
     return saveToDto(reportedAdjudication)
   }
 
+  fun setCreatedOnBehalfOf(chargeNumber: String, createdOnBehalfOfOfficer: String, createdOnBehalfOfReason: String): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
+      it.createdOnBehalfOfOfficer = createdOnBehalfOfOfficer
+      it.createdOnBehalfOfReason = createdOnBehalfOfReason
+    }
+
+    return saveToDto(reportedAdjudication)
+  }
+
   @Deprecated("this should be removed once data migration is complete - all reports will be available")
   private fun ReportedAdjudication.getConsecutiveReportsAvailable(): List<String> {
     val consecutiveReportsToFind = this.getPunishments().filter { it.consecutiveChargeNumber != null }.map { it.consecutiveChargeNumber!! }

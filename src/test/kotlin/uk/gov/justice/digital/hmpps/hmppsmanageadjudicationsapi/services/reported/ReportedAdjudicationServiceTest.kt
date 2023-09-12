@@ -1801,6 +1801,31 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class SetCreatedOnBehalfOf {
+    private val now = LocalDateTime.now()
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(chargeNumber = "1")
+      .also {
+        it.createdByUserId = "A_SMITH"
+        it.createDateTime = LocalDateTime.now()
+      }
+
+    @Test
+    fun `sets created on behalf of`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+
+      val response = reportedAdjudicationService.setCreatedOnBehalfOf("1", "officer", "some reason")
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.createdOnBehalfOfOfficer).isEqualTo("officer")
+      assertThat(argumentCaptor.value.createdOnBehalfOfReason).isEqualTo("some reason")
+      assertThat(response).isNotNull
+    }
+  }
+
   companion object {
     private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)

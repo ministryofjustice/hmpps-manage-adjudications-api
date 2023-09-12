@@ -190,4 +190,53 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
       verify(reportedAdjudicationService).setIssued("1", now)
     }
   }
+
+  @Nested
+  inner class SetCreatedOnBehalfOf {
+    @Test
+    fun `responds with a unauthorised status code`() {
+      setCreatedOnBehalfOfRequest("1", "offender", "some reason")
+        .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
+    fun `makes a call to set the created on behalf of`() {
+      whenever(
+        reportedAdjudicationService.setCreatedOnBehalfOf(
+          anyString(),
+          anyString(),
+          anyString(),
+        ),
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+
+      setCreatedOnBehalfOfRequest("1", "offender", "some reason")
+        .andExpect(status().isOk)
+
+      verify(reportedAdjudicationService).setCreatedOnBehalfOf(
+        "1",
+        "offender",
+        "some reason",
+      )
+    }
+
+    private fun setCreatedOnBehalfOfRequest(
+      id: String,
+      createdOnBehalfOfOfficer: String,
+      createdOnBehalfOfReason: String,
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(
+        mapOf(
+          "createdOnBehalfOfOfficer" to createdOnBehalfOfOfficer,
+          "createdOnBehalfOfReason" to createdOnBehalfOfReason,
+        ),
+      )
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/created-on-behalf-of")
+            .header("Content-Type", "application/json")
+            .content(body),
+        )
+    }
+  }
 }

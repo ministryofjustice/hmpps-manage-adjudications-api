@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.CreatedOnBehalfOfRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationService
@@ -88,5 +89,19 @@ class ReportedAdjudicationController(
     reportedAdjudicationService.setIssued(
       chargeNumber,
       issueRequest.dateTimeOfIssue,
+    ).toResponse()
+
+  @PutMapping(value = ["/{chargeNumber}/created-on-behalf-of"])
+  @Operation(summary = "Set created on behalf of")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
+  fun setCreatedOnBehalfOf(
+    @PathVariable(name = "chargeNumber") chargeNumber: String,
+    @RequestBody @Valid
+    createdOnBehalfOfRequest: CreatedOnBehalfOfRequest,
+  ): ReportedAdjudicationResponse =
+    reportedAdjudicationService.setCreatedOnBehalfOf(
+      chargeNumber,
+      createdOnBehalfOfRequest.createdOnBehalfOfOfficer,
+      createdOnBehalfOfRequest.createdOnBehalfOfReason,
     ).toResponse()
 }
