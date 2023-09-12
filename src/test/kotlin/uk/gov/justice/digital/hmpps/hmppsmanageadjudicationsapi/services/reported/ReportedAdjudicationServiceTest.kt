@@ -36,7 +36,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyS
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import java.time.LocalDateTime
-import java.util.*
 
 class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   private val legacySyncService: LegacySyncService = mock()
