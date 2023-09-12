@@ -4,6 +4,7 @@ import com.microsoft.applicationinsights.TelemetryClient
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssueHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -83,6 +84,15 @@ class ReportedAdjudicationService(
       }
       it.issuingOfficer = authenticationFacade.currentUsername
       it.dateTimeOfIssue = dateTimeOfIssue
+    }
+
+    return saveToDto(reportedAdjudication)
+  }
+
+  fun setCreatedOnBehalfOf(chargeNumber: String, createdOnBehalfOfOfficer: String, createdOnBehalfOfReason: String): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
+      it.createdOnBehalfOfOfficer = createdOnBehalfOfOfficer
+      it.createdOnBehalfOfReason = createdOnBehalfOfReason
     }
 
     return saveToDto(reportedAdjudication)
