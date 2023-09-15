@@ -532,7 +532,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateExistingRecordServiceTest#privilegeMappings")
     @ParameterizedTest
-    fun `forfeit ot privilege mapping`(toTest: Triple<OicSanctionCode, String, PunishmentType>) {
+    fun `forfeit to privilege mapping`(toTest: Triple<OicSanctionCode, String, PunishmentType>) {
       assertThat(
         MigrationEntityBuilder().createPunishment(
           code = toTest.first.name,
@@ -664,6 +664,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         Triple(OicSanctionCode.FORFEIT, PrivilegeType.FACILITIES.name, PunishmentType.PRIVILEGE),
         Triple(OicSanctionCode.FORFEIT, PrivilegeType.MONEY.name, PunishmentType.PRIVILEGE),
         Triple(OicSanctionCode.FORFEIT, PrivilegeType.TV.name, PunishmentType.PRIVILEGE),
+        Triple(OicSanctionCode.FORFEIT, PrivilegeType.GYM.name, PunishmentType.PRIVILEGE),
       ).stream()
   }
 }
