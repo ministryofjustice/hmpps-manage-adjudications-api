@@ -54,5 +54,5 @@ enum class PunishmentType {
   }
 }
 enum class PrivilegeType {
-  CANTEEN, FACILITIES, MONEY, TV, ASSOCIATION, OTHER
+  CANTEEN, FACILITIES, MONEY, TV, ASSOCIATION, GYM, OTHER
 }
