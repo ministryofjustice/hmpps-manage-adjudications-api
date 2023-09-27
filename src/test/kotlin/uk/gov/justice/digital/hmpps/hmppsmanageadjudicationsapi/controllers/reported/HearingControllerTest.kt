@@ -228,13 +228,13 @@ class HearingControllerTest : TestControllerBase() {
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
-    fun `responds with a forbidden status code for non ALO`() {
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_MIGRATE_ADJUDICATIONS"])
+    fun `responds with a forbidden status code for wrong role`() {
       allHearingsRequest(LocalDate.now()).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `get all hearings for agency `() {
       val now = LocalDate.now()
       allHearingsRequest(now)
