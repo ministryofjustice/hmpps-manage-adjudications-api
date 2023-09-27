@@ -118,6 +118,7 @@ class HearingController(
 
   @Operation(summary = "Get a list of hearings for a given date and agency")
   @GetMapping(value = ["/hearings"])
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   fun getAllHearingsByAgencyAndDate(
     @RequestParam(name = "hearingDate")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
