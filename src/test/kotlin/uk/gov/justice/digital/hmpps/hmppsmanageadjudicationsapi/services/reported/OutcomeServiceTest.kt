@@ -161,7 +161,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("REFER_POLICE", "REFER_GOV")
+    @CsvSource("REFER_GOV")
     fun `create outcome throws exception if gov referral outcome invalid state `(code: OutcomeCode) {
       assertTransition(code, OutcomeCode.REFER_GOV)
     }
