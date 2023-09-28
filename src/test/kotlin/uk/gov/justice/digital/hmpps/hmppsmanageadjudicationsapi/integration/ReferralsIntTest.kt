@@ -358,27 +358,26 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `police refer from hearing leads to gov ref`() {
-    initDataForUnScheduled()
-
+    initDataForUnScheduled().createOutcomeReferPolice()
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, LocalDateTime.now())
+    integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .expectStatus().isCreated
 
-    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    integrationTestData().createOutcomeReferGov(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .expectStatus().isCreated
 
-    integrationTestData().createReferral(
-      IntegrationTestData.DEFAULT_ADJUDICATION,
-      HearingOutcomeCode.REFER_POLICE,
-    )
+    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    integrationTestData().createOutcomeReferGov(
-      IntegrationTestData.DEFAULT_ADJUDICATION,
-    ).expectStatus().isCreated
+    webTestClient.delete()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.REFER_GOV.name)
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_GOV.name)
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(2)
+      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
   }
 
   @Test
@@ -393,6 +392,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.REFER_GOV.name)
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_GOV.name)
   }
 
   @Test
