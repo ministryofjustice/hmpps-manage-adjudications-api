@@ -357,27 +357,20 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
-  fun `police refer from hearing leads to gov ref`() {
-    initDataForUnScheduled().createOutcomeReferPolice()
+  fun `police refer (not from hearing) leads to refer gov`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
 
-    integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .expectStatus().isCreated
+    initDataForUnScheduled().createOutcomeReferPolice()
 
-    integrationTestData().createOutcomeReferGov(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .expectStatus().isCreated
-
-    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
-    webTestClient.delete()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .exchange()
-      .expectStatus().isOk
+    initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_POLICE)
+      .createOutcomeReferGov().expectStatus().isCreated
       .expectBody()
-      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_GOV.name)
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(2)
-      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_GOV.name)
   }
 
   @Test
