@@ -357,6 +357,45 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `police refer from hearing leads to gov ref`() {
+    initDataForUnScheduled()
+
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+
+    integrationTestData().createHearing(IntegrationTestData.DEFAULT_ADJUDICATION, LocalDateTime.now())
+
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+
+    integrationTestData().createReferral(
+      IntegrationTestData.DEFAULT_ADJUDICATION,
+      HearingOutcomeCode.REFER_POLICE,
+    )
+
+    integrationTestData().createOutcomeReferGov(
+      IntegrationTestData.DEFAULT_ADJUDICATION,
+    ).expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.REFER_GOV.name)
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.REFER_GOV.name)
+  }
+
+  @Test
+  fun `REFER_POLICE referral outcome of REFER_GOV`() {
+    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+
+    initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_POLICE)
+      .createOutcomeReferGov().expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.REFER_GOV.name)
+  }
+
+  @Test
   fun `REFER_INAD referral outcome of REFER_GOV`() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
