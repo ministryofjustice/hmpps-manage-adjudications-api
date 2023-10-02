@@ -30,7 +30,7 @@ data class Outcome(
 enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Finding? = null) {
   REFER_POLICE(ReportedAdjudicationStatus.REFER_POLICE, Finding.REF_POLICE) {
     override fun nextStates(): List<OutcomeCode> {
-      return listOf(NOT_PROCEED, PROSECUTION, SCHEDULE_HEARING, REFER_GOV)
+      return listOf(NOT_PROCEED, PROSECUTION, SCHEDULE_HEARING)
     }
   },
   REFER_INAD(ReportedAdjudicationStatus.REFER_INAD) {
