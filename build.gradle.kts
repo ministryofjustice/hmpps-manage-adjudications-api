@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.4.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.5.0"
   id("jacoco")
   kotlin("plugin.spring") version "1.9.10"
   kotlin("plugin.jpa") version "1.9.10"
@@ -26,9 +26,9 @@ dependencies {
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.0.1")
   implementation("io.opentelemetry:opentelemetry-api:1.30.1")
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.29.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.30.0")
 
-  runtimeOnly("com.h2database:h2:2.2.222")
+  runtimeOnly("com.h2database:h2:2.2.224")
   runtimeOnly("org.flywaydb:flyway-core")
   runtimeOnly("org.postgresql:postgresql")
 
@@ -36,11 +36,11 @@ dependencies {
   testImplementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:2.35.1")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.0.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.2")
   testImplementation("org.flywaydb:flyway-core")
   testImplementation("org.mockito:mockito-inline")
-  testImplementation("org.testcontainers:localstack:1.19.0")
-  testImplementation("org.testcontainers:postgresql:1.19.0")
+  testImplementation("org.testcontainers:localstack:1.19.1")
+  testImplementation("org.testcontainers:postgresql:1.19.1")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.30.1")
 }
 
