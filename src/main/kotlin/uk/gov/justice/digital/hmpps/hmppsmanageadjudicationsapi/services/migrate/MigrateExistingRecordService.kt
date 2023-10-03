@@ -106,6 +106,7 @@ class MigrateExistingRecordService(
       agencyId = adjudicationMigrateDto.agencyId,
       chargeNumber = this.chargeNumber,
       isYouthOffender = this.isYouthOffender,
+      hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
     )
 
     val disIssued = adjudicationMigrateDto.disIssued.toDisIssue()
@@ -131,7 +132,7 @@ class MigrateExistingRecordService(
 
       val hearingOutcomeCode = nomisHearing.hearingResult!!.finding.mapToHearingOutcomeCode(
         hasAdditionalHearingOutcomes = hasAdditionalOutcomes,
-        hasAdditionalHearings = hasAdditionalHearings,
+        hasAdditionalHearingsWithoutResults = hasAdditionalHearings, // note not checking for results at this point.
         chargeNumber = this.chargeNumber,
       )
 
@@ -189,6 +190,7 @@ class MigrateExistingRecordService(
             agencyId = adjudicationMigrateDto.agencyId,
             chargeNumber = this.chargeNumber,
             isYouthOffender = this.isYouthOffender,
+            hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
           ),
         )
       }

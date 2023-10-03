@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
@@ -713,12 +714,33 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
     }
 
-    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
-    @ParameterizedTest
-    fun `anything that doesnt make sense should throw an exception for now - to replace with logic once agreed`(dto: AdjudicationMigrateDto) {
+    fun `adjudication with multiple final states, and sanctions, where final state is not PROVED should throw error`() {
+      val dto = migrationFixtures.EXCEPTION_CASE_4
       Assertions.assertThatThrownBy {
         migrateNewRecordService.accept(dto)
       }.isInstanceOf(UnableToMigrateException::class.java)
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
+    @ParameterizedTest
+    fun `adjudications without multiple final states should adjourn and add comments, and use final outcome`(dto: AdjudicationMigrateDto) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      val lastOutcome = dto.hearings.maxByOrNull { it.hearingDateTime }
+
+      when (lastOutcome?.hearingResult?.finding) {
+        Finding.PROVED.name -> assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED)
+        Finding.D.name -> assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.DISMISSED)
+        else -> {}
+      }
+
+      argumentCaptor.value.hearings.filter { it.dateTimeOfHearing != lastOutcome?.hearingDateTime }.forEach {
+        assertThat(it.hearingOutcome?.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+        assertThat(it.hearingOutcome?.details).isNotEmpty()
+      }
     }
 
     @Test
@@ -774,14 +796,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.DISMISSED)
     }
 
-    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getPleaAsFindingException")
-    @ParameterizedTest
-    fun `hearing result throws exception as plea as finding is not the latest hearing`(dto: AdjudicationMigrateDto) {
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-    }
-
     @Test
     fun `appeal maps to QUASHED reason APPEAL`() {
       val dto = migrationFixtures.WITH_FINDING_APPEAL
@@ -797,15 +811,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `appeal throws exception if its not the latest result`() {
       val dto = migrationFixtures.WITH_FINDING_APPEAL_NOT_LATEST
-
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-    }
-
-    @Test
-    fun `appeal throws exception if it also contains quashed`() {
-      val dto = migrationFixtures.WITH_FINDING_APPEAL_AND_QUASHED
 
       Assertions.assertThatThrownBy {
         migrateNewRecordService.accept(dto)
@@ -867,14 +872,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
         migrationFixtures.WITH_FINDING_NOT_GUILTY,
         migrationFixtures.WITH_FINDING_UNFIT,
         migrationFixtures.WITH_FINDING_REFUSED,
-      ).stream()
-
-    @JvmStatic
-    fun getPleaAsFindingException(): Stream<AdjudicationMigrateDto> =
-      listOf(
-        migrationFixtures.WITH_FINDING_NOT_GUILTY_NOT_LAST,
-        migrationFixtures.WITH_FINDING_UNFIT_NOT_LAST,
-        migrationFixtures.WITH_FINDING_REFUSED_NOT_LAST,
       ).stream()
   }
 }
