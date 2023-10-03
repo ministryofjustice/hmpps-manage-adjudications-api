@@ -64,6 +64,7 @@ class MigrateNewRecordService(
       agencyId = adjudicationMigrateDto.agencyId,
       chargeNumber = chargeNumber,
       isYouthOffender = isYouthOffender,
+      hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
     )
 
     val hearingsAndResults = hearingsAndResultsAndOutcomes.first
@@ -223,13 +224,14 @@ class MigrateNewRecordService(
         else -> this
       }
 
-    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String, isYouthOffender: Boolean): Pair<List<Hearing>, List<Outcome>> {
-      this.validate(chargeNumber)
+    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String, isYouthOffender: Boolean, hasSanctions: Boolean): Pair<List<Hearing>, List<Outcome>> {
+      this.validate(chargeNumber, hasSanctions)
 
       val hearingsAndResults = mutableListOf<Hearing>()
       val outcomes = mutableListOf<Outcome>()
       for ((index, oicHearing) in this.withIndex()) {
         val hasAdditionalHearings = index < this.size - 1
+        val hasAdditionalHearingsWithoutResults = hasAdditionalHearings && this.subList(index, this.size - 1).all { it.hearingResult == null }
         val hasAdditionalHearingOutcomes = this.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
 
         val hearingOutcomeAndOutcome = when (oicHearing.hearingResult) {
@@ -237,7 +239,7 @@ class MigrateNewRecordService(
             Pair(
               createAdjourn(
                 adjudicator = oicHearing.adjudicator,
-                comment = oicHearing.commentText,
+                comment = oicHearing.commentText ?: "",
               ),
               null,
             )
@@ -247,7 +249,7 @@ class MigrateNewRecordService(
           else -> {
             val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(
               hasAdditionalHearingOutcomes = hasAdditionalHearingOutcomes,
-              hasAdditionalHearings = hasAdditionalHearings,
+              hasAdditionalHearingsWithoutResults = hasAdditionalHearingsWithoutResults,
               chargeNumber = chargeNumber,
             )
 
@@ -255,8 +257,8 @@ class MigrateNewRecordService(
               HearingOutcome(
                 code = hearingOutcomeCode,
                 adjudicator = oicHearing.adjudicator ?: "",
-                plea = oicHearing.hearingResult.plea.mapToPlea(),
-                details = oicHearing.commentText,
+                plea = oicHearing.hearingResult.plea.mapToPlea(finding = oicHearing.hearingResult.finding, chargeNumber = chargeNumber),
+                details = if (hasAdditionalHearings && hearingOutcomeCode == HearingOutcomeCode.ADJOURN) "${oicHearing.hearingResult.finding} ${oicHearing.commentText ?: ""}" else oicHearing.commentText ?: "",
               ),
               oicHearing.hearingResult.mapToOutcome(hearingOutcomeCode),
             )
@@ -308,7 +310,7 @@ class MigrateNewRecordService(
     fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index: Int): Boolean =
       index < this.size - 1 && this.none { it.hearingResult == null } && this.last().hearingResult?.finding != Finding.QUASHED.name
 
-    private fun List<MigrateHearing>.validate(chargeNumber: String) {
+    private fun List<MigrateHearing>.validate(chargeNumber: String, hasSanctions: Boolean) {
       val shouldBeFinal = listOf(Finding.APPEAL.name, Finding.QUASHED.name)
       if (this.none { it.hearingResult != null }) return
       val last = this.last()
@@ -326,7 +328,9 @@ class MigrateNewRecordService(
           ).contains(it)
       } > 1 || this.map { it.hearingResult?.finding }.containsAll(shouldBeFinal)
       ) {
-        throw UnableToMigrateException("record structure: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+        if (hasSanctions && last.hearingResult?.finding != Finding.PROVED.name) {
+          throw UnableToMigrateException("record structure: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+        }
       }
       if (shouldBeFinal.contains(last.hearingResult?.finding)) return
       if (this.any { shouldBeFinal.contains(it.hearingResult?.finding) }) {
@@ -368,24 +372,30 @@ class MigrateNewRecordService(
       else -> null
     }
 
-    fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean, hasAdditionalHearings: Boolean, chargeNumber: String): HearingOutcomeCode = when (this) {
+    fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean, hasAdditionalHearingsWithoutResults: Boolean, chargeNumber: String): HearingOutcomeCode = when (this) {
       Finding.QUASHED.name, Finding.APPEAL.name -> HearingOutcomeCode.COMPLETE
       Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name ->
         if (hasAdditionalHearingOutcomes) HearingOutcomeCode.ADJOURN else HearingOutcomeCode.COMPLETE
       Finding.PROSECUTED.name, Finding.REF_POLICE.name -> HearingOutcomeCode.REFER_POLICE
-      Finding.GUILTY.name, Finding.NOT_GUILTY.name, Finding.UNFIT.name, Finding.REFUSED.name, Finding.NOT_PROVEN.name, Finding.DISMISSED.name ->
-        if (hasAdditionalHearings) throw UnableToMigrateException("$chargeNumber: $this has additional hearings") else HearingOutcomeCode.COMPLETE
+      Finding.GUILTY.name, Finding.NOT_GUILTY.name, Finding.UNFIT.name, Finding.REFUSED.name, Finding.NOT_PROVEN.name, Finding.DISMISSED.name -> {
+        if (hasAdditionalHearingsWithoutResults) throw UnableToMigrateException("$chargeNumber: $this has additional hearings") else HearingOutcomeCode.COMPLETE
+        if (hasAdditionalHearingOutcomes) {
+          HearingOutcomeCode.ADJOURN
+        } else {
+          HearingOutcomeCode.COMPLETE
+        }
+      }
       Finding.S.name -> HearingOutcomeCode.ADJOURN
       else -> throw UnableToMigrateException("unsupported mapping $this")
     }
 
-    private fun String.mapToPlea(): HearingOutcomePlea = when (this) {
+    private fun String.mapToPlea(chargeNumber: String, finding: String): HearingOutcomePlea = when (this) {
       Plea.NOT_GUILTY.name -> HearingOutcomePlea.NOT_GUILTY
       Plea.GUILTY.name -> HearingOutcomePlea.GUILTY
       Plea.NOT_ASKED.name -> HearingOutcomePlea.NOT_ASKED
       Plea.UNFIT.name -> HearingOutcomePlea.UNFIT
       Plea.REFUSED.name -> HearingOutcomePlea.ABSTAIN
-      else -> throw UnableToMigrateException("$this plea is not mapped currently")
+      else -> throw UnableToMigrateException("$chargeNumber-1 $this plea is not mapped currently, finding $finding")
     }
 
     private fun MigratePunishment.mapToPunishment(): Punishment {

@@ -491,6 +491,19 @@ class MigrateFixtures {
     ),
   )
 
+  val EXCEPTION_CASE_4 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name, createdDateTime = LocalDateTime.now().plusDays(1)),
+      ),
+    ),
+    punishments = listOf(migrationEntityBuilder.createPunishment()),
+  )
+
   val WITH_ADDITIONAL_HEARINGS_IN_NOMIS = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(oicHearingId = 1, hearingResult = migrationEntityBuilder.createHearingResult()),
@@ -540,34 +553,6 @@ class MigrateFixtures {
     ),
   )
 
-  val WITH_FINDING_GUILTY_NOT_LAST = migrationEntityBuilder.createAdjudication(
-    hearings = listOf(
-      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.GUILTY.name)),
-      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1)),
-    ),
-  )
-
-  val WITH_FINDING_NOT_GUILTY_NOT_LAST = migrationEntityBuilder.createAdjudication(
-    hearings = listOf(
-      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.NOT_GUILTY.name)),
-      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1)),
-    ),
-  )
-
-  val WITH_FINDING_UNFIT_NOT_LAST = migrationEntityBuilder.createAdjudication(
-    hearings = listOf(
-      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.UNFIT.name)),
-      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1)),
-    ),
-  )
-
-  val WITH_FINDING_REFUSED_NOT_LAST = migrationEntityBuilder.createAdjudication(
-    hearings = listOf(
-      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REFUSED.name)),
-      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1)),
-    ),
-  )
-
   val WITH_FINDING_APPEAL = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name)),
@@ -579,13 +564,6 @@ class MigrateFixtures {
     hearings = listOf(
       migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name)),
       migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1)),
-    ),
-  )
-
-  val WITH_FINDING_APPEAL_AND_QUASHED = migrationEntityBuilder.createAdjudication(
-    hearings = listOf(
-      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().minusDays(1), hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name)),
-      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.QUASHED.name)),
     ),
   )
 
