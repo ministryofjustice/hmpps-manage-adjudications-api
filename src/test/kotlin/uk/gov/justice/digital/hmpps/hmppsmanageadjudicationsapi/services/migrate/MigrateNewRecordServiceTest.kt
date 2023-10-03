@@ -723,7 +723,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
     @ParameterizedTest
-    fun `adjudications without multiple final states should adjourn and add comments, and use final outcome`(dto: AdjudicationMigrateDto) {
+    fun `adjudications with multiple final states should adjourn and add comments, and use final outcome`(dto: AdjudicationMigrateDto) {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       migrateNewRecordService.accept(dto)
