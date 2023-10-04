@@ -107,6 +107,8 @@ enum class AdjudicationDomainEventType(val value: String, val description: Strin
   HEARING_OUTCOME_UPDATED("adjudication.hearingOutcome.updated", "Adjudication hearing outcome updated: ", AuditType.HEARING_OUTCOME_UPDATED),
   PUNISHMENTS_CREATED("adjudication.punishments.created", "Adjudication punishments created: ", AuditType.PUNISHMENTS_CREATED),
   PUNISHMENTS_UPDATED("adjudication.punishments.updated", "Adjudication punishments updated: ", AuditType.PUNISHMENTS_UPDATED),
+  QUASHED("adjudication.outcome.quashed", "Adjudication quashed: ", AuditType.QUASHED),
+  UNQUASHED("adjudication.outcome.unquashed", "Adjudication unquashed: ", AuditType.UNQUASHED),
 }
 
 fun Instant.toOffsetDateFormat(): String =
