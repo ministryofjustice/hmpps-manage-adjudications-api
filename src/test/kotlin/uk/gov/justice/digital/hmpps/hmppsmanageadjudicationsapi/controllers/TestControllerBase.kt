@@ -92,7 +92,7 @@ open class TestControllerBase {
         originatingAgencyId = "MDI",
       )
 
-    fun reportedAdjudicationDto(status: ReportedAdjudicationStatus) =
+    fun reportedAdjudicationDto(status: ReportedAdjudicationStatus, hearingIdActioned: Long? = null) =
       ReportedAdjudicationDto(
         chargeNumber = "1",
         prisonerNumber = "A12345",
@@ -132,6 +132,7 @@ open class TestControllerBase {
         punishmentComments = listOf(),
         overrideAgencyId = null,
         originatingAgencyId = "MDI",
+        hearingIdActioned = hearingIdActioned,
       )
 
     val INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO =

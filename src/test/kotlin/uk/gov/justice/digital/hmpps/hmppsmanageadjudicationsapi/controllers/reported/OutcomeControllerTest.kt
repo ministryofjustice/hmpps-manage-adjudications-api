@@ -51,7 +51,7 @@ class OutcomeControllerTest : TestControllerBase() {
 
     @Test
     fun `responds with a unauthorised status code`() {
-      createOutcomeRequest(
+      createProsecutionRequest(
         1,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
@@ -59,7 +59,7 @@ class OutcomeControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
-      createOutcomeRequest(
+      createProsecutionRequest(
         1,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
@@ -67,21 +67,26 @@ class OutcomeControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
-      createOutcomeRequest(
+      createProsecutionRequest(
         1,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @Test
+    @CsvSource("true", "false")
+    @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to create an outcome`() {
-      whenever(outcomeService.createProsecution("1")).thenReturn(REPORTED_ADJUDICATION_DTO)
+    fun `makes a call to create an prosecution`(fromHearing: Boolean) {
+      val response = if (fromHearing) reportedAdjudicationDto(status = ReportedAdjudicationStatus.PROSECUTION, hearingIdActioned = 1) else REPORTED_ADJUDICATION_DTO
 
-      createOutcomeRequest(1)
+      whenever(outcomeService.createProsecution("1")).thenReturn(response)
+
+      createProsecutionRequest(1)
         .andExpect(MockMvcResultMatchers.status().isCreated)
+
+      verify(eventPublishService, if (fromHearing) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME, response)
     }
 
-    private fun createOutcomeRequest(
+    private fun createProsecutionRequest(
       id: Long,
     ): ResultActions {
       return mockMvc
@@ -94,21 +99,10 @@ class OutcomeControllerTest : TestControllerBase() {
 
   @Nested
   inner class CreateNotProceed {
-    @BeforeEach
-    fun beforeEach() {
-      whenever(
-        outcomeService.createNotProceed(
-          anyString(),
-          any(),
-          any(),
-          any(),
-        ),
-      ).thenReturn(REPORTED_ADJUDICATION_DTO)
-    }
 
     @Test
     fun `responds with a unauthorised status code`() {
-      createOutcomeRequest(
+      createNotProceedRequest(
         1,
         NOT_PROCEED_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
@@ -117,7 +111,7 @@ class OutcomeControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
     fun `responds with a forbidden status code for non ALO`() {
-      createOutcomeRequest(
+      createNotProceedRequest(
         1,
         NOT_PROCEED_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
@@ -126,25 +120,37 @@ class OutcomeControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
     fun `responds with a forbidden status code for ALO without write scope`() {
-      createOutcomeRequest(
+      createNotProceedRequest(
         1,
         NOT_PROCEED_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @Test
+    @CsvSource("true", "false")
+    @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to create an outcome`() {
-      createOutcomeRequest(
+    fun `makes a call to create a not proceed`(fromHearing: Boolean) {
+      val response = if (fromHearing) reportedAdjudicationDto(status = ReportedAdjudicationStatus.PROSECUTION, hearingIdActioned = 1) else REPORTED_ADJUDICATION_DTO
+      whenever(
+        outcomeService.createNotProceed(
+          anyString(),
+          any(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(response)
+
+      createNotProceedRequest(
         1,
         NOT_PROCEED_REQUEST,
       )
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(outcomeService).createNotProceed("1", NotProceedReason.NOT_FAIR, "details")
+      verify(eventPublishService, if (fromHearing) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME, response)
     }
 
-    private fun createOutcomeRequest(
+    private fun createNotProceedRequest(
       id: Long,
       notProceedRequest: NotProceedRequest,
     ): ResultActions {
@@ -289,15 +295,6 @@ class OutcomeControllerTest : TestControllerBase() {
 
   @Nested
   inner class DeleteOutcome {
-    @BeforeEach
-    fun beforeEach() {
-      whenever(
-        outcomeService.deleteOutcome(
-          anyString(),
-          anyOrNull(),
-        ),
-      ).thenReturn(REPORTED_ADJUDICATION_DTO)
-    }
 
     @Test
     fun `responds with a unauthorised status code`() {

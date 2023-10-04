@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getLatestHearingId
 
 @Transactional
 @Service
@@ -35,7 +36,9 @@ class OutcomeService(
   ): ReportedAdjudicationDto = createOutcome(
     chargeNumber = chargeNumber,
     code = OutcomeCode.PROSECUTION,
-  )
+  ).also {
+    it.hearingIdActioned = it.hearings.getLatestHearingId()
+  }
 
   fun createReferGov(
     chargeNumber: String,
@@ -68,7 +71,9 @@ class OutcomeService(
     reason = reason,
     details = details,
     validate = validate,
-  )
+  ).also {
+    it.hearingIdActioned = it.hearings.getLatestHearingId()
+  }
 
   fun createReferral(
     chargeNumber: String,

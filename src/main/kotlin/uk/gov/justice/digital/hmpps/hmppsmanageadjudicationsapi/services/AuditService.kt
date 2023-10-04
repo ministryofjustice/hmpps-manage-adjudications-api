@@ -82,4 +82,6 @@ enum class AuditType {
   PUNISHMENTS_UPDATED,
   QUASHED,
   UNQUASHED,
+  PROSECUTION,
+  NOT_PROCEED,
 }

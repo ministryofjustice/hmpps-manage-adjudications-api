@@ -23,7 +23,7 @@ class EventPublishService(
         /*if(featureFlagsConfig.punishments)*/ publish(event = event, adjudication = adjudication)
       AdjudicationDomainEventType.HEARING_COMPLETED_CREATED, AdjudicationDomainEventType.HEARING_COMPLETED_DELETED, AdjudicationDomainEventType.HEARING_OUTCOME_UPDATED,
       AdjudicationDomainEventType.HEARING_ADJOURN_CREATED, AdjudicationDomainEventType.HEARING_ADJOURN_DELETED, AdjudicationDomainEventType.HEARING_REFERRAL_CREATED,
-      AdjudicationDomainEventType.HEARING_REFERRAL_DELETED,
+      AdjudicationDomainEventType.HEARING_REFERRAL_DELETED, AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME, AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME,
       -> /*if(featureFlagsConfig.outcomes)*/ publish(event = event, adjudication = adjudication, hearingId = adjudication.hearingIdActioned)
       else -> publish(event = event, adjudication = adjudication)
     }

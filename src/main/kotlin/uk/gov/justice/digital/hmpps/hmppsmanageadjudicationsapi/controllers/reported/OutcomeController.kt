@@ -84,11 +84,17 @@ class OutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody notProceedRequest: NotProceedRequest,
   ): ReportedAdjudicationResponse =
-    outcomeService.createNotProceed(
-      chargeNumber = chargeNumber,
-      details = notProceedRequest.details,
-      reason = notProceedRequest.reason,
-    ).toResponse()
+    eventPublishWrapper(
+      event = AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME,
+      controllerAction = {
+        outcomeService.createNotProceed(
+          chargeNumber = chargeNumber,
+          details = notProceedRequest.details,
+          reason = notProceedRequest.reason,
+        )
+      },
+      eventRule = { it.hearingIdActioned != null },
+    )
 
   @Operation(
     summary = "create a prosecution outcome",
@@ -114,9 +120,15 @@ class OutcomeController(
   fun createProsecution(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse =
-    outcomeService.createProsecution(
-      chargeNumber = chargeNumber,
-    ).toResponse()
+    eventPublishWrapper(
+      event = AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME,
+      controllerAction = {
+        outcomeService.createProsecution(
+          chargeNumber = chargeNumber,
+        )
+      },
+      eventRule = { it.hearingIdActioned != null },
+    )
 
   @Operation(
     summary = "create a referral outcome for refer gov",
