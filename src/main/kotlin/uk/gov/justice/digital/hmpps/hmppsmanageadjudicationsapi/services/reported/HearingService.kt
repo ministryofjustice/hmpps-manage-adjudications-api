@@ -196,7 +196,7 @@ class HearingService(
     }
 
     fun List<HearingDto>.getLatestHearingId(): Long? =
-      this?.maxByOrNull { h -> h.dateTimeOfHearing }?.id
+      this.maxByOrNull { h -> h.dateTimeOfHearing }?.id
 
     private fun throwHearingNotFoundException(): Nothing = throw EntityNotFoundException("Hearing not found")
   }

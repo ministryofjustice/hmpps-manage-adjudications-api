@@ -9,6 +9,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -54,19 +55,6 @@ class HearingOutcomeControllerTest : TestControllerBase() {
   @Nested
   inner class CreateReferral {
 
-    @BeforeEach
-    fun beforeEach() {
-      whenever(
-        referralService.createReferral(
-          ArgumentMatchers.anyString(),
-          any(),
-          any(),
-          any(),
-          any(),
-        ),
-      ).thenReturn(REPORTED_ADJUDICATION_DTO)
-    }
-
     @Test
     fun `responds with a unauthorised status code`() {
       createReferralRequest(
@@ -98,6 +86,17 @@ class HearingOutcomeControllerTest : TestControllerBase() {
     @CsvSource("REFER_POLICE", "REFER_INAD", "REFER_GOV")
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create a hearing outcome`(code: HearingOutcomeCode) {
+      val response = reportedAdjudicationDto(status = code.outcomeCode?.status!!)
+      whenever(
+        referralService.createReferral(
+          ArgumentMatchers.anyString(),
+          any(),
+          any(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(response)
+
       createReferralRequest(1, referralRequest(code))
         .andExpect(MockMvcResultMatchers.status().isCreated)
       verify(referralService).createReferral(
@@ -106,7 +105,7 @@ class HearingOutcomeControllerTest : TestControllerBase() {
         adjudicator = "test",
         details = "details",
       )
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_REFERRAL_CREATED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, if (code == HearingOutcomeCode.REFER_POLICE) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.HEARING_REFERRAL_CREATED, response)
     }
 
     private fun createReferralRequest(
