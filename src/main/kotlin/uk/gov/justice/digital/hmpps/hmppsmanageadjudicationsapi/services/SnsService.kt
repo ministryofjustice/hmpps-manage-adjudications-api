@@ -109,8 +109,8 @@ enum class AdjudicationDomainEventType(val value: String, val description: Strin
   PUNISHMENTS_UPDATED("adjudication.punishments.updated", "Adjudication punishments updated: ", AuditType.PUNISHMENTS_UPDATED),
   QUASHED("adjudication.outcome.quashed", "Adjudication quashed: ", AuditType.QUASHED),
   UNQUASHED("adjudication.outcome.unquashed", "Adjudication unquashed: ", AuditType.UNQUASHED),
-  PROSECUTION("adjudication.referral.outcome.prosecution", "Adjudication prosecution from referral: ", AuditType.PROSECUTION),
-  NOT_PROCEED("adjudication.referral.outcome.notproceed", "Adjudication not proceed from referral: ", AuditType.NOT_PROCEED),
+  PROSECUTION_REFERRAL_OUTCOME("adjudication.referral.outcome.prosecution", "Adjudication prosecution from referral: ", AuditType.PROSECUTION),
+  NOT_PROCEED_REFERRAL_OUTCOME("adjudication.referral.outcome.notproceed", "Adjudication not proceed from referral: ", AuditType.NOT_PROCEED),
 }
 
 fun Instant.toOffsetDateFormat(): String =

@@ -83,7 +83,7 @@ class OutcomeControllerTest : TestControllerBase() {
       createProsecutionRequest(1)
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(eventPublishService, if (fromHearing) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.PROSECUTION, response)
+      verify(eventPublishService, if (fromHearing) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME, response)
     }
 
     private fun createProsecutionRequest(
@@ -147,7 +147,7 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(outcomeService).createNotProceed("1", NotProceedReason.NOT_FAIR, "details")
-      verify(eventPublishService, if (fromHearing) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.NOT_PROCEED, response)
+      verify(eventPublishService, if (fromHearing) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME, response)
     }
 
     private fun createNotProceedRequest(

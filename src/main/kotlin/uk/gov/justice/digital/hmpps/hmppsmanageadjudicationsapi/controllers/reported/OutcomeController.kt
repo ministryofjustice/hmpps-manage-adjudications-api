@@ -85,7 +85,7 @@ class OutcomeController(
     @RequestBody notProceedRequest: NotProceedRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.NOT_PROCEED,
+      event = AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME,
       controllerAction = {
         outcomeService.createNotProceed(
           chargeNumber = chargeNumber,
@@ -121,7 +121,7 @@ class OutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.PROSECUTION,
+      event = AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME,
       controllerAction = {
         outcomeService.createProsecution(
           chargeNumber = chargeNumber,
