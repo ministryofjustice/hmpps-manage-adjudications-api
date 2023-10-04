@@ -3,9 +3,13 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -21,6 +25,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 
 @WebMvcTest(
@@ -316,14 +322,26 @@ class OutcomeControllerTest : TestControllerBase() {
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @Test
+    @CsvSource("QUASHED", "NOT_PROCEED")
+    @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to delete an outcome`() {
+    fun `makes a call to delete an outcome`(outcomeCode: OutcomeCode) {
+      val response = reportedAdjudicationDto(status = if (outcomeCode == OutcomeCode.QUASHED) ReportedAdjudicationStatus.CHARGE_PROVED else ReportedAdjudicationStatus.UNSCHEDULED)
+
+      whenever(
+        outcomeService.deleteOutcome(
+          anyString(),
+          anyOrNull(),
+        ),
+      ).thenReturn(response)
+
       deleteOutcomeRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(outcomeService).deleteOutcome(
         "1",
       )
+
+      verify(eventPublishService, if (outcomeCode == OutcomeCode.QUASHED) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.UNQUASHED, response)
     }
 
     private fun deleteOutcomeRequest(
@@ -383,6 +401,7 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(outcomeService).createQuashed("1", QUASHED_REQUEST.reason, QUASHED_REQUEST.details)
+      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.QUASHED, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun createQuashedRequest(

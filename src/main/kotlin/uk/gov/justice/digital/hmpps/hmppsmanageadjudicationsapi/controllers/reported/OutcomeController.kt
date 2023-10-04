@@ -16,6 +16,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ErrorResp
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 
 @Schema(description = "Request to add a police referral, or refer gov request")
@@ -171,11 +173,16 @@ class OutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody quashedRequest: QuashedRequest,
   ): ReportedAdjudicationResponse =
-    outcomeService.createQuashed(
-      chargeNumber = chargeNumber,
-      reason = quashedRequest.reason,
-      details = quashedRequest.details,
-    ).toResponse()
+    eventPublishWrapper(
+      event = AdjudicationDomainEventType.QUASHED,
+      controllerAction = {
+        outcomeService.createQuashed(
+          chargeNumber = chargeNumber,
+          reason = quashedRequest.reason,
+          details = quashedRequest.details,
+        )
+      },
+    )
 
   @Operation(
     summary = "create a police refer outcome",
@@ -214,9 +221,15 @@ class OutcomeController(
   fun removeNotProceedWithoutReferralOrQuashed(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse =
-    outcomeService.deleteOutcome(
-      chargeNumber = chargeNumber,
-    ).toResponse()
+    eventPublishWrapper(
+      event = AdjudicationDomainEventType.UNQUASHED,
+      controllerAction = {
+        outcomeService.deleteOutcome(
+          chargeNumber = chargeNumber,
+        )
+      },
+      eventRule = { it.status == ReportedAdjudicationStatus.CHARGE_PROVED },
+    )
 
   @Operation(summary = "amend outcome without a hearing (refer police, not proceed or quashed), unless its a referral outcome - not proceed")
   @PutMapping(value = ["/{chargeNumber}/outcome"])
