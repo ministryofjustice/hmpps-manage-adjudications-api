@@ -574,9 +574,23 @@ class MigrateFixtures {
     ),
   )
 
+  val WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_GUILTY = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.GUILTY.name)),
+      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1)),
+    ),
+  )
+
   val WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_NOT_PROCEED = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.NOT_PROCEED.name)),
+      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1)),
+    ),
+  )
+
+  val WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_DISMISSED = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name)),
       migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1)),
     ),
   )
