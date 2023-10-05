@@ -231,7 +231,7 @@ class MigrateNewRecordService(
       val outcomes = mutableListOf<Outcome>()
       for ((index, oicHearing) in this.withIndex()) {
         val hasAdditionalHearings = index < this.size - 1
-        val hasAdditionalHearingsWithoutResults = hasAdditionalHearings && this.subList(index, this.size - 1).all { it.hearingResult == null }
+        val hasAdditionalHearingsWithoutResults = hasAdditionalHearings && this.subList(index + 1, this.size).all { it.hearingResult == null }
         val hasAdditionalHearingOutcomes = this.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
 
         val hearingOutcomeAndOutcome = when (oicHearing.hearingResult) {
@@ -375,7 +375,7 @@ class MigrateNewRecordService(
     fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean, hasAdditionalHearingsWithoutResults: Boolean, chargeNumber: String): HearingOutcomeCode = when (this) {
       Finding.QUASHED.name, Finding.APPEAL.name -> HearingOutcomeCode.COMPLETE
       Finding.PROVED.name, Finding.D.name, Finding.NOT_PROCEED.name ->
-        if (hasAdditionalHearingOutcomes) HearingOutcomeCode.ADJOURN else HearingOutcomeCode.COMPLETE
+        if (hasAdditionalHearingOutcomes) HearingOutcomeCode.ADJOURN else if (hasAdditionalHearingsWithoutResults) throw UnableToMigrateException("$chargeNumber: $this has additional hearings") else HearingOutcomeCode.COMPLETE
       Finding.PROSECUTED.name, Finding.REF_POLICE.name -> HearingOutcomeCode.REFER_POLICE
       Finding.GUILTY.name, Finding.NOT_GUILTY.name, Finding.UNFIT.name, Finding.REFUSED.name, Finding.NOT_PROVEN.name, Finding.DISMISSED.name -> {
         if (hasAdditionalHearingsWithoutResults) throw UnableToMigrateException("$chargeNumber: $this has additional hearings") else HearingOutcomeCode.COMPLETE

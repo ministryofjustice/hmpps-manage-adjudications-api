@@ -816,6 +816,15 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
         migrateNewRecordService.accept(dto)
       }.isInstanceOf(UnableToMigrateException::class.java)
     }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getAdditionalHearingsAfterFinalState")
+    @ParameterizedTest
+    fun `exception thrown when additional hearings without results after final hearing`(dto: AdjudicationMigrateDto) {
+      Assertions.assertThatThrownBy {
+        migrateNewRecordService.accept(dto)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+        .hasMessageContaining("has additional hearings")
+    }
   }
 
   @Nested
@@ -872,6 +881,13 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
         migrationFixtures.WITH_FINDING_NOT_GUILTY,
         migrationFixtures.WITH_FINDING_UNFIT,
         migrationFixtures.WITH_FINDING_REFUSED,
+      ).stream()
+
+    @JvmStatic
+    fun getAdditionalHearingsAfterFinalState(): Stream<AdjudicationMigrateDto> =
+      listOf(
+        migrationFixtures.WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_PROVED,
+        migrationFixtures.WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_NOT_PROCEED,
       ).stream()
   }
 }
