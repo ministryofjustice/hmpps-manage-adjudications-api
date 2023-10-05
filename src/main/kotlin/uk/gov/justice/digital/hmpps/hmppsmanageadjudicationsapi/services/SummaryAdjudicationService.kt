@@ -6,7 +6,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSearchResponse
@@ -16,7 +15,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyN
 import java.time.LocalDate
 
 @Service
-@Transactional
 class SummaryAdjudicationService(
   private val legacyNomisGateway: LegacyNomisGateway,
   private val featureFlagsConfig: FeatureFlagsConfig,
