@@ -595,6 +595,50 @@ class MigrateFixtures {
     ),
   )
 
+  val PLEA_NOT_MAPPED_DIFF_TO_FINDING = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(
+          plea = Finding.QUASHED.name,
+          finding = Finding.NOT_PROCEED.name,
+        ),
+      ),
+    ),
+  )
+
+  val PLEA_NOT_MAPPED_SAME_AS_FINDING = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(
+          plea = Finding.QUASHED.name,
+          finding = Finding.QUASHED.name,
+        ),
+      ),
+    ),
+  )
+
+  val PLEA_NOT_MAPPED_DOUBLE_NEGATIVE = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(
+          plea = Finding.DISMISSED.name,
+          finding = Finding.NOT_PROCEED.name,
+        ),
+      ),
+    ),
+  )
+
+  val PLEA_NOT_MAPPED_DOUBLE_NEGATIVE2 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(
+          plea = Finding.NOT_PROVEN.name,
+          finding = Finding.NOT_PROCEED.name,
+        ),
+      ),
+    ),
+  )
+
   fun getSelection(): List<AdjudicationMigrateDto> = listOf(
     ADULT_SINGLE_OFFENCE, YOUTH_SINGLE_OFFENCE, NON_BINARY_GENDER, UNKNOWN_GENDER,
     WITH_HEARINGS_AND_SOME_RESULTS, WITH_HEARINGS_AND_RESULTS, WITH_HEARING, WITH_NO_ADJUDICATOR,

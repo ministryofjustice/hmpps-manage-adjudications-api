@@ -841,6 +841,38 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       )
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
     }
+
+    @Test
+    fun `if plea is not mapped and doesnt not equal finding throws exception`() {
+      val dto = migrationFixtures.PLEA_NOT_MAPPED_DIFF_TO_FINDING
+
+      Assertions.assertThatThrownBy {
+        migrateNewRecordService.accept(dto)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+        .hasMessageContaining("not mapped")
+    }
+
+    @Test
+    fun `if plea is not mapped, and is same as finding, plea should be NOT_ASKED`() {
+      val dto = migrationFixtures.PLEA_NOT_MAPPED_SAME_AS_FINDING
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome?.plea).isEqualTo(HearingOutcomePlea.NOT_ASKED)
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getPleaFindingDoubleNegatives")
+    @ParameterizedTest
+    fun `if plea is not mapped, and is a negative, as per finding, plea should be NOT_ASKED`(dto: AdjudicationMigrateDto) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome?.plea).isEqualTo(HearingOutcomePlea.NOT_ASKED)
+    }
   }
 
   @Nested
@@ -911,6 +943,13 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       listOf(
         migrationFixtures.WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_NOT_PROCEED,
         migrationFixtures.WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_DISMISSED,
+      ).stream()
+
+    @JvmStatic
+    fun getPleaFindingDoubleNegatives(): Stream<AdjudicationMigrateDto> =
+      listOf(
+        migrationFixtures.PLEA_NOT_MAPPED_DOUBLE_NEGATIVE,
+        migrationFixtures.PLEA_NOT_MAPPED_DOUBLE_NEGATIVE2,
       ).stream()
   }
 }
