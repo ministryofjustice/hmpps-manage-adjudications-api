@@ -404,8 +404,14 @@ class MigrateNewRecordService(
       Plea.NOT_ASKED.name -> HearingOutcomePlea.NOT_ASKED
       Plea.UNFIT.name -> HearingOutcomePlea.UNFIT
       Plea.REFUSED.name -> HearingOutcomePlea.ABSTAIN
-      else -> throw UnableToMigrateException("$chargeNumber-1 $this plea is not mapped currently, finding $finding")
+      else -> if (this == finding || (negativeFindingStates().contains(this) && negativeFindingStates().contains(finding))) {
+        HearingOutcomePlea.NOT_ASKED
+      } else {
+        throw UnableToMigrateException("$chargeNumber-1 $this plea is not mapped currently, finding $finding")
+      }
     }
+
+    private fun negativeFindingStates() = listOf(Finding.NOT_PROVEN.name, Finding.NOT_PROCEED.name, Finding.DISMISSED.name)
 
     private fun MigratePunishment.mapToPunishment(): Punishment {
       val prospectiveStatuses = listOf(Status.PROSPECTIVE.name, Status.SUSP_PROSP.name)
