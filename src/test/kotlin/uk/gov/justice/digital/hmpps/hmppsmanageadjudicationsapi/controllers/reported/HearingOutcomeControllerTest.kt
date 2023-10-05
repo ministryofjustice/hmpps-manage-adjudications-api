@@ -9,7 +9,6 @@ import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -105,7 +104,7 @@ class HearingOutcomeControllerTest : TestControllerBase() {
         adjudicator = "test",
         details = "details",
       )
-      verify(eventPublishService, if (code == HearingOutcomeCode.REFER_POLICE) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.HEARING_REFERRAL_CREATED, response)
+      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_REFERRAL_CREATED, response)
     }
 
     private fun createReferralRequest(

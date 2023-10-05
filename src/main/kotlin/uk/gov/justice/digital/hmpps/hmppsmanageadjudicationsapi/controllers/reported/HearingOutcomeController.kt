@@ -135,7 +135,6 @@ class HearingOutcomeController(
           details = referralRequest.details,
         )
       },
-      eventRule = { it.status == ReportedAdjudicationStatus.REFER_POLICE },
     )
 
   @Operation(summary = "remove a referral")
