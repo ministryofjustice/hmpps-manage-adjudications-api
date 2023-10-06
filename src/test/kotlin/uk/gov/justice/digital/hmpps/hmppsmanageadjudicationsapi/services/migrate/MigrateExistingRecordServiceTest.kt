@@ -684,6 +684,21 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first().sanctionSeq).isEqualTo(dto.punishments.first().sanctionSeq)
     }
 
+    @Test
+    fun `throws exception if a new hearing before latest`() {
+      val dto = migrationFixtures.HEARING_BEFORE_LATEST
+
+      Assertions.assertThatThrownBy {
+        migrateExistingRecordService.accept(
+          dto,
+          existing(dto).also {
+            it.hearings.last().hearingOutcome = null
+          },
+        )
+      }.isInstanceOf(ExistingRecordConflictException::class.java)
+        .hasMessageContaining("has a new hearing before latest")
+    }
+
     @Disabled
     @Test
     fun `punishments are matched in adjudications - add latest schedule`() {
