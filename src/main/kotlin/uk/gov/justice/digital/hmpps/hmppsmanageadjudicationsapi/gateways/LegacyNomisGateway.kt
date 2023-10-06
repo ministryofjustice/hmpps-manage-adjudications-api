@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenderAdjudicationHearing
 import java.time.LocalDate
 import java.util.*
 
@@ -197,9 +198,40 @@ class LegacyNomisGateway(private val prisonApiClientCreds: WebClient) {
       .retrieve()
       .bodyToMono(object : ParameterizedTypeReference<AdjudicationSummary>() {})
       .block()!!
+
+  fun getOffenderAdjudicationHearings(
+    prisonerNumbers: Set<String>,
+    agencyId: String,
+    fromDate: LocalDate,
+    toDate: LocalDate,
+    timeSlot: TimeSlot?,
+  ) =
+    prisonApiClientCreds
+      .post()
+      .uri { uriBuilder ->
+        uriBuilder.path("/offenders/adjudication-hearings")
+          .queryParam("agencyId", agencyId)
+          .queryParam("fromDate", fromDate)
+          .queryParam("toDate", toDate)
+          .queryParamIfPresent("timeSlot", Optional.ofNullable(timeSlot))
+          .build()
+      }
+      .bodyValue(prisonerNumbers)
+      .retrieve()
+      .bodyToMono(object : ParameterizedTypeReference<List<OffenderAdjudicationHearing>>() {})
+      .block()!!
 }
 
 data class OicHearingResult(
   val pleaFindingCode: String,
   val findingCode: String,
 )
+
+/**
+ * Represents morning or afternoon.
+ */
+enum class TimeSlot {
+  AM,
+  PM,
+  ED,
+}
