@@ -98,7 +98,16 @@ class MigrateExistingRecordService(
     val hearingsAndResults = hearingsAndResultsAndOutcomes.first
     val outcomes = hearingsAndResultsAndOutcomes.second
 
-    hearingsAndResults.forEach { this.hearings.add(it.also { hearing -> hearing.migrated = true }) }
+    hearingsAndResults.forEach { hearingToAdd ->
+      this.hearings.add(
+        hearingToAdd.also {
+          it.migrated = true
+          if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(it.dateTimeOfHearing) == true && it.hearingOutcome == null) {
+            it.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
+          }
+        },
+      )
+    }
     outcomes.forEach { this.addOutcome(it.also { outcome -> outcome.migrated = true }) }
   }
 
@@ -190,8 +199,8 @@ class MigrateExistingRecordService(
       if (this.hearings.none { it.oicHearingId == nomisHearing.oicHearingId } &&
         this.getOutcomes().none { it.oicHearingId == nomisHearing.oicHearingId }
       ) {
-        if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(nomisHearing.hearingDateTime) == true) {
-          throw ExistingRecordConflictException("$chargeNumber has a new hearing before latest")
+        if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(nomisHearing.hearingDateTime) == true && nomisHearing.hearingResult != null) {
+          throw ExistingRecordConflictException("$chargeNumber has a new hearing with result before latest")
         }
 
         if (HearingOutcomeCode.COMPLETE == this.getLatestHearing()?.hearingOutcome?.code &&

@@ -663,6 +663,18 @@ class MigrateFixtures {
     ),
   )
 
+  val HEARING_BEFORE_LATEST_WITH_RESULT = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 100,
+        hearingDateTime = LocalDateTime.now().minusDays(1),
+        hearingResult =
+        migrationEntityBuilder.createHearingResult(),
+      ),
+      migrationEntityBuilder.createHearing(),
+    ),
+  )
+
   val HEARING_BEFORE_LATEST = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(oicHearingId = 100, hearingDateTime = LocalDateTime.now().minusDays(1)),

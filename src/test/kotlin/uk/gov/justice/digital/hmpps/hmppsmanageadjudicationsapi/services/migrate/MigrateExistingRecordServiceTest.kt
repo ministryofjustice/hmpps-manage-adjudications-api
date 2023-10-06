@@ -685,8 +685,8 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `throws exception if a new hearing before latest`() {
-      val dto = migrationFixtures.HEARING_BEFORE_LATEST
+    fun `throws exception if a new hearing before latest with result`() {
+      val dto = migrationFixtures.HEARING_BEFORE_LATEST_WITH_RESULT
 
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(
@@ -696,7 +696,23 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
           },
         )
       }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("has a new hearing before latest")
+        .hasMessageContaining("has a new hearing with result before latest")
+    }
+
+    @Test
+    fun `adjourns hearing if before latest if it has no result`() {
+      val dto = migrationFixtures.HEARING_BEFORE_LATEST
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.last().hearingOutcome = null
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.hearings.minByOrNull { it.dateTimeOfHearing }!!.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
     }
 
     @Disabled
