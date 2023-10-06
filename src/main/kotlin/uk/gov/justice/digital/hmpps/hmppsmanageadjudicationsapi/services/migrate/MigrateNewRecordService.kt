@@ -312,7 +312,7 @@ class MigrateNewRecordService(
     fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index: Int): Boolean =
       index < this.size - 1 && this.none { it.hearingResult == null } && this.last().hearingResult?.finding != Finding.QUASHED.name
 
-    private fun List<MigrateHearing>.validate(chargeNumber: String, hasSanctions: Boolean) {
+    fun List<MigrateHearing>.validate(chargeNumber: String, hasSanctions: Boolean) {
       val shouldBeFinal = listOf(Finding.APPEAL.name, Finding.QUASHED.name)
       if (this.none { it.hearingResult != null }) return
       val last = this.last()

@@ -209,12 +209,66 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `existing hearing outcome with code NOMIS and no corresponding result throws exception`() {
+    fun `existing hearing outcome with code NOMIS adjourns empty results and completes nomis outcome`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.PHASE2_HEARINGS_NO_RESULTS
 
+      migrateExistingRecordService.accept(dto, existing(dto))
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+    }
+
+    @Test
+    fun `existing record with multiple nomis outcomes will call validate and throw exception`() {
+      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing(dto))
-      }.isInstanceOf(ExistingRecordConflictException::class.java)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+        .hasMessageContaining("record structure")
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
+    @ParameterizedTest
+    fun `adjudications with multiple final states should adjourn and add comments, and use final outcome`(dto: AdjudicationMigrateDto) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.clear()
+          dto.hearings.forEach {
+              hearing ->
+            it.hearings.add(
+              Hearing(
+                oicHearingId = hearing.oicHearingId,
+                dateTimeOfHearing = hearing.hearingDateTime,
+                oicHearingType = OicHearingType.GOV_ADULT,
+                agencyId = "MDI",
+                locationId = 1,
+                chargeNumber = dto.oicIncidentId.toString(),
+                hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = ""),
+              ),
+            )
+          }
+        },
+      )
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      val lastOutcome = dto.hearings.maxByOrNull { it.hearingDateTime }
+
+      when (lastOutcome?.hearingResult?.finding) {
+        Finding.PROVED.name -> assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+        Finding.D.name -> assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.DISMISSED)
+        else -> {}
+      }
+
+      argumentCaptor.value.hearings.filter { it.dateTimeOfHearing != lastOutcome?.hearingDateTime }.forEach {
+        assertThat(it.hearingOutcome?.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+        assertThat(it.hearingOutcome?.details).isNotEmpty()
+      }
     }
 
     @CsvSource("PROVED", "D", "NOT_PROCEED")

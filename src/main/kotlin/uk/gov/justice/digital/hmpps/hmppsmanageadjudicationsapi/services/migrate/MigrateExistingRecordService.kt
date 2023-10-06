@@ -37,6 +37,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toPunishmentMappings
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toPunishments
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toWitnesses
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.validate
 
 @Transactional
 @Service
@@ -122,29 +123,42 @@ class MigrateExistingRecordService(
   }
 
   private fun ReportedAdjudication.processPhase2(adjudicationMigrateDto: AdjudicationMigrateDto) {
-    this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }.forEach { nomisCode ->
-      val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { nomisCode.oicHearingId == it.oicHearingId && it.hearingResult != null }
-        ?: throw ExistingRecordConflictException("${this.chargeNumber} has NOMIS outcome for hearing ${nomisCode.id} ${nomisCode.oicHearingId} and no record or result ${adjudicationMigrateDto.hearings.map { it.oicHearingId }}")
+    adjudicationMigrateDto.hearings.validate(this.chargeNumber, adjudicationMigrateDto.punishments.isNotEmpty())
 
-      val index = adjudicationMigrateDto.hearings.indexOf(nomisHearing)
-      val hasAdditionalOutcomes = adjudicationMigrateDto.hearings.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
-      val hasAdditionalHearings = index < adjudicationMigrateDto.hearings.size - 1
-      val hasAdditionalHearingsWithoutResults = hasAdditionalHearings && adjudicationMigrateDto.hearings.subList(index + 1, adjudicationMigrateDto.hearings.size).all { it.hearingResult == null }
+    this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }.forEach { hearingOutcomeNomis ->
+      val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { hearingOutcomeNomis.oicHearingId == it.oicHearingId && it.hearingResult != null }
+      if (nomisHearing != null) {
+        val index = adjudicationMigrateDto.hearings.indexOf(nomisHearing)
+        val hasAdditionalOutcomes =
+          adjudicationMigrateDto.hearings.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
+        val hasAdditionalHearings = index < adjudicationMigrateDto.hearings.size - 1
+        val hasAdditionalHearingsWithoutResults = hasAdditionalHearings && adjudicationMigrateDto.hearings.subList(
+          index + 1,
+          adjudicationMigrateDto.hearings.size,
+        ).all { it.hearingResult == null }
 
-      val hearingOutcomeCode = nomisHearing.hearingResult!!.finding.mapToHearingOutcomeCode(
-        hasAdditionalHearingOutcomes = hasAdditionalOutcomes,
-        hasAdditionalHearingsWithoutResults = hasAdditionalHearingsWithoutResults,
-        chargeNumber = this.chargeNumber,
-      )
+        val hearingOutcomeCode = nomisHearing.hearingResult!!.finding.mapToHearingOutcomeCode(
+          hasAdditionalHearingOutcomes = hasAdditionalOutcomes,
+          hasAdditionalHearingsWithoutResults = hasAdditionalHearingsWithoutResults,
+          chargeNumber = this.chargeNumber,
+        )
 
-      nomisCode.hearingOutcome!!.adjudicator = nomisHearing.adjudicator ?: ""
-      nomisCode.hearingOutcome!!.code = hearingOutcomeCode
-      nomisCode.hearingOutcome!!.nomisOutcome = true
-      nomisHearing.hearingResult.mapToOutcome(hearingOutcomeCode)?.let {
-        this.addOutcome(it.also { outcome -> outcome.migrated = true })
-        nomisHearing.hearingResult.createAdditionalOutcome(hasAdditionalHearings)?.let { outcome ->
-          this.addOutcome(outcome.also { o -> o.migrated = true })
+        hearingOutcomeNomis.hearingOutcome!!.adjudicator = nomisHearing.adjudicator ?: ""
+        hearingOutcomeNomis.hearingOutcome!!.code = hearingOutcomeCode
+        hearingOutcomeNomis.hearingOutcome!!.nomisOutcome = true
+        if (hearingOutcomeCode == HearingOutcomeCode.ADJOURN) {
+          hearingOutcomeNomis.hearingOutcome!!.details = nomisHearing.hearingResult.finding
         }
+        nomisHearing.hearingResult.mapToOutcome(hearingOutcomeCode)?.let {
+          this.addOutcome(it.also { outcome -> outcome.migrated = true })
+          nomisHearing.hearingResult.createAdditionalOutcome(hasAdditionalHearings)?.let { outcome ->
+            this.addOutcome(outcome.also { o -> o.migrated = true })
+          }
+        }
+      } else {
+        hearingOutcomeNomis.hearingOutcome!!.adjudicator = ""
+        hearingOutcomeNomis.hearingOutcome!!.code = HearingOutcomeCode.ADJOURN
+        hearingOutcomeNomis.hearingOutcome!!.nomisOutcome = true
       }
     }
   }

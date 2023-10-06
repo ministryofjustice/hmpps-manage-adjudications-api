@@ -208,8 +208,29 @@ class MigrateFixtures {
     hearings = listOf(
       migrationEntityBuilder.createHearing(oicHearingId = 1, hearingDateTime = LocalDate.now().atStartOfDay()),
       migrationEntityBuilder.createHearing(oicHearingId = 2, hearingDateTime = LocalDate.now().atStartOfDay().plusDays(1)),
-      migrationEntityBuilder.createHearing(oicHearingId = 3, hearingDateTime = LocalDate.now().atStartOfDay().plusDays(2)),
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 3,
+        hearingDateTime = LocalDate.now().atStartOfDay().plusDays(2),
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
     ),
+  )
+
+  val PHASE2_HEARINGS_BAD_STRUCTURE = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 1,
+        hearingDateTime = LocalDate.now().atStartOfDay(),
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+      migrationEntityBuilder.createHearing(oicHearingId = 2, hearingDateTime = LocalDate.now().atStartOfDay().plusDays(1)),
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 3,
+        hearingDateTime = LocalDate.now().atStartOfDay().plusDays(2),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.DISMISSED.name),
+      ),
+    ),
+    punishments = listOf(migrationEntityBuilder.createPunishment()),
   )
 
   fun PHASE2_HEARINGS_AND_NOMIS(finding: Finding) = migrationEntityBuilder.createAdjudication(
@@ -461,6 +482,7 @@ class MigrateFixtures {
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name),
       ),
       migrationEntityBuilder.createHearing(
+        oicHearingId = 2,
         hearingDateTime = LocalDateTime.now().plusDays(1),
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
@@ -473,6 +495,7 @@ class MigrateFixtures {
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
       ),
       migrationEntityBuilder.createHearing(
+        oicHearingId = 2,
         hearingDateTime = LocalDateTime.now().plusDays(1),
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
@@ -485,6 +508,7 @@ class MigrateFixtures {
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.NOT_PROCEED.name),
       ),
       migrationEntityBuilder.createHearing(
+        oicHearingId = 2,
         hearingDateTime = LocalDateTime.now().plusDays(1),
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
