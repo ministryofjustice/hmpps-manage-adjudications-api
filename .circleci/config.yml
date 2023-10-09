@@ -30,7 +30,6 @@ jobs:
       localstack_tag: << pipeline.parameters.localstack-version >>
       services: "sns,sqs"
       postgres_tag: << pipeline.parameters.postgres-version >>
-      postgres_db: "adjudications"
       postgres_username: "adjudications"
       postgres_password: "adjudications"
     steps:
