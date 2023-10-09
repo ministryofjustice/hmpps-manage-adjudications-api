@@ -204,6 +204,27 @@ class MigrateFixtures {
     ),
   )
 
+  val COMPLETE_QUASHED = migrationEntityBuilder.createAdjudication(
+    disIssued = listOf(DisIssued(issuingOfficer = "officer", dateTimeOfIssue = LocalDateTime.now())),
+    damages = listOf(migrationEntityBuilder.createDamage()),
+    evidence = listOf(migrationEntityBuilder.createEvidence()),
+    witnesses = listOf(migrationEntityBuilder.createWitness()),
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 100,
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 101,
+        hearingDateTime = LocalDateTime.now().plusDays(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(comment = "something"),
+    ),
+  )
+
   val PHASE2_HEARINGS_NO_RESULTS = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(oicHearingId = 1, hearingDateTime = LocalDate.now().atStartOfDay()),

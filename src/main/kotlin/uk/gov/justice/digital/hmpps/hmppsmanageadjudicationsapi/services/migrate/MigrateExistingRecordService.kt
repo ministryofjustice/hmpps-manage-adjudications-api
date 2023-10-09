@@ -182,49 +182,49 @@ class MigrateExistingRecordService(
         } else {
           null
         }
-
       hearing.hearingOutcome?.let {
         nomisHearingResult?.let { nhr ->
           it.code.mapFinding(nhr.finding, this.chargeNumber)
         }
       }
+
       hearing.update(nomisHearing)
       nomisHearingResult?.let {
         hearing.hearingOutcome?.update(nomisHearing)
       }
     }
 
-    adjudicationMigrateDto.hearings.sortedBy { it.hearingDateTime }.forEach { nomisHearing ->
+    adjudicationMigrateDto.hearings.filter { this.filterNewHearings(it) }.sortedBy { it.hearingDateTime }.forEach {
+      if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(it.hearingDateTime) == true && it.hearingResult != null) {
+        throw ExistingRecordConflictException("$chargeNumber has a new hearing with result before latest ${it.hearingResult.finding}")
+      }
 
-      if (this.hearings.none { it.oicHearingId == nomisHearing.oicHearingId } &&
-        this.getOutcomes().none { it.oicHearingId == nomisHearing.oicHearingId }
+      if (HearingOutcomeCode.COMPLETE == this.getLatestHearing()?.hearingOutcome?.code &&
+        it.hearingResult?.finding != Finding.QUASHED.name
       ) {
-        if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(nomisHearing.hearingDateTime) == true && nomisHearing.hearingResult != null) {
-          throw ExistingRecordConflictException("$chargeNumber has a new hearing with result before latest")
-        }
-
-        if (HearingOutcomeCode.COMPLETE == this.getLatestHearing()?.hearingOutcome?.code &&
-          nomisHearing.hearingResult?.finding != Finding.QUASHED.name
-        ) {
-          throw ExistingRecordConflictException("$chargeNumber has a new hearing after completed ${nomisHearing.hearingResult?.finding}")
-        }
-
-        this.addHearingsAndOutcomes(
-          listOf(nomisHearing).toHearingsAndResultsAndOutcomes(
-            agencyId = adjudicationMigrateDto.agencyId,
-            chargeNumber = this.chargeNumber,
-            isYouthOffender = this.isYouthOffender,
-            hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
-          ),
-        )
+        throw ExistingRecordConflictException("$chargeNumber has a new hearing after completed ${it.hearingResult?.finding}")
       }
     }
+
+    this.addHearingsAndOutcomes(
+      adjudicationMigrateDto.hearings.filter { this.filterNewHearings(it) }.sortedBy { it.hearingDateTime }
+        .toHearingsAndResultsAndOutcomes(
+          agencyId = adjudicationMigrateDto.agencyId,
+          chargeNumber = this.chargeNumber,
+          isYouthOffender = this.isYouthOffender,
+          hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
+        ),
+    )
 
     when (this.getPunishments().isEmpty()) {
       true -> this.processPunishments(adjudicationMigrateDto.punishments)
       false -> this.processPunishments(this.getPunishments().update(adjudicationMigrateDto.punishments))
     }
   }
+
+  private fun ReportedAdjudication.filterNewHearings(nomisHearing: MigrateHearing): Boolean =
+    this.hearings.none { it.oicHearingId == nomisHearing.oicHearingId } &&
+      this.getOutcomes().none { it.oicHearingId == nomisHearing.oicHearingId }
 
   private fun List<Punishment>.update(sanctions: List<MigratePunishment>): List<MigratePunishment> {
     val newPunishments = mutableListOf<MigratePunishment>()
@@ -288,12 +288,14 @@ class MigrateExistingRecordService(
     fun List<Hearing>.containsNomisHearingOutcomeCode(): Boolean =
       this.any { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }
 
-    fun HearingOutcomeCode.mapFinding(finding: String, chargeNumber: String) {
+   fun HearingOutcomeCode.mapFinding(finding: String, chargeNumber: String) { //check logs for this.
       val msg = "$chargeNumber hearing result code has changed ${this.outcomeCode} vs $finding"
       when (finding) {
         Finding.D.name, Finding.PROVED.name -> if (this != HearingOutcomeCode.COMPLETE) throw ExistingRecordConflictException(msg)
         Finding.REF_POLICE.name -> if (this != HearingOutcomeCode.REFER_POLICE) throw ExistingRecordConflictException(msg)
         Finding.NOT_PROCEED.name -> if (!listOf(HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.COMPLETE).contains(this)) throw ExistingRecordConflictException(msg)
+        Finding.S.name -> HearingOutcomeCode.ADJOURN
+        Finding.APPEAL.name -> HearingOutcomeCode.COMPLETE
         else -> throw ExistingRecordConflictException("$chargeNumber unsupported mapping $finding")
       }
     }
