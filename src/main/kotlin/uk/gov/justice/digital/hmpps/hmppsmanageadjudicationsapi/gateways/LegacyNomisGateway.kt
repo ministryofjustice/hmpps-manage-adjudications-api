@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudicatio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenderAdjudicationHearing
 import java.time.LocalDate
-import java.util.*
+import java.util.Optional
 
 @Service
 class LegacyNomisGateway(private val prisonApiClientCreds: WebClient) {
