@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
+import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
@@ -10,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHear
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrationEntityBuilder
 import java.time.LocalDateTime
 
+@ActiveProfiles("nomis")
 class MigrateExistingIntTest : SqsIntegrationTestBase() {
   @BeforeEach
   fun setUp() {

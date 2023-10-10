@@ -44,9 +44,9 @@ feature:
   nomis-source-of-truth: true
   async:
     chargeNumbers: false
-    adjudications: false
-    hearings: false
-    outcomes: false
+    adjudications: true
+    hearings: true
+    outcomes: true
     punishments: false
   skip:
     existing: false

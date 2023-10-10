@@ -2,11 +2,13 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_LOCATION_ID
 
+@ActiveProfiles("nomis")
 class MigrateResetIntTest : SqsIntegrationTestBase() {
   @BeforeEach
   fun setUp() {
