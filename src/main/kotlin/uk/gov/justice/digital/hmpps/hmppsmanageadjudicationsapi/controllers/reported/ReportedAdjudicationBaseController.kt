@@ -25,8 +25,9 @@ class ReportedAdjudicationBaseController {
     event: AdjudicationDomainEventType,
     controllerAction: () -> ReportedAdjudicationDto,
     eventRule: (ReportedAdjudicationDto) -> Boolean = { _ -> true },
+    eventSupplier: (ReportedAdjudicationDto) -> AdjudicationDomainEventType = { _ -> event },
   ): ReportedAdjudicationResponse =
-    controllerAction.invoke().also { if (eventRule.invoke(it)) eventPublishService.publishEvent(event, it) }.toResponse()
+    controllerAction.invoke().also { if (eventRule.invoke(it)) eventPublishService.publishEvent(eventSupplier.invoke(it), it) }.toResponse()
 
   companion object {
     fun ReportedAdjudicationDto.toResponse() = ReportedAdjudicationResponse(this)

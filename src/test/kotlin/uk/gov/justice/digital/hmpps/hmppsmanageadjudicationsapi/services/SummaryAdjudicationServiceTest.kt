@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudicatio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Award
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenderAdjudicationHearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyNomisGateway
 import java.time.LocalDate
@@ -119,5 +120,57 @@ class SummaryAdjudicationServiceTest {
     val adjudicationDetail = summaryAdjudicationService.getAdjudication(prisonerNumber, 1L)
 
     Assertions.assertThat(adjudicationDetail.adjudicationNumber).isEqualTo(adjudicationNumber)
+  }
+
+  @Test
+  fun `can get hearing results for prisoner numbers`() {
+    val anotherPrisonerNumber = "A12345"
+    val agencyId = "MDI"
+    val today = LocalDate.now()
+    val fromDate = today.minusDays(30)
+    val toDate = today.minusDays(1)
+
+    whenever(
+      legacyNomisGateway.getOffenderAdjudicationHearings(
+        prisonerNumbers = setOf(prisonerNumber, anotherPrisonerNumber),
+        agencyId = agencyId,
+        fromDate = fromDate,
+        toDate = toDate,
+        timeSlot = null,
+      ),
+    ).thenReturn(
+      listOf(
+        OffenderAdjudicationHearing(
+          agencyId = agencyId,
+          offenderNo = prisonerNumber,
+          hearingId = 1,
+          hearingType = null,
+          startTime = null,
+          internalLocationId = 123L,
+          internalLocationDescription = null,
+          eventStatus = null,
+        ),
+        OffenderAdjudicationHearing(
+          agencyId = agencyId,
+          offenderNo = anotherPrisonerNumber,
+          hearingId = 1,
+          hearingType = null,
+          startTime = null,
+          internalLocationId = 123L,
+          internalLocationDescription = null,
+          eventStatus = null,
+        ),
+      ),
+    )
+    val adjudicationHearings = summaryAdjudicationService.getOffenderAdjudicationHearings(
+      prisonerNumbers = setOf(prisonerNumber, anotherPrisonerNumber),
+      agencyId = agencyId,
+      fromDate = fromDate,
+      toDate = toDate,
+      timeSlot = null,
+    )
+
+    Assertions.assertThat(adjudicationHearings[0].offenderNo).isEqualTo(prisonerNumber)
+    Assertions.assertThat(adjudicationHearings[1].offenderNo).isEqualTo(anotherPrisonerNumber)
   }
 }

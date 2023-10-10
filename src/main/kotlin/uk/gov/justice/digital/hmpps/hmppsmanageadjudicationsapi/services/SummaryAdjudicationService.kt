@@ -10,8 +10,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFl
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSearchResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenderAdjudicationHearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyNomisGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.TimeSlot
 import java.time.LocalDate
 
 @Service
@@ -72,6 +74,21 @@ class SummaryAdjudicationService(
     } else {
       // TODO: get data from this database!
       AdjudicationSummary(bookingId = bookingId, adjudicationCount = 0, awards = listOf())
+    }
+  }
+
+  fun getOffenderAdjudicationHearings(
+    prisonerNumbers: Set<String>,
+    agencyId: String,
+    fromDate: LocalDate,
+    toDate: LocalDate,
+    timeSlot: TimeSlot?,
+  ): List<OffenderAdjudicationHearing> {
+    return if (featureFlagsConfig.nomisSourceOfTruth) {
+      legacyNomisGateway.getOffenderAdjudicationHearings(prisonerNumbers, agencyId, fromDate, toDate, timeSlot)
+    } else {
+      // TODO: get data from this database!
+      listOf()
     }
   }
 }
