@@ -173,7 +173,8 @@ class MigrateExistingRecordService(
   }
 
   private fun ReportedAdjudication.processPhase3(adjudicationMigrateDto: AdjudicationMigrateDto) {
-    this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.filterOutPreviousPhases() }.forEach { hearing ->
+    val hearings = this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.filterOutPreviousPhases() }
+    hearings.forEachIndexed { index, hearing ->
       val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { it.oicHearingId == hearing.oicHearingId }
         ?: throw ExistingRecordConflictException("${this.chargeNumber} ${hearing.oicHearingId} hearing no longer exists in nomis")
       val nomisHearingResult = nomisHearing.hearingResult
@@ -184,7 +185,11 @@ class MigrateExistingRecordService(
         }
       hearing.hearingOutcome?.let {
         nomisHearingResult?.let { nhr ->
-          it.code.mapFinding(nhr.finding, this.chargeNumber)
+          it.code.mapFinding(
+            finding = nhr.finding,
+            chargeNumber = this.chargeNumber,
+            isLastOutcome = index == hearings.size - 1,
+          )
         }
       }
 
@@ -288,14 +293,12 @@ class MigrateExistingRecordService(
     fun List<Hearing>.containsNomisHearingOutcomeCode(): Boolean =
       this.any { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }
 
-   fun HearingOutcomeCode.mapFinding(finding: String, chargeNumber: String) { //check logs for this.
-      val msg = "$chargeNumber hearing result code has changed ${this.outcomeCode} vs $finding"
+    fun HearingOutcomeCode.mapFinding(finding: String, chargeNumber: String, isLastOutcome: Boolean) {
+      val msg = "$chargeNumber hearing result code has changed $this vs $finding, is last outcome? $isLastOutcome"
       when (finding) {
-        Finding.D.name, Finding.PROVED.name -> if (this != HearingOutcomeCode.COMPLETE) throw ExistingRecordConflictException(msg)
+        Finding.D.name, Finding.PROVED.name, Finding.APPEAL.name -> if (this != HearingOutcomeCode.COMPLETE) throw ExistingRecordConflictException(msg)
         Finding.REF_POLICE.name -> if (this != HearingOutcomeCode.REFER_POLICE) throw ExistingRecordConflictException(msg)
         Finding.NOT_PROCEED.name -> if (!listOf(HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.COMPLETE).contains(this)) throw ExistingRecordConflictException(msg)
-        Finding.S.name -> HearingOutcomeCode.ADJOURN
-        Finding.APPEAL.name -> HearingOutcomeCode.COMPLETE
         else -> throw ExistingRecordConflictException("$chargeNumber unsupported mapping $finding")
       }
     }
