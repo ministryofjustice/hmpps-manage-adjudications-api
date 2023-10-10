@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -15,6 +16,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -33,10 +35,16 @@ import java.time.LocalDateTime
 class NomisOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
   private val legacySyncService: LegacySyncService = mock()
-  private val nomisOutcomeService = NomisOutcomeService(legacySyncService)
+  private val featureFlagsConfig: FeatureFlagsConfig = mock()
+  private val nomisOutcomeService = NomisOutcomeService(legacySyncService, featureFlagsConfig)
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // not applicable
+  }
+
+  @BeforeEach
+  fun `init`() {
+    whenever(featureFlagsConfig.outcomes).thenReturn(false)
   }
 
   @Nested

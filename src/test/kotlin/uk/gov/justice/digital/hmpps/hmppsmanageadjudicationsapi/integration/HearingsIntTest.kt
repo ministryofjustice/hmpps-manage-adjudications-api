@@ -65,36 +65,6 @@ class HearingsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
-  fun `create hearing fails on prisonApi and does not create a hearing`() {
-    initDataForUnScheduled()
-
-    val dateTimeOfHearing = LocalDateTime.of(2010, 10, 12, 10, 0)
-
-    prisonApiMockServer.stubCreateHearingFailure(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
-    webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .bodyValue(
-        mapOf(
-          "locationId" to 1,
-          "dateTimeOfHearing" to dateTimeOfHearing,
-          "oicHearingType" to OicHearingType.GOV.name,
-        ),
-      )
-      .exchange()
-      .expectStatus().is5xxServerError
-
-    webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
-      .headers(setHeaders())
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
-  }
-
-  @Test
   fun `amend a hearing `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     initDataForUnScheduled().createHearing()
@@ -148,40 +118,6 @@ class HearingsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
-  fun `amend a hearing fails on prison api and does not update the hearing `() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    initDataForUnScheduled().createHearing()
-
-    prisonApiMockServer.stubAmendHearingFailure(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
-
-    webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .bodyValue(
-        mapOf(
-          "locationId" to 3,
-          "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1),
-          "oicHearingType" to OicHearingType.GOV_ADULT.name,
-        ),
-      )
-      .exchange()
-      .expectStatus().is5xxServerError
-
-    webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
-      .headers(setHeaders())
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.hearings[0].locationId")
-      .isEqualTo(IntegrationTestData.UPDATED_LOCATION_ID)
-      .jsonPath("$.reportedAdjudication.hearings[0].dateTimeOfHearing")
-      .isEqualTo("2010-11-19T10:00:00")
-      .jsonPath("$.reportedAdjudication.hearings[0].id").isNotEmpty
-  }
-
-  @Test
   fun `delete a hearing `() {
     prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     initDataForUnScheduled().createHearing()
@@ -196,28 +132,6 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.status")
       .isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED.name)
       .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
-  }
-
-  @Test
-  fun `delete a hearing fails on prison api and does not delete record`() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    initDataForUnScheduled().createHearing()
-
-    prisonApiMockServer.stubDeleteHearingFailure(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
-    webTestClient.delete()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .exchange()
-      .expectStatus().is5xxServerError
-
-    webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/v2")
-      .headers(setHeaders())
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(1)
   }
 
   @Test

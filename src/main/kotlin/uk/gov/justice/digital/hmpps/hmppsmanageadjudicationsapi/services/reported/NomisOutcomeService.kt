@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -20,9 +21,11 @@ import java.time.LocalDateTime
 @Service
 class NomisOutcomeService(
   private val legacySyncService: LegacySyncService,
+  private val featureFlagsConfig: FeatureFlagsConfig,
 ) {
 
   fun createHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome): Long? {
+    if (featureFlagsConfig.outcomes) return null
     if (hearing == null && outcome.doNotCallApi() || outcome.ignore()) return null
 
     hearing?.let {
@@ -53,6 +56,7 @@ class NomisOutcomeService(
   }
 
   fun amendHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome) {
+    if (featureFlagsConfig.outcomes) return
     if (hearing == null && outcome.doNotCallApi() || outcome.ignore()) return
 
     hearing?.let {
@@ -72,6 +76,7 @@ class NomisOutcomeService(
   }
 
   fun deleteHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome) {
+    if (featureFlagsConfig.outcomes) return
     if (hearing == null && outcome.doNotCallApi() || outcome.ignore()) return
 
     hearing?.let {
