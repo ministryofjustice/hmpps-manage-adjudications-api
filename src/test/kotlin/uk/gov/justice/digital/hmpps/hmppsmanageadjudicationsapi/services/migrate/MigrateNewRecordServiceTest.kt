@@ -714,11 +714,13 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
     }
 
+    @Test
     fun `adjudication with multiple final states, and sanctions, where final state is not PROVED should throw error`() {
       val dto = migrationFixtures.EXCEPTION_CASE_4
       Assertions.assertThatThrownBy {
         migrateNewRecordService.accept(dto)
       }.isInstanceOf(UnableToMigrateException::class.java)
+        .hasMessageContaining("record structure")
     }
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")

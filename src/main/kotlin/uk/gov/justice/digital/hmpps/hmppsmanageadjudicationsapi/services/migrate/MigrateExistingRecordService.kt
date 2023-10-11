@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.MigrateResponse
@@ -37,6 +39,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toPunishmentMappings
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toPunishments
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toWitnesses
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.validate
 
 @Transactional
 @Service
@@ -44,7 +47,10 @@ class MigrateExistingRecordService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto, existingAdjudication: ReportedAdjudication): MigrateResponse {
-    if (adjudicationMigrateDto.prisoner.prisonerNumber != existingAdjudication.prisonerNumber) throw ExistingRecordConflictException("Prisoner different between nomis and adjudications")
+    if (adjudicationMigrateDto.prisoner.prisonerNumber != existingAdjudication.prisonerNumber) {
+      existingAdjudication.prisonerNumber = adjudicationMigrateDto.prisoner.prisonerNumber
+      log.warn("Prisoner different between nomis ${adjudicationMigrateDto.prisoner.prisonerNumber} and adjudications ${existingAdjudication.prisonerNumber}")
+    }
     if (adjudicationMigrateDto.agencyId != existingAdjudication.originatingAgencyId) throw ExistingRecordConflictException("agency different between nomis and adjudications")
 
     existingAdjudication.offenderBookingId = adjudicationMigrateDto.bookingId
@@ -97,7 +103,16 @@ class MigrateExistingRecordService(
     val hearingsAndResults = hearingsAndResultsAndOutcomes.first
     val outcomes = hearingsAndResultsAndOutcomes.second
 
-    hearingsAndResults.forEach { this.hearings.add(it.also { hearing -> hearing.migrated = true }) }
+    hearingsAndResults.forEach { hearingToAdd ->
+      this.hearings.add(
+        hearingToAdd.also {
+          it.migrated = true
+          if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(it.dateTimeOfHearing) == true && it.hearingOutcome == null) {
+            it.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
+          }
+        },
+      )
+    }
     outcomes.forEach { this.addOutcome(it.also { outcome -> outcome.migrated = true }) }
   }
 
@@ -107,6 +122,8 @@ class MigrateExistingRecordService(
       chargeNumber = this.chargeNumber,
       isYouthOffender = this.isYouthOffender,
       hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
+      isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
+      hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
     )
 
     val disIssued = adjudicationMigrateDto.disIssued.toDisIssue()
@@ -122,35 +139,54 @@ class MigrateExistingRecordService(
   }
 
   private fun ReportedAdjudication.processPhase2(adjudicationMigrateDto: AdjudicationMigrateDto) {
-    this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }.forEach { nomisCode ->
-      val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { nomisCode.oicHearingId == it.oicHearingId && it.hearingResult != null }
-        ?: throw ExistingRecordConflictException("${this.chargeNumber} has NOMIS outcome for hearing ${nomisCode.id} ${nomisCode.oicHearingId} and no record or result ${adjudicationMigrateDto.hearings.map { it.oicHearingId }}")
+    adjudicationMigrateDto.hearings.validate(
+      chargeNumber = this.chargeNumber,
+      hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
+      hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
+      isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
+    )
 
-      val index = adjudicationMigrateDto.hearings.indexOf(nomisHearing)
-      val hasAdditionalOutcomes = adjudicationMigrateDto.hearings.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
-      val hasAdditionalHearings = index < adjudicationMigrateDto.hearings.size - 1
-      val hasAdditionalHearingsWithoutResults = hasAdditionalHearings && adjudicationMigrateDto.hearings.subList(index + 1, adjudicationMigrateDto.hearings.size).all { it.hearingResult == null }
+    this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }.forEach { hearingOutcomeNomis ->
+      val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { hearingOutcomeNomis.oicHearingId == it.oicHearingId && it.hearingResult != null }
+      if (nomisHearing != null) {
+        val index = adjudicationMigrateDto.hearings.indexOf(nomisHearing)
+        val hasAdditionalOutcomes =
+          adjudicationMigrateDto.hearings.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
+        val hasAdditionalHearings = index < adjudicationMigrateDto.hearings.size - 1
+        val hasAdditionalHearingsWithoutResults = hasAdditionalHearings && adjudicationMigrateDto.hearings.subList(
+          index + 1,
+          adjudicationMigrateDto.hearings.size,
+        ).all { it.hearingResult == null }
 
-      val hearingOutcomeCode = nomisHearing.hearingResult!!.finding.mapToHearingOutcomeCode(
-        hasAdditionalHearingOutcomes = hasAdditionalOutcomes,
-        hasAdditionalHearingsWithoutResults = hasAdditionalHearingsWithoutResults,
-        chargeNumber = this.chargeNumber,
-      )
+        val hearingOutcomeCode = nomisHearing.hearingResult!!.finding.mapToHearingOutcomeCode(
+          hasAdditionalHearingOutcomes = hasAdditionalOutcomes,
+          hasAdditionalHearingsWithoutResults = hasAdditionalHearingsWithoutResults,
+          chargeNumber = this.chargeNumber,
+        )
 
-      nomisCode.hearingOutcome!!.adjudicator = nomisHearing.adjudicator ?: ""
-      nomisCode.hearingOutcome!!.code = hearingOutcomeCode
-      nomisCode.hearingOutcome!!.nomisOutcome = true
-      nomisHearing.hearingResult.mapToOutcome(hearingOutcomeCode)?.let {
-        this.addOutcome(it.also { outcome -> outcome.migrated = true })
-        nomisHearing.hearingResult.createAdditionalOutcome(hasAdditionalHearings)?.let { outcome ->
-          this.addOutcome(outcome.also { o -> o.migrated = true })
+        hearingOutcomeNomis.hearingOutcome!!.adjudicator = nomisHearing.adjudicator ?: ""
+        hearingOutcomeNomis.hearingOutcome!!.code = hearingOutcomeCode
+        hearingOutcomeNomis.hearingOutcome!!.nomisOutcome = true
+        if (hearingOutcomeCode == HearingOutcomeCode.ADJOURN) {
+          hearingOutcomeNomis.hearingOutcome!!.details = nomisHearing.hearingResult.finding
         }
+        nomisHearing.hearingResult.mapToOutcome(hearingOutcomeCode)?.let {
+          this.addOutcome(it.also { outcome -> outcome.migrated = true })
+          nomisHearing.hearingResult.createAdditionalOutcome(hasAdditionalHearings)?.let { outcome ->
+            this.addOutcome(outcome.also { o -> o.migrated = true })
+          }
+        }
+      } else {
+        hearingOutcomeNomis.hearingOutcome!!.adjudicator = ""
+        hearingOutcomeNomis.hearingOutcome!!.code = HearingOutcomeCode.ADJOURN
+        hearingOutcomeNomis.hearingOutcome!!.nomisOutcome = true
       }
     }
   }
 
   private fun ReportedAdjudication.processPhase3(adjudicationMigrateDto: AdjudicationMigrateDto) {
-    this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.filterOutPreviousPhases() }.forEach { hearing ->
+    val hearings = this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.filterOutPreviousPhases() }
+    hearings.forEachIndexed { index, hearing ->
       val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { it.oicHearingId == hearing.oicHearingId }
         ?: throw ExistingRecordConflictException("${this.chargeNumber} ${hearing.oicHearingId} hearing no longer exists in nomis")
       val nomisHearingResult = nomisHearing.hearingResult
@@ -159,49 +195,55 @@ class MigrateExistingRecordService(
         } else {
           null
         }
-
       hearing.hearingOutcome?.let {
         nomisHearingResult?.let { nhr ->
-          it.code.mapFinding(nhr.finding, this.chargeNumber)
+          it.code.mapFinding(
+            finding = nhr.finding,
+            chargeNumber = this.chargeNumber,
+            isLastOutcome = index == hearings.size - 1,
+          )
         }
       }
+
       hearing.update(nomisHearing)
       nomisHearingResult?.let {
         hearing.hearingOutcome?.update(nomisHearing)
       }
     }
 
-    adjudicationMigrateDto.hearings.sortedBy { it.hearingDateTime }.forEach { nomisHearing ->
+    adjudicationMigrateDto.hearings.filter { this.filterNewHearings(it) }.sortedBy { it.hearingDateTime }.forEach {
+      if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(it.hearingDateTime) == true && it.hearingResult != null) {
+        throw ExistingRecordConflictException("$chargeNumber has a new hearing with result before latest ${it.hearingResult.finding}")
+      }
 
-      if (this.hearings.none { it.oicHearingId == nomisHearing.oicHearingId } &&
-        this.getOutcomes().none { it.oicHearingId == nomisHearing.oicHearingId }
+      if (HearingOutcomeCode.COMPLETE == this.getLatestHearing()?.hearingOutcome?.code &&
+        it.hearingResult?.finding != Finding.QUASHED.name
       ) {
-        if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(nomisHearing.hearingDateTime) == true) {
-          throw ExistingRecordConflictException("$chargeNumber has a new hearing before latest")
-        }
-
-        if (HearingOutcomeCode.COMPLETE == this.getLatestHearing()?.hearingOutcome?.code &&
-          nomisHearing.hearingResult?.finding != Finding.QUASHED.name
-        ) {
-          throw ExistingRecordConflictException("$chargeNumber has a new hearing after completed ${nomisHearing.hearingResult?.finding}")
-        }
-
-        this.addHearingsAndOutcomes(
-          listOf(nomisHearing).toHearingsAndResultsAndOutcomes(
-            agencyId = adjudicationMigrateDto.agencyId,
-            chargeNumber = this.chargeNumber,
-            isYouthOffender = this.isYouthOffender,
-            hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
-          ),
-        )
+        throw ExistingRecordConflictException("$chargeNumber has a new hearing after completed ${it.hearingResult?.finding}")
       }
     }
+
+    this.addHearingsAndOutcomes(
+      adjudicationMigrateDto.hearings.filter { this.filterNewHearings(it) }.sortedBy { it.hearingDateTime }
+        .toHearingsAndResultsAndOutcomes(
+          agencyId = adjudicationMigrateDto.agencyId,
+          chargeNumber = this.chargeNumber,
+          isYouthOffender = this.isYouthOffender,
+          hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
+          isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
+          hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
+        ),
+    )
 
     when (this.getPunishments().isEmpty()) {
       true -> this.processPunishments(adjudicationMigrateDto.punishments)
       false -> this.processPunishments(this.getPunishments().update(adjudicationMigrateDto.punishments))
     }
   }
+
+  private fun ReportedAdjudication.filterNewHearings(nomisHearing: MigrateHearing): Boolean =
+    this.hearings.none { it.oicHearingId == nomisHearing.oicHearingId } &&
+      this.getOutcomes().none { it.oicHearingId == nomisHearing.oicHearingId }
 
   private fun List<Punishment>.update(sanctions: List<MigratePunishment>): List<MigratePunishment> {
     val newPunishments = mutableListOf<MigratePunishment>()
@@ -254,6 +296,7 @@ class MigrateExistingRecordService(
   }
 
   companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
     fun Hearing.filterOutPreviousPhases(): Boolean = this.hearingOutcome?.nomisOutcome != true && this.hearingOutcome?.migrated != true
     fun List<Hearing>.hasHearingWithoutResult(): Boolean {
       val hearingsWithoutLast = this.sortedBy { it.dateTimeOfHearing }
@@ -265,10 +308,10 @@ class MigrateExistingRecordService(
     fun List<Hearing>.containsNomisHearingOutcomeCode(): Boolean =
       this.any { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }
 
-    fun HearingOutcomeCode.mapFinding(finding: String, chargeNumber: String) {
-      val msg = "$chargeNumber hearing result code has changed ${this.outcomeCode} vs $finding"
+    fun HearingOutcomeCode.mapFinding(finding: String, chargeNumber: String, isLastOutcome: Boolean) {
+      val msg = "$chargeNumber hearing result code has changed $this vs $finding, is last outcome? $isLastOutcome"
       when (finding) {
-        Finding.D.name, Finding.PROVED.name -> if (this != HearingOutcomeCode.COMPLETE) throw ExistingRecordConflictException(msg)
+        Finding.D.name, Finding.PROVED.name, Finding.APPEAL.name -> if (this != HearingOutcomeCode.COMPLETE) throw ExistingRecordConflictException(msg)
         Finding.REF_POLICE.name -> if (this != HearingOutcomeCode.REFER_POLICE) throw ExistingRecordConflictException(msg)
         Finding.NOT_PROCEED.name -> if (!listOf(HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.COMPLETE).contains(this)) throw ExistingRecordConflictException(msg)
         else -> throw ExistingRecordConflictException("$chargeNumber unsupported mapping $finding")

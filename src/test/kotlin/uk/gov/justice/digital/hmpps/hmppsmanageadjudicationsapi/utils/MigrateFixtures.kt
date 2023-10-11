@@ -204,12 +204,54 @@ class MigrateFixtures {
     ),
   )
 
+  val COMPLETE_QUASHED = migrationEntityBuilder.createAdjudication(
+    disIssued = listOf(DisIssued(issuingOfficer = "officer", dateTimeOfIssue = LocalDateTime.now())),
+    damages = listOf(migrationEntityBuilder.createDamage()),
+    evidence = listOf(migrationEntityBuilder.createEvidence()),
+    witnesses = listOf(migrationEntityBuilder.createWitness()),
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 100,
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 101,
+        hearingDateTime = LocalDateTime.now().plusDays(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(comment = "something"),
+    ),
+  )
+
   val PHASE2_HEARINGS_NO_RESULTS = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(oicHearingId = 1, hearingDateTime = LocalDate.now().atStartOfDay()),
       migrationEntityBuilder.createHearing(oicHearingId = 2, hearingDateTime = LocalDate.now().atStartOfDay().plusDays(1)),
-      migrationEntityBuilder.createHearing(oicHearingId = 3, hearingDateTime = LocalDate.now().atStartOfDay().plusDays(2)),
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 3,
+        hearingDateTime = LocalDate.now().atStartOfDay().plusDays(2),
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
     ),
+  )
+
+  val PHASE2_HEARINGS_BAD_STRUCTURE = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 1,
+        hearingDateTime = LocalDate.now().atStartOfDay(),
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+      migrationEntityBuilder.createHearing(oicHearingId = 2, hearingDateTime = LocalDate.now().atStartOfDay().plusDays(1)),
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 3,
+        hearingDateTime = LocalDate.now().atStartOfDay().plusDays(2),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.DISMISSED.name),
+      ),
+    ),
+    punishments = listOf(migrationEntityBuilder.createPunishment()),
   )
 
   fun PHASE2_HEARINGS_AND_NOMIS(finding: Finding) = migrationEntityBuilder.createAdjudication(
@@ -461,6 +503,7 @@ class MigrateFixtures {
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name),
       ),
       migrationEntityBuilder.createHearing(
+        oicHearingId = 2,
         hearingDateTime = LocalDateTime.now().plusDays(1),
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
@@ -473,6 +516,7 @@ class MigrateFixtures {
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
       ),
       migrationEntityBuilder.createHearing(
+        oicHearingId = 2,
         hearingDateTime = LocalDateTime.now().plusDays(1),
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
@@ -485,6 +529,7 @@ class MigrateFixtures {
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.NOT_PROCEED.name),
       ),
       migrationEntityBuilder.createHearing(
+        oicHearingId = 2,
         hearingDateTime = LocalDateTime.now().plusDays(1),
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
@@ -636,6 +681,25 @@ class MigrateFixtures {
           finding = Finding.NOT_PROCEED.name,
         ),
       ),
+    ),
+  )
+
+  val HEARING_BEFORE_LATEST_WITH_RESULT = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 100,
+        hearingDateTime = LocalDateTime.now().minusDays(1),
+        hearingResult =
+        migrationEntityBuilder.createHearingResult(),
+      ),
+      migrationEntityBuilder.createHearing(),
+    ),
+  )
+
+  val HEARING_BEFORE_LATEST = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(oicHearingId = 100, hearingDateTime = LocalDateTime.now().minusDays(1)),
+      migrationEntityBuilder.createHearing(),
     ),
   )
 

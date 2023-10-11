@@ -65,6 +65,8 @@ class MigrateNewRecordService(
       chargeNumber = chargeNumber,
       isYouthOffender = isYouthOffender,
       hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
+      isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
+      hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
     )
 
     val hearingsAndResults = hearingsAndResultsAndOutcomes.first
@@ -224,8 +226,13 @@ class MigrateNewRecordService(
         else -> this
       }
 
-    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String, isYouthOffender: Boolean, hasSanctions: Boolean): Pair<List<Hearing>, List<Outcome>> {
-      this.validate(chargeNumber, hasSanctions)
+    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String, isYouthOffender: Boolean, hasSanctions: Boolean, isActive: Boolean, hasADA: Boolean): Pair<List<Hearing>, List<Outcome>> {
+      this.validate(
+        chargeNumber = chargeNumber,
+        hasSanctions = hasSanctions,
+        isActive = isActive,
+        hasADA = hasADA,
+      )
 
       val hearingsAndResults = mutableListOf<Hearing>()
       val outcomes = mutableListOf<Outcome>()
@@ -312,7 +319,7 @@ class MigrateNewRecordService(
     fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index: Int): Boolean =
       index < this.size - 1 && this.none { it.hearingResult == null } && this.last().hearingResult?.finding != Finding.QUASHED.name
 
-    private fun List<MigrateHearing>.validate(chargeNumber: String, hasSanctions: Boolean) {
+    fun List<MigrateHearing>.validate(chargeNumber: String, hasSanctions: Boolean, hasADA: Boolean, isActive: Boolean) {
       val shouldBeFinal = listOf(Finding.APPEAL.name, Finding.QUASHED.name)
       if (this.none { it.hearingResult != null }) return
       val last = this.last()
@@ -331,7 +338,15 @@ class MigrateNewRecordService(
       } > 1 || this.map { it.hearingResult?.finding }.containsAll(shouldBeFinal)
       ) {
         if (hasSanctions && last.hearingResult?.finding != Finding.PROVED.name) {
-          throw UnableToMigrateException("record structure: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+          if (!isActive) {
+            throw UnableToMigrateException("record structure (inactive): $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+          }
+          if (isActive && hasADA) {
+            throw UnableToMigrateException("record structure (active with ADA): $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+          }
+          if (isActive && !hasADA) {
+            throw UnableToMigrateException("record structure (active without ADA): $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+          }
         }
       }
       if (shouldBeFinal.contains(last.hearingResult?.finding)) return

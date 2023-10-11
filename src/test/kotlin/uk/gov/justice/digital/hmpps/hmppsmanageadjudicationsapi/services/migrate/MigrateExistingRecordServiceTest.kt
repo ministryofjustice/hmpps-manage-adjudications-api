@@ -50,17 +50,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
   inner class Phase1 {
 
     @Test
-    fun `sanity check - its not same prisoner -throws exception`() {
-      val existing = entityBuilder.reportedAdjudication()
-      val dto = migrationFixtures.ADULT_SINGLE_OFFENCE
-
-      Assertions.assertThatThrownBy {
-        migrateExistingRecordService.accept(dto, existing)
-      }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("Prisoner different between nomis and adjudications")
-    }
-
-    @Test
     fun `sanity check - its not same agency -throws exception`() {
       val dto = migrationFixtures.ADULT_SINGLE_OFFENCE
       val existing = entityBuilder.reportedAdjudication(prisonerNumber = dto.prisoner.prisonerNumber, agencyId = "XYZ")
@@ -209,12 +198,66 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `existing hearing outcome with code NOMIS and no corresponding result throws exception`() {
+    fun `existing hearing outcome with code NOMIS adjourns empty results and completes nomis outcome`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.PHASE2_HEARINGS_NO_RESULTS
 
+      migrateExistingRecordService.accept(dto, existing(dto))
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+    }
+
+    @Test
+    fun `existing record with multiple nomis outcomes will call validate and throw exception`() {
+      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing(dto))
-      }.isInstanceOf(ExistingRecordConflictException::class.java)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+        .hasMessageContaining("record structure")
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
+    @ParameterizedTest
+    fun `adjudications with multiple final states should adjourn and add comments, and use final outcome`(dto: AdjudicationMigrateDto) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.clear()
+          dto.hearings.forEach {
+              hearing ->
+            it.hearings.add(
+              Hearing(
+                oicHearingId = hearing.oicHearingId,
+                dateTimeOfHearing = hearing.hearingDateTime,
+                oicHearingType = OicHearingType.GOV_ADULT,
+                agencyId = "MDI",
+                locationId = 1,
+                chargeNumber = dto.oicIncidentId.toString(),
+                hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = ""),
+              ),
+            )
+          }
+        },
+      )
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      val lastOutcome = dto.hearings.maxByOrNull { it.hearingDateTime }
+
+      when (lastOutcome?.hearingResult?.finding) {
+        Finding.PROVED.name -> assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+        Finding.D.name -> assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.DISMISSED)
+        else -> {}
+      }
+
+      argumentCaptor.value.hearings.filter { it.dateTimeOfHearing != lastOutcome?.hearingDateTime }.forEach {
+        assertThat(it.hearingOutcome?.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+        assertThat(it.hearingOutcome?.details).isNotEmpty()
+      }
     }
 
     @CsvSource("PROVED", "D", "NOT_PROCEED")
@@ -628,6 +671,37 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.getPunishments().first().sanctionSeq).isEqualTo(dto.punishments.first().sanctionSeq)
+    }
+
+    @Test
+    fun `throws exception if a new hearing before latest with result`() {
+      val dto = migrationFixtures.HEARING_BEFORE_LATEST_WITH_RESULT
+
+      Assertions.assertThatThrownBy {
+        migrateExistingRecordService.accept(
+          dto,
+          existing(dto).also {
+            it.hearings.last().hearingOutcome = null
+          },
+        )
+      }.isInstanceOf(ExistingRecordConflictException::class.java)
+        .hasMessageContaining("has a new hearing with result before latest")
+    }
+
+    @Test
+    fun `adjourns hearing if before latest if it has no result`() {
+      val dto = migrationFixtures.HEARING_BEFORE_LATEST
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.last().hearingOutcome = null
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.hearings.minByOrNull { it.dateTimeOfHearing }!!.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
     }
 
     @Disabled

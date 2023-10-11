@@ -59,7 +59,8 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
     val body = objectMapper.writeValueAsString(
       getExistingRecord(
         oicIncidentId = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toLong(),
-        prisonerNumber = "XYZ",
+        prisonerNumber = IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
+        agencyId = "LEI",
       ),
     )
 
@@ -249,7 +250,14 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
   }
 
   companion object {
-    fun getExistingRecord(oicIncidentId: Long, prisonerNumber: String, offenceCode: String = "51:4", dateTimeOfHearing: LocalDateTime = LocalDateTime.now()) = MigrationEntityBuilder().createAdjudication(
+    fun getExistingRecord(
+      oicIncidentId: Long,
+      prisonerNumber: String,
+      offenceCode: String = "51:4",
+      dateTimeOfHearing: LocalDateTime = LocalDateTime.now(),
+      agencyId: String = "MDI",
+    ) = MigrationEntityBuilder().createAdjudication(
+      agencyId = agencyId,
       oicIncidentId = oicIncidentId,
       offence = MigrationEntityBuilder().createOffence(offenceCode = offenceCode, offenceDescription = "updated desc"),
       prisoner = MigrationEntityBuilder().createPrisoner(prisonerNumber = prisonerNumber),
