@@ -45,6 +45,7 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
         chargeNumber = REPORTED_ADJUDICATION_DTO.chargeNumber,
         prisonId = REPORTED_ADJUDICATION_DTO.originatingAgencyId,
         prisonerNumber = REPORTED_ADJUDICATION_DTO.prisonerNumber,
+        status = REPORTED_ADJUDICATION_DTO.status.name,
       ),
     )
   }
@@ -74,6 +75,7 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
         prisonId = REPORTED_ADJUDICATION_DTO.originatingAgencyId,
         prisonerNumber = REPORTED_ADJUDICATION_DTO.prisonerNumber,
         hearingId = 1,
+        status = REPORTED_ADJUDICATION_DTO.status.name,
       ),
     )
   }

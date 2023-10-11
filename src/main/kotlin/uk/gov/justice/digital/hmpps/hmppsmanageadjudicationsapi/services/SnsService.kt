@@ -68,6 +68,7 @@ data class AdditionalInformation(
   val nomsNumber: String? = null,
   val reason: String? = null,
   val prisonId: String? = null,
+  val status: String? = null,
 )
 
 data class HMPPSDomainEvent(
@@ -109,9 +110,14 @@ enum class AdjudicationDomainEventType(val value: String, val description: Strin
   PUNISHMENTS_UPDATED("adjudication.punishments.updated", "Adjudication punishments updated: ", AuditType.PUNISHMENTS_UPDATED),
   QUASHED("adjudication.outcome.quashed", "Adjudication quashed: ", AuditType.QUASHED),
   UNQUASHED("adjudication.outcome.unquashed", "Adjudication unquashed: ", AuditType.UNQUASHED),
-  PROSECUTION_REFERRAL_OUTCOME("adjudication.referral.outcome.prosecution", "Adjudication prosecution from referral: ", AuditType.PROSECUTION),
-  NOT_PROCEED_REFERRAL_OUTCOME("adjudication.referral.outcome.notproceed", "Adjudication not proceed from referral: ", AuditType.NOT_PROCEED),
+  PROSECUTION_REFERRAL_OUTCOME("adjudication.referral.outcome.prosecution", "Adjudication prosecution from referral: ", AuditType.REFERRAL_OUTCOME_PROSECUTION),
+  NOT_PROCEED_REFERRAL_OUTCOME("adjudication.referral.outcome.notproceed", "Adjudication not proceed from referral: ", AuditType.REFERRAL_OUTCOME_NOT_PROCEED),
   REFERRAL_OUTCOME_DELETED("adjudication.referral.outcome.deleted", "Adjudication referral outcome deleted: ", AuditType.REFERRAL_OUTCOME_DELETED),
+  REF_POLICE_OUTCOME("adjudication.outcome.referPolice", "Adjudication referred to police: ", AuditType.REF_POLICE_OUTCOME_CREATED),
+  NOT_PROCEED_OUTCOME("adjudication.outcome.notProceed", "Adjudication not proceeded with: ", AuditType.NOT_PROCEED_OUTCOME_CREATED),
+  OUTCOME_UPDATED("adjudication.outcome.updated", "Adjudication outcome updated: ", AuditType.OUTCOME_UPDATED),
+  NOT_PROCEED_OUTCOME_DELETED("adjudication.outcome.notProceed.deleted", "Adjudication not proceed outcome deleted: ", AuditType.NOT_PROCEED_OUTCOME_DELETED),
+  REFERRAL_OUTCOME_REFER_GOV("adjudication.referral.outcome.referGov", "Adjudication referral outcome refer gov created: ", AuditType.REFERRAL_OUTCOME_REFER_GOV),
 }
 
 fun Instant.toOffsetDateFormat(): String =
