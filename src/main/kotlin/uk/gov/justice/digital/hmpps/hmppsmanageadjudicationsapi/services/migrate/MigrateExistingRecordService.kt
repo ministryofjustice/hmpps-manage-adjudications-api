@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.MigrateResponse
@@ -45,7 +47,10 @@ class MigrateExistingRecordService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto, existingAdjudication: ReportedAdjudication): MigrateResponse {
-    if (adjudicationMigrateDto.prisoner.prisonerNumber != existingAdjudication.prisonerNumber) throw ExistingRecordConflictException("Prisoner different between nomis and adjudications")
+    if (adjudicationMigrateDto.prisoner.prisonerNumber != existingAdjudication.prisonerNumber) {
+      existingAdjudication.prisonerNumber = adjudicationMigrateDto.prisoner.prisonerNumber
+      log.warn("Prisoner different between nomis ${adjudicationMigrateDto.prisoner.prisonerNumber} and adjudications ${existingAdjudication.prisonerNumber}")
+    }
     if (adjudicationMigrateDto.agencyId != existingAdjudication.originatingAgencyId) throw ExistingRecordConflictException("agency different between nomis and adjudications")
 
     existingAdjudication.offenderBookingId = adjudicationMigrateDto.bookingId
@@ -117,6 +122,8 @@ class MigrateExistingRecordService(
       chargeNumber = this.chargeNumber,
       isYouthOffender = this.isYouthOffender,
       hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
+      isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
+      hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
     )
 
     val disIssued = adjudicationMigrateDto.disIssued.toDisIssue()
@@ -132,7 +139,12 @@ class MigrateExistingRecordService(
   }
 
   private fun ReportedAdjudication.processPhase2(adjudicationMigrateDto: AdjudicationMigrateDto) {
-    adjudicationMigrateDto.hearings.validate(this.chargeNumber, adjudicationMigrateDto.punishments.isNotEmpty())
+    adjudicationMigrateDto.hearings.validate(
+      chargeNumber = this.chargeNumber,
+      hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
+      hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
+      isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
+    )
 
     this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }.forEach { hearingOutcomeNomis ->
       val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { hearingOutcomeNomis.oicHearingId == it.oicHearingId && it.hearingResult != null }
@@ -218,6 +230,8 @@ class MigrateExistingRecordService(
           chargeNumber = this.chargeNumber,
           isYouthOffender = this.isYouthOffender,
           hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
+          isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
+          hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
         ),
     )
 
@@ -282,6 +296,7 @@ class MigrateExistingRecordService(
   }
 
   companion object {
+    val log: Logger = LoggerFactory.getLogger(this::class.java)
     fun Hearing.filterOutPreviousPhases(): Boolean = this.hearingOutcome?.nomisOutcome != true && this.hearingOutcome?.migrated != true
     fun List<Hearing>.hasHearingWithoutResult(): Boolean {
       val hearingsWithoutLast = this.sortedBy { it.dateTimeOfHearing }

@@ -50,17 +50,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
   inner class Phase1 {
 
     @Test
-    fun `sanity check - its not same prisoner -throws exception`() {
-      val existing = entityBuilder.reportedAdjudication()
-      val dto = migrationFixtures.ADULT_SINGLE_OFFENCE
-
-      Assertions.assertThatThrownBy {
-        migrateExistingRecordService.accept(dto, existing)
-      }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("Prisoner different between nomis and adjudications")
-    }
-
-    @Test
     fun `sanity check - its not same agency -throws exception`() {
       val dto = migrationFixtures.ADULT_SINGLE_OFFENCE
       val existing = entityBuilder.reportedAdjudication(prisonerNumber = dto.prisoner.prisonerNumber, agencyId = "XYZ")

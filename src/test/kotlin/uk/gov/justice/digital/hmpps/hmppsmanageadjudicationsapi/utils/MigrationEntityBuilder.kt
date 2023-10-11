@@ -28,6 +28,7 @@ import kotlin.random.Random
 class MigrationEntityBuilder {
 
   fun createAdjudication(
+    agencyId: String = "MDI",
     agencyIncidentId: Long = 1,
     oicIncidentId: Long = Random.nextLong(10000, 999999),
     offenceSequence: Long = 1,
@@ -42,11 +43,11 @@ class MigrationEntityBuilder {
     disIssued: List<DisIssued> = emptyList(),
   ): AdjudicationMigrateDto =
     AdjudicationMigrateDto(
+      agencyId = agencyId,
       agencyIncidentId = agencyIncidentId,
       oicIncidentId = oicIncidentId,
       offenceSequence = offenceSequence,
       bookingId = 1,
-      agencyId = "MDI",
       incidentDateTime = LocalDateTime.now(),
       locationId = 1,
       statement = "some details",
