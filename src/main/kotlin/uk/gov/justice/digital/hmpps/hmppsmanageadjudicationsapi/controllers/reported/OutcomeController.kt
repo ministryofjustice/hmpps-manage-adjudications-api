@@ -93,7 +93,12 @@ class OutcomeController(
           reason = notProceedRequest.reason,
         )
       },
-      eventRule = { it.hearingIdActioned != null },
+      eventSupplier = {
+        when (it.hearingIdActioned) {
+          null -> AdjudicationDomainEventType.NOT_PROCEED_OUTCOME
+          else -> AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME
+        }
+      },
     )
 
   @Operation(
@@ -127,7 +132,6 @@ class OutcomeController(
           chargeNumber = chargeNumber,
         )
       },
-      eventRule = { it.hearingIdActioned != null },
     )
 
   @Operation(
@@ -155,10 +159,15 @@ class OutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody referGovRequest: ReferralDetailsRequest,
   ): ReportedAdjudicationResponse =
-    outcomeService.createReferGov(
-      chargeNumber = chargeNumber,
-      details = referGovRequest.details,
-    ).toResponse()
+    eventPublishWrapper(
+      event = AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV,
+      controllerAction = {
+        outcomeService.createReferGov(
+          chargeNumber = chargeNumber,
+          details = referGovRequest.details,
+        )
+      },
+    )
 
   @Operation(
     summary = "quash an outcome",
@@ -221,11 +230,16 @@ class OutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody policeReferralRequest: ReferralDetailsRequest,
   ): ReportedAdjudicationResponse =
-    outcomeService.createReferral(
-      chargeNumber = chargeNumber,
-      code = OutcomeCode.REFER_POLICE,
-      details = policeReferralRequest.details,
-    ).toResponse()
+    eventPublishWrapper(
+      event = AdjudicationDomainEventType.REF_POLICE_OUTCOME,
+      controllerAction = {
+        outcomeService.createReferral(
+          chargeNumber = chargeNumber,
+          code = OutcomeCode.REFER_POLICE,
+          details = policeReferralRequest.details,
+        )
+      },
+    )
 
   @Operation(summary = "remove a not proceed without a referral outcome, or a quashed outcome")
   @DeleteMapping(value = ["/{chargeNumber}/outcome"])
@@ -240,7 +254,12 @@ class OutcomeController(
           chargeNumber = chargeNumber,
         )
       },
-      eventRule = { it.status == ReportedAdjudicationStatus.CHARGE_PROVED },
+      eventSupplier = {
+        when (it.status) {
+          ReportedAdjudicationStatus.CHARGE_PROVED -> AdjudicationDomainEventType.UNQUASHED
+          else -> AdjudicationDomainEventType.NOT_PROCEED_OUTCOME_DELETED
+        }
+      },
     )
 
   @Operation(summary = "amend outcome without a hearing (refer police, not proceed or quashed), unless its a referral outcome - not proceed")
@@ -250,10 +269,15 @@ class OutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody amendOutcomeRequest: AmendOutcomeRequest,
   ): ReportedAdjudicationResponse =
-    outcomeService.amendOutcomeViaApi(
-      chargeNumber = chargeNumber,
-      details = amendOutcomeRequest.details,
-      reason = amendOutcomeRequest.reason,
-      quashedReason = amendOutcomeRequest.quashedReason,
-    ).toResponse()
+    eventPublishWrapper(
+      event = AdjudicationDomainEventType.OUTCOME_UPDATED,
+      controllerAction = {
+        outcomeService.amendOutcomeViaApi(
+          chargeNumber = chargeNumber,
+          details = amendOutcomeRequest.details,
+          reason = amendOutcomeRequest.reason,
+          quashedReason = amendOutcomeRequest.quashedReason,
+        )
+      },
+    )
 }

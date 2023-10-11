@@ -16,16 +16,34 @@ class EventPublishService(
 
   fun publishEvent(event: AdjudicationDomainEventType, adjudication: ReportedAdjudicationDto) {
     when (event) {
-      AdjudicationDomainEventType.ADJUDICATION_CREATED -> if (featureFlagsConfig.adjudications) publish(event = event, adjudication = adjudication)
-      AdjudicationDomainEventType.HEARING_CREATED, AdjudicationDomainEventType.HEARING_UPDATED, AdjudicationDomainEventType.HEARING_DELETED ->
-        /*if (featureFlagsConfig.hearings)*/ publish(event = event, adjudication = adjudication, hearingId = adjudication.hearingIdActioned)
-      AdjudicationDomainEventType.PUNISHMENTS_CREATED, AdjudicationDomainEventType.PUNISHMENTS_UPDATED, AdjudicationDomainEventType.QUASHED, AdjudicationDomainEventType.UNQUASHED ->
-        /*if(featureFlagsConfig.punishments)*/ publish(event = event, adjudication = adjudication)
-      AdjudicationDomainEventType.HEARING_COMPLETED_CREATED, AdjudicationDomainEventType.HEARING_COMPLETED_DELETED, AdjudicationDomainEventType.HEARING_OUTCOME_UPDATED,
-      AdjudicationDomainEventType.HEARING_ADJOURN_CREATED, AdjudicationDomainEventType.HEARING_ADJOURN_DELETED, AdjudicationDomainEventType.HEARING_REFERRAL_CREATED,
-      AdjudicationDomainEventType.HEARING_REFERRAL_DELETED, AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME, AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME,
+      AdjudicationDomainEventType.ADJUDICATION_CREATED,
+      -> if (featureFlagsConfig.adjudications) publish(event = event, adjudication = adjudication)
+      AdjudicationDomainEventType.HEARING_CREATED,
+      AdjudicationDomainEventType.HEARING_UPDATED,
+      AdjudicationDomainEventType.HEARING_DELETED,
+      -> /*if (featureFlagsConfig.hearings)*/ publish(event = event, adjudication = adjudication, hearingId = adjudication.hearingIdActioned)
+      AdjudicationDomainEventType.PUNISHMENTS_CREATED,
+      AdjudicationDomainEventType.PUNISHMENTS_UPDATED,
+      AdjudicationDomainEventType.QUASHED,
+      AdjudicationDomainEventType.UNQUASHED,
+      -> /*if(featureFlagsConfig.punishments)*/ publish(event = event, adjudication = adjudication)
+      AdjudicationDomainEventType.HEARING_COMPLETED_CREATED,
+      AdjudicationDomainEventType.HEARING_COMPLETED_DELETED,
+      AdjudicationDomainEventType.HEARING_OUTCOME_UPDATED,
+      AdjudicationDomainEventType.HEARING_ADJOURN_CREATED,
+      AdjudicationDomainEventType.HEARING_ADJOURN_DELETED,
+      AdjudicationDomainEventType.HEARING_REFERRAL_CREATED,
+      AdjudicationDomainEventType.HEARING_REFERRAL_DELETED,
+      AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME,
+      AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME,
       AdjudicationDomainEventType.REFERRAL_OUTCOME_DELETED,
       -> /*if(featureFlagsConfig.outcomes)*/ publish(event = event, adjudication = adjudication, hearingId = adjudication.hearingIdActioned)
+      AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV,
+      AdjudicationDomainEventType.NOT_PROCEED_OUTCOME_DELETED,
+      AdjudicationDomainEventType.OUTCOME_UPDATED,
+      AdjudicationDomainEventType.NOT_PROCEED_OUTCOME,
+      AdjudicationDomainEventType.REF_POLICE_OUTCOME,
+      -> /*if(featureFlagsConfig.outcomes)*/publish(event = event, adjudication = adjudication)
       else -> publish(event = event, adjudication = adjudication)
     }
   }
@@ -40,6 +58,7 @@ class EventPublishService(
         prisonId = adjudication.originatingAgencyId,
         prisonerNumber = adjudication.prisonerNumber,
         hearingId = hearingId,
+        status = adjudication.status.name,
       ),
     )
 

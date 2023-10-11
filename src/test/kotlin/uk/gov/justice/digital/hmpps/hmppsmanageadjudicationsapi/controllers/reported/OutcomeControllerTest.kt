@@ -9,7 +9,6 @@ import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -72,18 +71,17 @@ class OutcomeControllerTest : TestControllerBase() {
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @CsvSource("true", "false")
-    @ParameterizedTest
+    @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to create an prosecution`(fromHearing: Boolean) {
-      val response = if (fromHearing) reportedAdjudicationDto(status = ReportedAdjudicationStatus.PROSECUTION, hearingIdActioned = 1) else REPORTED_ADJUDICATION_DTO
+    fun `makes a call to create an prosecution`() {
+      val response = REPORTED_ADJUDICATION_DTO
 
       whenever(outcomeService.createProsecution("1")).thenReturn(response)
 
       createProsecutionRequest(1)
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(eventPublishService, if (fromHearing) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME, response)
+      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME, response)
     }
 
     private fun createProsecutionRequest(
@@ -130,7 +128,7 @@ class OutcomeControllerTest : TestControllerBase() {
     @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create a not proceed`(fromHearing: Boolean) {
-      val response = if (fromHearing) reportedAdjudicationDto(status = ReportedAdjudicationStatus.PROSECUTION, hearingIdActioned = 1) else REPORTED_ADJUDICATION_DTO
+      val response = if (fromHearing) reportedAdjudicationDto(status = ReportedAdjudicationStatus.NOT_PROCEED, hearingIdActioned = 1) else REPORTED_ADJUDICATION_DTO
       whenever(
         outcomeService.createNotProceed(
           anyString(),
@@ -147,7 +145,7 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(outcomeService).createNotProceed("1", NotProceedReason.NOT_FAIR, "details")
-      verify(eventPublishService, if (fromHearing) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME, response)
+      verify(eventPublishService, atLeastOnce()).publishEvent(if (fromHearing) AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME else AdjudicationDomainEventType.NOT_PROCEED_OUTCOME, response)
     }
 
     private fun createNotProceedRequest(
@@ -204,7 +202,7 @@ class OutcomeControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to create an outcome`() {
+    fun `makes a call to create a refer gov outcome`() {
       createOutcomeRequest(
         1,
         POLICE_REFER_REQUEST,
@@ -212,6 +210,7 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(outcomeService).createReferGov("1", "details")
+      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun createOutcomeRequest(
@@ -270,13 +269,14 @@ class OutcomeControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to create an outcome`() {
+    fun `makes a call to create ref police outcome`() {
       createOutcomeRequest(
         1,
         POLICE_REFER_REQUEST,
       )
         .andExpect(MockMvcResultMatchers.status().isCreated)
       verify(outcomeService).createReferral("1", OutcomeCode.REFER_POLICE, "details")
+      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.REF_POLICE_OUTCOME, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun createOutcomeRequest(
@@ -338,7 +338,7 @@ class OutcomeControllerTest : TestControllerBase() {
         "1",
       )
 
-      verify(eventPublishService, if (outcomeCode == OutcomeCode.QUASHED) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.UNQUASHED, response)
+      verify(eventPublishService, atLeastOnce()).publishEvent(if (outcomeCode == OutcomeCode.QUASHED) AdjudicationDomainEventType.UNQUASHED else AdjudicationDomainEventType.NOT_PROCEED_OUTCOME_DELETED, response)
     }
 
     private fun deleteOutcomeRequest(
@@ -491,6 +491,8 @@ class OutcomeControllerTest : TestControllerBase() {
         details = "details",
         quashedReason = AMEND_QUASHED_REQUEST.quashedReason,
       )
+
+      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.OUTCOME_UPDATED, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun amendOutcomeRequest(
