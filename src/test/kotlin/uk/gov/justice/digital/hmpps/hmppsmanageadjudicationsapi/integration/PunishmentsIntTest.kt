@@ -398,7 +398,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
                 type = type,
                 days = 10,
                 suspendedUntil = suspendedUntil,
-                consecutiveReportNumber = consecutiveReportNumber,
+                consecutiveChargeNumber = consecutiveReportNumber,
               ),
             ),
         ),

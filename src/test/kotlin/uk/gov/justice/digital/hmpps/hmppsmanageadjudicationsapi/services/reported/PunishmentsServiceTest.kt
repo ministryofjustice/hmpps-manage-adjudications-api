@@ -313,7 +313,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           ),
           PunishmentRequest(
             type = PunishmentType.ADDITIONAL_DAYS,
-            consecutiveReportNumber = "999",
+            consecutiveChargeNumber = "999",
             days = 1,
           ),
           PunishmentRequest(
