@@ -263,7 +263,7 @@ class PunishmentsService(
       otherPrivilege = punishmentRequest.otherPrivilege,
       stoppagePercentage = punishmentRequest.stoppagePercentage,
       suspendedUntil = punishmentRequest.suspendedUntil,
-      consecutiveChargeNumber = punishmentRequest.consecutiveReportNumber,
+      consecutiveChargeNumber = punishmentRequest.consecutiveChargeNumber,
       amount = punishmentRequest.damagesOwedAmount,
       schedule = when (punishmentRequest.type) {
         PunishmentType.CAUTION, PunishmentType.DAMAGES_OWED -> mutableListOf(PunishmentSchedule(days = 0))

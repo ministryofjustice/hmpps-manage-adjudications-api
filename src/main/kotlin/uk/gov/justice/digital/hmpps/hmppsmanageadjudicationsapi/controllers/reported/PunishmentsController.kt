@@ -52,8 +52,8 @@ data class PunishmentRequest(
   val suspendedUntil: LocalDate? = null,
   @Schema(description = "optional activated from report number")
   val activatedFrom: String? = null,
-  @Schema(description = "optional consecutive report number")
-  val consecutiveReportNumber: String? = null,
+  @Schema(description = "optional consecutive charge number")
+  val consecutiveChargeNumber: String? = null,
   @Schema(description = "optional amount - money being recovered for damages - only use if type is DAMAGED_OWED")
   val damagesOwedAmount: Double? = null,
 )
