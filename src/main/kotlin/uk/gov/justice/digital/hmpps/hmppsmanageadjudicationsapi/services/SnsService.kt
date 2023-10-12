@@ -111,7 +111,7 @@ enum class AdjudicationDomainEventType(val value: String, val description: Strin
   QUASHED("adjudication.outcome.quashed", "Adjudication quashed: ", AuditType.QUASHED),
   UNQUASHED("adjudication.outcome.unquashed", "Adjudication unquashed: ", AuditType.UNQUASHED),
   PROSECUTION_REFERRAL_OUTCOME("adjudication.referral.outcome.prosecution", "Adjudication prosecution from referral: ", AuditType.REFERRAL_OUTCOME_PROSECUTION),
-  NOT_PROCEED_REFERRAL_OUTCOME("adjudication.referral.outcome.notproceed", "Adjudication not proceed from referral: ", AuditType.REFERRAL_OUTCOME_NOT_PROCEED),
+  NOT_PROCEED_REFERRAL_OUTCOME("adjudication.referral.outcome.notProceed", "Adjudication not proceed from referral: ", AuditType.REFERRAL_OUTCOME_NOT_PROCEED),
   REFERRAL_OUTCOME_DELETED("adjudication.referral.outcome.deleted", "Adjudication referral outcome deleted: ", AuditType.REFERRAL_OUTCOME_DELETED),
   REF_POLICE_OUTCOME("adjudication.outcome.referPolice", "Adjudication referred to police: ", AuditType.REF_POLICE_OUTCOME_CREATED),
   NOT_PROCEED_OUTCOME("adjudication.outcome.notProceed", "Adjudication not proceeded with: ", AuditType.NOT_PROCEED_OUTCOME_CREATED),
