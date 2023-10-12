@@ -152,8 +152,8 @@ class AdjudicationWorkflowService(
   }
 
   private fun checkStateTransition(draftAdjudication: DraftAdjudication) {
-    val reportNumber = draftAdjudication.chargeNumber!!
-    val reportedAdjudication = reportedAdjudicationService.get(reportNumber)
+    val chargeNumber = draftAdjudication.chargeNumber!!
+    val reportedAdjudication = reportedAdjudicationService.get(chargeNumber)
     val fromStatus = reportedAdjudication.status
     if (!ReportedAdjudicationStatus.AWAITING_REVIEW.canTransitionFrom(fromStatus)) {
       throw IllegalStateException("Unable to complete draft adjudication ${draftAdjudication.chargeNumber} as it is in the state $fromStatus")
@@ -334,7 +334,7 @@ class AdjudicationWorkflowService(
       mapOf(
         "adjudicationNumber" to draftAdjudication.id.toString(),
         "agencyId" to draftAdjudication.agencyId,
-        "reportNumber" to chargeNumber,
+        "chargeNumber" to chargeNumber,
       ),
       null,
     )

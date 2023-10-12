@@ -529,12 +529,12 @@ class IntegrationTestData(
   }
 
   fun acceptReport(
-    reportNumber: String,
+    chargeNumber: String,
     activeCaseLoad: String,
     status: ReportedAdjudicationStatus = ReportedAdjudicationStatus.UNSCHEDULED,
   ): WebTestClient.ResponseSpec {
     return webTestClient.put()
-      .uri("/reported-adjudications/$reportNumber/status")
+      .uri("/reported-adjudications/$chargeNumber/status")
       .headers(setHeaders(username = "ITAG_ALO", activeCaseload = activeCaseLoad))
       .bodyValue(
         mapOf(
@@ -548,11 +548,11 @@ class IntegrationTestData(
 
   fun issueReport(
     draftCreationData: DraftAdjudicationResponse,
-    reportNumber: String,
+    chargeNumber: String,
     headers: (HttpHeaders) -> Unit = setHeaders(),
   ): WebTestClient.ResponseSpec {
     return webTestClient.put()
-      .uri("/reported-adjudications/$reportNumber/issue")
+      .uri("/reported-adjudications/$chargeNumber/issue")
       .headers(headers)
       .bodyValue(
         mapOf(

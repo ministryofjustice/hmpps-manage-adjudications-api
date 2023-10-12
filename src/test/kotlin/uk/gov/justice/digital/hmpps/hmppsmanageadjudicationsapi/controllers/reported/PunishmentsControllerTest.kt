@@ -220,7 +220,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     private fun getSuspendedPunishmentsRequest(): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/punishments/AE1234/suspended?reportNumber=12345")
+          MockMvcRequestBuilders.get("/reported-adjudications/punishments/AE1234/suspended/v2?chargeNumber=12345")
             .header("Content-Type", "application/json"),
         )
     }

@@ -21,7 +21,7 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
   @Test
   fun `existing record phase 1 updates status to CHARGE_PROVED and collections updated`() {
     initDataForAccept().acceptReport(
-      reportNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
+      chargeNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
       activeCaseLoad = IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
       status = ReportedAdjudicationStatus.ACCEPTED,
     )
@@ -51,7 +51,7 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
   @Test
   fun `existing record conflict exception`() {
     initDataForAccept().acceptReport(
-      reportNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
+      chargeNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
       activeCaseLoad = IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
       status = ReportedAdjudicationStatus.ACCEPTED,
     )
@@ -75,7 +75,7 @@ class MigrateExistingIntTest : SqsIntegrationTestBase() {
   @Test
   fun `existing record offence code has changed`() {
     initDataForAccept().acceptReport(
-      reportNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
+      chargeNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
       activeCaseLoad = IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
       status = ReportedAdjudicationStatus.ACCEPTED,
     )
