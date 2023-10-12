@@ -49,7 +49,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
     initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved()
 
-    createPunishments(type = PunishmentType.ADDITIONAL_DAYS, consecutiveReportNumber = "9999")
+    createPunishments(type = PunishmentType.ADDITIONAL_DAYS, consecutiveChargeNumber = "9999")
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.ADDITIONAL_DAYS.name)
@@ -249,7 +249,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isCreated
 
     webTestClient.get()
-      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended?reportNumber=${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}")
+      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended/v2?chargeNumber=${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -383,7 +383,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   private fun createPunishments(
     adjudicationNumber: String = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
     type: PunishmentType = PunishmentType.CONFINEMENT,
-    consecutiveReportNumber: String? = null,
+    consecutiveChargeNumber: String? = null,
   ): WebTestClient.ResponseSpec {
     val suspendedUntil = LocalDate.now().plusMonths(1)
 
@@ -398,7 +398,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
                 type = type,
                 days = 10,
                 suspendedUntil = suspendedUntil,
-                consecutiveChargeNumber = consecutiveReportNumber,
+                consecutiveChargeNumber = consecutiveChargeNumber,
               ),
             ),
         ),

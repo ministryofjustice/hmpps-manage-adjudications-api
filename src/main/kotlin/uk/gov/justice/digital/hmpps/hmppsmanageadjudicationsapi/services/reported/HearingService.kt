@@ -143,7 +143,7 @@ class HearingService(
       end = dateOfHearing.plusDays(1).atStartOfDay(),
     )
 
-    val adjudicationsMap = findByReportNumberIn(
+    val adjudicationsMap = findByChargeNumberIn(
       hearings.map { it.chargeNumber },
     ).associateBy { it.chargeNumber }
 

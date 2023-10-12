@@ -75,9 +75,9 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun acceptReport(reportNumber: String, activeCaseload: String = "MDI"): IntegrationTestScenario {
+  fun acceptReport(chargeNumber: String, activeCaseload: String = "MDI"): IntegrationTestScenario {
     intTestData.acceptReport(
-      reportNumber,
+      chargeNumber,
       activeCaseload,
     )
     return this
@@ -162,10 +162,10 @@ class IntegrationTestScenario(
     return intTestData.createOutcomeReferGov(testAdjudicationDataSet)
   }
 
-  fun issueReport(reportNumber: String): IntegrationTestScenario {
+  fun issueReport(chargeNumber: String): IntegrationTestScenario {
     intTestData.issueReport(
       draftCreationResponse,
-      reportNumber,
+      chargeNumber,
       headers,
     )
     return this

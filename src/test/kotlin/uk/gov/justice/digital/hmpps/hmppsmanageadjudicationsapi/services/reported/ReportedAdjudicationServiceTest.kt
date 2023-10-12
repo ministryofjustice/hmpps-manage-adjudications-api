@@ -371,7 +371,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       verify(telemetryClient).trackEvent(
         ReportedAdjudicationService.TELEMETRY_EVENT,
         mapOf(
-          "reportNumber" to entityBuilder.reportedAdjudication().chargeNumber.toString(),
+          "chargeNumber" to entityBuilder.reportedAdjudication().chargeNumber.toString(),
           "agencyId" to entityBuilder.reportedAdjudication().originatingAgencyId,
           "status" to to.name,
           "reason" to null,
@@ -416,7 +416,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       verify(telemetryClient).trackEvent(
         ReportedAdjudicationService.TELEMETRY_EVENT,
         mapOf(
-          "reportNumber" to existingReportedAdjudication.chargeNumber,
+          "chargeNumber" to existingReportedAdjudication.chargeNumber,
           "agencyId" to existingReportedAdjudication.originatingAgencyId,
           "status" to ReportedAdjudicationStatus.REJECTED.name,
           "reason" to "Status Reason",

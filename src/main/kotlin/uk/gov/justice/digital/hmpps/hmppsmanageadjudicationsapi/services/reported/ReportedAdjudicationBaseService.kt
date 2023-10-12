@@ -276,10 +276,10 @@ open class ReportedDtoService(
       )
     }
 
-  private fun isConsecutiveReportAvailable(consecutiveReportNumber: String?, consecutiveReportsAvailable: List<String>?): Boolean? {
-    consecutiveReportNumber ?: return null
+  private fun isConsecutiveReportAvailable(consecutiveChargeNumber: String?, consecutiveReportsAvailable: List<String>?): Boolean? {
+    consecutiveChargeNumber ?: return null
     consecutiveReportsAvailable ?: return null
-    return consecutiveReportsAvailable.any { it == consecutiveReportNumber }
+    return consecutiveReportsAvailable.any { it == consecutiveChargeNumber }
   }
 
   private fun PunishmentSchedule.toPunishmentScheduleDto(): PunishmentScheduleDto =
@@ -350,7 +350,7 @@ open class ReportedAdjudicationBaseService(
       },
     ).toDto(activeCaseload = authenticationFacade.activeCaseload)
 
-  protected fun findByReportNumberIn(adjudicationNumbers: List<String>) = reportedAdjudicationRepository.findByChargeNumberIn(adjudicationNumbers)
+  protected fun findByChargeNumberIn(chargeNumbers: List<String>) = reportedAdjudicationRepository.findByChargeNumberIn(chargeNumbers)
 
   protected fun getReportsWithSuspendedPunishments(prisonerNumber: String) = reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(
     prisonerNumber = prisonerNumber,
@@ -360,8 +360,8 @@ open class ReportedAdjudicationBaseService(
   protected fun getReportsWithActiveAdditionalDays(prisonerNumber: String, punishmentType: PunishmentType) =
     reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(prisonerNumber, punishmentType)
 
-  protected fun isLinkedToReport(consecutiveReportNumber: String, type: PunishmentType): Boolean =
-    reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsType(consecutiveReportNumber, type).isNotEmpty()
+  protected fun isLinkedToReport(consecutiveChargeNumber: String, type: PunishmentType): Boolean =
+    reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsType(consecutiveChargeNumber, type).isNotEmpty()
 
   companion object {
     fun throwEntityNotFoundException(id: String): Nothing =

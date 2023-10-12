@@ -59,7 +59,7 @@ class ReportedAdjudicationService(
     telemetryClient.trackEvent(
       TELEMETRY_EVENT,
       mapOf(
-        "reportNumber" to reportedAdjudication.chargeNumber,
+        "chargeNumber" to reportedAdjudication.chargeNumber,
         "agencyId" to reportedAdjudication.originatingAgencyId,
         "status" to status.name,
         "reason" to statusReason,
@@ -101,7 +101,7 @@ class ReportedAdjudicationService(
   private fun ReportedAdjudication.getConsecutiveReportsAvailable(): List<String> {
     val consecutiveReportsToFind = this.getPunishments().filter { it.consecutiveChargeNumber != null }.map { it.consecutiveChargeNumber!! }
     if (consecutiveReportsToFind.isNotEmpty()) {
-      return findByReportNumberIn(consecutiveReportsToFind).map { it.chargeNumber }
+      return findByChargeNumberIn(consecutiveReportsToFind).map { it.chargeNumber }
     }
 
     return emptyList()

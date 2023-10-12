@@ -300,7 +300,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         mapOf(
           "adjudicationNumber" to "1",
           "agencyId" to "MDI",
-          "reportNumber" to "123456",
+          "chargeNumber" to "123456",
         ),
         null,
       )

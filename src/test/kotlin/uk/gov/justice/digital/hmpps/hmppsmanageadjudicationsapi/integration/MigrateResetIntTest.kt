@@ -36,7 +36,7 @@ class MigrateResetIntTest : SqsIntegrationTestBase() {
   @Test
   fun `reset migration removes existing record updates - phase 1`() {
     initDataForAccept(incDamagesEvidenceWitnesses = false).acceptReport(
-      reportNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
+      chargeNumber = IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber,
       activeCaseLoad = IntegrationTestData.DEFAULT_ADJUDICATION.agencyId,
       status = ReportedAdjudicationStatus.ACCEPTED,
     )
