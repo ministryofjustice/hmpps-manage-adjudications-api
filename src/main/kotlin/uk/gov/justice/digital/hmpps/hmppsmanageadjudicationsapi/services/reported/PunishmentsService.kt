@@ -312,6 +312,7 @@ class PunishmentsService(
       endDate = punishmentRequest.endDate,
     ).also {
       it.activatedFromChargeNumber = punishmentRequest.activatedFrom
+      it.consecutiveChargeNumber = punishmentRequest.consecutiveChargeNumber
     }
   }
   private fun cloneSuspendedPunishment(punishment: Punishment, days: Int, startDate: LocalDate?, endDate: LocalDate?) = Punishment(

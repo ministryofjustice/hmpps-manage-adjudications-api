@@ -518,6 +518,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1),
             activatedFrom = "2",
+            consecutiveChargeNumber = "12345",
           ),
         ),
       )
@@ -529,6 +530,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
       assertThat(argumentCaptor.value.getPunishments().first().id).isNull()
       assertThat(argumentCaptor.value.getPunishments().first().activatedFromChargeNumber).isEqualTo("2")
+      assertThat(argumentCaptor.value.getPunishments().first().consecutiveChargeNumber).isEqualTo("12345")
 
       assertThat(response).isNotNull
     }
@@ -1115,6 +1117,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(1),
             activatedFrom = "2",
+            consecutiveChargeNumber = "12345",
           ),
         ),
       )
@@ -1126,6 +1129,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
       assertThat(argumentCaptor.value.getPunishments().first().id).isNull()
       assertThat(argumentCaptor.value.getPunishments().first().activatedFromChargeNumber).isEqualTo("2")
+      assertThat(argumentCaptor.value.getPunishments().first().consecutiveChargeNumber).isEqualTo("12345")
 
       assertThat(response).isNotNull
     }
