@@ -108,20 +108,10 @@ class PunishmentsController(
       },
     )
 
-  @Deprecated("to remove see v2")
-  @Operation(summary = "get a list of suspended punishments by prisoner")
-  @GetMapping(value = ["/punishments/{prisonerNumber}/suspended"])
-  @ResponseStatus(HttpStatus.OK)
-  fun getSuspendedPunishments(
-    @PathVariable(name = "prisonerNumber") prisonerNumber: String,
-    @RequestParam(name = "reportNumber") reportNumber: String,
-  ): List<SuspendedPunishmentDto> =
-    punishmentsService.getSuspendedPunishments(prisonerNumber = prisonerNumber, chargeNumber = reportNumber)
-
   @Operation(summary = "get a list of suspended punishments by prisoner")
   @GetMapping(value = ["/punishments/{prisonerNumber}/suspended/v2"])
   @ResponseStatus(HttpStatus.OK)
-  fun getSuspendedPunishmentsV2(
+  fun getSuspendedPunishments(
     @PathVariable(name = "prisonerNumber") prisonerNumber: String,
     @RequestParam(name = "chargeNumber") chargeNumber: String,
   ): List<SuspendedPunishmentDto> =
