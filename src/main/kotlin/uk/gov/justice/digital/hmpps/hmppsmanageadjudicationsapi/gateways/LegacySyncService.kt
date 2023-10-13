@@ -85,7 +85,7 @@ class LegacySyncService(
   }
 
   fun createSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>) {
-    if (!featureFlagsConfig.outcomes && !featureFlagsConfig.punishments) {
+    if (!featureFlagsConfig.punishments) {
       legacyNomisGateway.createSanctions(adjudicationNumber, sanctions)
     }
   }
