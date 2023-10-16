@@ -67,5 +67,13 @@ class DraftOffenceController(
     @PathVariable(name = "offenceCode") offenceCode: Int,
     @RequestParam(value = "youthOffender") isYouthOffender: Boolean,
     @RequestParam(value = "gender", required = false) gender: Gender?,
-  ): OffenceRuleDetailsDto = incidentOffenceService.lookupRuleDetails(offenceCode, isYouthOffender, gender ?: Gender.MALE)
+  ): OffenceRuleDetailsDto = incidentOffenceService.getRule(offenceCode, isYouthOffender, gender ?: Gender.MALE)
+
+  @GetMapping("/offence-rules")
+  @Operation(summary = "Returns all the offence rules")
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
+  fun getOffenceRules(
+    @RequestParam(value = "youthOffender") isYouthOffender: Boolean,
+    @RequestParam(value = "gender", required = false) gender: Gender?,
+  ): List<OffenceRuleDetailsDto> = incidentOffenceService.getRules(isYouthOffender, gender ?: Gender.MALE)
 }
