@@ -522,6 +522,17 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `gets all adult offence rules`() {
+    webTestClient.get()
+      .uri("/draft-adjudications/offence-rules?youthOffender=false")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.size()").isEqualTo(62)
+  }
+
+  @Test
   fun `set the applicable rule and delete all offences`() {
     val testAdjudication = IntegrationTestData.ADJUDICATION_1
     val intTestData = integrationTestData()

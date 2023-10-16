@@ -97,6 +97,8 @@ data class OffenceRuleDetailsDto(
   val paragraphNumber: String,
   @Schema(description = "The name relating to the paragraph description", example = "Committed an assault")
   val paragraphDescription: String,
+  @Schema(description = "unique offence rule id")
+  val offenceCode: Int? = null,
 )
 
 @Schema(description = "Incident statement")
