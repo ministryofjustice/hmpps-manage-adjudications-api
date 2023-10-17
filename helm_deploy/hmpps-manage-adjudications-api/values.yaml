@@ -14,7 +14,6 @@ generic-service:
 
   ingress:
     enabled: true
-    modsecurity_enabled: true
     host: app-hostname.local    # override per environment
     tlsSecretName: hmpps-manage-adjudications-api-cert
     annotations:
