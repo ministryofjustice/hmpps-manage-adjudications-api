@@ -6,6 +6,9 @@ generic-service:
 
   ingress:
     host: manage-adjudications-api-dev.hmpps.service.justice.gov.uk
+    modsecurity_enabled: true
+    modsecurity_github_team: "hmpps-adjudications"
+
 
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.dev.json
