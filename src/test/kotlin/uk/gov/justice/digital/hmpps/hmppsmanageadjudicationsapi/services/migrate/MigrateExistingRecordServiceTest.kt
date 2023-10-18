@@ -215,8 +215,8 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing(dto))
-      }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("record structure")
+      }.isInstanceOf(ExistingRecordConflictException::class.java)
+        .hasMessageContaining("has a new hearing after")
     }
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
@@ -355,7 +355,8 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       migrateExistingRecordService.accept(dto, existing)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.QUASHED)
     }

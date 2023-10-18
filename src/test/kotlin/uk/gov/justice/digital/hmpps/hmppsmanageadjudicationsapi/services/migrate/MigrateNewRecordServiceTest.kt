@@ -715,8 +715,22 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `adjudication with multiple final states, and sanctions, where final state is not PROVED should throw error`() {
+    fun `adjudication with multiple final states, and sanctions, where final state is not PROVED should process and set status to CORRUPTED`() {
       val dto = migrationFixtures.EXCEPTION_CASE_4
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.last().code).isEqualTo(OutcomeCode.DISMISSED)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
+    }
+
+    @Test
+    fun `adjudication with multiple final states, and sanctions, where final state is not PROVED (and active with ADA) should throw error`() {
+      val dto = migrationFixtures.EXCEPTION_CASE_5
       Assertions.assertThatThrownBy {
         migrateNewRecordService.accept(dto)
       }.isInstanceOf(UnableToMigrateException::class.java)
@@ -810,18 +824,9 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().quashedReason).isEqualTo(QuashedReason.APPEAL_UPHELD)
     }
 
-    @Test
-    fun `appeal throws exception if its not the latest result`() {
-      val dto = migrationFixtures.WITH_FINDING_APPEAL_NOT_LATEST
-
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-    }
-
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getAdditionalHearingsAfterFinalState")
     @ParameterizedTest
-    fun `exception thrown when additional hearings without results after final hearing`(dto: AdjudicationMigrateDto) {
+    fun `exception thrown when additional hearings without results after final hearing, and hearing date is in the future`(dto: AdjudicationMigrateDto) {
       Assertions.assertThatThrownBy {
         migrateNewRecordService.accept(dto)
       }.isInstanceOf(UnableToMigrateException::class.java)
@@ -838,6 +843,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(
         when (dto.hearings.first().hearingResult!!.finding) {
           Finding.NOT_PROCEED.name -> OutcomeCode.NOT_PROCEED
+          Finding.GUILTY.name, Finding.PROVED.name -> OutcomeCode.CHARGE_PROVED
           else -> OutcomeCode.DISMISSED
         },
       )
@@ -846,7 +852,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `if plea is not mapped and doesnt not equal finding throws exception`() {
-      val dto = migrationFixtures.PLEA_NOT_MAPPED_DIFF_TO_FINDING
+      val dto = migrationFixtures.PLEA_ISSUE_5
 
       Assertions.assertThatThrownBy {
         migrateNewRecordService.accept(dto)
@@ -874,6 +880,41 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome?.plea).isEqualTo(HearingOutcomePlea.NOT_ASKED)
+    }
+
+    @Test
+    fun `plea quashed, finding proved, should quash the charge proved`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(migrationFixtures.PLEA_ISSUE_2)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome?.plea).isEqualTo(HearingOutcomePlea.NOT_ASKED)
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.last().code).isEqualTo(OutcomeCode.QUASHED)
+    }
+
+    @Test
+    fun `plea prosecuted, finding refer police should add prosecution outcome`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(migrationFixtures.PLEA_ISSUE_7)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome?.plea).isEqualTo(HearingOutcomePlea.NOT_ASKED)
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.first().code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.last().code).isEqualTo(OutcomeCode.PROSECUTION)
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getPleaAsFindingNotAsked")
+    @ParameterizedTest
+    fun `finding as plea with no effect should set to not asked`(dto: AdjudicationMigrateDto) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome?.plea).isEqualTo(HearingOutcomePlea.NOT_ASKED)
     }
   }
 
@@ -945,6 +986,8 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       listOf(
         migrationFixtures.WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_NOT_PROCEED,
         migrationFixtures.WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_DISMISSED,
+        migrationFixtures.WTIH_ADDITIONAL_HEARINGS_IN_PAST_AFTER_OUTCOME_PROVED,
+        migrationFixtures.WTIH_ADDITIONAL_HEARINGS_IN_PAST_AFTER_OUTCOME_GUILTY,
       ).stream()
 
     @JvmStatic
@@ -952,6 +995,15 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       listOf(
         migrationFixtures.PLEA_NOT_MAPPED_DOUBLE_NEGATIVE,
         migrationFixtures.PLEA_NOT_MAPPED_DOUBLE_NEGATIVE2,
+      ).stream()
+
+    @JvmStatic
+    fun getPleaAsFindingNotAsked(): Stream<AdjudicationMigrateDto> =
+      listOf(
+        migrationFixtures.PLEA_ISSUE_1,
+        migrationFixtures.PLEA_ISSUE_3,
+        migrationFixtures.PLEA_ISSUE_4,
+        migrationFixtures.PLEA_ISSUE_6,
       ).stream()
   }
 }
