@@ -341,16 +341,14 @@ class MigrateNewRecordService(
           if (!isActive) {
             throw UnableToMigrateException("record structure (inactive): $chargeNumber - ${this.map { it.hearingResult?.finding }}")
           }
-          if (isActive && hasADA) {
+          if (hasADA) {
             throw UnableToMigrateException("record structure (active with ADA): $chargeNumber - ${this.map { it.hearingResult?.finding }}")
           }
-          if (isActive && !hasADA) {
-            throw UnableToMigrateException("record structure (active without ADA): $chargeNumber - ${this.map { it.hearingResult?.finding }}")
-          }
+          throw UnableToMigrateException("record structure (active without ADA): $chargeNumber - ${this.map { it.hearingResult?.finding }}")
         }
       }
       if (shouldBeFinal.contains(last.hearingResult?.finding)) return
-      if (this.any { shouldBeFinal.contains(it.hearingResult?.finding) }) {
+      if (this.any { shouldBeFinal.contains(it.hearingResult?.finding) } && this.count { it.hearingResult != null } > 1) {
         val indexOf = this.indexOfLast { shouldBeFinal.contains(it.hearingResult?.finding) }
         if (indexOf != -1 && indexOf < this.size - 1) throw UnableToMigrateException("record structure: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
       }
