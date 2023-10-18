@@ -715,8 +715,22 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `adjudication with multiple final states, and sanctions, where final state is not PROVED should throw error`() {
+    fun `adjudication with multiple final states, and sanctions, where final state is not PROVED should process and set status to CORRUPTED`() {
       val dto = migrationFixtures.EXCEPTION_CASE_4
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.last().code).isEqualTo(OutcomeCode.DISMISSED)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
+    }
+
+    @Test
+    fun `adjudication with multiple final states, and sanctions, where final state is not PROVED (and active with ADA) should throw error`() {
+      val dto = migrationFixtures.EXCEPTION_CASE_5
       Assertions.assertThatThrownBy {
         migrateNewRecordService.accept(dto)
       }.isInstanceOf(UnableToMigrateException::class.java)

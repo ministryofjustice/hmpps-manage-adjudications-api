@@ -111,7 +111,11 @@ data class ReportedAdjudication(
         if (this.getLatestHearing().isAdjourn()) {
           ReportedAdjudicationStatus.ADJOURNED
         } else {
-          this.getOutcomes().sortedByDescending { it.actualCreatedDate ?: it.createDateTime }.first().code.status
+          if (this.getOutcomes().count { listOf(OutcomeCode.DISMISSED, OutcomeCode.CHARGE_PROVED, OutcomeCode.NOT_PROCEED).contains(it.code) } > 1) {
+            ReportedAdjudicationStatus.CORRUPTED
+          } else {
+            this.getOutcomes().sortedByDescending { it.actualCreatedDate ?: it.createDateTime }.first().code.status
+          }
         }
       }
     }
@@ -198,6 +202,7 @@ enum class ReportedAdjudicationStatus {
     }
   },
   QUASHED,
+  CORRUPTED,
   ;
   open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
   fun canTransitionFrom(from: ReportedAdjudicationStatus): Boolean {

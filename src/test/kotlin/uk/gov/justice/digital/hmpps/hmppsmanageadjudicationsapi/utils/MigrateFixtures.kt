@@ -549,6 +549,19 @@ class MigrateFixtures {
     punishments = listOf(migrationEntityBuilder.createPunishment()),
   )
 
+  val EXCEPTION_CASE_5 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name, createdDateTime = LocalDateTime.now().plusDays(1)),
+      ),
+    ),
+    punishments = listOf(migrationEntityBuilder.createPunishment(code = OicSanctionCode.ADA.name)),
+  )
+
   val WITH_ADDITIONAL_HEARINGS_IN_NOMIS = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(oicHearingId = 1, hearingResult = migrationEntityBuilder.createHearingResult()),

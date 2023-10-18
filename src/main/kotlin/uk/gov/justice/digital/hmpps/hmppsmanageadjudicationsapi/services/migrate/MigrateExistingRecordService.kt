@@ -140,14 +140,16 @@ class MigrateExistingRecordService(
   }
 
   private fun ReportedAdjudication.processPhase2(adjudicationMigrateDto: AdjudicationMigrateDto) {
-    adjudicationMigrateDto.hearings.validate(
+    val valid = adjudicationMigrateDto.hearings.validate(
       chargeNumber = this.chargeNumber,
       hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
       hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
       isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
     )
 
-    this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }.forEach { hearingOutcomeNomis ->
+    val hearingsMarkedWithNomis = this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }
+
+    hearingsMarkedWithNomis.forEachIndexed { hearingIndex, hearingOutcomeNomis ->
       val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { hearingOutcomeNomis.oicHearingId == it.oicHearingId && it.hearingResult != null }
       if (nomisHearing != null) {
         val index = adjudicationMigrateDto.hearings.indexOf(nomisHearing)
@@ -160,9 +162,10 @@ class MigrateExistingRecordService(
         ).all { it.hearingResult == null }
 
         val hearingOutcomeCode = nomisHearing.hearingResult!!.finding.mapToHearingOutcomeCode(
-          hasAdditionalHearingOutcomes = hasAdditionalOutcomes,
+          hasAdditionalHearingOutcomes = hasAdditionalOutcomes || hearingIndex < hearingsMarkedWithNomis.size - 1,
           hasAdditionalHearingsInFutureWithoutResults = hasAdditionalHearingsWithoutResults && adjudicationMigrateDto.hearings.any { LocalDateTime.now().isBefore(it.hearingDateTime) },
           chargeNumber = this.chargeNumber,
+          valid = valid,
         )
 
         hearingOutcomeNomis.hearingOutcome!!.adjudicator = nomisHearing.adjudicator ?: ""
