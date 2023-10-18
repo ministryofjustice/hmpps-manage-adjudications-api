@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways
 
 enum class Finding {
-  APPEAL, D, DISMISSED, GUILTY, NOT_GUILTY, NOT_PROCEED, NOT_PROVEN, PROSECUTED, PROVED, QUASHED, REFUSED, REF_POLICE, S, UNFIT,
+  APPEAL, D, DISMISSED, GUILTY, NOT_GUILTY, NOT_PROCEED, NOT_PROVEN, PROSECUTED, PROVED, QUASHED, REFUSED, REF_POLICE, S, UNFIT, ADJOURNED,
 }
 
 enum class Plea {

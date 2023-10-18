@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toPunishments
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toWitnesses
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.validate
+import java.time.LocalDateTime
 
 @Transactional
 @Service
@@ -160,7 +161,7 @@ class MigrateExistingRecordService(
 
         val hearingOutcomeCode = nomisHearing.hearingResult!!.finding.mapToHearingOutcomeCode(
           hasAdditionalHearingOutcomes = hasAdditionalOutcomes,
-          hasAdditionalHearingsWithoutResults = hasAdditionalHearingsWithoutResults,
+          hasAdditionalHearingsInFutureWithoutResults = hasAdditionalHearingsWithoutResults && adjudicationMigrateDto.hearings.any { LocalDateTime.now().isBefore(it.hearingDateTime) },
           chargeNumber = this.chargeNumber,
         )
 

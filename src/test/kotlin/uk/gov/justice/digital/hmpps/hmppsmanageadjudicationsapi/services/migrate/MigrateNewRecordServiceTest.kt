@@ -810,18 +810,9 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().quashedReason).isEqualTo(QuashedReason.APPEAL_UPHELD)
     }
 
-    @Test
-    fun `appeal throws exception if its not the latest result`() {
-      val dto = migrationFixtures.WITH_FINDING_APPEAL_NOT_LATEST
-
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-    }
-
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getAdditionalHearingsAfterFinalState")
     @ParameterizedTest
-    fun `exception thrown when additional hearings without results after final hearing`(dto: AdjudicationMigrateDto) {
+    fun `exception thrown when additional hearings without results after final hearing, and hearing date is in the future`(dto: AdjudicationMigrateDto) {
       Assertions.assertThatThrownBy {
         migrateNewRecordService.accept(dto)
       }.isInstanceOf(UnableToMigrateException::class.java)
@@ -838,6 +829,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(
         when (dto.hearings.first().hearingResult!!.finding) {
           Finding.NOT_PROCEED.name -> OutcomeCode.NOT_PROCEED
+          Finding.GUILTY.name, Finding.PROVED.name -> OutcomeCode.CHARGE_PROVED
           else -> OutcomeCode.DISMISSED
         },
       )
@@ -945,6 +937,8 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       listOf(
         migrationFixtures.WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_NOT_PROCEED,
         migrationFixtures.WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_DISMISSED,
+        migrationFixtures.WTIH_ADDITIONAL_HEARINGS_IN_PAST_AFTER_OUTCOME_PROVED,
+        migrationFixtures.WTIH_ADDITIONAL_HEARINGS_IN_PAST_AFTER_OUTCOME_GUILTY,
       ).stream()
 
     @JvmStatic

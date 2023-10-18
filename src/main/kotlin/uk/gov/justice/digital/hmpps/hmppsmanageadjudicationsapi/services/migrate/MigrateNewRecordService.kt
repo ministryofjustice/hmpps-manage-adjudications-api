@@ -256,7 +256,7 @@ class MigrateNewRecordService(
           else -> {
             val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(
               hasAdditionalHearingOutcomes = hasAdditionalHearingOutcomes,
-              hasAdditionalHearingsWithoutResults = hasAdditionalHearingsWithoutResults,
+              hasAdditionalHearingsInFutureWithoutResults = hasAdditionalHearingsWithoutResults && this.any { LocalDateTime.now().isBefore(it.hearingDateTime) },
               chargeNumber = chargeNumber,
             )
 
@@ -387,26 +387,26 @@ class MigrateNewRecordService(
       else -> null
     }
 
-    fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean, hasAdditionalHearingsWithoutResults: Boolean, chargeNumber: String): HearingOutcomeCode = when (this) {
+    fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean, hasAdditionalHearingsInFutureWithoutResults: Boolean, chargeNumber: String): HearingOutcomeCode = when (this) {
       Finding.QUASHED.name, Finding.APPEAL.name -> HearingOutcomeCode.COMPLETE
       Finding.PROVED.name, Finding.GUILTY.name -> if (hasAdditionalHearingOutcomes) {
         HearingOutcomeCode.ADJOURN
-      } else if (hasAdditionalHearingsWithoutResults) {
-        throw UnableToMigrateException("$chargeNumber: $this has additional hearings")
+      } else if (hasAdditionalHearingsInFutureWithoutResults) {
+        throw UnableToMigrateException("$chargeNumber: $this has additional hearings in the future")
       } else {
         HearingOutcomeCode.COMPLETE
       }
       Finding.PROSECUTED.name, Finding.REF_POLICE.name -> HearingOutcomeCode.REFER_POLICE
       Finding.D.name, Finding.NOT_PROCEED.name, Finding.NOT_GUILTY.name, Finding.UNFIT.name, Finding.REFUSED.name, Finding.NOT_PROVEN.name, Finding.DISMISSED.name ->
         if (hasAdditionalHearingOutcomes) HearingOutcomeCode.ADJOURN else HearingOutcomeCode.COMPLETE
-      Finding.S.name -> HearingOutcomeCode.ADJOURN
+      Finding.S.name, Finding.ADJOURNED.name -> HearingOutcomeCode.ADJOURN
       else -> throw UnableToMigrateException("unsupported mapping $this")
     }
 
     private fun String?.isFinalOutcomeState(): Boolean =
       when (this) {
         Finding.D.name, Finding.NOT_PROCEED.name, Finding.NOT_GUILTY.name,
-        Finding.UNFIT.name, Finding.REFUSED.name, Finding.NOT_PROVEN.name, Finding.DISMISSED.name,
+        Finding.UNFIT.name, Finding.REFUSED.name, Finding.NOT_PROVEN.name, Finding.DISMISSED.name, Finding.GUILTY.name, Finding.PROVED.name,
         -> true
         else -> false
       }
