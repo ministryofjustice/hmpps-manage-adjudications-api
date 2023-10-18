@@ -852,7 +852,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `if plea is not mapped and doesnt not equal finding throws exception`() {
-      val dto = migrationFixtures.PLEA_NOT_MAPPED_DIFF_TO_FINDING
+      val dto = migrationFixtures.PLEA_ISSUE_5
 
       Assertions.assertThatThrownBy {
         migrateNewRecordService.accept(dto)
@@ -880,6 +880,41 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome?.plea).isEqualTo(HearingOutcomePlea.NOT_ASKED)
+    }
+
+    @Test
+    fun `plea quashed, finding proved, should quash the charge proved`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(migrationFixtures.PLEA_ISSUE_2)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome?.plea).isEqualTo(HearingOutcomePlea.NOT_ASKED)
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.last().code).isEqualTo(OutcomeCode.QUASHED)
+    }
+
+    @Test
+    fun `plea prosecuted, finding refer police should add prosecution outcome`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(migrationFixtures.PLEA_ISSUE_7)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome?.plea).isEqualTo(HearingOutcomePlea.NOT_ASKED)
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.first().code).isEqualTo(OutcomeCode.REFER_POLICE)
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.last().code).isEqualTo(OutcomeCode.PROSECUTION)
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getPleaAsFindingNotAsked")
+    @ParameterizedTest
+    fun `finding as plea with no effect should set to not asked`(dto: AdjudicationMigrateDto) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome?.plea).isEqualTo(HearingOutcomePlea.NOT_ASKED)
     }
   }
 
@@ -960,6 +995,15 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       listOf(
         migrationFixtures.PLEA_NOT_MAPPED_DOUBLE_NEGATIVE,
         migrationFixtures.PLEA_NOT_MAPPED_DOUBLE_NEGATIVE2,
+      ).stream()
+
+    @JvmStatic
+    fun getPleaAsFindingNotAsked(): Stream<AdjudicationMigrateDto> =
+      listOf(
+        migrationFixtures.PLEA_ISSUE_1,
+        migrationFixtures.PLEA_ISSUE_3,
+        migrationFixtures.PLEA_ISSUE_4,
+        migrationFixtures.PLEA_ISSUE_6,
       ).stream()
   }
 }

@@ -261,14 +261,22 @@ class MigrateNewRecordService(
               valid = valid,
             )
 
+            var plea: HearingOutcomePlea
+            try {
+              plea = oicHearing.hearingResult.plea.mapToPlea(
+                finding = oicHearing.hearingResult.finding,
+                chargeNumber = chargeNumber,
+              )
+            } catch (e: UnableToMigrateException) {
+              if (hasAdditionalHearingOutcomes || oicHearing.hearingResult.plea == Finding.PROVED.name) throw e
+              plea = HearingOutcomePlea.NOT_ASKED
+            }
+
             Pair(
               HearingOutcome(
                 code = hearingOutcomeCode,
                 adjudicator = oicHearing.adjudicator ?: "",
-                plea = oicHearing.hearingResult.plea.mapToPlea(
-                  finding = oicHearing.hearingResult.finding,
-                  chargeNumber = chargeNumber,
-                ),
+                plea = plea,
                 details = if (hasAdditionalHearings && hearingOutcomeCode == HearingOutcomeCode.ADJOURN) "${oicHearing.hearingResult.finding} ${oicHearing.commentText ?: ""}" else oicHearing.commentText ?: "",
               ),
               oicHearing.hearingResult.mapToOutcome(hearingOutcomeCode),
@@ -279,8 +287,23 @@ class MigrateNewRecordService(
         hearingOutcomeAndOutcome?.second.let {
           it?.let { outcome ->
             outcomes.add(outcome)
-            oicHearing.hearingResult!!.createAdditionalOutcome(hasAdditionalHearings)?.let { additionalOutcome ->
-              outcomes.add(additionalOutcome)
+            oicHearing.hearingResult?.let { result ->
+              if ((result.plea == Finding.PROSECUTED.name && result.finding == Finding.REF_POLICE.name) ||
+                (result.plea == Finding.QUASHED.name && result.finding == Finding.PROVED.name)
+              ) {
+                MigrateHearingResult(
+                  plea = Plea.NOT_ASKED.name,
+                  finding = result.plea,
+                  createdDateTime = result.createdDateTime,
+                  createdBy = result.createdBy,
+                ).createAdditionalOutcome(hasAdditionalHearings)?.let { additionalOutcome ->
+                  outcomes.add(additionalOutcome)
+                }
+              } else {
+                result.createAdditionalOutcome(hasAdditionalHearings)?.let { additionalOutcome ->
+                  outcomes.add(additionalOutcome)
+                }
+              }
             }
           }
         }

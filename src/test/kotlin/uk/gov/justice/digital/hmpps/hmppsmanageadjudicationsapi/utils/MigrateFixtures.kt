@@ -660,17 +660,6 @@ class MigrateFixtures {
     ),
   )
 
-  val PLEA_NOT_MAPPED_DIFF_TO_FINDING = migrationEntityBuilder.createAdjudication(
-    hearings = listOf(
-      migrationEntityBuilder.createHearing(
-        hearingResult = migrationEntityBuilder.createHearingResult(
-          plea = Finding.QUASHED.name,
-          finding = Finding.NOT_PROCEED.name,
-        ),
-      ),
-    ),
-  )
-
   val PLEA_NOT_MAPPED_SAME_AS_FINDING = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
@@ -720,6 +709,49 @@ class MigrateFixtures {
     hearings = listOf(
       migrationEntityBuilder.createHearing(oicHearingId = 100, hearingDateTime = LocalDateTime.now().minusDays(1)),
       migrationEntityBuilder.createHearing(),
+    ),
+  )
+
+  val PLEA_ISSUE_1 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(plea = Finding.QUASHED.name, finding = Finding.NOT_PROCEED.name)),
+    ),
+  )
+
+  val PLEA_ISSUE_2 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(plea = Finding.QUASHED.name, finding = Finding.PROVED.name)),
+    ),
+  )
+
+  val PLEA_ISSUE_3 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(plea = Finding.REF_POLICE.name, finding = Finding.NOT_PROCEED.name)),
+    ),
+  )
+
+  val PLEA_ISSUE_4 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(plea = Finding.QUASHED.name, finding = Finding.APPEAL.name)),
+    ),
+  )
+
+  val PLEA_ISSUE_5 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(plea = Finding.PROVED.name, finding = Finding.NOT_PROVEN.name)),
+    ),
+  )
+
+  val PLEA_ISSUE_6 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult()),
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(plea = Finding.APPEAL.name, finding = Finding.QUASHED.name)),
+    ),
+  )
+
+  val PLEA_ISSUE_7 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(plea = Finding.PROSECUTED.name, finding = Finding.REF_POLICE.name)),
     ),
   )
 
