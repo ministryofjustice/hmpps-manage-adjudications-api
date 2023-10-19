@@ -9,7 +9,6 @@ import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -142,11 +141,11 @@ class HearingOutcomeControllerTest : TestControllerBase() {
       removeReferralRequest(1).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @CsvSource("REFER_POLICE,false,", "SCHEDULE_HEARING,true,HEARING_REFERRAL_DELETED", "REFER_POLICE,true,REFERRAL_OUTCOME_DELETED")
+    @CsvSource(",false,REFERRAL_DELETED", "SCHEDULE_HEARING,true,HEARING_REFERRAL_DELETED", "REFER_POLICE,true,REFERRAL_OUTCOME_DELETED", "REFER_POLICE,false,REFERRAL_OUTCOME_DELETED")
     @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to remove a referral`(code: OutcomeCode, hasHearings: Boolean, eventToSend: AdjudicationDomainEventType? = null) {
-      val response = reportedAdjudicationDto(status = code.status, hearingIdActioned = if (hasHearings)1 else null)
+    fun `makes a call to remove a referral`(nextState: OutcomeCode? = null, hasHearings: Boolean, eventToSend: AdjudicationDomainEventType) {
+      val response = reportedAdjudicationDto(status = nextState?.status ?: ReportedAdjudicationStatus.UNSCHEDULED, hearingIdActioned = if (hasHearings)1 else null)
 
       whenever(
         referralService.removeReferral(
@@ -157,7 +156,7 @@ class HearingOutcomeControllerTest : TestControllerBase() {
       removeReferralRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(referralService).removeReferral("1")
-      verify(eventPublishService, if (eventToSend != null) atLeastOnce() else never()).publishEvent(eventToSend ?: AdjudicationDomainEventType.HEARING_REFERRAL_DELETED, response)
+      verify(eventPublishService, atLeastOnce()).publishEvent(eventToSend, response)
     }
 
     private fun removeReferralRequest(

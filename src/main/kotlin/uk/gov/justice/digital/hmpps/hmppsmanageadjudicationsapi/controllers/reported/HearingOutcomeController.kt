@@ -150,11 +150,10 @@ class HearingOutcomeController(
           chargeNumber = chargeNumber,
         )
       },
-      eventRule = { it.hearingIdActioned != null },
       eventSupplier = {
         when (it.status) {
           ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_GOV, ReportedAdjudicationStatus.REFER_INAD -> AdjudicationDomainEventType.REFERRAL_OUTCOME_DELETED
-          else -> AdjudicationDomainEventType.HEARING_REFERRAL_DELETED
+          else -> if (it.hearingIdActioned != null) AdjudicationDomainEventType.HEARING_REFERRAL_DELETED else AdjudicationDomainEventType.REFERRAL_DELETED
         }
       },
     )
