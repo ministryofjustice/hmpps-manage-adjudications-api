@@ -30,7 +30,7 @@ class EvidenceController(
     evidenceRequest: EvidenceRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.EVIDENCE_UPDATED,
+      eventSupplier = { AdjudicationDomainEventType.EVIDENCE_UPDATED },
       controllerAction = {
         evidenceService.updateEvidence(
           chargeNumber,

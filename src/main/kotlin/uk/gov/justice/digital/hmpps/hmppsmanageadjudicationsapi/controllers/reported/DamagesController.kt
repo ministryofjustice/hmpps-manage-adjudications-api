@@ -30,7 +30,7 @@ class DamagesController(
     damagesRequest: DamagesRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.DAMAGES_UPDATED,
+      eventSupplier = { AdjudicationDomainEventType.DAMAGES_UPDATED },
       controllerAction = {
         damagesService.updateDamages(
           chargeNumber,

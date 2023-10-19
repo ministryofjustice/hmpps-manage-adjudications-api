@@ -126,7 +126,7 @@ class HearingOutcomeController(
     @RequestBody referralRequest: ReferralRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.HEARING_REFERRAL_CREATED,
+      eventSupplier = { AdjudicationDomainEventType.HEARING_REFERRAL_CREATED },
       controllerAction = {
         referralService.createReferral(
           chargeNumber = chargeNumber,
@@ -144,7 +144,6 @@ class HearingOutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.HEARING_REFERRAL_DELETED,
       controllerAction = {
         referralService.removeReferral(
           chargeNumber = chargeNumber,
@@ -184,7 +183,7 @@ class HearingOutcomeController(
     @RequestBody adjournRequest: AdjournRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.HEARING_ADJOURN_CREATED,
+      eventSupplier = { AdjudicationDomainEventType.HEARING_ADJOURN_CREATED },
       controllerAction = {
         hearingOutcomeService.createAdjourn(
           chargeNumber = chargeNumber,
@@ -203,7 +202,7 @@ class HearingOutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.HEARING_ADJOURN_DELETED,
+      eventSupplier = { AdjudicationDomainEventType.HEARING_ADJOURN_DELETED },
       controllerAction = {
         hearingOutcomeService.removeAdjourn(chargeNumber = chargeNumber)
       },
@@ -218,7 +217,7 @@ class HearingOutcomeController(
     @RequestBody amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.HEARING_OUTCOME_UPDATED,
+      eventSupplier = { AdjudicationDomainEventType.HEARING_OUTCOME_UPDATED },
       controllerAction = {
         amendHearingOutcomeService.amendHearingOutcome(
           chargeNumber = chargeNumber,
@@ -254,7 +253,7 @@ class HearingOutcomeController(
     @RequestBody completedDismissedRequest: HearingCompletedDismissedRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.HEARING_COMPLETED_CREATED,
+      eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_CREATED },
       controllerAction = {
         completedHearingService.createDismissed(
           chargeNumber = chargeNumber,
@@ -291,7 +290,7 @@ class HearingOutcomeController(
     @RequestBody completedNotProceedRequest: HearingCompletedNotProceedRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.HEARING_COMPLETED_CREATED,
+      eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_CREATED },
       controllerAction = {
         completedHearingService.createNotProceed(
           chargeNumber = chargeNumber,
@@ -310,7 +309,7 @@ class HearingOutcomeController(
     @RequestBody chargeProvedRequest: HearingCompletedChargeProvedRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.HEARING_COMPLETED_CREATED,
+      eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_CREATED },
       controllerAction = {
         completedHearingService.createChargeProved(
           chargeNumber = chargeNumber,
@@ -327,7 +326,7 @@ class HearingOutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.HEARING_COMPLETED_DELETED,
+      eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_DELETED },
       controllerAction = {
         completedHearingService.removeOutcome(
           chargeNumber = chargeNumber,

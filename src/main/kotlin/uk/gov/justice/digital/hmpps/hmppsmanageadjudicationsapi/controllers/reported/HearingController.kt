@@ -73,7 +73,7 @@ class HearingController(
     @RequestBody hearingRequest: HearingRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.HEARING_CREATED,
+      eventSupplier = { AdjudicationDomainEventType.HEARING_CREATED },
       controllerAction = {
         hearingService.createHearing(
           chargeNumber = chargeNumber,
@@ -92,7 +92,7 @@ class HearingController(
     @RequestBody hearingRequest: HearingRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.HEARING_UPDATED,
+      eventSupplier = { AdjudicationDomainEventType.HEARING_UPDATED },
       controllerAction = {
         hearingService.amendHearing(
           chargeNumber = chargeNumber,
@@ -110,7 +110,7 @@ class HearingController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.HEARING_DELETED,
+      eventSupplier = { AdjudicationDomainEventType.HEARING_DELETED },
       controllerAction = {
         hearingService.deleteHearing(chargeNumber = chargeNumber)
       },

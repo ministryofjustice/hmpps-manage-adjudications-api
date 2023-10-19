@@ -456,7 +456,7 @@ class MigrateNewRecordService(
       val typesWithoutDates = PunishmentType.additionalDays().plus(PunishmentType.CAUTION)
       val type = when (this.sanctionCode) {
         OicSanctionCode.ADA.name -> if (prospectiveStatuses.contains(this.sanctionStatus)) PunishmentType.PROSPECTIVE_DAYS else PunishmentType.ADDITIONAL_DAYS
-        OicSanctionCode.EXTRA_WORK.name -> PunishmentType.EXCLUSION_WORK // fine
+        OicSanctionCode.EXTRA_WORK.name -> PunishmentType.EXCLUSION_WORK
         OicSanctionCode.EXTW.name -> PunishmentType.EXTRA_WORK
         OicSanctionCode.CAUTION.name -> PunishmentType.CAUTION
         OicSanctionCode.CC.name -> PunishmentType.CONFINEMENT

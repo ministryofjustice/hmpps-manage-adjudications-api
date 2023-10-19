@@ -85,7 +85,6 @@ class OutcomeController(
     @RequestBody notProceedRequest: NotProceedRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME,
       controllerAction = {
         outcomeService.createNotProceed(
           chargeNumber = chargeNumber,
@@ -126,7 +125,7 @@ class OutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME,
+      eventSupplier = { AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME },
       controllerAction = {
         outcomeService.createProsecution(
           chargeNumber = chargeNumber,
@@ -160,7 +159,7 @@ class OutcomeController(
     @RequestBody referGovRequest: ReferralDetailsRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV,
+      eventSupplier = { AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV },
       controllerAction = {
         outcomeService.createReferGov(
           chargeNumber = chargeNumber,
@@ -195,7 +194,7 @@ class OutcomeController(
     @RequestBody quashedRequest: QuashedRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.QUASHED,
+      eventSupplier = { AdjudicationDomainEventType.QUASHED },
       controllerAction = {
         outcomeService.createQuashed(
           chargeNumber = chargeNumber,
@@ -231,7 +230,7 @@ class OutcomeController(
     @RequestBody policeReferralRequest: ReferralDetailsRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.REF_POLICE_OUTCOME,
+      eventSupplier = { AdjudicationDomainEventType.REF_POLICE_OUTCOME },
       controllerAction = {
         outcomeService.createReferral(
           chargeNumber = chargeNumber,
@@ -248,7 +247,6 @@ class OutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.UNQUASHED,
       controllerAction = {
         outcomeService.deleteOutcome(
           chargeNumber = chargeNumber,
@@ -270,7 +268,7 @@ class OutcomeController(
     @RequestBody amendOutcomeRequest: AmendOutcomeRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.OUTCOME_UPDATED,
+      eventSupplier = { AdjudicationDomainEventType.OUTCOME_UPDATED },
       controllerAction = {
         outcomeService.amendOutcomeViaApi(
           chargeNumber = chargeNumber,
