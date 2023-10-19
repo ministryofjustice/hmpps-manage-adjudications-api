@@ -94,7 +94,7 @@ class OutcomeController(
         )
       },
       eventSupplier = {
-        when (it.hearingIdActioned) {
+        when (it.outcomes.lastOrNull()?.outcome?.referralOutcome) {
           null -> AdjudicationDomainEventType.NOT_PROCEED_OUTCOME
           else -> AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME
         }
