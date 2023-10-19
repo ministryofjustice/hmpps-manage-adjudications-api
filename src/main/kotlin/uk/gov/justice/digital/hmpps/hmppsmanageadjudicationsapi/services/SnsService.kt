@@ -118,6 +118,7 @@ enum class AdjudicationDomainEventType(val value: String, val description: Strin
   OUTCOME_UPDATED("adjudication.outcome.updated", "Adjudication outcome updated: ", AuditType.OUTCOME_UPDATED),
   NOT_PROCEED_OUTCOME_DELETED("adjudication.outcome.notProceed.deleted", "Adjudication not proceed outcome deleted: ", AuditType.NOT_PROCEED_OUTCOME_DELETED),
   REFERRAL_OUTCOME_REFER_GOV("adjudication.referral.outcome.referGov", "Adjudication referral outcome refer gov created: ", AuditType.REFERRAL_OUTCOME_REFER_GOV),
+  REFERRAL_DELETED("adjudication.referral.deleted", "Adjudication referral deleted: ", AuditType.REFERRAL_DELETED),
 }
 
 fun Instant.toOffsetDateFormat(): String =

@@ -43,6 +43,7 @@ class EventPublishService(
       AdjudicationDomainEventType.OUTCOME_UPDATED,
       AdjudicationDomainEventType.NOT_PROCEED_OUTCOME,
       AdjudicationDomainEventType.REF_POLICE_OUTCOME,
+      AdjudicationDomainEventType.REFERRAL_DELETED,
       -> /*if(featureFlagsConfig.outcomes)*/publish(event = event, adjudication = adjudication)
       else -> publish(event = event, adjudication = adjudication)
     }
