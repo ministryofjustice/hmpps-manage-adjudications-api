@@ -66,7 +66,7 @@ class ReportedAdjudicationController(
     reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.ADJUDICATION_CREATED,
+      eventSupplier = { AdjudicationDomainEventType.ADJUDICATION_CREATED },
       controllerAction = {
         reportedAdjudicationService.setStatus(
           chargeNumber,

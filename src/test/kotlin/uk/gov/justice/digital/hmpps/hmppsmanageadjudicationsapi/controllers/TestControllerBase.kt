@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDeta
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -92,7 +93,11 @@ open class TestControllerBase {
         originatingAgencyId = "MDI",
       )
 
-    fun reportedAdjudicationDto(status: ReportedAdjudicationStatus, hearingIdActioned: Long? = null) =
+    fun reportedAdjudicationDto(
+      status: ReportedAdjudicationStatus,
+      hearingIdActioned: Long? = null,
+      outcomes: List<OutcomeHistoryDto> = emptyList(),
+    ) =
       ReportedAdjudicationDto(
         chargeNumber = "1",
         prisonerNumber = "A12345",
@@ -127,7 +132,7 @@ open class TestControllerBase {
         hearings = listOf(),
         disIssueHistory = listOf(),
         gender = Gender.MALE,
-        outcomes = listOf(),
+        outcomes = outcomes,
         punishments = listOf(),
         punishmentComments = listOf(),
         overrideAgencyId = null,

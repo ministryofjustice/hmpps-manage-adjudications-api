@@ -22,10 +22,9 @@ class ReportedAdjudicationBaseController {
   private lateinit var eventPublishService: EventPublishService
 
   fun eventPublishWrapper(
-    event: AdjudicationDomainEventType,
     controllerAction: () -> ReportedAdjudicationDto,
     eventRule: (ReportedAdjudicationDto) -> Boolean = { _ -> true },
-    eventSupplier: (ReportedAdjudicationDto) -> AdjudicationDomainEventType = { _ -> event },
+    eventSupplier: (ReportedAdjudicationDto) -> AdjudicationDomainEventType,
   ): ReportedAdjudicationResponse =
     controllerAction.invoke().also { if (eventRule.invoke(it)) eventPublishService.publishEvent(eventSupplier.invoke(it), it) }.toResponse()
 

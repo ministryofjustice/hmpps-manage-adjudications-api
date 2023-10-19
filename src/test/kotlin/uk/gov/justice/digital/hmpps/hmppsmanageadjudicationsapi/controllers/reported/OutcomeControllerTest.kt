@@ -21,6 +21,9 @@ import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
@@ -127,8 +130,20 @@ class OutcomeControllerTest : TestControllerBase() {
     @CsvSource("true", "false")
     @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to create a not proceed`(fromHearing: Boolean) {
-      val response = if (fromHearing) reportedAdjudicationDto(status = ReportedAdjudicationStatus.NOT_PROCEED, hearingIdActioned = 1) else REPORTED_ADJUDICATION_DTO
+    fun `makes a call to create a not proceed referral outcome`(fromHearing: Boolean) {
+      val response = reportedAdjudicationDto(
+        status = ReportedAdjudicationStatus.NOT_PROCEED,
+        hearingIdActioned = if (fromHearing) 1 else null,
+        outcomes =
+        listOf(
+          OutcomeHistoryDto(
+            outcome = CombinedOutcomeDto(
+              outcome = OutcomeDto(code = OutcomeCode.REFER_POLICE),
+              referralOutcome = OutcomeDto(code = OutcomeCode.NOT_PROCEED),
+            ),
+          ),
+        ),
+      )
       whenever(
         outcomeService.createNotProceed(
           anyString(),
@@ -145,7 +160,30 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(outcomeService).createNotProceed("1", NotProceedReason.NOT_FAIR, "details")
-      verify(eventPublishService, atLeastOnce()).publishEvent(if (fromHearing) AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME else AdjudicationDomainEventType.NOT_PROCEED_OUTCOME, response)
+      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME, response)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to create a not proceed outcome`() {
+      val response = reportedAdjudicationDto(status = ReportedAdjudicationStatus.NOT_PROCEED)
+      whenever(
+        outcomeService.createNotProceed(
+          anyString(),
+          any(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(response)
+
+      createNotProceedRequest(
+        1,
+        NOT_PROCEED_REQUEST,
+      )
+        .andExpect(MockMvcResultMatchers.status().isCreated)
+
+      verify(outcomeService).createNotProceed("1", NotProceedReason.NOT_FAIR, "details")
+      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.NOT_PROCEED_OUTCOME, response)
     }
 
     private fun createNotProceedRequest(

@@ -82,7 +82,7 @@ class PunishmentsController(
     @RequestBody punishmentsRequest: PunishmentsRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.PUNISHMENTS_CREATED,
+      eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_CREATED },
       controllerAction = {
         punishmentsService.create(
           chargeNumber = chargeNumber,
@@ -99,7 +99,7 @@ class PunishmentsController(
     @RequestBody punishmentsRequest: PunishmentsRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      event = AdjudicationDomainEventType.PUNISHMENTS_UPDATED,
+      eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_UPDATED },
       controllerAction = {
         punishmentsService.update(
           chargeNumber = chargeNumber,
