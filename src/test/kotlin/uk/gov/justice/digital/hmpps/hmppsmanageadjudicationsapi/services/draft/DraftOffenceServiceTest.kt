@@ -156,15 +156,13 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
   fun `gets all offence adult rules`() {
     val offenceRules = incidentOffenceService.getRules(isYouthOffender = false, gender = Gender.MALE)
 
-    assertThat(offenceRules.size).isEqualTo(OffenceCodes.getAdultOffenceCodes().map { it.uniqueOffenceCodes }.flatten().distinct().size)
-    assertThat(offenceRules.all { it.offenceCode != null }).isTrue
+    assertThat(offenceRules.size).isEqualTo(OffenceCodes.getAdultOffenceCodes().distinctBy { it.paragraph }.size)
   }
 
   @Test
   fun `gets all yoi offence rules`() {
     val offenceRules = incidentOffenceService.getRules(isYouthOffender = true, gender = Gender.MALE)
 
-    assertThat(offenceRules.size).isEqualTo(OffenceCodes.getYouthOffenceCodes().map { it.uniqueOffenceCodes }.flatten().distinct().size)
-    assertThat(offenceRules.all { it.offenceCode != null }).isTrue
+    assertThat(offenceRules.size).isEqualTo(OffenceCodes.getYouthOffenceCodes().distinctBy { it.paragraph }.size)
   }
 }

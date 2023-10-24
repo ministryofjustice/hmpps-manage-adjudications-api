@@ -529,7 +529,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.size()").isEqualTo(62)
+      .jsonPath("$.size()").isEqualTo(28)
   }
 
   @Test
