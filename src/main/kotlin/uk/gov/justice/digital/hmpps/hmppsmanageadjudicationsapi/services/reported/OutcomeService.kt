@@ -270,7 +270,7 @@ class OutcomeService(
   }
 
   companion object {
-    fun ReportedAdjudication.latestOutcome(): Outcome? = this.getOutcomes().maxByOrNull { it.createDateTime!! }
+    fun ReportedAdjudication.latestOutcome(): Outcome? = this.getOutcomes().maxByOrNull { it.actualCreatedDate ?: it.createDateTime!! }
 
     fun ReportedAdjudication.getOutcome(id: Long) =
       this.getOutcomes().firstOrNull { it.id == id } ?: throw EntityNotFoundException("Outcome not found for $id")

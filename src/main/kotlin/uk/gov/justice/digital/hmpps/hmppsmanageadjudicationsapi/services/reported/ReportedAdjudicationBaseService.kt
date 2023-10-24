@@ -48,7 +48,7 @@ open class ReportedDtoService(
 
   protected fun ReportedAdjudication.toDto(activeCaseload: String? = null, consecutiveReportsAvailable: List<String>? = null): ReportedAdjudicationDto {
     val hearings = this.hearings.toHearings()
-    val outcomes = this.getOutcomes().createCombinedOutcomes()
+    val outcomes = this.get().createCombinedOutcomes()
     return ReportedAdjudicationDto(
       chargeNumber = chargeNumber,
       prisonerNumber = prisonerNumber,

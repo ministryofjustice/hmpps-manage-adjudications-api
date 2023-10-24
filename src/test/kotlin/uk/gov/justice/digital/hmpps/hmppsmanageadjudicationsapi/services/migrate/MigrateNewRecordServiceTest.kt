@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrat
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -28,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 import java.time.LocalDateTime
@@ -358,6 +358,19 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `process punishments - PADA`() {
+      val dto = migrationFixtures.WITH_PUNISHMENT_PADA
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.PROSPECTIVE_DAYS)
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().startDate).isNull()
+      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().endDate).isNull()
+    }
+
+    @Test
     fun `process punishments - PROSPECTIVE ADA SUSPENDED`() {
       val dto = migrationFixtures.WITH_PUNISHMENT_PROSPECITVE_ADA_SUSPENDED
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -369,7 +382,20 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first().schedule.first().suspendedUntil).isEqualTo(dto.punishments.first().effectiveDate)
     }
 
-    @Disabled
+    @Test
+    fun `process punishments - STOP EARN`() {
+      val dto = migrationFixtures.WITH_PUNISHMENT_STOPPAGE_EARNINGS
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.PRIVILEGE)
+      assertThat(argumentCaptor.value.getPunishments().first().privilegeType).isEqualTo(PrivilegeType.OTHER)
+      assertThat(argumentCaptor.value.getPunishments().first().otherPrivilege).isEqualTo(OicSanctionCode.STOP_EARN.name)
+      assertThat(argumentCaptor.value.getPunishments().first().amount).isEqualTo(dto.punishments.first().compensationAmount?.toDouble())
+    }
+
     @Test
     fun `process punishments - DAMAGES`() {
       val dto = migrationFixtures.WITH_PUNISHMENT_DAMAGES_AMOUNT
@@ -406,7 +432,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.EARNINGS)
-      assertThat(argumentCaptor.value.getPunishments().first().stoppagePercentage).isNull()
+      assertThat(argumentCaptor.value.getPunishments().first().stoppagePercentage).isEqualTo(0)
     }
 
     @Test
@@ -447,22 +473,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
-    @Disabled
-    @Test
-    fun `process punishments - OTHER NO AMOUNT throws exception`() {
-      val dto = migrationFixtures.WITH_PUNISHMENT_DAMAGES_NO_AMOUNT
-
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("the sanction code ${dto.punishments.first().sanctionCode} has no amount")
-    }
-
-    @Test
-    fun `should reject additional punishments if caution is set - to discuss - most likely accept them?`() {
-      // give damages owed is other, perhaps safer to not do this.  TBC
-    }
-
     @Test
     fun `any case that is not known will be mapped to PRIVILEGE `() {
       val dto = migrationFixtures.WITH_PUNISHMENT_UNKNOWN_CODE
@@ -474,6 +484,15 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.PRIVILEGE)
       assertThat(argumentCaptor.value.getPunishments().first().privilegeType).isEqualTo(PrivilegeType.OTHER)
       assertThat(argumentCaptor.value.getPunishments().first().otherPrivilege).isEqualTo(dto.punishments.first().sanctionCode)
+    }
+
+    @Test
+    fun `throws exception if we have a QUASHED ADA, and the final outcome is not QUASHED`() {
+      val dto = migrationFixtures.WITH_QUASHED_ADA_AND_NO_QUASHED_OUTCOME
+      Assertions.assertThatThrownBy {
+        migrateNewRecordService.accept(dto)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+        .hasMessageContaining("Quashed ADA where final outcome is not QUASHED")
     }
   }
 

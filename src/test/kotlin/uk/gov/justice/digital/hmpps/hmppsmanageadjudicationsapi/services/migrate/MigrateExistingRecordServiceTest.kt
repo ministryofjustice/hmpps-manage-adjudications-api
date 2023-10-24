@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrat
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -21,7 +20,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -318,22 +316,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.PROSECUTION)
     }
 
-    @Disabled // disabled as need more stats before adding new items
-    @Test
-    fun `existing hearing outcome with code NOMIS has REFER_POLICE and another hearing`() {
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-      val dto = migrationFixtures.POLICE_REFERRAL_NEW_HEARING
-      val existing = existing(dto)
-
-      migrateExistingRecordService.accept(dto, existing)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.REFER_POLICE)
-      assertThat(argumentCaptor.value.hearings.last().hearingOutcome).isNull()
-      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.REFER_POLICE)
-      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
-    }
-
     @Test
     fun `existing hearing outcomes with code NOMIS has CHARG_PROVED and QUASHED`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -596,85 +578,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `punishments created if they are not matched with adjudications`() {
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-      val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
-      val existing = existing(dto).also {
-        it.hearings.first().oicHearingId = dto.hearings.first().oicHearingId
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
-        it.clearPunishments()
-        it.addPunishment(
-          Punishment(
-            type = PunishmentType.EXTRA_WORK,
-            schedule = mutableListOf(
-              PunishmentSchedule(days = 0),
-            ),
-          ),
-        )
-      }
-
-      migrateExistingRecordService.accept(dto, existing)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.EXTRA_WORK)
-      assertThat(argumentCaptor.value.getPunishments().last().type).isEqualTo(PunishmentType.CONFINEMENT)
-    }
-
-    @Test
-    fun `throws exception if more than one existing record matches`() {
-      val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
-      val existing = existing(dto).also {
-        it.hearings.first().oicHearingId = dto.hearings.first().oicHearingId
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
-        it.clearPunishments()
-        it.addPunishment(
-          Punishment(
-            type = PunishmentType.CONFINEMENT,
-            schedule = mutableListOf(
-              PunishmentSchedule(days = 0),
-            ),
-          ),
-        )
-        it.addPunishment(
-          Punishment(
-            type = PunishmentType.CONFINEMENT,
-            schedule = mutableListOf(
-              PunishmentSchedule(days = 0),
-            ),
-          ),
-        )
-      }
-
-      Assertions.assertThatThrownBy {
-        migrateExistingRecordService.accept(dto, existing)
-      }.isInstanceOf(ExistingRecordConflictException::class.java)
-    }
-
-    @Test
-    fun `sets sanction sequence for existing record match`() {
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-      val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
-      val existing = existing(dto).also {
-        it.hearings.first().oicHearingId = dto.hearings.first().oicHearingId
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
-        it.clearPunishments()
-        it.addPunishment(
-          Punishment(
-            type = PunishmentType.CONFINEMENT,
-            schedule = mutableListOf(
-              PunishmentSchedule(days = 0),
-            ),
-          ),
-        )
-      }
-
-      migrateExistingRecordService.accept(dto, existing)
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.getPunishments().first().sanctionSeq).isEqualTo(dto.punishments.first().sanctionSeq)
-    }
-
-    @Test
     fun `throws exception if a new hearing before latest with result`() {
       val dto = migrationFixtures.HEARING_BEFORE_LATEST_WITH_RESULT
 
@@ -703,12 +606,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       assertThat(argumentCaptor.value.hearings.minByOrNull { it.dateTimeOfHearing }!!.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
-    }
-
-    @Disabled
-    @Test
-    fun `punishments are matched in adjudications - add latest schedule`() {
-      // this will be captured during discovery with John
     }
   }
 
