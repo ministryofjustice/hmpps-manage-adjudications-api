@@ -270,7 +270,7 @@ class OutcomeService(
   }
 
   companion object {
-    fun ReportedAdjudication.latestOutcome(): Outcome? = this.getOutcomes().maxByOrNull { it.getCreatedDate()!! }
+    fun ReportedAdjudication.latestOutcome(): Outcome? = this.getOutcomes().maxByOrNull { it.getCreatedDateTime()!! }
 
     fun ReportedAdjudication.getOutcome(id: Long) =
       this.getOutcomes().firstOrNull { it.id == id } ?: throw EntityNotFoundException("Outcome not found for $id")
@@ -289,7 +289,7 @@ class OutcomeService(
     }
 
     fun ReportedAdjudication.lastOutcomeIsRefer() =
-      OutcomeCode.referrals().contains(this.getOutcomes().maxByOrNull { it.getCreatedDate()!! }?.code)
+      OutcomeCode.referrals().contains(this.getOutcomes().maxByOrNull { it.getCreatedDateTime()!! }?.code)
 
     fun Outcome?.canQuash() {
       if (this?.code != OutcomeCode.CHARGE_PROVED) {

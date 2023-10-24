@@ -26,7 +26,7 @@ data class Outcome(
   var actualCreatedDate: LocalDateTime? = null,
   var migrated: Boolean = false,
 ) : BaseEntity() {
-  fun getCreatedDate(): LocalDateTime? = this.actualCreatedDate ?: this.createDateTime
+  fun getCreatedDateTime(): LocalDateTime? = this.actualCreatedDate ?: this.createDateTime
 }
 
 enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Finding? = null) {
