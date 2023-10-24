@@ -39,6 +39,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Authent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.getOutcome
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -48,7 +49,7 @@ open class ReportedDtoService(
 
   protected fun ReportedAdjudication.toDto(activeCaseload: String? = null, consecutiveReportsAvailable: List<String>? = null): ReportedAdjudicationDto {
     val hearings = this.hearings.toHearings()
-    val outcomes = this.get().createCombinedOutcomes()
+    val outcomes = this.getOutcome().createCombinedOutcomes()
     return ReportedAdjudicationDto(
       chargeNumber = chargeNumber,
       prisonerNumber = prisonerNumber,
