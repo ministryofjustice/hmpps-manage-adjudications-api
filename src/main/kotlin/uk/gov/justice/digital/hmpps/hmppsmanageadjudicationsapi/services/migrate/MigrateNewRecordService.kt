@@ -55,9 +55,6 @@ class MigrateNewRecordService(
 ) {
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse {
     val chargeNumber = adjudicationMigrateDto.getChargeNumber()
-    val punishmentsAndComments = adjudicationMigrateDto.punishments.toPunishments()
-    val punishments = punishmentsAndComments.first
-    val punishmentComments = punishmentsAndComments.second
     val isYouthOffender = adjudicationMigrateDto.offence.getIsYouthOffender()
 
     val hearingsAndResultsAndOutcomes = adjudicationMigrateDto.hearings.sortedBy { it.hearingDateTime }.toHearingsAndResultsAndOutcomes(
@@ -72,6 +69,9 @@ class MigrateNewRecordService(
     val hearingsAndResults = hearingsAndResultsAndOutcomes.first
     val outcomes = hearingsAndResultsAndOutcomes.second
 
+    val punishmentsAndComments = adjudicationMigrateDto.punishments.toPunishments(outcomes.sortedBy { it.actualCreatedDate }.lastOrNull()?.code)
+    val punishments = punishmentsAndComments.first
+    val punishmentComments = punishmentsAndComments.second
     val disIssued = adjudicationMigrateDto.disIssued.toDisIssue()
 
     val reportedAdjudication = ReportedAdjudication(
@@ -327,13 +327,13 @@ class MigrateNewRecordService(
       return Pair(hearingsAndResults, outcomes)
     }
 
-    fun List<MigratePunishment>.toPunishments(): Pair<List<Punishment>, List<PunishmentComment>> {
+    fun List<MigratePunishment>.toPunishments(finalOutcome: OutcomeCode?): Pair<List<Punishment>, List<PunishmentComment>> {
       val punishments = mutableListOf<Punishment>()
       val punishmentComments = mutableListOf<PunishmentComment>()
 
       this.forEach { sanction ->
 
-        punishments.add(sanction.mapToPunishment())
+        punishments.add(sanction.mapToPunishment(finalOutcome = finalOutcome))
 
         sanction.comment?.let {
           punishmentComments.add(PunishmentComment(comment = it))
@@ -451,11 +451,18 @@ class MigrateNewRecordService(
 
     private fun negativeFindingStates() = listOf(Finding.NOT_PROVEN.name, Finding.NOT_PROCEED.name, Finding.DISMISSED.name)
 
-    private fun MigratePunishment.mapToPunishment(): Punishment {
+    private fun MigratePunishment.mapToPunishment(finalOutcome: OutcomeCode?): Punishment {
+      finalOutcome?.let {
+        if (this.sanctionStatus == Status.QUASHED.name && this.sanctionCode == OicSanctionCode.ADA.name && it != OutcomeCode.QUASHED) {
+          throw UnableToMigrateException("Quashed ADA where final outcome is not QUASHED")
+        }
+      }
+
       val prospectiveStatuses = listOf(Status.PROSPECTIVE.name, Status.SUSP_PROSP.name)
-      val typesWithoutDates = PunishmentType.additionalDays().plus(PunishmentType.CAUTION)
+      val typesWithoutDates = PunishmentType.additionalDays().plus(PunishmentType.CAUTION).plus(PunishmentType.DAMAGES_OWED)
       val type = when (this.sanctionCode) {
         OicSanctionCode.ADA.name -> if (prospectiveStatuses.contains(this.sanctionStatus)) PunishmentType.PROSPECTIVE_DAYS else PunishmentType.ADDITIONAL_DAYS
+        OicSanctionCode.PADA.name -> PunishmentType.PROSPECTIVE_DAYS
         OicSanctionCode.EXTRA_WORK.name -> PunishmentType.EXCLUSION_WORK
         OicSanctionCode.EXTW.name -> PunishmentType.EXTRA_WORK
         OicSanctionCode.CAUTION.name -> PunishmentType.CAUTION
@@ -463,26 +470,27 @@ class MigrateNewRecordService(
         OicSanctionCode.REMACT.name -> PunishmentType.REMOVAL_ACTIVITY
         OicSanctionCode.REMWIN.name -> PunishmentType.REMOVAL_WING
         OicSanctionCode.STOP_PCT.name -> PunishmentType.EARNINGS
+        OicSanctionCode.OTHER.name -> if (this.compensationAmount != null) PunishmentType.DAMAGES_OWED else PunishmentType.PRIVILEGE
         else -> PunishmentType.PRIVILEGE
       }
 
       val suspendedUntil = when (this.sanctionStatus) {
-        Status.SUSPENDED.name, Status.SUSP_PROSP.name -> this.effectiveDate
+        Status.SUSPENDED.name, Status.SUSP_PROSP.name, Status.SUSPEN_RED.name, Status.SUSPEN_EXT.name -> this.effectiveDate
         else -> null
       }
 
       val startDate = when (this.sanctionStatus) {
-        Status.SUSPENDED.name, Status.SUSP_PROSP.name -> null
+        Status.SUSPENDED.name, Status.SUSP_PROSP.name, Status.SUSPEN_RED.name, Status.SUSPEN_EXT.name -> null
         else -> if (typesWithoutDates.contains(type)) null else this.effectiveDate
       }
 
       val endDate = when (this.sanctionStatus) {
-        Status.SUSPENDED.name, Status.SUSP_PROSP.name -> null
+        Status.SUSPENDED.name, Status.SUSP_PROSP.name, Status.SUSPEN_RED.name, Status.SUSPEN_EXT.name -> null
         else -> if (typesWithoutDates.contains(type)) null else this.effectiveDate.plusDays((this.days ?: 0).toLong())
       }
 
       val stoppagePercentage = when (type) {
-        PunishmentType.EARNINGS -> this.compensationAmount
+        PunishmentType.EARNINGS -> this.compensationAmount ?: 0
         else -> null
       }
 
@@ -496,6 +504,11 @@ class MigrateNewRecordService(
         else -> null
       }
 
+      val amount = when (this.sanctionCode) {
+        OicSanctionCode.STOP_EARN.name, OicSanctionCode.OTHER.name -> this.compensationAmount ?: 0
+        else -> null
+      }
+
       return Punishment(
         type = type,
         nomisStatus = this.sanctionStatus,
@@ -505,6 +518,7 @@ class MigrateNewRecordService(
         suspendedUntil = suspendedUntil,
         privilegeType = privilegeType,
         otherPrivilege = otherPrivilege,
+        amount = amount?.toDouble(),
         schedule = mutableListOf(
           PunishmentSchedule(days = this.days ?: 0, startDate = startDate, endDate = endDate, suspendedUntil = suspendedUntil),
         ),

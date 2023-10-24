@@ -111,6 +111,15 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_QUASHED_ADA_AND_NO_QUASHED_OUTCOME = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult()),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.ADA.name, status = Status.QUASHED.name),
+    ),
+  )
+
   val WITH_PUNISHMENT_PRIVILEGES = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
       migrationEntityBuilder.createPunishment(code = OicSanctionCode.FORFEIT.name),
@@ -135,6 +144,12 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_PUNISHMENT_PADA = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = "PADA", status = "PROSPECTIVE", days = 10),
+    ),
+  )
+
   val WITH_PUNISHMENT_PROSPECITVE_ADA_SUSPENDED = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
       migrationEntityBuilder.createPunishment(code = "ADA", status = Status.SUSP_PROSP.name, days = 10, effectiveDate = LocalDate.now()),
@@ -143,7 +158,7 @@ class MigrateFixtures {
 
   val WITH_PUNISHMENT_DAMAGES_AMOUNT = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
-      migrationEntityBuilder.createPunishment(code = "OTHER", amount = BigDecimal(10.50)),
+      migrationEntityBuilder.createPunishment(code = "OTHER", amount = BigDecimal(10.50), days = 0),
     ),
   )
 
@@ -156,6 +171,12 @@ class MigrateFixtures {
   val WITH_PUNISHMENT_STOPPAGE_PERCENTAGE = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
       migrationEntityBuilder.createPunishment(code = OicSanctionCode.STOP_PCT.name, amount = BigDecimal(10.50)),
+    ),
+  )
+
+  val WITH_PUNISHMENT_STOPPAGE_EARNINGS = migrationEntityBuilder.createAdjudication(
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.STOP_EARN.name, amount = BigDecimal(10.50)),
     ),
   )
 

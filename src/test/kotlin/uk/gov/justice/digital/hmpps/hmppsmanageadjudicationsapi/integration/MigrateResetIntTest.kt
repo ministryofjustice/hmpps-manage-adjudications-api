@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_LOCATION_ID
 
@@ -135,8 +134,9 @@ class MigrateResetIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.reportedAdjudication.punishments[0].schedule.days").isEqualTo(10)
-      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.CONFINEMENT.name)
+      // ignore, we clear punishments now.  so losing data is not an issue
+      //  .jsonPath("$.reportedAdjudication.punishments[0].schedule.days").isEqualTo(10)
+      //  .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.CONFINEMENT.name)
       .jsonPath("$.reportedAdjudication.hearings[0].locationId").isEqualTo(UPDATED_LOCATION_ID)
       .jsonPath("$.reportedAdjudication.hearings[0].outcome.adjudicator").isEqualTo("test")
   }
