@@ -25,7 +25,9 @@ data class Outcome(
   var deleted: Boolean? = null,
   var actualCreatedDate: LocalDateTime? = null,
   var migrated: Boolean = false,
-) : BaseEntity()
+) : BaseEntity() {
+  fun getCreatedDate(): LocalDateTime? = this.actualCreatedDate ?: this.createDateTime
+}
 
 enum class OutcomeCode(val status: ReportedAdjudicationStatus, val finding: Finding? = null) {
   REFER_POLICE(ReportedAdjudicationStatus.REFER_POLICE, Finding.REF_POLICE) {

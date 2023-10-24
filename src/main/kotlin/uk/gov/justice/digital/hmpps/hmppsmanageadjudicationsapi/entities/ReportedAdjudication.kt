@@ -114,7 +114,7 @@ data class ReportedAdjudication(
           if (this.getOutcomes().count { listOf(OutcomeCode.DISMISSED, OutcomeCode.CHARGE_PROVED, OutcomeCode.NOT_PROCEED).contains(it.code) } > 1) {
             ReportedAdjudicationStatus.CORRUPTED
           } else {
-            this.getOutcomes().sortedByDescending { it.actualCreatedDate ?: it.createDateTime }.first().code.status
+            this.getOutcomes().sortedByDescending { it.getCreatedDate() }.first().code.status
           }
         }
       }
@@ -145,7 +145,7 @@ data class ReportedAdjudication(
   private fun Hearing?.isAdjourn() = this?.hearingOutcome?.code == HearingOutcomeCode.ADJOURN
 
   companion object {
-    fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.createDateTime!! }
+    fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.getCreatedDate()!! }
   }
 }
 

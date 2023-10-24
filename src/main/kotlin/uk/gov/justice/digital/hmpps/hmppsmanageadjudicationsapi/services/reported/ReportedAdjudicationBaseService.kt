@@ -137,7 +137,7 @@ open class ReportedDtoService(
     if (this.isEmpty()) return emptyList()
 
     val combinedOutcomes = mutableListOf<CombinedOutcomeDto>()
-    val orderedOutcomes = this.sortedBy { it.actualCreatedDate ?: it.createDateTime }.toMutableList()
+    val orderedOutcomes = this.sortedBy { it.getCreatedDate() }.toMutableList()
 
     do {
       val outcome = orderedOutcomes.removeFirst()
