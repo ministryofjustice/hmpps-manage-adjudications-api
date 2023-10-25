@@ -47,6 +47,6 @@ feature:
     adjudications: true
     hearings: true
     outcomes: true
-    punishments: false
+    punishments: true
   skip:
     existing: false
