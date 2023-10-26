@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.SecurityFilterChain
@@ -37,23 +38,31 @@ class ResourceServerConfiguration {
 
   @Bean
   fun filterChain(http: HttpSecurity): SecurityFilterChain {
-    http.headers().frameOptions().sameOrigin().and()
-      .sessionManagement()
-      .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+    http {
+      headers { frameOptions { sameOrigin = true } }
+      sessionManagement { sessionCreationPolicy = SessionCreationPolicy.STATELESS }
       // Can't have CSRF protection as requires session
-      .and().csrf().disable()
-      .authorizeHttpRequests { auth ->
-        auth.requestMatchers(
-          "/webjars/**", "/favicon.ico", "/csrf",
-          "/health/**", "/info",
-          "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**",
-          "/swagger-resources", "/swagger-resources/configuration/ui", "/swagger-resources/configuration/security",
+      csrf { disable() }
+      authorizeHttpRequests {
+        listOf(
+          "/webjars/**",
+          "/favicon.ico",
+          "/csrf",
+          "/health/**",
+          "/info",
+          "/v3/api-docs/**",
+          "/swagger-ui.html",
+          "/swagger-ui/**",
+          "/swagger-resources",
+          "/swagger-resources/configuration/ui",
+          "/swagger-resources/configuration/security",
           "/scheduled-tasks/*",
           "/queue-admin/retry-all-dlqs",
-        ).permitAll()
-          .anyRequest()
-          .authenticated()
-      }.oauth2ResourceServer().jwt().jwtAuthenticationConverter(AuthAwareTokenConverter())
+        ).forEach { authorize(it, permitAll) }
+        authorize(anyRequest, authenticated)
+      }
+      oauth2ResourceServer { jwt { jwtAuthenticationConverter = AuthAwareTokenConverter() } }
+    }
     return http.addFilterAfter(ActiveCaseLoadFilter(), BasicAuthenticationFilter::class.java).build()
   }
 
