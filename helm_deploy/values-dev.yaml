@@ -25,7 +25,7 @@ generic-service:
     FEATURE_NOMIS_SOURCE_OF_TRUTH: true
     FEATURE_SKIP_EXISTING: true
     FEATURE_ASYNC_HEARINGS: true
-    FEATURE_ASYNC_PUNISHMENTS: false
+    FEATURE_ASYNC_PUNISHMENTS: true
     FEATURE_ASYNC_OUTCOMES: true
 
   allowlist: null
