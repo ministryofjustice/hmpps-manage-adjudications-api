@@ -348,7 +348,11 @@ open class ReportedAdjudicationBaseService(
   protected fun hasLinkedAda(reportedAdjudication: ReportedAdjudication): Boolean =
     when (reportedAdjudication.status) {
       ReportedAdjudicationStatus.CHARGE_PROVED ->
-        if (reportedAdjudication.getPunishments().isEmpty()) false else isLinkedToReport(reportedAdjudication.chargeNumber, PunishmentType.additionalDays())
+        if (reportedAdjudication.getPunishments().none { PunishmentType.additionalDays().contains(it.type) }) {
+          false
+        } else {
+          isLinkedToReport(reportedAdjudication.chargeNumber, PunishmentType.additionalDays())
+        }
       else -> false
     }
 
