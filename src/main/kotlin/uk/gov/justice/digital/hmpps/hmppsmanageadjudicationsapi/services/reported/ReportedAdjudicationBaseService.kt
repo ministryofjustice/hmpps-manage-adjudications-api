@@ -46,9 +46,9 @@ open class ReportedDtoService(
   protected val offenceCodeLookupService: OffenceCodeLookupService,
 ) {
 
-  protected fun ReportedAdjudication.toDto(activeCaseload: String? = null, consecutiveReportsAvailable: List<String>? = null): ReportedAdjudicationDto {
+  protected fun ReportedAdjudication.toDto(activeCaseload: String? = null, consecutiveReportsAvailable: List<String>? = null, hasLinkedAda: Boolean = false): ReportedAdjudicationDto {
     val hearings = this.hearings.toHearings()
-    val outcomes = this.getOutcomes().createCombinedOutcomes()
+    val outcomes = this.getOutcomes().createCombinedOutcomes(hasLinkedAda = hasLinkedAda)
     return ReportedAdjudicationDto(
       chargeNumber = chargeNumber,
       prisonerNumber = prisonerNumber,
@@ -86,7 +86,7 @@ open class ReportedDtoService(
       gender = gender,
       dateTimeOfFirstHearing = dateTimeOfFirstHearing,
       outcomes = createOutcomeHistory(hearings.toMutableList(), outcomes.toMutableList()),
-      punishments = this.getPunishments().toPunishments(consecutiveReportsAvailable),
+      punishments = this.getPunishments().toPunishments(consecutiveReportsAvailable, hasLinkedAda),
       punishmentComments = this.punishmentComments.toPunishmentComments(),
       outcomeEnteredInNomis = hearings.any { it.outcome?.code == HearingOutcomeCode.NOMIS },
       overrideAgencyId = this.overrideAgencyId,
@@ -98,7 +98,7 @@ open class ReportedDtoService(
   }
 
   protected fun ReportedAdjudication.getOutcomeHistory(): List<OutcomeHistoryDto> =
-    createOutcomeHistory(this.hearings.toHearings().toMutableList(), this.getOutcomes().createCombinedOutcomes().toMutableList())
+    createOutcomeHistory(this.hearings.toHearings().toMutableList(), this.getOutcomes().createCombinedOutcomes(false).toMutableList())
 
   private fun createOutcomeHistory(hearings: MutableList<HearingDto>, outcomes: MutableList<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
     if (hearings.isEmpty() && outcomes.isEmpty()) return listOf()
@@ -133,7 +133,7 @@ open class ReportedDtoService(
     return history.toList()
   }
 
-  protected fun List<Outcome>.createCombinedOutcomes(): List<CombinedOutcomeDto> {
+  protected fun List<Outcome>.createCombinedOutcomes(hasLinkedAda: Boolean): List<CombinedOutcomeDto> {
     if (this.isEmpty()) return emptyList()
 
     val combinedOutcomes = mutableListOf<CombinedOutcomeDto>()
@@ -148,14 +148,14 @@ open class ReportedDtoService(
 
           combinedOutcomes.add(
             CombinedOutcomeDto(
-              outcome = outcome.toOutcomeDto(),
-              referralOutcome = referralOutcome?.toOutcomeDto(),
+              outcome = outcome.toOutcomeDto(hasLinkedAda = hasLinkedAda && outcome.code == OutcomeCode.CHARGE_PROVED),
+              referralOutcome = referralOutcome?.toOutcomeDto(false),
             ),
           )
         }
         else -> combinedOutcomes.add(
           CombinedOutcomeDto(
-            outcome = outcome.toOutcomeDto(),
+            outcome = outcome.toOutcomeDto(hasLinkedAda = hasLinkedAda && outcome.code == OutcomeCode.CHARGE_PROVED),
           ),
         )
       }
@@ -242,13 +242,14 @@ open class ReportedDtoService(
       plea = this.plea,
     )
 
-  private fun Outcome.toOutcomeDto(): OutcomeDto =
+  private fun Outcome.toOutcomeDto(hasLinkedAda: Boolean): OutcomeDto =
     OutcomeDto(
       id = this.id,
       code = this.code,
       details = this.details,
       reason = this.reason,
       quashedReason = this.quashedReason,
+      canRemove = !hasLinkedAda,
     )
 
   private fun List<DisIssueHistory>.toDisIssueHistory(): List<DisIssueHistoryDto> =
@@ -259,7 +260,7 @@ open class ReportedDtoService(
       )
     }.sortedBy { it.dateTimeOfIssue }.toList()
 
-  private fun List<Punishment>.toPunishments(consecutiveReportsAvailable: List<String>?): List<PunishmentDto> =
+  private fun List<Punishment>.toPunishments(consecutiveReportsAvailable: List<String>?, hasLinkedAda: Boolean): List<PunishmentDto> =
     this.sortedBy { it.type }.map {
       PunishmentDto(
         id = it.id,
@@ -271,6 +272,7 @@ open class ReportedDtoService(
         activatedFrom = it.activatedFromChargeNumber,
         activatedBy = it.activatedByChargeNumber,
         consecutiveChargeNumber = it.consecutiveChargeNumber,
+        canRemove = !(PunishmentType.additionalDays().contains(it.type) && hasLinkedAda),
         consecutiveReportAvailable = isConsecutiveReportAvailable(it.consecutiveChargeNumber, consecutiveReportsAvailable),
         schedule = it.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toPunishmentScheduleDto(),
       )
@@ -343,12 +345,26 @@ open class ReportedAdjudicationBaseService(
     return reportedAdjudication
   }
 
+  protected fun hasLinkedAda(reportedAdjudication: ReportedAdjudication): Boolean =
+    when (reportedAdjudication.status) {
+      ReportedAdjudicationStatus.CHARGE_PROVED ->
+        if (reportedAdjudication.getPunishments().none { PunishmentType.additionalDays().contains(it.type) }) {
+          false
+        } else {
+          isLinkedToReport(reportedAdjudication.chargeNumber, PunishmentType.additionalDays())
+        }
+      else -> false
+    }
+
   protected fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
     reportedAdjudicationRepository.save(
       reportedAdjudication.also {
         it.lastModifiedAgencyId = authenticationFacade.activeCaseload
       },
-    ).toDto(activeCaseload = authenticationFacade.activeCaseload)
+    ).toDto(
+      activeCaseload = authenticationFacade.activeCaseload,
+      hasLinkedAda = hasLinkedAda(reportedAdjudication),
+    )
 
   protected fun findByChargeNumberIn(chargeNumbers: List<String>) = reportedAdjudicationRepository.findByChargeNumberIn(chargeNumbers)
 
@@ -360,8 +376,8 @@ open class ReportedAdjudicationBaseService(
   protected fun getReportsWithActiveAdditionalDays(prisonerNumber: String, punishmentType: PunishmentType) =
     reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(prisonerNumber, punishmentType)
 
-  protected fun isLinkedToReport(consecutiveChargeNumber: String, type: PunishmentType): Boolean =
-    reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsType(consecutiveChargeNumber, type).isNotEmpty()
+  protected fun isLinkedToReport(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean =
+    reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn(consecutiveChargeNumber, types).isNotEmpty()
 
   companion object {
     fun throwEntityNotFoundException(id: String): Nothing =
