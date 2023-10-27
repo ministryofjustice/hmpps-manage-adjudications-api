@@ -345,6 +345,13 @@ open class ReportedAdjudicationBaseService(
     return reportedAdjudication
   }
 
+  protected fun hasLinkedAda(reportedAdjudication: ReportedAdjudication): Boolean =
+    when (reportedAdjudication.status) {
+      ReportedAdjudicationStatus.CHARGE_PROVED ->
+        if (reportedAdjudication.getPunishments().isEmpty()) false else isLinkedToReport(reportedAdjudication.chargeNumber, PunishmentType.additionalDays())
+      else -> false
+    }
+
   protected fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
     reportedAdjudicationRepository.save(
       reportedAdjudication.also {
@@ -352,7 +359,7 @@ open class ReportedAdjudicationBaseService(
       },
     ).toDto(
       activeCaseload = authenticationFacade.activeCaseload,
-      hasLinkedAda = isLinkedToReport(reportedAdjudication.chargeNumber, PunishmentType.additionalDays()),
+      hasLinkedAda = hasLinkedAda(reportedAdjudication),
     )
 
   protected fun findByChargeNumberIn(chargeNumbers: List<String>) = reportedAdjudicationRepository.findByChargeNumberIn(chargeNumbers)

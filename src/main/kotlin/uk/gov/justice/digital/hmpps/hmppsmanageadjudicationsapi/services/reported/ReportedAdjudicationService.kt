@@ -6,7 +6,6 @@ import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssueHistory
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -40,7 +39,7 @@ class ReportedAdjudicationService(
     return reportedAdjudication.toDto(
       activeCaseload = authenticationFacade.activeCaseload,
       consecutiveReportsAvailable = reportedAdjudication.getConsecutiveReportsAvailable(),
-      hasLinkedAda = isLinkedToReport(reportedAdjudication.chargeNumber, PunishmentType.additionalDays()),
+      hasLinkedAda = hasLinkedAda(reportedAdjudication),
     )
   }
 
