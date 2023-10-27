@@ -215,7 +215,9 @@ class MigrateExistingRecordService(
       }
     }
 
-    adjudicationMigrateDto.hearings.filter { this.filterNewHearings(it) }.sortedBy { it.hearingDateTime }.forEach {
+    val newHearingsToReview = adjudicationMigrateDto.hearings.filter { this.filterNewHearings(it) }.toMutableList()
+
+    newHearingsToReview.sortedBy { it.hearingDateTime }.forEach {
       if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(it.hearingDateTime) == true && it.hearingResult != null) {
         throw ExistingRecordConflictException("$chargeNumber has a new hearing with result before latest ${it.hearingResult.finding}")
       }
@@ -223,12 +225,16 @@ class MigrateExistingRecordService(
       if (HearingOutcomeCode.COMPLETE == this.getLatestHearing()?.hearingOutcome?.code &&
         it.hearingResult?.finding != Finding.QUASHED.name
       ) {
-        throw ExistingRecordConflictException("$chargeNumber has a new hearing after completed ${it.hearingResult?.finding}")
+        if (it.hearingDateTime.isAfter(LocalDateTime.now()) || it.hearingResult != null) {
+          throw ExistingRecordConflictException("$chargeNumber has a new hearing in the future after completed ${it.hearingResult?.finding}")
+        } else {
+          newHearingsToReview.remove(it)
+        }
       }
     }
 
     this.addHearingsAndOutcomes(
-      adjudicationMigrateDto.hearings.filter { this.filterNewHearings(it) }.sortedBy { it.hearingDateTime }
+      newHearingsToReview.sortedBy { it.hearingDateTime }
         .toHearingsAndResultsAndOutcomes(
           agencyId = adjudicationMigrateDto.agencyId,
           chargeNumber = this.chargeNumber,

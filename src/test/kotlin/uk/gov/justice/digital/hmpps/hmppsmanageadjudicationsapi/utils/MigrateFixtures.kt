@@ -162,12 +162,6 @@ class MigrateFixtures {
     ),
   )
 
-  val WITH_PUNISHMENT_DAMAGES_NO_AMOUNT = migrationEntityBuilder.createAdjudication(
-    punishments = listOf(
-      migrationEntityBuilder.createPunishment(code = "OTHER"),
-    ),
-  )
-
   val WITH_PUNISHMENT_STOPPAGE_PERCENTAGE = migrationEntityBuilder.createAdjudication(
     punishments = listOf(
       migrationEntityBuilder.createPunishment(code = OicSanctionCode.STOP_PCT.name, amount = BigDecimal(10.50)),
@@ -225,27 +219,6 @@ class MigrateFixtures {
     ),
   )
 
-  val COMPLETE_QUASHED = migrationEntityBuilder.createAdjudication(
-    disIssued = listOf(DisIssued(issuingOfficer = "officer", dateTimeOfIssue = LocalDateTime.now())),
-    damages = listOf(migrationEntityBuilder.createDamage()),
-    evidence = listOf(migrationEntityBuilder.createEvidence()),
-    witnesses = listOf(migrationEntityBuilder.createWitness()),
-    hearings = listOf(
-      migrationEntityBuilder.createHearing(
-        oicHearingId = 100,
-        hearingResult = migrationEntityBuilder.createHearingResult(),
-      ),
-      migrationEntityBuilder.createHearing(
-        oicHearingId = 101,
-        hearingDateTime = LocalDateTime.now().plusDays(1),
-        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name),
-      ),
-    ),
-    punishments = listOf(
-      migrationEntityBuilder.createPunishment(comment = "something"),
-    ),
-  )
-
   val PHASE2_HEARINGS_NO_RESULTS = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(oicHearingId = 1, hearingDateTime = LocalDate.now().atStartOfDay()),
@@ -281,69 +254,6 @@ class MigrateFixtures {
         oicHearingId = 1,
         hearingDateTime = LocalDate.now().atStartOfDay(),
         hearingResult = migrationEntityBuilder.createHearingResult(finding = finding.name),
-      ),
-    ),
-  )
-
-  val MULTIPLE_OFFENDERS = listOf(
-    migrationEntityBuilder.createAdjudication(
-      oicIncidentId = 2,
-      prisoner = migrationEntityBuilder.createPrisoner(
-        prisonerNumber = "AB12345",
-      ),
-    ),
-    migrationEntityBuilder.createAdjudication(
-      oicIncidentId = 3,
-      prisoner = migrationEntityBuilder.createPrisoner(
-        prisonerNumber = "AC12345",
-      ),
-    ),
-    migrationEntityBuilder.createAdjudication(
-      oicIncidentId = 4,
-      prisoner = migrationEntityBuilder.createPrisoner(
-        prisonerNumber = "AD12345",
-      ),
-    ),
-  )
-
-  val MULTIPLE_OFFENDERS_AND_OFFENCES = listOf(
-    migrationEntityBuilder.createAdjudication(
-      oicIncidentId = 2,
-      prisoner = migrationEntityBuilder.createPrisoner(
-        prisonerNumber = "AB12345",
-      ),
-    ),
-    migrationEntityBuilder.createAdjudication(
-      oicIncidentId = 2,
-      offenceSequence = 2,
-      prisoner = migrationEntityBuilder.createPrisoner(
-        prisonerNumber = "AB12345",
-      ),
-    ),
-    migrationEntityBuilder.createAdjudication(
-      oicIncidentId = 3,
-      prisoner = migrationEntityBuilder.createPrisoner(
-        prisonerNumber = "AC12345",
-      ),
-    ),
-    migrationEntityBuilder.createAdjudication(
-      oicIncidentId = 3,
-      offenceSequence = 2,
-      prisoner = migrationEntityBuilder.createPrisoner(
-        prisonerNumber = "AC12345",
-      ),
-    ),
-    migrationEntityBuilder.createAdjudication(
-      oicIncidentId = 4,
-      prisoner = migrationEntityBuilder.createPrisoner(
-        prisonerNumber = "AD12345",
-      ),
-    ),
-    migrationEntityBuilder.createAdjudication(
-      oicIncidentId = 4,
-      offenceSequence = 2,
-      prisoner = migrationEntityBuilder.createPrisoner(
-        prisonerNumber = "AD12345",
       ),
     ),
   )
@@ -642,14 +552,14 @@ class MigrateFixtures {
   val WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_PROVED = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult()),
-      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1)),
+      migrationEntityBuilder.createHearing(oicHearingId = 4, hearingDateTime = LocalDateTime.now().plusDays(1)),
     ),
   )
 
   val WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_GUILTY = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.GUILTY.name)),
-      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1)),
+      migrationEntityBuilder.createHearing(oicHearingId = 4, hearingDateTime = LocalDateTime.now().plusDays(29)),
     ),
   )
 
@@ -733,6 +643,13 @@ class MigrateFixtures {
     ),
   )
 
+  val NEW_HEARING_AFTER_COMPLETED = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().minusDays(4), hearingResult = migrationEntityBuilder.createHearingResult()),
+      migrationEntityBuilder.createHearing(oicHearingId = 100, hearingDateTime = LocalDateTime.now().minusDays(1)),
+    ),
+  )
+
   val PLEA_ISSUE_1 = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(plea = Finding.QUASHED.name, finding = Finding.NOT_PROCEED.name)),
@@ -754,12 +671,6 @@ class MigrateFixtures {
   val PLEA_ISSUE_4 = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(plea = Finding.QUASHED.name, finding = Finding.APPEAL.name)),
-    ),
-  )
-
-  val PLEA_ISSUE_5 = migrationEntityBuilder.createAdjudication(
-    hearings = listOf(
-      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(plea = Finding.PROVED.name, finding = Finding.NOT_PROVEN.name)),
     ),
   )
 

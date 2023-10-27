@@ -256,21 +256,15 @@ class MigrateNewRecordService(
           else -> {
             val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(
               hasAdditionalHearingOutcomes = hasAdditionalHearingOutcomes,
-              hasAdditionalHearingsInFutureWithoutResults = hasAdditionalHearingsWithoutResults && this.any { LocalDateTime.now().isBefore(it.hearingDateTime) },
+              hasAdditionalHearingsInFutureWithoutResults = hasAdditionalHearingsWithoutResults &&
+                this.filter { it.oicHearingId != oicHearing.oicHearingId }.maxByOrNull { it.hearingDateTime }?.hearingDateTime?.isBefore(oicHearing.hearingDateTime.plusDays(30)) ?: false,
               chargeNumber = chargeNumber,
               valid = valid,
             )
 
-            var plea: HearingOutcomePlea
-            try {
-              plea = oicHearing.hearingResult.plea.mapToPlea(
-                finding = oicHearing.hearingResult.finding,
-                chargeNumber = chargeNumber,
-              )
-            } catch (e: UnableToMigrateException) {
-              if (hasAdditionalHearingOutcomes || oicHearing.hearingResult.plea == Finding.PROVED.name) throw e
-              plea = HearingOutcomePlea.NOT_ASKED
-            }
+            val plea = oicHearing.hearingResult.plea.mapToPlea(
+              finding = oicHearing.hearingResult.finding,
+            )
 
             Pair(
               HearingOutcome(
@@ -436,7 +430,7 @@ class MigrateNewRecordService(
         else -> false
       }
 
-    private fun String.mapToPlea(chargeNumber: String, finding: String): HearingOutcomePlea = when (this) {
+    private fun String.mapToPlea(finding: String): HearingOutcomePlea = when (this) {
       Plea.NOT_GUILTY.name -> HearingOutcomePlea.NOT_GUILTY
       Plea.GUILTY.name -> HearingOutcomePlea.GUILTY
       Plea.NOT_ASKED.name -> HearingOutcomePlea.NOT_ASKED
@@ -444,8 +438,10 @@ class MigrateNewRecordService(
       Plea.REFUSED.name -> HearingOutcomePlea.ABSTAIN
       else -> if (this == finding || (negativeFindingStates().contains(this) && negativeFindingStates().contains(finding))) {
         HearingOutcomePlea.NOT_ASKED
+      } else if (this == Finding.GUILTY.name) {
+        HearingOutcomePlea.GUILTY
       } else {
-        throw UnableToMigrateException("$chargeNumber-1 $this plea is not mapped currently, finding $finding")
+        HearingOutcomePlea.NOT_ASKED
       }
     }
 

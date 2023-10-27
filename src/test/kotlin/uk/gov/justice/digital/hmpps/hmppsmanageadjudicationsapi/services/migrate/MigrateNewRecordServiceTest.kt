@@ -870,16 +870,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `if plea is not mapped and doesnt not equal finding throws exception`() {
-      val dto = migrationFixtures.PLEA_ISSUE_5
-
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("not mapped")
-    }
-
-    @Test
     fun `if plea is not mapped, and is same as finding, plea should be NOT_ASKED`() {
       val dto = migrationFixtures.PLEA_NOT_MAPPED_SAME_AS_FINDING
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)

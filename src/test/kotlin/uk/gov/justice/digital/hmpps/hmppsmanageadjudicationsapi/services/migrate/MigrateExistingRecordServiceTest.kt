@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
@@ -214,7 +215,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing(dto))
       }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("has a new hearing after")
+        .hasMessageContaining("has a new hearing in the future ")
     }
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
@@ -507,19 +508,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `throws exception if additional hearings and results found - note this will need to be addressed with more data available`() {
-      val dto = migrationFixtures.WITH_ADDITIONAL_HEARINGS_IN_NOMIS
-      val existing = existing(dto).also {
-        it.hearings.first().oicHearingId = dto.hearings.first().oicHearingId
-        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "someone")
-      }
-
-      Assertions.assertThatThrownBy {
-        migrateExistingRecordService.accept(dto, existing)
-      }.isInstanceOf(ExistingRecordConflictException::class.java)
-    }
-
-    @Test
     fun `punishments created if they exist in nomis only`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
@@ -606,6 +594,24 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       assertThat(argumentCaptor.value.hearings.minByOrNull { it.dateTimeOfHearing }!!.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+    }
+
+    @Test
+    fun `existing record that is completed, with additional hearings ignores the empty hearings`() {
+      val dto = migrationFixtures.NEW_HEARING_AFTER_COMPLETED
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.last().hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
     }
   }
 
