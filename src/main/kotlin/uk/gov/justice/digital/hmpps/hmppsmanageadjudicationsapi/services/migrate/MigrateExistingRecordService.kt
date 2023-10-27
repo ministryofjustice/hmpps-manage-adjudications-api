@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePreMigrate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingPreMigrate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -201,11 +202,52 @@ class MigrateExistingRecordService(
         }
       hearing.hearingOutcome?.let {
         nomisHearingResult?.let { nhr ->
-          it.code.mapFinding(
-            finding = nhr.finding,
-            chargeNumber = this.chargeNumber,
-            isLastOutcome = index == hearings.size - 1,
-          )
+
+          try {
+            it.code.mapFinding(
+              finding = nhr.finding,
+              chargeNumber = this.chargeNumber,
+              isLastOutcome = index == hearings.size - 1,
+            )
+          } catch (e: ExistingRecordConflictException) {
+            when (it.code) {
+              HearingOutcomeCode.ADJOURN ->
+                when (nhr.finding) {
+                  Finding.PROVED.name -> {
+                    it.code = HearingOutcomeCode.COMPLETE
+                    this.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = LocalDateTime.now()))
+                  }
+                  Finding.NOT_PROCEED.name, Finding.DISMISSED.name -> {
+                    it.code = HearingOutcomeCode.COMPLETE
+                    this.addOutcome(Outcome(code = OutcomeCode.NOT_PROCEED, actualCreatedDate = LocalDateTime.now()))
+                  }
+                  Finding.D.name -> {
+                    it.code = HearingOutcomeCode.COMPLETE
+                    this.addOutcome(Outcome(code = OutcomeCode.DISMISSED, actualCreatedDate = LocalDateTime.now()))
+                  }
+                  else -> throw e
+                }
+              HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_GOV, HearingOutcomeCode.REFER_INAD ->
+                when (nhr.finding) {
+                  Finding.PROVED.name -> {
+                    it.code = HearingOutcomeCode.COMPLETE
+                    this.latestOutcome()?.code = OutcomeCode.CHARGE_PROVED
+                  }
+                  Finding.NOT_PROCEED.name, Finding.DISMISSED.name, Finding.D.name -> {
+                    this.addOutcome(Outcome(code = OutcomeCode.NOT_PROCEED, actualCreatedDate = LocalDateTime.now()))
+                  }
+                  Finding.PROSECUTED.name -> {
+                    if (it.code == HearingOutcomeCode.REFER_POLICE) {
+                      this.addOutcome(Outcome(code = OutcomeCode.PROSECUTION, actualCreatedDate = LocalDateTime.now()))
+                    } else {
+                      throw e
+                    }
+                  }
+                  else -> throw e
+                }
+              else -> throw e
+            }
+          }
         }
       }
 
