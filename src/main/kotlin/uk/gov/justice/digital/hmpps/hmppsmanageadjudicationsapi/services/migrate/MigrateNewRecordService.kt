@@ -46,6 +46,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToPunishment
 import java.time.LocalDateTime
 
 @Transactional
@@ -325,9 +326,17 @@ class MigrateNewRecordService(
       val punishments = mutableListOf<Punishment>()
       val punishmentComments = mutableListOf<PunishmentComment>()
 
+      finalOutcome?.let {
+        if (this.any { sanction -> sanction.sanctionStatus == Status.QUASHED.name && sanction.sanctionCode == OicSanctionCode.ADA.name } && it != OutcomeCode.QUASHED) {
+          punishmentComments.add(
+            PunishmentComment(comment = "ADA is quashed in NOMIS", migrated = true),
+          )
+        }
+      }
+
       this.forEach { sanction ->
 
-        punishments.add(sanction.mapToPunishment(finalOutcome = finalOutcome))
+        punishments.add(sanction.mapToPunishment())
 
         sanction.comment?.let {
           punishmentComments.add(PunishmentComment(comment = it))
@@ -447,13 +456,7 @@ class MigrateNewRecordService(
 
     private fun negativeFindingStates() = listOf(Finding.NOT_PROVEN.name, Finding.NOT_PROCEED.name, Finding.DISMISSED.name)
 
-    private fun MigratePunishment.mapToPunishment(finalOutcome: OutcomeCode?): Punishment {
-      finalOutcome?.let {
-        if (this.sanctionStatus == Status.QUASHED.name && this.sanctionCode == OicSanctionCode.ADA.name && it != OutcomeCode.QUASHED) {
-          throw UnableToMigrateException("Quashed ADA where final outcome is not QUASHED")
-        }
-      }
-
+    private fun MigratePunishment.mapToPunishment(): Punishment {
       val prospectiveStatuses = listOf(Status.PROSPECTIVE.name, Status.SUSP_PROSP.name)
       val typesWithoutDates = PunishmentType.additionalDays().plus(PunishmentType.CAUTION).plus(PunishmentType.DAMAGES_OWED)
       val type = when (this.sanctionCode) {

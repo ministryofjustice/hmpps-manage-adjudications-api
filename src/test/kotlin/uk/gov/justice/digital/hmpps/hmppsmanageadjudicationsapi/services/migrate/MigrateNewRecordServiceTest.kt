@@ -487,12 +487,14 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `throws exception if we have a QUASHED ADA, and the final outcome is not QUASHED`() {
+    fun `adds comment if we have a QUASHED ADA, and the final outcome is not QUASHED`() {
       val dto = migrationFixtures.WITH_QUASHED_ADA_AND_NO_QUASHED_OUTCOME
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("Quashed ADA where final outcome is not QUASHED")
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.punishmentComments.any { it.comment.contains("ADA is quashed in NOMIS") }).isTrue
     }
   }
 
