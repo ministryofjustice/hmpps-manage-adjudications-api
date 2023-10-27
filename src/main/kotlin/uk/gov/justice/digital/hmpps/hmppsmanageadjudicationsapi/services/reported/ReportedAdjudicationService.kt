@@ -39,6 +39,7 @@ class ReportedAdjudicationService(
     return reportedAdjudication.toDto(
       activeCaseload = authenticationFacade.activeCaseload,
       consecutiveReportsAvailable = reportedAdjudication.getConsecutiveReportsAvailable(),
+      hasLinkedAda = hasLinkedAda(reportedAdjudication),
     )
   }
 

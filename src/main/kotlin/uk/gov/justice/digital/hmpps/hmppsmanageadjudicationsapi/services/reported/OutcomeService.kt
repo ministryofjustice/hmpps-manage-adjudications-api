@@ -258,7 +258,7 @@ class OutcomeService(
 
   fun getOutcomes(chargeNumber: String): List<CombinedOutcomeDto> {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
-    return reportedAdjudication.getOutcomes().createCombinedOutcomes()
+    return reportedAdjudication.getOutcomes().createCombinedOutcomes(false)
   }
 
   fun getLatestOutcome(chargeNumber: String): Outcome? = findByChargeNumber(chargeNumber).latestOutcome()

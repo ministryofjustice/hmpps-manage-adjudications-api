@@ -215,6 +215,8 @@ data class OutcomeDto(
   val reason: NotProceedReason? = null,
   @Schema(description = "optional quashed reason")
   val quashedReason: QuashedReason? = null,
+  @Schema(description = "flag to indicate if the outcome can be removed")
+  val canRemove: Boolean = true,
 )
 
 @Schema(description = "Combined Outcome - currently to support referral but maybe expanded once awards are added")
@@ -257,6 +259,8 @@ data class PunishmentDto(
   val consecutiveReportAvailable: Boolean? = null,
   @Schema(description = "optional amount - money being recovered for damages")
   val damagesOwedAmount: Double? = null,
+  @Schema(description = "flag to indicate if the punishment can be removed")
+  val canRemove: Boolean = true,
 )
 
 @Schema(description = "punishment schedule")
