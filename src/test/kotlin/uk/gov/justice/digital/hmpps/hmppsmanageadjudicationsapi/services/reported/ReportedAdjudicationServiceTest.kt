@@ -1834,6 +1834,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     fun `init`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication(chargeNumber = "12345").also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.createdByUserId = ""
           it.createDateTime = LocalDateTime.now()
           it.clearOutcomes()
