@@ -644,7 +644,7 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    val result = reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsType("1234", PunishmentType.PROSPECTIVE_DAYS)
+    val result = reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn("1234", listOf(PunishmentType.PROSPECTIVE_DAYS))
     assertThat(result.size).isEqualTo(1)
   }
 }

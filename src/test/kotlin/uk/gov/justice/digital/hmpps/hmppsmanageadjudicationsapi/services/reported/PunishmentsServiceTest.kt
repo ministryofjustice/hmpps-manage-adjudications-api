@@ -797,7 +797,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsType("1", type)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn("1", listOf(type))).thenReturn(
         listOf(entityBuilder.reportedAdjudication(chargeNumber = "1234")),
       )
 
@@ -826,7 +826,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsType("1", type)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn("1", listOf(type))).thenReturn(
         listOf(entityBuilder.reportedAdjudication(chargeNumber = "1234")),
       )
 
@@ -858,7 +858,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsType("1", type)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn("1", listOf(type))).thenReturn(
         listOf(entityBuilder.reportedAdjudication(chargeNumber = "1234")),
       )
 
@@ -1165,6 +1165,58 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("CAUTION can only include DAMAGES_OWED")
+    }
+
+    @Test
+    fun `changing a punishment from consecutive to concurrent removes the consecutive to charge`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(
+        reportedAdjudication.also {
+          it.clearPunishments()
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = PunishmentType.ADDITIONAL_DAYS,
+              consecutiveChargeNumber = "1234",
+              schedule = mutableListOf(PunishmentSchedule(days = 1)),
+            ),
+          )
+        },
+      )
+      val response = punishmentsService.update(
+        chargeNumber = "12345",
+        punishments =
+        listOf(
+          PunishmentRequest(id = 1, type = PunishmentType.ADDITIONAL_DAYS, days = 1),
+        ),
+      )
+
+      assertThat(response.punishments.first().consecutiveChargeNumber).isNull()
+    }
+
+    @Test
+    fun `changing damages owed amount updates new amount`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(
+        reportedAdjudication.also {
+          it.clearPunishments()
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = PunishmentType.DAMAGES_OWED,
+              amount = 100.0,
+              schedule = mutableListOf(PunishmentSchedule(days = 1)),
+            ),
+          )
+        },
+      )
+      val response = punishmentsService.update(
+        chargeNumber = "12345",
+        punishments =
+        listOf(
+          PunishmentRequest(id = 1, type = PunishmentType.DAMAGES_OWED, damagesOwedAmount = 99.9),
+        ),
+      )
+
+      assertThat(response.punishments.first().damagesOwedAmount).isEqualTo(99.9)
     }
   }
 

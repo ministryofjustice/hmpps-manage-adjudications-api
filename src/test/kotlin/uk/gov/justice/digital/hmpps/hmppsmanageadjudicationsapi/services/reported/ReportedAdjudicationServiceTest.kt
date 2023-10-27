@@ -6,6 +6,7 @@ import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -1823,6 +1824,52 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.createdOnBehalfOfOfficer).isEqualTo("officer")
       assertThat(argumentCaptor.value.createdOnBehalfOfReason).isEqualTo("some reason")
       assertThat(response).isNotNull
+    }
+  }
+
+  @Nested
+  inner class CanRemoveFlags {
+
+    @BeforeEach
+    fun `init`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication(chargeNumber = "12345").also {
+          it.createdByUserId = ""
+          it.createDateTime = LocalDateTime.now()
+          it.clearOutcomes()
+          it.hearings.first().hearingOutcome = HearingOutcome(
+            code = HearingOutcomeCode.COMPLETE,
+            adjudicator = "",
+          )
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          it.clearPunishments()
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.ADDITIONAL_DAYS,
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 1),
+              ),
+            ),
+          )
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn("12345", PunishmentType.additionalDays()))
+        .thenReturn(listOf(entityBuilder.reportedAdjudication()))
+    }
+
+    @Test
+    fun `outcome can not be removed as it has a linked ADA`() {
+      val dto = reportedAdjudicationService.getReportedAdjudicationDetails(chargeNumber = "12345")
+
+      assertThat(dto.outcomes.first().outcome!!.outcome.canRemove).isFalse
+    }
+
+    @Test
+    fun `punishment can not be removed if consecutive to another report`() {
+      val dto = reportedAdjudicationService.getReportedAdjudicationDetails(chargeNumber = "12345")
+
+      assertThat(dto.punishments.first().canRemove).isFalse
     }
   }
 

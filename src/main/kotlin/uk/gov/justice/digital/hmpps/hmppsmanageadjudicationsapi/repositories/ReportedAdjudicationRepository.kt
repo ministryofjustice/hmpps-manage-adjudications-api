@@ -99,7 +99,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("statuses") statuses: List<String>,
   ): Long
 
-  fun findByPunishmentsConsecutiveChargeNumberAndPunishmentsType(consecutiveChargeNumber: String, type: PunishmentType): List<ReportedAdjudication>
+  fun findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn(consecutiveChargeNumber: String, types: List<PunishmentType>): List<ReportedAdjudication>
 
   @Query(
     value = "select ra.charge_number from reported_adjudications ra where ra.migrated is false and ra.originating_agency_id = :agency",
