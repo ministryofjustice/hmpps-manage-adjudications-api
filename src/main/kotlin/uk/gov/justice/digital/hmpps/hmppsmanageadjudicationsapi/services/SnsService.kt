@@ -108,7 +108,7 @@ enum class AdjudicationDomainEventType(val value: String, val description: Strin
   HEARING_OUTCOME_UPDATED("adjudication.hearingOutcome.updated", "Adjudication hearing outcome updated: ", AuditType.HEARING_OUTCOME_UPDATED),
   PUNISHMENTS_CREATED("adjudication.punishments.created", "Adjudication punishments created: ", AuditType.PUNISHMENTS_CREATED),
   PUNISHMENTS_UPDATED("adjudication.punishments.updated", "Adjudication punishments updated: ", AuditType.PUNISHMENTS_UPDATED),
-  PUNISHMENTS_DELETED("adjudication.punishments.deleted", "Adjudication punishments deleted: ", AuditType.PUNISHMENTS_UPDATED),
+  PUNISHMENTS_DELETED("adjudication.punishments.deleted", "Adjudication punishments deleted: ", AuditType.PUNISHMENTS_DELETED),
   QUASHED("adjudication.outcome.quashed", "Adjudication quashed: ", AuditType.QUASHED),
   UNQUASHED("adjudication.outcome.unquashed", "Adjudication unquashed: ", AuditType.UNQUASHED),
   PROSECUTION_REFERRAL_OUTCOME("adjudication.referral.outcome.prosecution", "Adjudication prosecution from referral: ", AuditType.REFERRAL_OUTCOME_PROSECUTION),
