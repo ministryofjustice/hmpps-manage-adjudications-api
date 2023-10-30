@@ -755,7 +755,37 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         migrateNewRecordService.accept(dto)
       }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("record structure")
+        .hasMessageContaining("record structure (active with ADA):")
+    }
+
+    @Test
+    fun `adjudication with quashed or appeal before another outcome, with active ADA throws exception`() {
+      val dto = migrationFixtures.EXCEPTION_CASE_6
+      Assertions.assertThatThrownBy {
+        migrateNewRecordService.accept(dto)
+      }.isInstanceOf(UnableToMigrateException::class.java)
+        .hasMessageContaining("record structure (active with ADA):")
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getQuashedAppealCorruptedStates")
+    @ParameterizedTest
+    fun `adjudication with quashed or appeal before another outcome, without active ADA will accept as corrupted record`(dto: AdjudicationMigrateDto) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }[1].code).isEqualTo(OutcomeCode.QUASHED)
+      assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.last().code).isEqualTo(
+        when (dto.hearings.last().hearingResult!!.finding) {
+          Finding.PROVED.name -> OutcomeCode.CHARGE_PROVED
+          Finding.D.name -> OutcomeCode.DISMISSED
+          else -> null
+        },
+      )
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(3)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
     }
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
@@ -959,6 +989,14 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
         migrationFixtures.EXCEPTION_CASE,
         migrationFixtures.EXCEPTION_CASE_2,
         migrationFixtures.EXCEPTION_CASE_3,
+      ).stream()
+
+    @JvmStatic
+    fun getQuashedAppealCorruptedStates(): Stream<AdjudicationMigrateDto> =
+      listOf(
+        migrationFixtures.EXCEPTION_CASE_7,
+        migrationFixtures.EXCEPTION_CASE_8,
+        migrationFixtures.EXCEPTION_CASE_9,
       ).stream()
 
     @JvmStatic

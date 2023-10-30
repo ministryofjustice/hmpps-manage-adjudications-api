@@ -377,7 +377,8 @@ class MigrateNewRecordService(
       if (shouldBeFinal.contains(last.hearingResult?.finding)) return true
       if (this.any { shouldBeFinal.contains(it.hearingResult?.finding) } && this.count { it.hearingResult != null } > 1) {
         val indexOf = this.indexOfLast { shouldBeFinal.contains(it.hearingResult?.finding) }
-        if (indexOf != -1 && indexOf < this.size - 1) throw UnableToMigrateException("record structure: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+        // add better exception in for now.
+        if (indexOf != -1 && indexOf < this.size - 1 && hasSanctions && hasADA && isActive) throw UnableToMigrateException("record structure (active with ADA):: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
       }
       return true
     }
