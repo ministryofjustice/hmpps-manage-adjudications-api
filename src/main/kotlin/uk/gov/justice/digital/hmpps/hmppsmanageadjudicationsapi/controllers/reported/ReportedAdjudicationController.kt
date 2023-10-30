@@ -66,7 +66,12 @@ class ReportedAdjudicationController(
     reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      eventSupplier = { AdjudicationDomainEventType.ADJUDICATION_CREATED },
+      events = listOf(
+        EventRuleAndSupplier(
+          eventRule = { it.status == ReportedAdjudicationStatus.UNSCHEDULED },
+          eventSupplier = { AdjudicationDomainEventType.ADJUDICATION_CREATED },
+        ),
+      ),
       controllerAction = {
         reportedAdjudicationService.setStatus(
           chargeNumber,
@@ -75,7 +80,6 @@ class ReportedAdjudicationController(
           reportedAdjudicationStatusRequest.statusDetails,
         )
       },
-      eventRule = { it.status == ReportedAdjudicationStatus.UNSCHEDULED },
     )
 
   @PutMapping(value = ["/{chargeNumber}/issue"])

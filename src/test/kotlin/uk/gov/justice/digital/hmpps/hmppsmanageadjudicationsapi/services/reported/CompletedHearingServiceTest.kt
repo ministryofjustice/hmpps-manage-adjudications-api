@@ -4,6 +4,8 @@ import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
@@ -109,14 +111,21 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class RemoveCompletedHearingOutcome {
 
-    @Test
-    fun `remove a completed hearing outcome removes outcome and hearing outcome `() {
+    @CsvSource("CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
+    @ParameterizedTest
+    fun `remove a completed hearing outcome removes outcome and hearing outcome `(outcomeCode: OutcomeCode) {
       whenever(hearingOutcomeService.deleteHearingOutcome(any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
-      whenever(outcomeService.getLatestOutcome("1")).thenReturn(Outcome(id = 1L, code = OutcomeCode.CHARGE_PROVED))
-      completedHearingService.removeOutcome(chargeNumber = "1")
+      whenever(outcomeService.getLatestOutcome("1")).thenReturn(Outcome(id = 1L, code = outcomeCode))
+      val response = completedHearingService.removeOutcome(chargeNumber = "1")
 
       verify(outcomeService, atLeastOnce()).deleteOutcome(chargeNumber = "1", id = 1L)
       verify(hearingOutcomeService, atLeastOnce()).deleteHearingOutcome(chargeNumber = "1")
+
+      if (outcomeCode == OutcomeCode.CHARGE_PROVED) {
+        Assertions.assertThat(response.punishmentsRemoved).isTrue
+      } else {
+        Assertions.assertThat(response.punishmentsRemoved).isFalse
+      }
     }
 
     @Test

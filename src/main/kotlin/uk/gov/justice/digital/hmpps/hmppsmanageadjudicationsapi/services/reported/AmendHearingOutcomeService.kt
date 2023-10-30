@@ -49,6 +49,7 @@ class AmendHearingOutcomeService(
         amendHearingOutcomeRequest = amendHearingOutcomeRequest,
       ).also {
         it.hearingIdActioned = it.hearings.getLatestHearingId()
+        it.punishmentsRemoved = currentStatus == ReportedAdjudicationStatus.CHARGE_PROVED
       }
     }
   }

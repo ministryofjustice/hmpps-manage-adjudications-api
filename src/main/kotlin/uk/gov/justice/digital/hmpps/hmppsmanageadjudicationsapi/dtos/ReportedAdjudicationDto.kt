@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
@@ -80,11 +81,15 @@ data class ReportedAdjudicationDto(
   @Schema(description = "optional actions flag to indicate if an ALO can carry out actions against a transferable adjudication, null if not transferable")
   val transferableActionsAllowed: Boolean? = null,
   @Schema(description = "hearing id action carried out on")
+  @JsonIgnore
   var hearingIdActioned: Long? = null,
   @Schema(description = "Name the officer the report was created on behalf of")
   var createdOnBehalfOfOfficer: String? = null,
   @Schema(description = "Reason why the report was created on behalf of another officer")
   var createdOnBehalfOfReason: String? = null,
+  @Schema(description = "punishments have been removed due to outcome delete or edit")
+  @JsonIgnore
+  var punishmentsRemoved: Boolean = false,
 )
 
 @Schema(description = "Details of an offence")

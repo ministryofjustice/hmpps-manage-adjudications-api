@@ -9,6 +9,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -283,16 +284,6 @@ class HearingOutcomeControllerTest : TestControllerBase() {
 
   @Nested
   inner class AmendHearingOutcome {
-    @BeforeEach
-    fun beforeEach() {
-      whenever(
-        amendHearingOutcomeService.amendHearingOutcome(
-          ArgumentMatchers.anyString(),
-          any(),
-          any(),
-        ),
-      ).thenReturn(REPORTED_ADJUDICATION_DTO)
-    }
 
     @Test
     fun `responds with a unauthorised status code`() {
@@ -313,17 +304,31 @@ class HearingOutcomeControllerTest : TestControllerBase() {
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @Test
+    @CsvSource("CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
+    @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to amend a hearing outcome`() {
-      amendHearingOutcomeRequest(1, AMEND_OUTCOME_REQUEST, ReportedAdjudicationStatus.REFER_POLICE)
+    fun `makes a call to amend a hearing outcome`(status: ReportedAdjudicationStatus) {
+      whenever(
+        amendHearingOutcomeService.amendHearingOutcome(
+          ArgumentMatchers.anyString(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(
+        REPORTED_ADJUDICATION_DTO.also {
+          it.punishmentsRemoved = status == ReportedAdjudicationStatus.CHARGE_PROVED
+        },
+      )
+
+      amendHearingOutcomeRequest(1, AMEND_OUTCOME_REQUEST, status)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(amendHearingOutcomeService).amendHearingOutcome(
         chargeNumber = "1",
-        status = ReportedAdjudicationStatus.REFER_POLICE,
+        status = status,
         AMEND_OUTCOME_REQUEST,
       )
       verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_OUTCOME_UPDATED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, if (status == ReportedAdjudicationStatus.CHARGE_PROVED) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.PUNISHMENTS_DELETED, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun amendHearingOutcomeRequest(
@@ -457,14 +462,6 @@ class HearingOutcomeControllerTest : TestControllerBase() {
 
   @Nested
   inner class RemoveCompletedHearingOutcome {
-    @BeforeEach
-    fun beforeEach() {
-      whenever(
-        completedHearingService.removeOutcome(
-          ArgumentMatchers.anyString(),
-        ),
-      ).thenReturn(REPORTED_ADJUDICATION_DTO)
-    }
 
     @Test
     fun `responds with a unauthorised status code`() {
@@ -483,13 +480,21 @@ class HearingOutcomeControllerTest : TestControllerBase() {
       removeCompletedHearingOutcomeRequest(1).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @Test
+    @CsvSource("CHARGE_PROVED", "DISMISSED", "NOT_PROCEED")
+    @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to remove a completed hearing`() {
+    fun `makes a call to remove a completed hearing`(outcomeCode: OutcomeCode) {
+      whenever(
+        completedHearingService.removeOutcome(
+          ArgumentMatchers.anyString(),
+        ),
+      ).thenReturn(REPORTED_ADJUDICATION_DTO.also { it.punishmentsRemoved = outcomeCode == OutcomeCode.CHARGE_PROVED })
+
       removeCompletedHearingOutcomeRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(completedHearingService).removeOutcome("1")
       verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_COMPLETED_DELETED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, if (outcomeCode == OutcomeCode.CHARGE_PROVED) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.PUNISHMENTS_DELETED, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun removeCompletedHearingOutcomeRequest(
