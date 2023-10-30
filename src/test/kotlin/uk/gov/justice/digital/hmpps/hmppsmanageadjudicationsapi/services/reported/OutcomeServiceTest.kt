@@ -577,6 +577,37 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.REFER_GOV)
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.REFER_GOV)
     }
+
+    @Test
+    fun `delete outcome throws exception if ADA linked to another report`() {
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn(any(), any())).thenReturn(
+        listOf(reportedAdjudication),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
+        reportedAdjudication
+          .also {
+            it.addOutcome(Outcome(id = 1, code = OutcomeCode.CHARGE_PROVED).also { o -> o.createDateTime = LocalDateTime.now() })
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.DAMAGES_OWED,
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10),
+                ),
+              ),
+            )
+            it.punishmentComments.add(PunishmentComment(comment = ""))
+          },
+      )
+
+      Assertions.assertThatThrownBy {
+        outcomeService.deleteOutcome(
+          "1",
+          1,
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("is linked to another report")
+    }
   }
 
   @Nested

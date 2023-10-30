@@ -56,10 +56,14 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       val request = createRequest(status)
 
-      whenever(outcomeService.amendOutcomeViaService(any(), any(), anyOrNull(), anyOrNull())).thenReturn(REPORTED_ADJUDICATION_DTO)
+      whenever(outcomeService.amendOutcomeViaService(any(), any(), anyOrNull(), anyOrNull())).thenReturn(
+        REPORTED_ADJUDICATION_DTO.also {
+          it.punishmentsRemoved = false
+        },
+      )
       whenever(hearingOutcomeService.amendHearingOutcome(any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(REPORTED_ADJUDICATION_DTO)
 
-      amendHearingOutcomeService.amendHearingOutcome(
+      val response = amendHearingOutcomeService.amendHearingOutcome(
         chargeNumber = "1",
         status = status,
         amendHearingOutcomeRequest = request,
@@ -83,6 +87,8 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
           notProceedReason = request.notProceedReason,
         )
       }
+
+      Assertions.assertThat(response.punishmentsRemoved).isFalse
     }
 
     @CsvSource("ACCEPTED", "SCHEDULED", "UNSCHEDULED", "REJECTED", "RETURNED", "PROSECUTION", "QUASHED", "AWAITING_REVIEW")
@@ -136,7 +142,7 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       val request = createRequest(to)
 
-      amendHearingOutcomeService.amendHearingOutcome(
+      val response = amendHearingOutcomeService.amendHearingOutcome(
         chargeNumber = "1",
         status = to,
         amendHearingOutcomeRequest = request,
@@ -165,6 +171,12 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
           verify(completedHearingService, atLeastOnce()).createChargeProved("1", request.adjudicator!!, request.plea!!, false)
 
         else -> {}
+      }
+
+      if (from == ReportedAdjudicationStatus.CHARGE_PROVED) {
+        Assertions.assertThat(response.punishmentsRemoved).isTrue
+      } else {
+        Assertions.assertThat(response.punishmentsRemoved).isFalse
       }
     }
 

@@ -92,12 +92,17 @@ class OutcomeController(
           reason = notProceedRequest.reason,
         )
       },
-      eventSupplier = {
-        when (it.outcomes.lastOrNull()?.outcome?.referralOutcome) {
-          null -> AdjudicationDomainEventType.NOT_PROCEED_OUTCOME
-          else -> AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME
-        }
-      },
+      events = listOf(
+        EventRuleAndSupplier(
+          eventSupplier = {
+            when (it.outcomes.lastOrNull()?.outcome?.referralOutcome) {
+              null -> AdjudicationDomainEventType.NOT_PROCEED_OUTCOME
+              else -> AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME
+            }
+          },
+        ),
+      ),
+
     )
 
   @Operation(
@@ -125,7 +130,11 @@ class OutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      eventSupplier = { AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME },
+      events = listOf(
+        EventRuleAndSupplier(
+          eventSupplier = { AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME },
+        ),
+      ),
       controllerAction = {
         outcomeService.createProsecution(
           chargeNumber = chargeNumber,
@@ -159,7 +168,11 @@ class OutcomeController(
     @RequestBody referGovRequest: ReferralDetailsRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      eventSupplier = { AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV },
+      events = listOf(
+        EventRuleAndSupplier(
+          eventSupplier = { AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV },
+        ),
+      ),
       controllerAction = {
         outcomeService.createReferGov(
           chargeNumber = chargeNumber,
@@ -194,7 +207,11 @@ class OutcomeController(
     @RequestBody quashedRequest: QuashedRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      eventSupplier = { AdjudicationDomainEventType.QUASHED },
+      events = listOf(
+        EventRuleAndSupplier(
+          eventSupplier = { AdjudicationDomainEventType.QUASHED },
+        ),
+      ),
       controllerAction = {
         outcomeService.createQuashed(
           chargeNumber = chargeNumber,
@@ -230,7 +247,11 @@ class OutcomeController(
     @RequestBody policeReferralRequest: ReferralDetailsRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      eventSupplier = { AdjudicationDomainEventType.REF_POLICE_OUTCOME },
+      events = listOf(
+        EventRuleAndSupplier(
+          eventSupplier = { AdjudicationDomainEventType.REF_POLICE_OUTCOME },
+        ),
+      ),
       controllerAction = {
         outcomeService.createReferral(
           chargeNumber = chargeNumber,
@@ -252,12 +273,16 @@ class OutcomeController(
           chargeNumber = chargeNumber,
         )
       },
-      eventSupplier = {
-        when (it.status) {
-          ReportedAdjudicationStatus.CHARGE_PROVED -> AdjudicationDomainEventType.UNQUASHED
-          else -> AdjudicationDomainEventType.NOT_PROCEED_OUTCOME_DELETED
-        }
-      },
+      events = listOf(
+        EventRuleAndSupplier(
+          eventSupplier = {
+            when (it.status) {
+              ReportedAdjudicationStatus.CHARGE_PROVED -> AdjudicationDomainEventType.UNQUASHED
+              else -> AdjudicationDomainEventType.NOT_PROCEED_OUTCOME_DELETED
+            }
+          },
+        ),
+      ),
     )
 
   @Operation(summary = "amend outcome without a hearing (refer police, not proceed or quashed), unless its a referral outcome - not proceed")
@@ -268,7 +293,11 @@ class OutcomeController(
     @RequestBody amendOutcomeRequest: AmendOutcomeRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
-      eventSupplier = { AdjudicationDomainEventType.OUTCOME_UPDATED },
+      events = listOf(
+        EventRuleAndSupplier(
+          eventSupplier = { AdjudicationDomainEventType.OUTCOME_UPDATED },
+        ),
+      ),
       controllerAction = {
         outcomeService.amendOutcomeViaApi(
           chargeNumber = chargeNumber,
