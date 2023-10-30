@@ -14,6 +14,11 @@ data class ReportedAdjudicationResponse(
   val reportedAdjudication: ReportedAdjudicationDto,
 )
 
+class EventRuleAndSupplier(
+  val eventRule: (ReportedAdjudicationDto) -> Boolean = { _ -> true },
+  val eventSupplier: (ReportedAdjudicationDto) -> AdjudicationDomainEventType,
+)
+
 @RestController
 @RequestMapping("/reported-adjudications")
 class ReportedAdjudicationBaseController {
@@ -23,10 +28,11 @@ class ReportedAdjudicationBaseController {
 
   fun eventPublishWrapper(
     controllerAction: () -> ReportedAdjudicationDto,
-    eventRule: (ReportedAdjudicationDto) -> Boolean = { _ -> true },
-    eventSupplier: (ReportedAdjudicationDto) -> AdjudicationDomainEventType,
+    events: List<EventRuleAndSupplier> = emptyList(),
   ): ReportedAdjudicationResponse =
-    controllerAction.invoke().also { if (eventRule.invoke(it)) eventPublishService.publishEvent(eventSupplier.invoke(it), it) }.toResponse()
+    controllerAction.invoke().also {
+      events.forEach { event -> if (event.eventRule.invoke(it)) eventPublishService.publishEvent(event.eventSupplier.invoke(it), it) }
+    }.toResponse()
 
   companion object {
     fun ReportedAdjudicationDto.toResponse() = ReportedAdjudicationResponse(this)
