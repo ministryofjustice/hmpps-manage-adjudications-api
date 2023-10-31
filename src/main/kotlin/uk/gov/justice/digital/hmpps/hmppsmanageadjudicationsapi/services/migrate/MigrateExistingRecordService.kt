@@ -53,7 +53,7 @@ class MigrateExistingRecordService(
       existingAdjudication.prisonerNumber = adjudicationMigrateDto.prisoner.prisonerNumber
       log.warn("Prisoner different between nomis ${adjudicationMigrateDto.prisoner.prisonerNumber} and adjudications ${existingAdjudication.prisonerNumber}")
     }
-    if (adjudicationMigrateDto.agencyId != existingAdjudication.originatingAgencyId) throw ExistingRecordConflictException("agency different between nomis and adjudications")
+    if (adjudicationMigrateDto.agencyId != existingAdjudication.originatingAgencyId) throw ExistingRecordConflictException("${existingAdjudication.originatingAgencyId} agency different between nomis and adjudications")
 
     existingAdjudication.offenderBookingId = adjudicationMigrateDto.bookingId
     existingAdjudication.statusBeforeMigration = existingAdjudication.status
@@ -146,6 +146,7 @@ class MigrateExistingRecordService(
       hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
       hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
       isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
+      agency = this.originatingAgencyId,
     )
 
     val hearingsMarkedWithNomis = this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }
@@ -193,10 +194,10 @@ class MigrateExistingRecordService(
     val hearings = this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.filterOutPreviousPhases() }
     hearings.forEachIndexed { index, hearing ->
       val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { it.oicHearingId == hearing.oicHearingId }
-        ?: throw ExistingRecordConflictException("${this.chargeNumber} ${hearing.oicHearingId} hearing no longer exists in nomis")
+        ?: throw ExistingRecordConflictException("${this.originatingAgencyId} ${this.chargeNumber} ${hearing.oicHearingId} hearing no longer exists in nomis")
       val nomisHearingResult = nomisHearing.hearingResult
         ?: if (hearing.hearingOutcome != null && hearing.hearingOutcome!!.code.shouldExistInNomis()) {
-          throw ExistingRecordConflictException("${this.chargeNumber} ${hearing.oicHearingId} ${hearing.hearingOutcome?.code} hearing result no longer exists in nomis")
+          throw ExistingRecordConflictException("${this.originatingAgencyId} ${this.chargeNumber} ${hearing.oicHearingId} ${hearing.hearingOutcome?.code} hearing result no longer exists in nomis")
         } else {
           null
         }
@@ -261,14 +262,15 @@ class MigrateExistingRecordService(
 
     newHearingsToReview.sortedBy { it.hearingDateTime }.forEach {
       if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(it.hearingDateTime) == true && it.hearingResult != null) {
-        throw ExistingRecordConflictException("$chargeNumber has a new hearing with result before latest ${it.hearingResult.finding}")
+        if (this.getLatestHearing()?.hearingOutcome != null) throw ExistingRecordConflictException("${this.originatingAgencyId} $chargeNumber has a new hearing with result before latest, nomis finding ${it.hearingResult.finding}")
+        this.hearings.remove(this.getLatestHearing()!!)
       }
 
       if (HearingOutcomeCode.COMPLETE == this.getLatestHearing()?.hearingOutcome?.code &&
         it.hearingResult?.finding != Finding.QUASHED.name
       ) {
         if (it.hearingDateTime.isAfter(LocalDateTime.now()) || it.hearingResult != null) {
-          throw ExistingRecordConflictException("$chargeNumber has a new hearing in the future after completed ${it.hearingResult?.finding}")
+          throw ExistingRecordConflictException("${this.originatingAgencyId} $chargeNumber has a new hearing in the future after completed ${it.hearingResult?.finding}")
         } else {
           newHearingsToReview.remove(it)
         }

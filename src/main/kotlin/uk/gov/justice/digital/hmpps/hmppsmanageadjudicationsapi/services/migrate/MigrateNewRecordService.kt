@@ -233,6 +233,7 @@ class MigrateNewRecordService(
         hasSanctions = hasSanctions,
         isActive = isActive,
         hasADA = hasADA,
+        agency = agencyId,
       )
 
       val hearingsAndResults = mutableListOf<Hearing>()
@@ -349,7 +350,7 @@ class MigrateNewRecordService(
     fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index: Int): Boolean =
       index < this.size - 1 && this.none { it.hearingResult == null } && this.last().hearingResult?.finding != Finding.QUASHED.name
 
-    fun List<MigrateHearing>.validate(chargeNumber: String, hasSanctions: Boolean, hasADA: Boolean, isActive: Boolean): Boolean {
+    fun List<MigrateHearing>.validate(chargeNumber: String, hasSanctions: Boolean, hasADA: Boolean, isActive: Boolean, agency: String): Boolean {
       val shouldBeFinal = listOf(Finding.APPEAL.name, Finding.QUASHED.name)
       if (this.none { it.hearingResult != null }) return true
       val last = this.last()
@@ -369,7 +370,7 @@ class MigrateNewRecordService(
       ) {
         if (hasSanctions && last.hearingResult?.finding != Finding.PROVED.name) {
           if (isActive && hasADA) {
-            throw UnableToMigrateException("record structure (active with ADA): $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+            throw UnableToMigrateException("$agency record structure (active with ADA): $chargeNumber - ${this.map { it.hearingResult?.finding }}")
           }
           return false
         }
@@ -378,7 +379,7 @@ class MigrateNewRecordService(
       if (this.any { shouldBeFinal.contains(it.hearingResult?.finding) } && this.count { it.hearingResult != null } > 1) {
         val indexOf = this.indexOfLast { shouldBeFinal.contains(it.hearingResult?.finding) }
         // add better exception in for now.
-        if (indexOf != -1 && indexOf < this.size - 1 && hasSanctions && hasADA && isActive) throw UnableToMigrateException("record structure (active with ADA):: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+        if (indexOf != -1 && indexOf < this.size - 1 && hasSanctions && hasADA && isActive) throw UnableToMigrateException("$agency record structure (active with ADA):: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
       }
       return true
     }
