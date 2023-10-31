@@ -1224,7 +1224,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
   inner class GetSuspendedPunishments {
 
     private val reportedAdjudications = listOf(
-      entityBuilder.reportedAdjudication(chargeNumber = "1").also {
+      entityBuilder.reportedAdjudication(chargeNumber = "2").also {
         it.addPunishment(
           Punishment(
             type = PunishmentType.REMOVAL_WING,
@@ -1292,7 +1292,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       val removalWing = suspended.first { it.punishment.type == PunishmentType.REMOVAL_WING }
 
       assertThat(suspended.size).isEqualTo(1)
-      assertThat(removalWing.chargeNumber).isEqualTo("1")
+      assertThat(removalWing.chargeNumber).isEqualTo("2")
       assertThat(removalWing.punishment.type).isEqualTo(PunishmentType.REMOVAL_WING)
       assertThat(removalWing.punishment.schedule.days).isEqualTo(10)
       assertThat(removalWing.punishment.schedule.suspendedUntil).isEqualTo(LocalDate.now())

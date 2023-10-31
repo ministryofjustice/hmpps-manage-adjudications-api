@@ -239,17 +239,14 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get suspended punishments `() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    prisonApiMockServer.stubCreateSanctions(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
     initDataForUnScheduled().createHearing().createChargeProved()
+    initDataForUnScheduled(IntegrationTestData.DEFAULT_ADJUDICATION_OVERRIDE).createHearing().createChargeProved()
 
     createPunishments()
       .expectStatus().isCreated
 
     webTestClient.get()
-      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended/v2?chargeNumber=${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}")
+      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended/v2?chargeNumber=${IntegrationTestData.DEFAULT_ADJUDICATION_OVERRIDE.chargeNumber}")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk

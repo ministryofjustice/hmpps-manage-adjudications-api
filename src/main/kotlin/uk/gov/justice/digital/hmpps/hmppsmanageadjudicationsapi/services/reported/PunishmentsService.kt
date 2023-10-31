@@ -103,6 +103,7 @@ class PunishmentsService(
       when (punishmentRequest.id) {
         null -> when (punishmentRequest.activatedFrom) {
           null -> reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = punishmentRequest))
+          // this is related to manual activation (to be removed post migration) where there is no id to clone
           else -> reportedAdjudication.addPunishment(activateSuspendedPunishment(chargeNumber = chargeNumber, punishmentRequest = punishmentRequest))
         }
         else -> {
@@ -125,13 +126,9 @@ class PunishmentsService(
               }
             }
             else ->
+              // this check is stop activating it again if the id exists.  otherwise the id is reference to the item it will clone
               if (reportedAdjudication.getPunishments().getPunishment(punishmentRequest.id) == null) {
-                reportedAdjudication.addPunishment(
-                  activateSuspendedPunishment(
-                    chargeNumber = chargeNumber,
-                    punishmentRequest = punishmentRequest,
-                  ),
-                )
+                reportedAdjudication.addPunishment(activateSuspendedPunishment(chargeNumber = chargeNumber, punishmentRequest = punishmentRequest))
               }
           }
         }
@@ -155,7 +152,9 @@ class PunishmentsService(
   }
 
   fun getSuspendedPunishments(prisonerNumber: String, chargeNumber: String): List<SuspendedPunishmentDto> {
-    val reportsWithSuspendedPunishments = getReportsWithSuspendedPunishments(prisonerNumber = prisonerNumber)
+    val reportsWithSuspendedPunishments = getReportsWithSuspendedPunishments(prisonerNumber = prisonerNumber).filter {
+      it.chargeNumber != chargeNumber
+    }
     val includeAdditionalDays = includeAdditionalDays(chargeNumber)
 
     return reportsWithSuspendedPunishments.map {
@@ -343,7 +342,7 @@ class PunishmentsService(
       this.days != punishmentRequest.days || this.endDate != punishmentRequest.endDate || this.startDate != punishmentRequest.startDate ||
         this.suspendedUntil != punishmentRequest.suspendedUntil
 
-    fun List<Punishment>.getPunishment(id: Long): Punishment? =
+    private fun List<Punishment>.getPunishment(id: Long): Punishment? =
       this.firstOrNull { it.id == id }
     fun List<Punishment>.getPunishmentToAmend(id: Long): Punishment =
       this.getPunishment(id) ?: throw EntityNotFoundException("Punishment $id is not associated with ReportedAdjudication")

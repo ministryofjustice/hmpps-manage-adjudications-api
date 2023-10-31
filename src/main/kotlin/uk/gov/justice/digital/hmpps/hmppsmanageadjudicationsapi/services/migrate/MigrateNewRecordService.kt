@@ -46,6 +46,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToPunishment
 import java.time.LocalDateTime
 
 @Transactional
@@ -232,6 +233,7 @@ class MigrateNewRecordService(
         hasSanctions = hasSanctions,
         isActive = isActive,
         hasADA = hasADA,
+        agency = agencyId,
       )
 
       val hearingsAndResults = mutableListOf<Hearing>()
@@ -256,21 +258,15 @@ class MigrateNewRecordService(
           else -> {
             val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(
               hasAdditionalHearingOutcomes = hasAdditionalHearingOutcomes,
-              hasAdditionalHearingsInFutureWithoutResults = hasAdditionalHearingsWithoutResults && this.any { LocalDateTime.now().isBefore(it.hearingDateTime) },
+              hasAdditionalHearingsInFutureWithoutResults = hasAdditionalHearingsWithoutResults &&
+                this.filter { it.oicHearingId != oicHearing.oicHearingId }.maxByOrNull { it.hearingDateTime }?.hearingDateTime?.isBefore(oicHearing.hearingDateTime.plusDays(30)) ?: false,
               chargeNumber = chargeNumber,
               valid = valid,
             )
 
-            var plea: HearingOutcomePlea
-            try {
-              plea = oicHearing.hearingResult.plea.mapToPlea(
-                finding = oicHearing.hearingResult.finding,
-                chargeNumber = chargeNumber,
-              )
-            } catch (e: UnableToMigrateException) {
-              if (hasAdditionalHearingOutcomes || oicHearing.hearingResult.plea == Finding.PROVED.name) throw e
-              plea = HearingOutcomePlea.NOT_ASKED
-            }
+            val plea = oicHearing.hearingResult.plea.mapToPlea(
+              finding = oicHearing.hearingResult.finding,
+            )
 
             Pair(
               HearingOutcome(
@@ -331,9 +327,17 @@ class MigrateNewRecordService(
       val punishments = mutableListOf<Punishment>()
       val punishmentComments = mutableListOf<PunishmentComment>()
 
+      finalOutcome?.let {
+        if (this.any { sanction -> sanction.sanctionStatus == Status.QUASHED.name && sanction.sanctionCode == OicSanctionCode.ADA.name } && it != OutcomeCode.QUASHED) {
+          punishmentComments.add(
+            PunishmentComment(comment = "ADA is quashed in NOMIS", migrated = true),
+          )
+        }
+      }
+
       this.forEach { sanction ->
 
-        punishments.add(sanction.mapToPunishment(finalOutcome = finalOutcome))
+        punishments.add(sanction.mapToPunishment())
 
         sanction.comment?.let {
           punishmentComments.add(PunishmentComment(comment = it))
@@ -346,7 +350,7 @@ class MigrateNewRecordService(
     fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index: Int): Boolean =
       index < this.size - 1 && this.none { it.hearingResult == null } && this.last().hearingResult?.finding != Finding.QUASHED.name
 
-    fun List<MigrateHearing>.validate(chargeNumber: String, hasSanctions: Boolean, hasADA: Boolean, isActive: Boolean): Boolean {
+    fun List<MigrateHearing>.validate(chargeNumber: String, hasSanctions: Boolean, hasADA: Boolean, isActive: Boolean, agency: String): Boolean {
       val shouldBeFinal = listOf(Finding.APPEAL.name, Finding.QUASHED.name)
       if (this.none { it.hearingResult != null }) return true
       val last = this.last()
@@ -366,7 +370,7 @@ class MigrateNewRecordService(
       ) {
         if (hasSanctions && last.hearingResult?.finding != Finding.PROVED.name) {
           if (isActive && hasADA) {
-            throw UnableToMigrateException("record structure (active with ADA): $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+            throw UnableToMigrateException("$agency record structure (active with ADA): $chargeNumber - ${this.map { it.hearingResult?.finding }}")
           }
           return false
         }
@@ -374,7 +378,8 @@ class MigrateNewRecordService(
       if (shouldBeFinal.contains(last.hearingResult?.finding)) return true
       if (this.any { shouldBeFinal.contains(it.hearingResult?.finding) } && this.count { it.hearingResult != null } > 1) {
         val indexOf = this.indexOfLast { shouldBeFinal.contains(it.hearingResult?.finding) }
-        if (indexOf != -1 && indexOf < this.size - 1) throw UnableToMigrateException("record structure: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+        // add better exception in for now.
+        if (indexOf != -1 && indexOf < this.size - 1 && hasSanctions && hasADA && isActive) throw UnableToMigrateException("$agency record structure (active with ADA):: $chargeNumber - ${this.map { it.hearingResult?.finding }}")
       }
       return true
     }
@@ -436,7 +441,7 @@ class MigrateNewRecordService(
         else -> false
       }
 
-    private fun String.mapToPlea(chargeNumber: String, finding: String): HearingOutcomePlea = when (this) {
+    private fun String.mapToPlea(finding: String): HearingOutcomePlea = when (this) {
       Plea.NOT_GUILTY.name -> HearingOutcomePlea.NOT_GUILTY
       Plea.GUILTY.name -> HearingOutcomePlea.GUILTY
       Plea.NOT_ASKED.name -> HearingOutcomePlea.NOT_ASKED
@@ -444,20 +449,16 @@ class MigrateNewRecordService(
       Plea.REFUSED.name -> HearingOutcomePlea.ABSTAIN
       else -> if (this == finding || (negativeFindingStates().contains(this) && negativeFindingStates().contains(finding))) {
         HearingOutcomePlea.NOT_ASKED
+      } else if (this == Finding.GUILTY.name) {
+        HearingOutcomePlea.GUILTY
       } else {
-        throw UnableToMigrateException("$chargeNumber-1 $this plea is not mapped currently, finding $finding")
+        HearingOutcomePlea.NOT_ASKED
       }
     }
 
     private fun negativeFindingStates() = listOf(Finding.NOT_PROVEN.name, Finding.NOT_PROCEED.name, Finding.DISMISSED.name)
 
-    private fun MigratePunishment.mapToPunishment(finalOutcome: OutcomeCode?): Punishment {
-      finalOutcome?.let {
-        if (this.sanctionStatus == Status.QUASHED.name && this.sanctionCode == OicSanctionCode.ADA.name && it != OutcomeCode.QUASHED) {
-          throw UnableToMigrateException("Quashed ADA where final outcome is not QUASHED")
-        }
-      }
-
+    private fun MigratePunishment.mapToPunishment(): Punishment {
       val prospectiveStatuses = listOf(Status.PROSPECTIVE.name, Status.SUSP_PROSP.name)
       val typesWithoutDates = PunishmentType.additionalDays().plus(PunishmentType.CAUTION).plus(PunishmentType.DAMAGES_OWED)
       val type = when (this.sanctionCode) {
