@@ -259,7 +259,7 @@ class MigrateNewRecordService(
             val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(
               hasAdditionalHearingOutcomes = hasAdditionalHearingOutcomes,
               hasAdditionalHearingsInFutureWithoutResults = hasAdditionalHearingsWithoutResults &&
-                this.filter { it.oicHearingId != oicHearing.oicHearingId }.maxByOrNull { it.hearingDateTime }?.hearingDateTime?.isBefore(oicHearing.hearingDateTime.plusDays(30)) ?: false,
+                this.filter { it.oicHearingId != oicHearing.oicHearingId }.any { LocalDateTime.now().isBefore(it.hearingDateTime) && it.hearingDateTime.isBefore(oicHearing.hearingDateTime.plusDays(30)) },
               chargeNumber = chargeNumber,
               valid = valid,
             )
