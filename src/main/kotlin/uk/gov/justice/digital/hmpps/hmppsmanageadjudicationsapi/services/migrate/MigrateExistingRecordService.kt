@@ -10,8 +10,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePuni
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePreMigrate
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingPreMigrate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
@@ -193,10 +191,10 @@ class MigrateExistingRecordService(
     val hearings = this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.filterOutPreviousPhases() }
     hearings.forEachIndexed { index, hearing ->
       val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { it.oicHearingId == hearing.oicHearingId }
-        ?: throw ExistingRecordConflictException("${this.originatingAgencyId} ${this.chargeNumber} ${hearing.oicHearingId} hearing no longer exists in nomis")
+        ?: throw IgnoreAsPreprodRefreshOutofSyncException("${this.originatingAgencyId} ${this.chargeNumber} ${hearing.oicHearingId} hearing no longer exists in nomis")
       val nomisHearingResult = nomisHearing.hearingResult
         ?: if (hearing.hearingOutcome != null && hearing.hearingOutcome!!.code.shouldExistInNomis()) {
-          throw ExistingRecordConflictException("${this.originatingAgencyId} ${this.chargeNumber} ${hearing.oicHearingId} ${hearing.hearingOutcome?.code} hearing result no longer exists in nomis")
+          throw IgnoreAsPreprodRefreshOutofSyncException("${this.originatingAgencyId} ${this.chargeNumber} ${hearing.oicHearingId} ${hearing.hearingOutcome?.code} hearing result no longer exists in nomis")
         } else {
           null
         }
@@ -278,7 +276,7 @@ class MigrateExistingRecordService(
             OutcomeCode.CHARGE_PROVED -> if (it.hearingResult.finding != Finding.PROVED.name) {
               throw exception
             }
-            OutcomeCode.REFER_POLICE -> if(it.hearingResult.finding != Finding.REF_POLICE.name){
+            OutcomeCode.REFER_POLICE -> if (it.hearingResult.finding != Finding.REF_POLICE.name) {
               throw exception
             }
             else -> throw exception
@@ -345,7 +343,6 @@ class MigrateExistingRecordService(
 
   private fun Hearing.update(nomisHearing: MigrateHearing) {
     if (this.locationId != nomisHearing.locationId || this.dateTimeOfHearing != nomisHearing.hearingDateTime || this.oicHearingType != nomisHearing.oicHearingType) {
-      this.hearingPreMigrate = HearingPreMigrate(dateTimeOfHearing = this.dateTimeOfHearing, locationId = this.locationId, oicHearingType = this.oicHearingType)
       this.locationId = nomisHearing.locationId
       this.dateTimeOfHearing = nomisHearing.hearingDateTime
       this.oicHearingType = nomisHearing.oicHearingType
@@ -354,7 +351,6 @@ class MigrateExistingRecordService(
 
   private fun HearingOutcome.update(nomisHearing: MigrateHearing) {
     if (this.adjudicator != nomisHearing.adjudicator) {
-      this.hearingOutcomePreMigrate = HearingOutcomePreMigrate(code = this.code, adjudicator = this.adjudicator)
       this.adjudicator = nomisHearing.adjudicator ?: ""
     }
   }
@@ -367,8 +363,8 @@ class MigrateExistingRecordService(
     this.migrated = true
   }
 
-  private fun ReportedAdjudication.processPunishments(punishments: List<MigratePunishment>) {
-    val punishmentsAndComments = punishments.toPunishments(this.latestOutcome()?.code)
+  private fun ReportedAdjudication.processPunishments(sanctions: List<MigratePunishment>) {
+    val punishmentsAndComments = sanctions.toPunishments(this.latestOutcome()?.code)
     val punishments = punishmentsAndComments.first
     val punishmentComments = punishmentsAndComments.second
 

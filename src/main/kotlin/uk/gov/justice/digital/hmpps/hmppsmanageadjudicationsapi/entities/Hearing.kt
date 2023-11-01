@@ -31,9 +31,6 @@ data class Hearing(
   @JoinColumn(name = "outcome_id")
   var hearingOutcome: HearingOutcome? = null,
   var migrated: Boolean = false,
-  @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
-  @JoinColumn(name = "hearing_pre_migrate_id")
-  var hearingPreMigrate: HearingPreMigrate? = null,
   @field:Length(max = 240)
   var representative: String? = null,
 ) : BaseEntity()

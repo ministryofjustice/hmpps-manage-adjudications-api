@@ -500,7 +500,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing(dto))
-      }.isInstanceOf(ExistingRecordConflictException::class.java)
+      }.isInstanceOf(IgnoreAsPreprodRefreshOutofSyncException::class.java)
     }
 
     @Test
@@ -514,20 +514,12 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         it.hearings.first().oicHearingType = OicHearingType.INAD_YOI
       }
 
-      val locationId = existing.hearings.first().locationId
-      val dt = existing.hearings.first().dateTimeOfHearing
-      val type = existing.hearings.first().oicHearingType
-
       migrateExistingRecordService.accept(dto, existing)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(dto.hearings.first().locationId)
       assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(dto.hearings.first().oicHearingType)
       assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(dto.hearings.first().hearingDateTime)
-      assertThat(argumentCaptor.value.hearings.first().hearingPreMigrate).isNotNull
-      assertThat(argumentCaptor.value.hearings.first().hearingPreMigrate!!.locationId).isEqualTo(locationId)
-      assertThat(argumentCaptor.value.hearings.first().hearingPreMigrate!!.oicHearingType).isEqualTo(type)
-      assertThat(argumentCaptor.value.hearings.first().hearingPreMigrate!!.dateTimeOfHearing).isEqualTo(dt)
     }
 
     @Test
@@ -536,7 +528,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing(dto))
-      }.isInstanceOf(ExistingRecordConflictException::class.java)
+      }.isInstanceOf(IgnoreAsPreprodRefreshOutofSyncException::class.java)
     }
 
     @Test
@@ -548,14 +540,10 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "someone")
       }
 
-      val adjudicator = existing.hearings.first().hearingOutcome!!.adjudicator
-
       migrateExistingRecordService.accept(dto, existing)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo(dto.hearings.first().adjudicator)
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.hearingOutcomePreMigrate).isNotNull
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.hearingOutcomePreMigrate!!.adjudicator).isEqualTo(adjudicator)
     }
 
     @Disabled("removed for now - live data should not throw it, but need to throw still")
@@ -769,7 +757,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("has a new hearing with result before latest with different outcome")
     }
 
-    @CsvSource("PROVED", "D", "DISMISSED", "NOT_PROCEED", "REFER_POLICE")
+    @CsvSource("PROVED", "D", "DISMISSED", "NOT_PROCEED", "REF_POLICE")
     @ParameterizedTest
     fun `adjourns result if a new hearing before latest, and latest has a same hearing outcome`(finding: Finding) {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -778,13 +766,14 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         Finding.DISMISSED, Finding.NOT_PROCEED -> OutcomeCode.NOT_PROCEED
         Finding.D -> OutcomeCode.DISMISSED
         Finding.PROVED -> OutcomeCode.CHARGE_PROVED
+        Finding.REF_POLICE -> OutcomeCode.REFER_POLICE
         else -> OutcomeCode.QUASHED
       }
 
       migrateExistingRecordService.accept(
         dto,
         existing(dto).also {
-          it.hearings.first().hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
+          it.hearings.first().hearingOutcome!!.code = if (finding == Finding.REF_POLICE) HearingOutcomeCode.REFER_POLICE else HearingOutcomeCode.COMPLETE
           it.addOutcome(Outcome(code = outcomeCode, actualCreatedDate = LocalDateTime.now()))
         },
       )
@@ -793,7 +782,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
       assertThat(argumentCaptor.value.hearings.minBy { it.dateTimeOfHearing }.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
-      assertThat(argumentCaptor.value.hearings.maxBy { it.dateTimeOfHearing }.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.hearings.maxBy { it.dateTimeOfHearing }.hearingOutcome!!.code).isEqualTo(if (finding == Finding.REF_POLICE) HearingOutcomeCode.REFER_POLICE else HearingOutcomeCode.COMPLETE)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(outcomeCode)
     }
 

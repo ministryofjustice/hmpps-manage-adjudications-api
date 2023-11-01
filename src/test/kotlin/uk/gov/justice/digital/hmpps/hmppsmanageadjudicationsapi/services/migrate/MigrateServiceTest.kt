@@ -2,12 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrat
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
@@ -18,29 +15,16 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
   private val migrateExistingRecordService: MigrateExistingRecordService = mock()
   private val migrateNewRecordService: MigrateNewRecordService = mock()
   private val featureFlagsConfig: FeatureFlagsConfig = mock()
-  private val resetRecordService: ResetRecordService = mock()
 
   private val migrateService = MigrateService(
     reportedAdjudicationRepository,
     migrateNewRecordService,
     migrateExistingRecordService,
     featureFlagsConfig,
-    resetRecordService,
   )
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // na
-  }
-
-  @CsvSource("true", "false")
-  @ParameterizedTest
-  fun `reset migration calls database reset`(skip: Boolean) {
-    whenever(featureFlagsConfig.skipExistingRecords).thenReturn(skip)
-    whenever(reportedAdjudicationRepository.getDistinctAgencies()).thenReturn(listOf("1"))
-    whenever(reportedAdjudicationRepository.findRecordsToReset(any())).thenReturn(listOf("1"))
-    migrateService.reset()
-    verify(resetRecordService, atLeastOnce()).remove(any())
-    verify(resetRecordService, if (skip) never() else atLeastOnce()).reset(any())
   }
 
   @Test
