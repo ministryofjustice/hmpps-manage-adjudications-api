@@ -399,7 +399,7 @@ class MigrateNewRecordService(
         else -> null
       }
 
-    private fun String.mapToOutcomeCode(): OutcomeCode = when (this) {
+    fun String.mapToOutcomeCode(): OutcomeCode = when (this) {
       Finding.PROVED.name, Finding.QUASHED.name, Finding.GUILTY.name, Finding.APPEAL.name -> OutcomeCode.CHARGE_PROVED
       Finding.D.name, Finding.NOT_PROVEN.name, Finding.NOT_GUILTY.name, Finding.UNFIT.name, Finding.REFUSED.name -> OutcomeCode.DISMISSED
       Finding.NOT_PROCEED.name, Finding.DISMISSED.name -> OutcomeCode.NOT_PROCEED

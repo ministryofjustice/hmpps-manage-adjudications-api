@@ -231,7 +231,7 @@ class MigrateFixtures {
     ),
   )
 
-  val PHASE2_HEARINGS_BAD_STRUCTURE = migrationEntityBuilder.createAdjudication(
+  fun PHASE2_HEARINGS_BAD_STRUCTURE(finding: Finding, withSanctions: Boolean = true) = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         oicHearingId = 1,
@@ -242,10 +242,10 @@ class MigrateFixtures {
       migrationEntityBuilder.createHearing(
         oicHearingId = 3,
         hearingDateTime = LocalDate.now().atStartOfDay().plusDays(2),
-        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.DISMISSED.name),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = finding.name),
       ),
     ),
-    punishments = listOf(migrationEntityBuilder.createPunishment()),
+    punishments = if (withSanctions) listOf(migrationEntityBuilder.createPunishment()) else emptyList(),
   )
 
   fun PHASE2_HEARINGS_AND_NOMIS(finding: Finding) = migrationEntityBuilder.createAdjudication(

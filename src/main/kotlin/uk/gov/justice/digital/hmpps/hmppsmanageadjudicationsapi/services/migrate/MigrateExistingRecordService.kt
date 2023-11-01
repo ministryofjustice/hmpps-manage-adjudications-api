@@ -275,7 +275,20 @@ class MigrateExistingRecordService(
         if (it.hearingResult == null) {
           newHearingsToReview.remove(it)
         } else {
-          throw ExistingRecordConflictException("${this.originatingAgencyId} $chargeNumber has a new hearing with result after completed ${it.hearingResult.finding}")
+          if (listOf(Finding.D.name, Finding.DISMISSED.name, Finding.NOT_PROCEED.name).contains(it.hearingResult.finding)) {
+            if (adjudicationMigrateDto.punishments.isNotEmpty()) {
+              throw ExistingRecordConflictException("${this.originatingAgencyId} $chargeNumber new hearing with negative result after completed ${it.hearingResult.finding}")
+            } else {
+              if (this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED) {
+                this.removeOutcome(this.latestOutcome()!!)
+                this.hearings.remove(this.getLatestHearing()!!)
+              }
+            }
+          }
+          if (it.hearingResult.finding == Finding.PROVED.name && this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED) {
+            this.getLatestHearing()!!.hearingOutcome!!.code = HearingOutcomeCode.ADJOURN
+            this.removeOutcome(this.latestOutcome()!!)
+          }
         }
       }
     }

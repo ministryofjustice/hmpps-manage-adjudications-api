@@ -210,13 +210,66 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
     }
 
-    @Test
-    fun `existing record with multiple nomis outcomes will throw exception`() {
-      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE
+    @CsvSource("NOT_PROCEED", "D", "DISMISSED")
+    @ParameterizedTest
+    fun `existing record with multiple nomis outcomes will throw exception if new outcome has changed to negative outcome if sanctions exist in nomis`(finding: Finding) {
+      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE(finding)
       Assertions.assertThatThrownBy {
-        migrateExistingRecordService.accept(dto, existing(dto))
+        migrateExistingRecordService.accept(
+          dto,
+          existing(dto).also {
+            it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          },
+        )
       }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining(" new hearing with result after completed")
+        .hasMessageContaining("new hearing with negative result after completed")
+    }
+
+    @CsvSource("NOT_PROCEED", "D", "DISMISSED")
+    @ParameterizedTest
+    fun `existing record with multiple nomis outcomes will correct outcome if it has changed to negative outcome if sanctions do not exist in nomis`(finding: Finding) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE(finding, false)
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = LocalDateTime.now()))
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.hearings.maxByOrNull { it.dateTimeOfHearing }!!.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(
+        when (finding) {
+          Finding.D -> OutcomeCode.DISMISSED
+          Finding.NOT_PROCEED, Finding.DISMISSED -> OutcomeCode.NOT_PROCEED
+          else -> null
+        },
+      )
+    }
+
+    @Test
+    fun `completed existing record with a new outcome of PROVED will adjourn previous hearing and accept latest as charge proved`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE(Finding.PROVED)
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.first().hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
+        }.also {
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = LocalDateTime.now()))
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.hearings.minByOrNull { it.dateTimeOfHearing }!!.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.maxByOrNull { it.dateTimeOfHearing }!!.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
     }
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
