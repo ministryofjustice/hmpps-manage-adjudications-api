@@ -864,8 +864,8 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `appeal maps to QUASHED reason APPEAL`() {
-      val dto = migrationFixtures.WITH_FINDING_APPEAL
+    fun `appeal maps to QUASHED reason APPEAL if no reduced sanctions`() {
+      val dto = migrationFixtures.WITH_FINDING_APPEAL(false)
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       migrateNewRecordService.accept(dto)
@@ -873,6 +873,17 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.QUASHED)
       assertThat(argumentCaptor.value.getOutcomes().last().quashedReason).isEqualTo(QuashedReason.APPEAL_UPHELD)
+    }
+
+    @Test
+    fun `appeal maps to charge proved if reduced sanctions present`() {
+      val dto = migrationFixtures.WITH_FINDING_APPEAL(true)
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.punishmentComments.first().comment).isEqualTo("Reduced on APPEAL")
     }
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getAdditionalHearingsAfterFinalState")

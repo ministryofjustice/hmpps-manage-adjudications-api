@@ -282,6 +282,29 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
     }
 
+    @CsvSource("true", "false")
+    @ParameterizedTest
+    fun `completed existing record with a new outcome of APPEAL will add quashed or not based on reducedSanctions`(hasReducedSanctions: Boolean) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE(finding = Finding.APPEAL, withSanctions = false, hasReducedSanctions = hasReducedSanctions)
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.first().hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
+        }.also {
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = LocalDateTime.now()))
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(if (hasReducedSanctions) OutcomeCode.CHARGE_PROVED else OutcomeCode.QUASHED)
+      if (hasReducedSanctions) assertThat(argumentCaptor.value.punishmentComments.first().comment).isEqualTo("Reduced on APPEAL")
+    }
+
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
     @ParameterizedTest
     fun `adjudications with multiple final states should adjourn and add comments, and use final outcome`(dto: AdjudicationMigrateDto) {

@@ -231,7 +231,7 @@ class MigrateFixtures {
     ),
   )
 
-  fun PHASE2_HEARINGS_BAD_STRUCTURE(finding: Finding, withSanctions: Boolean = true) = migrationEntityBuilder.createAdjudication(
+  fun PHASE2_HEARINGS_BAD_STRUCTURE(finding: Finding, withSanctions: Boolean = true, hasReducedSanctions: Boolean = false) = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         oicHearingId = 1,
@@ -245,7 +245,15 @@ class MigrateFixtures {
         hearingResult = migrationEntityBuilder.createHearingResult(finding = finding.name),
       ),
     ),
-    punishments = if (withSanctions) listOf(migrationEntityBuilder.createPunishment()) else emptyList(),
+    punishments = if (withSanctions) {
+      listOf(migrationEntityBuilder.createPunishment())
+    } else if (hasReducedSanctions) {
+      listOf(
+        migrationEntityBuilder.createPunishment(status = Status.AWARD_RED.name),
+      )
+    } else {
+      emptyList()
+    },
   )
 
   fun PHASE2_HEARINGS_AND_NOMIS(finding: Finding) = migrationEntityBuilder.createAdjudication(
@@ -604,11 +612,12 @@ class MigrateFixtures {
     ),
   )
 
-  val WITH_FINDING_APPEAL = migrationEntityBuilder.createAdjudication(
+  fun WITH_FINDING_APPEAL(reducedSanctions: Boolean) = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name)),
       migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1), hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name)),
     ),
+    punishments = if (reducedSanctions) listOf(migrationEntityBuilder.createPunishment(code = OicSanctionCode.CC.name, status = Status.REDAPP.name)) else emptyList(),
   )
 
   val WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_PROVED = migrationEntityBuilder.createAdjudication(

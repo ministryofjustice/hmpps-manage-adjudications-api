@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -26,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.createAdjourn
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.createHearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.hasReducedSanctions
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToHearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toChargeMapping
@@ -98,9 +100,10 @@ class MigrateExistingRecordService(
     )
   }
 
-  private fun ReportedAdjudication.addHearingsAndOutcomes(hearingsAndResultsAndOutcomes: Pair<List<Hearing>, List<Outcome>>) {
+  private fun ReportedAdjudication.addHearingsAndOutcomes(hearingsAndResultsAndOutcomes: Triple<List<Hearing>, List<Outcome>, PunishmentComment?>) {
     val hearingsAndResults = hearingsAndResultsAndOutcomes.first
     val outcomes = hearingsAndResultsAndOutcomes.second
+    val punishmentComment = hearingsAndResultsAndOutcomes.third
 
     hearingsAndResults.forEach { hearingToAdd ->
       this.hearings.add(
@@ -113,6 +116,10 @@ class MigrateExistingRecordService(
       )
     }
     outcomes.forEach { this.addOutcome(it.also { outcome -> outcome.migrated = true }) }
+
+    punishmentComment?.let {
+      this.punishmentComments.add(punishmentComment)
+    }
   }
 
   private fun ReportedAdjudication.processPhase1(adjudicationMigrateDto: AdjudicationMigrateDto) {
@@ -123,6 +130,7 @@ class MigrateExistingRecordService(
       hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
       isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
       hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
+      hasReducedSanctions = adjudicationMigrateDto.hasReducedSanctions(),
     )
 
     val disIssued = adjudicationMigrateDto.disIssued.toDisIssue()
@@ -317,6 +325,14 @@ class MigrateExistingRecordService(
             this.getLatestHearing()!!.hearingOutcome!!.code = HearingOutcomeCode.ADJOURN
             this.removeOutcome(this.latestOutcome()!!)
           }
+          if (it.hearingResult.finding == Finding.APPEAL.name) {
+            newHearingsToReview.remove(it)
+            if (adjudicationMigrateDto.hasReducedSanctions()) {
+              this.punishmentComments.add(PunishmentComment(comment = "Reduced on APPEAL"))
+            } else {
+              this.addOutcome(Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = it.hearingDateTime))
+            }
+          }
         }
       }
     }
@@ -330,6 +346,7 @@ class MigrateExistingRecordService(
           hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
           isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
           hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
+          hasReducedSanctions = adjudicationMigrateDto.hasReducedSanctions(),
         ),
     )
     // we always clear existing ones now, and replace with NOMIS

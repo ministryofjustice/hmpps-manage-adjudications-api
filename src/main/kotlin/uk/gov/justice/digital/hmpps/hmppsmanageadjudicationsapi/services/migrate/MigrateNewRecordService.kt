@@ -64,14 +64,17 @@ class MigrateNewRecordService(
       hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
       isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
       hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
+      hasReducedSanctions = adjudicationMigrateDto.hasReducedSanctions(),
     )
 
     val hearingsAndResults = hearingsAndResultsAndOutcomes.first
     val outcomes = hearingsAndResultsAndOutcomes.second
+    val punishmentComment = hearingsAndResultsAndOutcomes.third
 
     val punishmentsAndComments = adjudicationMigrateDto.punishments.toPunishments(outcomes.sortedBy { it.actualCreatedDate }.lastOrNull()?.code)
     val punishments = punishmentsAndComments.first
     val punishmentComments = punishmentsAndComments.second
+    punishmentComment?.let { punishmentComments.add(it) }
     val disIssued = adjudicationMigrateDto.disIssued.toDisIssue()
 
     val reportedAdjudication = ReportedAdjudication(
@@ -238,7 +241,7 @@ class MigrateNewRecordService(
         else -> this
       }
 
-    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String, isYouthOffender: Boolean, hasSanctions: Boolean, isActive: Boolean, hasADA: Boolean): Pair<List<Hearing>, List<Outcome>> {
+    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String, isYouthOffender: Boolean, hasSanctions: Boolean, isActive: Boolean, hasADA: Boolean, hasReducedSanctions: Boolean): Triple<List<Hearing>, List<Outcome>, PunishmentComment?> {
       val valid = this.validate(
         chargeNumber = chargeNumber,
         hasSanctions = hasSanctions,
@@ -249,6 +252,7 @@ class MigrateNewRecordService(
 
       val hearingsAndResults = mutableListOf<Hearing>()
       val outcomes = mutableListOf<Outcome>()
+      var punishmentComment: PunishmentComment? = null
       outerLoop@ for ((index, oicHearing) in this.withIndex()) {
         val hasAdditionalHearings = index < this.size - 1
         val hasAdditionalHearingsWithoutResults = hasAdditionalHearings && this.subList(index + 1, this.size).all { it.hearingResult == null }
@@ -307,8 +311,12 @@ class MigrateNewRecordService(
                   outcomes.add(additionalOutcome)
                 }
               } else {
-                result.createAdditionalOutcome(hasAdditionalHearings)?.let { additionalOutcome ->
-                  outcomes.add(additionalOutcome)
+                if (result.finding == Finding.APPEAL.name && hasReducedSanctions) {
+                  punishmentComment = PunishmentComment(comment = "Reduced on APPEAL")
+                } else {
+                  result.createAdditionalOutcome(hasAdditionalHearings)?.let { additionalOutcome ->
+                    outcomes.add(additionalOutcome)
+                  }
                 }
               }
             }
@@ -327,10 +335,10 @@ class MigrateNewRecordService(
         if (hasAdditionalHearingsWithoutResults && oicHearing.hearingResult?.finding?.isFinalOutcomeState() == true) break@outerLoop
       }
 
-      return Pair(hearingsAndResults, outcomes)
+      return Triple(hearingsAndResults, outcomes, punishmentComment)
     }
 
-    fun List<MigratePunishment>.toPunishments(finalOutcome: OutcomeCode?): Pair<List<Punishment>, List<PunishmentComment>> {
+    fun List<MigratePunishment>.toPunishments(finalOutcome: OutcomeCode?): Pair<List<Punishment>, MutableList<PunishmentComment>> {
       val punishments = mutableListOf<Punishment>()
       val punishmentComments = mutableListOf<PunishmentComment>()
 
@@ -462,6 +470,9 @@ class MigrateNewRecordService(
         HearingOutcomePlea.NOT_ASKED
       }
     }
+
+    fun AdjudicationMigrateDto.hasReducedSanctions() =
+      this.punishments.any { listOf(Status.REDAPP.name, Status.AWARD_RED.name).contains(it.sanctionStatus) }
 
     private fun negativeFindingStates() = listOf(Finding.NOT_PROVEN.name, Finding.NOT_PROCEED.name, Finding.DISMISSED.name)
 
