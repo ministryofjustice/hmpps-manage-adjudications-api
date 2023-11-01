@@ -722,7 +722,7 @@ class MigrateFixtures {
   val NEW_HEARING_AFTER_COMPLETED = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().minusDays(4), hearingResult = migrationEntityBuilder.createHearingResult()),
-      migrationEntityBuilder.createHearing(oicHearingId = 100, hearingDateTime = LocalDateTime.now().minusDays(1)),
+      migrationEntityBuilder.createHearing(oicHearingId = 100, hearingDateTime = LocalDateTime.now().plusDays(1)),
     ),
   )
 

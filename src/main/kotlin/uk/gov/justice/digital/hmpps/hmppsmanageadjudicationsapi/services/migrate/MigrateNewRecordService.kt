@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.ChargeNumberMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.HearingMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.MigrateResponse
@@ -49,7 +48,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.D
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToPunishment
 import java.time.LocalDateTime
 
-@Transactional
 @Service
 class MigrateNewRecordService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,

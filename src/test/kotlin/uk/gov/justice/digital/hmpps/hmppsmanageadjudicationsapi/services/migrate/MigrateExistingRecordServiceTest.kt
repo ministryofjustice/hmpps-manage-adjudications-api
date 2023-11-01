@@ -211,12 +211,12 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `existing record with multiple nomis outcomes will call validate and throw exception`() {
+    fun `existing record with multiple nomis outcomes will throw exception`() {
       val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing(dto))
       }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("has a new hearing in the future ")
+        .hasMessageContaining(" new hearing with result after completed")
     }
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
