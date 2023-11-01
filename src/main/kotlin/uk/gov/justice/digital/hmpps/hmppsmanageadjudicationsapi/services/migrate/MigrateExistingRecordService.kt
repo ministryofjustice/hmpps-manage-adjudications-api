@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.createAdditionalOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.createAdjourn
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.createHearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToHearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToOutcome
@@ -265,8 +266,37 @@ class MigrateExistingRecordService(
 
     newHearingsToReview.sortedBy { it.hearingDateTime }.forEach {
       if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(it.hearingDateTime) == true && it.hearingResult != null) {
-        if (this.getLatestHearing()?.hearingOutcome != null) throw ExistingRecordConflictException("${this.originatingAgencyId} $chargeNumber has a new hearing with result before latest, nomis finding ${it.hearingResult.finding}")
-        this.hearings.remove(this.getLatestHearing()!!)
+        if (this.getLatestHearing()?.hearingOutcome != null) {
+          val exception = ExistingRecordConflictException("${this.originatingAgencyId} $chargeNumber has a new hearing with result before latest with different outcome, nomis finding ${it.hearingResult.finding}")
+          when (this.latestOutcome()?.code) {
+            OutcomeCode.DISMISSED -> if (it.hearingResult.finding != Finding.D.name) {
+              throw exception
+            }
+            OutcomeCode.NOT_PROCEED -> if (!listOf(Finding.DISMISSED.name, Finding.NOT_PROCEED.name).contains(it.hearingResult.finding)) {
+              throw exception
+            }
+            OutcomeCode.CHARGE_PROVED -> if (it.hearingResult.finding != Finding.PROVED.name) {
+              throw exception
+            }
+            OutcomeCode.REFER_POLICE -> if(it.hearingResult.finding != Finding.REF_POLICE.name){
+              throw exception
+            }
+            else -> throw exception
+          }
+
+          this.hearings.add(
+            it.createHearing(
+              isYouthOffender = this.isYouthOffender,
+              agencyId = this.originatingAgencyId,
+              chargeNumber = this.chargeNumber,
+              hearingOutcome = createAdjourn(),
+            ),
+          )
+          newHearingsToReview.remove(it)
+          return@forEach
+        } else {
+          this.hearings.remove(this.getLatestHearing()!!)
+        }
       }
 
       if (HearingOutcomeCode.COMPLETE == this.getLatestHearing()?.hearingOutcome?.code &&
@@ -277,7 +307,7 @@ class MigrateExistingRecordService(
         } else {
           if (listOf(Finding.D.name, Finding.DISMISSED.name, Finding.NOT_PROCEED.name).contains(it.hearingResult.finding)) {
             if (adjudicationMigrateDto.punishments.isNotEmpty()) {
-              throw ExistingRecordConflictException("${this.originatingAgencyId} $chargeNumber new hearing with negative result after completed ${it.hearingResult.finding}")
+              throw ExistingRecordConflictException("${this.originatingAgencyId} $chargeNumber new hearing with negative result after completed ${it.hearingResult.finding} - sanctions present in nomis")
             } else {
               if (this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED) {
                 this.removeOutcome(this.latestOutcome()!!)
@@ -364,7 +394,7 @@ class MigrateExistingRecordService(
       when (finding) {
         Finding.D.name, Finding.PROVED.name, Finding.APPEAL.name -> if (this != HearingOutcomeCode.COMPLETE) throw ExistingRecordConflictException(msg)
         Finding.REF_POLICE.name -> if (this != HearingOutcomeCode.REFER_POLICE) throw ExistingRecordConflictException(msg)
-        Finding.NOT_PROCEED.name -> if (!listOf(HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.COMPLETE).contains(this)) throw ExistingRecordConflictException(msg)
+        Finding.NOT_PROCEED.name, Finding.DISMISSED.name -> if (!listOf(HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.COMPLETE).contains(this)) throw ExistingRecordConflictException(msg)
         Finding.ADJOURNED.name -> HearingOutcomeCode.ADJOURN
         else -> throw ExistingRecordConflictException("$chargeNumber unsupported mapping $finding")
       }

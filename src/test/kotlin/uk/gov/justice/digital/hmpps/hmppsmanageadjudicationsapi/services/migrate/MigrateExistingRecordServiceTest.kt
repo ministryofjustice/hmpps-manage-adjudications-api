@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -234,12 +235,21 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         dto,
         existing(dto).also {
           it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = LocalDateTime.now()))
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.CAUTION,
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 1),
+              ),
+            ),
+          )
         },
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.getPunishments()).isEmpty()
       assertThat(argumentCaptor.value.hearings.maxByOrNull { it.dateTimeOfHearing }!!.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(
         when (finding) {
@@ -744,16 +754,47 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `throws exception if a new hearing before latest, and latest has a hearing outcome`() {
-      val dto = migrationFixtures.HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION
+    fun `throws exception if a new hearing before latest, and latest has a different hearing outcome`() {
+      val dto = migrationFixtures.HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION(finding = Finding.D)
 
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(
           dto,
-          existing(dto),
+          existing(dto).also {
+            it.hearings.first().hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
+            it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          },
         )
       }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("has a new hearing with result before latest")
+        .hasMessageContaining("has a new hearing with result before latest with different outcome")
+    }
+
+    @CsvSource("PROVED", "D", "DISMISSED", "NOT_PROCEED", "REFER_POLICE")
+    @ParameterizedTest
+    fun `adjourns result if a new hearing before latest, and latest has a same hearing outcome`(finding: Finding) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION(finding = finding)
+      val outcomeCode = when (finding) {
+        Finding.DISMISSED, Finding.NOT_PROCEED -> OutcomeCode.NOT_PROCEED
+        Finding.D -> OutcomeCode.DISMISSED
+        Finding.PROVED -> OutcomeCode.CHARGE_PROVED
+        else -> OutcomeCode.QUASHED
+      }
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.first().hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
+          it.addOutcome(Outcome(code = outcomeCode, actualCreatedDate = LocalDateTime.now()))
+        },
+      )
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.hearings.minBy { it.dateTimeOfHearing }.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.maxBy { it.dateTimeOfHearing }.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(outcomeCode)
     }
 
     @Test

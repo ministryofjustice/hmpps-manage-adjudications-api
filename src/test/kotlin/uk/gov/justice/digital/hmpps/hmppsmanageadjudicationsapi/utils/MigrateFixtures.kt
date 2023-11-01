@@ -686,16 +686,16 @@ class MigrateFixtures {
     ),
   )
 
-  val HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION = migrationEntityBuilder.createAdjudication(
+  fun HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION(finding: Finding) = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         oicHearingId = 100,
         hearingDateTime = LocalDateTime.now().minusDays(1),
         hearingResult =
-        migrationEntityBuilder.createHearingResult(),
+        migrationEntityBuilder.createHearingResult(finding = finding.name),
       ),
       migrationEntityBuilder.createHearing(
-        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = finding.name),
       ),
     ),
   )

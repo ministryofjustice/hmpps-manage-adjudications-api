@@ -45,6 +45,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.handleGov
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToPunishment
 import java.time.LocalDateTime
 
@@ -144,6 +145,18 @@ class MigrateNewRecordService(
         reason = HearingOutcomeAdjournReason.OTHER,
         details = "created via migration $comment",
         migrated = true,
+      )
+
+    fun MigrateHearing.createHearing(isYouthOffender: Boolean, agencyId: String, chargeNumber: String, hearingOutcome: HearingOutcome?): Hearing =
+      Hearing(
+        dateTimeOfHearing = this.hearingDateTime,
+        locationId = this.locationId,
+        oicHearingType = this.oicHearingType.handleGov(isYouthOffender),
+        oicHearingId = this.oicHearingId,
+        agencyId = agencyId,
+        chargeNumber = chargeNumber,
+        hearingOutcome = hearingOutcome,
+        representative = this.representative,
       )
 
     fun AdjudicationMigrateDto.toChargeMapping(chargeNumber: String) = ChargeNumberMapping(
@@ -303,15 +316,11 @@ class MigrateNewRecordService(
         }
 
         hearingsAndResults.add(
-          Hearing(
-            dateTimeOfHearing = oicHearing.hearingDateTime,
-            locationId = oicHearing.locationId,
-            oicHearingType = oicHearing.oicHearingType.handleGov(isYouthOffender),
-            oicHearingId = oicHearing.oicHearingId,
+          oicHearing.createHearing(
+            isYouthOffender = isYouthOffender,
             agencyId = agencyId,
             chargeNumber = chargeNumber,
             hearingOutcome = hearingOutcomeAndOutcome?.first,
-            representative = oicHearing.representative,
           ),
         )
 
