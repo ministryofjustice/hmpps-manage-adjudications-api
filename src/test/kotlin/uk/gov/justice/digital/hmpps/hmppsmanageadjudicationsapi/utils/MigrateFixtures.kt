@@ -298,6 +298,18 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_HEARING_AND_RESULT_REF_POLICE = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 101,
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
+      ),
+    ),
+  )
+
   val WITH_HEARING_AND_REFERRAL_RESULT = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(

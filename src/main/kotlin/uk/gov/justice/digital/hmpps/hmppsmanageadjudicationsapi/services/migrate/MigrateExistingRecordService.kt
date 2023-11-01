@@ -224,6 +224,11 @@ class MigrateExistingRecordService(
                     it.code = HearingOutcomeCode.COMPLETE
                     this.addOutcome(Outcome(code = OutcomeCode.DISMISSED, actualCreatedDate = LocalDateTime.now()))
                   }
+                  Finding.REF_POLICE.name -> {
+                    if (this.status != ReportedAdjudicationStatus.CHARGE_PROVED) {
+                      throw e
+                    } else {}
+                  }
                   else -> throw e
                 }
               HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_GOV, HearingOutcomeCode.REFER_INAD ->

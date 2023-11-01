@@ -524,6 +524,35 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
     }
 
+    @Test
+    fun `hearing result code has changed from adjourned to refer police, and final outcome is charge proved, should not update adjourned`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.WITH_HEARING_AND_RESULT_REF_POLICE
+      val existing = existing(dto).also {
+        it.hearings.first().oicHearingId = dto.hearings.first().oicHearingId
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "someone")
+        it.hearings.add(
+          Hearing(
+            dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+            agencyId = "",
+            oicHearingId = 101,
+            locationId = 1,
+            chargeNumber = "",
+            oicHearingType = OicHearingType.GOV_ADULT,
+            hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
+          ),
+        )
+        it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+      }
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+    }
+
     @CsvSource("REFER_POLICE", "REFER_GOV", "REFER_INAD")
     @ParameterizedTest
     fun `hearing result code has changed from refer to outcome - update hearing and add outcome`(hearingOutcomeCode: HearingOutcomeCode) {
