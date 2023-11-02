@@ -11,6 +11,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 
 class ExistingRecordConflictException(message: String) : Exception(message)
 
+class IgnoreAsPreprodRefreshOutofSyncException(message: String) : Exception(message)
+
 class UnableToMigrateException(message: String) : Exception(message)
 
 class SkipExistingRecordException : Exception("Skip existing record flag is true")
@@ -21,21 +23,7 @@ class MigrateService(
   private val migrateNewRecordService: MigrateNewRecordService,
   private val migrateExistingRecordService: MigrateExistingRecordService,
   private val featureFlagsConfig: FeatureFlagsConfig,
-  private val resetRecordService: ResetRecordService,
 ) {
-
-  fun reset(agency: String? = null) {
-    log.info("starting migration reset")
-
-    val agencies = if (agency != null) listOf(agency) else reportedAdjudicationRepository.getDistinctAgencies()
-
-    agencies.forEach {
-      resetRecordService.remove(it)
-      if (!featureFlagsConfig.skipExistingRecords) {
-        reportedAdjudicationRepository.findRecordsToReset(it).forEach { record -> resetRecordService.reset(record) }
-      }
-    }
-  }
 
   @Transactional
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse {

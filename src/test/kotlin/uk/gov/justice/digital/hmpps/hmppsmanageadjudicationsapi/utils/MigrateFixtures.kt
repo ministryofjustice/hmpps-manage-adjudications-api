@@ -231,7 +231,7 @@ class MigrateFixtures {
     ),
   )
 
-  val PHASE2_HEARINGS_BAD_STRUCTURE = migrationEntityBuilder.createAdjudication(
+  fun PHASE2_HEARINGS_BAD_STRUCTURE(finding: Finding, withSanctions: Boolean = true, hasReducedSanctions: Boolean = false) = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         oicHearingId = 1,
@@ -242,10 +242,18 @@ class MigrateFixtures {
       migrationEntityBuilder.createHearing(
         oicHearingId = 3,
         hearingDateTime = LocalDate.now().atStartOfDay().plusDays(2),
-        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.DISMISSED.name),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = finding.name),
       ),
     ),
-    punishments = listOf(migrationEntityBuilder.createPunishment()),
+    punishments = if (withSanctions) {
+      listOf(migrationEntityBuilder.createPunishment())
+    } else if (hasReducedSanctions) {
+      listOf(
+        migrationEntityBuilder.createPunishment(status = Status.AWARD_RED.name),
+      )
+    } else {
+      emptyList()
+    },
   )
 
   fun PHASE2_HEARINGS_AND_NOMIS(finding: Finding) = migrationEntityBuilder.createAdjudication(
@@ -294,6 +302,18 @@ class MigrateFixtures {
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+    ),
+  )
+
+  val WITH_HEARING_AND_RESULT_REF_POLICE = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 101,
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
       ),
     ),
   )
@@ -592,11 +612,12 @@ class MigrateFixtures {
     ),
   )
 
-  val WITH_FINDING_APPEAL = migrationEntityBuilder.createAdjudication(
+  fun WITH_FINDING_APPEAL(reducedSanctions: Boolean) = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name)),
       migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1), hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name)),
     ),
+    punishments = if (reducedSanctions) listOf(migrationEntityBuilder.createPunishment(code = OicSanctionCode.CC.name, status = Status.REDAPP.name)) else emptyList(),
   )
 
   val WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_PROVED = migrationEntityBuilder.createAdjudication(
@@ -674,16 +695,16 @@ class MigrateFixtures {
     ),
   )
 
-  val HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION = migrationEntityBuilder.createAdjudication(
+  fun HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION(finding: Finding) = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         oicHearingId = 100,
         hearingDateTime = LocalDateTime.now().minusDays(1),
         hearingResult =
-        migrationEntityBuilder.createHearingResult(),
+        migrationEntityBuilder.createHearingResult(finding = finding.name),
       ),
       migrationEntityBuilder.createHearing(
-        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.REF_POLICE.name),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = finding.name),
       ),
     ),
   )
@@ -722,7 +743,7 @@ class MigrateFixtures {
   val NEW_HEARING_AFTER_COMPLETED = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().minusDays(4), hearingResult = migrationEntityBuilder.createHearingResult()),
-      migrationEntityBuilder.createHearing(oicHearingId = 100, hearingDateTime = LocalDateTime.now().minusDays(1)),
+      migrationEntityBuilder.createHearing(oicHearingId = 100, hearingDateTime = LocalDateTime.now().plusDays(1)),
     ),
   )
 

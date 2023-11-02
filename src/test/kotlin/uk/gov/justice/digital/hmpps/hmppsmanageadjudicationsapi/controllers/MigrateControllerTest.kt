@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
@@ -27,62 +26,34 @@ class MigrateControllerTest : TestControllerBase() {
   @MockBean
   lateinit var migrateService: MigrateService
 
-  @Nested
-  inner class Accept {
+  private val migrateFixtures = MigrateFixtures()
 
-    private val migrateFixtures = MigrateFixtures()
-
-    @Test
-    fun `responds with a unauthorised status code`() {
-      createMigrationRequest(
-        migrateFixtures.ADULT_SINGLE_OFFENCE,
-      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
-
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_MIGRATE_ADJUDICATIONS", "SCOPE_write"])
-    fun `responds with a 201`() {
-      createMigrationRequest(
-        migrateFixtures.ADULT_SINGLE_OFFENCE,
-      ).andExpect(MockMvcResultMatchers.status().isCreated)
-
-      verify(migrateService, atLeastOnce()).accept(any())
-    }
-
-    private fun createMigrationRequest(
-      adjudication: AdjudicationMigrateDto,
-    ): ResultActions {
-      val body = objectMapper.writeValueAsString(adjudication)
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.post("/reported-adjudications/migrate")
-            .header("Content-Type", "application/json")
-            .content(body),
-        )
-    }
+  @Test
+  fun `responds with a unauthorised status code`() {
+    createMigrationRequest(
+      migrateFixtures.ADULT_SINGLE_OFFENCE,
+    ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
   }
 
-  @Nested
-  inner class Reset {
+  @Test
+  @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_MIGRATE_ADJUDICATIONS", "SCOPE_write"])
+  fun `responds with a 201`() {
+    createMigrationRequest(
+      migrateFixtures.ADULT_SINGLE_OFFENCE,
+    ).andExpect(MockMvcResultMatchers.status().isCreated)
 
-    @Test
-    fun `responds with a unauthorised status code`() {
-      createResetRequest().andExpect(MockMvcResultMatchers.status().isUnauthorized)
-    }
+    verify(migrateService, atLeastOnce()).accept(any())
+  }
 
-    @Test
-    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_MIGRATE_ADJUDICATIONS", "SCOPE_write"])
-    fun `responds with a 200`() {
-      createResetRequest().andExpect(MockMvcResultMatchers.status().isOk)
-      verify(migrateService, atLeastOnce()).reset()
-    }
-
-    private fun createResetRequest(): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.delete("/reported-adjudications/migrate/reset")
-            .header("Content-Type", "application/json"),
-        )
-    }
+  private fun createMigrationRequest(
+    adjudication: AdjudicationMigrateDto,
+  ): ResultActions {
+    val body = objectMapper.writeValueAsString(adjudication)
+    return mockMvc
+      .perform(
+        MockMvcRequestBuilders.post("/reported-adjudications/migrate")
+          .header("Content-Type", "application/json")
+          .content(body),
+      )
   }
 }

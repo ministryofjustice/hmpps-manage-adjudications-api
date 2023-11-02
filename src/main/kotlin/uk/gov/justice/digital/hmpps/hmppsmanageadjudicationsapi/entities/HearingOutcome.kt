@@ -1,12 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import jakarta.persistence.FetchType
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.validation.ValidationException
 import org.hibernate.validator.constraints.Length
@@ -28,9 +24,6 @@ data class HearingOutcome(
   var plea: HearingOutcomePlea? = null,
   var nomisOutcome: Boolean = false,
   var migrated: Boolean = false,
-  @OneToOne(optional = true, cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
-  @JoinColumn(name = "hearing_outcome_pre_migrate_id")
-  var hearingOutcomePreMigrate: HearingOutcomePreMigrate? = null,
 ) : BaseEntity()
 
 enum class HearingOutcomeCode(val outcomeCode: OutcomeCode? = null) {

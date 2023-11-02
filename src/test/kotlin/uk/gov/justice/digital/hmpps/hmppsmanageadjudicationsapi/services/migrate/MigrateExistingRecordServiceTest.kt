@@ -22,13 +22,16 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateExistingRecordService.Companion.mapToPunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrationEntityBuilder
@@ -64,7 +67,11 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     fun `offence code has been altered and no longer matches - switch to migration mode`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
-      val existing = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId).also {
+      val existing = entityBuilder.reportedAdjudication(
+        chargeNumber = dto.oicIncidentId.toString(),
+        prisonerNumber = dto.prisoner.prisonerNumber,
+        agencyId = dto.agencyId,
+      ).also {
         it.status = ReportedAdjudicationStatus.ACCEPTED
       }
 
@@ -87,16 +94,33 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         entityBuilder.reportedAdjudication().also {
           it.status = ReportedAdjudicationStatus.ACCEPTED
           it.addPunishment(
-            punishment = Punishment(id = 2, type = PunishmentType.CAUTION, sanctionSeq = dto.punishments.first().sanctionSeq, schedule = mutableListOf()),
+            punishment = Punishment(
+              id = 2,
+              type = PunishmentType.CAUTION,
+              sanctionSeq = dto.punishments.first().sanctionSeq,
+              schedule = mutableListOf(),
+            ),
           )
           it.hearings.clear()
           it.hearings.add(
-            Hearing(id = 2, dateTimeOfHearing = LocalDateTime.now(), locationId = 1, oicHearingType = OicHearingType.GOV_ADULT, agencyId = "", chargeNumber = "", oicHearingId = 1),
+            Hearing(
+              id = 2,
+              dateTimeOfHearing = LocalDateTime.now(),
+              locationId = 1,
+              oicHearingType = OicHearingType.GOV_ADULT,
+              agencyId = "",
+              chargeNumber = "",
+              oicHearingId = 1,
+            ),
           )
         },
       )
 
-      val existing = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId).also {
+      val existing = entityBuilder.reportedAdjudication(
+        chargeNumber = dto.oicIncidentId.toString(),
+        prisonerNumber = dto.prisoner.prisonerNumber,
+        agencyId = dto.agencyId,
+      ).also {
         it.hearings.clear()
         it.clearPunishments()
         it.clearOutcomes()
@@ -138,7 +162,11 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     fun `damages are updated`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
-      val existing = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId)
+      val existing = entityBuilder.reportedAdjudication(
+        chargeNumber = dto.oicIncidentId.toString(),
+        prisonerNumber = dto.prisoner.prisonerNumber,
+        agencyId = dto.agencyId,
+      )
         .also { it.status = ReportedAdjudicationStatus.ACCEPTED }
 
       migrateExistingRecordService.accept(dto, existing)
@@ -152,7 +180,11 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     fun `evidence is updated`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
-      val existing = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId).also {
+      val existing = entityBuilder.reportedAdjudication(
+        chargeNumber = dto.oicIncidentId.toString(),
+        prisonerNumber = dto.prisoner.prisonerNumber,
+        agencyId = dto.agencyId,
+      ).also {
         it.status = ReportedAdjudicationStatus.ACCEPTED
       }
 
@@ -167,7 +199,11 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     fun `witnesses are updated`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
-      val existing = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId).also {
+      val existing = entityBuilder.reportedAdjudication(
+        chargeNumber = dto.oicIncidentId.toString(),
+        prisonerNumber = dto.prisoner.prisonerNumber,
+        agencyId = dto.agencyId,
+      ).also {
         it.status = ReportedAdjudicationStatus.ACCEPTED
       }
 
@@ -176,6 +212,26 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.witnesses.size).isEqualTo(2)
       assertThat(argumentCaptor.value.witnesses.last().migrated).isTrue
+    }
+
+    @Test
+    fun `existing record has multiple offences, adds presented offence and clears rest`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
+      val existing = entityBuilder.reportedAdjudication(
+        chargeNumber = dto.oicIncidentId.toString(),
+        prisonerNumber = dto.prisoner.prisonerNumber,
+        agencyId = dto.agencyId,
+      ).also {
+        it.status = ReportedAdjudicationStatus.ACCEPTED
+        it.offenceDetails.add(ReportedOffence(offenceCode = 9999))
+      }
+
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(OffenceCodes.MIGRATED_OFFENCE.uniqueOffenceCodes.first())
     }
   }
 
@@ -210,13 +266,98 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
     }
 
-    @Test
-    fun `existing record with multiple nomis outcomes will call validate and throw exception`() {
-      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE
+    @CsvSource("NOT_PROCEED", "D", "DISMISSED")
+    @ParameterizedTest
+    fun `existing record with multiple nomis outcomes will throw exception if new outcome has changed to negative outcome if sanctions exist in nomis`(finding: Finding) {
+      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE(finding)
       Assertions.assertThatThrownBy {
-        migrateExistingRecordService.accept(dto, existing(dto))
+        migrateExistingRecordService.accept(
+          dto,
+          existing(dto).also {
+            it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          },
+        )
       }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("has a new hearing in the future ")
+        .hasMessageContaining("new hearing with negative result after completed")
+    }
+
+    @CsvSource("NOT_PROCEED", "D", "DISMISSED")
+    @ParameterizedTest
+    fun `existing record with multiple nomis outcomes will correct outcome if it has changed to negative outcome if sanctions do not exist in nomis`(finding: Finding) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE(finding, false)
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = LocalDateTime.now()))
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.CAUTION,
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 1),
+              ),
+            ),
+          )
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.getPunishments()).isEmpty()
+      assertThat(argumentCaptor.value.hearings.maxByOrNull { it.dateTimeOfHearing }!!.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(
+        when (finding) {
+          Finding.D -> OutcomeCode.DISMISSED
+          Finding.NOT_PROCEED, Finding.DISMISSED -> OutcomeCode.NOT_PROCEED
+          else -> null
+        },
+      )
+    }
+
+    @Test
+    fun `completed existing record with a new outcome of PROVED will adjourn previous hearing and accept latest as charge proved`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE(Finding.PROVED)
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.first().hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
+        }.also {
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = LocalDateTime.now()))
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.hearings.minByOrNull { it.dateTimeOfHearing }!!.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.maxByOrNull { it.dateTimeOfHearing }!!.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+    }
+
+    @CsvSource("true", "false")
+    @ParameterizedTest
+    fun `completed existing record with a new outcome of APPEAL will add quashed or not based on reducedSanctions`(hasReducedSanctions: Boolean) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE(finding = Finding.APPEAL, withSanctions = false, hasReducedSanctions = hasReducedSanctions)
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.first().hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
+        }.also {
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = LocalDateTime.now()))
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(if (hasReducedSanctions) OutcomeCode.CHARGE_PROVED else OutcomeCode.QUASHED)
+      if (hasReducedSanctions) assertThat(argumentCaptor.value.punishmentComments.first().comment).isEqualTo("Reduced on APPEAL")
     }
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
@@ -437,7 +578,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing(dto))
-      }.isInstanceOf(ExistingRecordConflictException::class.java)
+      }.isInstanceOf(IgnoreAsPreprodRefreshOutofSyncException::class.java)
     }
 
     @Test
@@ -451,20 +592,12 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         it.hearings.first().oicHearingType = OicHearingType.INAD_YOI
       }
 
-      val locationId = existing.hearings.first().locationId
-      val dt = existing.hearings.first().dateTimeOfHearing
-      val type = existing.hearings.first().oicHearingType
-
       migrateExistingRecordService.accept(dto, existing)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(dto.hearings.first().locationId)
       assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(dto.hearings.first().oicHearingType)
       assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(dto.hearings.first().hearingDateTime)
-      assertThat(argumentCaptor.value.hearings.first().hearingPreMigrate).isNotNull
-      assertThat(argumentCaptor.value.hearings.first().hearingPreMigrate!!.locationId).isEqualTo(locationId)
-      assertThat(argumentCaptor.value.hearings.first().hearingPreMigrate!!.oicHearingType).isEqualTo(type)
-      assertThat(argumentCaptor.value.hearings.first().hearingPreMigrate!!.dateTimeOfHearing).isEqualTo(dt)
     }
 
     @Test
@@ -473,7 +606,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(dto, existing(dto))
-      }.isInstanceOf(ExistingRecordConflictException::class.java)
+      }.isInstanceOf(IgnoreAsPreprodRefreshOutofSyncException::class.java)
     }
 
     @Test
@@ -485,14 +618,10 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "someone")
       }
 
-      val adjudicator = existing.hearings.first().hearingOutcome!!.adjudicator
-
       migrateExistingRecordService.accept(dto, existing)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo(dto.hearings.first().adjudicator)
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.hearingOutcomePreMigrate).isNotNull
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.hearingOutcomePreMigrate!!.adjudicator).isEqualTo(adjudicator)
     }
 
     @Disabled("removed for now - live data should not throw it, but need to throw still")
@@ -520,6 +649,35 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       migrateExistingRecordService.accept(dto, existing)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+    }
+
+    @Test
+    fun `hearing result code has changed from adjourned to refer police, and final outcome is charge proved, should not update adjourned`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.WITH_HEARING_AND_RESULT_REF_POLICE
+      val existing = existing(dto).also {
+        it.hearings.first().oicHearingId = dto.hearings.first().oicHearingId
+        it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "someone")
+        it.hearings.add(
+          Hearing(
+            dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+            agencyId = "",
+            oicHearingId = 101,
+            locationId = 1,
+            chargeNumber = "",
+            oicHearingType = OicHearingType.GOV_ADULT,
+            hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
+          ),
+        )
+        it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+      }
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
       assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
     }
@@ -662,16 +820,48 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `throws exception if a new hearing before latest, and latest has a hearing outcome`() {
-      val dto = migrationFixtures.HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION
+    fun `throws exception if a new hearing before latest, and latest has a different hearing outcome`() {
+      val dto = migrationFixtures.HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION(finding = Finding.D)
 
       Assertions.assertThatThrownBy {
         migrateExistingRecordService.accept(
           dto,
-          existing(dto),
+          existing(dto).also {
+            it.hearings.first().hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
+            it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          },
         )
       }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("has a new hearing with result before latest")
+        .hasMessageContaining("has a new hearing with result before latest with different outcome")
+    }
+
+    @CsvSource("PROVED", "D", "DISMISSED", "NOT_PROCEED", "REF_POLICE")
+    @ParameterizedTest
+    fun `adjourns result if a new hearing before latest, and latest has a same hearing outcome`(finding: Finding) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION(finding = finding)
+      val outcomeCode = when (finding) {
+        Finding.DISMISSED, Finding.NOT_PROCEED -> OutcomeCode.NOT_PROCEED
+        Finding.D -> OutcomeCode.DISMISSED
+        Finding.PROVED -> OutcomeCode.CHARGE_PROVED
+        Finding.REF_POLICE -> OutcomeCode.REFER_POLICE
+        else -> OutcomeCode.QUASHED
+      }
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.first().hearingOutcome!!.code = if (finding == Finding.REF_POLICE) HearingOutcomeCode.REFER_POLICE else HearingOutcomeCode.COMPLETE
+          it.addOutcome(Outcome(code = outcomeCode, actualCreatedDate = LocalDateTime.now()))
+        },
+      )
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.hearings.minBy { it.dateTimeOfHearing }.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.maxBy { it.dateTimeOfHearing }.hearingOutcome!!.code).isEqualTo(if (finding == Finding.REF_POLICE) HearingOutcomeCode.REFER_POLICE else HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(outcomeCode)
     }
 
     @Test
