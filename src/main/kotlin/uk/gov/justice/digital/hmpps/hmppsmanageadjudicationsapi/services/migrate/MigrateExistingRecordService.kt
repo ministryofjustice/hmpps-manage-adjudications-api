@@ -54,6 +54,10 @@ class MigrateExistingRecordService(
     }
     if (adjudicationMigrateDto.agencyId != existingAdjudication.originatingAgencyId) throw ExistingRecordConflictException("${existingAdjudication.originatingAgencyId} agency different between nomis and adjudications")
 
+    while (existingAdjudication.offenceDetails.size > 1) {
+      existingAdjudication.offenceDetails.removeLast()
+    }
+
     existingAdjudication.offenderBookingId = adjudicationMigrateDto.bookingId
     existingAdjudication.statusBeforeMigration = existingAdjudication.status
 

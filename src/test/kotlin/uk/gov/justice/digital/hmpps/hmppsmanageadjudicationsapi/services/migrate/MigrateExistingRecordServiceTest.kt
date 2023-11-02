@@ -26,10 +26,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateExistingRecordService.Companion.mapToPunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrationEntityBuilder
@@ -65,7 +67,11 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     fun `offence code has been altered and no longer matches - switch to migration mode`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
-      val existing = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId).also {
+      val existing = entityBuilder.reportedAdjudication(
+        chargeNumber = dto.oicIncidentId.toString(),
+        prisonerNumber = dto.prisoner.prisonerNumber,
+        agencyId = dto.agencyId,
+      ).also {
         it.status = ReportedAdjudicationStatus.ACCEPTED
       }
 
@@ -88,16 +94,33 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         entityBuilder.reportedAdjudication().also {
           it.status = ReportedAdjudicationStatus.ACCEPTED
           it.addPunishment(
-            punishment = Punishment(id = 2, type = PunishmentType.CAUTION, sanctionSeq = dto.punishments.first().sanctionSeq, schedule = mutableListOf()),
+            punishment = Punishment(
+              id = 2,
+              type = PunishmentType.CAUTION,
+              sanctionSeq = dto.punishments.first().sanctionSeq,
+              schedule = mutableListOf(),
+            ),
           )
           it.hearings.clear()
           it.hearings.add(
-            Hearing(id = 2, dateTimeOfHearing = LocalDateTime.now(), locationId = 1, oicHearingType = OicHearingType.GOV_ADULT, agencyId = "", chargeNumber = "", oicHearingId = 1),
+            Hearing(
+              id = 2,
+              dateTimeOfHearing = LocalDateTime.now(),
+              locationId = 1,
+              oicHearingType = OicHearingType.GOV_ADULT,
+              agencyId = "",
+              chargeNumber = "",
+              oicHearingId = 1,
+            ),
           )
         },
       )
 
-      val existing = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId).also {
+      val existing = entityBuilder.reportedAdjudication(
+        chargeNumber = dto.oicIncidentId.toString(),
+        prisonerNumber = dto.prisoner.prisonerNumber,
+        agencyId = dto.agencyId,
+      ).also {
         it.hearings.clear()
         it.clearPunishments()
         it.clearOutcomes()
@@ -139,7 +162,11 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     fun `damages are updated`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
-      val existing = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId)
+      val existing = entityBuilder.reportedAdjudication(
+        chargeNumber = dto.oicIncidentId.toString(),
+        prisonerNumber = dto.prisoner.prisonerNumber,
+        agencyId = dto.agencyId,
+      )
         .also { it.status = ReportedAdjudicationStatus.ACCEPTED }
 
       migrateExistingRecordService.accept(dto, existing)
@@ -153,7 +180,11 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     fun `evidence is updated`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
-      val existing = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId).also {
+      val existing = entityBuilder.reportedAdjudication(
+        chargeNumber = dto.oicIncidentId.toString(),
+        prisonerNumber = dto.prisoner.prisonerNumber,
+        agencyId = dto.agencyId,
+      ).also {
         it.status = ReportedAdjudicationStatus.ACCEPTED
       }
 
@@ -168,7 +199,11 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     fun `witnesses are updated`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
-      val existing = entityBuilder.reportedAdjudication(chargeNumber = dto.oicIncidentId.toString(), prisonerNumber = dto.prisoner.prisonerNumber, agencyId = dto.agencyId).also {
+      val existing = entityBuilder.reportedAdjudication(
+        chargeNumber = dto.oicIncidentId.toString(),
+        prisonerNumber = dto.prisoner.prisonerNumber,
+        agencyId = dto.agencyId,
+      ).also {
         it.status = ReportedAdjudicationStatus.ACCEPTED
       }
 
@@ -177,6 +212,26 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.witnesses.size).isEqualTo(2)
       assertThat(argumentCaptor.value.witnesses.last().migrated).isTrue
+    }
+
+    @Test
+    fun `existing record has multiple offences, adds presented offence and clears rest`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.COMPLETE_CHARGE_PROVED
+      val existing = entityBuilder.reportedAdjudication(
+        chargeNumber = dto.oicIncidentId.toString(),
+        prisonerNumber = dto.prisoner.prisonerNumber,
+        agencyId = dto.agencyId,
+      ).also {
+        it.status = ReportedAdjudicationStatus.ACCEPTED
+        it.offenceDetails.add(ReportedOffence(offenceCode = 9999))
+      }
+
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.offenceDetails.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.offenceDetails.first().offenceCode).isEqualTo(OffenceCodes.MIGRATED_OFFENCE.uniqueOffenceCodes.first())
     }
   }
 
