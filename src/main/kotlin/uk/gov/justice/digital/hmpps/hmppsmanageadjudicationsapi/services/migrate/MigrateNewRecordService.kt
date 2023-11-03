@@ -266,8 +266,8 @@ class MigrateNewRecordService(
       var punishmentComment: PunishmentComment? = null
       outerLoop@ for ((index, oicHearing) in this.withIndex()) {
         val hasAdditionalHearings = index < this.size - 1
-        val hasAdditionalHearingsWithoutResults = hasAdditionalHearings && this.subList(index + 1, this.size).all { it.hearingResult == null }
-        val hasAdditionalHearingOutcomes = this.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index)
+        val hasAdditionalHearingsWithoutResults = hasAdditionalHearings && this.subList(index + 1, this.size).any { it.hearingResult == null }
+        val hasAdditionalHearingOutcomes = this.subList(index + 1, this.size).hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed()
 
         val hearingOutcomeAndOutcome = when (oicHearing.hearingResult) {
           null -> if (hasAdditionalHearings) {
@@ -343,7 +343,7 @@ class MigrateNewRecordService(
           ),
         )
 
-        if (hasAdditionalHearingsWithoutResults && oicHearing.hearingResult?.finding?.isFinalOutcomeState() == true) break@outerLoop
+        if (!hasAdditionalHearingOutcomes && hasAdditionalHearingsWithoutResults && oicHearing.hearingResult?.finding?.isFinalOutcomeState() == true) break@outerLoop
       }
 
       return Triple(hearingsAndResults, outcomes, punishmentComment)
@@ -373,8 +373,8 @@ class MigrateNewRecordService(
       return Pair(punishments, punishmentComments)
     }
 
-    fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(index: Int): Boolean =
-      index < this.size - 1 && this.none { it.hearingResult == null } && this.last().hearingResult?.finding != Finding.QUASHED.name
+    fun List<MigrateHearing>.hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed(): Boolean =
+      this.any { it.hearingResult != null } && this.last().hearingResult?.finding != Finding.QUASHED.name
 
     fun List<MigrateHearing>.validate(chargeNumber: String, hasSanctions: Boolean, hasADA: Boolean, isActive: Boolean, agency: String): Boolean {
       val shouldBeFinal = listOf(Finding.APPEAL.name, Finding.QUASHED.name)
@@ -397,6 +397,9 @@ class MigrateNewRecordService(
         if (hasSanctions && last.hearingResult?.finding != Finding.PROVED.name) {
           if (isActive && hasADA) {
             throw UnableToMigrateException("$agency record structure (active with ADA): $chargeNumber - ${this.map { it.hearingResult?.finding }}")
+          }
+          if (last.hearingResult == null && this.last { it.hearingResult != null }.hearingResult?.finding == Finding.PROVED.name) {
+            return true
           }
           return false
         }
@@ -427,7 +430,7 @@ class MigrateNewRecordService(
         else -> null
       }
 
-    fun String.mapToOutcomeCode(): OutcomeCode = when (this) {
+    private fun String.mapToOutcomeCode(): OutcomeCode = when (this) {
       Finding.PROVED.name, Finding.QUASHED.name, Finding.GUILTY.name, Finding.APPEAL.name -> OutcomeCode.CHARGE_PROVED
       Finding.D.name, Finding.NOT_PROVEN.name, Finding.NOT_GUILTY.name, Finding.UNFIT.name, Finding.REFUSED.name -> OutcomeCode.DISMISSED
       Finding.NOT_PROCEED.name, Finding.DISMISSED.name -> OutcomeCode.NOT_PROCEED

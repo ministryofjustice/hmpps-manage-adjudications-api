@@ -303,7 +303,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(3)
       assertThat(argumentCaptor.value.getPunishments()).isEmpty()
       assertThat(argumentCaptor.value.hearings.maxByOrNull { it.dateTimeOfHearing }!!.hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(
