@@ -9,11 +9,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Migr
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 
-class ExistingRecordConflictException(message: String) : Exception(message)
+class ExistingRecordConflictException(message: String) : RuntimeException(message)
 
-class IgnoreAsPreprodRefreshOutofSyncException(message: String) : Exception(message)
+class IgnoreAsPreprodRefreshOutofSyncException(message: String) : RuntimeException(message)
 
-class UnableToMigrateException(message: String) : Exception(message)
+class UnableToMigrateException(message: String) : RuntimeException(message)
 
 class SkipExistingRecordException : Exception("Skip existing record flag is true")
 
