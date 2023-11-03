@@ -45,8 +45,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.handleGov
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToPunishment
 import java.time.LocalDateTime
 
 @Service
@@ -65,13 +63,17 @@ class MigrateNewRecordService(
       isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
       hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
       hasReducedSanctions = adjudicationMigrateDto.hasReducedSanctions(),
+      usernameOnPunishment = adjudicationMigrateDto.punishments.firstOrNull()?.createdBy,
     )
 
     val hearingsAndResults = hearingsAndResultsAndOutcomes.first
     val outcomes = hearingsAndResultsAndOutcomes.second
     val punishmentComment = hearingsAndResultsAndOutcomes.third
 
-    val punishmentsAndComments = adjudicationMigrateDto.punishments.toPunishments(outcomes.sortedBy { it.actualCreatedDate }.lastOrNull()?.code)
+    val punishmentsAndComments = adjudicationMigrateDto.punishments.toPunishments(
+      finalOutcome = outcomes.sortedBy { it.actualCreatedDate }.lastOrNull()?.code,
+      usernameOnPunishment = adjudicationMigrateDto.punishments.firstOrNull()?.createdBy,
+    )
     val punishments = punishmentsAndComments.first
     val punishmentComments = punishmentsAndComments.second
     punishmentComment?.let { punishmentComments.add(it) }
@@ -241,7 +243,16 @@ class MigrateNewRecordService(
         else -> this
       }
 
-    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(agencyId: String, chargeNumber: String, isYouthOffender: Boolean, hasSanctions: Boolean, isActive: Boolean, hasADA: Boolean, hasReducedSanctions: Boolean): Triple<List<Hearing>, List<Outcome>, PunishmentComment?> {
+    fun List<MigrateHearing>.toHearingsAndResultsAndOutcomes(
+      agencyId: String,
+      chargeNumber: String,
+      isYouthOffender: Boolean,
+      hasSanctions: Boolean,
+      isActive: Boolean,
+      hasADA: Boolean,
+      hasReducedSanctions: Boolean,
+      usernameOnPunishment: String?,
+    ): Triple<List<Hearing>, List<Outcome>, PunishmentComment?> {
       val valid = this.validate(
         chargeNumber = chargeNumber,
         hasSanctions = hasSanctions,
@@ -312,7 +323,7 @@ class MigrateNewRecordService(
                 }
               } else {
                 if (result.finding == Finding.APPEAL.name && hasReducedSanctions) {
-                  punishmentComment = PunishmentComment(comment = "Reduced on APPEAL")
+                  punishmentComment = PunishmentComment(comment = "Reduced on APPEAL", nomisCreatedBy = usernameOnPunishment!!)
                 } else {
                   result.createAdditionalOutcome(hasAdditionalHearings)?.let { additionalOutcome ->
                     outcomes.add(additionalOutcome)
@@ -338,14 +349,14 @@ class MigrateNewRecordService(
       return Triple(hearingsAndResults, outcomes, punishmentComment)
     }
 
-    fun List<MigratePunishment>.toPunishments(finalOutcome: OutcomeCode?): Pair<List<Punishment>, MutableList<PunishmentComment>> {
+    fun List<MigratePunishment>.toPunishments(finalOutcome: OutcomeCode?, usernameOnPunishment: String?): Pair<List<Punishment>, MutableList<PunishmentComment>> {
       val punishments = mutableListOf<Punishment>()
       val punishmentComments = mutableListOf<PunishmentComment>()
 
       finalOutcome?.let {
         if (this.any { sanction -> sanction.sanctionStatus == Status.QUASHED.name && sanction.sanctionCode == OicSanctionCode.ADA.name } && it != OutcomeCode.QUASHED) {
           punishmentComments.add(
-            PunishmentComment(comment = "ADA is quashed in NOMIS", migrated = true),
+            PunishmentComment(comment = "ADA is quashed in NOMIS", migrated = true, nomisCreatedBy = usernameOnPunishment!!),
           )
         }
       }
@@ -355,7 +366,7 @@ class MigrateNewRecordService(
         punishments.add(sanction.mapToPunishment())
 
         sanction.comment?.let {
-          punishmentComments.add(PunishmentComment(comment = it))
+          punishmentComments.add(PunishmentComment(comment = it, nomisCreatedBy = sanction.createdBy))
         }
       }
 
