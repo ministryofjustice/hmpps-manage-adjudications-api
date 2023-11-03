@@ -295,6 +295,12 @@ class MigrateExistingRecordService(
             OutcomeCode.REFER_POLICE -> if (it.hearingResult.finding != Finding.REF_POLICE.name) {
               throw exception
             }
+            null -> if (this.getLatestHearing()?.hearingOutcome?.code == HearingOutcomeCode.ADJOURN) {
+              this.hearings.remove(this.getLatestHearing()!!)
+              return@forEach
+            } else {
+              throw exception
+            }
             else -> throw exception
           }
 

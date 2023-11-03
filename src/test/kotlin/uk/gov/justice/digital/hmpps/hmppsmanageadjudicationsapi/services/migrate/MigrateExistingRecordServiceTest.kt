@@ -838,6 +838,25 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("has a new hearing with result before latest with different outcome")
     }
 
+    @CsvSource("PROVED", "D")
+    @ParameterizedTest
+    fun `with a adjourned result after nomis accepts nomis result and removes DPS hearing`(finding: Finding) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION(finding = finding, withResult = false)
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.last().hearingOutcome!!.code = HearingOutcomeCode.ADJOURN
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(if (finding == Finding.PROVED) OutcomeCode.CHARGE_PROVED else OutcomeCode.DISMISSED)
+    }
+
     @CsvSource("PROVED", "D", "DISMISSED", "NOT_PROCEED", "REF_POLICE")
     @ParameterizedTest
     fun `adjourns result if a new hearing before latest, and latest has a same hearing outcome`(finding: Finding) {
