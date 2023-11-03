@@ -102,6 +102,7 @@ class MigrationEntityBuilder {
       consecutiveChargeNumber = consecutiveChargeNumber,
       days = days,
       effectiveDate = effectiveDate,
+      createdBy = "NOMIS_USER",
     )
 
   fun createHearing(

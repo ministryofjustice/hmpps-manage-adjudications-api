@@ -357,7 +357,10 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(if (hasReducedSanctions) OutcomeCode.CHARGE_PROVED else OutcomeCode.QUASHED)
-      if (hasReducedSanctions) assertThat(argumentCaptor.value.punishmentComments.first().comment).isEqualTo("Reduced on APPEAL")
+      if (hasReducedSanctions) {
+        assertThat(argumentCaptor.value.punishmentComments.first().comment).isEqualTo("Reduced on APPEAL")
+        assertThat(argumentCaptor.value.punishmentComments.first().nomisCreatedBy).isEqualTo(dto.punishments.first().createdBy)
+      }
     }
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")

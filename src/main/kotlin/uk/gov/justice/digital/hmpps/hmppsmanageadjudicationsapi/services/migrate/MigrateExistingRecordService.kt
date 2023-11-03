@@ -135,6 +135,7 @@ class MigrateExistingRecordService(
       isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
       hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
       hasReducedSanctions = adjudicationMigrateDto.hasReducedSanctions(),
+      usernameOnPunishment = adjudicationMigrateDto.punishments.firstOrNull()?.createdBy,
     )
 
     val disIssued = adjudicationMigrateDto.disIssued.toDisIssue()
@@ -332,7 +333,7 @@ class MigrateExistingRecordService(
           if (it.hearingResult.finding == Finding.APPEAL.name) {
             newHearingsToReview.remove(it)
             if (adjudicationMigrateDto.hasReducedSanctions()) {
-              this.punishmentComments.add(PunishmentComment(comment = "Reduced on APPEAL"))
+              this.punishmentComments.add(PunishmentComment(comment = "Reduced on APPEAL", nomisCreatedBy = adjudicationMigrateDto.punishments.first().createdBy))
             } else {
               this.addOutcome(Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = it.hearingDateTime))
             }
@@ -351,6 +352,7 @@ class MigrateExistingRecordService(
           isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
           hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
           hasReducedSanctions = adjudicationMigrateDto.hasReducedSanctions(),
+          usernameOnPunishment = adjudicationMigrateDto.punishments.firstOrNull()?.createdBy,
         ),
     )
     // we always clear existing ones now, and replace with NOMIS
@@ -385,7 +387,7 @@ class MigrateExistingRecordService(
   }
 
   private fun ReportedAdjudication.processPunishments(sanctions: List<MigratePunishment>) {
-    val punishmentsAndComments = sanctions.toPunishments(this.latestOutcome()?.code)
+    val punishmentsAndComments = sanctions.toPunishments(finalOutcome = this.latestOutcome()?.code, usernameOnPunishment = sanctions.firstOrNull()?.createdBy)
     val punishments = punishmentsAndComments.first
     val punishmentComments = punishmentsAndComments.second
 

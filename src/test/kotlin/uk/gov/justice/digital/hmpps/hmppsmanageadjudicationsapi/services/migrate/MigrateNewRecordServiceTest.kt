@@ -444,6 +444,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.punishmentComments.first().comment).isEqualTo(dto.punishments.first().comment)
+      assertThat(argumentCaptor.value.punishmentComments.first().nomisCreatedBy).isEqualTo(dto.punishments.first().createdBy)
     }
 
     @Test
@@ -884,6 +885,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.punishmentComments.first().comment).isEqualTo("Reduced on APPEAL")
+      assertThat(argumentCaptor.value.punishmentComments.first().nomisCreatedBy).isEqualTo(dto.punishments.first().createdBy)
     }
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getAdditionalHearingsAfterFinalState")

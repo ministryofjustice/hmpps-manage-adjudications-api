@@ -15,6 +15,7 @@ data class PunishmentComment(
   var migrated: Boolean = false,
   @Enumerated(EnumType.STRING)
   var reasonForChange: ReasonForChange? = null,
+  val nomisCreatedBy: String? = null,
 ) : BaseEntity()
 
 enum class ReasonForChange {

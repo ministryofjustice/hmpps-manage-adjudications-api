@@ -141,6 +141,8 @@ data class MigratePunishment(
   val consecutiveChargeNumber: String?,
   @Schema(description = "days applied - note we do not support months, should be converted to days if present TBC")
   val days: Int?,
+  @Schema(description = "created by username")
+  val createdBy: String,
 )
 
 @Schema(description = "hearing and optional result")
