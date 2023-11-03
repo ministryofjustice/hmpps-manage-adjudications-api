@@ -27,18 +27,27 @@ class MigrateService(
 
   @Transactional
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse {
-    val reportedAdjudication = reportedAdjudicationRepository.findByChargeNumber(
-      chargeNumber = adjudicationMigrateDto.oicIncidentId.toString(),
+    val reportedAdjudication = reportedAdjudicationRepository.findByChargeNumberIn(
+      chargeNumbers = listOf(
+        adjudicationMigrateDto.oicIncidentId.toString(),
+        "${adjudicationMigrateDto.oicIncidentId}-${adjudicationMigrateDto.offenceSequence}",
+      ),
     )
 
-    return if (reportedAdjudication != null && adjudicationMigrateDto.offenceSequence == 1L) {
+    val existingRecord = reportedAdjudication.firstOrNull { !it.migrated }
+    val duplicatedRecord = reportedAdjudication.firstOrNull { it.migrated }
+
+    return if (existingRecord != null && adjudicationMigrateDto.offenceSequence == 1L) {
       if (featureFlagsConfig.skipExistingRecords) throw SkipExistingRecordException()
 
       migrateExistingRecordService.accept(
         adjudicationMigrateDto = adjudicationMigrateDto,
-        existingAdjudication = reportedAdjudication,
+        existingAdjudication = existingRecord,
       )
     } else {
+      duplicatedRecord?.let {
+        throw UnableToMigrateException("already processed this record")
+      }
       migrateNewRecordService.accept(
         adjudicationMigrateDto = adjudicationMigrateDto,
       )
