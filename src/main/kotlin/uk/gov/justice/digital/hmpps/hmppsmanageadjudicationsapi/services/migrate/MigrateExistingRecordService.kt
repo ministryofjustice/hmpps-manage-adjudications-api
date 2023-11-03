@@ -333,7 +333,7 @@ class MigrateExistingRecordService(
           if (it.hearingResult.finding == Finding.APPEAL.name) {
             newHearingsToReview.remove(it)
             if (adjudicationMigrateDto.hasReducedSanctions()) {
-              this.punishmentComments.add(PunishmentComment(comment = "Reduced on APPEAL", nomisCreatedBy = adjudicationMigrateDto.reportingOfficer.username))
+              this.punishmentComments.add(PunishmentComment(comment = "Reduced on APPEAL", nomisCreatedBy = adjudicationMigrateDto.punishments.first().createdBy))
             } else {
               this.addOutcome(Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = it.hearingDateTime))
             }

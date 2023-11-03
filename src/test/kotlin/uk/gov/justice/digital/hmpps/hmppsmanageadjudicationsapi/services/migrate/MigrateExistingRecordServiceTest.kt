@@ -359,7 +359,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(if (hasReducedSanctions) OutcomeCode.CHARGE_PROVED else OutcomeCode.QUASHED)
       if (hasReducedSanctions) {
         assertThat(argumentCaptor.value.punishmentComments.first().comment).isEqualTo("Reduced on APPEAL")
-        assertThat(argumentCaptor.value.punishmentComments.first().nomisCreatedBy).isEqualTo(dto.reportingOfficer.username)
+        assertThat(argumentCaptor.value.punishmentComments.first().nomisCreatedBy).isEqualTo(dto.punishments.first().createdBy)
       }
     }
 
