@@ -29,7 +29,7 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
 
   @Test
   fun `accept a new record calls new record migration service`() {
-    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(null)
+    whenever(reportedAdjudicationRepository.findByChargeNumberIn(any())).thenReturn(emptyList())
     migrateService.accept(migrationFixtures.ADULT_SINGLE_OFFENCE)
 
     verify(migrateNewRecordService, atLeastOnce()).accept(any())
@@ -37,7 +37,7 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
 
   @Test
   fun `accept an existing record calls existing record migration service`() {
-    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
+    whenever(reportedAdjudicationRepository.findByChargeNumberIn(any())).thenReturn(listOf(entityBuilder.reportedAdjudication()))
     migrateService.accept(migrationFixtures.ADULT_SINGLE_OFFENCE)
 
     verify(migrateExistingRecordService, atLeastOnce()).accept(any(), any())
@@ -45,7 +45,7 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
 
   @Test
   fun `accept redirects existing report to new record migration service ir the offence sequence is greater than 1`() {
-    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
+    whenever(reportedAdjudicationRepository.findByChargeNumberIn(any())).thenReturn(listOf(entityBuilder.reportedAdjudication()))
     migrateService.accept(migrationFixtures.ADULT_MULITPLE_OFFENCES.last())
 
     verify(migrateNewRecordService, atLeastOnce()).accept(any())
@@ -54,11 +54,27 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
   @Test
   fun `throws exception when skip is true`() {
     whenever(featureFlagsConfig.skipExistingRecords).thenReturn(true)
-    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
+    whenever(reportedAdjudicationRepository.findByChargeNumberIn(any())).thenReturn(listOf(entityBuilder.reportedAdjudication()))
 
     Assertions.assertThatThrownBy {
       migrateService.accept(migrationFixtures.ADULT_SINGLE_OFFENCE)
     }.isInstanceOf(SkipExistingRecordException::class.java)
       .hasMessageContaining("Skip existing record flag is true")
+  }
+
+  @Test
+  fun `throws exception if we have already processed record - avoids duplicate key error`() {
+    whenever(reportedAdjudicationRepository.findByChargeNumberIn(any())).thenReturn(
+      listOf(
+        entityBuilder.reportedAdjudication().also {
+          it.migrated = true
+        },
+      ),
+    )
+
+    Assertions.assertThatThrownBy {
+      migrateService.accept(migrationFixtures.ADULT_SINGLE_OFFENCE)
+    }.isInstanceOf(UnableToMigrateException::class.java)
+      .hasMessageContaining("already processed this record")
   }
 }

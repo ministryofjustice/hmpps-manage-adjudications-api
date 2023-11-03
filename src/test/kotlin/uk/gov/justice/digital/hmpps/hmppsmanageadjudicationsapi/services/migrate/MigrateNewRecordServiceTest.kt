@@ -789,6 +789,28 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
     }
 
+    @Test
+    fun `NN-5675 proved proved hearing no result is going in as corrupted - should be charged proved`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.EXCEPTION_CASE_5675
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED)
+    }
+
+    @Test
+    fun `NN-5675 not proceed, proved, hearing with no result is corrupted - should be charge proved`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.EXCEPTION_CASE_5675_1
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED)
+    }
+
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getExceptionCases")
     @ParameterizedTest
     fun `adjudications with multiple final states should adjourn and add comments, and use final outcome`(dto: AdjudicationMigrateDto) {

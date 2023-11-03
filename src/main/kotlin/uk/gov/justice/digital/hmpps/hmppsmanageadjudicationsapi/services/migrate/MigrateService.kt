@@ -9,11 +9,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Migr
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 
-class ExistingRecordConflictException(message: String) : Exception(message)
+class ExistingRecordConflictException(message: String) : RuntimeException(message)
 
-class IgnoreAsPreprodRefreshOutofSyncException(message: String) : Exception(message)
+class IgnoreAsPreprodRefreshOutofSyncException(message: String) : RuntimeException(message)
 
-class UnableToMigrateException(message: String) : Exception(message)
+class UnableToMigrateException(message: String) : RuntimeException(message)
 
 class SkipExistingRecordException : Exception("Skip existing record flag is true")
 
@@ -27,18 +27,27 @@ class MigrateService(
 
   @Transactional
   fun accept(adjudicationMigrateDto: AdjudicationMigrateDto): MigrateResponse {
-    val reportedAdjudication = reportedAdjudicationRepository.findByChargeNumber(
-      chargeNumber = adjudicationMigrateDto.oicIncidentId.toString(),
+    val reportedAdjudication = reportedAdjudicationRepository.findByChargeNumberIn(
+      chargeNumbers = listOf(
+        adjudicationMigrateDto.oicIncidentId.toString(),
+        "${adjudicationMigrateDto.oicIncidentId}-${adjudicationMigrateDto.offenceSequence}",
+      ),
     )
 
-    return if (reportedAdjudication != null && adjudicationMigrateDto.offenceSequence == 1L) {
+    val existingRecord = reportedAdjudication.firstOrNull { !it.migrated }
+    val duplicatedRecord = reportedAdjudication.firstOrNull { it.migrated }
+
+    return if (existingRecord != null && adjudicationMigrateDto.offenceSequence == 1L) {
       if (featureFlagsConfig.skipExistingRecords) throw SkipExistingRecordException()
 
       migrateExistingRecordService.accept(
         adjudicationMigrateDto = adjudicationMigrateDto,
-        existingAdjudication = reportedAdjudication,
+        existingAdjudication = existingRecord,
       )
     } else {
+      duplicatedRecord?.let {
+        throw UnableToMigrateException("already processed this record")
+      }
       migrateNewRecordService.accept(
         adjudicationMigrateDto = adjudicationMigrateDto,
       )

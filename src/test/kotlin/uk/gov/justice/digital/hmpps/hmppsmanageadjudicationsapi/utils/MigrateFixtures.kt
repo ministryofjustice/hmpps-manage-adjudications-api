@@ -469,6 +469,45 @@ class MigrateFixtures {
     ),
   )
 
+  val EXCEPTION_CASE_5675 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().minusYears(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 2,
+        hearingDateTime = LocalDateTime.now().minusYears(1).plusDays(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().minusYears(1).plusDays(2),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(),
+    ),
+  )
+  val EXCEPTION_CASE_5675_1 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().minusYears(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.NOT_PROCEED.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 2,
+        hearingDateTime = LocalDateTime.now().minusYears(1).plusDays(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name, createdDateTime = LocalDateTime.now().plusDays(1)),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().minusYears(1).plusDays(2),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(),
+    ),
+  )
+
   val EXCEPTION_CASE_2 = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
@@ -695,7 +734,7 @@ class MigrateFixtures {
     ),
   )
 
-  fun HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION(finding: Finding) = migrationEntityBuilder.createAdjudication(
+  fun HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION(finding: Finding, withResult: Boolean = true) = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         oicHearingId = 100,
@@ -704,7 +743,7 @@ class MigrateFixtures {
         migrationEntityBuilder.createHearingResult(finding = finding.name),
       ),
       migrationEntityBuilder.createHearing(
-        hearingResult = migrationEntityBuilder.createHearingResult(finding = finding.name),
+        hearingResult = if (withResult) migrationEntityBuilder.createHearingResult(finding = finding.name) else null,
       ),
     ),
   )
