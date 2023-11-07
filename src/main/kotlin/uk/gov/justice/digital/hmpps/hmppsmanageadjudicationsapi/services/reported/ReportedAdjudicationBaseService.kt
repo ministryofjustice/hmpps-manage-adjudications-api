@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssu
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
@@ -247,7 +248,8 @@ open class ReportedDtoService(
       id = this.id,
       code = this.code,
       details = this.details,
-      reason = this.reason,
+      // added due to migration - not applicable for DPS app itself
+      reason = this.reason ?: if (this.code == OutcomeCode.NOT_PROCEED) NotProceedReason.OTHER else null,
       quashedReason = this.quashedReason,
       canRemove = !hasLinkedAda,
     )

@@ -9,7 +9,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateHear
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePunishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
@@ -124,7 +126,7 @@ class MigrateExistingRecordService(
         hearingToAdd.also {
           it.migrated = true
           if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(it.dateTimeOfHearing) == true && it.hearingOutcome == null) {
-            it.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
+            it.hearingOutcome = createAdjourn()
           }
         },
       )
@@ -209,6 +211,8 @@ class MigrateExistingRecordService(
         hearingOutcomeNomis.hearingOutcome!!.adjudicator = ""
         hearingOutcomeNomis.hearingOutcome!!.code = HearingOutcomeCode.ADJOURN
         hearingOutcomeNomis.hearingOutcome!!.nomisOutcome = true
+        hearingOutcomeNomis.hearingOutcome!!.plea = HearingOutcomePlea.NOT_ASKED
+        hearingOutcomeNomis.hearingOutcome!!.reason = HearingOutcomeAdjournReason.OTHER
         nomisHearing?.let {
           hearingOutcomeNomis.hearingOutcome!!.details = "${it.commentText} - actual finding ${it.hearingResult?.finding}"
         }
@@ -350,6 +354,7 @@ class MigrateExistingRecordService(
           }
           if (it.hearingResult.finding == Finding.PROVED.name && this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED) {
             this.getLatestHearing()!!.hearingOutcome!!.code = HearingOutcomeCode.ADJOURN
+            this.getLatestHearing()!!.hearingOutcome!!.reason = HearingOutcomeAdjournReason.OTHER
             this.removeOutcome(this.latestOutcome()!!)
           }
           if (it.hearingResult.finding == Finding.APPEAL.name) {
@@ -367,6 +372,7 @@ class MigrateExistingRecordService(
     if (listOf(OutcomeCode.DISMISSED, OutcomeCode.NOT_PROCEED).contains(latestOutcome?.code) && newHearingsToReview.isNotEmpty() && this.hearings.isNotEmpty()) {
       if (newHearingsToReview.any { it.hearingResult?.finding == Finding.PROVED.name }) {
         this.getLatestHearing()?.hearingOutcome?.code = HearingOutcomeCode.ADJOURN
+        this.getLatestHearing()?.hearingOutcome?.reason = HearingOutcomeAdjournReason.OTHER
         this.getLatestHearing()?.hearingOutcome?.details = "Adjourned as nomis is now charge proved - previous outcome ${latestOutcome?.code}"
         this.removeOutcome(latestOutcome!!)
       }
