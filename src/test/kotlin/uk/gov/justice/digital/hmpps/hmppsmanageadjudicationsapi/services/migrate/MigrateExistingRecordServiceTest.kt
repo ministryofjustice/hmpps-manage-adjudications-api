@@ -488,6 +488,43 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.QUASHED)
     }
+
+    @CsvSource("3773547", "3892422", "3823250")
+    @ParameterizedTest
+    fun `nomis locked records with corrupted results, adjourn the dps hearing outcome`(chargeNumber: String) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.HEARING_WITH_NOT_PROCEED_DUPLICATE
+      val existing = existing(dto).also {
+        it.chargeNumber = chargeNumber
+      }
+
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.NOT_PROCEED)
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
+    }
+
+    @CsvSource("3871590", "3864251", "3899085")
+    @ParameterizedTest
+    fun `nomis locked records with corrupted results charge proved outcome, adjourn the dps hearing outcome`(chargeNumber: String) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.HEARING_WITH_CHARGE_PROVED
+      val existing = existing(dto).also {
+        it.chargeNumber = chargeNumber
+      }
+
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("entered in error - actual finding NOT_PROCEED")
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
+    }
   }
 
   @Nested

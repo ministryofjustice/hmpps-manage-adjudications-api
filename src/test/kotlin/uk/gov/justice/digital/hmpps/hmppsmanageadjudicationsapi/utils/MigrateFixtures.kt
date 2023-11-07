@@ -334,6 +334,37 @@ class MigrateFixtures {
     ),
   )
 
+  val HEARING_WITH_NOT_PROCEED_DUPLICATE = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.NOT_PROCEED.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(1),
+      ),
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 2,
+        hearingDateTime = LocalDateTime.now().plusDays(2),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.NOT_PROCEED.name),
+      ),
+    ),
+  )
+
+  val HEARING_WITH_CHARGE_PROVED = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        comment = "entered in error",
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.NOT_PROCEED.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        oicHearingId = 2,
+        hearingDateTime = LocalDateTime.now().plusDays(2),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
+      ),
+    ),
+    punishments = listOf(migrationEntityBuilder.createPunishment()),
+  )
+
   val POLICE_REF_NOT_PROCEED = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(

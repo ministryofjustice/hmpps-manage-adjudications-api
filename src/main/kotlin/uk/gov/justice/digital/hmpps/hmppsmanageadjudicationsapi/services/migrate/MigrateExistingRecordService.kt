@@ -173,7 +173,7 @@ class MigrateExistingRecordService(
 
     hearingsMarkedWithNomis.forEachIndexed { hearingIndex, hearingOutcomeNomis ->
       val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { hearingOutcomeNomis.oicHearingId == it.oicHearingId && it.hearingResult != null }
-      if (nomisHearing != null) {
+      if (nomisHearing != null && !listOf("3871590", "3864251", "3899085", "3773547", "3892422", "3823250").contains(this.chargeNumber)) {
         val index = adjudicationMigrateDto.hearings.indexOf(nomisHearing)
         val hasAdditionalOutcomes =
           adjudicationMigrateDto.hearings.subList(index + 1, adjudicationMigrateDto.hearings.size).hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed()
@@ -209,6 +209,9 @@ class MigrateExistingRecordService(
         hearingOutcomeNomis.hearingOutcome!!.adjudicator = ""
         hearingOutcomeNomis.hearingOutcome!!.code = HearingOutcomeCode.ADJOURN
         hearingOutcomeNomis.hearingOutcome!!.nomisOutcome = true
+        nomisHearing?.let {
+          hearingOutcomeNomis.hearingOutcome!!.details = "${it.commentText} - actual finding ${it.hearingResult?.finding}"
+        }
       }
     }
   }
