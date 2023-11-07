@@ -65,6 +65,11 @@ class MigrateExistingRecordService(
       existingAdjudication.offenceDetails.first().update(adjudicationMigrateDto)
     }
 
+    // remove duplicate not proceeds - bug in DPS using back on browser
+    if (existingAdjudication.getOutcomes().all { it.code == OutcomeCode.NOT_PROCEED } && existingAdjudication.getOutcomes().size == 2) {
+      existingAdjudication.removeOutcome(existingAdjudication.latestOutcome()!!)
+    }
+
     if (existingAdjudication.status == ReportedAdjudicationStatus.ACCEPTED) {
       existingAdjudication.processPhase1(adjudicationMigrateDto)
     } else if (existingAdjudication.hearings.containsNomisHearingOutcomeCode()) {

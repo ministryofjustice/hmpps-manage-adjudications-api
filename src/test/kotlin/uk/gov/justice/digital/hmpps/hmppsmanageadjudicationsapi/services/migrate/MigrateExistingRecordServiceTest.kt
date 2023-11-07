@@ -919,6 +919,34 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
     }
+
+    @Test
+    fun `remove duplicate not proceed records`() {
+      val dto = migrationFixtures.NOT_PROCEED
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.clear()
+          it.clearOutcomes()
+          it.addOutcome(
+            Outcome(code = OutcomeCode.NOT_PROCEED).also {
+              it.createDateTime = LocalDateTime.now()
+            },
+          )
+          it.addOutcome(
+            Outcome(code = OutcomeCode.NOT_PROCEED).also {
+              it.createDateTime = LocalDateTime.now().plusDays(1)
+            },
+          )
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.NOT_PROCEED)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
+    }
   }
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {

@@ -786,6 +786,8 @@ class MigrateFixtures {
     ),
   )
 
+  val NOT_PROCEED = migrationEntityBuilder.createAdjudication()
+
   val PLEA_ISSUE_1 = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(plea = Finding.QUASHED.name, finding = Finding.NOT_PROCEED.name)),
