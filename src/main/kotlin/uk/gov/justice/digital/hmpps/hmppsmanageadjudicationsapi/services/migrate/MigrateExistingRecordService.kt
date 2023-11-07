@@ -363,6 +363,14 @@ class MigrateExistingRecordService(
         }
       }
     }
+    val latestOutcome = this.latestOutcome()
+    if (listOf(OutcomeCode.DISMISSED, OutcomeCode.NOT_PROCEED).contains(latestOutcome?.code) && newHearingsToReview.isNotEmpty() && this.hearings.isNotEmpty()) {
+      if (newHearingsToReview.any { it.hearingResult?.finding == Finding.PROVED.name }) {
+        this.getLatestHearing()?.hearingOutcome?.code = HearingOutcomeCode.ADJOURN
+        this.getLatestHearing()?.hearingOutcome?.details = "Adjourned as nomis is now charge proved - previous outcome ${latestOutcome?.code}"
+        this.removeOutcome(latestOutcome!!)
+      }
+    }
 
     this.addHearingsAndOutcomes(
       newHearingsToReview.sortedBy { it.hearingDateTime }
