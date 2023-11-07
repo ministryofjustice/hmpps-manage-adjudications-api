@@ -488,6 +488,43 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.QUASHED)
     }
+
+    @CsvSource("3773547", "3892422", "3823250")
+    @ParameterizedTest
+    fun `nomis locked records with corrupted results, adjourn the dps hearing outcome`(chargeNumber: String) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.HEARING_WITH_NOT_PROCEED_DUPLICATE
+      val existing = existing(dto).also {
+        it.chargeNumber = chargeNumber
+      }
+
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.NOT_PROCEED)
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
+    }
+
+    @CsvSource("3871590", "3864251", "3899085")
+    @ParameterizedTest
+    fun `nomis locked records with corrupted results charge proved outcome, adjourn the dps hearing outcome`(chargeNumber: String) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.HEARING_WITH_CHARGE_PROVED
+      val existing = existing(dto).also {
+        it.chargeNumber = chargeNumber
+      }
+
+      migrateExistingRecordService.accept(dto, existing)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("entered in error - actual finding NOT_PROCEED")
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
+    }
   }
 
   @Nested
@@ -918,6 +955,83 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
+    }
+
+    @Test
+    fun `remove duplicate not proceed records`() {
+      val dto = migrationFixtures.NOT_PROCEED
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.clear()
+          it.clearOutcomes()
+          it.addOutcome(
+            Outcome(code = OutcomeCode.NOT_PROCEED).also {
+              it.createDateTime = LocalDateTime.now()
+            },
+          )
+          it.addOutcome(
+            Outcome(code = OutcomeCode.NOT_PROCEED).also {
+              it.createDateTime = LocalDateTime.now().plusDays(1)
+            },
+          )
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.NOT_PROCEED)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
+    }
+
+    @Test
+    fun `dps is set as not proceed no hearing, and nomis record has hearings - remove DPS record and replace with nomis`() {
+      val dto = migrationFixtures.NOT_PROCEED_REPLACE_WITH_NOMIS
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.clear()
+          it.clearOutcomes()
+          it.addOutcome(
+            Outcome(code = OutcomeCode.NOT_PROCEED).also {
+              it.createDateTime = LocalDateTime.now()
+            },
+          )
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
+    }
+
+    @Test
+    fun `dps hearing and outcome set to not proceed, followed by a nomis outcome of charge proved`() {
+      val dto = migrationFixtures.NOT_PROCEED_CHARGE_PROVED_REPLACE_WITH_NOMIS
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.first().hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
+          it.clearOutcomes()
+          it.addOutcome(
+            Outcome(code = OutcomeCode.NOT_PROCEED).also {
+              it.createDateTime = LocalDateTime.now()
+            },
+          )
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
+      assertThat(argumentCaptor.value.hearings.last().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
     }
   }
 

@@ -9,7 +9,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigrateHear
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.MigratePunishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
@@ -65,6 +67,16 @@ class MigrateExistingRecordService(
       existingAdjudication.offenceDetails.first().update(adjudicationMigrateDto)
     }
 
+    // remove duplicate not proceeds - bug in DPS using back on browser
+    if (existingAdjudication.getOutcomes().all { it.code == OutcomeCode.NOT_PROCEED } && existingAdjudication.getOutcomes().size == 2) {
+      existingAdjudication.removeOutcome(existingAdjudication.latestOutcome()!!)
+    }
+
+    // if dps is not proceed no hearing and nomis has hearings, remove dps outcome
+    if (existingAdjudication.getOutcomes().size == 1 && existingAdjudication.latestOutcome()?.code == OutcomeCode.NOT_PROCEED && existingAdjudication.hearings.isEmpty() && adjudicationMigrateDto.hearings.isNotEmpty()) {
+      existingAdjudication.removeOutcome(existingAdjudication.latestOutcome()!!)
+    }
+
     if (existingAdjudication.status == ReportedAdjudicationStatus.ACCEPTED) {
       existingAdjudication.processPhase1(adjudicationMigrateDto)
     } else if (existingAdjudication.hearings.containsNomisHearingOutcomeCode()) {
@@ -114,7 +126,7 @@ class MigrateExistingRecordService(
         hearingToAdd.also {
           it.migrated = true
           if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(it.dateTimeOfHearing) == true && it.hearingOutcome == null) {
-            it.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
+            it.hearingOutcome = createAdjourn()
           }
         },
       )
@@ -163,7 +175,7 @@ class MigrateExistingRecordService(
 
     hearingsMarkedWithNomis.forEachIndexed { hearingIndex, hearingOutcomeNomis ->
       val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { hearingOutcomeNomis.oicHearingId == it.oicHearingId && it.hearingResult != null }
-      if (nomisHearing != null) {
+      if (nomisHearing != null && !listOf("3871590", "3864251", "3899085", "3773547", "3892422", "3823250").contains(this.chargeNumber)) {
         val index = adjudicationMigrateDto.hearings.indexOf(nomisHearing)
         val hasAdditionalOutcomes =
           adjudicationMigrateDto.hearings.subList(index + 1, adjudicationMigrateDto.hearings.size).hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed()
@@ -199,6 +211,11 @@ class MigrateExistingRecordService(
         hearingOutcomeNomis.hearingOutcome!!.adjudicator = ""
         hearingOutcomeNomis.hearingOutcome!!.code = HearingOutcomeCode.ADJOURN
         hearingOutcomeNomis.hearingOutcome!!.nomisOutcome = true
+        hearingOutcomeNomis.hearingOutcome!!.plea = HearingOutcomePlea.NOT_ASKED
+        hearingOutcomeNomis.hearingOutcome!!.reason = HearingOutcomeAdjournReason.OTHER
+        nomisHearing?.let {
+          hearingOutcomeNomis.hearingOutcome!!.details = "${it.commentText} - actual finding ${it.hearingResult?.finding}"
+        }
       }
     }
   }
@@ -337,6 +354,7 @@ class MigrateExistingRecordService(
           }
           if (it.hearingResult.finding == Finding.PROVED.name && this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED) {
             this.getLatestHearing()!!.hearingOutcome!!.code = HearingOutcomeCode.ADJOURN
+            this.getLatestHearing()!!.hearingOutcome!!.reason = HearingOutcomeAdjournReason.OTHER
             this.removeOutcome(this.latestOutcome()!!)
           }
           if (it.hearingResult.finding == Finding.APPEAL.name) {
@@ -348,6 +366,15 @@ class MigrateExistingRecordService(
             }
           }
         }
+      }
+    }
+    val latestOutcome = this.latestOutcome()
+    if (listOf(OutcomeCode.DISMISSED, OutcomeCode.NOT_PROCEED).contains(latestOutcome?.code) && newHearingsToReview.isNotEmpty() && this.hearings.isNotEmpty()) {
+      if (newHearingsToReview.any { it.hearingResult?.finding == Finding.PROVED.name }) {
+        this.getLatestHearing()?.hearingOutcome?.code = HearingOutcomeCode.ADJOURN
+        this.getLatestHearing()?.hearingOutcome?.reason = HearingOutcomeAdjournReason.OTHER
+        this.getLatestHearing()?.hearingOutcome?.details = "Adjourned as nomis is now charge proved - previous outcome ${latestOutcome?.code}"
+        this.removeOutcome(latestOutcome!!)
       }
     }
 
