@@ -947,6 +947,29 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.NOT_PROCEED)
       assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
     }
+
+    @Test
+    fun `dps is set as not proceed no hearing, and nomis record has hearings - remove DPS record and replace with nomis`() {
+      val dto = migrationFixtures.NOT_PROCEED_REPLACE_WITH_NOMIS
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.clear()
+          it.clearOutcomes()
+          it.addOutcome(
+            Outcome(code = OutcomeCode.NOT_PROCEED).also {
+              it.createDateTime = LocalDateTime.now()
+            },
+          )
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
+    }
   }
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {

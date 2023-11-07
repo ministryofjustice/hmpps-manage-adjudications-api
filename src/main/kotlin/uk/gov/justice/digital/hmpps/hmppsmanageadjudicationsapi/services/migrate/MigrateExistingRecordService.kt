@@ -70,6 +70,11 @@ class MigrateExistingRecordService(
       existingAdjudication.removeOutcome(existingAdjudication.latestOutcome()!!)
     }
 
+    // if dps is not proceed no hearing and nomis has hearings, remove dps outcome
+    if (existingAdjudication.getOutcomes().size == 1 && existingAdjudication.latestOutcome()?.code == OutcomeCode.NOT_PROCEED && existingAdjudication.hearings.isEmpty() && adjudicationMigrateDto.hearings.isNotEmpty()) {
+      existingAdjudication.removeOutcome(existingAdjudication.latestOutcome()!!)
+    }
+
     if (existingAdjudication.status == ReportedAdjudicationStatus.ACCEPTED) {
       existingAdjudication.processPhase1(adjudicationMigrateDto)
     } else if (existingAdjudication.hearings.containsNomisHearingOutcomeCode()) {
