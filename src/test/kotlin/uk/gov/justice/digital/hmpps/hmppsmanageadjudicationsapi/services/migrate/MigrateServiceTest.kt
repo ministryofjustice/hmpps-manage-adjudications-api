@@ -74,7 +74,7 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
 
     Assertions.assertThatThrownBy {
       migrateService.accept(migrationFixtures.ADULT_SINGLE_OFFENCE)
-    }.isInstanceOf(UnableToMigrateException::class.java)
+    }.isInstanceOf(DuplicateCreationException::class.java)
       .hasMessageContaining("already processed this record")
   }
 }
