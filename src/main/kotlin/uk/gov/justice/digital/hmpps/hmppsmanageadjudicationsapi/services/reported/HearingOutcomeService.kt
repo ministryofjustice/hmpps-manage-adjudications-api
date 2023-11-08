@@ -100,6 +100,8 @@ class HearingOutcomeService(
       it.getHearing().validateCanRefer(code)
     }
 
+    if (reportedAdjudication.getHearing().hearingOutcome != null) throw RuntimeException("back key detected")
+
     reportedAdjudication.getHearing().hearingOutcome = HearingOutcome(
       code = code,
       reason = reason,
