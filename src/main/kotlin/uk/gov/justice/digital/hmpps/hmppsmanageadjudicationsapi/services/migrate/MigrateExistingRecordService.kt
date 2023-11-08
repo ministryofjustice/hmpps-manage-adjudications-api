@@ -175,11 +175,9 @@ class MigrateExistingRecordService(
 
   private fun ReportedAdjudication.processPhase2(adjudicationMigrateDto: AdjudicationMigrateDto) {
     val valid = adjudicationMigrateDto.hearings.validate(
-      chargeNumber = this.chargeNumber,
       hasSanctions = adjudicationMigrateDto.punishments.isNotEmpty(),
       hasADA = adjudicationMigrateDto.punishments.any { it.sanctionCode == OicSanctionCode.ADA.name },
       isActive = adjudicationMigrateDto.prisoner.currentAgencyId != null,
-      agency = this.originatingAgencyId,
     )
 
     val hearingsMarkedWithNomis = this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.hearingOutcome?.code == HearingOutcomeCode.NOMIS }
