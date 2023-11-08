@@ -43,10 +43,10 @@ class PunishmentsService(
 ) {
 
   fun removeQuashedFinding(reportedAdjudication: ReportedAdjudication) {
-    legacySyncService.deleteSanctions(adjudicationNumber = reportedAdjudication.chargeNumber.toLong())
+    legacySyncService.deleteSanctions(adjudicationNumber = reportedAdjudication.chargeNumber)
 
     legacySyncService.createSanctions(
-      adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
+      adjudicationNumber = reportedAdjudication.chargeNumber,
       sanctions = reportedAdjudication.mapToSanctions(),
     )
   }
@@ -73,7 +73,7 @@ class PunishmentsService(
     }
 
     legacySyncService.createSanctions(
-      adjudicationNumber = chargeNumber.toLong(),
+      adjudicationNumber = chargeNumber,
       sanctions = reportedAdjudication.mapToSanctions(),
     )
 
@@ -136,7 +136,7 @@ class PunishmentsService(
     }
 
     legacySyncService.updateSanctions(
-      adjudicationNumber = chargeNumber.toLong(),
+      adjudicationNumber = chargeNumber,
       sanctions = reportedAdjudication.mapToSanctions(),
     )
 

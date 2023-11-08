@@ -84,27 +84,27 @@ class LegacySyncService(
     }
   }
 
-  fun createSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>) {
+  fun createSanctions(adjudicationNumber: String, sanctions: List<OffenderOicSanctionRequest>) {
     if (!featureFlagsConfig.punishments) {
-      legacyNomisGateway.createSanctions(adjudicationNumber, sanctions)
+      legacyNomisGateway.createSanctions(adjudicationNumber.toLong(), sanctions)
     }
   }
 
-  fun updateSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>) {
+  fun updateSanctions(adjudicationNumber: String, sanctions: List<OffenderOicSanctionRequest>) {
     if (!featureFlagsConfig.punishments) {
-      legacyNomisGateway.updateSanctions(adjudicationNumber, sanctions)
+      legacyNomisGateway.updateSanctions(adjudicationNumber.toLong(), sanctions)
     }
   }
 
-  fun quashSanctions(adjudicationNumber: Long) {
+  fun quashSanctions(adjudicationNumber: String) {
     if (!featureFlagsConfig.punishments) {
-      legacyNomisGateway.quashSanctions(adjudicationNumber)
+      legacyNomisGateway.quashSanctions(adjudicationNumber.toLong())
     }
   }
 
-  fun deleteSanctions(adjudicationNumber: Long) {
+  fun deleteSanctions(adjudicationNumber: String) {
     if (!featureFlagsConfig.punishments) {
-      legacyNomisGateway.deleteSanctions(adjudicationNumber)
+      legacyNomisGateway.deleteSanctions(adjudicationNumber.toLong())
     }
   }
 }
