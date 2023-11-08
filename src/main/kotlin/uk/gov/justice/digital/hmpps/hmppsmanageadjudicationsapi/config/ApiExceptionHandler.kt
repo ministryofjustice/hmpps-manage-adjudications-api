@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus.CONFLICT
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.I_AM_A_TEAPOT
+import org.springframework.http.HttpStatus.NOT_ACCEPTABLE
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.HttpStatus.NOT_MODIFIED
 import org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.DuplicateCreationException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.ExistingRecordConflictException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.IgnoreAsPreprodRefreshOutofSyncException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.SkipExistingRecordException
@@ -191,6 +193,20 @@ class ApiExceptionHandler {
       .body(
         ErrorResponse(
           status = I_AM_A_TEAPOT,
+          userMessage = e.message,
+        ),
+      )
+  }
+
+  @ExceptionHandler(DuplicateCreationException::class)
+  fun handleDuplicateCreationException(e: DuplicateCreationException): ResponseEntity<ErrorResponse?>? {
+    log.info("DuplicateCreationException: {}", e.message)
+
+    return ResponseEntity
+      .status(NOT_ACCEPTABLE)
+      .body(
+        ErrorResponse(
+          status = NOT_ACCEPTABLE,
           userMessage = e.message,
         ),
       )

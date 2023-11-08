@@ -15,6 +15,8 @@ class IgnoreAsPreprodRefreshOutofSyncException(message: String) : RuntimeExcepti
 
 class UnableToMigrateException(message: String) : RuntimeException(message)
 
+class DuplicateCreationException(message: String) : RuntimeException(message)
+
 class SkipExistingRecordException : Exception("Skip existing record flag is true")
 
 @Service
@@ -46,7 +48,7 @@ class MigrateService(
       )
     } else {
       duplicatedRecord?.let {
-        throw UnableToMigrateException("already processed this record")
+        throw DuplicateCreationException("already processed this record")
       }
       migrateNewRecordService.accept(
         adjudicationMigrateDto = adjudicationMigrateDto,
