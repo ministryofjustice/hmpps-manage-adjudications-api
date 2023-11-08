@@ -91,8 +91,19 @@ class MigrateExistingRecordService(
       }
     }
 
-    if (existingAdjudication.status != ReportedAdjudicationStatus.ACCEPTED) {
-      existingAdjudication.processPhase3(adjudicationMigrateDto)
+    if (existingAdjudication.chargeNumber == "3990011") {
+      existingAdjudication.removeOutcome(existingAdjudication.latestOutcome()!!)
+    }
+
+    if (existingAdjudication.status != ReportedAdjudicationStatus.ACCEPTED && (
+      !listOf("3944645", "3963134", "3947329", "3944650", "3879400").contains(existingAdjudication.chargeNumber)
+      )
+    ) {
+      if (existingAdjudication.chargeNumber == "3851533") {
+        existingAdjudication.handleSanctions(adjudicationMigrateDto)
+      } else {
+        existingAdjudication.processPhase3(adjudicationMigrateDto)
+      }
     }
 
     adjudicationMigrateDto.damages.toDamages().forEach {
@@ -298,7 +309,6 @@ class MigrateExistingRecordService(
     newHearingsToReview.sortedBy { it.hearingDateTime }.forEach {
       if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(it.hearingDateTime) == true && it.hearingResult != null) {
         if (this.getLatestHearing()?.hearingOutcome != null) {
-          // val exception = ExistingRecordConflictException("${this.originatingAgencyId} $chargeNumber has a new hearing with result before latest with different outcome, nomis finding ${it.hearingResult.finding}")
           when (this.latestOutcome()?.code) {
             OutcomeCode.DISMISSED -> if (it.hearingResult.finding != Finding.D.name) {
               return@forEach
@@ -344,8 +354,6 @@ class MigrateExistingRecordService(
         } else {
           if (listOf(Finding.D.name, Finding.DISMISSED.name, Finding.NOT_PROCEED.name).contains(it.hearingResult.finding)) {
             if (adjudicationMigrateDto.punishments.isEmpty()) {
-              //   throw ExistingRecordConflictException("${this.originatingAgencyId} $chargeNumber new hearing with negative result after completed ${it.hearingResult.finding} - sanctions present in nomis")
-              // } else {
               if (this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED) {
                 this.removeOutcome(this.latestOutcome()!!)
                 this.hearings.remove(this.getLatestHearing()!!)
@@ -392,6 +400,10 @@ class MigrateExistingRecordService(
         ),
     )
     // we always clear existing ones now, and replace with NOMIS
+    this.handleSanctions(adjudicationMigrateDto)
+  }
+
+  private fun ReportedAdjudication.handleSanctions(adjudicationMigrateDto: AdjudicationMigrateDto) {
     this.clearPunishments()
     this.processPunishments(adjudicationMigrateDto.punishments)
   }
