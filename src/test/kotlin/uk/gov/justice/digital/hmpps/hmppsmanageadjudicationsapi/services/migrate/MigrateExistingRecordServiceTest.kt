@@ -268,21 +268,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
 
     @CsvSource("NOT_PROCEED", "D", "DISMISSED")
     @ParameterizedTest
-    fun `existing record with multiple nomis outcomes will throw exception if new outcome has changed to negative outcome if sanctions exist in nomis`(finding: Finding) {
-      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE(finding)
-      Assertions.assertThatThrownBy {
-        migrateExistingRecordService.accept(
-          dto,
-          existing(dto).also {
-            it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
-          },
-        )
-      }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("new hearing with negative result after completed")
-    }
-
-    @CsvSource("NOT_PROCEED", "D", "DISMISSED")
-    @ParameterizedTest
     fun `existing record with multiple nomis outcomes will correct outcome if it has changed to negative outcome if sanctions do not exist in nomis`(finding: Finding) {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE(finding, false)
@@ -612,6 +597,36 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       )
     }
 
+    @CsvSource("NOT_PROCEED", "D", "DISMISSED")
+    @ParameterizedTest
+    fun `existing record with multiple nomis outcomes will accept as corrupted if new outcome has changed to negative outcome if sanctions exist in nomis`(finding: Finding) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.PHASE2_HEARINGS_BAD_STRUCTURE(finding)
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.addOutcome(
+            Outcome(code = OutcomeCode.CHARGE_PROVED).also {
+              it.createDateTime = LocalDateTime.now()
+            },
+          )
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(2)
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(
+        when (finding) {
+          Finding.NOT_PROCEED, Finding.DISMISSED -> OutcomeCode.NOT_PROCEED
+          else -> OutcomeCode.DISMISSED
+        },
+      )
+      assertThat(argumentCaptor.value.getPunishments()).isNotEmpty
+    }
+
     @Test
     fun `hearing no longer exists in nomis throws exception`() {
       val dto = migrationFixtures.ADULT_SINGLE_OFFENCE
@@ -860,19 +875,26 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `throws exception if a new hearing before latest, and latest has a different hearing outcome`() {
+    fun `accepts as corrupted if a new hearing before latest, and latest has a different hearing outcome`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.HEARING_BEFORE_LATEST_WITH_RESULT_EXCEPTION(finding = Finding.D)
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.first().hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
+          it.addOutcome(
+            Outcome(code = OutcomeCode.CHARGE_PROVED).also {
+              it.createDateTime = LocalDateTime.now()
+            },
+          )
+        },
+      )
 
-      Assertions.assertThatThrownBy {
-        migrateExistingRecordService.accept(
-          dto,
-          existing(dto).also {
-            it.hearings.first().hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
-            it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
-          },
-        )
-      }.isInstanceOf(ExistingRecordConflictException::class.java)
-        .hasMessageContaining("has a new hearing with result before latest with different outcome")
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(2)
+      assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.DISMISSED)
     }
 
     @CsvSource("PROVED", "D")
