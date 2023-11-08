@@ -31,33 +31,33 @@ class LegacySyncService(
     }
   }
 
-  fun amendHearing(adjudicationNumber: Long, oicHearingId: Long?, oicHearingRequest: OicHearingRequest) {
+  fun amendHearing(adjudicationNumber: String, oicHearingId: Long?, oicHearingRequest: OicHearingRequest) {
     if (!featureFlagsConfig.hearings) {
       legacyNomisGateway.amendHearing(
-        adjudicationNumber = adjudicationNumber,
+        adjudicationNumber = adjudicationNumber.toLong(),
         oicHearingId = oicHearingId!!,
         oicHearingRequest = oicHearingRequest,
       )
     }
   }
 
-  fun deleteHearing(adjudicationNumber: Long, oicHearingId: Long?) {
+  fun deleteHearing(adjudicationNumber: String, oicHearingId: Long?) {
     if (!featureFlagsConfig.hearings) {
       legacyNomisGateway.deleteHearing(
-        adjudicationNumber = adjudicationNumber,
+        adjudicationNumber = adjudicationNumber.toLong(),
         oicHearingId = oicHearingId!!,
       )
     }
   }
 
   fun createHearingResult(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     oicHearingId: Long?,
     oicHearingResultRequest: OicHearingResultRequest,
   ) {
     if (!featureFlagsConfig.outcomes) {
       legacyNomisGateway.createHearingResult(
-        adjudicationNumber = adjudicationNumber,
+        adjudicationNumber = adjudicationNumber.toLong(),
         oicHearingId = oicHearingId!!,
         oicHearingResultRequest = oicHearingResultRequest,
       )
@@ -65,46 +65,46 @@ class LegacySyncService(
   }
 
   fun amendHearingResult(
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
     oicHearingId: Long?,
     oicHearingResultRequest: OicHearingResultRequest,
   ) {
     if (!featureFlagsConfig.outcomes) {
       legacyNomisGateway.amendHearingResult(
-        adjudicationNumber = adjudicationNumber,
+        adjudicationNumber = adjudicationNumber.toLong(),
         oicHearingId = oicHearingId!!,
         oicHearingResultRequest = oicHearingResultRequest,
       )
     }
   }
 
-  fun deleteHearingResult(adjudicationNumber: Long, oicHearingId: Long?) {
+  fun deleteHearingResult(adjudicationNumber: String, oicHearingId: Long?) {
     if (!featureFlagsConfig.outcomes) {
-      legacyNomisGateway.deleteHearingResult(adjudicationNumber = adjudicationNumber, oicHearingId = oicHearingId!!)
+      legacyNomisGateway.deleteHearingResult(adjudicationNumber = adjudicationNumber.toLong(), oicHearingId = oicHearingId!!)
     }
   }
 
-  fun createSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>) {
+  fun createSanctions(adjudicationNumber: String, sanctions: List<OffenderOicSanctionRequest>) {
     if (!featureFlagsConfig.punishments) {
-      legacyNomisGateway.createSanctions(adjudicationNumber, sanctions)
+      legacyNomisGateway.createSanctions(adjudicationNumber.toLong(), sanctions)
     }
   }
 
-  fun updateSanctions(adjudicationNumber: Long, sanctions: List<OffenderOicSanctionRequest>) {
+  fun updateSanctions(adjudicationNumber: String, sanctions: List<OffenderOicSanctionRequest>) {
     if (!featureFlagsConfig.punishments) {
-      legacyNomisGateway.updateSanctions(adjudicationNumber, sanctions)
+      legacyNomisGateway.updateSanctions(adjudicationNumber.toLong(), sanctions)
     }
   }
 
-  fun quashSanctions(adjudicationNumber: Long) {
+  fun quashSanctions(adjudicationNumber: String) {
     if (!featureFlagsConfig.punishments) {
-      legacyNomisGateway.quashSanctions(adjudicationNumber)
+      legacyNomisGateway.quashSanctions(adjudicationNumber.toLong())
     }
   }
 
-  fun deleteSanctions(adjudicationNumber: Long) {
+  fun deleteSanctions(adjudicationNumber: String) {
     if (!featureFlagsConfig.punishments) {
-      legacyNomisGateway.deleteSanctions(adjudicationNumber)
+      legacyNomisGateway.deleteSanctions(adjudicationNumber.toLong())
     }
   }
 }

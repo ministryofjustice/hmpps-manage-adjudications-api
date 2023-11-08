@@ -751,21 +751,25 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `adjudication with multiple final states, and sanctions, where final state is not PROVED (and active with ADA) should throw error`() {
+    fun `adjudication with multiple final states, and sanctions, where final state is not PROVED (and active with ADA) accepts as corrupted`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.EXCEPTION_CASE_5
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("record structure (active with ADA):")
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
+      assertThat(argumentCaptor.value.getPunishments()).isNotEmpty
     }
 
     @Test
-    fun `adjudication with quashed or appeal before another outcome, with active ADA throws exception`() {
+    fun `adjudication with quashed or appeal before another outcome, with active ADA accepts as corrupted`() {
       val dto = migrationFixtures.EXCEPTION_CASE_6
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("record structure (active with ADA):")
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
+      assertThat(argumentCaptor.value.getPunishments()).isNotEmpty
     }
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getQuashedAppealCorruptedStates")

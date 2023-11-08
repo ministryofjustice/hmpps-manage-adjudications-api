@@ -93,7 +93,7 @@ class HearingService(
     reportedAdjudication.hearings.filter { it.id != hearingToEdit.id }.validateHearingDate(dateTimeOfHearing)
 
     legacySyncService.amendHearing(
-      adjudicationNumber = chargeNumber.toLong(),
+      adjudicationNumber = chargeNumber,
       oicHearingId = hearingToEdit.oicHearingId,
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = dateTimeOfHearing,
@@ -120,7 +120,7 @@ class HearingService(
     val hearingToRemove = reportedAdjudication.getHearing().canDelete()
 
     legacySyncService.deleteHearing(
-      adjudicationNumber = chargeNumber.toLong(),
+      adjudicationNumber = chargeNumber,
       oicHearingId = hearingToRemove.oicHearingId,
     )
 

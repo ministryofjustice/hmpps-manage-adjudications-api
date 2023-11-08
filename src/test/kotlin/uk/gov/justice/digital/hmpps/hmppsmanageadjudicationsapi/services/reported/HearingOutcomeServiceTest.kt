@@ -110,6 +110,19 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
     }
 
+    @Test
+    fun `runtime exception if a hearing outcome already exists, due to usage of back key in browser`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        reportedAdjudication
+          .also { it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "") },
+      )
+
+      Assertions.assertThatThrownBy {
+        hearingOutcomeService.createAdjourn("1", adjudicator = "", reason = HearingOutcomeAdjournReason.OTHER, details = "", plea = HearingOutcomePlea.NOT_ASKED)
+      }.isInstanceOf(RuntimeException::class.java)
+        .hasMessageContaining("back key detected")
+    }
+
     @CsvSource("GOV_ADULT", "GOV_YOI")
     @ParameterizedTest
     fun `exception thrown if REFER_GOV used when hearing is GOV_`(oicHearingType: OicHearingType) {
@@ -154,7 +167,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       if (listOf(HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV).contains(code)) {
         verify(legacySyncService, atLeastOnce()).amendHearing(
-          reportedAdjudication.chargeNumber.toLong(),
+          reportedAdjudication.chargeNumber,
           reportedAdjudication.hearings.first().oicHearingId,
           OicHearingRequest(
             reportedAdjudication.hearings.first().dateTimeOfHearing,
@@ -189,7 +202,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       verify(legacySyncService, atLeastOnce()).amendHearing(
-        reportedAdjudication.chargeNumber.toLong(),
+        reportedAdjudication.chargeNumber,
         reportedAdjudication.hearings.first().oicHearingId,
         OicHearingRequest(
           reportedAdjudication.hearings.first().dateTimeOfHearing,
@@ -294,7 +307,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       if (code == HearingOutcomeCode.REFER_INAD) {
         verify(legacySyncService, atLeastOnce()).amendHearing(
-          reportedAdjudication.chargeNumber.toLong(),
+          reportedAdjudication.chargeNumber,
           reportedAdjudication.hearings.first().oicHearingId,
           OicHearingRequest(
             reportedAdjudication.hearings.first().dateTimeOfHearing,
@@ -323,7 +336,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       verify(legacySyncService, atLeastOnce()).amendHearing(
-        reportedAdjudication.chargeNumber.toLong(),
+        reportedAdjudication.chargeNumber,
         reportedAdjudication.hearings.first().oicHearingId,
         OicHearingRequest(reportedAdjudication.hearings.first().dateTimeOfHearing, reportedAdjudication.hearings.first().oicHearingType, reportedAdjudication.hearings.first().locationId),
       )
@@ -599,7 +612,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       if (code == HearingOutcomeCode.REFER_INAD) {
         verify(legacySyncService, atLeastOnce()).amendHearing(
-          reportedAdjudication.chargeNumber.toLong(),
+          reportedAdjudication.chargeNumber,
           reportedAdjudication.hearings.first().oicHearingId,
           OicHearingRequest(
             reportedAdjudication.hearings.first().dateTimeOfHearing,
@@ -647,7 +660,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       verify(legacySyncService, atLeastOnce()).amendHearing(
-        reportedAdjudication.chargeNumber.toLong(),
+        reportedAdjudication.chargeNumber,
         reportedAdjudication.hearings.first().oicHearingId,
         OicHearingRequest(
           reportedAdjudication.hearings.first().dateTimeOfHearing,

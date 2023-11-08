@@ -24,14 +24,14 @@ class NomisOutcomeService(
   private val featureFlagsConfig: FeatureFlagsConfig,
 ) {
 
-  fun createHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome): Long? {
+  fun createHearingResultIfApplicable(adjudicationNumber: String, hearing: Hearing?, outcome: Outcome): Long? {
     if (featureFlagsConfig.outcomes) return null
     if (hearing == null && outcome.doNotCallApi() || outcome.ignore()) return null
 
     hearing?.let {
       if (outcome.createHearingAndOutcome() || isPoliceReferralOutcomeFromHearing(hearing = it, outcome = outcome)) {
         val oicHearingId = legacySyncService.createHearing(
-          adjudicationNumber = adjudicationNumber.toString(),
+          adjudicationNumber = adjudicationNumber,
           oicHearingRequest = OicHearingRequest(
             dateTimeOfHearing = LocalDateTime.now(),
             oicHearingType = it.oicHearingType,
@@ -55,7 +55,7 @@ class NomisOutcomeService(
     return null
   }
 
-  fun amendHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome) {
+  fun amendHearingResultIfApplicable(adjudicationNumber: String, hearing: Hearing?, outcome: Outcome) {
     if (featureFlagsConfig.outcomes) return
     if (hearing == null && outcome.doNotCallApi() || outcome.ignore()) return
 
@@ -75,7 +75,7 @@ class NomisOutcomeService(
     }
   }
 
-  fun deleteHearingResultIfApplicable(adjudicationNumber: Long, hearing: Hearing?, outcome: Outcome) {
+  fun deleteHearingResultIfApplicable(adjudicationNumber: String, hearing: Hearing?, outcome: Outcome) {
     if (featureFlagsConfig.outcomes) return
     if (hearing == null && outcome.doNotCallApi() || outcome.ignore()) return
 
@@ -91,7 +91,7 @@ class NomisOutcomeService(
     }
   }
 
-  private fun createHearingResult(adjudicationNumber: Long, hearing: Hearing, outcome: Outcome, oicHearingId: Long? = null) {
+  private fun createHearingResult(adjudicationNumber: String, hearing: Hearing, outcome: Outcome, oicHearingId: Long? = null) {
     legacySyncService.createHearingResult(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = oicHearingId ?: hearing.oicHearingId,
@@ -103,7 +103,7 @@ class NomisOutcomeService(
     )
   }
 
-  private fun deleteHearingResult(adjudicationNumber: Long, hearing: Hearing, outcome: Outcome) {
+  private fun deleteHearingResult(adjudicationNumber: String, hearing: Hearing, outcome: Outcome) {
     legacySyncService.deleteHearingResult(
       adjudicationNumber = adjudicationNumber,
       oicHearingId = outcome.oicHearingId ?: hearing.oicHearingId,
