@@ -95,9 +95,7 @@ class MigrateExistingRecordService(
       existingAdjudication.removeOutcome(existingAdjudication.latestOutcome()!!)
     }
 
-    if (existingAdjudication.status != ReportedAdjudicationStatus.ACCEPTED && (
-      !listOf("3944645", "3963134", "3947329", "3944650", "3879400").contains(existingAdjudication.chargeNumber)
-      )
+    if (existingAdjudication.status != ReportedAdjudicationStatus.ACCEPTED && !listOf("3944645", "3963134", "3947329", "3944650", "3879400").contains(existingAdjudication.chargeNumber)
     ) {
       if (existingAdjudication.chargeNumber == "3851533") {
         existingAdjudication.handleSanctions(adjudicationMigrateDto)
