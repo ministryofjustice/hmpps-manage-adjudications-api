@@ -177,7 +177,7 @@ class OutcomeService(
       quashedReason = quashedReason,
     ).also {
       it.oicHearingId = nomisOutcomeService.createHearingResultIfApplicable(
-        adjudicationNumber = chargeNumber.toLong(),
+        adjudicationNumber = chargeNumber,
         hearing = reportedAdjudication.getLatestHearing(),
         outcome = it,
       )
@@ -214,7 +214,7 @@ class OutcomeService(
     }
 
     nomisOutcomeService.amendHearingResultIfApplicable(
-      adjudicationNumber = chargeNumber.toLong(),
+      adjudicationNumber = chargeNumber,
       hearing = reportedAdjudication.getLatestHearing(),
       outcome = reportedAdjudication.latestOutcome()!!,
     )
@@ -250,7 +250,7 @@ class OutcomeService(
     }
 
     nomisOutcomeService.deleteHearingResultIfApplicable(
-      adjudicationNumber = chargeNumber.toLong(),
+      adjudicationNumber = chargeNumber,
       hearing = reportedAdjudication.getLatestHearing(),
       outcome = outcomeToDelete,
     )

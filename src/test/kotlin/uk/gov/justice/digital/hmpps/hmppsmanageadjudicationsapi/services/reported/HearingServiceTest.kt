@@ -346,7 +346,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       verify(legacySyncService, atLeastOnce()).amendHearing(
-        1235L,
+        "1235",
         3,
         OicHearingRequest(
           dateTimeOfHearing = now.plusDays(1),
@@ -419,7 +419,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(legacySyncService, atLeastOnce()).deleteHearing(1235L, 3)
+      verify(legacySyncService, atLeastOnce()).deleteHearing("1235", 3)
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(0)
 
@@ -453,7 +453,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(legacySyncService, atLeastOnce()).deleteHearing(1235L, 2)
+      verify(legacySyncService, atLeastOnce()).deleteHearing("1235", 2)
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
@@ -481,7 +481,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(legacySyncService, atLeastOnce()).deleteHearing(1235L, 1)
+      verify(legacySyncService, atLeastOnce()).deleteHearing("1235", 1)
 
       assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(3)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.REFER_POLICE)

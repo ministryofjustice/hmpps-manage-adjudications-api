@@ -178,7 +178,7 @@ class HearingOutcomeService(
   private fun updateOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
     val hearing = reportedAdjudication.getHearing()
     legacySyncService.amendHearing(
-      adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
+      adjudicationNumber = reportedAdjudication.chargeNumber,
       oicHearingId = hearing.oicHearingId,
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = hearing.dateTimeOfHearing,
@@ -193,7 +193,7 @@ class HearingOutcomeService(
   private fun removeOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
     val hearing = reportedAdjudication.getHearing()
     legacySyncService.amendHearing(
-      adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
+      adjudicationNumber = reportedAdjudication.chargeNumber,
       oicHearingId = hearing.oicHearingId,
       oicHearingRequest = OicHearingRequest(
         dateTimeOfHearing = hearing.dateTimeOfHearing,

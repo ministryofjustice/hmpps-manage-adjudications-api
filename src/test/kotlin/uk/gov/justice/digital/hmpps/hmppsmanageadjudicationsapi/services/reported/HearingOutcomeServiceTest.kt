@@ -167,7 +167,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       if (listOf(HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV).contains(code)) {
         verify(legacySyncService, atLeastOnce()).amendHearing(
-          reportedAdjudication.chargeNumber.toLong(),
+          reportedAdjudication.chargeNumber,
           reportedAdjudication.hearings.first().oicHearingId,
           OicHearingRequest(
             reportedAdjudication.hearings.first().dateTimeOfHearing,
@@ -202,7 +202,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       verify(legacySyncService, atLeastOnce()).amendHearing(
-        reportedAdjudication.chargeNumber.toLong(),
+        reportedAdjudication.chargeNumber,
         reportedAdjudication.hearings.first().oicHearingId,
         OicHearingRequest(
           reportedAdjudication.hearings.first().dateTimeOfHearing,
@@ -307,7 +307,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       if (code == HearingOutcomeCode.REFER_INAD) {
         verify(legacySyncService, atLeastOnce()).amendHearing(
-          reportedAdjudication.chargeNumber.toLong(),
+          reportedAdjudication.chargeNumber,
           reportedAdjudication.hearings.first().oicHearingId,
           OicHearingRequest(
             reportedAdjudication.hearings.first().dateTimeOfHearing,
@@ -336,7 +336,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       verify(legacySyncService, atLeastOnce()).amendHearing(
-        reportedAdjudication.chargeNumber.toLong(),
+        reportedAdjudication.chargeNumber,
         reportedAdjudication.hearings.first().oicHearingId,
         OicHearingRequest(reportedAdjudication.hearings.first().dateTimeOfHearing, reportedAdjudication.hearings.first().oicHearingType, reportedAdjudication.hearings.first().locationId),
       )
@@ -612,7 +612,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       if (code == HearingOutcomeCode.REFER_INAD) {
         verify(legacySyncService, atLeastOnce()).amendHearing(
-          reportedAdjudication.chargeNumber.toLong(),
+          reportedAdjudication.chargeNumber,
           reportedAdjudication.hearings.first().oicHearingId,
           OicHearingRequest(
             reportedAdjudication.hearings.first().dateTimeOfHearing,
@@ -660,7 +660,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       verify(legacySyncService, atLeastOnce()).amendHearing(
-        reportedAdjudication.chargeNumber.toLong(),
+        reportedAdjudication.chargeNumber,
         reportedAdjudication.hearings.first().oicHearingId,
         OicHearingRequest(
           reportedAdjudication.hearings.first().dateTimeOfHearing,
