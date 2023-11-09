@@ -91,7 +91,7 @@ class MigrateExistingRecordService(
       }
     }
 
-    if (existingAdjudication.chargeNumber == "3990011") {
+    if (listOf("3990011", "3937166").contains(existingAdjudication.chargeNumber)) {
       existingAdjudication.removeOutcome(existingAdjudication.latestOutcome()!!)
     }
 
