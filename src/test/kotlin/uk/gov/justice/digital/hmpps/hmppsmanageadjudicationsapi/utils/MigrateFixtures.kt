@@ -301,6 +301,7 @@ class MigrateFixtures {
   val WITH_HEARING_AND_RESULT = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
+        comment = "some notes",
         hearingResult = migrationEntityBuilder.createHearingResult(),
       ),
     ),

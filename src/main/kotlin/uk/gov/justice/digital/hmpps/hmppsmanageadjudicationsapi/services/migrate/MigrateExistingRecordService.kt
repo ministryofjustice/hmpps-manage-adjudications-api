@@ -208,7 +208,7 @@ class MigrateExistingRecordService(
             this.removeOutcome(it)
           }
         }
-        nomisHearing.hearingResult.mapToOutcome(hearingOutcomeCode)?.let {
+        nomisHearing.hearingResult.mapToOutcome(commentText = nomisHearing.commentText, hearingOutcomeCode = hearingOutcomeCode)?.let {
           this.addOutcome(it.also { outcome -> outcome.migrated = true })
           nomisHearing.hearingResult.createAdditionalOutcome(hasAdditionalHearings)?.let { outcome ->
             this.addOutcome(outcome.also { o -> o.migrated = true })

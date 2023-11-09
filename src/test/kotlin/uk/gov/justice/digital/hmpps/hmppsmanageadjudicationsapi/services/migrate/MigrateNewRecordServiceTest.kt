@@ -582,6 +582,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.NOT_GUILTY)
 
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
+      assertThat(argumentCaptor.value.getOutcomes().first().details).isEqualTo(dto.hearings.first().commentText)
       assertThat(
         argumentCaptor.value.getOutcomes().first().actualCreatedDate,
       ).isEqualTo(dto.hearings.first().hearingResult!!.createdDateTime)
