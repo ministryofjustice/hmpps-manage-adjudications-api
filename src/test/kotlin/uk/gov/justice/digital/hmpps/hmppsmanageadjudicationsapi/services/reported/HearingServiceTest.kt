@@ -146,7 +146,23 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         hearingService.createHearing("1", 1, LocalDateTime.now().minusDays(10), OicHearingType.GOV)
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("A hearing can not be before the previous hearing")
+        .hasMessageContaining("A hearing can not be before or at the same time as the previous hearing")
+    }
+
+    @Test
+    fun `create hearing throws validation exception if the hearing date is equal to the previous hearing`() {
+      val now = LocalDateTime.now()
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.add(
+            Hearing(dateTimeOfHearing = now, locationId = 1, oicHearingType = OicHearingType.GOV, oicHearingId = 1, agencyId = "", chargeNumber = "1"),
+          )
+        },
+      )
+      Assertions.assertThatThrownBy {
+        hearingService.createHearing("1", 1, now, OicHearingType.GOV)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("A hearing can not be before or at the same time as the previous hearing")
     }
 
     @Test
@@ -330,7 +346,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         hearingService.amendHearing("1", 1, LocalDateTime.now().plusDays(1), OicHearingType.GOV)
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("A hearing can not be before the previous hearing")
+        .hasMessageContaining("A hearing can not be before or at the same time as the previous hearing")
     }
 
     @Test

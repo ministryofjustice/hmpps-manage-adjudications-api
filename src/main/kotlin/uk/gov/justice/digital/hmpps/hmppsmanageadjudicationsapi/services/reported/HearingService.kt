@@ -173,8 +173,8 @@ class HearingService(
     }
 
     fun List<Hearing>.validateHearingDate(date: LocalDateTime) {
-      if (this.any { it.dateTimeOfHearing.isAfter(date) }) {
-        throw ValidationException("A hearing can not be before the previous hearing")
+      if (this.any { it.dateTimeOfHearing.isAfter(date) || it.dateTimeOfHearing.isEqual(date) }) {
+        throw ValidationException("A hearing can not be before or at the same time as the previous hearing")
       }
     }
 

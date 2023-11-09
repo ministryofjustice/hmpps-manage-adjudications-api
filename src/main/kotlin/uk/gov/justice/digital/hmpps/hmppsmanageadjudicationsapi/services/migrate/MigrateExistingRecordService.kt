@@ -91,7 +91,7 @@ class MigrateExistingRecordService(
       }
     }
 
-    if (existingAdjudication.chargeNumber == "3990011") {
+    if (listOf("3990011", "3937166").contains(existingAdjudication.chargeNumber)) {
       existingAdjudication.removeOutcome(existingAdjudication.latestOutcome()!!)
     }
 
@@ -208,7 +208,7 @@ class MigrateExistingRecordService(
             this.removeOutcome(it)
           }
         }
-        nomisHearing.hearingResult.mapToOutcome(hearingOutcomeCode)?.let {
+        nomisHearing.hearingResult.mapToOutcome(commentText = nomisHearing.commentText, hearingOutcomeCode = hearingOutcomeCode)?.let {
           this.addOutcome(it.also { outcome -> outcome.migrated = true })
           nomisHearing.hearingResult.createAdditionalOutcome(hasAdditionalHearings)?.let { outcome ->
             this.addOutcome(outcome.also { o -> o.migrated = true })

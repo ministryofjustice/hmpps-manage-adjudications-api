@@ -299,7 +299,7 @@ class MigrateNewRecordService(
                 plea = plea,
                 details = if (hasAdditionalHearings && hearingOutcomeCode == HearingOutcomeCode.ADJOURN) "${oicHearing.hearingResult.finding} ${oicHearing.commentText ?: ""}" else oicHearing.commentText ?: "",
               ),
-              oicHearing.hearingResult.mapToOutcome(hearingOutcomeCode),
+              oicHearing.hearingResult.mapToOutcome(commentText = oicHearing.commentText, hearingOutcomeCode = hearingOutcomeCode),
             )
           }
         }
@@ -411,13 +411,14 @@ class MigrateNewRecordService(
       return true
     }
 
-    fun MigrateHearingResult.mapToOutcome(hearingOutcomeCode: HearingOutcomeCode): Outcome? =
+    fun MigrateHearingResult.mapToOutcome(commentText: String?, hearingOutcomeCode: HearingOutcomeCode): Outcome? =
       when (hearingOutcomeCode) {
         HearingOutcomeCode.ADJOURN, HearingOutcomeCode.NOMIS -> null
         else -> Outcome(
           code = this.finding.mapToOutcomeCode(),
           actualCreatedDate = this.createdDateTime,
           reason = this.finding.notProceedReason(),
+          details = commentText,
         )
       }
 
