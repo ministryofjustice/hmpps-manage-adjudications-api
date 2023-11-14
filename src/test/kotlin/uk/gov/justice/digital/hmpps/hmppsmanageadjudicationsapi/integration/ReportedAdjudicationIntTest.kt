@@ -108,8 +108,6 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reported adjudication details with invalid adjudication number`() {
-    oAuthMockServer.stubGrantToken()
-
     webTestClient.get()
       .uri("/reported-adjudications/15242/v2")
       .headers(setHeaders())
@@ -134,8 +132,6 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create draft from reported adjudication returns expected result`() {
-    oAuthMockServer.stubGrantToken()
-
     val scenario = initDataForAccept(testData = IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "BXI" })
 
     webTestClient.post()
@@ -182,8 +178,6 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create draft from reported adjudication with invalid adjudication number`() {
-    oAuthMockServer.stubGrantToken()
-
     webTestClient.post()
       .uri("/reported-adjudications/1524242/create-draft-adjudication")
       .headers(setHeaders())

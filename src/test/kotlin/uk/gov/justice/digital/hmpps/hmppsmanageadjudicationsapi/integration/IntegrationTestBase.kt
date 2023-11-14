@@ -1,10 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import jakarta.annotation.PostConstruct
 import org.flywaydb.core.Flyway
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -18,8 +16,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.OAuthMockServer
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.TestBase
 import java.time.LocalDateTime
@@ -34,9 +30,6 @@ abstract class IntegrationTestBase : TestBase() {
   lateinit var webTestClient: WebTestClient
 
   @Autowired
-  lateinit var flyway: Flyway
-
-  @Autowired
   lateinit var jwtAuthHelper: JwtAuthHelper
 
   @Autowired
@@ -48,34 +41,11 @@ abstract class IntegrationTestBase : TestBase() {
   @SpyBean
   lateinit var auditingHandler: AuditingHandler
 
-  companion object {
+  @Autowired
+  lateinit var flyway: Flyway
 
-    @JvmField
-    internal val prisonApiMockServer = PrisonApiMockServer()
-
-    @JvmField
-    internal val oAuthMockServer = OAuthMockServer()
-
-    @BeforeAll
-    @JvmStatic
-    fun startMocks() {
-      prisonApiMockServer.start()
-      oAuthMockServer.start()
-      oAuthMockServer.stubGrantToken()
-      oAuthMockServer.stubHealthPing(200)
-      prisonApiMockServer.stubHealth()
-    }
-
-    @AfterAll
-    @JvmStatic
-    fun stopMocks() {
-      prisonApiMockServer.stop()
-      oAuthMockServer.stop()
-    }
-  }
-
-  @AfterEach
-  fun resetDb() {
+  @PostConstruct
+  fun init() {
     flyway.clean()
     flyway.migrate()
   }
@@ -105,7 +75,6 @@ abstract class IntegrationTestBase : TestBase() {
   }
 
   protected fun initDataForAccept(overrideAgencyId: String? = null, testData: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION, incDamagesEvidenceWitnesses: Boolean = true): IntegrationTestScenario {
-    oAuthMockServer.stubGrantToken()
     val intTestData = integrationTestData()
 
     val draftUserHeaders = if (overrideAgencyId != null) {

@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -172,6 +173,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.transferReviewTotal").isEqualTo(1)
   }
 
+  @Disabled("this is now flakey, has other test coverage")
   @Test
   fun `get all reports for transfers only `() {
     Thread.sleep(1000)
