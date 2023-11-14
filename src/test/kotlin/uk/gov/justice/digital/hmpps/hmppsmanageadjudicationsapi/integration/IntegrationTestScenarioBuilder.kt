@@ -26,6 +26,9 @@ class IntegrationTestScenario(
   private val draftCreationResponse: DraftAdjudicationResponse,
   private val testAdjudicationDataSet: AdjudicationIntTestDataSet,
 ) {
+
+  fun getGeneratedChargeNumber(): String = testAdjudicationDataSet.chargeNumber!!
+
   fun setApplicableRules(): IntegrationTestScenario {
     intTestData.setApplicableRules(draftCreationResponse, testAdjudicationDataSet, headers)
     return this
@@ -67,17 +70,19 @@ class IntegrationTestScenario(
   }
 
   fun completeDraft(): IntegrationTestScenario {
-    intTestData.completeDraftAdjudication(
+    val chargeNumber = intTestData.completeDraftAdjudication(
       draftCreationResponse,
-      testAdjudicationDataSet,
       headers,
     )
+
+    testAdjudicationDataSet.chargeNumber = chargeNumber
+
     return this
   }
 
-  fun acceptReport(chargeNumber: String, activeCaseload: String = "MDI"): IntegrationTestScenario {
+  fun acceptReport(activeCaseload: String = "MDI"): IntegrationTestScenario {
     intTestData.acceptReport(
-      chargeNumber,
+      testAdjudicationDataSet.chargeNumber!!,
       activeCaseload,
     )
     return this
@@ -154,25 +159,31 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun createOutcomeNotProceed(): WebTestClient.ResponseSpec {
-    return intTestData.createOutcomeNotProceed(testAdjudicationDataSet)
+  fun createOutcomeNotProceed(): IntegrationTestScenario {
+    intTestData.createOutcomeNotProceed(testAdjudicationDataSet)
+    return this
   }
 
   fun createOutcomeReferGov(): WebTestClient.ResponseSpec {
     return intTestData.createOutcomeReferGov(testAdjudicationDataSet)
   }
 
-  fun issueReport(chargeNumber: String): IntegrationTestScenario {
+  fun issueReport(): IntegrationTestScenario {
     intTestData.issueReport(
       draftCreationResponse,
-      chargeNumber,
+      getGeneratedChargeNumber(),
       headers,
     )
     return this
   }
 
-  fun reportedAdjudicationSetStatus(reportedAdjudicationStatus: ReportedAdjudicationStatus) {
+  fun reportedAdjudicationSetStatus(reportedAdjudicationStatus: ReportedAdjudicationStatus): IntegrationTestScenario {
     intTestData.reportedAdjudicationStatus(reportedAdjudicationStatus, testAdjudicationDataSet, headers)
+    return this
+  }
+
+  fun recallCompletedDraftAdjudication(): DraftAdjudicationResponse {
+    return intTestData.recallCompletedDraftAdjudication(testAdjudicationDataSet, headers)
   }
 
   fun getDraftId(): Long {

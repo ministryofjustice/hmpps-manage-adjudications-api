@@ -49,6 +49,7 @@ abstract class IntegrationTestBase : TestBase() {
   lateinit var auditingHandler: AuditingHandler
 
   companion object {
+
     @JvmField
     internal val prisonApiMockServer = PrisonApiMockServer()
 
@@ -100,13 +101,11 @@ abstract class IntegrationTestBase : TestBase() {
   }
 
   fun integrationTestData(): IntegrationTestData {
-    return IntegrationTestData(webTestClient, jwtAuthHelper, prisonApiMockServer)
+    return IntegrationTestData(webTestClient, jwtAuthHelper)
   }
 
-  protected fun initDataForAccept(overrideAgencyId: String? = null, testData: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION, incDamagesEvidenceWitnesses: Boolean = true): IntegrationTestData {
+  protected fun initDataForAccept(overrideAgencyId: String? = null, testData: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION, incDamagesEvidenceWitnesses: Boolean = true): IntegrationTestScenario {
     oAuthMockServer.stubGrantToken()
-    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
-
     val intTestData = integrationTestData()
 
     val draftUserHeaders = if (overrideAgencyId != null) {
@@ -120,7 +119,7 @@ abstract class IntegrationTestBase : TestBase() {
       headers = draftUserHeaders,
     )
 
-    if (incDamagesEvidenceWitnesses) {
+    return if (incDamagesEvidenceWitnesses) {
       draftIntTestScenarioBuilder
         .startDraft(testData)
         .setApplicableRules()
@@ -142,13 +141,9 @@ abstract class IntegrationTestBase : TestBase() {
         .addIncidentStatement()
         .completeDraft()
     }
-
-    return intTestData
   }
 
   protected fun initDataForUnScheduled(adjudication: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION): IntegrationTestScenario {
-    prisonApiMockServer.stubPostAdjudication(adjudication)
-
     val intTestData = integrationTestData()
     val draftUserHeaders = setHeaders(username = adjudication.createdByUserId)
     val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
@@ -167,7 +162,7 @@ abstract class IntegrationTestBase : TestBase() {
       .addEvidence()
       .addWitnesses()
       .completeDraft()
-      .acceptReport(adjudication.chargeNumber)
+      .acceptReport()
   }
 
   fun migrateRecord(dto: AdjudicationMigrateDto) {

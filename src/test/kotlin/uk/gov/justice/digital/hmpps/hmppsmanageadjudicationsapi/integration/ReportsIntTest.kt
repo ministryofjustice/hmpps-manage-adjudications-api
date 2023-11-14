@@ -16,15 +16,15 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @ParameterizedTest
   @CsvSource(
-    "2020-12-14, 2020-12-17, AWAITING_REVIEW, 3, 1234",
-    "2020-12-15, 2020-12-15, AWAITING_REVIEW, 1, 789",
+    "2020-12-14, 2020-12-17, AWAITING_REVIEW, 3, MDI-000003",
+    "2020-12-15, 2020-12-15, AWAITING_REVIEW, 1, MDI-000002",
   )
   fun `return a page of reported adjudications for agency with filters`(
     startDate: String,
     endDate: String,
     reportedAdjudicationStatus: ReportedAdjudicationStatus,
     expectedCount: Int,
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
   ) {
     initMyReportData()
 
@@ -40,15 +40,15 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @ParameterizedTest
   @CsvSource(
-    "2020-12-14, 2020-12-16, AWAITING_REVIEW, 2, 1234",
-    "2020-12-14, 2020-12-14, AWAITING_REVIEW, 1, 567",
+    "2020-12-14, 2020-12-16, AWAITING_REVIEW, 2, MDI-000003",
+    "2020-12-14, 2020-12-14, AWAITING_REVIEW, 1, MDI-000001",
   )
   fun `return a page of reported adjudications completed by the current user with filters`(
     startDate: String,
     endDate: String,
     reportedAdjudicationStatus: ReportedAdjudicationStatus,
     expectedCount: Int,
-    adjudicationNumber: Long,
+    adjudicationNumber: String,
   ) {
     initMyReportData()
 
@@ -76,8 +76,8 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.content[0].chargeNumber").isEqualTo(IntegrationTestData.ADJUDICATION_4.chargeNumber)
-      .jsonPath("$.content[1].chargeNumber").isEqualTo(IntegrationTestData.ADJUDICATION_2.chargeNumber)
+      .jsonPath("$.content[0].chargeNumber").isEqualTo("MDI-000003")
+      .jsonPath("$.content[1].chargeNumber").isEqualTo("MDI-000001")
   }
 
   @Test
@@ -94,6 +94,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .startDraft(IntegrationTestData.ADJUDICATION_1)
       .setApplicableRules()
       .setIncidentRole()
+      .setAssociatedPrisoner()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
@@ -137,14 +138,12 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.content[0].chargeNumber").isEqualTo(IntegrationTestData.ADJUDICATION_3.chargeNumber)
-      .jsonPath("$.content[1].chargeNumber").isEqualTo(IntegrationTestData.ADJUDICATION_2.chargeNumber)
+      .jsonPath("$.content[0].chargeNumber").isEqualTo("MDI-000002")
+      .jsonPath("$.content[1].chargeNumber").isEqualTo("MDI-000001")
   }
 
   @Test
   fun `get adjudications for issue for all locations in agency MDI for date range`() {
-    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
-
     initMyReportData() // ensure more data to filter out
 
     val intTestData = integrationTestData()
@@ -162,8 +161,8 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
-      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toString())
-      .issueReport(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toString())
+      .acceptReport()
+      .issueReport()
 
     webTestClient.get()
       .uri("/reported-adjudications/for-issue?startDate=2010-11-12&endDate=2020-12-16")
@@ -177,9 +176,6 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get issued adjudications for all locations in agency MDI for date range`() {
-    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
     initMyReportData() // ensure more data to filter out
 
     val intTestData = integrationTestData()
@@ -197,8 +193,8 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
-      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toString())
-      .issueReport(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toString())
+      .acceptReport()
+      .issueReport()
       .createHearing()
 
     webTestClient.get()
@@ -213,9 +209,6 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get not issued adjudications for all locations in agency MDI for date range`() {
-    prisonApiMockServer.stubPostAdjudication(IntegrationTestData.DEFAULT_ADJUDICATION)
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
     initMyReportData() // ensure more data to filter out
 
     val intTestData = integrationTestData()
@@ -233,7 +226,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
-      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toString())
+      .acceptReport()
       .createHearing()
 
     webTestClient.get()

@@ -98,7 +98,7 @@ api:
 feature:
   nomis-source-of-truth: ${FEATURE_NOMIS_SOURCE_OF_TRUTH:true}
   async:
-      chargeNumbers: false
+      chargeNumbers: ${FEATURE_CHARGE_NUMBER:false}
       adjudications: ${FEATURE_ASYNC_ADJUDICATIONS:false}
       hearings:  ${FEATURE_ASYNC_HEARINGS:false}
       outcomes: ${FEATURE_ASYNC_OUTCOMES:false}

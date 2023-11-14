@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
@@ -18,7 +19,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Quashed
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.wiremock.PrisonApiMockServer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -26,7 +26,6 @@ import java.time.LocalDateTime
 class IntegrationTestData(
   private val webTestClient: WebTestClient,
   private val jwtAuthHelper: JwtAuthHelper,
-  private val prisonApiMockServer: PrisonApiMockServer,
 ) {
 
   companion object {
@@ -55,9 +54,7 @@ class IntegrationTestData(
       paragraphDescription = "",
     )
 
-    const val DEFAULT_CHARGE_NUMBER = "1524242"
     const val DEFAULT_PRISONER_NUMBER = "AA1234A"
-    const val DEFAULT_PRISONER_BOOKING_ID = 123L
     const val DEFAULT_AGENCY_ID = "MDI"
     const val DEFAULT_CREATED_USER_ID = "B_MILLS"
     val DEFAULT_DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 11, 12, 10, 0)
@@ -99,7 +96,7 @@ class IntegrationTestData(
     val UPDATED_DATE_TIME_OF_INCIDENT = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
 
     val DEFAULT_ADJUDICATION = AdjudicationIntTestDataSet(
-      chargeNumber = DEFAULT_CHARGE_NUMBER,
+      chargeNumber = "1524242", // hardcoded for migrate existing int tests that rely on nomis.  Overidden by all other tests
       prisonerNumber = DEFAULT_PRISONER_NUMBER,
       agencyId = DEFAULT_AGENCY_ID,
       locationId = UPDATED_LOCATION_ID,
@@ -124,7 +121,6 @@ class IntegrationTestData(
     )
 
     val DEFAULT_ADJUDICATION_OVERRIDE = AdjudicationIntTestDataSet(
-      chargeNumber = "67891",
       prisonerNumber = DEFAULT_PRISONER_NUMBER,
       agencyId = DEFAULT_AGENCY_ID,
       locationId = UPDATED_LOCATION_ID,
@@ -149,9 +145,8 @@ class IntegrationTestData(
     )
 
     val DEFAULT_TRANSFER_ADJUDICATION = AdjudicationIntTestDataSet(
-      chargeNumber = "999999",
       prisonerNumber = DEFAULT_PRISONER_NUMBER,
-      agencyId = "TJW",
+      agencyId = "BXI",
       locationId = UPDATED_LOCATION_ID,
       dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
       dateTimeOfIncident = DEFAULT_DATE_TIME_OF_INCIDENT,
@@ -174,7 +169,6 @@ class IntegrationTestData(
     )
 
     val UPDATED_ADJUDICATION = AdjudicationIntTestDataSet(
-      chargeNumber = DEFAULT_CHARGE_NUMBER,
       prisonerNumber = DEFAULT_PRISONER_NUMBER,
       agencyId = DEFAULT_AGENCY_ID,
       locationId = UPDATED_LOCATION_ID,
@@ -195,7 +189,7 @@ class IntegrationTestData(
     )
 
     val ADJUDICATION_1 = AdjudicationIntTestDataSet(
-      chargeNumber = "456",
+      chargeNumber = "1234",
       prisonerNumber = "BB2345B",
       agencyId = "LEI",
       locationId = 11L,
@@ -218,7 +212,7 @@ class IntegrationTestData(
     )
 
     val ADJUDICATION_2 = AdjudicationIntTestDataSet(
-      chargeNumber = "567",
+      chargeNumber = "12345",
       prisonerNumber = "CC2345C",
       agencyId = "MDI",
       locationId = 12L,
@@ -239,7 +233,6 @@ class IntegrationTestData(
     )
 
     val ADJUDICATION_3 = AdjudicationIntTestDataSet(
-      chargeNumber = "789",
       prisonerNumber = "DD3456D",
       agencyId = "MDI",
       locationId = 13L,
@@ -260,7 +253,6 @@ class IntegrationTestData(
     )
 
     val ADJUDICATION_4 = AdjudicationIntTestDataSet(
-      chargeNumber = "1234",
       prisonerNumber = "EE4567E",
       agencyId = "MDI",
       locationId = 14L,
@@ -281,7 +273,6 @@ class IntegrationTestData(
     )
 
     val ADJUDICATION_5 = AdjudicationIntTestDataSet(
-      chargeNumber = "2345",
       prisonerNumber = "FF4567F",
       agencyId = "LEI",
       locationId = 15L,
@@ -542,15 +533,16 @@ class IntegrationTestData(
 
   fun completeDraftAdjudication(
     draftCreationData: DraftAdjudicationResponse,
-    testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): WebTestClient.ResponseSpec {
-    prisonApiMockServer.stubPostAdjudicationCreationRequestData(testDataSet)
-
+  ): String {
     return webTestClient.post()
       .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/complete-draft-adjudication")
       .headers(headers)
       .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(ReportedAdjudicationDto::class.java)
+      .responseBody
+      .blockFirst()!!.chargeNumber
   }
 
   fun acceptReport(

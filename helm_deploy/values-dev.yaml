@@ -22,6 +22,7 @@ generic-service:
     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: https://sign-in-dev.hmpps.service.justice.gov.uk/auth/.well-known/jwks.json
     PRISON_API_ENDPOINT_URL: https://prison-api-dev.prison.service.justice.gov.uk
     FEATURE_ASYNC_ADJUDICATIONS: true
+    FEATURE_CHARGE_NUMBER: true
     FEATURE_NOMIS_SOURCE_OF_TRUTH: true
     FEATURE_SKIP_EXISTING: true
     FEATURE_ASYNC_HEARINGS: true

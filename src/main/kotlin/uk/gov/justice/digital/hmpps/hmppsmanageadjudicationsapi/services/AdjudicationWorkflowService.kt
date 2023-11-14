@@ -62,6 +62,8 @@ private class ReportedAdjudicationServiceWrapper(
   fun save(reportedAdjudication: ReportedAdjudication) = saveToDto(reportedAdjudication)
 
   fun getUsername() = authenticationFacade.currentUsername
+
+  fun getChargeNumber(agency: String): String = getNextChargeNumber(agency)
 }
 
 @Transactional
@@ -161,11 +163,11 @@ class AdjudicationWorkflowService(
   }
 
   private fun createReportedAdjudication(draftAdjudication: DraftAdjudication): ReportedAdjudicationDto {
-    val adjudicationNumber = legacySyncService.requestAdjudicationCreationData()!!
+    val chargeNumber = legacySyncService.requestAdjudicationCreationData() ?: reportedAdjudicationService.getChargeNumber(draftAdjudication.agencyId)
 
     return reportedAdjudicationService.save(
       ReportedAdjudication(
-        chargeNumber = adjudicationNumber.toString(),
+        chargeNumber = chargeNumber.toString(),
         prisonerNumber = draftAdjudication.prisonerNumber,
         gender = draftAdjudication.gender,
         originatingAgencyId = draftAdjudication.agencyId,

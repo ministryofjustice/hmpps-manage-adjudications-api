@@ -1,8 +1,0 @@
-feature:
-  nomis-source-of-truth: true
-  async:
-    chargeNumbers: false
-    adjudications: false
-    hearings: false
-    outcomes: false
-    punishments: false

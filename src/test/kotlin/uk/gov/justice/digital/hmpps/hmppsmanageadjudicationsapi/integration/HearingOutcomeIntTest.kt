@@ -22,13 +22,10 @@ class HearingOutcomeIntTest : SqsIntegrationTestBase() {
   inner class Adjourn {
     @Test
     fun `create hearing outcome - adjourn`() {
-      prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-      prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
-      initDataForUnScheduled().createHearing()
+      val scenario = initDataForUnScheduled().createHearing()
 
       webTestClient.post()
-        .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/adjourn")
+        .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/outcome/adjourn")
         .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
         .bodyValue(
           mapOf(
@@ -60,13 +57,10 @@ class HearingOutcomeIntTest : SqsIntegrationTestBase() {
 
     @Test
     fun `remove adjourn outcome `() {
-      prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-      prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
-      initDataForUnScheduled().createHearing().createAdjourn()
+      val scenario = initDataForUnScheduled().createHearing().createAdjourn()
 
       webTestClient.delete()
-        .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/adjourn")
+        .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/outcome/adjourn")
         .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
         .exchange()
         .expectStatus().isOk
@@ -79,13 +73,10 @@ class HearingOutcomeIntTest : SqsIntegrationTestBase() {
 
     @Test
     fun `create hearing outcome - adjourn and then create new hearing`() {
-      prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-      prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
-      initDataForUnScheduled().createHearing().createAdjourn()
+      val scenario = initDataForUnScheduled().createHearing().createAdjourn()
 
       webTestClient.post()
-        .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
+        .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/v2")
         .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
         .bodyValue(
           mapOf(
@@ -106,13 +97,9 @@ class HearingOutcomeIntTest : SqsIntegrationTestBase() {
   inner class Referral {
     @Test
     fun `create hearing outcome for referral`() {
-      prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-      initDataForUnScheduled().createHearing()
-
-      prisonApiMockServer.stubCreateHearingResult(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
+      val scenario = initDataForUnScheduled().createHearing()
       webTestClient.post()
-        .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/referral")
+        .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/outcome/referral")
         .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
         .bodyValue(
           mapOf(
@@ -140,59 +127,14 @@ class HearingOutcomeIntTest : SqsIntegrationTestBase() {
     }
 
     @Test
-    fun `referral transaction is rolled back when hearing outcome succeeds and outcome creation fails`() {
-      prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-      initDataForUnScheduled().createHearing()
-
-      webTestClient.put()
-        .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/status")
-        .headers(setHeaders())
-        .bodyValue(
-          mapOf(
-            "status" to ReportedAdjudicationStatus.REFER_POLICE,
-            "statusReason" to "status reason",
-            "statusDetails" to "status details",
-          ),
-        )
-        .exchange()
-        .expectStatus().is2xxSuccessful
-
-      webTestClient.post()
-        .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/referral")
-        .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-        .bodyValue(
-          mapOf(
-            "adjudicator" to "test",
-            "code" to HearingOutcomeCode.REFER_INAD,
-            "details" to "details",
-          ),
-        )
-        .exchange()
-        .expectStatus().isBadRequest
-
-      webTestClient.get()
-        .uri("/reported-adjudications/1524242/v2")
-        .headers(setHeaders())
-        .exchange()
-        .expectStatus().is2xxSuccessful
-        .expectBody()
-        .jsonPath("$.reportedAdjudication.outcomes[0].outcome").doesNotExist()
-        .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome").doesNotExist()
-        .jsonPath("$.reportedAdjudication.outcomes[0].hearing").exists()
-    }
-
-    @Test
     fun `should only create one schedule hearing - refer police, adjourn, adjourn `() {
-      prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-      prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
-      initDataForUnScheduled()
+      val scenario = initDataForUnScheduled()
         .createOutcomeReferPolice()
         .createHearing(dateTimeOfHearing = LocalDateTime.now())
         .createAdjourn()
 
       webTestClient.post()
-        .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
+        .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/v2")
         .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
         .bodyValue(
           mapOf(
