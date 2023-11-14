@@ -22,6 +22,7 @@ import org.springframework.web.context.annotation.RequestScope
 import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
 
+@Deprecated("remove post migrate - no more prison api")
 @Configuration
 class WebClientConfig(
   @Value("\${prison.api.endpoint.url}") private val prisonApiUrl: String,

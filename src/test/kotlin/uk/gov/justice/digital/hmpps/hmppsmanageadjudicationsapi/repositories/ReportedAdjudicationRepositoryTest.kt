@@ -38,6 +38,7 @@ import java.time.LocalTime
 @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
 @Import(AuditConfiguration::class, UserDetails::class)
 class ReportedAdjudicationRepositoryTest {
+
   @Autowired
   lateinit var entityManager: TestEntityManager
 
@@ -79,7 +80,7 @@ class ReportedAdjudicationRepositoryTest {
       entityBuilder.reportedAdjudication(
         chargeNumber = "12366",
         dateTime = dateTimeOfIncident.plusHours(1),
-        agencyId = "TJW",
+        agencyId = "BXI",
         hearingId = null,
       ).also {
         it.overrideAgencyId = "LEI"
@@ -90,7 +91,7 @@ class ReportedAdjudicationRepositoryTest {
       entityBuilder.reportedAdjudication(
         chargeNumber = "123666",
         dateTime = dateTimeOfIncident.plusHours(1),
-        agencyId = "TJW",
+        agencyId = "BXI",
         hearingId = null,
       ).also {
         it.overrideAgencyId = "LEI"
@@ -102,7 +103,7 @@ class ReportedAdjudicationRepositoryTest {
       entityBuilder.reportedAdjudication(
         chargeNumber = "9999",
         dateTime = dateTimeOfIncident.plusHours(1),
-        agencyId = "TJW",
+        agencyId = "BXI",
         hearingId = null,
       ).also {
         it.status = ReportedAdjudicationStatus.UNSCHEDULED
@@ -646,5 +647,10 @@ class ReportedAdjudicationRepositoryTest {
 
     val result = reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn("1234", listOf(PunishmentType.PROSPECTIVE_DAYS))
     assertThat(result.size).isEqualTo(1)
+  }
+
+  @Test
+  fun `get next charge number`() {
+    assertThat(reportedAdjudicationRepository.getNextChargeSequence("MDI_CHARGE_SEQUENCE")).isEqualTo(1)
   }
 }

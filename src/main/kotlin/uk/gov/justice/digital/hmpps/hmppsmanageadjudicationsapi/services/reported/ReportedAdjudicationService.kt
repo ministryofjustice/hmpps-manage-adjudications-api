@@ -1,15 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import com.microsoft.applicationinsights.TelemetryClient
-import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssueHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -54,7 +51,7 @@ class ReportedAdjudicationService(
       saveToDto(it)
     }
     if (status.isAccepted()) {
-      saveToPrisonApi(reportedAdjudication)
+      legacySyncService.publishAdjudication(reportedAdjudication)
     }
 
     telemetryClient.trackEvent(
@@ -106,59 +103,5 @@ class ReportedAdjudicationService(
     }
 
     return emptyList()
-  }
-
-  private fun saveToPrisonApi(reportedAdjudication: ReportedAdjudication) {
-    legacySyncService.publishAdjudication(
-      AdjudicationDetailsToPublish(
-        offenderNo = reportedAdjudication.prisonerNumber,
-        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
-        reporterName = reportedAdjudication.createdByUserId
-          ?: throw EntityNotFoundException(
-            "ReportedAdjudication creator name not set for reported adjudication number ${reportedAdjudication.chargeNumber}",
-          ),
-        reportedDateTime = reportedAdjudication.createDateTime
-          ?: throw EntityNotFoundException(
-            "ReportedAdjudication creation time not set for reported adjudication number ${reportedAdjudication.chargeNumber}",
-          ),
-        agencyId = reportedAdjudication.originatingAgencyId,
-        incidentTime = reportedAdjudication.dateTimeOfDiscovery,
-        incidentLocationId = reportedAdjudication.locationId,
-        statement = reportedAdjudication.statement,
-        offenceCodes = getNomisCodes(reportedAdjudication.incidentRoleCode, reportedAdjudication.offenceDetails, reportedAdjudication.isYouthOffender),
-        connectedOffenderIds = getAssociatedOffenders(
-          associatedPrisonersNumber = reportedAdjudication.incidentRoleAssociatedPrisonersNumber,
-        ),
-        victimOffenderIds = getVictimOffenders(
-          prisonerNumber = reportedAdjudication.prisonerNumber,
-          offenceDetails = reportedAdjudication.offenceDetails,
-        ),
-        victimStaffUsernames = getVictimStaffUsernames(reportedAdjudication.offenceDetails),
-      ),
-    )
-  }
-
-  private fun getNomisCodes(roleCode: String?, offenceDetails: MutableList<ReportedOffence>?, isYouthOffender: Boolean): List<String> {
-    if (roleCode != null) { // Null means committed on own
-      return offenceDetails?.map { offenceCodeLookupService.getOffenceCode(it.offenceCode, isYouthOffender).getNomisCodeWithOthers() }
-        ?: emptyList()
-    }
-    return offenceDetails?.map { offenceCodeLookupService.getOffenceCode(it.offenceCode, isYouthOffender).getNomisCode() }
-      ?: emptyList()
-  }
-
-  private fun getAssociatedOffenders(associatedPrisonersNumber: String?): List<String> {
-    if (associatedPrisonersNumber == null) {
-      return emptyList()
-    }
-    return listOf(associatedPrisonersNumber)
-  }
-
-  private fun getVictimOffenders(prisonerNumber: String, offenceDetails: MutableList<ReportedOffence>?): List<String> {
-    return offenceDetails?.filter { it.victimPrisonersNumber != prisonerNumber }?.mapNotNull { it.victimPrisonersNumber } ?: emptyList()
-  }
-
-  private fun getVictimStaffUsernames(offenceDetails: MutableList<ReportedOffence>?): List<String> {
-    return offenceDetails?.mapNotNull { it.victimStaffUsername } ?: emptyList()
   }
 }

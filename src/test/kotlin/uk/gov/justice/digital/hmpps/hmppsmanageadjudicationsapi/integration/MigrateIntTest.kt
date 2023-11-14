@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrateFixtures
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrationEntityBuilder
 import java.time.LocalDateTime
 import java.util.stream.Stream
 
@@ -202,27 +201,8 @@ class MigrateIntTest : SqsIntegrationTestBase() {
 
     fun getAdjudication(): AdjudicationMigrateDto = migrateFixtures.ADULT_SINGLE_OFFENCE
 
-    fun getAdjudicationForReset(): AdjudicationMigrateDto = migrateFixtures.WITH_HEARING_AND_RESULT
-
     @JvmStatic
     fun getAllNewAdjudications(): Stream<AdjudicationMigrateDto> = migrateFixtures.getSelection().stream()
-
-    fun getExistingRecordForReset(oicIncidentId: Long, prisonerNumber: String, offenceCode: String = "51:4") = MigrationEntityBuilder().createAdjudication(
-      oicIncidentId = oicIncidentId,
-      offence = MigrationEntityBuilder().createOffence(offenceCode = offenceCode, offenceDescription = "updated desc"),
-      prisoner = MigrationEntityBuilder().createPrisoner(prisonerNumber = prisonerNumber),
-      hearings = listOf(
-        MigrationEntityBuilder().createHearing(
-          hearingResult = MigrationEntityBuilder().createHearingResult(),
-        ),
-      ),
-      punishments = listOf(
-        MigrationEntityBuilder().createPunishment(),
-      ),
-      damages = listOf(MigrationEntityBuilder().createDamage()),
-      evidence = listOf(MigrationEntityBuilder().createEvidence()),
-      witnesses = listOf(MigrationEntityBuilder().createWitness()),
-    )
 
     fun getPoliceProsecutionFromHearing() = migrateFixtures.HEARING_WITH_PROSECUTION
 

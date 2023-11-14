@@ -27,7 +27,7 @@ class PrisonOffenderEventListenerTest {
   fun `transfer event calls transfer service`() {
     prisonOffenderEventListener.onPrisonOffenderEvent("/messages/transfer.json".readResourceAsText())
 
-    verify(transferService, atLeastOnce()).processTransferEvent("AA1234A", "TJW")
+    verify(transferService, atLeastOnce()).processTransferEvent("AA1234A", "BXI")
   }
 
   @Test

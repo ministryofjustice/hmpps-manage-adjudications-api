@@ -324,6 +324,17 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         .extracting("id", "prisonerNumber")
         .contains(1L, "A12345")
     }
+
+    @Test
+    fun `pads new charge number correctly`() {
+      whenever(legacySyncService.requestAdjudicationCreationData()).thenReturn(null)
+      whenever(reportedAdjudicationRepository.getNextChargeSequence(any())).thenReturn(1L)
+      var response = adjudicationWorkflowService.completeDraftAdjudication(1L)
+      assertThat(response.chargeNumber).isEqualTo("MDI-000001")
+      whenever(reportedAdjudicationRepository.getNextChargeSequence(any())).thenReturn(1000L)
+      response = adjudicationWorkflowService.completeDraftAdjudication(1L)
+      assertThat(response.chargeNumber).isEqualTo("MDI-001000")
+    }
   }
 
   @Nested

@@ -32,7 +32,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.AdjudicationDetailsToPublish
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
@@ -108,7 +107,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `override agency is not found throws exception `() {
-      whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
+      whenever(authenticationFacade.activeCaseload).thenReturn("BXI")
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.overrideAgencyId = "XXX"
@@ -136,10 +135,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `override caseload allows access`() {
-      whenever(authenticationFacade.activeCaseload).thenReturn("TJW")
+      whenever(authenticationFacade.activeCaseload).thenReturn("BXI")
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
-          it.overrideAgencyId = "TJW"
+          it.overrideAgencyId = "BXI"
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = ""
         },
@@ -423,139 +422,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           "reason" to "Status Reason",
         ),
         null,
-      )
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-      "true",
-      "false",
-    )
-    fun `setting status with different roles submits to prison api with correct data`(
-      committedOnOwn: Boolean,
-    ) {
-      val existingReportedAdjudication = existingReportedAdjudication(committedOnOwn, true, true)
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-        existingReportedAdjudication,
-      )
-
-      val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
-        it.status = ReportedAdjudicationStatus.UNSCHEDULED
-      }
-      returnedReportedAdjudication.createdByUserId = "A_USER"
-      returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-        returnedReportedAdjudication.also {
-          it.status = ReportedAdjudicationStatus.AWAITING_REVIEW
-        },
-      )
-
-      reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.UNSCHEDULED)
-
-      var expectedConnectedOffenderIds: List<String> = emptyList()
-      if (!committedOnOwn) {
-        expectedConnectedOffenderIds = listOf(INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)
-      }
-
-      val expectedVictimOffenderIds: List<String> = listOf("A1234AA")
-      val expectedVictimStaffUsernames: List<String> = listOf("ABC12D")
-
-      val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
-        offenderNo = "A12345",
-        adjudicationNumber = 1235L,
-        reporterName = "A_USER",
-        reportedDateTime = REPORTED_DATE_TIME,
-        agencyId = "MDI",
-        incidentLocationId = 2L,
-        incidentTime = DATE_TIME_OF_INCIDENT.plusDays(1),
-        statement = INCIDENT_STATEMENT,
-        offenceCodes = if (committedOnOwn) {
-          listOf(offenceCodeLookupService.getOffenceCode(1002, true).getNomisCode())
-        } else {
-          listOf(offenceCodeLookupService.getOffenceCode(1002, true).getNomisCodeWithOthers())
-        },
-        victimOffenderIds = expectedVictimOffenderIds,
-        victimStaffUsernames = expectedVictimStaffUsernames,
-        connectedOffenderIds = expectedConnectedOffenderIds,
-      )
-      verify(legacySyncService).publishAdjudication(expectedAdjudicationToPublish)
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-      "true",
-      "false",
-    )
-    fun `setting status with different youth offender flag submits to prison api with correct data`(
-      isYouthOffender: Boolean,
-    ) {
-      val existingReportedAdjudication = existingReportedAdjudication(false, isYouthOffender, false)
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(existingReportedAdjudication)
-
-      val returnedReportedAdjudication = existingReportedAdjudication.copy().also {
-        it.status = ReportedAdjudicationStatus.UNSCHEDULED
-      }
-      returnedReportedAdjudication.createdByUserId = "A_USER"
-      returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-        returnedReportedAdjudication,
-      )
-
-      reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.UNSCHEDULED)
-
-      val expectedConnectedOffenderIds = listOf(INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER)
-      val expectedVictimOffenderIds: List<String> = emptyList()
-      val expectedVictimStaffUsernames: List<String> = emptyList()
-
-      val expectedAdjudicationToPublish = AdjudicationDetailsToPublish(
-        offenderNo = "A12345",
-        adjudicationNumber = 1235L,
-        reporterName = "A_USER",
-        reportedDateTime = REPORTED_DATE_TIME,
-        agencyId = "MDI",
-        incidentLocationId = 2L,
-        incidentTime = DATE_TIME_OF_INCIDENT.plusDays(1),
-        statement = INCIDENT_STATEMENT,
-        offenceCodes = listOf(offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).getNomisCodeWithOthers()),
-        victimOffenderIds = expectedVictimOffenderIds,
-        victimStaffUsernames = expectedVictimStaffUsernames,
-        connectedOffenderIds = expectedConnectedOffenderIds,
-      )
-      verify(legacySyncService).publishAdjudication(expectedAdjudicationToPublish)
-    }
-
-    @Test
-    fun `create adjudication removes offender from multiple roles for prison api `() {
-      val now = LocalDateTime.now()
-      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.createdByUserId = ""
-        it.createDateTime = now
-        it.incidentRoleAssociatedPrisonersNumber = null
-        it.offenceDetails.first().victimPrisonersNumber = "A12345"
-        it.offenceDetails.first().victimStaffUsername = null
-        it.offenceDetails.first().victimOtherPersonsName = null
-      }
-
-      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-
-      reportedAdjudicationService.setStatus("1", ReportedAdjudicationStatus.UNSCHEDULED)
-
-      verify(legacySyncService, atLeastOnce()).publishAdjudication(
-        adjudicationDetailsToPublish = AdjudicationDetailsToPublish(
-          offenderNo = reportedAdjudication.prisonerNumber,
-          adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
-          reporterName = "",
-          reportedDateTime = now,
-          agencyId = reportedAdjudication.originatingAgencyId,
-          incidentLocationId = reportedAdjudication.locationId,
-          incidentTime = reportedAdjudication.dateTimeOfDiscovery,
-          statement = reportedAdjudication.statement,
-          offenceCodes = listOf(offenceCodeLookupService.getOffenceCode(1002, false).getNomisCodeWithOthers()),
-          victimStaffUsernames = emptyList(),
-          victimOffenderIds = emptyList(),
-          connectedOffenderIds = emptyList(),
-        ),
       )
     }
 
@@ -1875,12 +1741,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   }
 
   companion object {
-    private val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
-    private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
-    private const val INCIDENT_STATEMENT = "Example statement"
-    private val INCIDENT_ROLE_CODE = "25a"
-    private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
-    private val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
+    val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
+    val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
+    const val INCIDENT_STATEMENT = "Example statement"
+    val INCIDENT_ROLE_CODE = "25a"
+    val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
+    val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
   }
 
   @Test

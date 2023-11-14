@@ -368,6 +368,12 @@ open class ReportedAdjudicationBaseService(
       hasLinkedAda = hasLinkedAda(reportedAdjudication),
     )
 
+  protected fun getNextChargeNumber(agency: String): String {
+    val next = reportedAdjudicationRepository.getNextChargeSequence("${agency}_CHARGE_SEQUENCE")
+
+    return "$agency-${next.toString().padStart(6, '0')}"
+  }
+
   protected fun findByChargeNumberIn(chargeNumbers: List<String>) = reportedAdjudicationRepository.findByChargeNumberIn(chargeNumbers)
 
   protected fun getReportsWithSuspendedPunishments(prisonerNumber: String) = reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(

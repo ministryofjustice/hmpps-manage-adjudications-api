@@ -15,13 +15,11 @@ class HearingsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create a hearing `() {
-    initDataForUnScheduled()
+    val scenario = initDataForUnScheduled()
 
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 12, 10, 0)
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -45,13 +43,11 @@ class HearingsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create a hearing illegal state on hearing type `() {
-    initDataForUnScheduled()
+    val scenario = initDataForUnScheduled()
 
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 12, 10, 0)
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -66,14 +62,11 @@ class HearingsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `amend a hearing `() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    initDataForUnScheduled().createHearing()
-
-    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    val scenario = initDataForUnScheduled().createHearing()
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -97,14 +90,11 @@ class HearingsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `amend a hearing illegal state on hearing type `() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    initDataForUnScheduled().createHearing()
-
-    prisonApiMockServer.stubAmendHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    val scenario = initDataForUnScheduled().createHearing()
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -119,12 +109,10 @@ class HearingsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `delete a hearing `() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    initDataForUnScheduled().createHearing()
-    prisonApiMockServer.stubDeleteHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+    val scenario = initDataForUnScheduled().createHearing()
 
     webTestClient.delete()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/v2")
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -136,8 +124,7 @@ class HearingsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get all hearings`() {
-    prisonApiMockServer.stubCreateHearing(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
-    initDataForUnScheduled().createHearing()
+    val scenario = initDataForUnScheduled().createHearing()
 
     webTestClient.get()
       .uri("/reported-adjudications/hearings?hearingDate=${IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.toLocalDate()}")
@@ -151,9 +138,9 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.hearings[0].status")
       .isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
       .jsonPath("$.hearings[0].chargeNumber")
-      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+      .isEqualTo(scenario.getGeneratedChargeNumber())
       .jsonPath("$.hearings[0].chargeNumber")
-      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber)
+      .isEqualTo(scenario.getGeneratedChargeNumber())
       .jsonPath("$.hearings[0].dateTimeOfDiscovery")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfDiscoveryISOString)
       .jsonPath("$.hearings[0].dateTimeOfHearing")
