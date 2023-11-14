@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -50,12 +49,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
         )
         .build(),
     )
+
+    Thread.sleep(500)
   }
 
   @CsvSource("BXI,true", "XXX,false")
   @ParameterizedTest
   fun `test access for single report`(agencyId: String, allowed: Boolean) {
-    Thread.sleep(1000)
     val response = webTestClient.get()
       .uri("/reported-adjudications/$chargeNumber/v2")
       .headers(setHeaders(activeCaseload = agencyId))
@@ -70,7 +70,6 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   @CsvSource("BXI,1", "XXX,0")
   @ParameterizedTest
   fun `test access for reports `(agencyId: String, total: Int) {
-    Thread.sleep(1000)
     adjourn(activeCaseLoad = "BXI")
 
     webTestClient.get()
@@ -83,8 +82,6 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   @CsvSource("BXI,1", "XXX,0")
   @ParameterizedTest
   fun `test access for reports for issue `(agencyId: String, total: Int) {
-    Thread.sleep(1000)
-
     webTestClient.get()
       .uri("/reported-adjudications/for-issue?startDate=2010-11-12&endDate=2020-12-16")
       .headers(setHeaders(activeCaseload = agencyId))
@@ -97,8 +94,6 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   @CsvSource("BXI,ISSUED,,1", "BXI,NOT_ISSUED,,1", "BXI,ISSUED,NOT_ISSUED,1", "XXX,ISSUED,,0", "XXX,NOT_ISSUED,,0", "XXX,ISSUED,NOT_ISSUED,0")
   @ParameterizedTest
   fun `test access for reports for print `(agencyId: String, issuedStatus: IssuedStatus, issuedStatus2: IssuedStatus?, total: Int) {
-    Thread.sleep(1000)
-
     if (issuedStatus == IssuedStatus.ISSUED) {
       val dateTimeOfIssue = LocalDateTime.of(2022, 11, 29, 10, 0)
       webTestClient.put()
@@ -130,7 +125,6 @@ class TransfersIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `a transferable adjudication sets the latest hearing at the override agency id `() {
-    Thread.sleep(1000)
     adjourn()
 
     val dateTimeOfHearing = LocalDateTime.of(2020, 10, 12, 10, 0)
@@ -154,7 +148,6 @@ class TransfersIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get report count by agency `() {
-    Thread.sleep(1000)
     webTestClient.delete()
       .uri("/reported-adjudications/$chargeNumber/hearing/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
@@ -173,17 +166,16 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.transferReviewTotal").isEqualTo(1)
   }
 
-  @Disabled("this is now flakey, has other test coverage")
   @Test
   fun `get all reports for transfers only `() {
-    Thread.sleep(1000)
     initDataForUnScheduled()
 
     webTestClient.get()
-      .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2010-11-13&status=SCHEDULED,UNSCHEDULED&transfersOnly=true&page=0&size=20")
+      .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2010-11-13&status=SCHEDULED&transfersOnly=true&page=0&size=20")
       .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
-      .expectStatus().isOk.expectBody().jsonPath("$.content.size()").isEqualTo(1)
+      .expectStatus().isOk.expectBody()
+      .jsonPath("$.content.size()").isEqualTo(1)
   }
 
   private fun adjourn(activeCaseLoad: String = "MDI") {
