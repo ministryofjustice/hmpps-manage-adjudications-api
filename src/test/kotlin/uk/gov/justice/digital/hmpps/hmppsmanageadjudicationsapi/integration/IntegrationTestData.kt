@@ -96,7 +96,6 @@ class IntegrationTestData(
     val UPDATED_DATE_TIME_OF_INCIDENT = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
 
     val DEFAULT_ADJUDICATION = AdjudicationIntTestDataSet(
-      chargeNumber = "1524242", // hardcoded for migrate existing int tests that rely on nomis.  Overidden by all other tests
       prisonerNumber = DEFAULT_PRISONER_NUMBER,
       agencyId = DEFAULT_AGENCY_ID,
       locationId = UPDATED_LOCATION_ID,
@@ -189,7 +188,6 @@ class IntegrationTestData(
     )
 
     val ADJUDICATION_1 = AdjudicationIntTestDataSet(
-      chargeNumber = "1234",
       prisonerNumber = "BB2345B",
       agencyId = "LEI",
       locationId = 11L,
@@ -212,7 +210,6 @@ class IntegrationTestData(
     )
 
     val ADJUDICATION_2 = AdjudicationIntTestDataSet(
-      chargeNumber = "12345",
       prisonerNumber = "CC2345C",
       agencyId = "MDI",
       locationId = 12L,

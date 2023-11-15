@@ -25,7 +25,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.DuplicateCreationException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.ExistingRecordConflictException
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.IgnoreAsPreprodRefreshOutofSyncException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.NomisDeletedHearingsOrOutcomesException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.SkipExistingRecordException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.UnableToMigrateException
 
@@ -184,8 +184,8 @@ class ApiExceptionHandler {
       )
   }
 
-  @ExceptionHandler(IgnoreAsPreprodRefreshOutofSyncException::class)
-  fun handleIgnoreAsPreprodRefreshOutofSyncException(e: IgnoreAsPreprodRefreshOutofSyncException): ResponseEntity<ErrorResponse?>? {
+  @ExceptionHandler(NomisDeletedHearingsOrOutcomesException::class)
+  fun handleIgnoreAsPreprodRefreshOutofSyncException(e: NomisDeletedHearingsOrOutcomesException): ResponseEntity<ErrorResponse?>? {
     log.info("IgnoreAsPreprodRefreshOutofSyncException: {}", e.message)
 
     return ResponseEntity

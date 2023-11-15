@@ -231,13 +231,48 @@ class MigrateExistingRecordService(
     val hearings = this.hearings.sortedBy { it.dateTimeOfHearing }.filter { it.filterOutPreviousPhases() }
     hearings.forEachIndexed { index, hearing ->
       val nomisHearing = adjudicationMigrateDto.hearings.firstOrNull { it.oicHearingId == hearing.oicHearingId }
-        ?: throw IgnoreAsPreprodRefreshOutofSyncException("${this.originatingAgencyId} ${this.chargeNumber} ${hearing.oicHearingId} hearing no longer exists in nomis")
-      val nomisHearingResult = nomisHearing.hearingResult
-        ?: if (hearing.hearingOutcome != null && hearing.hearingOutcome!!.code.shouldExistInNomis()) {
-          throw IgnoreAsPreprodRefreshOutofSyncException("${this.originatingAgencyId} ${this.chargeNumber} ${hearing.oicHearingId} ${hearing.hearingOutcome?.code} hearing result no longer exists in nomis")
+
+      if (nomisHearing == null) {
+        if (index < hearings.size - 1) {
+          throw NomisDeletedHearingsOrOutcomesException("${this.originatingAgencyId} ${this.chargeNumber} ${hearing.oicHearingId} hearing no longer exists in nomis and has later hearings in DPS")
         } else {
-          null
+          this.hearings.remove(hearing)
+          if (listOf(
+              HearingOutcomeCode.COMPLETE,
+              HearingOutcomeCode.REFER_INAD,
+              HearingOutcomeCode.REFER_POLICE,
+              HearingOutcomeCode.REFER_GOV,
+            ).contains(hearing.hearingOutcome?.code)
+          ) {
+            val latestOutcome = this.latestOutcome()
+            if (listOf(HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV, HearingOutcomeCode.REFER_POLICE).contains(hearing.hearingOutcome?.code)) {
+              if (listOf(OutcomeCode.PROSECUTION, OutcomeCode.NOT_PROCEED).contains(latestOutcome?.code)) {
+                this.removeOutcome(latestOutcome!!)
+              }
+            }
+            this.removeOutcome(this.latestOutcome()!!)
+          }
         }
+      }
+
+      val nomisHearingResult = nomisHearing?.hearingResult
+
+      if (nomisHearing?.hearingResult == null && hearing.hearingOutcome != null && hearing.hearingOutcome!!.code.shouldExistInNomis()) {
+        if (listOf(HearingOutcomeCode.COMPLETE, HearingOutcomeCode.REFER_POLICE).contains(hearing.hearingOutcome?.code)) {
+          if (index < hearings.size - 1) {
+            throw NomisDeletedHearingsOrOutcomesException("${this.originatingAgencyId} ${this.chargeNumber} ${hearing.oicHearingId} ${hearing.hearingOutcome?.code} hearing result no longer exists in nomis, and has later hearings in DPS")
+          } else {
+            val latestOutcome = this.latestOutcome()
+            if (HearingOutcomeCode.REFER_POLICE == hearing.hearingOutcome?.code) {
+              if (listOf(OutcomeCode.PROSECUTION, OutcomeCode.NOT_PROCEED).contains(latestOutcome?.code)) {
+                this.removeOutcome(latestOutcome!!)
+              }
+            }
+            this.removeOutcome(this.latestOutcome()!!)
+          }
+        }
+        hearing.hearingOutcome = null
+      }
       hearing.hearingOutcome?.let {
         nomisHearingResult?.let { nhr ->
 
@@ -294,9 +329,12 @@ class MigrateExistingRecordService(
         }
       }
 
-      hearing.update(nomisHearing)
-      nomisHearingResult?.let {
-        hearing.hearingOutcome?.update(nomisHearing)
+      nomisHearing?.let { updated ->
+        hearing.update(updated)
+
+        nomisHearingResult?.let {
+          hearing.hearingOutcome?.update(updated)
+        }
       }
     }
 

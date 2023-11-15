@@ -628,12 +628,71 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `hearing no longer exists in nomis throws exception`() {
+    fun `hearing no longer exists removes hearing in DPS`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.ADULT_SINGLE_OFFENCE
 
-      Assertions.assertThatThrownBy {
-        migrateExistingRecordService.accept(dto, existing(dto))
-      }.isInstanceOf(IgnoreAsPreprodRefreshOutofSyncException::class.java)
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.first().hearingOutcome = null
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings).isEmpty()
+    }
+
+    @Test
+    fun `hearing no longer exists removes hearing and outcome in DPS`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.ADULT_SINGLE_OFFENCE
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
+          it.addOutcome(
+            Outcome(code = OutcomeCode.REFER_INAD).also {
+              it.createDateTime = LocalDateTime.now()
+            },
+          )
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings).isEmpty()
+      assertThat(argumentCaptor.value.getOutcomes()).isEmpty()
+    }
+
+    @Test
+    fun `hearing no longer exists removes hearing, outcome and referral outcome in DPS`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.ADULT_SINGLE_OFFENCE
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
+          it.addOutcome(
+            Outcome(code = OutcomeCode.REFER_INAD).also {
+              it.createDateTime = LocalDateTime.now()
+            },
+          )
+          it.addOutcome(
+            Outcome(code = OutcomeCode.NOT_PROCEED).also {
+              it.createDateTime = LocalDateTime.now().plusDays(1)
+            },
+          )
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings).isEmpty()
+      assertThat(argumentCaptor.value.getOutcomes()).isEmpty()
     }
 
     @Test
@@ -656,12 +715,53 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `hearing result no longer exists in nomis throws exception`() {
+    fun `hearing result no longer exists in nomis removes hearing result and outcome`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.WITH_HEARING
 
-      Assertions.assertThatThrownBy {
-        migrateExistingRecordService.accept(dto, existing(dto))
-      }.isInstanceOf(IgnoreAsPreprodRefreshOutofSyncException::class.java)
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
+          it.addOutcome(
+            Outcome(code = OutcomeCode.NOT_PROCEED).also {
+              it.createDateTime = LocalDateTime.now()
+            },
+          )
+        },
+      )
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNull()
+      assertThat(argumentCaptor.value.getOutcomes()).isEmpty()
+    }
+
+    @Test
+    fun `hearing result no longer exists in nomis removes hearing result, outcome and referral outcome`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.WITH_HEARING
+
+      migrateExistingRecordService.accept(
+        dto,
+        existing(dto).also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+          it.addOutcome(
+            Outcome(code = OutcomeCode.REFER_POLICE).also {
+              it.createDateTime = LocalDateTime.now()
+            },
+          )
+          it.addOutcome(
+            Outcome(code = OutcomeCode.NOT_PROCEED).also {
+              it.createDateTime = LocalDateTime.now().plusDays(1)
+            },
+          )
+        },
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNull()
+      assertThat(argumentCaptor.value.getOutcomes()).isEmpty()
     }
 
     @Test
