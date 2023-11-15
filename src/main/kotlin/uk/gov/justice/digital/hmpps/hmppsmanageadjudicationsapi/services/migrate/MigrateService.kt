@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 
 class ExistingRecordConflictException(message: String) : RuntimeException(message)
 
-class IgnoreAsPreprodRefreshOutofSyncException(message: String) : RuntimeException(message)
+class NomisDeletedHearingsOrOutcomesException(message: String) : RuntimeException(message)
 
 class UnableToMigrateException(message: String) : RuntimeException(message)
 

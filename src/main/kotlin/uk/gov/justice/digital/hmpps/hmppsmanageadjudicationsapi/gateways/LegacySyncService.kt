@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways
 
-import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -14,13 +14,8 @@ class LegacySyncService(
   private val offenceCodeLookupService: OffenceCodeLookupService,
 ) {
 
-  fun requestAdjudicationCreationData(): Long? {
-    return if (!featureFlagsConfig.chargeNumbers) {
-      legacyNomisGateway.requestAdjudicationCreationData()
-    } else {
-      return null
-    }
-  }
+  fun requestAdjudicationCreationData(): Long? =
+    if (!featureFlagsConfig.chargeNumbers) legacyNomisGateway.requestAdjudicationCreationData() else null
 
   fun publishAdjudication(reportedAdjudication: ReportedAdjudication) {
     if (!featureFlagsConfig.adjudications) {
@@ -29,11 +24,11 @@ class LegacySyncService(
           offenderNo = reportedAdjudication.prisonerNumber,
           adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
           reporterName = reportedAdjudication.createdByUserId
-            ?: throw EntityNotFoundException(
+            ?: throw ValidationException(
               "ReportedAdjudication creator name not set for reported adjudication number ${reportedAdjudication.chargeNumber}",
             ),
           reportedDateTime = reportedAdjudication.createDateTime
-            ?: throw EntityNotFoundException(
+            ?: throw ValidationException(
               "ReportedAdjudication creation time not set for reported adjudication number ${reportedAdjudication.chargeNumber}",
             ),
           agencyId = reportedAdjudication.originatingAgencyId,
