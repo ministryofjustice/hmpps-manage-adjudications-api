@@ -244,17 +244,10 @@ class MigrateExistingRecordService(
               HearingOutcomeCode.REFER_GOV,
             ).contains(hearing.hearingOutcome?.code)
           ) {
-            val latestOutcome = this.latestOutcome()
-            if (listOf(HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV, HearingOutcomeCode.REFER_POLICE).contains(hearing.hearingOutcome?.code)) {
-              if (listOf(OutcomeCode.PROSECUTION, OutcomeCode.NOT_PROCEED).contains(latestOutcome?.code)) {
-                latestOutcome?.let {
-                  this.removeOutcome(it)
-                }
-              }
-            }
-            this.latestOutcome()?.let {
-              this.removeOutcome(it)
-            }
+            this.removeDataNoLongerInNomis(
+              hearingOutComeCodes = listOf(HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV, HearingOutcomeCode.REFER_POLICE),
+              hearingOutcomeCode = hearing.hearingOutcome?.code,
+            )
           }
         }
       }
@@ -266,17 +259,10 @@ class MigrateExistingRecordService(
           if (index < hearings.size - 1) {
             throw NomisDeletedHearingsOrOutcomesException("${this.originatingAgencyId} ${this.chargeNumber} ${hearing.oicHearingId} ${hearing.hearingOutcome?.code} hearing result no longer exists in nomis, and has later hearings in DPS")
           } else {
-            val latestOutcome = this.latestOutcome()
-            if (HearingOutcomeCode.REFER_POLICE == hearing.hearingOutcome?.code) {
-              if (listOf(OutcomeCode.PROSECUTION, OutcomeCode.NOT_PROCEED).contains(latestOutcome?.code)) {
-                latestOutcome?.let {
-                  this.removeOutcome(it)
-                }
-              }
-            }
-            this.latestOutcome()?.let {
-              this.removeOutcome(it)
-            }
+            this.removeDataNoLongerInNomis(
+              hearingOutComeCodes = listOf(HearingOutcomeCode.REFER_POLICE),
+              hearingOutcomeCode = hearing.hearingOutcome?.code,
+            )
           }
         }
         hearing.hearingOutcome = null
@@ -443,6 +429,20 @@ class MigrateExistingRecordService(
     )
     // we always clear existing ones now, and replace with NOMIS
     this.handleSanctions(adjudicationMigrateDto)
+  }
+
+  private fun ReportedAdjudication.removeDataNoLongerInNomis(hearingOutComeCodes: List<HearingOutcomeCode>, hearingOutcomeCode: HearingOutcomeCode?) {
+    val latestOutcome = this.latestOutcome()
+    if (hearingOutComeCodes.contains(hearingOutcomeCode)) {
+      if (listOf(OutcomeCode.PROSECUTION, OutcomeCode.NOT_PROCEED).contains(latestOutcome?.code)) {
+        latestOutcome?.let {
+          this.removeOutcome(it)
+        }
+      }
+    }
+    this.latestOutcome()?.let {
+      this.removeOutcome(it)
+    }
   }
 
   private fun ReportedAdjudication.handleSanctions(adjudicationMigrateDto: AdjudicationMigrateDto) {
