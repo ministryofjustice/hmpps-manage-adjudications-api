@@ -547,6 +547,72 @@ class OutcomeControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class Repair {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        outcomeService.repair(
+          anyString(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      repairRequest(
+        1,
+        REPAIR_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      repairRequest(
+        1,
+        REPAIR_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      repairRequest(
+        1,
+        REPAIR_REQUEST,
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to repair outcomes`() {
+      repairRequest(1, REPAIR_REQUEST)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(outcomeService).repair(
+        chargeNumber = "1",
+        correctOutcomeCode = REPAIR_REQUEST.correctOutcomeCode,
+        incorrectOutcomeCode = REPAIR_REQUEST.incorrectOutcomeCode,
+      )
+    }
+
+    private fun repairRequest(
+      id: Long,
+      request: RepairRequest,
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(request)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/repair")
+            .header("Content-Type", "application/json")
+            .content(body),
+        )
+    }
+  }
+
   companion object {
     private val POLICE_REFER_REQUEST = ReferralDetailsRequest(details = "details")
     private val NOT_PROCEED_REQUEST = NotProceedRequest(reason = NotProceedReason.NOT_FAIR, details = "details")
@@ -554,5 +620,6 @@ class OutcomeControllerTest : TestControllerBase() {
     private val AMEND_REFER_POLICE_REQUEST = AmendOutcomeRequest(details = "details")
     private val AMEND_NOT_PROCEED_REQUEST = AmendOutcomeRequest(details = "details", reason = NotProceedReason.NOT_FAIR)
     private val AMEND_QUASHED_REQUEST = AmendOutcomeRequest(details = "details", quashedReason = QuashedReason.JUDICIAL_REVIEW)
+    private val REPAIR_REQUEST = RepairRequest(correctOutcomeCode = OutcomeCode.CHARGE_PROVED, incorrectOutcomeCode = OutcomeCode.NOT_PROCEED)
   }
 }
