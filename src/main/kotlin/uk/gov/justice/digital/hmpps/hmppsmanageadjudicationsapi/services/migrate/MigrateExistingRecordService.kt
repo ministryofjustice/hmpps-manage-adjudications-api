@@ -247,10 +247,14 @@ class MigrateExistingRecordService(
             val latestOutcome = this.latestOutcome()
             if (listOf(HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV, HearingOutcomeCode.REFER_POLICE).contains(hearing.hearingOutcome?.code)) {
               if (listOf(OutcomeCode.PROSECUTION, OutcomeCode.NOT_PROCEED).contains(latestOutcome?.code)) {
-                this.removeOutcome(latestOutcome!!)
+                latestOutcome?.let {
+                  this.removeOutcome(it)
+                }
               }
             }
-            this.removeOutcome(this.latestOutcome()!!)
+            this.latestOutcome()?.let {
+              this.removeOutcome(it)
+            }
           }
         }
       }
@@ -265,10 +269,14 @@ class MigrateExistingRecordService(
             val latestOutcome = this.latestOutcome()
             if (HearingOutcomeCode.REFER_POLICE == hearing.hearingOutcome?.code) {
               if (listOf(OutcomeCode.PROSECUTION, OutcomeCode.NOT_PROCEED).contains(latestOutcome?.code)) {
-                this.removeOutcome(latestOutcome!!)
+                latestOutcome?.let {
+                  this.removeOutcome(it)
+                }
               }
             }
-            this.removeOutcome(this.latestOutcome()!!)
+            this.latestOutcome()?.let {
+              this.removeOutcome(it)
+            }
           }
         }
         hearing.hearingOutcome = null
