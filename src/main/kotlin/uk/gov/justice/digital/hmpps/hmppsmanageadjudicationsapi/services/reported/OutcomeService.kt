@@ -6,6 +6,7 @@ import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -151,6 +152,56 @@ class OutcomeService(
       details = details,
       reason = notProceedReason,
     )
+  }
+
+  fun repair(
+    chargeNumber: String,
+    correctOutcomeCode: OutcomeCode,
+    incorrectOutcomeCode: OutcomeCode,
+  ): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
+    if (listOf(OutcomeCode.PROSECUTION, OutcomeCode.REFER_INAD, OutcomeCode.REFER_POLICE, OutcomeCode.REFER_GOV, OutcomeCode.QUASHED).contains(correctOutcomeCode)) {
+      throw ValidationException("not supported for repair $correctOutcomeCode")
+    }
+    reportedAdjudication.getOutcomes().sortedBy { it.getCreatedDateTime() }.firstOrNull() ?: throw ValidationException("no such outcome $correctOutcomeCode")
+
+    if (correctOutcomeCode != OutcomeCode.CHARGE_PROVED) reportedAdjudication.clearPunishments()
+
+    var located = false
+
+    reportedAdjudication.getOutcomeHistory().forEach {
+      it.outcome?.let {
+          outcomeDto ->
+        if (outcomeDto.outcome.code == correctOutcomeCode) {
+          located = true
+          return@forEach
+        }
+        when (located) {
+          true -> {
+            it.hearing?.let { hearingDto ->
+              reportedAdjudication.hearings.remove(
+                reportedAdjudication.hearings.first { hearing -> hearingDto.id == hearing.id },
+              )
+            }
+            it.outcome.referralOutcome?.let { referralOutcomeDto ->
+              reportedAdjudication.removeOutcome(reportedAdjudication.getOutcome(referralOutcomeDto.id!!))
+            }
+            reportedAdjudication.removeOutcome(reportedAdjudication.getOutcome(it.outcome.outcome.id!!))
+          }
+          false -> {
+            if (outcomeDto.outcome.code == incorrectOutcomeCode) {
+              it.hearing?.let { hearingDto ->
+                reportedAdjudication.hearings.first { hearing -> hearing.id == hearingDto.id }.hearingOutcome?.code =
+                  HearingOutcomeCode.ADJOURN
+              }
+              reportedAdjudication.removeOutcome(reportedAdjudication.getOutcome(it.outcome.outcome.id!!))
+            }
+          }
+        }
+      }
+    }
+
+    return saveToDto(reportedAdjudication)
   }
 
   private fun createOutcome(
