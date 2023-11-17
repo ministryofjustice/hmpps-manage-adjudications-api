@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -915,15 +914,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.punishmentComments.first().nomisCreatedBy).isEqualTo(dto.punishments.first().createdBy)
     }
 
-    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getAdditionalHearingsAfterFinalState")
-    @ParameterizedTest
-    fun `exception thrown when additional hearings without results after final hearing, and hearing date is in the future`(dto: AdjudicationMigrateDto) {
-      Assertions.assertThatThrownBy {
-        migrateNewRecordService.accept(dto)
-      }.isInstanceOf(UnableToMigrateException::class.java)
-        .hasMessageContaining("has additional hearings")
-    }
-
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getAdditionalHearingsAfterFinalStateShouldBeIgnored")
     @ParameterizedTest
     fun `additional hearings are ignored if state is final`(dto: AdjudicationMigrateDto) {
@@ -1061,13 +1051,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
         migrationFixtures.WITH_FINDING_NOT_GUILTY,
         migrationFixtures.WITH_FINDING_UNFIT,
         migrationFixtures.WITH_FINDING_REFUSED,
-      ).stream()
-
-    @JvmStatic
-    fun getAdditionalHearingsAfterFinalState(): Stream<AdjudicationMigrateDto> =
-      listOf(
-        migrationFixtures.WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_PROVED,
-        migrationFixtures.WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_GUILTY,
       ).stream()
 
     @JvmStatic

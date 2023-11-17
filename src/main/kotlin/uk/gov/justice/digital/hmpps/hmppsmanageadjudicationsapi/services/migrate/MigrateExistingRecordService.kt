@@ -187,15 +187,9 @@ class MigrateExistingRecordService(
         val hasAdditionalOutcomes =
           adjudicationMigrateDto.hearings.subList(index + 1, adjudicationMigrateDto.hearings.size).hasAdditionalOutcomesAndFinalOutcomeIsNotQuashed()
         val hasAdditionalHearings = index < adjudicationMigrateDto.hearings.size - 1
-        val hasAdditionalHearingsWithoutResults = hasAdditionalHearings && adjudicationMigrateDto.hearings.subList(
-          index + 1,
-          adjudicationMigrateDto.hearings.size,
-        ).all { it.hearingResult == null }
 
         val hearingOutcomeCode = nomisHearing.hearingResult!!.finding.mapToHearingOutcomeCode(
           hasAdditionalHearingOutcomes = hasAdditionalOutcomes || hearingIndex < hearingsMarkedWithNomis.size - 1,
-          hasAdditionalHearingsInFutureWithoutResults = hasAdditionalHearingsWithoutResults && adjudicationMigrateDto.hearings.any { LocalDateTime.now().isBefore(it.hearingDateTime) },
-          chargeNumber = this.chargeNumber,
           valid = valid,
         )
 
