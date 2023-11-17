@@ -282,9 +282,6 @@ class MigrateNewRecordService(
           else -> {
             val hearingOutcomeCode = oicHearing.hearingResult.finding.mapToHearingOutcomeCode(
               hasAdditionalHearingOutcomes = hasAdditionalHearingOutcomes,
-              hasAdditionalHearingsInFutureWithoutResults = hasAdditionalHearingsWithoutResults &&
-                this.filter { it.oicHearingId != oicHearing.oicHearingId }.any { LocalDateTime.now().isBefore(it.hearingDateTime) && it.hearingDateTime.isBefore(oicHearing.hearingDateTime.plusDays(30)) },
-              chargeNumber = chargeNumber,
               valid = valid,
             )
 
@@ -445,12 +442,10 @@ class MigrateNewRecordService(
       else -> null
     }
 
-    fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean, hasAdditionalHearingsInFutureWithoutResults: Boolean, chargeNumber: String, valid: Boolean): HearingOutcomeCode = when (this) {
+    fun String.mapToHearingOutcomeCode(hasAdditionalHearingOutcomes: Boolean, valid: Boolean): HearingOutcomeCode = when (this) {
       Finding.QUASHED.name, Finding.APPEAL.name -> HearingOutcomeCode.COMPLETE
       Finding.PROVED.name, Finding.GUILTY.name -> if (hasAdditionalHearingOutcomes) {
         if (valid) HearingOutcomeCode.ADJOURN else HearingOutcomeCode.COMPLETE
-      } else if (hasAdditionalHearingsInFutureWithoutResults) {
-        throw UnableToMigrateException("$chargeNumber: $this has additional hearings in the future")
       } else {
         HearingOutcomeCode.COMPLETE
       }
