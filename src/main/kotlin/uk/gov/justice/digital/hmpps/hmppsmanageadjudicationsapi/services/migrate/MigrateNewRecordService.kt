@@ -389,11 +389,11 @@ class MigrateNewRecordService(
           ).contains(it)
       } > 1 || this.map { it.hearingResult?.finding }.containsAll(shouldBeFinal)
       ) {
-        if (hasSanctions && last.hearingResult?.finding != Finding.PROVED.name) {
+        if (hasSanctions && !listOf(Finding.PROVED.name, Finding.GUILTY.name).contains(last.hearingResult?.finding)) {
           if (isActive && hasADA) {
             return false
           }
-          if (last.hearingResult == null && this.last { it.hearingResult != null }.hearingResult?.finding == Finding.PROVED.name) {
+          if (last.hearingResult == null && listOf(Finding.PROVED.name, Finding.GUILTY.name).contains(this.last { it.hearingResult != null }.hearingResult?.finding)) {
             return true
           }
           return false
