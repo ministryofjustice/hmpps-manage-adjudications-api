@@ -39,9 +39,8 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.2")
   testImplementation("org.flywaydb:flyway-core")
-  testImplementation("org.mockito:mockito-inline")
-  testImplementation("org.testcontainers:localstack:1.19.1")
-  testImplementation("org.testcontainers:postgresql:1.19.1")
+  testImplementation("org.testcontainers:localstack:1.19.2")
+  testImplementation("org.testcontainers:postgresql:1.19.2")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.32.0")
 }
 
