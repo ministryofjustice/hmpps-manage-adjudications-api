@@ -104,8 +104,8 @@ class SummaryAdjudicationService(
           val latestSchedule = it.schedule.latestSchedule()
           Award(
             bookingId = bookingId,
-            status = it.getStatus(),
-            statusDescription = it.getStatus(),
+            status = it.getStatus(latestSchedule),
+            statusDescription = it.getStatus(latestSchedule),
             effectiveDate = latestSchedule.startDate ?: latestSchedule.createDateTime?.toLocalDate(),
             days = latestSchedule.days,
             sanctionCode = it.type.name,
@@ -136,8 +136,8 @@ class SummaryAdjudicationService(
   companion object {
     fun Punishment.filterSuspended(includeSuspended: Boolean): Boolean = (!includeSuspended && this.suspendedUntil == null || includeSuspended)
     fun List<PunishmentSchedule>.filterCutOff(cutOff: LocalDate): Boolean = (this.latestSchedule().startDate ?: LocalDate.now()).isAfter(cutOff)
-    fun Punishment.getStatus(): String =
-      if (this.schedule.latestSchedule().suspendedUntil != null) "SUSPENDED" else if (this.type == PunishmentType.PROSPECTIVE_DAYS) "PROSPECTIVE" else "IMMEDIATE"
+    fun Punishment.getStatus(latest: PunishmentSchedule): String =
+      if (latest.suspendedUntil != null) "SUSPENDED" else if (this.type == PunishmentType.PROSPECTIVE_DAYS) "PROSPECTIVE" else "IMMEDIATE"
 
     fun Punishment.sanctionCodeDescription(): String = when (this.otherPrivilege) {
       null -> when (this.privilegeType) {
