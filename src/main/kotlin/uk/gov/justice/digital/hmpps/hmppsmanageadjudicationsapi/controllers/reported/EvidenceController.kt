@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.EvidenceService
 
@@ -32,6 +33,7 @@ class EvidenceController(
     eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
+          eventRule = { it.status != ReportedAdjudicationStatus.AWAITING_REVIEW },
           eventSupplier = { AdjudicationDomainEventType.EVIDENCE_UPDATED },
         ),
       ),
