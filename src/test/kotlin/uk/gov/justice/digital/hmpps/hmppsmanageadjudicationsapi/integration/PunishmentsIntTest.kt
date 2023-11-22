@@ -347,7 +347,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.punishmentComments.size()").isEqualTo(0)
   }
 
-  private fun createPunishments(
+  fun createPunishments(
     chargeNumber: String,
     type: PunishmentType = PunishmentType.CONFINEMENT,
     consecutiveChargeNumber: String? = null,

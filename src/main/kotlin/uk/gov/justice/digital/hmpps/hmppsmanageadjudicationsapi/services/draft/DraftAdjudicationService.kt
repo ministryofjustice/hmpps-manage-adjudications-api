@@ -112,6 +112,7 @@ class DraftAdjudicationService(
     locationId: Long,
     dateTimeOfIncident: LocalDateTime,
     dateTimeOfDiscovery: LocalDateTime? = null,
+    offenderBookingId: Long? = null,
   ): DraftAdjudicationDto {
     dateOfDiscoveryValidation(dateTimeOfDiscovery, dateTimeOfIncident)
 
@@ -119,6 +120,7 @@ class DraftAdjudicationService(
 
     val draftAdjudication = DraftAdjudication(
       prisonerNumber = prisonerNumber,
+      offenderBookingId = offenderBookingId,
       gender = gender,
       agencyId = agencyId,
       overrideAgencyId = overrideAgencyId,

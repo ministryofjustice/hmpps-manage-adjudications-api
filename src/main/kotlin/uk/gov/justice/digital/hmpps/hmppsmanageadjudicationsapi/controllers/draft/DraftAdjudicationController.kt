@@ -49,6 +49,8 @@ data class NewAdjudicationRequest(
   @Schema(description = "Optional Date time if discovery date different to incident date", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfDiscovery: LocalDateTime? = null,
+  @Schema(description = "offender book id used for api calls from dps")
+  val offenderBookingId: Long? = null,
 )
 
 @Schema(description = "Request to update the incident role")
@@ -200,6 +202,7 @@ class DraftAdjudicationController(
         newAdjudicationRequest.locationId,
         newAdjudicationRequest.dateTimeOfIncident,
         newAdjudicationRequest.dateTimeOfDiscovery,
+        newAdjudicationRequest.offenderBookingId,
       )
 
     return DraftAdjudicationResponse(

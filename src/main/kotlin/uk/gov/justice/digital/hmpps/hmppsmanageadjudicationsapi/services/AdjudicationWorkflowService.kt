@@ -104,6 +104,7 @@ class AdjudicationWorkflowService(
       chargeNumber = reportedAdjudication.chargeNumber,
       reportByUserId = reportedAdjudication.createdByUserId,
       prisonerNumber = reportedAdjudication.prisonerNumber,
+      offenderBookingId = reportedAdjudication.offenderBookingId,
       gender = reportedAdjudication.gender,
       agencyId = reportedAdjudication.originatingAgencyId,
       overrideAgencyId = reportedAdjudication.overrideAgencyId,
@@ -168,6 +169,7 @@ class AdjudicationWorkflowService(
     return reportedAdjudicationService.save(
       ReportedAdjudication(
         chargeNumber = chargeNumber.toString(),
+        offenderBookingId = draftAdjudication.offenderBookingId,
         prisonerNumber = draftAdjudication.prisonerNumber,
         gender = draftAdjudication.gender,
         originatingAgencyId = draftAdjudication.agencyId,
@@ -208,6 +210,7 @@ class AdjudicationWorkflowService(
     previousReportedAdjudication.let {
       it.chargeNumber = previousReportedAdjudication.chargeNumber
       it.prisonerNumber = draftAdjudication.prisonerNumber
+      it.offenderBookingId = draftAdjudication.offenderBookingId
       it.gender = draftAdjudication.gender
       it.originatingAgencyId = draftAdjudication.agencyId
       it.overrideAgencyId = draftAdjudication.overrideAgencyId

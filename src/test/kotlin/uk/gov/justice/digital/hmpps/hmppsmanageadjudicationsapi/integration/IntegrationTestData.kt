@@ -55,6 +55,7 @@ class IntegrationTestData(
     )
 
     const val DEFAULT_PRISONER_NUMBER = "AA1234A"
+    const val DEFAULT_OFFENDER_BOOKING_ID = 1L
     const val DEFAULT_AGENCY_ID = "MDI"
     const val DEFAULT_CREATED_USER_ID = "B_MILLS"
     val DEFAULT_DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 11, 12, 10, 0)
@@ -97,6 +98,7 @@ class IntegrationTestData(
 
     val DEFAULT_ADJUDICATION = AdjudicationIntTestDataSet(
       prisonerNumber = DEFAULT_PRISONER_NUMBER,
+      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
       agencyId = DEFAULT_AGENCY_ID,
       locationId = UPDATED_LOCATION_ID,
       dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
@@ -121,6 +123,7 @@ class IntegrationTestData(
 
     val DEFAULT_ADJUDICATION_OVERRIDE = AdjudicationIntTestDataSet(
       prisonerNumber = DEFAULT_PRISONER_NUMBER,
+      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
       agencyId = DEFAULT_AGENCY_ID,
       locationId = UPDATED_LOCATION_ID,
       dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
@@ -145,6 +148,7 @@ class IntegrationTestData(
 
     val DEFAULT_TRANSFER_ADJUDICATION = AdjudicationIntTestDataSet(
       prisonerNumber = DEFAULT_PRISONER_NUMBER,
+      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
       agencyId = "BXI",
       locationId = UPDATED_LOCATION_ID,
       dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
@@ -169,6 +173,7 @@ class IntegrationTestData(
 
     val UPDATED_ADJUDICATION = AdjudicationIntTestDataSet(
       prisonerNumber = DEFAULT_PRISONER_NUMBER,
+      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
       agencyId = DEFAULT_AGENCY_ID,
       locationId = UPDATED_LOCATION_ID,
       dateTimeOfIncidentISOString = UPDATED_DATE_TIME_OF_INCIDENT_TEXT,
@@ -189,6 +194,7 @@ class IntegrationTestData(
 
     val ADJUDICATION_1 = AdjudicationIntTestDataSet(
       prisonerNumber = "BB2345B",
+      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
       agencyId = "LEI",
       locationId = 11L,
       dateTimeOfIncidentISOString = "2020-12-13T08:00:00",
@@ -211,6 +217,7 @@ class IntegrationTestData(
 
     val ADJUDICATION_2 = AdjudicationIntTestDataSet(
       prisonerNumber = "CC2345C",
+      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
       agencyId = "MDI",
       locationId = 12L,
       dateTimeOfIncidentISOString = "2020-12-14T09:00:00",
@@ -231,6 +238,7 @@ class IntegrationTestData(
 
     val ADJUDICATION_3 = AdjudicationIntTestDataSet(
       prisonerNumber = "DD3456D",
+      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
       agencyId = "MDI",
       locationId = 13L,
       dateTimeOfIncidentISOString = "2020-12-15T10:00:00",
@@ -251,6 +259,7 @@ class IntegrationTestData(
 
     val ADJUDICATION_4 = AdjudicationIntTestDataSet(
       prisonerNumber = "EE4567E",
+      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
       agencyId = "MDI",
       locationId = 14L,
       dateTimeOfIncidentISOString = "2020-12-16T10:00:00",
@@ -271,6 +280,7 @@ class IntegrationTestData(
 
     val ADJUDICATION_5 = AdjudicationIntTestDataSet(
       prisonerNumber = "FF4567F",
+      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
       agencyId = "LEI",
       locationId = 15L,
       dateTimeOfIncidentISOString = "2020-12-17T10:00:00",
@@ -309,6 +319,7 @@ class IntegrationTestData(
       .bodyValue(
         mapOf(
           "prisonerNumber" to testDataSet.prisonerNumber,
+          "offenderBookingId" to testDataSet.offenderBookingId,
           "gender" to testDataSet.gender.name,
           "agencyId" to testDataSet.agencyId,
           "locationId" to testDataSet.locationId,
@@ -704,6 +715,7 @@ class IntegrationTestData(
 
   fun createPunishments(
     testDataSet: AdjudicationIntTestDataSet,
+    startDate: LocalDate? = null,
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/punishments/v2")
@@ -715,12 +727,15 @@ class IntegrationTestData(
               PunishmentRequest(
                 type = PunishmentType.CONFINEMENT,
                 days = 10,
-                suspendedUntil = LocalDate.now(),
+                suspendedUntil = if (startDate == null) LocalDate.now() else null,
+                startDate = startDate,
+                endDate = startDate?.plusDays(1),
               ),
             ),
         ),
       )
       .exchange()
+      .expectStatus().isCreated
   }
 
   fun createNotProceed(

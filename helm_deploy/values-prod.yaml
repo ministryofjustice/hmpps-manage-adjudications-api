@@ -12,7 +12,10 @@ generic-service:
     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: https://sign-in.hmpps.service.justice.gov.uk/auth/.well-known/jwks.json
     PRISON_API_ENDPOINT_URL: https://api.prison.service.justice.gov.uk
     FEATURE_ASYNC_ADJUDICATIONS: false
-    FEATURE_NOMIS_SOURCE_OF_TRUTH: true
+    FEATURE_NOMIS_SOURCE_OF_TRUTH_SUMMARY: true
+    FEATURE_NOMIS_SOURCE_OF_TRUTH_ADJUDICATIONS: true
+    FEATURE_NOMIS_SOURCE_OF_TRUTH_ADJUDICATION: true
+    FEATURE_NOMIS_SOURCE_OF_TRUTH_HEARING: true
 
   postgresDatabaseRestore:
     enabled: true

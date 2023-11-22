@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class IntegrationTestScenarioBuilder(
@@ -110,8 +111,11 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun createPunishments(): IntegrationTestScenario {
-    intTestData.createPunishments(testAdjudicationDataSet)
+  fun createPunishments(startDate: LocalDate? = null): IntegrationTestScenario {
+    intTestData.createPunishments(
+      testDataSet = testAdjudicationDataSet,
+      startDate = startDate,
+    )
 
     return this
   }
