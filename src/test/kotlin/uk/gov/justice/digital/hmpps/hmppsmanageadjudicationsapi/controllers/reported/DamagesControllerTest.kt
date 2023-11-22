@@ -2,9 +2,12 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
@@ -20,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamagesRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.DamagesService
 
@@ -47,15 +51,25 @@ class DamagesControllerTest : TestControllerBase() {
     setDamagesRequest(1, DAMAGES_REQUEST).andExpect(MockMvcResultMatchers.status().isUnauthorized)
   }
 
-  @Test
+  @CsvSource("UNSCHEDULED", "AWAITING_REVIEW")
+  @ParameterizedTest
   @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
-  fun `makes a call to set the damages`() {
+  fun `makes a call to set the damages`(status: ReportedAdjudicationStatus) {
+    val dto = reportedAdjudicationDto(status = status)
+
+    whenever(
+      damagesService.updateDamages(
+        ArgumentMatchers.anyString(),
+        any(),
+      ),
+    ).thenReturn(dto)
+
     setDamagesRequest(1, DAMAGES_REQUEST)
       .andExpect(MockMvcResultMatchers.status().isOk)
 
     verify(damagesService).updateDamages("1", DAMAGES_REQUEST.damages)
 
-    verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.DAMAGES_UPDATED, REPORTED_ADJUDICATION_DTO)
+    verify(eventPublishService, if (status != ReportedAdjudicationStatus.AWAITING_REVIEW) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.DAMAGES_UPDATED, dto)
   }
 
   private fun setDamagesRequest(
