@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Pronoun
 data class DraftAdjudication(
   override val id: Long? = null,
   val prisonerNumber: String,
+  val offenderBookingId: Long? = null,
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   var gender: Gender,

@@ -63,6 +63,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           any(),
           any(),
           anyOrNull(),
+          anyOrNull(),
         ),
       ).thenReturn(
         draftAdjudicationDto(),

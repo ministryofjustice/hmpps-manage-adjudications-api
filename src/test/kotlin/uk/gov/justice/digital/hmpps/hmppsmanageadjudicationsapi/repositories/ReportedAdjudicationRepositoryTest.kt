@@ -15,6 +15,7 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConfiguration
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
@@ -26,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferIgnoreStatuses
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
@@ -652,5 +654,26 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `get next charge number`() {
     assertThat(reportedAdjudicationRepository.getNextChargeSequence("MDI_CHARGE_SEQUENCE")).isEqualTo(1)
+  }
+
+  @Test
+  fun `adjudication summary`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 2L, chargeNumber = "TESTING_SUM").also {
+        it.hearings.clear()
+        it.hearings.add(
+          Hearing(dateTimeOfHearing = LocalDateTime.now().minusDays(1), locationId = 1, agencyId = "", oicHearingType = OicHearingType.GOV_ADULT, chargeNumber = ""),
+        )
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+      },
+    )
+
+    val adjudications = reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+      bookingId = 2L,
+      status = ReportedAdjudicationStatus.CHARGE_PROVED,
+      cutOff = LocalDate.now().minusDays(2).atStartOfDay(),
+    )
+
+    assertThat(adjudications.size).isEqualTo(1)
   }
 }

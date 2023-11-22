@@ -24,11 +24,13 @@ class EntityBuilder {
     agencyId: String = "MDI",
     hearingId: Long? = 1L,
     prisonerNumber: String = "A12345",
+    offenderBookingId: Long? = null,
   ): ReportedAdjudication {
     return ReportedAdjudication(
       id = id,
       chargeNumber = chargeNumber,
       prisonerNumber = prisonerNumber,
+      offenderBookingId = offenderBookingId,
       gender = Gender.MALE,
       originatingAgencyId = agencyId,
       locationId = 2,
