@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSearchResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
@@ -16,12 +17,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenderAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyNomisGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.TimeSlot
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferIgnoreStatuses
 import java.time.LocalDate
 
 @Service
@@ -70,8 +73,34 @@ class SummaryAdjudicationService(
         )
       } ?: AdjudicationSearchResponse(results = Page.empty(), offences = listOf(), agencies = listOf())
     } else {
-      // TODO: get data from this database!
-      AdjudicationSearchResponse(results = Page.empty(), offences = listOf(), agencies = listOf())
+      val adjudications = when(agencyId) {
+        null -> reportedAdjudicationRepository.findByPrisonerNumberAndDateTimeOfDiscoveryBetweenAndStatusIn(
+          prisonerNumber = prisonerNumber,
+          fromDate = (fromDate ?: minimumDate).atStartOfDay(),
+          toDate = (toDate ?: maximumDate).atStartOfDay(),
+          statuses = finding?.mapFindingToStatus() ?: allStatuses,
+          pageable = pageable
+        )
+        else -> reportedAdjudicationRepository.findByPrisonerNumberAndAgencyAndDate(
+          prisonerNumber = prisonerNumber,
+          startDate = (fromDate ?: minimumDate).atStartOfDay(),
+          endDate = (toDate ?: maximumDate).atStartOfDay(),
+          statuses = finding?.mapFindingToStatus()?.map { it.name } ?: allStatuses.map { it.name },
+          transferIgnoreStatuses = transferIgnoreStatuses.map { it.name },
+          agencyId = agencyId,
+          pageable = pageable
+        )
+      }
+
+      return   AdjudicationSearchResponse(
+        PageImpl(
+        adjudications.content.map {
+          it.mapToAdjudication()
+        },
+        PageRequest.of(pageable.offset.toInt() / pageable.pageSize, pageable.pageSize), adjudications.totalPages.toLong()
+      ), offences =  listOf(), agencies = listOf() )
+
+
     }
   }
 
@@ -152,5 +181,28 @@ class SummaryAdjudicationService(
       PunishmentType.EARNINGS -> "${this.stoppagePercentage}%"
       else -> null
     }
+
+    val minimumDate: LocalDate = LocalDate.of(2001, 1, 1)
+    val maximumDate: LocalDate = LocalDate.of(2999, 1, 1)
+
+    val allStatuses = ReportedAdjudicationStatus.values().filter { it != ReportedAdjudicationStatus.ACCEPTED }
+
+    fun Finding.mapFindingToStatus(): List<ReportedAdjudicationStatus> = when(this) {
+      Finding.PROVED, Finding.GUILTY -> listOf(ReportedAdjudicationStatus.CHARGE_PROVED)
+      Finding.ADJOURNED -> listOf(ReportedAdjudicationStatus.ADJOURNED)
+      Finding.D, Finding.NOT_GUILTY, Finding.NOT_PROVEN -> listOf(ReportedAdjudicationStatus.DISMISSED)
+      Finding.NOT_PROCEED, Finding.DISMISSED -> listOf(ReportedAdjudicationStatus.NOT_PROCEED)
+      Finding.REF_POLICE -> listOf(ReportedAdjudicationStatus.REFER_POLICE)
+      Finding.QUASHED, Finding.APPEAL -> listOf(ReportedAdjudicationStatus.QUASHED)
+      Finding.PROSECUTED -> listOf(ReportedAdjudicationStatus.PROSECUTION)
+      else -> listOf(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV)
+    }
+
+    fun ReportedAdjudication.mapToAdjudication(): Adjudication =
+      Adjudication(
+        adjudicationNumber = this.chargeNumber,
+        reportTime = this.dateTimeOfDiscovery,
+        agencyId = this.originatingAgencyId,
+      )
   }
 }

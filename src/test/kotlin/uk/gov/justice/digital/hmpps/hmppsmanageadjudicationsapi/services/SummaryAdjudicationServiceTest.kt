@@ -7,8 +7,13 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.mockito.kotlin.any
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
@@ -127,7 +132,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
       val adjudicationSummary = summaryAdjudicationService.getAdjudicationSummary(1L, null, null)
 
-      Assertions.assertThat(adjudicationSummary.adjudicationCount).isEqualTo(2)
+      assertThat(adjudicationSummary.adjudicationCount).isEqualTo(2)
     }
 
     @Test
@@ -401,6 +406,55 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       val response = summaryAdjudicationService.getAdjudicationSummary(bookingId = 1L, awardCutoffDate = null, adjudicationCutoffDate = null)
 
       assertThat(response.awards.first().sanctionCodeDescription).contains("playstation")
+    }
+  }
+
+  @Nested
+  inner class Adjudications {
+
+    @BeforeEach
+    fun init() {
+      whenever(featureFlagsConfig.nomisSourceOfTruthAdjudications).thenReturn(false)
+    }
+
+    @Test
+    fun `returns pageable adjudications - verify calls jpa prisoner number and status and date` () {
+
+      whenever(reportedAdjudicationRepository.findByPrisonerNumberAndDateTimeOfDiscoveryBetweenAndStatusIn(any(), any(), any(), any(), any())).thenReturn(
+        Page.empty()
+      )
+
+      summaryAdjudicationService.getAdjudications(
+        prisonerNumber = "12345", offenceId = null, agencyId = null, finding = null, fromDate = LocalDate.now(), toDate = LocalDate.now(), pageable = PageRequest.of(1, 10)
+      )
+      verify(reportedAdjudicationRepository, atLeastOnce()).findByPrisonerNumberAndDateTimeOfDiscoveryBetweenAndStatusIn(any(), any(), any(), any(), any())
+    }
+
+    @Test
+    fun `returns pageable adjudications - verify custom query and dates` () {
+
+      whenever(reportedAdjudicationRepository.findByPrisonerNumberAndAgencyAndDate(any(), any(), any(), any(), any(), any(), any())).thenReturn(
+        Page.empty()
+      )
+
+      summaryAdjudicationService.getAdjudications(
+        prisonerNumber = "12345", offenceId = null, agencyId = "MDI", finding = null, fromDate = LocalDate.now(), toDate = LocalDate.now(), pageable = PageRequest.of(1, 10)
+      )
+
+      verify(reportedAdjudicationRepository, atLeastOnce()).findByPrisonerNumberAndAgencyAndDate(any(), any(), any(), any(), any(), any(), any())
+    }
+
+    @Test
+    fun `returns content correctly ` () {
+      whenever(reportedAdjudicationRepository.findByPrisonerNumberAndDateTimeOfDiscoveryBetweenAndStatusIn(any(), any(), any(), any(), any())).thenReturn(
+        PageImpl(
+          listOf(entityBuilder.reportedAdjudication()),
+        ),
+      )
+
+      val adjudications = summaryAdjudicationService.getAdjudications(
+        prisonerNumber = "12345", offenceId = null, agencyId = null, finding = null, fromDate = LocalDate.now(), toDate = LocalDate.now(), pageable = PageRequest.of(1, 10))
+
     }
   }
 }

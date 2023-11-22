@@ -676,4 +676,59 @@ class ReportedAdjudicationRepositoryTest {
 
     assertThat(adjudications.size).isEqualTo(1)
   }
-}
+
+  @Test
+  fun `reports by prisoner and status and date` () {
+
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(prisonerNumber = "12345", chargeNumber = "TESTING_SUM").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(1)
+      },
+    )
+
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(prisonerNumber = "12345", chargeNumber = "TESTING_SUM2").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfDiscovery = LocalDateTime.now().plusDays(1)
+      },
+    )
+
+    val response = reportedAdjudicationRepository.findByPrisonerNumberAndDateTimeOfDiscoveryBetweenAndStatusIn(
+      prisonerNumber = "12345", statuses = listOf(ReportedAdjudicationStatus.CHARGE_PROVED), fromDate = LocalDateTime.now().minusYears(1), toDate = LocalDateTime.now(), pageable =  Pageable.ofSize(10)
+    )
+    assertThat(response.content.size).isEqualTo(1)
+  }
+
+  @Test
+  fun `reports by prisoner and agency` () {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(prisonerNumber = "12345", chargeNumber = "TESTING_SUM").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(1)
+        it.originatingAgencyId = "MDI"
+      },
+    )
+
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(prisonerNumber = "12345", chargeNumber = "TESTING_SUM2").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(2)
+        it.originatingAgencyId = "TJW"
+        it.overrideAgencyId = "MDI"
+      },
+    )
+
+
+    val response = reportedAdjudicationRepository.findByPrisonerNumberAndAgencyAndDate(
+      prisonerNumber = "12345", statuses = listOf(ReportedAdjudicationStatus.CHARGE_PROVED.name), transferIgnoreStatuses = listOf("TEST"), startDate = LocalDateTime.now().minusYears(1), endDate = LocalDateTime.now(), agencyId = "MDI", pageable =  Pageable.ofSize(10)
+    )
+    assertThat(response.content.size).isEqualTo(2)
+
+  }
+
+ }
