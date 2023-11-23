@@ -98,8 +98,6 @@ api:
 feature:
   nomis-source-of-truth:
       summary: ${FEATURE_NOMIS_SOURCE_OF_TRUTH_SUMMARY:true}
-      adjudications: ${FEATURE_NOMIS_SOURCE_OF_TRUTH_ADJUDICATIONS:true}
-      adjudication: ${FEATURE_NOMIS_SOURCE_OF_TRUTH_ADJUDICATION:true}
       hearing: ${FEATURE_NOMIS_SOURCE_OF_TRUTH_HEARING:true}
   async:
       chargeNumbers: ${FEATURE_CHARGE_NUMBER:false}

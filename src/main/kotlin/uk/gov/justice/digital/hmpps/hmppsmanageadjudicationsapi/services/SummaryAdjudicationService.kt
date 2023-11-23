@@ -24,7 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyN
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.TimeSlot
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferIgnoreStatuses
 import java.time.LocalDate
 
 @Service
@@ -33,14 +32,8 @@ class SummaryAdjudicationService(
   private val featureFlagsConfig: FeatureFlagsConfig,
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
-  fun getAdjudication(prisonerNumber: String, chargeId: Long): AdjudicationDetail {
-    return if (featureFlagsConfig.nomisSourceOfTruthAdjudication) {
-      legacyNomisGateway.getAdjudicationDetailForPrisoner(prisonerNumber, chargeId)
-    } else {
-      // TODO: get data from this database!
-      AdjudicationDetail(adjudicationNumber = chargeId)
-    }
-  }
+  fun getAdjudication(prisonerNumber: String, chargeId: Long): AdjudicationDetail =
+    legacyNomisGateway.getAdjudicationDetailForPrisoner(prisonerNumber, chargeId)
 
   fun getAdjudications(
     prisonerNumber: String,
@@ -51,57 +44,26 @@ class SummaryAdjudicationService(
     toDate: LocalDate?,
     pageable: Pageable,
   ): AdjudicationSearchResponse {
-    return if (featureFlagsConfig.nomisSourceOfTruthAdjudications) {
-      val response = legacyNomisGateway.getAdjudicationsForPrisoner(
-        prisonerNumber,
-        offenceId,
-        agencyId,
-        finding,
-        fromDate,
-        toDate,
-        pageable,
+    val response = legacyNomisGateway.getAdjudicationsForPrisoner(
+      prisonerNumber,
+      offenceId,
+      agencyId,
+      finding,
+      fromDate,
+      toDate,
+      pageable,
+    )
+
+    val pageOffset = response.headers.getHeader("Page-Offset")
+    val pageSize = response.headers.getHeader("Page-Limit")
+    val totalRecords = response.headers.getHeader("Total-Records")
+    return response.body?.let {
+      AdjudicationSearchResponse(
+        results = PageImpl(it.results, PageRequest.of(pageOffset.toInt() / pageSize.toInt(), pageSize.toInt()), totalRecords.toLong()),
+        offences = it.offences,
+        agencies = it.agencies,
       )
-
-      val pageOffset = response.headers.getHeader("Page-Offset")
-      val pageSize = response.headers.getHeader("Page-Limit")
-      val totalRecords = response.headers.getHeader("Total-Records")
-      response.body?.let {
-        AdjudicationSearchResponse(
-          results = PageImpl(it.results, PageRequest.of(pageOffset.toInt() / pageSize.toInt(), pageSize.toInt()), totalRecords.toLong()),
-          offences = it.offences,
-          agencies = it.agencies,
-        )
-      } ?: AdjudicationSearchResponse(results = Page.empty(), offences = listOf(), agencies = listOf())
-    } else {
-      val adjudications = when(agencyId) {
-        null -> reportedAdjudicationRepository.findByPrisonerNumberAndDateTimeOfDiscoveryBetweenAndStatusIn(
-          prisonerNumber = prisonerNumber,
-          fromDate = (fromDate ?: minimumDate).atStartOfDay(),
-          toDate = (toDate ?: maximumDate).atStartOfDay(),
-          statuses = finding?.mapFindingToStatus() ?: allStatuses,
-          pageable = pageable
-        )
-        else -> reportedAdjudicationRepository.findByPrisonerNumberAndAgencyAndDate(
-          prisonerNumber = prisonerNumber,
-          startDate = (fromDate ?: minimumDate).atStartOfDay(),
-          endDate = (toDate ?: maximumDate).atStartOfDay(),
-          statuses = finding?.mapFindingToStatus()?.map { it.name } ?: allStatuses.map { it.name },
-          transferIgnoreStatuses = transferIgnoreStatuses.map { it.name },
-          agencyId = agencyId,
-          pageable = pageable
-        )
-      }
-
-      return   AdjudicationSearchResponse(
-        PageImpl(
-        adjudications.content.map {
-          it.mapToAdjudication()
-        },
-        PageRequest.of(pageable.offset.toInt() / pageable.pageSize, pageable.pageSize), adjudications.totalPages.toLong()
-      ), offences =  listOf(), agencies = listOf() )
-
-
-    }
+    } ?: AdjudicationSearchResponse(results = Page.empty(), offences = listOf(), agencies = listOf())
   }
 
   private fun HttpHeaders.getHeader(key: String) = this[key]?.get(0) ?: "0"
@@ -187,7 +149,7 @@ class SummaryAdjudicationService(
 
     val allStatuses = ReportedAdjudicationStatus.values().filter { it != ReportedAdjudicationStatus.ACCEPTED }
 
-    fun Finding.mapFindingToStatus(): List<ReportedAdjudicationStatus> = when(this) {
+    fun Finding.mapFindingToStatus(): List<ReportedAdjudicationStatus> = when (this) {
       Finding.PROVED, Finding.GUILTY -> listOf(ReportedAdjudicationStatus.CHARGE_PROVED)
       Finding.ADJOURNED -> listOf(ReportedAdjudicationStatus.ADJOURNED)
       Finding.D, Finding.NOT_GUILTY, Finding.NOT_PROVEN -> listOf(ReportedAdjudicationStatus.DISMISSED)

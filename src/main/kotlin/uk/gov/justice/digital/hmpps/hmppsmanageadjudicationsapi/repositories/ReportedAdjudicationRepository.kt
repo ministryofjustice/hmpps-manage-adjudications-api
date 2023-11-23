@@ -117,7 +117,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     fromDate: LocalDateTime,
     toDate: LocalDateTime,
     statuses: List<ReportedAdjudicationStatus>,
-    pageable: Pageable): Page<ReportedAdjudication>
+    pageable: Pageable,
+  ): Page<ReportedAdjudication>
 
   @Query(
     value = "select * from reported_adjudications ra $prisonerReportsWithDateWhereClause",
@@ -131,13 +132,13 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("endDate") endDate: LocalDateTime,
     @Param("statuses") statuses: List<String>,
     @Param("transferIgnoreStatuses") transferIgnoreStatuses: List<String>,
-    pageable: Pageable
+    pageable: Pageable,
   ): Page<ReportedAdjudication>
 
   companion object {
 
     private const val dateAndStatusFilter = "ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate and ra.status in :statuses "
-    private const val agencyAndStatusFilter  =  "and (" +
+    private const val agencyAndStatusFilter = "and (" +
       "ra.originating_agency_id = :agencyId " +
       "or ra.override_agency_id = :agencyId and ra.status not in :transferIgnoreStatuses and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :agencyId " +
       "or ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) = :agencyId" +
@@ -147,7 +148,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
     const val allReportsWhereClause =
       "where $dateAndStatusFilter $agencyAndStatusFilter"
-
 
     const val transferReportsWhereClause =
       "where $dateAndStatusFilter" +
