@@ -60,19 +60,19 @@ data class Award(
 @Schema(description = "An overview of an adjudication")
 data class Adjudication(
   @Schema(description = "Adjudication Number", example = "1234567")
-  val adjudicationNumber: String,
+  val adjudicationNumber: Long,
 
   @Schema(description = "Report Time", example = "2017-03-17T08:02:00")
   val reportTime: LocalDateTime,
 
   @Schema(description = "Agency Incident Id", example = "1484302")
-  val agencyIncidentId: Long? = null,
+  val agencyIncidentId: Long,
 
   @Schema(description = "Agency Id", example = "MDI")
   val agencyId: String?,
 
   @Schema(description = "Party Sequence", example = "1")
-  val partySeq: Long? = null,
+  val partySeq: Long,
 
   @Schema(description = "Charges made as part of the adjudication")
   val adjudicationCharges: List<AdjudicationCharge>? = null,
