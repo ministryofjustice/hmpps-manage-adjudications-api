@@ -30,14 +30,8 @@ class SummaryAdjudicationService(
   private val featureFlagsConfig: FeatureFlagsConfig,
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
-  fun getAdjudication(prisonerNumber: String, chargeId: Long): AdjudicationDetail {
-    return if (featureFlagsConfig.nomisSourceOfTruthAdjudication) {
-      legacyNomisGateway.getAdjudicationDetailForPrisoner(prisonerNumber, chargeId)
-    } else {
-      // TODO: get data from this database!
-      AdjudicationDetail(adjudicationNumber = chargeId)
-    }
-  }
+  fun getAdjudication(prisonerNumber: String, chargeId: Long): AdjudicationDetail =
+    legacyNomisGateway.getAdjudicationDetailForPrisoner(prisonerNumber, chargeId)
 
   fun getAdjudications(
     prisonerNumber: String,
@@ -48,31 +42,26 @@ class SummaryAdjudicationService(
     toDate: LocalDate?,
     pageable: Pageable,
   ): AdjudicationSearchResponse {
-    return if (featureFlagsConfig.nomisSourceOfTruthAdjudications) {
-      val response = legacyNomisGateway.getAdjudicationsForPrisoner(
-        prisonerNumber,
-        offenceId,
-        agencyId,
-        finding,
-        fromDate,
-        toDate,
-        pageable,
-      )
+    val response = legacyNomisGateway.getAdjudicationsForPrisoner(
+      prisonerNumber,
+      offenceId,
+      agencyId,
+      finding,
+      fromDate,
+      toDate,
+      pageable,
+    )
 
-      val pageOffset = response.headers.getHeader("Page-Offset")
-      val pageSize = response.headers.getHeader("Page-Limit")
-      val totalRecords = response.headers.getHeader("Total-Records")
-      response.body?.let {
-        AdjudicationSearchResponse(
-          results = PageImpl(it.results, PageRequest.of(pageOffset.toInt() / pageSize.toInt(), pageSize.toInt()), totalRecords.toLong()),
-          offences = it.offences,
-          agencies = it.agencies,
-        )
-      } ?: AdjudicationSearchResponse(results = Page.empty(), offences = listOf(), agencies = listOf())
-    } else {
-      // TODO: get data from this database!
-      AdjudicationSearchResponse(results = Page.empty(), offences = listOf(), agencies = listOf())
-    }
+    val pageOffset = response.headers.getHeader("Page-Offset")
+    val pageSize = response.headers.getHeader("Page-Limit")
+    val totalRecords = response.headers.getHeader("Total-Records")
+    return response.body?.let {
+      AdjudicationSearchResponse(
+        results = PageImpl(it.results, PageRequest.of(pageOffset.toInt() / pageSize.toInt(), pageSize.toInt()), totalRecords.toLong()),
+        offences = it.offences,
+        agencies = it.agencies,
+      )
+    } ?: AdjudicationSearchResponse(results = Page.empty(), offences = listOf(), agencies = listOf())
   }
 
   private fun HttpHeaders.getHeader(key: String) = this[key]?.get(0) ?: "0"

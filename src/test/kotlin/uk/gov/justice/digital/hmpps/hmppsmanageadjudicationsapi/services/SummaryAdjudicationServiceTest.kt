@@ -52,8 +52,6 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @BeforeEach
     fun beforeEach() {
       whenever(featureFlagsConfig.nomisSourceOfTruthSummary).thenReturn(true)
-      whenever(featureFlagsConfig.nomisSourceOfTruthAdjudication).thenReturn(true)
-      whenever(featureFlagsConfig.nomisSourceOfTruthAdjudications).thenReturn(true)
       whenever(featureFlagsConfig.nomisSourceOfTruthHearing).thenReturn(true)
     }
 
@@ -127,7 +125,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
       val adjudicationSummary = summaryAdjudicationService.getAdjudicationSummary(1L, null, null)
 
-      Assertions.assertThat(adjudicationSummary.adjudicationCount).isEqualTo(2)
+      assertThat(adjudicationSummary.adjudicationCount).isEqualTo(2)
     }
 
     @Test

@@ -112,17 +112,42 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     cutOff: LocalDateTime,
   ): List<ReportedAdjudication>
 
+  fun findByOffenderBookingIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+    offenderBookingId: Long,
+    fromDate: LocalDateTime,
+    toDate: LocalDateTime,
+    statuses: List<ReportedAdjudicationStatus>,
+    pageable: Pageable,
+  ): Page<ReportedAdjudication>
+
+  @Query(
+    value = "select * from reported_adjudications ra $prisonerReportsWithDateWhereClause",
+    countQuery = "select count(1) from reported_adjudications ra $prisonerReportsWithDateWhereClause",
+    nativeQuery = true,
+  )
+  fun findByOffenderBookingIdAndAgencyAndDate(
+    @Param("offenderBookingId") offenderBookingId: Long,
+    @Param("agencyId") agencyId: String,
+    @Param("startDate") startDate: LocalDateTime,
+    @Param("endDate") endDate: LocalDateTime,
+    @Param("statuses") statuses: List<String>,
+    @Param("transferIgnoreStatuses") transferIgnoreStatuses: List<String>,
+    pageable: Pageable,
+  ): Page<ReportedAdjudication>
+
   companion object {
 
     private const val dateAndStatusFilter = "ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate and ra.status in :statuses "
+    private const val agencyAndStatusFilter = "and (" +
+      "ra.originating_agency_id = :agencyId " +
+      "or ra.override_agency_id = :agencyId and ra.status not in :transferIgnoreStatuses and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :agencyId " +
+      "or ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) = :agencyId" +
+      ")"
+
+    const val prisonerReportsWithDateWhereClause = "where ra.offender_booking_id = :offenderBookingId and $dateAndStatusFilter $agencyAndStatusFilter"
 
     const val allReportsWhereClause =
-      "where $dateAndStatusFilter" +
-        "and (" +
-        "ra.originating_agency_id = :agencyId " +
-        "or ra.override_agency_id = :agencyId and ra.status not in :transferIgnoreStatuses and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :agencyId " +
-        "or ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) = :agencyId" +
-        ")"
+      "where $dateAndStatusFilter $agencyAndStatusFilter"
 
     const val transferReportsWhereClause =
       "where $dateAndStatusFilter" +
