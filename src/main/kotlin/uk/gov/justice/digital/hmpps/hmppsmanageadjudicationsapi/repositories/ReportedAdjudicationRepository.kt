@@ -112,8 +112,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     cutOff: LocalDateTime,
   ): List<ReportedAdjudication>
 
-  fun findByPrisonerNumberAndDateTimeOfDiscoveryBetweenAndStatusIn(
-    prisonerNumber: String,
+  fun findByOffenderBookingIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+    offenderBookingId: Long,
     fromDate: LocalDateTime,
     toDate: LocalDateTime,
     statuses: List<ReportedAdjudicationStatus>,
@@ -125,8 +125,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     countQuery = "select count(1) from reported_adjudications ra $prisonerReportsWithDateWhereClause",
     nativeQuery = true,
   )
-  fun findByPrisonerNumberAndAgencyAndDate(
-    @Param("prisonerNumber") prisonerNumber: String,
+  fun findByOffenderBookingIdAndAgencyAndDate(
+    @Param("offenderBookingId") offenderBookingId: Long,
     @Param("agencyId") agencyId: String,
     @Param("startDate") startDate: LocalDateTime,
     @Param("endDate") endDate: LocalDateTime,
@@ -144,7 +144,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
       "or ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) = :agencyId" +
       ")"
 
-    const val prisonerReportsWithDateWhereClause = "where ra.prisoner_number = :prisonerNumber and $dateAndStatusFilter $agencyAndStatusFilter"
+    const val prisonerReportsWithDateWhereClause = "where ra.offender_booking_id = :offenderBookingId and $dateAndStatusFilter $agencyAndStatusFilter"
 
     const val allReportsWhereClause =
       "where $dateAndStatusFilter $agencyAndStatusFilter"

@@ -680,7 +680,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `reports by prisoner and status and date`() {
     reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(prisonerNumber = "12345", chargeNumber = "TESTING_SUM").also {
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM").also {
         it.hearings.clear()
         it.status = ReportedAdjudicationStatus.CHARGE_PROVED
         it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(1)
@@ -688,15 +688,15 @@ class ReportedAdjudicationRepositoryTest {
     )
 
     reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(prisonerNumber = "12345", chargeNumber = "TESTING_SUM2").also {
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM2").also {
         it.hearings.clear()
         it.status = ReportedAdjudicationStatus.CHARGE_PROVED
         it.dateTimeOfDiscovery = LocalDateTime.now().plusDays(1)
       },
     )
 
-    val response = reportedAdjudicationRepository.findByPrisonerNumberAndDateTimeOfDiscoveryBetweenAndStatusIn(
-      prisonerNumber = "12345",
+    val response = reportedAdjudicationRepository.findByOffenderBookingIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
+      offenderBookingId = 3L,
       statuses = listOf(ReportedAdjudicationStatus.CHARGE_PROVED),
       fromDate = LocalDateTime.now().minusYears(1),
       toDate = LocalDateTime.now(),
@@ -708,7 +708,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `reports by prisoner and agency`() {
     reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(prisonerNumber = "12345", chargeNumber = "TESTING_SUM").also {
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM").also {
         it.hearings.clear()
         it.status = ReportedAdjudicationStatus.CHARGE_PROVED
         it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(1)
@@ -717,7 +717,7 @@ class ReportedAdjudicationRepositoryTest {
     )
 
     reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(prisonerNumber = "12345", chargeNumber = "TESTING_SUM2").also {
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM2").also {
         it.hearings.clear()
         it.status = ReportedAdjudicationStatus.CHARGE_PROVED
         it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(2)
@@ -726,8 +726,8 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    val response = reportedAdjudicationRepository.findByPrisonerNumberAndAgencyAndDate(
-      prisonerNumber = "12345",
+    val response = reportedAdjudicationRepository.findByOffenderBookingIdAndAgencyAndDate(
+      offenderBookingId = 3L,
       statuses = listOf(ReportedAdjudicationStatus.CHARGE_PROVED.name),
       transferIgnoreStatuses = listOf("TEST"),
       startDate = LocalDateTime.now().minusYears(1),
