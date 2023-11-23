@@ -43,7 +43,6 @@ hmpps.sqs:
 feature:
   nomis-source-of-truth:
     summary: false
-    hearing: false
   async:
     chargeNumbers: true
     adjudications: true

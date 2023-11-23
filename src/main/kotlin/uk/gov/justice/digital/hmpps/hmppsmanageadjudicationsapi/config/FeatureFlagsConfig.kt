@@ -7,8 +7,6 @@ import org.springframework.context.annotation.Configuration
 class FeatureFlagsConfig(
   @Value("\${feature.nomis-source-of-truth.summary:true}")
   val nomisSourceOfTruthSummary: Boolean,
-  @Value("\${feature.nomis-source-of-truth.hearing:true}")
-  val nomisSourceOfTruthHearing: Boolean,
   @Value("\${feature.async.chargeNumbers}")
   val chargeNumbers: Boolean,
   @Value("\${feature.async.adjudications}")
