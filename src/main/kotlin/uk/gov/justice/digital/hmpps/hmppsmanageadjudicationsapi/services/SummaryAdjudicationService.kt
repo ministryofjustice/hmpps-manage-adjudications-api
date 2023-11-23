@@ -12,14 +12,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudicatio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSearchResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Award
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenderAdjudicationHearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyNomisGateway
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.TimeSlot
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
 import java.time.LocalDate
@@ -104,21 +102,6 @@ class SummaryAdjudicationService(
           )
         },
       )
-    }
-  }
-
-  fun getOffenderAdjudicationHearings(
-    prisonerNumbers: Set<String>,
-    agencyId: String,
-    fromDate: LocalDate,
-    toDate: LocalDate,
-    timeSlot: TimeSlot?,
-  ): List<OffenderAdjudicationHearing> {
-    return if (featureFlagsConfig.nomisSourceOfTruthHearing) {
-      legacyNomisGateway.getOffenderAdjudicationHearings(prisonerNumbers, agencyId, fromDate, toDate, timeSlot)
-    } else {
-      // TODO: get data from this database!
-      listOf()
     }
   }
 

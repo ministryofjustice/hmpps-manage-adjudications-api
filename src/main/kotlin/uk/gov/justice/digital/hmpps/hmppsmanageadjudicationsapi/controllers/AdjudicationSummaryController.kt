@@ -13,17 +13,13 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSearchResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenderAdjudicationHearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.TimeSlot
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.SummaryAdjudicationService
 import java.time.LocalDate
 
@@ -170,52 +166,5 @@ class AdjudicationSummaryController(
       toDate = toDate,
       pageable = pageable,
     )
-  }
-
-  @Operation(
-    summary = "Gets a list of offender adjudication hearings",
-    description = """
-        <p>This endpoint returns a list of offender adjudication hearings for 1 or more offenders for a given date range and optional time slot.</p>
-        <p>If the date range goes beyond 31 days then an exception will be thrown.</p>
-        <p>At least one offender number must be supplied if not then an exception will be thrown.</p>
-        <p>If the time slot is provided then the results will be further restricted to the hearings that fall in that time slot.</p>
-        """,
-  )
-  @PostMapping("/adjudication-hearings")
-  fun getOffenderAdjudicationHearings(
-    @Parameter(
-      description = "The prisoner numbers. Prisoner numbers have the format:<b>G0364GX</b>",
-      required = true,
-    )
-    @RequestBody
-    prisonerNumbers: Set<String>,
-    @RequestParam(
-      value = "agencyId",
-      required = true,
-    )
-    @Parameter(description = "An agency id to allow filtering by the prison in which the offence occurred")
-    agencyId: String,
-    @RequestParam(
-      value = "fromDate",
-      required = true,
-    )
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @Parameter(description = "Adjudications must have been reported on or after this date (in YYYY-MM-DD format).")
-    fromDate: LocalDate,
-    @RequestParam(
-      value = "toDate",
-      required = true,
-    )
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @Parameter(description = "Adjudications must have been reported on or before this date (in YYYY-MM-DD format).")
-    toDate: LocalDate,
-    @RequestParam(
-      value = "timeSlot",
-      required = false,
-    )
-    @Parameter(description = "AM, PM or ED")
-    timeSlot: TimeSlot?,
-  ): List<OffenderAdjudicationHearing> {
-    return summaryAdjudicationService.getOffenderAdjudicationHearings(prisonerNumbers, agencyId, fromDate, toDate, timeSlot)
   }
 }
