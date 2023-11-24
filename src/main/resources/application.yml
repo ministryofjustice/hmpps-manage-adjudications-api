@@ -107,8 +107,4 @@ feature:
   skip:
      existing: ${FEATURE_SKIP_EXISTING:false}
 
-service:
-  active:
-    prisons: ${SERVICE_ACTIVE_PRISONS:}
-
 
