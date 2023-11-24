@@ -7,6 +7,4 @@ import org.springframework.context.annotation.Configuration
 class ActivePrisonConfig(
   @Value("\${service.active.prisons:}")
   val activePrisons: String,
-) {
-  fun isActive(agency: String): Boolean = if (activePrisons.trim().isEmpty()) true else activePrisons.split(",").contains(agency)
-}
+)

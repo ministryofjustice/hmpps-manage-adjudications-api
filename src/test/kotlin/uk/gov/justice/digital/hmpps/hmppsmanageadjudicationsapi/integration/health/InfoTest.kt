@@ -9,18 +9,6 @@ import java.time.format.DateTimeFormatter
 class InfoTest : SqsIntegrationTestBase() {
 
   @Test
-  fun `is service active`() {
-    webTestClient.get()
-      .uri("/service/active?agency=MDI")
-      .headers(setHeaders())
-      .exchange()
-      .expectStatus()
-      .isOk
-      .expectBody()
-      .jsonPath("$.active").isEqualTo("true")
-  }
-
-  @Test
   fun `Info page is accessible`() {
     webTestClient.get()
       .uri("/info")
@@ -38,6 +26,16 @@ class InfoTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody().jsonPath("build.version").value<String> {
         assertThat(it).startsWith(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
+      }
+  }
+
+  @Test
+  fun `has active prisons`() {
+    webTestClient.get().uri("/info")
+      .exchange()
+      .expectStatus().isOk
+      .expectBody().jsonPath("activeAgencies").value<List<String>> {
+        assertThat(it.isEmpty())
       }
   }
 }
