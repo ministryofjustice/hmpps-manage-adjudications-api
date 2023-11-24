@@ -29,7 +29,7 @@ class ServiceController(
   ): ActivePrison {
     return ActivePrison(
       agency = agency,
-      active = activePrisonConfig.isAvailable(
+      active = activePrisonConfig.isActive(
         agency = agency,
       ),
     )

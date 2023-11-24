@@ -8,5 +8,5 @@ class ActivePrisonConfig(
   @Value("\${service.active.prisons:}")
   val activePrisons: String,
 ) {
-  fun isAvailable(agency: String): Boolean = if (activePrisons.trim().isEmpty()) true else activePrisons.split(",").contains(agency)
+  fun isActive(agency: String): Boolean = if (activePrisons.trim().isEmpty()) true else activePrisons.split(",").contains(agency)
 }

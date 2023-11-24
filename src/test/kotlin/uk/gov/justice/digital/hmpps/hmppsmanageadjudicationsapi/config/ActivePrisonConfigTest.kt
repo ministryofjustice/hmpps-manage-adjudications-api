@@ -8,18 +8,18 @@ class ActivePrisonConfigTest {
   @Test
   fun `no env variable returns true`() {
     val activePrisonConfig = ActivePrisonConfig("")
-    assertThat(activePrisonConfig.isAvailable("test")).isTrue
+    assertThat(activePrisonConfig.isActive("test")).isTrue
   }
 
   @Test
   fun `agency is available`() {
     val activePrisonConfig = ActivePrisonConfig("test")
-    assertThat(activePrisonConfig.isAvailable("test")).isTrue
+    assertThat(activePrisonConfig.isActive("test")).isTrue
   }
 
   @Test
   fun `agency is not available`() {
     val activePrisonConfig = ActivePrisonConfig("nottest")
-    assertThat(activePrisonConfig.isAvailable("test")).isFalse
+    assertThat(activePrisonConfig.isActive("test")).isFalse
   }
 }
