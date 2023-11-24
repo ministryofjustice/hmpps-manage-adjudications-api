@@ -9,6 +9,18 @@ import java.time.format.DateTimeFormatter
 class InfoTest : SqsIntegrationTestBase() {
 
   @Test
+  fun `is service active`() {
+    webTestClient.get()
+      .uri("/service/active?agency=MDI")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody()
+      .jsonPath("$.active").isEqualTo("true")
+  }
+
+  @Test
   fun `Info page is accessible`() {
     webTestClient.get()
       .uri("/info")
