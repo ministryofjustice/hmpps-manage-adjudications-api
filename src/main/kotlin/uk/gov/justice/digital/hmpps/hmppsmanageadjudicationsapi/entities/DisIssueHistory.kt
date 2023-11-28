@@ -12,5 +12,4 @@ data class DisIssueHistory(
   @field:Length(max = 32)
   var issuingOfficer: String,
   var dateTimeOfIssue: LocalDateTime,
-  var migrated: Boolean = false,
 ) : BaseEntity()

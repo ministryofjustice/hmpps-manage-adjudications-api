@@ -24,7 +24,6 @@ data class Outcome(
   var oicHearingId: Long? = null,
   var deleted: Boolean? = null,
   var actualCreatedDate: LocalDateTime? = null,
-  var migrated: Boolean = false,
 ) : BaseEntity() {
   fun getCreatedDateTime(): LocalDateTime? = this.actualCreatedDate ?: this.createDateTime
 }

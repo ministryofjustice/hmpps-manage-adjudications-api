@@ -46,7 +46,6 @@ data class ReportedWitness(
   var lastName: String,
   @field:Length(max = 32)
   var reporter: String,
-  var migrated: Boolean = false,
   @field:Length(max = 32)
   var username: String? = null,
   var dateAdded: LocalDateTime? = null,

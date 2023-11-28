@@ -15,6 +15,5 @@ data class ReportedOffence(
   var nomisOffenceCode: String? = null,
   @field:Length(max = 350)
   var nomisOffenceDescription: String? = null,
-  var migrated: Boolean = false,
   var actualOffenceCode: Int? = null,
 ) : BaseEntity()
