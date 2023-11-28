@@ -12,7 +12,6 @@ data class PunishmentComment(
   override val id: Long? = null,
   @field:Length(max = 4000)
   var comment: String,
-  var migrated: Boolean = false,
   @Enumerated(EnumType.STRING)
   var reasonForChange: ReasonForChange? = null,
   val nomisCreatedBy: String? = null,

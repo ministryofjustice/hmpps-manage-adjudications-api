@@ -12,5 +12,4 @@ data class PunishmentSchedule(
   var startDate: LocalDate? = null,
   var endDate: LocalDate? = null,
   var suspendedUntil: LocalDate? = null,
-  var migrated: Boolean = false,
 ) : BaseEntity()

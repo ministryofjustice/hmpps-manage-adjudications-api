@@ -106,9 +106,9 @@ class MigrateNewRecordService(
       outcomes = outcomes.toMutableList(),
       statement = adjudicationMigrateDto.statement,
       offenceDetails = mutableListOf(adjudicationMigrateDto.offence.getOffenceDetails()),
-      migrated = true,
       punishments = punishments.toMutableList(),
       punishmentComments = punishmentComments.toMutableList(),
+      migrated = true,
     ).also {
       it.calculateStatus()
     }
@@ -351,7 +351,7 @@ class MigrateNewRecordService(
       finalOutcome?.let {
         if (this.any { sanction -> sanction.sanctionStatus == Status.QUASHED.name && sanction.sanctionCode == OicSanctionCode.ADA.name } && it != OutcomeCode.QUASHED) {
           punishmentComments.add(
-            PunishmentComment(comment = "ADA is quashed in NOMIS", migrated = true, nomisCreatedBy = usernameOnPunishment!!),
+            PunishmentComment(comment = "ADA is quashed in NOMIS", nomisCreatedBy = usernameOnPunishment!!),
           )
         }
       }

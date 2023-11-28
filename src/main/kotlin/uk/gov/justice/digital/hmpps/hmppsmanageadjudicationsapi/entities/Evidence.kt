@@ -44,6 +44,5 @@ data class ReportedEvidence(
   var details: String,
   @field:Length(max = 32)
   var reporter: String,
-  var migrated: Boolean = false,
   var dateAdded: LocalDateTime? = null,
 ) : BaseEntity()

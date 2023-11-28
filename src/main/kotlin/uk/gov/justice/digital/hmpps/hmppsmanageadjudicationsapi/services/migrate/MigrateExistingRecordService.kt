@@ -105,15 +105,15 @@ class MigrateExistingRecordService(
     }
 
     adjudicationMigrateDto.damages.toDamages().forEach {
-      existingAdjudication.damages.add(it.also { reportedDamage -> reportedDamage.migrated = true })
+      existingAdjudication.damages.add(it)
     }
 
     adjudicationMigrateDto.evidence.toEvidence().forEach {
-      existingAdjudication.evidence.add(it.also { reportedEvidence -> reportedEvidence.migrated = true })
+      existingAdjudication.evidence.add(it)
     }
 
     adjudicationMigrateDto.witnesses.toWitnesses().forEach {
-      existingAdjudication.witnesses.add(it.also { reportedWitness -> reportedWitness.migrated = true })
+      existingAdjudication.witnesses.add(it)
     }
 
     val saved = reportedAdjudicationRepository.save(existingAdjudication).also { it.calculateStatus() }
@@ -133,14 +133,13 @@ class MigrateExistingRecordService(
     hearingsAndResults.forEach { hearingToAdd ->
       this.hearings.add(
         hearingToAdd.also {
-          it.migrated = true
           if (this.getLatestHearing()?.dateTimeOfHearing?.isAfter(it.dateTimeOfHearing) == true && it.hearingOutcome == null) {
             it.hearingOutcome = createAdjourn()
           }
         },
       )
     }
-    outcomes.forEach { this.addOutcome(it.also { outcome -> outcome.migrated = true }) }
+    outcomes.forEach { this.addOutcome(it) }
 
     punishmentComment?.let {
       this.punishmentComments.add(punishmentComment)
@@ -164,7 +163,7 @@ class MigrateExistingRecordService(
     this.issuingOfficer = disIssued.first
     this.dateTimeOfIssue = disIssued.second
     disIssued.third.forEach {
-      this.disIssueHistory.add(it.also { disIssueHistory -> disIssueHistory.migrated = true })
+      this.disIssueHistory.add(it)
     }
 
     this.addHearingsAndOutcomes(hearingsAndResultsAndOutcomes)
@@ -203,9 +202,9 @@ class MigrateExistingRecordService(
           }
         }
         nomisHearing.hearingResult.mapToOutcome(commentText = nomisHearing.commentText, hearingOutcomeCode = hearingOutcomeCode)?.let {
-          this.addOutcome(it.also { outcome -> outcome.migrated = true })
+          this.addOutcome(it)
           nomisHearing.hearingResult.createAdditionalOutcome(hasAdditionalHearings)?.let { outcome ->
-            this.addOutcome(outcome.also { o -> o.migrated = true })
+            this.addOutcome(outcome)
           }
         }
       } else {
@@ -467,7 +466,6 @@ class MigrateExistingRecordService(
     this.nomisOffenceDescription = adjudicationMigrateDto.offence.offenceDescription
     this.actualOffenceCode = this.offenceCode
     this.offenceCode = OffenceCodes.MIGRATED_OFFENCE.uniqueOffenceCodes.first()
-    this.migrated = true
   }
 
   private fun ReportedAdjudication.processPunishments(sanctions: List<MigratePunishment>) {
@@ -475,8 +473,8 @@ class MigrateExistingRecordService(
     val punishments = punishmentsAndComments.first
     val punishmentComments = punishmentsAndComments.second
 
-    punishmentComments.forEach { this.punishmentComments.add(it.also { punishmentComment -> punishmentComment.migrated = true }) }
-    punishments.forEach { this.addPunishment(it.also { punishment -> punishment.migrated = true }) }
+    punishmentComments.forEach { this.punishmentComments.add(it) }
+    punishments.forEach { this.addPunishment(it) }
   }
 
   companion object {
