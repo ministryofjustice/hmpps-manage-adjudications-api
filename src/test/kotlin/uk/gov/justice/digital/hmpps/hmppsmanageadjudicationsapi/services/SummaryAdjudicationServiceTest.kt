@@ -23,14 +23,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyNomisGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyReadNomisGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
-  private val legacyNomisGateway: LegacyNomisGateway = mock()
+  private val legacyNomisGateway: LegacyReadNomisGateway = mock()
   private val featureFlagsConfig: FeatureFlagsConfig = mock()
 
   private val prisonerNumber = "A1234AB"
