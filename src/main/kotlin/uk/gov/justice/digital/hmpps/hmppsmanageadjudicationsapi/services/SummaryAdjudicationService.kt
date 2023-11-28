@@ -17,14 +17,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyNomisGateway
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyReadNomisGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
 import java.time.LocalDate
 
 @Service
 class SummaryAdjudicationService(
-  private val legacyNomisGateway: LegacyNomisGateway,
+  private val legacyNomisGateway: LegacyReadNomisGateway,
   private val featureFlagsConfig: FeatureFlagsConfig,
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
