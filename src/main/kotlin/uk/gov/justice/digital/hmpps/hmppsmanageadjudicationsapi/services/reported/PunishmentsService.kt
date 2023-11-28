@@ -20,8 +20,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -47,7 +45,7 @@ class PunishmentsService(
 
     legacySyncService.createSanctions(
       adjudicationNumber = reportedAdjudication.chargeNumber,
-      sanctions = reportedAdjudication.mapToSanctions(),
+      punishments = reportedAdjudication.getPunishments(),
     )
   }
 
@@ -74,7 +72,7 @@ class PunishmentsService(
 
     legacySyncService.createSanctions(
       adjudicationNumber = chargeNumber,
-      sanctions = reportedAdjudication.mapToSanctions(),
+      punishments = reportedAdjudication.getPunishments(),
     )
 
     return saveToDto(reportedAdjudication)
@@ -137,7 +135,7 @@ class PunishmentsService(
 
     legacySyncService.updateSanctions(
       adjudicationNumber = chargeNumber,
-      sanctions = reportedAdjudication.mapToSanctions(),
+      punishments = reportedAdjudication.getPunishments(),
     )
 
     return saveToDto(reportedAdjudication)
@@ -327,9 +325,6 @@ class PunishmentsService(
   )
 
   companion object {
-
-    fun ReportedAdjudication.mapToSanctions(): List<OffenderOicSanctionRequest> =
-      this.getPunishments().map { it.mapPunishmentToSanction() }
 
     fun List<PunishmentSchedule>.latestSchedule() = this.maxBy { it.createDateTime!! }
 

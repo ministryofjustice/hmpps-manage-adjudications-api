@@ -3,8 +3,10 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 
 @Service
@@ -110,15 +112,15 @@ class LegacySyncService(
     }
   }
 
-  fun createSanctions(adjudicationNumber: String, sanctions: List<OffenderOicSanctionRequest>) {
+  fun createSanctions(adjudicationNumber: String, punishments: List<Punishment>) {
     if (!featureFlagsConfig.punishments) {
-      legacyNomisGateway.createSanctions(adjudicationNumber.toLong(), sanctions)
+      legacyNomisGateway.createSanctions(adjudicationNumber.toLong(), punishments.map { it.mapPunishmentToSanction() })
     }
   }
 
-  fun updateSanctions(adjudicationNumber: String, sanctions: List<OffenderOicSanctionRequest>) {
+  fun updateSanctions(adjudicationNumber: String, punishments: List<Punishment>) {
     if (!featureFlagsConfig.punishments) {
-      legacyNomisGateway.updateSanctions(adjudicationNumber.toLong(), sanctions)
+      legacyNomisGateway.updateSanctions(adjudicationNumber.toLong(), punishments.map { it.mapPunishmentToSanction() })
     }
   }
 
