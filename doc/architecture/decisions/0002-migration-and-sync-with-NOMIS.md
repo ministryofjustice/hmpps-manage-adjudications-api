@@ -1,6 +1,6 @@
-# 4. Mastering and Synchronisation of Adjudication data with NOMIS
+# 2. Mastering and Synchronisation of Adjudication data with NOMIS
 
-[Next >>](9999-end.md)
+[Next >>](0003-arch-overview.md)
 
 
 Date: 2023-03-14
@@ -298,4 +298,4 @@ This endpoint will contain all the information need to populate the adjudication
 
 
 
-[Next >>](9999-end.md)
+[Next >>](0003-arch-overview.md)

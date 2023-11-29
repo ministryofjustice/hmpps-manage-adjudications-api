@@ -33,7 +33,7 @@ before you start running the tests. Once done you can run the tests by running `
 `./gradlew bootRun --args='--spring.profiles.active=dev-local'`
 
 ## Architecture
-High Level architecture show below ![Architecture](doc/architecture/decisions/architecture.svg)
+High Level architecture show below ![Architecture](doc/architecture/decisions/arch-overview-adjudications.svg)
 
 Architecture decision records start [here](doc/architecture/decisions/0001-use-adr.md)
 
