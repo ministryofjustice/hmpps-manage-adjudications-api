@@ -678,34 +678,6 @@ class ReportedAdjudicationRepositoryTest {
   }
 
   @Test
-  fun `reports by prisoner and status and date`() {
-    reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM").also {
-        it.hearings.clear()
-        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
-        it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(1)
-      },
-    )
-
-    reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM2").also {
-        it.hearings.clear()
-        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
-        it.dateTimeOfDiscovery = LocalDateTime.now().plusDays(1)
-      },
-    )
-
-    val response = reportedAdjudicationRepository.findByOffenderBookingIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
-      offenderBookingId = 3L,
-      statuses = listOf(ReportedAdjudicationStatus.CHARGE_PROVED),
-      fromDate = LocalDateTime.now().minusYears(1),
-      toDate = LocalDateTime.now(),
-      pageable = Pageable.ofSize(10),
-    )
-    assertThat(response.content.size).isEqualTo(1)
-  }
-
-  @Test
   fun `reports by prisoner and agency`() {
     reportedAdjudicationRepository.save(
       entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM").also {
@@ -726,13 +698,13 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    val response = reportedAdjudicationRepository.findByOffenderBookingIdAndAgencyAndDate(
+    val response = reportedAdjudicationRepository.findAdjudicationsForBooking(
       offenderBookingId = 3L,
       statuses = listOf(ReportedAdjudicationStatus.CHARGE_PROVED.name),
       transferIgnoreStatuses = listOf("TEST"),
       startDate = LocalDateTime.now().minusYears(1),
       endDate = LocalDateTime.now(),
-      agencyId = "MDI",
+      agencies = listOf("MDI"),
       pageable = Pageable.ofSize(10),
     )
     assertThat(response.content.size).isEqualTo(2)

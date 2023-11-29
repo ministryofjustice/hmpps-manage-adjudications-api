@@ -99,16 +99,16 @@ class DraftAdjudicationRepositoryTest {
       )
       .contains(
         Tuple(
-          draft.offenceDetails!!.first().offenceCode,
-          draft.offenceDetails!!.first().victimPrisonersNumber,
-          draft.offenceDetails!!.first().victimStaffUsername,
-          draft.offenceDetails!!.first().victimOtherPersonsName,
+          draft.offenceDetails.first().offenceCode,
+          draft.offenceDetails.first().victimPrisonersNumber,
+          draft.offenceDetails.first().victimStaffUsername,
+          draft.offenceDetails.first().victimOtherPersonsName,
         ),
         Tuple(
-          draft.offenceDetails!!.last().offenceCode,
-          draft.offenceDetails!!.last().victimPrisonersNumber,
-          draft.offenceDetails!!.last().victimStaffUsername,
-          draft.offenceDetails!!.last().victimOtherPersonsName,
+          draft.offenceDetails.last().offenceCode,
+          draft.offenceDetails.last().victimPrisonersNumber,
+          draft.offenceDetails.last().victimStaffUsername,
+          draft.offenceDetails.last().victimOtherPersonsName,
         ),
       )
 
@@ -121,8 +121,8 @@ class DraftAdjudicationRepositoryTest {
       )
       .contains(
         Tuple(
-          draft.damages!!.first().code,
-          draft.damages!!.first().details,
+          draft.damages.first().code,
+          draft.damages.first().details,
         ),
       )
 
@@ -135,8 +135,8 @@ class DraftAdjudicationRepositoryTest {
       )
       .contains(
         Tuple(
-          draft.evidence!!.first().code,
-          draft.evidence!!.first().details,
+          draft.evidence.first().code,
+          draft.evidence.first().details,
         ),
       )
 
@@ -150,9 +150,9 @@ class DraftAdjudicationRepositoryTest {
       )
       .contains(
         Tuple(
-          draft.witnesses!!.first().code,
-          draft.witnesses!!.first().firstName,
-          draft.witnesses!!.first().lastName,
+          draft.witnesses.first().code,
+          draft.witnesses.first().firstName,
+          draft.witnesses.first().lastName,
         ),
       )
 
@@ -185,10 +185,10 @@ class DraftAdjudicationRepositoryTest {
       )
       .contains(
         Tuple(
-          updatedDraft.offenceDetails!!.first().offenceCode,
-          updatedDraft.offenceDetails!!.first().victimPrisonersNumber,
-          updatedDraft.offenceDetails!!.first().victimStaffUsername,
-          updatedDraft.offenceDetails!!.first().victimOtherPersonsName,
+          updatedDraft.offenceDetails.first().offenceCode,
+          updatedDraft.offenceDetails.first().victimPrisonersNumber,
+          updatedDraft.offenceDetails.first().victimStaffUsername,
+          updatedDraft.offenceDetails.first().victimOtherPersonsName,
         ),
       )
   }

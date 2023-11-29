@@ -254,6 +254,19 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.transferReviewTotal").isEqualTo(0)
   }
 
+  @Test
+  fun `get reports for booking`() {
+    initDataForUnScheduled()
+
+    webTestClient.get()
+      .uri("/reported-adjudications/booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}?status=UNSCHEDULED&agency=${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}&page=0&size=20")
+      .headers(setHeaders(username = "P_NESS"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(1)
+  }
+
   private fun initMyReportData() {
     val intTestData = integrationTestData()
 
