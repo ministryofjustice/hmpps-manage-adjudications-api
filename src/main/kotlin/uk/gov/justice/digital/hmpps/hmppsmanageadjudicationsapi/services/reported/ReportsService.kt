@@ -120,7 +120,27 @@ class ReportsService(
     )
   }
 
+  fun getAdjudicationsForBooking(
+    bookingId: Long,
+    startDate: LocalDate? = null,
+    endDate: LocalDate? = null,
+    agencies: List<String>,
+    statuses: List<ReportedAdjudicationStatus>,
+    pageable: Pageable,
+  ): Page<ReportedAdjudicationDto> =
+    reportedAdjudicationRepository.findAdjudicationsForBooking(
+      offenderBookingId = bookingId,
+      startDate = reportsFrom(startDate ?: minDate),
+      endDate = reportsTo(endDate ?: maxDate),
+      agencies = agencies,
+      statuses = statuses.map { it.name },
+      transferIgnoreStatuses = transferIgnoreStatuses.map { it.name },
+      pageable = pageable,
+    ).map { it.toDto() }
+
   companion object {
+    val minDate: LocalDate = LocalDate.of(1999, 1, 1)
+    val maxDate: LocalDate = LocalDate.of(2999, 1, 1)
     val transferReviewStatuses = listOf(
       ReportedAdjudicationStatus.UNSCHEDULED,
       ReportedAdjudicationStatus.REFER_POLICE,

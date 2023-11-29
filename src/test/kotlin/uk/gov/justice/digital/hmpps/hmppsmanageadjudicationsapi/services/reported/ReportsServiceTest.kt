@@ -301,6 +301,37 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class AdjudicationHistoryForBooking {
+
+    @Test
+    fun `gets all bookings for agency and status without any dates`() {
+      whenever(
+        reportedAdjudicationRepository.findAdjudicationsForBooking(any(), any(), any(), any(), any(), any(), any()),
+      ).thenReturn(
+        PageImpl(
+          listOf(
+            entityBuilder.reportedAdjudication().also {
+              it.createDateTime = LocalDateTime.now()
+              it.createdByUserId = ""
+            },
+          ),
+        ),
+      )
+
+      val response = reportsService.getAdjudicationsForBooking(
+        bookingId = 1,
+        statuses = listOf(ReportedAdjudicationStatus.SCHEDULED),
+        agencies = listOf("MDI"),
+        pageable = Pageable.ofSize(20).withPage(0),
+      )
+
+      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForBooking(any(), any(), any(), any(), any(), any(), any())
+
+      assertThat(response.content.size).isEqualTo(1)
+    }
+  }
+
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // not required.
   }
