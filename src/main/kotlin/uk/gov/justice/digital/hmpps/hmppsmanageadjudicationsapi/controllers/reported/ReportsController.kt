@@ -219,7 +219,7 @@ class ReportsController(
   @GetMapping("/report-counts")
   fun getReportCounts(): AgencyReportCountsDto = reportsService.getReportCounts()
 
-  @Operation(summary = "Get all reported adjudications for caseload")
+  @Operation(summary = "Get adjudications for an offender booking")
   @Parameters(
     Parameter(
       name = "page",
@@ -231,17 +231,22 @@ class ReportsController(
     ),
     Parameter(
       name = "sort",
-      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery DESC",
+      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to date_time_of_discovery DESC",
+    ),
+    Parameter(
+      name = "bookingId",
+      required = true,
+      description = "offender booking id",
     ),
     Parameter(
       name = "startDate",
       required = false,
-      description = "optional inclusive start date for results, default is today - 3 days",
+      description = "optional inclusive start date for results",
     ),
     Parameter(
       name = "endDate",
       required = false,
-      description = "optional inclusive end date for results, default is today",
+      description = "optional inclusive end date for results",
     ),
     Parameter(
       name = "status",
@@ -249,9 +254,9 @@ class ReportsController(
       description = "list of status filter for reports",
     ),
     Parameter(
-      name = "transfersOnly",
-      required = false,
-      description = "optional filter for transferred reports only",
+      name = "agency",
+      required = true,
+      description = "list of agencies to filter for reports, based on current booking",
     ),
   )
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
