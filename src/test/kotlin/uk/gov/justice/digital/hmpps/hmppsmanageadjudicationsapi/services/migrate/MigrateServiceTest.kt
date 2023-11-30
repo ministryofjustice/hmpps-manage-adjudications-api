@@ -5,9 +5,11 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 
 class MigrateServiceTest : ReportedAdjudicationTestBase() {
@@ -76,5 +78,21 @@ class MigrateServiceTest : ReportedAdjudicationTestBase() {
       migrateService.accept(migrationFixtures.ADULT_SINGLE_OFFENCE)
     }.isInstanceOf(DuplicateCreationException::class.java)
       .hasMessageContaining("already processed this record")
+  }
+
+  @Test
+  fun `ignore rejected records in DPS, if present in nomis `() {
+    whenever(reportedAdjudicationRepository.findByChargeNumberIn(any())).thenReturn(
+      listOf(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.REJECTED
+        },
+      ),
+    )
+
+    migrateService.accept(migrationFixtures.ADULT_SINGLE_OFFENCE)
+
+    verify(migrateNewRecordService, never()).accept(any())
+    verify(migrateExistingRecordService, never()).accept(any(), any())
   }
 }

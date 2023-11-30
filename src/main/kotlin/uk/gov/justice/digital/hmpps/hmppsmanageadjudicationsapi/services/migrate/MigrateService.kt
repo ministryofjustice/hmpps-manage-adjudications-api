@@ -5,8 +5,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.ChargeNumberMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.MigrateResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 
 class ExistingRecordConflictException(message: String) : RuntimeException(message)
@@ -41,7 +43,15 @@ class MigrateService(
 
     return if (existingRecord != null && adjudicationMigrateDto.offenceSequence == 1L) {
       if (featureFlagsConfig.skipExistingRecords) throw SkipExistingRecordException()
-
+      if (existingRecord.status == ReportedAdjudicationStatus.REJECTED) {
+        return MigrateResponse(
+          chargeNumberMapping = ChargeNumberMapping(
+            chargeNumber = existingRecord.chargeNumber,
+            oicIncidentId = adjudicationMigrateDto.oicIncidentId,
+            offenceSequence = adjudicationMigrateDto.offenceSequence,
+          ),
+        )
+      }
       migrateExistingRecordService.accept(
         adjudicationMigrateDto = adjudicationMigrateDto,
         existingAdjudication = existingRecord,
