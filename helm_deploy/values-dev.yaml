@@ -28,6 +28,7 @@ generic-service:
     FEATURE_ASYNC_HEARINGS: true
     FEATURE_ASYNC_PUNISHMENTS: true
     FEATURE_ASYNC_OUTCOMES: true
+    SERVICE_ACTIVE_PRISONS: "FNI,HHI"
 
   allowlist: null
 
