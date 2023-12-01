@@ -546,7 +546,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
               originatingAgencyId = "MDI",
             ),
           ),
-          PageRequest.of(0, 20, Sort.by("date_time_of_discovery").descending()),
+          PageRequest.of(0, 20, Sort.by("IncidentDetailsDateTimeOfDiscovery").descending()),
           2,
         ),
       )
