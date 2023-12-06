@@ -9,8 +9,11 @@ import org.hibernate.validator.constraints.Length
 data class ReportedOffence(
   override val id: Long? = null,
   var offenceCode: Int,
+  @field:Length(max = 7)
   var victimPrisonersNumber: String? = null,
+  @field:Length(max = 30)
   var victimStaffUsername: String? = null,
+  @field:Length(max = 100)
   var victimOtherPersonsName: String? = null,
   var nomisOffenceCode: String? = null,
   @field:Length(max = 350)
