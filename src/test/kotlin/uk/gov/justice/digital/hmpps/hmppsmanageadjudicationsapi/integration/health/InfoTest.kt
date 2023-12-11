@@ -35,7 +35,7 @@ class InfoTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody().jsonPath("activeAgencies").value<List<String>> {
-        assertThat(it.isEmpty())
+        assertThat(it.contains("***")).isTrue
       }
   }
 }

@@ -109,6 +109,6 @@ feature:
 
 service:
   active:
-    prisons: ${SERVICE_ACTIVE_PRISONS:}
+    prisons: ${SERVICE_ACTIVE_PRISONS:***}
 
 
