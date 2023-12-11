@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.10.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.11.0"
   id("jacoco")
   kotlin("plugin.spring") version "1.9.21"
   kotlin("plugin.jpa") version "1.9.21"
@@ -22,10 +22,10 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.apache.commons:commons-text:1.11.0")
   implementation("io.swagger:swagger-annotations:1.6.12")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.1.1")
-  implementation("io.opentelemetry:opentelemetry-api:1.32.0")
+  implementation("io.opentelemetry:opentelemetry-api:1.33.0")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:1.32.0")
 
   runtimeOnly("com.h2database:h2:2.2.224")
@@ -41,7 +41,7 @@ dependencies {
   testImplementation("org.flywaydb:flyway-core")
   testImplementation("org.testcontainers:localstack:1.19.3")
   testImplementation("org.testcontainers:postgresql:1.19.3")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.32.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.33.0")
 }
 
 allOpen {
