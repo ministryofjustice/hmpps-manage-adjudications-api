@@ -145,6 +145,38 @@ class LegacySyncServiceTest {
     )
   }
 
+  @Test
+  fun `create adjudication removes duplicate when associate is victim `() {
+    val now = LocalDateTime.now()
+    val reportedAdjudication = ReportedAdjudicationTestBase.entityBuilder.reportedAdjudication().also {
+      it.createdByUserId = ""
+      it.createDateTime = now
+      it.incidentRoleAssociatedPrisonersNumber = "A12347"
+      it.offenceDetails.first().victimPrisonersNumber = "A12347"
+      it.offenceDetails.first().victimStaffUsername = null
+      it.offenceDetails.first().victimOtherPersonsName = null
+    }
+
+    legacySyncService.publishAdjudication(reportedAdjudication)
+
+    verify(legacyNomisGateway, atLeastOnce()).publishAdjudication(
+      adjudicationDetailsToPublish = AdjudicationDetailsToPublish(
+        offenderNo = reportedAdjudication.prisonerNumber,
+        adjudicationNumber = reportedAdjudication.chargeNumber.toLong(),
+        reporterName = "",
+        reportedDateTime = now,
+        agencyId = reportedAdjudication.originatingAgencyId,
+        incidentLocationId = reportedAdjudication.locationId,
+        incidentTime = reportedAdjudication.dateTimeOfDiscovery,
+        statement = reportedAdjudication.statement,
+        offenceCodes = listOf(offenceCodeLookupService.getOffenceCode(1002, false).getNomisCodeWithOthers()),
+        victimStaffUsernames = emptyList(),
+        victimOffenderIds = emptyList(),
+        connectedOffenderIds = listOf("A12347"),
+      ),
+    )
+  }
+
   private fun existingReportedAdjudication(
     committedOnOwn: Boolean,
     isYouthOffender: Boolean,

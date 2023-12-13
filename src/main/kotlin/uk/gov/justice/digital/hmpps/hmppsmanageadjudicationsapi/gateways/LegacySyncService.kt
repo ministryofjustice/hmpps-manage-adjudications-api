@@ -21,6 +21,13 @@ class LegacySyncService(
 
   fun publishAdjudication(reportedAdjudication: ReportedAdjudication) {
     if (!featureFlagsConfig.adjudications) {
+      val associates = getAssociatedOffenders(
+        associatedPrisonersNumber = reportedAdjudication.incidentRoleAssociatedPrisonersNumber,
+      )
+      val victims = getVictimOffenders(
+        prisonerNumber = reportedAdjudication.prisonerNumber,
+        offenceDetails = reportedAdjudication.offenceDetails,
+      )
       legacyNomisGateway.publishAdjudication(
         AdjudicationDetailsToPublish(
           offenderNo = reportedAdjudication.prisonerNumber,
@@ -38,13 +45,8 @@ class LegacySyncService(
           incidentLocationId = reportedAdjudication.locationId,
           statement = reportedAdjudication.statement,
           offenceCodes = getNomisCodes(reportedAdjudication.incidentRoleCode, reportedAdjudication.offenceDetails, reportedAdjudication.isYouthOffender),
-          connectedOffenderIds = getAssociatedOffenders(
-            associatedPrisonersNumber = reportedAdjudication.incidentRoleAssociatedPrisonersNumber,
-          ),
-          victimOffenderIds = getVictimOffenders(
-            prisonerNumber = reportedAdjudication.prisonerNumber,
-            offenceDetails = reportedAdjudication.offenceDetails,
-          ),
+          connectedOffenderIds = associates,
+          victimOffenderIds = victims.filter { !associates.contains(it) },
           victimStaffUsernames = getVictimStaffUsernames(reportedAdjudication.offenceDetails),
         ),
       )
