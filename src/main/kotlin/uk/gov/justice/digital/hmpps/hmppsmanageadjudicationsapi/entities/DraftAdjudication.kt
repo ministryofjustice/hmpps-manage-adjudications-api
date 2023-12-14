@@ -53,7 +53,9 @@ data class DraftAdjudication(
   var damagesSaved: Boolean? = null,
   var evidenceSaved: Boolean? = null,
   var witnessesSaved: Boolean? = null,
+  @field:Length(max = 32)
   var createdOnBehalfOfOfficer: String? = null,
+  @field:Length(max = 4000)
   var createdOnBehalfOfReason: String? = null,
 ) : BaseEntity()
 

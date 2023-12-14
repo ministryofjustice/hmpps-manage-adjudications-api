@@ -79,7 +79,9 @@ data class ReportedAdjudication(
   @JoinColumn(name = "reported_adjudication_fk_id")
   var punishmentComments: MutableList<PunishmentComment>,
   var migrated: Boolean = false,
+  @field:Length(max = 32)
   var createdOnBehalfOfOfficer: String? = null,
+  @field:Length(max = 4000)
   var createdOnBehalfOfReason: String? = null,
 ) :
   BaseEntity() {
