@@ -464,7 +464,7 @@ class MigrateNewRecordService(
         else -> false
       }
 
-    private fun String.mapToPlea(finding: String): HearingOutcomePlea = when (this) {
+    fun String.mapToPlea(finding: String): HearingOutcomePlea = when (this) {
       Plea.NOT_GUILTY.name -> HearingOutcomePlea.NOT_GUILTY
       Plea.GUILTY.name -> HearingOutcomePlea.GUILTY
       Plea.NOT_ASKED.name -> HearingOutcomePlea.NOT_ASKED
