@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.hasReducedSanctions
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToHearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.mapToPlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toChargeMapping
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toDamages
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordService.Companion.toDisIssue
@@ -195,6 +196,7 @@ class MigrateExistingRecordService(
         hearingOutcomeNomis.hearingOutcome!!.adjudicator = nomisHearing.adjudicator ?: ""
         hearingOutcomeNomis.hearingOutcome!!.code = hearingOutcomeCode
         hearingOutcomeNomis.hearingOutcome!!.nomisOutcome = true
+        hearingOutcomeNomis.hearingOutcome!!.plea = nomisHearing.hearingResult.plea.mapToPlea(finding = nomisHearing.hearingResult.finding)
         if (hearingOutcomeCode == HearingOutcomeCode.ADJOURN) {
           hearingOutcomeNomis.hearingOutcome!!.details = nomisHearing.hearingResult.finding
           this.latestOutcome()?.let {
