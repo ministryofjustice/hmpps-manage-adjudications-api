@@ -143,7 +143,7 @@ data class MigratePunishment(
   val days: Int?,
   @Schema(description = "created by username")
   val createdBy: String,
-  @Schema(description = "created data time")
+  @Schema(description = "created date time")
   val createdDateTime: LocalDateTime,
 )
 
