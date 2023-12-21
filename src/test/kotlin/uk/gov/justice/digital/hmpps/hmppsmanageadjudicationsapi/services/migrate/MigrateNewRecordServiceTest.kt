@@ -444,6 +444,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.punishmentComments.first().comment).isEqualTo(dto.punishments.first().comment)
       assertThat(argumentCaptor.value.punishmentComments.first().nomisCreatedBy).isEqualTo(dto.punishments.first().createdBy)
+      assertThat(argumentCaptor.value.punishmentComments.first().actualCreatedDate).isEqualTo(dto.punishments.first().createdDateTime)
     }
 
     @Test

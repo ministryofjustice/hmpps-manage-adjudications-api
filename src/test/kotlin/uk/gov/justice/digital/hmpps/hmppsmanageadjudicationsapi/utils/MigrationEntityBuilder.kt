@@ -103,6 +103,7 @@ class MigrationEntityBuilder {
       days = days,
       effectiveDate = effectiveDate,
       createdBy = "NOMIS_USER",
+      createdDateTime = LocalDateTime.now(),
     )
 
   fun createHearing(
