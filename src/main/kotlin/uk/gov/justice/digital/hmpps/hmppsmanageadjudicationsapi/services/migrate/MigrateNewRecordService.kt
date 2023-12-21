@@ -361,7 +361,13 @@ class MigrateNewRecordService(
         punishments.add(sanction.mapToPunishment())
 
         sanction.comment?.let {
-          punishmentComments.add(PunishmentComment(comment = it, nomisCreatedBy = sanction.createdBy))
+          punishmentComments.add(
+            PunishmentComment(
+              comment = it,
+              nomisCreatedBy = sanction.createdBy,
+              actualCreatedDate = sanction.createdDateTime,
+            ),
+          )
         }
       }
 
