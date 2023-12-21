@@ -139,7 +139,7 @@ class ReportsService(
     ).map { it.toDto() }
 
   companion object {
-    val minDate: LocalDate = LocalDate.of(1970, 1, 1)
+    val minDate: LocalDate = LocalDate.of(1901, 1, 1)
     val maxDate: LocalDate = LocalDate.of(2999, 1, 1)
     val transferReviewStatuses = listOf(
       ReportedAdjudicationStatus.UNSCHEDULED,
