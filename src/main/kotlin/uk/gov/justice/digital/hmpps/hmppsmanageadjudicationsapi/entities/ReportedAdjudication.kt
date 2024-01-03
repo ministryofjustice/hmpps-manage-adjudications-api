@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -151,6 +152,7 @@ data class ReportedAdjudication(
   }
 }
 
+@Schema(description = "reported adjudication status codes")
 enum class ReportedAdjudicationStatus {
   @Deprecated("this is no longer used and remains for historic purposes - enabling for int tests phase 1")
   ACCEPTED,
