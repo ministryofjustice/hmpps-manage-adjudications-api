@@ -497,6 +497,38 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.punishmentComments.any { it.comment.contains("ADA is quashed in NOMIS") }).isTrue
     }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getCorruptedSuspendedPunishments")
+    @ParameterizedTest
+    fun `suspended punishment with unknown suspended until date corrupts record`(dto: AdjudicationMigrateDto) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
+      assertThat(argumentCaptor.value.getPunishments().first().suspendedUntil).isEqualTo(dto.punishments.first().createdDateTime.toLocalDate())
+      assertThat(argumentCaptor.value.punishmentComments.any { it.comment.contains("Suspended punishment suspended until date is unknown.  Currently set as created date") }).isTrue
+    }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getSuspendedPunishmentsForComments")
+    @ParameterizedTest
+    fun `suspended punishment where status date != effective date adds comment`(dto: AdjudicationMigrateDto) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      val punishment = dto.punishments.first()
+
+      assertThat(argumentCaptor.value.getPunishments().first().suspendedUntil).isEqualTo(
+        when (punishment.effectiveDate.isAfter(punishment.statusDate)) {
+          true -> punishment.effectiveDate
+          false -> punishment.statusDate
+        },
+      )
+      assertThat(argumentCaptor.value.punishmentComments.any { it.comment.contains("Suspended punishment data inconsistency effective date: ${punishment.effectiveDate} vs status date: ${punishment.statusDate}") }).isTrue
+    }
   }
 
   @Nested
@@ -1077,6 +1109,20 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
         migrationFixtures.PLEA_ISSUE_3,
         migrationFixtures.PLEA_ISSUE_4,
         migrationFixtures.PLEA_ISSUE_6,
+      ).stream()
+
+    @JvmStatic
+    fun getCorruptedSuspendedPunishments(): Stream<AdjudicationMigrateDto> =
+      listOf(
+        migrationFixtures.WITH_PUNISHMENT_SUSPENDED_CORRUPTED,
+        migrationFixtures.WITH_PUNISHMENT_SUSPENDED_CORRUPTED_2,
+      ).stream()
+
+    @JvmStatic
+    fun getSuspendedPunishmentsForComments(): Stream<AdjudicationMigrateDto> =
+      listOf(
+        migrationFixtures.WITH_PUNISHMENT_SUSPENDED_AND_EFFECITVE_DATE_GREATER,
+        migrationFixtures.WITH_PUNISHMENT_SUSPENDED_AND_STATUS_DATE_GREATER,
       ).stream()
   }
 }

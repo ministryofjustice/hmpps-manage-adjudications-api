@@ -1266,6 +1266,23 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.QUASHED)
       assertThat(argumentCaptor.value.getPunishments()).isNotEmpty
     }
+
+    @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getCorruptedSuspendedPunishments")
+    @ParameterizedTest
+    fun `suspended punishment with unknown suspended until date corrupts record`(dto: AdjudicationMigrateDto) {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateExistingRecordService.accept(
+        adjudicationMigrateDto = dto,
+        existingAdjudication = existing(dto).also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        },
+      )
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.getPunishments().first().suspendedUntil).isEqualTo(dto.punishments.first().createdDateTime.toLocalDate())
+      assertThat(argumentCaptor.value.punishmentComments.any { it.comment.contains("Suspended punishment suspended until date is unknown.  Currently set as created date") }).isTrue
+    }
   }
 
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {

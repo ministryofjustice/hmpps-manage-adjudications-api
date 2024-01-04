@@ -10,6 +10,7 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "punishment")
@@ -37,7 +38,7 @@ data class Punishment(
   var consecutiveChargeNumber: String? = null,
   @field:Length(max = 32)
   var nomisStatus: String? = null,
-
+  var actualCreatedDate: LocalDateTime? = null,
 ) : BaseEntity()
 
 enum class PunishmentType {
