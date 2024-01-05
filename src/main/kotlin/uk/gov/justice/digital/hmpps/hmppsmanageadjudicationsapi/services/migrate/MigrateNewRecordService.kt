@@ -76,6 +76,7 @@ class MigrateNewRecordService(
     )
     val punishments = punishmentsAndComments.first
     val punishmentComments = punishmentsAndComments.second
+
     punishmentComment?.let { punishmentComments.add(it) }
     val disIssued = adjudicationMigrateDto.disIssued.toDisIssue()
 
@@ -109,9 +110,7 @@ class MigrateNewRecordService(
       punishments = punishments.toMutableList(),
       punishmentComments = punishmentComments.toMutableList(),
       migrated = true,
-    ).also {
-      it.calculateStatus()
-    }
+    ).also { it.calculateStatus() }
 
     val saved = reportedAdjudicationRepository.save(reportedAdjudication).also {
       it.createDateTime = adjudicationMigrateDto.reportedDateTime
@@ -357,8 +356,8 @@ class MigrateNewRecordService(
       }
 
       this.forEach { sanction ->
-
-        punishments.add(sanction.mapToPunishment())
+        val mapped = sanction.mapToPunishment()
+        punishments.add(mapped.first)
 
         sanction.comment?.let {
           punishmentComments.add(
@@ -368,6 +367,9 @@ class MigrateNewRecordService(
               actualCreatedDate = sanction.createdDateTime,
             ),
           )
+        }
+        mapped.second.forEach {
+          punishmentComments.add(it)
         }
       }
 
@@ -490,7 +492,8 @@ class MigrateNewRecordService(
 
     private fun negativeFindingStates() = listOf(Finding.NOT_PROVEN.name, Finding.NOT_PROCEED.name, Finding.DISMISSED.name)
 
-    private fun MigratePunishment.mapToPunishment(): Punishment {
+    private fun MigratePunishment.mapToPunishment(): Pair<Punishment, List<PunishmentComment>> {
+      val additionalComments = mutableListOf<PunishmentComment>()
       val prospectiveStatuses = listOf(Status.PROSPECTIVE.name, Status.SUSP_PROSP.name)
       val typesWithoutDates = PunishmentType.additionalDays().plus(PunishmentType.CAUTION).plus(PunishmentType.DAMAGES_OWED)
       val type = when (this.sanctionCode) {
@@ -508,7 +511,27 @@ class MigrateNewRecordService(
       }
 
       val suspendedUntil = when (this.sanctionStatus) {
-        Status.SUSPENDED.name, Status.SUSP_PROSP.name, Status.SUSPEN_RED.name, Status.SUSPEN_EXT.name -> this.effectiveDate
+        Status.SUSPENDED.name, Status.SUSP_PROSP.name, Status.SUSPEN_RED.name, Status.SUSPEN_EXT.name -> when (this.statusDate) {
+          null -> if (this.effectiveDate == this.createdDateTime.toLocalDate()) {
+            additionalComments.add(
+              PunishmentComment(comment = "Suspended punishment suspended until date is unknown.  Currently set as created date"),
+            )
+            this.createdDateTime.toLocalDate()
+          } else {
+            this.effectiveDate
+          }
+          else -> if (this.effectiveDate == this.statusDate && this.statusDate == this.createdDateTime.toLocalDate()) {
+            additionalComments.add(
+              PunishmentComment(comment = "Suspended punishment suspended until date is unknown.  Currently set as created date"),
+            )
+            this.createdDateTime.toLocalDate()
+          } else {
+            additionalComments.add(
+              PunishmentComment(comment = "Suspended punishment data inconsistency effective date: ${this.effectiveDate} vs status date: ${this.statusDate}"),
+            )
+            if (this.effectiveDate.isAfter(this.statusDate)) this.effectiveDate else this.statusDate
+          }
+        }
         else -> null
       }
 
@@ -542,19 +565,23 @@ class MigrateNewRecordService(
         else -> null
       }
 
-      return Punishment(
-        type = type,
-        nomisStatus = this.sanctionStatus,
-        consecutiveChargeNumber = this.consecutiveChargeNumber,
-        stoppagePercentage = stoppagePercentage?.toInt(),
-        sanctionSeq = this.sanctionSeq,
-        suspendedUntil = suspendedUntil,
-        privilegeType = privilegeType,
-        otherPrivilege = otherPrivilege,
-        amount = amount?.toDouble(),
-        schedule = mutableListOf(
-          PunishmentSchedule(days = this.days ?: 0, startDate = startDate, endDate = endDate, suspendedUntil = suspendedUntil),
+      return Pair(
+        Punishment(
+          type = type,
+          nomisStatus = this.sanctionStatus,
+          consecutiveChargeNumber = this.consecutiveChargeNumber,
+          stoppagePercentage = stoppagePercentage?.toInt(),
+          sanctionSeq = this.sanctionSeq,
+          suspendedUntil = suspendedUntil,
+          privilegeType = privilegeType,
+          otherPrivilege = otherPrivilege,
+          amount = amount?.toDouble(),
+          actualCreatedDate = this.createdDateTime,
+          schedule = mutableListOf(
+            PunishmentSchedule(days = this.days ?: 0, startDate = startDate, endDate = endDate, suspendedUntil = suspendedUntil),
+          ),
         ),
+        additionalComments,
       )
     }
   }

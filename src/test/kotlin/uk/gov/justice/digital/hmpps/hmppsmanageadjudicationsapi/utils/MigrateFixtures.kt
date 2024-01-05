@@ -204,6 +204,50 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_PUNISHMENT_SUSPENDED_AND_STATUS_DATE_GREATER = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.ADA.name, effectiveDate = LocalDate.now().plusDays(1), statusDate = LocalDate.now().plusDays(2), status = Status.SUSPENDED.name),
+    ),
+  )
+
+  val WITH_PUNISHMENT_SUSPENDED_AND_EFFECITVE_DATE_GREATER = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.ADA.name, effectiveDate = LocalDate.now().plusDays(2), statusDate = LocalDate.now().plusDays(1), status = Status.SUSPENDED.name),
+    ),
+  )
+
+  val WITH_PUNISHMENT_SUSPENDED_CORRUPTED = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.ADA.name, effectiveDate = LocalDate.now(), statusDate = LocalDate.now(), status = Status.SUSPENDED.name),
+    ),
+  )
+
+  val WITH_PUNISHMENT_SUSPENDED_CORRUPTED_2 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.ADA.name, effectiveDate = LocalDate.now(), statusDate = null, status = Status.SUSPENDED.name),
+    ),
+  )
+
   val COMPLETE_CHARGE_PROVED = migrationEntityBuilder.createAdjudication(
     disIssued = listOf(DisIssued(issuingOfficer = "officer", dateTimeOfIssue = LocalDateTime.now())),
     damages = listOf(migrationEntityBuilder.createDamage()),

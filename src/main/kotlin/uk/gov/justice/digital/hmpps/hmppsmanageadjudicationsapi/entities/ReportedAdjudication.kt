@@ -114,7 +114,9 @@ data class ReportedAdjudication(
         if (this.getLatestHearing().isAdjourn()) {
           ReportedAdjudicationStatus.ADJOURNED
         } else {
-          if (this.getOutcomes().count { listOf(OutcomeCode.DISMISSED, OutcomeCode.CHARGE_PROVED, OutcomeCode.NOT_PROCEED).contains(it.code) } > 1) {
+          if (this.getOutcomes().count { listOf(OutcomeCode.DISMISSED, OutcomeCode.CHARGE_PROVED, OutcomeCode.NOT_PROCEED).contains(it.code) } > 1 ||
+            this.getPunishments().any { it.suspendedUntil != null && it.actualCreatedDate?.toLocalDate()?.isEqual(it.suspendedUntil) == true }
+          ) {
             ReportedAdjudicationStatus.CORRUPTED
           } else {
             this.getOutcomes().sortedByDescending { it.getCreatedDateTime() }.first().code.status

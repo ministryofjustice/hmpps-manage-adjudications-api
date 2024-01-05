@@ -92,6 +92,7 @@ class MigrationEntityBuilder {
     days: Int? = 1,
     effectiveDate: LocalDate = LocalDate.now(),
     consecutiveChargeNumber: String? = null,
+    statusDate: LocalDate? = null,
   ): MigratePunishment =
     MigratePunishment(
       sanctionCode = code,
@@ -104,6 +105,7 @@ class MigrationEntityBuilder {
       effectiveDate = effectiveDate,
       createdBy = "NOMIS_USER",
       createdDateTime = LocalDateTime.now(),
+      statusDate = statusDate,
     )
 
   fun createHearing(
