@@ -152,6 +152,8 @@ class PunishmentsService(
   fun getSuspendedPunishments(prisonerNumber: String, chargeNumber: String): List<SuspendedPunishmentDto> {
     val reportsWithSuspendedPunishments = getReportsWithSuspendedPunishments(prisonerNumber = prisonerNumber).filter {
       it.chargeNumber != chargeNumber
+    }.filter {
+      it.status != ReportedAdjudicationStatus.CORRUPTED
     }
     val includeAdditionalDays = includeAdditionalDays(chargeNumber)
 

@@ -1281,6 +1281,18 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           ),
         )
       },
+      entityBuilder.reportedAdjudication(chargeNumber = "5").also {
+        it.status = ReportedAdjudicationStatus.CORRUPTED
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.REMOVAL_WING,
+            suspendedUntil = LocalDate.now(),
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+            ),
+          ),
+        )
+      },
     )
 
     @Test
