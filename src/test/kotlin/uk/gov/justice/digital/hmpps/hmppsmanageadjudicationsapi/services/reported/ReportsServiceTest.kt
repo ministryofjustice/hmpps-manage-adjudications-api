@@ -332,6 +332,24 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class ReportsByPrisoner {
+
+    @Test
+    fun `returns reports for a prisoner`() {
+      whenever(reportedAdjudicationRepository.findByPrisonerNumber("A12345")).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication().also {
+            it.createDateTime = LocalDateTime.now()
+            it.createdByUserId = ""
+          },
+        ),
+      )
+      val response = reportsService.getReportsForPrisoner("A12345")
+      assertThat(response.isNotEmpty()).isTrue
+    }
+  }
+
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // not required.
   }

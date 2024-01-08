@@ -267,6 +267,20 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.content.size()").isEqualTo(1)
   }
 
+  @Test
+  fun `get reports for prisoner`() {
+    initDataForUnScheduled()
+
+    webTestClient.get()
+      .uri("/reported-adjudications/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}")
+      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ALL_ADJUDICATIONS")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.size()").isEqualTo(1)
+      .jsonPath("$.[0].prisonerNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber)
+  }
+
   private fun initMyReportData() {
     val intTestData = integrationTestData()
 
