@@ -300,4 +300,34 @@ class ReportsControllerTest : TestControllerBase() {
         )
     }
   }
+
+  @Nested
+  inner class GetAllReportsByPrisoner {
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      getAllReportsByPrisonerRequest()
+        .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ALL_ADJUDICATIONS"])
+    fun `responds successfully from issued details request `() {
+      whenever(
+        reportsService.getReportsForPrisoner(any()),
+      ).thenReturn(listOf(REPORTED_ADJUDICATION_DTO))
+
+      getAllReportsByPrisonerRequest()
+        .andExpect(MockMvcResultMatchers.status().isOk)
+      verify(reportsService, atLeastOnce()).getReportsForPrisoner("A12345")
+    }
+
+    private fun getAllReportsByPrisonerRequest(): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.get("/reported-adjudications/prisoner/A12345")
+            .header("Content-Type", "application/json"),
+        )
+    }
+  }
 }

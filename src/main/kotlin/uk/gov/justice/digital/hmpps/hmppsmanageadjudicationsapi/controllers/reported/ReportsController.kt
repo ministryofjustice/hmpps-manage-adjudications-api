@@ -280,4 +280,18 @@ class ReportsController(
     agencies = agencies,
     pageable = pageable,
   )
+
+  @Operation(summary = "Get all adjudications for a prisoner")
+  @Parameters(
+    Parameter(
+      name = "prisonerNumber",
+      required = true,
+      description = "prisoner number",
+    ),
+  )
+  @PreAuthorize("hasRole('ALL_ADJUDICATIONS')")
+  @GetMapping("/prisoner/{prisonerNumber}")
+  fun getAdjudicationsForPrisoner(
+    @PathVariable(name = "prisonerNumber") prisonerNumber: String,
+  ): List<ReportedAdjudicationDto> = reportsService.getReportsForPrisoner(prisonerNumber = prisonerNumber)
 }
