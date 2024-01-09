@@ -150,9 +150,9 @@ class PunishmentsService(
   }
 
   fun getSuspendedPunishments(prisonerNumber: String, chargeNumber: String): List<SuspendedPunishmentDto> {
-    val reportsWithSuspendedPunishments = getReportsWithSuspendedPunishments(prisonerNumber = prisonerNumber).filter {
-      it.chargeNumber != chargeNumber
-    }.toMutableList().union(getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber = prisonerNumber))
+    val reportsWithSuspendedPunishments = getReportsWithSuspendedPunishments(prisonerNumber = prisonerNumber).toMutableList()
+      .union(getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber = prisonerNumber))
+      .filter { it.chargeNumber != chargeNumber }
 
     val includeAdditionalDays = includeAdditionalDays(chargeNumber)
 
