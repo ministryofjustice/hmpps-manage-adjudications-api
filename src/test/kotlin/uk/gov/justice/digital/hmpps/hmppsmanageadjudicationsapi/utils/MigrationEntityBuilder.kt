@@ -93,6 +93,7 @@ class MigrationEntityBuilder {
     effectiveDate: LocalDate = LocalDate.now(),
     consecutiveChargeNumber: String? = null,
     statusDate: LocalDate? = null,
+    createdDateTime: LocalDateTime = LocalDateTime.now(),
   ): MigratePunishment =
     MigratePunishment(
       sanctionCode = code,
@@ -104,7 +105,7 @@ class MigrationEntityBuilder {
       days = days,
       effectiveDate = effectiveDate,
       createdBy = "NOMIS_USER",
-      createdDateTime = LocalDateTime.now(),
+      createdDateTime = createdDateTime,
       statusDate = statusDate,
     )
 

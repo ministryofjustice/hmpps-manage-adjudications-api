@@ -248,6 +248,23 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_PUNISHMENT_SUSPENDED_CORRUPTED_3 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(
+        createdDateTime = LocalDateTime.now().minusMonths(7),
+        code = OicSanctionCode.ADA.name,
+        effectiveDate = LocalDate.now().minusMonths(7),
+        statusDate = null,
+        status = Status.SUSPENDED.name,
+      ),
+    ),
+  )
+
   val COMPLETE_CHARGE_PROVED = migrationEntityBuilder.createAdjudication(
     disIssued = listOf(DisIssued(issuingOfficer = "officer", dateTimeOfIssue = LocalDateTime.now())),
     damages = listOf(migrationEntityBuilder.createDamage()),

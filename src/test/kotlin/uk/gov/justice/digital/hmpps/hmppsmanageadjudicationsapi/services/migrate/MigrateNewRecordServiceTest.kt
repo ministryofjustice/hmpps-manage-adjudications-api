@@ -506,9 +506,20 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       migrateNewRecordService.accept(dto)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED_PUNISHMENT)
       assertThat(argumentCaptor.value.getPunishments().first().suspendedUntil).isEqualTo(dto.punishments.first().createdDateTime.toLocalDate())
-      assertThat(argumentCaptor.value.punishmentComments.any { it.comment.contains("Suspended punishment suspended until date is unknown.  Currently set as created date") }).isTrue
+    }
+
+    @Test
+    fun `suspended punishment with unknown suspended until date does not corrupts record`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      val dto = migrationFixtures.WITH_PUNISHMENT_SUSPENDED_CORRUPTED_3
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.status).isNotEqualTo(ReportedAdjudicationStatus.CORRUPTED_PUNISHMENT)
+      assertThat(argumentCaptor.value.getPunishments().first().suspendedUntil).isEqualTo(dto.punishments.first().createdDateTime.toLocalDate())
     }
 
     @MethodSource("uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.MigrateNewRecordServiceTest#getSuspendedPunishmentsForComments")
@@ -527,7 +538,6 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
           false -> punishment.statusDate
         },
       )
-      assertThat(argumentCaptor.value.punishmentComments.any { it.comment.contains("Suspended punishment data inconsistency effective date: ${punishment.effectiveDate} vs status date: ${punishment.statusDate}") }).isTrue
     }
   }
 

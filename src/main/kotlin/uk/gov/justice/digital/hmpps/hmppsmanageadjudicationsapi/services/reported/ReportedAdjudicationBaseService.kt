@@ -381,6 +381,13 @@ open class ReportedAdjudicationBaseService(
     date = LocalDate.now().minusDays(1),
   )
 
+  protected fun getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber: String) =
+    reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(
+      prisonerNumber = prisonerNumber,
+      statuses = ReportedAdjudicationStatus.corruptedStatuses(),
+      date = LocalDate.now().minusMonths(6),
+    )
+
   protected fun getReportsWithActiveAdditionalDays(prisonerNumber: String, punishmentType: PunishmentType) =
     reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(prisonerNumber, punishmentType)
 
