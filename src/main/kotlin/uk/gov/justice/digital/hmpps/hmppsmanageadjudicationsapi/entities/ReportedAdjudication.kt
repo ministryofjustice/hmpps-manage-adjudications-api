@@ -14,6 +14,7 @@ import jakarta.validation.ValidationException
 import org.hibernate.validator.constraints.Length
 import org.jetbrains.annotations.TestOnly
 import java.lang.IllegalStateException
+import java.time.LocalDate
 import java.time.LocalDateTime
 @Entity
 @Table(name = "reported_adjudications")
@@ -114,10 +115,10 @@ data class ReportedAdjudication(
         if (this.getLatestHearing().isAdjourn()) {
           ReportedAdjudicationStatus.ADJOURNED
         } else {
-          if (this.getOutcomes().count { listOf(OutcomeCode.DISMISSED, OutcomeCode.CHARGE_PROVED, OutcomeCode.NOT_PROCEED).contains(it.code) } > 1 ||
-            this.getPunishments().any { it.suspendedUntil != null && it.actualCreatedDate?.toLocalDate()?.isEqual(it.suspendedUntil) == true }
-          ) {
+          if (this.getOutcomes().count { listOf(OutcomeCode.DISMISSED, OutcomeCode.CHARGE_PROVED, OutcomeCode.NOT_PROCEED).contains(it.code) } > 1) {
             ReportedAdjudicationStatus.CORRUPTED
+          } else if (this.getPunishments().any { it.isCorrupted() }) {
+            ReportedAdjudicationStatus.CORRUPTED_PUNISHMENT
           } else {
             this.getOutcomes().sortedByDescending { it.getCreatedDateTime() }.first().code.status
           }
@@ -145,12 +146,12 @@ data class ReportedAdjudication(
 
   fun clearPunishments() = this.punishments.clear()
 
-  fun removePunishment(punishment: Punishment) = this.punishments.remove(punishment)
-
   private fun Hearing?.isAdjourn() = this?.hearingOutcome?.code == HearingOutcomeCode.ADJOURN
 
   companion object {
     fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.getCreatedDateTime()!! }
+    fun Punishment.isCorrupted(): Boolean =
+      this.suspendedUntil != null && this.actualCreatedDate?.toLocalDate()?.isEqual(this.suspendedUntil) == true && this.actualCreatedDate?.toLocalDate()?.isAfter(LocalDate.now().minusMonths(6)) == true
   }
 }
 
@@ -209,7 +210,11 @@ enum class ReportedAdjudicationStatus {
   },
   QUASHED,
   CORRUPTED,
-  ;
+  CORRUPTED_PUNISHMENT {
+    override fun nextStates(): List<ReportedAdjudicationStatus> {
+      return listOf(CHARGE_PROVED)
+    }
+  }, ;
   open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
   fun canTransitionFrom(from: ReportedAdjudicationStatus): Boolean {
     val to = this
@@ -230,6 +235,8 @@ enum class ReportedAdjudicationStatus {
   companion object {
     fun issuableStatuses() = listOf(SCHEDULED, UNSCHEDULED)
     fun issuableStatusesForPrint() = listOf(SCHEDULED)
+
+    fun corruptedStatuses() = listOf(CORRUPTED_PUNISHMENT, CORRUPTED)
 
     fun ReportedAdjudicationStatus.validateTransition(vararg next: ReportedAdjudicationStatus) {
       next.toList().forEach {

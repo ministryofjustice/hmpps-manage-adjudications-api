@@ -521,6 +521,7 @@ class PunishmentsControllerTest : TestControllerBase() {
     val SUSPENDED_PUNISHMENTS_DTO = listOf(
       SuspendedPunishmentDto(
         chargeNumber = "1",
+        corrupted = false,
         punishment =
         PunishmentDto(
           type = PunishmentType.REMOVAL_WING,

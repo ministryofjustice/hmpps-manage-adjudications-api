@@ -284,6 +284,8 @@ data class PunishmentScheduleDto(
 data class SuspendedPunishmentDto(
   @Schema(description = "charge number punishment from")
   val chargeNumber: String,
+  @Schema(description = "indicates there is something wrong with this suspended punishment, and its within the last 6 months")
+  val corrupted: Boolean,
   @Schema(description = "punishment dto")
   val punishment: PunishmentDto,
 )

@@ -1281,29 +1281,34 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           ),
         )
       },
-      entityBuilder.reportedAdjudication(chargeNumber = "5").also {
-        it.status = ReportedAdjudicationStatus.CORRUPTED
-        it.addPunishment(
-          Punishment(
-            type = PunishmentType.REMOVAL_WING,
-            suspendedUntil = LocalDate.now(),
-            schedule = mutableListOf(
-              PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
-            ),
-          ),
-        )
-      },
     )
 
     @Test
     fun `get suspended punishments `() {
       whenever(reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any())).thenReturn(reportedAdjudications)
+      whenever(reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication(chargeNumber = "5").also {
+            it.status = ReportedAdjudicationStatus.CORRUPTED
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.REMOVAL_WING,
+                suspendedUntil = LocalDate.now(),
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+                ),
+              ),
+            )
+          },
+        ),
+      )
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
       val suspended = punishmentsService.getSuspendedPunishments("AE1234", chargeNumber = "1")
 
       val removalWing = suspended.first { it.punishment.type == PunishmentType.REMOVAL_WING }
 
-      assertThat(suspended.size).isEqualTo(1)
+      assertThat(suspended.size).isEqualTo(2)
+      assertThat(suspended.any { it.corrupted }).isTrue
       assertThat(removalWing.chargeNumber).isEqualTo("2")
       assertThat(removalWing.punishment.type).isEqualTo(PunishmentType.REMOVAL_WING)
       assertThat(removalWing.punishment.schedule.days).isEqualTo(10)

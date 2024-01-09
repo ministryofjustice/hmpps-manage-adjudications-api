@@ -513,22 +513,13 @@ class MigrateNewRecordService(
       val suspendedUntil = when (this.sanctionStatus) {
         Status.SUSPENDED.name, Status.SUSP_PROSP.name, Status.SUSPEN_RED.name, Status.SUSPEN_EXT.name -> when (this.statusDate) {
           null -> if (this.effectiveDate == this.createdDateTime.toLocalDate()) {
-            additionalComments.add(
-              PunishmentComment(comment = "Suspended punishment suspended until date is unknown.  Currently set as created date"),
-            )
             this.createdDateTime.toLocalDate()
           } else {
             this.effectiveDate
           }
           else -> if (this.effectiveDate == this.statusDate && this.statusDate == this.createdDateTime.toLocalDate()) {
-            additionalComments.add(
-              PunishmentComment(comment = "Suspended punishment suspended until date is unknown.  Currently set as created date"),
-            )
             this.createdDateTime.toLocalDate()
           } else {
-            additionalComments.add(
-              PunishmentComment(comment = "Suspended punishment data inconsistency effective date: ${this.effectiveDate} vs status date: ${this.statusDate}"),
-            )
             if (this.effectiveDate.isAfter(this.statusDate)) this.effectiveDate else this.statusDate
           }
         }

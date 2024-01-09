@@ -1281,7 +1281,6 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.getPunishments().first().suspendedUntil).isEqualTo(dto.punishments.first().createdDateTime.toLocalDate())
-      assertThat(argumentCaptor.value.punishmentComments.any { it.comment.contains("Suspended punishment suspended until date is unknown.  Currently set as created date") }).isTrue
     }
   }
 
