@@ -274,6 +274,31 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `get active punishments for offender booking id`() {
+    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    initDataForUnScheduled(IntegrationTestData.DEFAULT_ADJUDICATION_OVERRIDE).createHearing().createChargeProved()
+
+    createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false)
+      .expectStatus().isCreated
+
+    webTestClient.get()
+      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}/active")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_VIEW_ADJUDICATIONS")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.size()").isEqualTo(1)
+      .jsonPath("$.[0].chargeNumber").isEqualTo(scenario.getGeneratedChargeNumber())
+      .jsonPath("$.[0].punishmentType").isEqualTo(PunishmentType.CONFINEMENT.name)
+      .jsonPath("$.[0].days").isEqualTo(10)
+      .jsonPath("$.[0].startDate").isEqualTo(
+        LocalDate.now().plusMonths(1).format(
+          DateTimeFormatter.ISO_DATE,
+        ),
+      )
+  }
+
+  @Test
   fun `create punishment comment `() {
     val scenario = initDataForUnScheduled()
 
@@ -351,6 +376,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     chargeNumber: String,
     type: PunishmentType = PunishmentType.CONFINEMENT,
     consecutiveChargeNumber: String? = null,
+    isSuspended: Boolean = true,
   ): WebTestClient.ResponseSpec {
     val suspendedUntil = LocalDate.now().plusMonths(1)
 
@@ -364,7 +390,9 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
               PunishmentRequest(
                 type = type,
                 days = 10,
-                suspendedUntil = suspendedUntil,
+                suspendedUntil = if (isSuspended) suspendedUntil else null,
+                startDate = if (isSuspended) null else suspendedUntil,
+                endDate = if (isSuspended) null else suspendedUntil.plusDays(10),
                 consecutiveChargeNumber = consecutiveChargeNumber,
               ),
             ),

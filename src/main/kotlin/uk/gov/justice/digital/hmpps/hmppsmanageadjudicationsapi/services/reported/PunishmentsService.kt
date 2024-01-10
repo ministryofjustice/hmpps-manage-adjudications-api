@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ActivePunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentCommentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdditionalDaysDto
@@ -66,7 +67,12 @@ class PunishmentsService(
           activateSuspendedPunishment(chargeNumber = chargeNumber, punishmentRequest = it),
         )
       } else {
-        reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = it))
+        reportedAdjudication.addPunishment(
+          createNewPunishment(
+            punishmentRequest = it,
+            hearingDate = reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate(),
+          ),
+        )
       }
     }
 
@@ -100,7 +106,12 @@ class PunishmentsService(
 
       when (punishmentRequest.id) {
         null -> when (punishmentRequest.activatedFrom) {
-          null -> reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = punishmentRequest))
+          null -> reportedAdjudication.addPunishment(
+            createNewPunishment(
+              punishmentRequest = punishmentRequest,
+              hearingDate = reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate(),
+            ),
+          )
           // this is related to manual activation (to be removed post migration) where there is no id to clone
           else -> reportedAdjudication.addPunishment(activateSuspendedPunishment(chargeNumber = chargeNumber, punishmentRequest = punishmentRequest))
         }
@@ -118,7 +129,12 @@ class PunishmentsService(
                 else -> {
                   punishmentToAmend.type.consecutiveReportValidation(chargeNumber).let {
                     punishmentToAmend.deleted = true
-                    reportedAdjudication.addPunishment(createNewPunishment(punishmentRequest = punishmentRequest))
+                    reportedAdjudication.addPunishment(
+                      createNewPunishment(
+                        punishmentRequest = punishmentRequest,
+                        hearingDate = reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate(),
+                      ),
+                    )
                   }
                 }
               }
@@ -139,14 +155,6 @@ class PunishmentsService(
     )
 
     return saveToDto(reportedAdjudication)
-  }
-
-  private fun PunishmentType.consecutiveReportValidation(chargeNumber: String) {
-    if (PunishmentType.additionalDays().contains(this)) {
-      if (isLinkedToReport(chargeNumber, listOf(this))) {
-        throw ValidationException("Unable to modify: $this is linked to another report")
-      }
-    }
   }
 
   fun getSuspendedPunishments(prisonerNumber: String, chargeNumber: String): List<SuspendedPunishmentDto> {
@@ -204,6 +212,26 @@ class PunishmentsService(
       }.flatten()
   }
 
+  fun getActivePunishments(offenderBookingId: Long): List<ActivePunishmentDto> =
+    getReportsWithActivePunishments(offenderBookingId = offenderBookingId)
+      .map { reportedAdjudication ->
+        reportedAdjudication.getPunishments().filter { it.isActive() }.map {
+          val latestSchedule = it.schedule.latestSchedule()
+          ActivePunishmentDto(
+            punishmentType = it.type,
+            privilegeType = it.privilegeType,
+            otherPrivilege = it.otherPrivilege,
+            chargeNumber = reportedAdjudication.chargeNumber,
+            startDate = latestSchedule.startDate,
+            lastDay = latestSchedule.endDate,
+            days = if (latestSchedule.days == 0) null else latestSchedule.days,
+            amount = it.amount,
+            stoppagePercentage = it.stoppagePercentage,
+            activatedFrom = it.activatedFromChargeNumber,
+          )
+        }
+      }.flatten().sortedByDescending { it.startDate }
+
   fun createPunishmentComment(
     chargeNumber: String,
     punishmentComment: PunishmentCommentRequest,
@@ -250,12 +278,20 @@ class PunishmentsService(
     return saveToDto(reportedAdjudication)
   }
 
+  private fun PunishmentType.consecutiveReportValidation(chargeNumber: String) {
+    if (PunishmentType.additionalDays().contains(this)) {
+      if (isLinkedToReport(chargeNumber, listOf(this))) {
+        throw ValidationException("Unable to modify: $this is linked to another report")
+      }
+    }
+  }
+
   private fun includeAdditionalDays(chargeNumber: String): Boolean {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
     return OicHearingType.inadTypes().contains(reportedAdjudication.getLatestHearing()?.oicHearingType)
   }
 
-  private fun createNewPunishment(punishmentRequest: PunishmentRequest): Punishment =
+  private fun createNewPunishment(punishmentRequest: PunishmentRequest, hearingDate: LocalDate? = null): Punishment =
     Punishment(
       type = punishmentRequest.type,
       privilegeType = punishmentRequest.privilegeType,
@@ -265,7 +301,8 @@ class PunishmentsService(
       consecutiveChargeNumber = punishmentRequest.consecutiveChargeNumber,
       amount = punishmentRequest.damagesOwedAmount,
       schedule = when (punishmentRequest.type) {
-        PunishmentType.CAUTION, PunishmentType.DAMAGES_OWED -> mutableListOf(PunishmentSchedule(days = 0))
+        PunishmentType.CAUTION -> mutableListOf(PunishmentSchedule(days = 0))
+        PunishmentType.DAMAGES_OWED -> mutableListOf(PunishmentSchedule(days = 0, startDate = hearingDate))
         else -> mutableListOf(
           PunishmentSchedule(
             days = punishmentRequest.days!!,
@@ -401,5 +438,8 @@ class PunishmentsService(
     fun ReportedAdjudication.includeAdaWithSameHearingDateAndSeparateCharge(currentAdjudication: ReportedAdjudication): Boolean =
       this.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() == currentAdjudication.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() &&
         this.chargeNumber != currentAdjudication.chargeNumber
+
+    fun Punishment.isActive(): Boolean =
+      this.suspendedUntil == null && this.schedule.latestSchedule().startDate?.isAfter(LocalDate.now().minusDays(1)) == true
   }
 }
