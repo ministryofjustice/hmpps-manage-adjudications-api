@@ -68,13 +68,37 @@ data class PunishmentCommentRequest(
   val reasonForChange: ReasonForChange? = null,
 )
 
-@PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
+@Schema(description = "active punishment dto")
+data class ActivePunishmentDto(
+  @Schema(description = "charge number")
+  val chargeNumber: String,
+  @Schema(description = "punishment type")
+  val punishmentType: PunishmentType,
+  @Schema(description = "privilege type")
+  val privilegeType: PrivilegeType? = null,
+  @Schema(description = "other privilege description")
+  val otherPrivilege: String? = null,
+  @Schema(description = "days applied")
+  val days: Int? = null,
+  @Schema(description = "start date")
+  val startDate: LocalDate? = null,
+  @Schema(description = "last day")
+  val lastDay: LocalDate? = null,
+  @Schema(description = "amount")
+  val amount: Double? = null,
+  @Schema(description = "stoppage percentage")
+  val stoppagePercentage: Int? = null,
+  @Schema(description = "activated from report")
+  val activatedFrom: String? = null,
+)
+
 @RestController
 @Tag(name = "30. Punishments")
 class PunishmentsController(
   private val punishmentsService: PunishmentsService,
 ) : ReportedAdjudicationBaseController() {
 
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @PostMapping(value = ["/{chargeNumber}/punishments/v2"])
   @ResponseStatus(HttpStatus.CREATED)
   fun createV2(
@@ -95,6 +119,7 @@ class PunishmentsController(
       },
     )
 
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @Operation(summary = "updates a set of punishments")
   @PutMapping(value = ["/{chargeNumber}/punishments/v2"])
   @ResponseStatus(HttpStatus.OK)
@@ -116,6 +141,7 @@ class PunishmentsController(
       },
     )
 
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @Operation(summary = "get a list of suspended punishments by prisoner")
   @GetMapping(value = ["/punishments/{prisonerNumber}/suspended/v2"])
   @ResponseStatus(HttpStatus.OK)
@@ -125,6 +151,7 @@ class PunishmentsController(
   ): List<SuspendedPunishmentDto> =
     punishmentsService.getSuspendedPunishments(prisonerNumber = prisonerNumber, chargeNumber = chargeNumber)
 
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @Operation(summary = "get a list of active additional days reports by prisoner for a consecutive punishment")
   @GetMapping(value = ["/punishments/{prisonerNumber}/for-consecutive"])
   @ResponseStatus(HttpStatus.OK)
@@ -139,6 +166,16 @@ class PunishmentsController(
       punishmentType = punishmentType,
     )
 
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
+  @Operation(summary = "get a list of active punishments by offenderBookingId")
+  @GetMapping(value = ["/punishments/{offenderBookingId}/active"])
+  @ResponseStatus(HttpStatus.OK)
+  fun getActivePunishments(
+    @PathVariable(name = "offenderBookingId") offenderBookingId: Long,
+  ): List<ActivePunishmentDto> =
+    punishmentsService.getActivePunishments(offenderBookingId = offenderBookingId)
+
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @Operation(
     summary = "create punishment comment",
     responses = [
@@ -172,6 +209,7 @@ class PunishmentsController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @Operation(
     summary = "update punishment comment",
     responses = [
@@ -205,6 +243,7 @@ class PunishmentsController(
     return ReportedAdjudicationResponse(reportedAdjudication)
   }
 
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @Operation(
     summary = "delete punishment comment",
     responses = [

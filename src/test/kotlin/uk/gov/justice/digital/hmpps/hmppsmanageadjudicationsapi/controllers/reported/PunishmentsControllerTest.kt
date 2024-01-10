@@ -515,6 +515,47 @@ class PunishmentsControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class GetActivePunishments {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        punishmentsService.getActivePunishments(
+          ArgumentMatchers.anyLong(),
+        ),
+      ).thenReturn(
+        listOf(
+          ActivePunishmentDto(
+            chargeNumber = "1234",
+            punishmentType = PunishmentType.REMOVAL_WING,
+          ),
+        ),
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      activePunishmentsRequest().andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
+    fun `makes a call to get active punishments`() {
+      activePunishmentsRequest()
+        .andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(punishmentsService).getActivePunishments(any())
+    }
+
+    private fun activePunishmentsRequest(): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.get("/reported-adjudications/punishments/1234567/active")
+            .header("Content-Type", "application/json"),
+        )
+    }
+  }
+
   companion object {
     val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 10)
     val PUNISHMENT_COMMENT_REQUEST = PunishmentCommentRequest(comment = "some text")

@@ -1846,6 +1846,134 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class GetActivePunishments {
+
+    @Test
+    fun `get damages owed`() {
+      whenever(
+        reportedAdjudicationRepository.findByOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+          any(),
+          any(),
+        ),
+      ).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication().also {
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.DAMAGES_OWED,
+                amount = 5.5,
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 0, startDate = LocalDate.now()),
+                ),
+              ),
+            )
+          },
+        ),
+      )
+
+      val response = punishmentsService.getActivePunishments(offenderBookingId = 1)
+
+      assertThat(response.first().amount).isNotNull
+      assertThat(response.first().stoppagePercentage).isNull()
+      assertThat(response.first().punishmentType).isEqualTo(PunishmentType.DAMAGES_OWED)
+      assertThat(response.first().startDate).isEqualTo(LocalDate.now())
+      assertThat(response.first().lastDay).isNull()
+      assertThat(response.first().days).isNull()
+    }
+
+    @Test
+    fun `get activated from with other privilege`() {
+      whenever(
+        reportedAdjudicationRepository.findByOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+          any(),
+          any(),
+        ),
+      ).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication().also {
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.PRIVILEGE,
+                privilegeType = PrivilegeType.OTHER,
+                activatedFromChargeNumber = "12345",
+                otherPrivilege = "test",
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 5, startDate = LocalDate.now(), endDate = LocalDate.now().plusDays(5)),
+                ),
+              ),
+            )
+          },
+        ),
+      )
+
+      val response = punishmentsService.getActivePunishments(offenderBookingId = 1)
+
+      assertThat(response.first().amount).isNull()
+      assertThat(response.first().stoppagePercentage).isNull()
+      assertThat(response.first().punishmentType).isEqualTo(PunishmentType.PRIVILEGE)
+      assertThat(response.first().privilegeType).isEqualTo(PrivilegeType.OTHER)
+      assertThat(response.first().otherPrivilege).isNotNull
+      assertThat(response.first().startDate).isEqualTo(LocalDate.now())
+      assertThat(response.first().lastDay).isEqualTo(LocalDate.now().plusDays(5))
+      assertThat(response.first().days).isNotNull
+      assertThat(response.first().activatedFrom).isEqualTo("12345")
+    }
+
+    @Test
+    fun `get with stoppage percentage`() {
+      whenever(
+        reportedAdjudicationRepository.findByOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+          any(),
+          any(),
+        ),
+      ).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication().also {
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.EARNINGS,
+                stoppagePercentage = 90,
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 0, startDate = LocalDate.now(), endDate = LocalDate.now()),
+                ),
+              ),
+            )
+          },
+          entityBuilder.reportedAdjudication().also {
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.EARNINGS,
+                stoppagePercentage = 90,
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 0, startDate = LocalDate.now().minusDays(2), endDate = LocalDate.now()),
+                ),
+              ),
+            )
+          },
+          entityBuilder.reportedAdjudication().also {
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.EARNINGS,
+                suspendedUntil = LocalDate.now(),
+                stoppagePercentage = 90,
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 0, startDate = LocalDate.now().minusDays(2), endDate = LocalDate.now()),
+                ),
+              ),
+            )
+          },
+        ),
+      )
+
+      val response = punishmentsService.getActivePunishments(offenderBookingId = 1)
+
+      assertThat(response.size).isEqualTo(1)
+      assertThat(response.first().amount).isNull()
+      assertThat(response.first().stoppagePercentage).isNotNull
+    }
+  }
+
   companion object {
 
     fun getRequest(id: Long? = null, type: PunishmentType, startDate: LocalDate? = null, endDate: LocalDate? = null): PunishmentRequest =

@@ -394,6 +394,11 @@ open class ReportedAdjudicationBaseService(
   protected fun isLinkedToReport(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean =
     reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn(consecutiveChargeNumber, types).isNotEmpty()
 
+  protected fun getReportsWithActivePunishments(offenderBookingId: Long): List<ReportedAdjudication> =
+    reportedAdjudicationRepository.findByOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+      offenderBookingId = offenderBookingId,
+      cutOff = LocalDate.now().minusDays(1),
+    )
   companion object {
     fun throwEntityNotFoundException(id: String): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")

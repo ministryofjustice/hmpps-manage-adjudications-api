@@ -163,6 +163,43 @@ class ReportedAdjudicationRepositoryTest {
         it.lastModifiedAgencyId = "MDI"
       },
     )
+
+    entityManager.persistAndFlush(
+      entityBuilder.reportedAdjudication(
+        chargeNumber = "199777",
+        dateTime = dateTimeOfIncident.plusHours(1),
+        agencyId = "BXI",
+        hearingId = null,
+        offenderBookingId = 1L,
+      ).also {
+        it.hearings.clear()
+        it.hearings.add(
+          Hearing(
+            dateTimeOfHearing = LocalDateTime.now(),
+            locationId = 1,
+            agencyId = "",
+            chargeNumber = "",
+            oicHearingType = OicHearingType.GOV_ADULT,
+            hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
+          ),
+        )
+        it.clearOutcomes()
+        it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.DAMAGES_OWED,
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 0, startDate = LocalDate.now()),
+            ),
+          ),
+        )
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfIssue = LocalDateTime.now()
+        it.dateTimeOfFirstHearing = LocalDateTime.now()
+        it.overrideAgencyId = "MDI"
+        it.lastModifiedAgencyId = "MDI"
+      },
+    )
   }
 
   @Test
@@ -708,5 +745,15 @@ class ReportedAdjudicationRepositoryTest {
       pageable = Pageable.ofSize(10),
     )
     assertThat(response.content.size).isEqualTo(2)
+  }
+
+  @Test
+  fun `get active punishments`() {
+    assertThat(
+      reportedAdjudicationRepository.findByOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+        1L,
+        LocalDate.now().minusDays(1),
+      ).size,
+    ).isEqualTo(1)
   }
 }
