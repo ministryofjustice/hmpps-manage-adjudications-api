@@ -13,6 +13,7 @@ import jakarta.persistence.Table
 import jakarta.validation.ValidationException
 import org.hibernate.validator.constraints.Length
 import org.jetbrains.annotations.TestOnly
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -115,7 +116,9 @@ data class ReportedAdjudication(
         if (this.getLatestHearing().isAdjourn()) {
           ReportedAdjudicationStatus.ADJOURNED
         } else {
-          if (this.getOutcomes().count { listOf(OutcomeCode.DISMISSED, OutcomeCode.CHARGE_PROVED, OutcomeCode.NOT_PROCEED).contains(it.code) } > 1) {
+          if (this.getOutcomes().count { listOf(OutcomeCode.DISMISSED, OutcomeCode.CHARGE_PROVED, OutcomeCode.NOT_PROCEED).contains(it.code) } > 1 ||
+            this.latestOutcome()?.code == OutcomeCode.PROSECUTION && this.getPunishments().isNotEmpty()
+          ) {
             ReportedAdjudicationStatus.CORRUPTED
           } else if (this.getPunishments().any { it.isCorrupted() }) {
             ReportedAdjudicationStatus.CORRUPTED_PUNISHMENT
@@ -239,6 +242,7 @@ enum class ReportedAdjudicationStatus {
     fun corruptedStatuses() = listOf(CORRUPTED_PUNISHMENT, CORRUPTED)
 
     fun ReportedAdjudicationStatus.validateTransition(vararg next: ReportedAdjudicationStatus) {
+      if (this == CORRUPTED) return
       next.toList().forEach {
         if (this != it && !this.canTransitionTo(it)) throw ValidationException("Invalid status transition ${this.name} - ${it.name}")
       }

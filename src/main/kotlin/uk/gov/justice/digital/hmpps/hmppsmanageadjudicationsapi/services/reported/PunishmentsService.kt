@@ -408,7 +408,7 @@ class PunishmentsService(
     }
 
     fun ReportedAdjudication.validateCanAddPunishments() {
-      if (this.status != ReportedAdjudicationStatus.CHARGE_PROVED) {
+      if (!listOf(ReportedAdjudicationStatus.CHARGE_PROVED, ReportedAdjudicationStatus.CORRUPTED_PUNISHMENT, ReportedAdjudicationStatus.CORRUPTED_PUNISHMENT).contains(this.status)) {
         throw ValidationException("status is not CHARGE_PROVED")
       }
     }

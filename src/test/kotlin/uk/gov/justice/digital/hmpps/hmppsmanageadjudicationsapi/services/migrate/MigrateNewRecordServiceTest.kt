@@ -511,6 +511,16 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `prosecuted with punishments will set status to corrupted`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(migrationFixtures.PROSECUTED_WITH_PUNISHMENTS)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
+    }
+
+    @Test
     fun `suspended punishment with unknown suspended until date does not corrupts record`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       val dto = migrationFixtures.WITH_PUNISHMENT_SUSPENDED_CORRUPTED_3

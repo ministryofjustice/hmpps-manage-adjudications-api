@@ -52,14 +52,6 @@ data class AmendOutcomeRequest(
   val quashedReason: QuashedReason? = null,
 )
 
-@Schema(description = "repair a broken adjudication")
-data class RepairRequest(
-  @Schema(description = "the outcome that takes precedence")
-  val correctOutcomeCode: OutcomeCode,
-  @Schema(description = "the outcome that is wrong")
-  val incorrectOutcomeCode: OutcomeCode,
-)
-
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
 @RestController
 @Tag(name = "31. Outcomes")
@@ -315,16 +307,4 @@ class OutcomeController(
         )
       },
     )
-
-  @Operation(summary = "repairs a broken adjudication by providing the outcome that takes precedence")
-  @PutMapping(value = ["/{chargeNumber}/repair"])
-  @ResponseStatus(HttpStatus.OK)
-  fun repair(
-    @PathVariable(name = "chargeNumber") chargeNumber: String,
-    @RequestBody repairRequest: RepairRequest,
-  ): ReportedAdjudicationResponse = outcomeService.repair(
-    chargeNumber = chargeNumber,
-    correctOutcomeCode = repairRequest.correctOutcomeCode,
-    incorrectOutcomeCode = repairRequest.incorrectOutcomeCode,
-  ).toResponse()
 }

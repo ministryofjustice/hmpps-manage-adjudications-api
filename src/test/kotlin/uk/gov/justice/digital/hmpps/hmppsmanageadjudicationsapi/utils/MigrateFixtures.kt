@@ -26,6 +26,19 @@ class MigrateFixtures {
     reportedDateTime = reportedDateTime,
   )
 
+  val PROSECUTED_WITH_PUNISHMENTS = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(
+          finding = Finding.PROSECUTED.name,
+        ),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(),
+    ),
+  )
+
   val YOUTH_SINGLE_OFFENCE = migrationEntityBuilder.createAdjudication(
     offence = migrationEntityBuilder.createOffence(offenceCode = "55:12"),
   )
@@ -750,20 +763,6 @@ class MigrateFixtures {
       migrationEntityBuilder.createHearing(hearingDateTime = LocalDateTime.now().plusDays(1), hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.APPEAL.name)),
     ),
     punishments = if (reducedSanctions) listOf(migrationEntityBuilder.createPunishment(code = OicSanctionCode.CC.name, status = Status.REDAPP.name)) else emptyList(),
-  )
-
-  val WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_PROVED = migrationEntityBuilder.createAdjudication(
-    hearings = listOf(
-      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult()),
-      migrationEntityBuilder.createHearing(oicHearingId = 4, hearingDateTime = LocalDateTime.now().plusDays(1)),
-    ),
-  )
-
-  val WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_GUILTY = migrationEntityBuilder.createAdjudication(
-    hearings = listOf(
-      migrationEntityBuilder.createHearing(hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.GUILTY.name)),
-      migrationEntityBuilder.createHearing(oicHearingId = 4, hearingDateTime = LocalDateTime.now().plusDays(29)),
-    ),
   )
 
   val WTIH_ADDITIONAL_HEARINGS_AFTER_OUTCOME_NOT_PROCEED = migrationEntityBuilder.createAdjudication(
