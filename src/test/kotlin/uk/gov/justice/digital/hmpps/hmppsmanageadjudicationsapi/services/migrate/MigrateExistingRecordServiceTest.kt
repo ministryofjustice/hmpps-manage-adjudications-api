@@ -499,7 +499,7 @@ class MigrateExistingRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(2)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("entered in error - actual finding NOT_PROCEED")
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("entered in error nomis finding NOT_PROCEED")
       assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(1)
     }
   }

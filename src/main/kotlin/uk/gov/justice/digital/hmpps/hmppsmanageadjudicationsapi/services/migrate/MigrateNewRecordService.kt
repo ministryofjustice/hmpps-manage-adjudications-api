@@ -419,12 +419,14 @@ class MigrateNewRecordService(
     fun MigrateHearingResult.mapToOutcome(commentText: String?, hearingOutcomeCode: HearingOutcomeCode): Outcome? =
       when (hearingOutcomeCode) {
         HearingOutcomeCode.ADJOURN, HearingOutcomeCode.NOMIS -> null
-        else -> Outcome(
-          code = this.finding.mapToOutcomeCode(),
-          actualCreatedDate = this.createdDateTime,
-          reason = this.finding.notProceedReason(),
-          details = commentText,
-        )
+        else -> {
+          Outcome(
+            code = this.finding.mapToOutcomeCode(),
+            actualCreatedDate = this.createdDateTime,
+            reason = this.finding.notProceedReason(),
+            details = commentText ?: "",
+          )
+        }
       }
 
     private fun String.notProceedReason(): NotProceedReason? =
@@ -443,8 +445,8 @@ class MigrateNewRecordService(
     }
 
     fun MigrateHearingResult.createAdditionalOutcome(hasAdditionalHearings: Boolean): Outcome? = when (this.finding) {
-      Finding.QUASHED.name -> Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = this.createdDateTime.plusMinutes(1), quashedReason = QuashedReason.OTHER)
-      Finding.APPEAL.name -> Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = this.createdDateTime.plusMinutes(1), quashedReason = QuashedReason.APPEAL_UPHELD)
+      Finding.QUASHED.name -> Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = this.createdDateTime.plusMinutes(1), quashedReason = QuashedReason.OTHER, details = "")
+      Finding.APPEAL.name -> Outcome(code = OutcomeCode.QUASHED, actualCreatedDate = this.createdDateTime.plusMinutes(1), quashedReason = QuashedReason.APPEAL_UPHELD, details = "")
       Finding.PROSECUTED.name -> Outcome(code = OutcomeCode.PROSECUTION, actualCreatedDate = this.createdDateTime.plusMinutes(1))
       Finding.REF_POLICE.name -> if (hasAdditionalHearings) Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = this.createdDateTime.plusMinutes(1)) else null
       else -> null
