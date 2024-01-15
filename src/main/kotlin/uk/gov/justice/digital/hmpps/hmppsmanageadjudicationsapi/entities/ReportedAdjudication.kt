@@ -217,12 +217,12 @@ enum class ReportedAdjudicationStatus {
   INVALID_OUTCOME,
   INVALID_SUSPENDED {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(CHARGE_PROVED)
+      return listOf(CHARGE_PROVED, QUASHED)
     }
   },
   INVALID_ADA {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(CHARGE_PROVED)
+      return listOf(CHARGE_PROVED, QUASHED)
     }
   }, ;
   open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
