@@ -1289,7 +1289,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(
         listOf(
           entityBuilder.reportedAdjudication(chargeNumber = "5").also {
-            it.status = ReportedAdjudicationStatus.CORRUPTED
+            it.status = ReportedAdjudicationStatus.INVALID_OUTCOME
             it.addPunishment(
               Punishment(
                 type = PunishmentType.REMOVAL_WING,

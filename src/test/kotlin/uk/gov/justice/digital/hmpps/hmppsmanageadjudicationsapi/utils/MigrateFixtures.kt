@@ -278,6 +278,19 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_PUNISHMENT_CORRUPTED_ADA = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(
+          finding = Finding.PROSECUTED.name,
+        ),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.ADA.name),
+    ),
+  )
+
   val COMPLETE_CHARGE_PROVED = migrationEntityBuilder.createAdjudication(
     disIssued = listOf(DisIssued(issuingOfficer = "officer", dateTimeOfIssue = LocalDateTime.now())),
     damages = listOf(migrationEntityBuilder.createDamage()),
@@ -663,7 +676,7 @@ class MigrateFixtures {
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
     ),
-    punishments = listOf(migrationEntityBuilder.createPunishment(code = OicSanctionCode.ADA.name)),
+    punishments = listOf(migrationEntityBuilder.createPunishment(code = OicSanctionCode.CC.name)),
   )
 
   val EXCEPTION_CASE_6 = migrationEntityBuilder.createAdjudication(
@@ -676,7 +689,7 @@ class MigrateFixtures {
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name, createdDateTime = LocalDateTime.now().plusDays(1)),
       ),
     ),
-    punishments = listOf(migrationEntityBuilder.createPunishment(code = OicSanctionCode.ADA.name)),
+    punishments = listOf(migrationEntityBuilder.createPunishment(code = OicSanctionCode.CC.name)),
   )
 
   val EXCEPTION_CASE_7 = migrationEntityBuilder.createAdjudication(

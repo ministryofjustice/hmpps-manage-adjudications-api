@@ -488,7 +488,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         reportedAdjudication
           .also {
-            it.status = ReportedAdjudicationStatus.CORRUPTED
+            it.status = ReportedAdjudicationStatus.INVALID_OUTCOME
             it.addOutcome(Outcome(code = OutcomeCode.QUASHED).also { o -> o.createDateTime = LocalDateTime.now() })
           },
       )

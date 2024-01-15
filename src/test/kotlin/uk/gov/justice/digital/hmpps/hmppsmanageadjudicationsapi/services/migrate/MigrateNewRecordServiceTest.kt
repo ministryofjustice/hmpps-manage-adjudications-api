@@ -506,8 +506,18 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       migrateNewRecordService.accept(dto)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED_PUNISHMENT)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.INVALID_SUSPENDED)
       assertThat(argumentCaptor.value.getPunishments().first().suspendedUntil).isEqualTo(dto.punishments.first().createdDateTime.toLocalDate())
+    }
+
+    @Test
+    fun `ada without charge proved sets status to invalid ada`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(migrationFixtures.WITH_PUNISHMENT_CORRUPTED_ADA)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.INVALID_ADA)
     }
 
     @Test
@@ -517,7 +527,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       migrateNewRecordService.accept(migrationFixtures.PROSECUTED_WITH_PUNISHMENTS)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.INVALID_OUTCOME)
     }
 
     @Test
@@ -528,7 +538,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       migrateNewRecordService.accept(dto)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.status).isNotEqualTo(ReportedAdjudicationStatus.CORRUPTED_PUNISHMENT)
+      assertThat(argumentCaptor.value.status).isNotEqualTo(ReportedAdjudicationStatus.INVALID_SUSPENDED)
       assertThat(argumentCaptor.value.getPunishments().first().suspendedUntil).isEqualTo(dto.punishments.first().createdDateTime.toLocalDate())
     }
 
@@ -800,7 +810,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.last().code).isEqualTo(OutcomeCode.DISMISSED)
-      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.INVALID_OUTCOME)
     }
 
     @Test
@@ -810,7 +820,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       migrateNewRecordService.accept(dto)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.INVALID_OUTCOME)
       assertThat(argumentCaptor.value.getPunishments()).isNotEmpty
     }
 
@@ -821,7 +831,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       migrateNewRecordService.accept(dto)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.INVALID_OUTCOME)
       assertThat(argumentCaptor.value.getPunishments()).isNotEmpty
     }
 
@@ -843,7 +853,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(3)
-      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CORRUPTED)
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.INVALID_OUTCOME)
     }
 
     @Test
