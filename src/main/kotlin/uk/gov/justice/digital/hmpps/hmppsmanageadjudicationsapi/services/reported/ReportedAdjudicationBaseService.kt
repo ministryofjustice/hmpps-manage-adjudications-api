@@ -377,9 +377,9 @@ open class ReportedAdjudicationBaseService(
   protected fun findByChargeNumberIn(chargeNumbers: List<String>) = reportedAdjudicationRepository.findByChargeNumberIn(chargeNumbers)
 
   protected fun getReportsWithSuspendedPunishments(prisonerNumber: String) = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
+    status = ReportedAdjudicationStatus.CHARGE_PROVED,
     prisonerNumber = prisonerNumber,
     date = LocalDate.now().minusDays(1),
-    status = ReportedAdjudicationStatus.CHARGE_PROVED,
   )
 
   protected fun getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber: String) =
