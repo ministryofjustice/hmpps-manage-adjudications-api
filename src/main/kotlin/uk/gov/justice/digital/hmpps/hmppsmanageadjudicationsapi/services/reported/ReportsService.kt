@@ -15,7 +15,8 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 
 enum class IssuedStatus {
-  ISSUED, NOT_ISSUED
+  ISSUED,
+  NOT_ISSUED,
 }
 
 @Transactional(readOnly = true)

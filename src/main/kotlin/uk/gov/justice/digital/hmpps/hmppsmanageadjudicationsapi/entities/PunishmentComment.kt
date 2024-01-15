@@ -20,5 +20,8 @@ data class PunishmentComment(
 ) : BaseEntity()
 
 enum class ReasonForChange {
-  APPEAL, CORRECTION, OTHER, GOV_OR_DIRECTOR
+  APPEAL,
+  CORRECTION,
+  OTHER,
+  GOV_OR_DIRECTOR,
 }

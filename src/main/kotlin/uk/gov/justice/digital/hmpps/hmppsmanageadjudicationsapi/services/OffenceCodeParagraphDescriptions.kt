@@ -23,7 +23,6 @@ enum class PronounTypes(val tag: String) {
   SUBJECT_PERSONAL("<SUB>"),
   POSSESSIVE("<POS>"),
   REFLEXIVE("<REF>"),
-  ;
 }
 
 enum class Descriptions(val description: String) {

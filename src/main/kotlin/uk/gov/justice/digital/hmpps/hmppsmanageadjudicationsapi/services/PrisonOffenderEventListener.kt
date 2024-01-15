@@ -24,7 +24,9 @@ class PrisonOffenderEventListener(
 
       return try {
         Reason.values().any { it == Reason.valueOf(toTest) }
-      } catch (e: IllegalArgumentException) { false }
+      } catch (e: IllegalArgumentException) {
+        false
+      }
     }
   }
 
@@ -56,7 +58,11 @@ class PrisonOffenderEventListener(
 }
 
 enum class Reason {
-  TRANSFERRED, NEW_ADMISSION, READMISSION, TEMPORARY_ABSENCE_RETURN, RETURN_FROM_COURT
+  TRANSFERRED,
+  NEW_ADMISSION,
+  READMISSION,
+  TEMPORARY_ABSENCE_RETURN,
+  RETURN_FROM_COURT,
 }
 
 data class HMPPSEventType(val Value: String, val Type: String)

@@ -339,7 +339,7 @@ open class ReportedAdjudicationBaseService(
     val overrideAgencyId = reportedAdjudication.overrideAgencyId ?: reportedAdjudication.originatingAgencyId
 
     if (listOf(reportedAdjudication.originatingAgencyId, overrideAgencyId)
-      .none { it == authenticationFacade.activeCaseload }
+        .none { it == authenticationFacade.activeCaseload }
     ) {
       throwEntityNotFoundException(chargeNumber)
     }

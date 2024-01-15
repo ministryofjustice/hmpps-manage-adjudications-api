@@ -339,7 +339,6 @@ class IntegrationTestData(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-
   ): DraftAdjudicationResponse {
     return webTestClient.put()
       .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/incident-role")

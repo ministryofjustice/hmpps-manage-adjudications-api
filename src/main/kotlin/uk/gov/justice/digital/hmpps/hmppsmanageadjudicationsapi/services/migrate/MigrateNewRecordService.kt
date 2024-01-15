@@ -386,7 +386,7 @@ class MigrateNewRecordService(
       val first = this.first { it.hearingResult != null }
       if (listOf(Finding.S.name, Finding.REF_POLICE.name).contains(first.hearingResult?.finding)) return true
       if (this.map { it.hearingResult?.finding }.distinct().count {
-        listOf(
+          listOf(
             Finding.NOT_PROCEED.name,
             Finding.D.name,
             Finding.DISMISSED.name,
@@ -395,7 +395,7 @@ class MigrateNewRecordService(
             Finding.NOT_GUILTY.name,
             Finding.NOT_PROVEN.name,
           ).contains(it)
-      } > 1 || this.map { it.hearingResult?.finding }.containsAll(shouldBeFinal)
+        } > 1 || this.map { it.hearingResult?.finding }.containsAll(shouldBeFinal)
       ) {
         if (hasSanctions && !listOf(Finding.PROVED.name, Finding.GUILTY.name).contains(last.hearingResult?.finding)) {
           if (isActive && hasADA) {

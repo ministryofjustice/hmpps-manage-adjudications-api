@@ -90,6 +90,7 @@ enum class OffenceCodes(val paragraph: String, private val withOthers: String? =
   YOI_55_24(paragraph = "24", withOthers = "55:29AL", uniqueOffenceCodes = listOf(21001), paragraphDescription = Descriptions.YOI_24_ADULT_21),
   MIGRATED_OFFENCE(paragraph = "", uniqueOffenceCodes = listOf(0), paragraphDescription = Descriptions.DEFAULT),
   ;
+
   fun getNomisCode() = convertToCode(this.name)
 
   fun getNomisCodeWithOthers() = this.withOthers ?: getNomisCode()

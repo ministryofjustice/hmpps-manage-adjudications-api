@@ -182,5 +182,9 @@ data class MigrateHearingResult(
 )
 
 enum class NomisGender {
-  M, F, NK, NS, REF
+  M,
+  F,
+  NK,
+  NS,
+  REF,
 }

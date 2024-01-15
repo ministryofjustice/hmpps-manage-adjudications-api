@@ -8,11 +8,30 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 enum class OicSanctionCode {
-  ADA, CAUTION, CC, EXTRA_WORK, EXTW, FORFEIT, OTHER, REMACT, REMWIN, STOP_PCT, PADA, STOP_EARN
+  ADA,
+  CAUTION,
+  CC,
+  EXTRA_WORK,
+  EXTW,
+  FORFEIT,
+  OTHER,
+  REMACT,
+  REMWIN,
+  STOP_PCT,
+  PADA,
+  STOP_EARN,
 }
 
 enum class Status {
-  IMMEDIATE, PROSPECTIVE, QUASHED, SUSPENDED, SUSP_PROSP, SUSPEN_EXT, SUSPEN_RED, AWARD_RED, REDAPP,
+  IMMEDIATE,
+  PROSPECTIVE,
+  QUASHED,
+  SUSPENDED,
+  SUSP_PROSP,
+  SUSPEN_EXT,
+  SUSPEN_RED,
+  AWARD_RED,
+  REDAPP,
 }
 
 data class OffenderOicSanctionRequest(

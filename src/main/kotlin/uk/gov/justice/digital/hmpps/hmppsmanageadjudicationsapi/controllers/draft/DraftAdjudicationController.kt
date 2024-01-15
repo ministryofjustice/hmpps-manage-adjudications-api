@@ -36,7 +36,7 @@ data class NewAdjudicationRequest(
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
   @Schema(description = "Gender applied for adjuducation rules", example = "MALE")
-  val gender: Gender = Gender.MALE, // default when nothing set
+  val gender: Gender = Gender.MALE,
   @Schema(description = "The agency id (or caseload) associated with this adjudication", example = "MDI")
   val agencyId: String,
   @Schema(description = "The optional agencyId where the prisoner now resides", example = "MDI")

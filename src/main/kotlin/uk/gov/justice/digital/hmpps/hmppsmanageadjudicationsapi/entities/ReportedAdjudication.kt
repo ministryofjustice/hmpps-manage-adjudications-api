@@ -225,6 +225,7 @@ enum class ReportedAdjudicationStatus {
       return listOf(CHARGE_PROVED, QUASHED)
     }
   }, ;
+
   open fun nextStates(): List<ReportedAdjudicationStatus> = listOf()
   fun canTransitionFrom(from: ReportedAdjudicationStatus): Boolean {
     val to = this

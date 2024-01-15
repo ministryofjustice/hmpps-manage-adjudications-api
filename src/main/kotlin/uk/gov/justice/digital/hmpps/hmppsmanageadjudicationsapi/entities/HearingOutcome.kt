@@ -27,7 +27,14 @@ data class HearingOutcome(
 ) : BaseEntity()
 
 enum class HearingOutcomeCode(val outcomeCode: OutcomeCode? = null) {
-  COMPLETE, REFER_POLICE(OutcomeCode.REFER_POLICE), REFER_INAD(OutcomeCode.REFER_INAD), ADJOURN, NOMIS, REFER_GOV(OutcomeCode.REFER_GOV);
+  COMPLETE,
+  REFER_POLICE(OutcomeCode.REFER_POLICE),
+  REFER_INAD(OutcomeCode.REFER_INAD),
+  ADJOURN,
+  NOMIS,
+  REFER_GOV(OutcomeCode.REFER_GOV),
+  ;
+
   fun validateReferral(): HearingOutcomeCode {
     this.outcomeCode ?: throw ValidationException("invalid referral type")
     return this
@@ -35,9 +42,23 @@ enum class HearingOutcomeCode(val outcomeCode: OutcomeCode? = null) {
 }
 
 enum class HearingOutcomeAdjournReason {
-  LEGAL_ADVICE, LEGAL_REPRESENTATION, RO_ATTEND, HELP, UNFIT, WITNESS, WITNESS_SUPPORT, MCKENZIE, EVIDENCE, INVESTIGATION, OTHER
+  LEGAL_ADVICE,
+  LEGAL_REPRESENTATION,
+  RO_ATTEND,
+  HELP,
+  UNFIT,
+  WITNESS,
+  WITNESS_SUPPORT,
+  MCKENZIE,
+  EVIDENCE,
+  INVESTIGATION,
+  OTHER,
 }
 
 enum class HearingOutcomePlea(val plea: Plea) {
-  UNFIT(Plea.UNFIT), ABSTAIN(Plea.REFUSED), GUILTY(Plea.GUILTY), NOT_GUILTY(Plea.NOT_GUILTY), NOT_ASKED(Plea.NOT_ASKED)
+  UNFIT(Plea.UNFIT),
+  ABSTAIN(Plea.REFUSED),
+  GUILTY(Plea.GUILTY),
+  NOT_GUILTY(Plea.NOT_GUILTY),
+  NOT_ASKED(Plea.NOT_ASKED),
 }
