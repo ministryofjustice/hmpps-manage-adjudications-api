@@ -79,11 +79,11 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByChargeNumberIn(chargeNumbers: List<String>): List<ReportedAdjudication>
 
-  fun findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(prisonerNumber: String, date: LocalDate): List<ReportedAdjudication>
+  fun findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(status: ReportedAdjudicationStatus, prisonerNumber: String, date: LocalDate): List<ReportedAdjudication>
 
   fun findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(prisonerNumber: String, statuses: List<ReportedAdjudicationStatus>, date: LocalDate): List<ReportedAdjudication>
 
-  fun findByPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(prisonerNumber: String, punishmentType: PunishmentType): List<ReportedAdjudication>
+  fun findByStatusAndPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(status: ReportedAdjudicationStatus, prisonerNumber: String, punishmentType: PunishmentType): List<ReportedAdjudication>
 
   fun findByPrisonerNumberAndStatusIn(prisonerNumber: String, statuses: List<ReportedAdjudicationStatus>): List<ReportedAdjudication>
 
@@ -131,7 +131,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByPrisonerNumber(prisonerNumber: String): List<ReportedAdjudication>
 
-  fun findByOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+  fun findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+    status: ReportedAdjudicationStatus,
     offenderBookingId: Long,
     cutOff: LocalDate,
   ): List<ReportedAdjudication>

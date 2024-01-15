@@ -552,6 +552,7 @@ class ReportedAdjudicationRepositoryTest {
     for (i in 1..10) {
       reportedAdjudicationRepository.save(
         entityBuilder.reportedAdjudication(chargeNumber = i.toString()).also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.prisonerNumber = "TEST"
           it.hearings.clear()
           it.addPunishment(
@@ -565,7 +566,7 @@ class ReportedAdjudicationRepositoryTest {
       )
     }
 
-    val suspendedResult = reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter("TEST", LocalDate.now())
+    val suspendedResult = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(ReportedAdjudicationStatus.CHARGE_PROVED, "TEST", LocalDate.now())
 
     assertThat(suspendedResult.size).isEqualTo(8)
   }
@@ -575,6 +576,7 @@ class ReportedAdjudicationRepositoryTest {
     reportedAdjudicationRepository.save(
       entityBuilder.reportedAdjudication(chargeNumber = "100100").also {
         it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
         it.prisonerNumber = "TEST"
         it.addPunishment(
           Punishment(
@@ -589,6 +591,7 @@ class ReportedAdjudicationRepositoryTest {
 
     reportedAdjudicationRepository.save(
       entityBuilder.reportedAdjudication(chargeNumber = "100101").also {
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
         it.hearings.clear()
         it.prisonerNumber = "TEST"
         it.addPunishment(
@@ -603,7 +606,7 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    val additionalDaysReports = reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull("TEST", PunishmentType.ADDITIONAL_DAYS)
+    val additionalDaysReports = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(ReportedAdjudicationStatus.CHARGE_PROVED, "TEST", PunishmentType.ADDITIONAL_DAYS)
 
     assertThat(additionalDaysReports.size).isEqualTo(1)
   }
@@ -750,7 +753,8 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `get active punishments`() {
     assertThat(
-      reportedAdjudicationRepository.findByOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+      reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+        ReportedAdjudicationStatus.CHARGE_PROVED,
         1L,
         LocalDate.now().minusDays(1),
       ).size,
