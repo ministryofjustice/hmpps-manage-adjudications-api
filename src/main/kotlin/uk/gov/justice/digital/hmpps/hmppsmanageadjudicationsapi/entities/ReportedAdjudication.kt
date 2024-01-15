@@ -116,12 +116,14 @@ data class ReportedAdjudication(
         if (this.getLatestHearing().isAdjourn()) {
           ReportedAdjudicationStatus.ADJOURNED
         } else {
-          if (this.getOutcomes().count { listOf(OutcomeCode.DISMISSED, OutcomeCode.CHARGE_PROVED, OutcomeCode.NOT_PROCEED).contains(it.code) } > 1 ||
+          if (this.latestOutcome()?.code != OutcomeCode.CHARGE_PROVED && this.getPunishments().any { it.type == PunishmentType.ADDITIONAL_DAYS }) {
+            ReportedAdjudicationStatus.INVALID_ADA
+          } else if (this.getOutcomes().count { listOf(OutcomeCode.DISMISSED, OutcomeCode.CHARGE_PROVED, OutcomeCode.NOT_PROCEED).contains(it.code) } > 1 ||
             this.latestOutcome()?.code == OutcomeCode.PROSECUTION && this.getPunishments().isNotEmpty()
           ) {
-            ReportedAdjudicationStatus.CORRUPTED
+            ReportedAdjudicationStatus.INVALID_OUTCOME
           } else if (this.getPunishments().any { it.isCorrupted() }) {
-            ReportedAdjudicationStatus.CORRUPTED_PUNISHMENT
+            ReportedAdjudicationStatus.INVALID_SUSPENDED
           } else {
             this.getOutcomes().sortedByDescending { it.getCreatedDateTime() }.first().code.status
           }
@@ -212,8 +214,13 @@ enum class ReportedAdjudicationStatus {
     }
   },
   QUASHED,
-  CORRUPTED,
-  CORRUPTED_PUNISHMENT {
+  INVALID_OUTCOME,
+  INVALID_SUSPENDED {
+    override fun nextStates(): List<ReportedAdjudicationStatus> {
+      return listOf(CHARGE_PROVED)
+    }
+  },
+  INVALID_ADA {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
       return listOf(CHARGE_PROVED)
     }
@@ -239,10 +246,10 @@ enum class ReportedAdjudicationStatus {
     fun issuableStatuses() = listOf(SCHEDULED, UNSCHEDULED)
     fun issuableStatusesForPrint() = listOf(SCHEDULED)
 
-    fun corruptedStatuses() = listOf(CORRUPTED_PUNISHMENT, CORRUPTED)
+    fun corruptedStatuses() = listOf(INVALID_SUSPENDED, INVALID_OUTCOME, INVALID_ADA)
 
     fun ReportedAdjudicationStatus.validateTransition(vararg next: ReportedAdjudicationStatus) {
-      if (this == CORRUPTED) return
+      if (this == INVALID_OUTCOME) return
       next.toList().forEach {
         if (this != it && !this.canTransitionTo(it)) throw ValidationException("Invalid status transition ${this.name} - ${it.name}")
       }

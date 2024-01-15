@@ -286,7 +286,7 @@ class OutcomeService(
     }
 
     fun Outcome.canDelete(hasHearings: Boolean, outcomeReferGovReferral: Boolean, status: ReportedAdjudicationStatus): Outcome {
-      if (status == ReportedAdjudicationStatus.CORRUPTED) return this
+      if (status == ReportedAdjudicationStatus.INVALID_OUTCOME) return this
       val acceptableCode = if (!hasHearings || outcomeReferGovReferral) OutcomeCode.NOT_PROCEED else OutcomeCode.QUASHED
       if (acceptableCode != this.code) throw ValidationException("Unable to delete via api - DEL/outcome")
 
