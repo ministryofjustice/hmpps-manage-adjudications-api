@@ -23,8 +23,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   ): Page<ReportedAdjudication>
 
   @Query(
-    value = "select * from reported_adjudications ra $transferReportsWhereClause",
-    countQuery = "select count(1) from reported_adjudications ra $transferReportsWhereClause",
+    value = "select * from reported_adjudications ra $TRANSFER_REPORTS_WHERE_CLAUSE",
+    countQuery = "select count(1) from reported_adjudications ra $TRANSFER_REPORTS_WHERE_CLAUSE",
     nativeQuery = true,
   )
   fun findTransfersByAgency(
@@ -36,8 +36,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   ): Page<ReportedAdjudication>
 
   @Query(
-    value = "select * from reported_adjudications ra $allReportsWhereClause",
-    countQuery = "select count(1) from reported_adjudications ra $allReportsWhereClause",
+    value = "select * from reported_adjudications ra $ALL_REPORTS_WHERE_CLAUSE",
+    countQuery = "select count(1) from reported_adjudications ra $ALL_REPORTS_WHERE_CLAUSE",
     nativeQuery = true,
   )
   fun findAllReportsByAgency(
@@ -115,8 +115,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   ): List<ReportedAdjudication>
 
   @Query(
-    value = "select * from reported_adjudications ra $prisonerReportsWithDateWhereClause",
-    countQuery = "select count(1) from reported_adjudications ra $prisonerReportsWithDateWhereClause",
+    value = "select * from reported_adjudications ra $PRISONER_REPORTS_WITH_DATE_WHERE_CLAUSE",
+    countQuery = "select count(1) from reported_adjudications ra $PRISONER_REPORTS_WITH_DATE_WHERE_CLAUSE",
     nativeQuery = true,
   )
   fun findAdjudicationsForBooking(
@@ -139,26 +139,26 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   companion object {
 
-    private const val dateAndStatusFilter = "ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate and ra.status in :statuses "
-    private const val agencyAndStatusFilter = "and (" +
+    private const val DATE_AND_STATUS_FILTER = "ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate and ra.status in :statuses "
+    private const val AGENCY_AND_STATUS_FILTER = "and (" +
       "ra.originating_agency_id = :agencyId " +
       "or ra.override_agency_id = :agencyId and ra.status not in :transferIgnoreStatuses and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :agencyId " +
       "or ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) = :agencyId" +
       ")"
 
-    private const val agenciesAndStatusFilter = "and (" +
+    private const val AGENCIES_AND_STATUS_FILTER = "and (" +
       "ra.originating_agency_id in :agencies " +
       "or ra.override_agency_id in :agencies and ra.status not in :transferIgnoreStatuses and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) not in :agencies " +
       "or ra.override_agency_id in :agencies and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) in :agencies" +
       ")"
 
-    const val prisonerReportsWithDateWhereClause = "where ra.offender_booking_id = :offenderBookingId and $dateAndStatusFilter $agenciesAndStatusFilter"
+    const val PRISONER_REPORTS_WITH_DATE_WHERE_CLAUSE = "where ra.offender_booking_id = :offenderBookingId and $DATE_AND_STATUS_FILTER $AGENCIES_AND_STATUS_FILTER"
 
-    const val allReportsWhereClause =
-      "where $dateAndStatusFilter $agencyAndStatusFilter"
+    const val ALL_REPORTS_WHERE_CLAUSE =
+      "where $DATE_AND_STATUS_FILTER $AGENCY_AND_STATUS_FILTER"
 
-    const val transferReportsWhereClause =
-      "where $dateAndStatusFilter" +
+    const val TRANSFER_REPORTS_WHERE_CLAUSE =
+      "where $DATE_AND_STATUS_FILTER" +
         "and ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :agencyId "
   }
 }
