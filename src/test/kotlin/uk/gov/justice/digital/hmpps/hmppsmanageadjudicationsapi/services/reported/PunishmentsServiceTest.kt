@@ -97,7 +97,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
-    whenever(reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any())).thenReturn(
+    whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(
       listOf(
         entityBuilder.reportedAdjudication().also {
           it.addPunishment(
@@ -1285,7 +1285,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get suspended punishments `() {
-      whenever(reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any())).thenReturn(reportedAdjudications)
+      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(reportedAdjudications)
       whenever(reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(
         listOf(
           entityBuilder.reportedAdjudication(chargeNumber = "5").also {
@@ -1318,7 +1318,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("INAD_ADULT", "INAD_YOI")
     @ParameterizedTest
     fun `get suspended punishments for reported adjudication from independent adjudicator `(oicHearingType: OicHearingType) {
-      whenever(reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any())).thenReturn(reportedAdjudications)
+      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(reportedAdjudications)
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.hearings.first().oicHearingType = oicHearingType
@@ -1435,7 +1435,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
     @ParameterizedTest
     fun `get additional days reports`(punishmentType: PunishmentType) {
-      whenever(reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull("AE1234", punishmentType)).thenReturn(
+      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(ReportedAdjudicationStatus.CHARGE_PROVED, "AE1234", punishmentType)).thenReturn(
         reportedAdjudications,
       )
 
@@ -1852,7 +1852,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `get damages owed`() {
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+          any(),
           any(),
           any(),
         ),
@@ -1885,7 +1886,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `get activated from with other privilege`() {
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+          any(),
           any(),
           any(),
         ),
@@ -1923,7 +1925,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `get with stoppage percentage`() {
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+          any(),
           any(),
           any(),
         ),

@@ -376,9 +376,10 @@ open class ReportedAdjudicationBaseService(
 
   protected fun findByChargeNumberIn(chargeNumbers: List<String>) = reportedAdjudicationRepository.findByChargeNumberIn(chargeNumbers)
 
-  protected fun getReportsWithSuspendedPunishments(prisonerNumber: String) = reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsSuspendedUntilAfter(
+  protected fun getReportsWithSuspendedPunishments(prisonerNumber: String) = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
     prisonerNumber = prisonerNumber,
     date = LocalDate.now().minusDays(1),
+    status = ReportedAdjudicationStatus.CHARGE_PROVED,
   )
 
   protected fun getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber: String) =
@@ -389,13 +390,18 @@ open class ReportedAdjudicationBaseService(
     )
 
   protected fun getReportsWithActiveAdditionalDays(prisonerNumber: String, punishmentType: PunishmentType) =
-    reportedAdjudicationRepository.findByPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(prisonerNumber, punishmentType)
+    reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(
+      status = ReportedAdjudicationStatus.CHARGE_PROVED,
+      prisonerNumber = prisonerNumber,
+      punishmentType = punishmentType,
+    )
 
   protected fun isLinkedToReport(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean =
     reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn(consecutiveChargeNumber, types).isNotEmpty()
 
   protected fun getReportsWithActivePunishments(offenderBookingId: Long): List<ReportedAdjudication> =
-    reportedAdjudicationRepository.findByOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+    reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+      status = ReportedAdjudicationStatus.CHARGE_PROVED,
       offenderBookingId = offenderBookingId,
       cutOff = LocalDate.now().minusDays(1),
     )
