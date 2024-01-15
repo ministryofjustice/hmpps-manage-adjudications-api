@@ -195,7 +195,7 @@ class MigrateIntTest : SqsIntegrationTestBase() {
   companion object {
     private val migrateFixtures = MigrateFixtures()
 
-    fun getWithReportedDateTime(reportedDateTime: LocalDateTime): AdjudicationMigrateDto = migrateFixtures.ADULT_WITH_REPORTED_DATE_TIME(
+    fun getWithReportedDateTime(reportedDateTime: LocalDateTime): AdjudicationMigrateDto = migrateFixtures.aDULTWITHREPORTEDDATETIME(
       reportedDateTime = reportedDateTime,
     )
 
