@@ -65,6 +65,8 @@ class MigrateExistingRecordService(
 
     existingAdjudication.offenderBookingId = adjudicationMigrateDto.bookingId
     existingAdjudication.statusBeforeMigration = existingAdjudication.status
+    existingAdjudication.migratedInactivePrisoner = adjudicationMigrateDto.prisoner.currentAgencyId == null
+    existingAdjudication.migratedSplitRecord = adjudicationMigrateDto.nomisSplitRecord
 
     if (OffenceCodes.findByNomisCode(adjudicationMigrateDto.offence.offenceCode).none { it.uniqueOffenceCodes.contains(existingAdjudication.offenceDetails.first().offenceCode) }) {
       existingAdjudication.offenceDetails.first().update(adjudicationMigrateDto)
