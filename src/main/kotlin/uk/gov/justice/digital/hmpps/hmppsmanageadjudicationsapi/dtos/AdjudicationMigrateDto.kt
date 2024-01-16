@@ -49,6 +49,8 @@ data class AdjudicationMigrateDto(
   val hearings: List<MigrateHearing> = emptyList(),
   @Schema(description = "dis issued")
   val disIssued: List<DisIssued> = emptyList(),
+  @Schema(description = "the nomis record has been split into multiple adjudications")
+  val nomisSplitRecord: Boolean = false,
 )
 
 @Schema(description = "dis issued")

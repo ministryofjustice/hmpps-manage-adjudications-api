@@ -261,6 +261,18 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_PUNISHMENT_SUSPENDED_CORRUPTED_INACTIVE = migrationEntityBuilder.createAdjudication(
+    prisoner = migrationEntityBuilder.createPrisoner(currentAgencyId = null),
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.ADA.name, effectiveDate = LocalDate.now(), statusDate = null, status = Status.SUSPENDED.name),
+    ),
+  )
+
   val WITH_PUNISHMENT_SUSPENDED_CORRUPTED_3 = migrationEntityBuilder.createAdjudication(
     hearings = listOf(
       migrationEntityBuilder.createHearing(
@@ -279,6 +291,20 @@ class MigrateFixtures {
   )
 
   val WITH_PUNISHMENT_CORRUPTED_ADA = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(
+          finding = Finding.PROSECUTED.name,
+        ),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.ADA.name),
+    ),
+  )
+
+  val WITH_PUNISHMENT_CORRUPTED_ADA_INACTIVE = migrationEntityBuilder.createAdjudication(
+    prisoner = migrationEntityBuilder.createPrisoner(currentAgencyId = null),
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         hearingResult = migrationEntityBuilder.createHearingResult(
@@ -654,6 +680,20 @@ class MigrateFixtures {
   )
 
   val EXCEPTION_CASE_4 = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),
+      ),
+      migrationEntityBuilder.createHearing(
+        hearingDateTime = LocalDateTime.now().plusDays(1),
+        hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.D.name, createdDateTime = LocalDateTime.now().plusDays(1)),
+      ),
+    ),
+    punishments = listOf(migrationEntityBuilder.createPunishment()),
+  )
+
+  val EXCEPTION_CASE_4_INACTIVE = migrationEntityBuilder.createAdjudication(
+    prisoner = migrationEntityBuilder.createPrisoner(currentAgencyId = null),
     hearings = listOf(
       migrationEntityBuilder.createHearing(
         hearingResult = migrationEntityBuilder.createHearingResult(finding = Finding.PROVED.name),

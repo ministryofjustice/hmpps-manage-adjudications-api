@@ -110,6 +110,8 @@ class MigrateNewRecordService(
       punishments = punishments.toMutableList(),
       punishmentComments = punishmentComments.toMutableList(),
       migrated = true,
+      migratedInactivePrisoner = adjudicationMigrateDto.prisoner.currentAgencyId == null,
+      migratedSplitRecord = adjudicationMigrateDto.nomisSplitRecord,
     ).also { it.calculateStatus() }
 
     val saved = reportedAdjudicationRepository.save(reportedAdjudication).also {

@@ -58,6 +58,7 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.originatingAgencyId).isEqualTo(dto.agencyId)
       assertThat(argumentCaptor.value.overrideAgencyId).isNull()
       assertThat(argumentCaptor.value.locationId).isEqualTo(dto.locationId)
+      assertThat(argumentCaptor.value.migratedSplitRecord).isFalse
       assertThat(argumentCaptor.value.dateTimeOfIncident).isEqualTo(dto.incidentDateTime)
       assertThat(argumentCaptor.value.dateTimeOfDiscovery).isEqualTo(dto.incidentDateTime)
       assertThat(argumentCaptor.value.prisonerNumber).isEqualTo(dto.prisoner.prisonerNumber)
@@ -511,6 +512,16 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `suspended punishment with unknown suspended until date and inactive prisoner does not set invalid`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(migrationFixtures.WITH_PUNISHMENT_SUSPENDED_CORRUPTED_INACTIVE)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED)
+    }
+
+    @Test
     fun `ada without charge proved sets status to invalid ada`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
@@ -518,6 +529,16 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.INVALID_ADA)
+    }
+
+    @Test
+    fun `inactive prisoner ada without charge proved does sets status to invalid ada`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(migrationFixtures.WITH_PUNISHMENT_CORRUPTED_ADA_INACTIVE)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.status).isNotEqualTo(ReportedAdjudicationStatus.INVALID_ADA)
     }
 
     @Test
@@ -811,6 +832,18 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.actualCreatedDate }.last().code).isEqualTo(OutcomeCode.DISMISSED)
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.INVALID_OUTCOME)
+    }
+
+    @Test
+    fun `inactive prisoner adjudication with multiple final states, and sanctions, where final state is not PROVED should process and set status to CORRUPTED`() {
+      val dto = migrationFixtures.EXCEPTION_CASE_4_INACTIVE
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(dto)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.status).isNotEqualTo(ReportedAdjudicationStatus.INVALID_OUTCOME)
     }
 
     @Test
