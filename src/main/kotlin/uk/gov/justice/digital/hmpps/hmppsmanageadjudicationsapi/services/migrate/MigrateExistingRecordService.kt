@@ -500,7 +500,7 @@ class MigrateExistingRecordService(
         Finding.D.name, Finding.PROVED.name, Finding.APPEAL.name -> if (this != HearingOutcomeCode.COMPLETE) throw ExistingRecordConflictException(msg)
         Finding.REF_POLICE.name -> if (this != HearingOutcomeCode.REFER_POLICE) throw ExistingRecordConflictException(msg)
         Finding.NOT_PROCEED.name, Finding.DISMISSED.name -> if (!listOf(HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.COMPLETE).contains(this)) throw ExistingRecordConflictException(msg)
-        Finding.ADJOURNED.name -> HearingOutcomeCode.ADJOURN
+        Finding.ADJOURNED.name, Finding.S.name -> HearingOutcomeCode.ADJOURN
         else -> throw ExistingRecordConflictException("$chargeNumber unsupported mapping $finding")
       }
     }
