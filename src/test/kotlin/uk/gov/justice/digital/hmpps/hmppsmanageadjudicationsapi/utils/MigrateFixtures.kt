@@ -303,6 +303,19 @@ class MigrateFixtures {
     ),
   )
 
+  val WITH_PUNISHMENT_QUASHED_ADA = migrationEntityBuilder.createAdjudication(
+    hearings = listOf(
+      migrationEntityBuilder.createHearing(
+        hearingResult = migrationEntityBuilder.createHearingResult(
+          finding = Finding.QUASHED.name,
+        ),
+      ),
+    ),
+    punishments = listOf(
+      migrationEntityBuilder.createPunishment(code = OicSanctionCode.ADA.name),
+    ),
+  )
+
   val WITH_PUNISHMENT_CORRUPTED_ADA_INACTIVE = migrationEntityBuilder.createAdjudication(
     prisoner = migrationEntityBuilder.createPrisoner(currentAgencyId = null),
     hearings = listOf(

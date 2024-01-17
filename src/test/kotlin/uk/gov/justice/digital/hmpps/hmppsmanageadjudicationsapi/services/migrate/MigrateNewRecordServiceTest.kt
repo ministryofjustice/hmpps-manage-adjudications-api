@@ -532,6 +532,16 @@ class MigrateNewRecordServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `ada with quashed sets status to  quashed`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      migrateNewRecordService.accept(migrationFixtures.WITH_PUNISHMENT_QUASHED_ADA)
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+
+      assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.QUASHED)
+    }
+
+    @Test
     fun `inactive prisoner ada without charge proved does sets status to invalid ada`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
