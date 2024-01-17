@@ -124,7 +124,7 @@ data class ReportedAdjudication(
             this.latestOutcome()?.code == OutcomeCode.PROSECUTION && this.getPunishments().isNotEmpty()
           ) {
             ReportedAdjudicationStatus.INVALID_OUTCOME
-          } else if (this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED && this.isActivePrisoner() && this.getPunishments().any { it.isCorrupted() }) {
+          } else if (this.isActivePrisoner() && this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED  && this.getPunishments().any { it.isCorrupted() }) {
             ReportedAdjudicationStatus.INVALID_SUSPENDED
           } else {
             this.getOutcomes().sortedByDescending { it.getCreatedDateTime() }.first().code.status
