@@ -37,6 +37,7 @@ class ReportedAdjudicationService(
       activeCaseload = authenticationFacade.activeCaseload,
       consecutiveReportsAvailable = reportedAdjudication.getConsecutiveReportsAvailable(),
       hasLinkedAda = hasLinkedAda(reportedAdjudication),
+      linkedChargeNumbers = if (reportedAdjudication.migratedSplitRecord) findMultipleOffenceCharges(chargeNumber) else emptyList(),
     )
   }
 
