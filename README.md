@@ -7,9 +7,46 @@
 [![Repo standards badge](https://img.shields.io/badge/dynamic/json?color=blue&style=flat&logo=github&label=MoJ%20Compliant&query=%24.data%5B%3F%28%40.name%20%3D%3D%20%22hmpps-manage-adjudications-api%22%29%5D.status&url=https%3A%2F%2Foperations-engineering-reports.cloud-platform.service.justice.gov.uk%2Fgithub_repositories)](https://operations-engineering-reports.cloud-platform.service.justice.gov.uk/github_repositories#hmpps-manage-adjudications-api "Link to report")
 
 # Features
-* Start a new draft adjudication
+* start a new draft adjudication
+* add incident details, offence rules and roles, statements, damages, evidence and witnesses to the draft
+* submit a draft, creating a reported adjudication
+* review a reported adjudication
+* add amend hearings and outcomes
+* add / amend punishments
 
 The frontend can be found here: <https://github.com/ministryofjustice/hmpps-manage-adjudications>
+
+# Record security
+
+The Active-Caseload header parameter is used in conjunction with the front end, to avoid prisoner officers or 
+ALO's navigating to records they are not allowed to action, it is only use for endpoints for a specific resource, 
+and is not used for all reports endpoints
+
+# Transfers
+
+Transfers are handled by events within the api.  If a prisoner is transferred, a service will identify whether 
+the prisoner has any transfer in a transferable state, and will mark the new agency as the override agency
+
+# Adding an offence rule
+
+Due to nomis synchronisation, confirm if a new nomis code is required.  The majority of work to add a new offence
+is handled by the front end, based on the questions and decision paths.  
+
+The api would require a new OffenceCode, the original mapping spreadsheet can be found at
+<https://docs.google.com/spreadsheets/d/1Dx1CRSeJTjIQhDY8v4NrxYk-sUhVgbZgiW08WOo1Hk0/edit?usp_dm=false#gid=1375955278>
+
+Paragraph descriptions will need gender based content
+
+# Hearing outcomes and outcomes
+
+Validation and ordering of the outcomes is important.  A hearing can have a hearing outcome, 
+and generally an outcome (except for adjourn).  You can also have outcomes, without hearings. 
+In addition, from a rendering perspective, referrals have referral outcomes.
+
+The api handles the complexity for rendering on behalf of the UI.
+
+For guidance refer to the integration tests which demonstrate how the user will build 
+this model and how it should be represented for the UI
 
 # Instructions
 
