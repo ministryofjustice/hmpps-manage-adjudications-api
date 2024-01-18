@@ -47,7 +47,12 @@ open class ReportedDtoService(
   protected val offenceCodeLookupService: OffenceCodeLookupService,
 ) {
 
-  protected fun ReportedAdjudication.toDto(activeCaseload: String? = null, consecutiveReportsAvailable: List<String>? = null, hasLinkedAda: Boolean = false): ReportedAdjudicationDto {
+  protected fun ReportedAdjudication.toDto(
+    activeCaseload: String? = null,
+    consecutiveReportsAvailable: List<String>? = null,
+    hasLinkedAda: Boolean = false,
+    linkedChargeNumbers: List<String> = emptyList(),
+  ): ReportedAdjudicationDto {
     val hearings = this.hearings.toHearings()
     val outcomes = this.getOutcomes().createCombinedOutcomes(hasLinkedAda = hasLinkedAda)
     return ReportedAdjudicationDto(
@@ -95,6 +100,7 @@ open class ReportedDtoService(
       transferableActionsAllowed = this.isActionable(activeCaseload),
       createdOnBehalfOfOfficer = this.createdOnBehalfOfOfficer,
       createdOnBehalfOfReason = this.createdOnBehalfOfReason,
+      linkedChargeNumbers = linkedChargeNumbers,
     )
   }
 
@@ -346,6 +352,10 @@ open class ReportedAdjudicationBaseService(
 
     return reportedAdjudication
   }
+
+  protected fun findMultipleOffenceCharges(chargeNumber: String): List<String> =
+    reportedAdjudicationRepository.findByChargeNumberContains("${chargeNumber.substringBefore("-")}-")
+      .filter { it.chargeNumber != chargeNumber }.map { it.chargeNumber }
 
   protected fun hasLinkedAda(reportedAdjudication: ReportedAdjudication): Boolean =
     when (reportedAdjudication.status) {

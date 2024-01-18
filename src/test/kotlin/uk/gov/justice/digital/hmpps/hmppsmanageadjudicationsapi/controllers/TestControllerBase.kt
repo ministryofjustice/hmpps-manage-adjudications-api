@@ -91,6 +91,7 @@ open class TestControllerBase {
         punishmentComments = listOf(),
         overrideAgencyId = null,
         originatingAgencyId = "MDI",
+        linkedChargeNumbers = emptyList(),
       )
 
     fun reportedAdjudicationDto(
@@ -138,6 +139,7 @@ open class TestControllerBase {
         overrideAgencyId = null,
         originatingAgencyId = "MDI",
         hearingIdActioned = hearingIdActioned,
+        linkedChargeNumbers = emptyList(),
       )
 
     val INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO =

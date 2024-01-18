@@ -90,6 +90,8 @@ data class ReportedAdjudicationDto(
   @Schema(description = "punishments have been removed due to outcome delete or edit")
   @JsonIgnore
   var punishmentsRemoved: Boolean = false,
+  @Schema(description = "list of linked nomis charges, where multiple offences recorded on a single charge")
+  val linkedChargeNumbers: List<String>,
 )
 
 @Schema(description = "Details of an offence")

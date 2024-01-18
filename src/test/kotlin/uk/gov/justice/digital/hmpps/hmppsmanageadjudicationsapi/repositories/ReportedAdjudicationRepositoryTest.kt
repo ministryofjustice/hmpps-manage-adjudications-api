@@ -760,4 +760,21 @@ class ReportedAdjudicationRepositoryTest {
       ).size,
     ).isEqualTo(1)
   }
+
+  @Test
+  fun `find by charge number contains `() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2").also {
+        it.hearings.clear()
+      },
+    )
+
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-1").also {
+        it.hearings.clear()
+      },
+    )
+
+    assertThat(reportedAdjudicationRepository.findByChargeNumberContains("12345-").size).isEqualTo(2)
+  }
 }

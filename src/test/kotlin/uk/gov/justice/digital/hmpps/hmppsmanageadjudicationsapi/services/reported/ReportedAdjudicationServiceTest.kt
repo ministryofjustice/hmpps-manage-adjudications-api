@@ -235,7 +235,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         .contains(
           1002,
           offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraph,
-          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
+          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraphDescription.getParagraphDescription(
+            Gender.MALE,
+          ),
           null,
           null,
           null,
@@ -250,6 +252,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(reportedAdjudicationDto.hearings[0].oicHearingType).isEqualTo(OicHearingType.GOV_ADULT)
       assertThat(reportedAdjudicationDto.hearings[1].oicHearingType).isEqualTo(OicHearingType.GOV)
       assertThat(reportedAdjudicationDto.hearings[2].oicHearingType).isEqualTo(OicHearingType.INAD_YOI)
+
+      verify(reportedAdjudicationRepository, never()).findByChargeNumberContains(any())
     }
 
     @Test
@@ -287,7 +291,13 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByChargeNumberIn(any())).thenReturn(listOf(entityBuilder.reportedAdjudication(chargeNumber = "999")))
+      whenever(reportedAdjudicationRepository.findByChargeNumberIn(any())).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication(
+            chargeNumber = "999",
+          ),
+        ),
+      )
 
       val dto = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
@@ -295,6 +305,29 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(dto.punishments.first { it.consecutiveChargeNumber == "999" }.consecutiveReportAvailable).isTrue
       assertThat(dto.punishments.first { it.consecutiveChargeNumber == "9999" }.consecutiveReportAvailable).isFalse
       assertThat(dto.punishments.first { it.consecutiveChargeNumber == null }.consecutiveReportAvailable).isNull()
+    }
+
+    @Test
+    fun `contains linked charges and filters out own charge`() {
+      val report = entityBuilder.reportedAdjudication().also {
+        it.createDateTime = LocalDateTime.now()
+        it.createdByUserId = ""
+        it.migratedSplitRecord = true
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(report)
+      whenever(reportedAdjudicationRepository.findByChargeNumberContains(any())).thenReturn(
+        listOf(
+          report,
+          entityBuilder.reportedAdjudication(chargeNumber = "9872"),
+        ),
+      )
+
+      val response = reportedAdjudicationService.getReportedAdjudicationDetails(report.chargeNumber)
+
+      verify(reportedAdjudicationRepository, atLeastOnce()).findByChargeNumberContains("${report.chargeNumber}-")
+
+      assertThat(response.linkedChargeNumbers.size).isEqualTo(1)
+      assertThat(response.linkedChargeNumbers.first()).isEqualTo("9872")
     }
   }
 
