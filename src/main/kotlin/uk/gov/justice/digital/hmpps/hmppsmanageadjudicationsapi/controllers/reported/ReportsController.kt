@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.Parameters
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Page
@@ -281,7 +282,21 @@ class ReportsController(
     pageable = pageable,
   )
 
-  @Operation(summary = "Get all adjudications for a prisoner")
+  @Operation(
+    summary = "Get all adjudications for a prisoner",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "success",
+        content = [
+          io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = ReportedAdjudicationDto::class)),
+          ),
+        ],
+      ),
+    ],
+  )
   @Parameters(
     Parameter(
       name = "prisonerNumber",

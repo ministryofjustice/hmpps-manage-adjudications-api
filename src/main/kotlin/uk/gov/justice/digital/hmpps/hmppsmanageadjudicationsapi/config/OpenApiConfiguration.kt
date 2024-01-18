@@ -90,7 +90,7 @@ class OpenApiConfiguration(
   @Bean
   fun openAPICustomiser(): OpenApiCustomizer = OpenApiCustomizer {
     it.paths.forEach { (_, path: PathItem) ->
-      path.addParametersItem(Parameter().`in`(ParameterIn.HEADER.toString()).name("Active-Caseload").description("Current Caseload for request").schema(StringSchema()).example("MDI").required(true))
+      path.addParametersItem(Parameter().`in`(ParameterIn.HEADER.toString()).name("Active-Caseload").description("Current Caseload for request, to be used when making calls to a specific report").schema(StringSchema()).example("MDI").required(false))
 
       path.readOperations().forEach { operation ->
         operation.responses.default = createErrorApiResponse("Unexpected error")
