@@ -281,7 +281,20 @@ class ReportsController(
     pageable = pageable,
   )
 
-  @Operation(summary = "Get all adjudications for a prisoner")
+  @Operation(
+    summary = "Get all adjudications for a prisoner",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "success",
+        content = [
+          io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+          ),
+        ],
+      ),
+    ],
+  )
   @Parameters(
     Parameter(
       name = "prisonerNumber",
