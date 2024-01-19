@@ -775,6 +775,12 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    assertThat(reportedAdjudicationRepository.findByChargeNumberContains("12345-").size).isEqualTo(2)
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "112345-1").also {
+        it.hearings.clear()
+      },
+    )
+
+    assertThat(reportedAdjudicationRepository.findByChargeNumberStartsWith("12345-").size).isEqualTo(2)
   }
 }

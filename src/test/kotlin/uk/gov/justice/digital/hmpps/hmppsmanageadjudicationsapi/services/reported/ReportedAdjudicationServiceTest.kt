@@ -253,7 +253,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(reportedAdjudicationDto.hearings[1].oicHearingType).isEqualTo(OicHearingType.GOV)
       assertThat(reportedAdjudicationDto.hearings[2].oicHearingType).isEqualTo(OicHearingType.INAD_YOI)
 
-      verify(reportedAdjudicationRepository, never()).findByChargeNumberContains(any())
+      verify(reportedAdjudicationRepository, never()).findByChargeNumberStartsWith(any())
     }
 
     @Test
@@ -315,7 +315,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         it.migratedSplitRecord = true
       }
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(report)
-      whenever(reportedAdjudicationRepository.findByChargeNumberContains(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByChargeNumberStartsWith(any())).thenReturn(
         listOf(
           report,
           entityBuilder.reportedAdjudication(chargeNumber = "9872-2"),
@@ -325,7 +325,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       val response = reportedAdjudicationService.getReportedAdjudicationDetails(report.chargeNumber)
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findByChargeNumberContains("${report.chargeNumber}-")
+      verify(reportedAdjudicationRepository, atLeastOnce()).findByChargeNumberStartsWith("${report.chargeNumber}-")
 
       assertThat(response.linkedChargeNumbers.size).isEqualTo(2)
       assertThat(response.linkedChargeNumbers.first()).isEqualTo("9872-1")
