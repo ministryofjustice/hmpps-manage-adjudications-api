@@ -318,7 +318,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumberContains(any())).thenReturn(
         listOf(
           report,
-          entityBuilder.reportedAdjudication(chargeNumber = "9872"),
+          entityBuilder.reportedAdjudication(chargeNumber = "9872-2"),
+          entityBuilder.reportedAdjudication(chargeNumber = "9872-1"),
         ),
       )
 
@@ -326,8 +327,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository, atLeastOnce()).findByChargeNumberContains("${report.chargeNumber}-")
 
-      assertThat(response.linkedChargeNumbers.size).isEqualTo(1)
-      assertThat(response.linkedChargeNumbers.first()).isEqualTo("9872")
+      assertThat(response.linkedChargeNumbers.size).isEqualTo(2)
+      assertThat(response.linkedChargeNumbers.first()).isEqualTo("9872-1")
+      assertThat(response.linkedChargeNumbers.last()).isEqualTo("9872-2")
     }
   }
 
