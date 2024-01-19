@@ -781,6 +781,6 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    assertThat(reportedAdjudicationRepository.findByChargeNumberStartsWith("12345-").size).isEqualTo(2)
+    assertThat(reportedAdjudicationRepository.findByPrisonerNumberAndChargeNumberStartsWith("A12345", "12345-").size).isEqualTo(2)
   }
 }

@@ -353,8 +353,11 @@ open class ReportedAdjudicationBaseService(
     return reportedAdjudication
   }
 
-  protected fun findMultipleOffenceCharges(chargeNumber: String): List<String> =
-    reportedAdjudicationRepository.findByChargeNumberStartsWith("${chargeNumber.substringBefore("-")}-")
+  protected fun findMultipleOffenceCharges(prisonerNumber: String, chargeNumber: String): List<String> =
+    reportedAdjudicationRepository.findByPrisonerNumberAndChargeNumberStartsWith(
+      prisonerNumber = prisonerNumber,
+      chargeNumber = "${chargeNumber.substringBefore("-")}-",
+    )
       .filter { it.chargeNumber != chargeNumber }.map { it.chargeNumber }
       .sortedBy { it }
 

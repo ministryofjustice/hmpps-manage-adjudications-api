@@ -137,7 +137,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     cutOff: LocalDate,
   ): List<ReportedAdjudication>
 
-  fun findByChargeNumberStartsWith(chargeNumber: String): List<ReportedAdjudication>
+  fun findByPrisonerNumberAndChargeNumberStartsWith(prisonerNumber: String, chargeNumber: String): List<ReportedAdjudication>
 
   companion object {
 
