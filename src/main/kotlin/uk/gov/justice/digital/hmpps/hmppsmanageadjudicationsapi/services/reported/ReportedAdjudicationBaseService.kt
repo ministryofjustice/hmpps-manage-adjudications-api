@@ -356,6 +356,7 @@ open class ReportedAdjudicationBaseService(
   protected fun findMultipleOffenceCharges(chargeNumber: String): List<String> =
     reportedAdjudicationRepository.findByChargeNumberContains("${chargeNumber.substringBefore("-")}-")
       .filter { it.chargeNumber != chargeNumber }.map { it.chargeNumber }
+      .sortedBy { it }
 
   protected fun hasLinkedAda(reportedAdjudication: ReportedAdjudication): Boolean =
     when (reportedAdjudication.status) {
