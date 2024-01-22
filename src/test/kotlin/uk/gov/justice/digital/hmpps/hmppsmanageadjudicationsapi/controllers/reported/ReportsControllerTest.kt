@@ -312,7 +312,7 @@ class ReportsControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ALL_ADJUDICATIONS"])
-    fun `responds successfully from issued details request `() {
+    fun `responds successfully`() {
       whenever(
         reportsService.getReportsForPrisoner(any()),
       ).thenReturn(listOf(REPORTED_ADJUDICATION_DTO))
@@ -326,6 +326,36 @@ class ReportsControllerTest : TestControllerBase() {
       return mockMvc
         .perform(
           MockMvcRequestBuilders.get("/reported-adjudications/prisoner/A12345")
+            .header("Content-Type", "application/json"),
+        )
+    }
+  }
+
+  @Nested
+  inner class GetAllReportsByBooking {
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      getAllReportsByBookingRequest()
+        .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ALL_ADJUDICATIONS"])
+    fun `responds successfully`() {
+      whenever(
+        reportsService.getReportsForBooking(any()),
+      ).thenReturn(listOf(REPORTED_ADJUDICATION_DTO))
+
+      getAllReportsByBookingRequest()
+        .andExpect(MockMvcResultMatchers.status().isOk)
+      verify(reportsService, atLeastOnce()).getReportsForBooking(12345)
+    }
+
+    private fun getAllReportsByBookingRequest(): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.get("/reported-adjudications/all-by-booking/12345")
             .header("Content-Type", "application/json"),
         )
     }

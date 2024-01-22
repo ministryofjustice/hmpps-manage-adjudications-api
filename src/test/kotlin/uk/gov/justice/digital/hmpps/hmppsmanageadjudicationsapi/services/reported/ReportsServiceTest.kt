@@ -350,6 +350,24 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class ReportsByBooking {
+
+    @Test
+    fun `returns reports for a booking`() {
+      whenever(reportedAdjudicationRepository.findByOffenderBookingId(12345)).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication().also {
+            it.createDateTime = LocalDateTime.now()
+            it.createdByUserId = ""
+          },
+        ),
+      )
+      val response = reportsService.getReportsForBooking(12345)
+      assertThat(response.isNotEmpty()).isTrue
+    }
+  }
+
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // not required.
   }
