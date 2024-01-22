@@ -311,7 +311,7 @@ class ReportsController(
   ): List<ReportedAdjudicationDto> = reportsService.getReportsForPrisoner(prisonerNumber = prisonerNumber)
 
   @Operation(
-    summary = "Get all adjudications for a offender booking id",
+    summary = "Get all adjudications for an offender booking id",
     responses = [
       io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "200",
