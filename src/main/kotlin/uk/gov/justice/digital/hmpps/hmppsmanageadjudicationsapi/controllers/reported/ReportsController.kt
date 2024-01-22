@@ -309,4 +309,32 @@ class ReportsController(
   fun getAdjudicationsForPrisoner(
     @PathVariable(name = "prisonerNumber") prisonerNumber: String,
   ): List<ReportedAdjudicationDto> = reportsService.getReportsForPrisoner(prisonerNumber = prisonerNumber)
+
+  @Operation(
+    summary = "Get all adjudications for an offender booking id",
+    responses = [
+      io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "success",
+        content = [
+          io.swagger.v3.oas.annotations.media.Content(
+            mediaType = "application/json",
+            array = ArraySchema(schema = Schema(implementation = ReportedAdjudicationDto::class)),
+          ),
+        ],
+      ),
+    ],
+  )
+  @Parameters(
+    Parameter(
+      name = "offenderBookingId",
+      required = true,
+      description = "offender booking id",
+    ),
+  )
+  @PreAuthorize("hasRole('ALL_ADJUDICATIONS')")
+  @GetMapping("/all-by-booking/{offenderBookingId}")
+  fun getAdjudicationsForBooking(
+    @PathVariable(name = "offenderBookingId") offenderBookingId: Long,
+  ): List<ReportedAdjudicationDto> = reportsService.getReportsForBooking(offenderBookingId = offenderBookingId)
 }
