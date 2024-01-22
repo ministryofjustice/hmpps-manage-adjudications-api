@@ -44,6 +44,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.TransferService.Companion.transferableStatuses
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import java.time.LocalDateTime
 
@@ -86,7 +87,6 @@ class MigrateNewRecordService(
       prisonerNumber = adjudicationMigrateDto.prisoner.prisonerNumber,
       offenderBookingId = adjudicationMigrateDto.bookingId,
       originatingAgencyId = adjudicationMigrateDto.agencyId,
-      overrideAgencyId = adjudicationMigrateDto.getOverrideAgencyId(),
       dateTimeOfDiscovery = adjudicationMigrateDto.incidentDateTime,
       dateTimeOfIncident = adjudicationMigrateDto.incidentDateTime,
       incidentRoleCode = null,
@@ -112,7 +112,10 @@ class MigrateNewRecordService(
       migrated = true,
       migratedInactivePrisoner = adjudicationMigrateDto.prisoner.currentAgencyId == null,
       migratedSplitRecord = adjudicationMigrateDto.nomisSplitRecord,
-    ).also { it.calculateStatus() }
+    ).also {
+      it.calculateStatus()
+      it.overrideAgencyId = adjudicationMigrateDto.getOverrideAgencyId(it.status)
+    }
 
     val saved = reportedAdjudicationRepository.save(reportedAdjudication).also {
       it.createDateTime = adjudicationMigrateDto.reportedDateTime
@@ -189,10 +192,10 @@ class MigrateNewRecordService(
         else -> Gender.MALE
       }
 
-    fun AdjudicationMigrateDto.getOverrideAgencyId(): String? {
+    fun AdjudicationMigrateDto.getOverrideAgencyId(status: ReportedAdjudicationStatus): String? {
       this.prisoner.currentAgencyId ?: return null
 
-      return if (this.agencyId != this.prisoner.currentAgencyId) this.prisoner.currentAgencyId else null
+      return if (this.agencyId != this.prisoner.currentAgencyId && transferableStatuses.contains(status)) this.prisoner.currentAgencyId else null
     }
 
     fun List<MigrateDamage>.toDamages(): MutableList<ReportedDamage> =
