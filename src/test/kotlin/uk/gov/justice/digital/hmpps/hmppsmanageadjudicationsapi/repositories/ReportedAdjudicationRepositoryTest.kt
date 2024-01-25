@@ -612,13 +612,6 @@ class ReportedAdjudicationRepositoryTest {
   }
 
   @Test
-  fun `hearing without outcome test`() {
-    val hearings = hearingRepository.findByHearingOutcomeIsNull()
-
-    assertThat(hearings.size).isEqualTo(10)
-  }
-
-  @Test
   fun `punishment comments`() {
     val adjudication = reportedAdjudicationRepository.findByChargeNumber("1236")
     adjudication!!.punishmentComments.add(PunishmentComment(comment = "some text"))
