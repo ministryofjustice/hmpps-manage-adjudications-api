@@ -13,6 +13,7 @@ generic-service:
     PRISON_API_ENDPOINT_URL: https://api.prison.service.justice.gov.uk
     FEATURE_ASYNC_ADJUDICATIONS: false
     FEATURE_NOMIS_SOURCE_OF_TRUTH_SUMMARY: true
+    SERVICE_ACTIVE_PRISONS:
 
   postgresDatabaseRestore:
     enabled: true
