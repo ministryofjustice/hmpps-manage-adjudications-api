@@ -16,7 +16,7 @@ generic-service:
     FEATURE_ASYNC_HEARINGS: true
     FEATURE_ASYNC_PUNISHMENTS: true
     FEATURE_ASYNC_OUTCOMES: true
-    FEATURE_NOMIS_SOURCE_OF_TRUTH_SUMMARY: true
+    FEATURE_NOMIS_SOURCE_OF_TRUTH_SUMMARY: false
 
   postgresDatabaseRestore:
     enabled: true
