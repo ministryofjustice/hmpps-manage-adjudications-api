@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.12.0"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.14.1"
   id("jacoco")
   kotlin("plugin.spring") version "1.9.22"
   kotlin("plugin.jpa") version "1.9.22"
@@ -24,8 +24,8 @@ dependencies {
   implementation("io.swagger:swagger-annotations:1.6.12")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.1.1")
-  implementation("io.opentelemetry:opentelemetry-api:1.33.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.2.1")
+  implementation("io.opentelemetry:opentelemetry-api:1.34.1")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.0.0")
 
   runtimeOnly("com.h2database:h2:2.2.224")
@@ -41,14 +41,14 @@ dependencies {
   testImplementation("org.flywaydb:flyway-core")
   testImplementation("org.testcontainers:localstack:1.19.3")
   testImplementation("org.testcontainers:postgresql:1.19.3")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.33.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.34.1")
 }
 
 allOpen {
   annotations(
     "jakarta.persistence.Entity",
     "jakarta.persistence.MappedSuperclass",
-    "jakarta.persistence.Embeddable"
+    "jakarta.persistence.Embeddable",
   )
 }
 
