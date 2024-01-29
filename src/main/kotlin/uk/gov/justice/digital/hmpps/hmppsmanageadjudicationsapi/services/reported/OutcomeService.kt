@@ -25,7 +25,6 @@ class OutcomeService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
-  private val nomisOutcomeService: NomisOutcomeService,
   private val punishmentsService: PunishmentsService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
@@ -176,13 +175,7 @@ class OutcomeService(
       details = details,
       reason = reason,
       quashedReason = quashedReason,
-    ).also {
-      it.oicHearingId = nomisOutcomeService.createHearingResultIfApplicable(
-        adjudicationNumber = chargeNumber,
-        hearing = reportedAdjudication.getLatestHearing(),
-        outcome = it,
-      )
-    }
+    )
 
     reportedAdjudication.addOutcome(outcomeToCreate)
 
@@ -214,12 +207,6 @@ class OutcomeService(
       }
     }
 
-    nomisOutcomeService.amendHearingResultIfApplicable(
-      adjudicationNumber = chargeNumber,
-      hearing = reportedAdjudication.getLatestHearing(),
-      outcome = reportedAdjudication.latestOutcome()!!,
-    )
-
     return saveToDto(reportedAdjudication)
   }
 
@@ -247,15 +234,8 @@ class OutcomeService(
         reportedAdjudication.clearPunishments()
         reportedAdjudication.punishmentComments.clear()
       }
-      OutcomeCode.QUASHED -> punishmentsService.removeQuashedFinding(reportedAdjudication)
       else -> {}
     }
-
-    nomisOutcomeService.deleteHearingResultIfApplicable(
-      adjudicationNumber = chargeNumber,
-      hearing = reportedAdjudication.getLatestHearing(),
-      outcome = outcomeToDelete,
-    )
 
     return saveToDto(reportedAdjudication)
   }

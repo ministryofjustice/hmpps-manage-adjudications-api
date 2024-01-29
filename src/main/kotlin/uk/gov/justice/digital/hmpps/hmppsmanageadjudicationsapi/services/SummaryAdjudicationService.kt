@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSearchResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
@@ -25,7 +24,6 @@ import java.time.LocalDate
 @Service
 class SummaryAdjudicationService(
   private val legacyNomisGateway: LegacyNomisGateway,
-  private val featureFlagsConfig: FeatureFlagsConfig,
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
   fun getAdjudication(prisonerNumber: String, chargeId: Long): AdjudicationDetail =
@@ -71,38 +69,34 @@ class SummaryAdjudicationService(
     adjudicationCutoffDate: LocalDate?,
     includeSuspended: Boolean = false,
   ): AdjudicationSummary {
-    return if (featureFlagsConfig.nomisSourceOfTruthSummary) {
-      legacyNomisGateway.getAdjudicationsForPrisonerForBooking(bookingId, awardCutoffDate, adjudicationCutoffDate)
-    } else {
-      val cutOff = adjudicationCutoffDate ?: LocalDate.now().minusMonths(3)
-      val punishmentCutOff = awardCutoffDate ?: LocalDate.now().minusDays(1)
-      val provenByOffenderBookingId = reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
-        bookingId = bookingId,
-        status = ReportedAdjudicationStatus.CHARGE_PROVED,
-        cutOff = cutOff.atStartOfDay(),
-      )
-      return AdjudicationSummary(
-        bookingId = bookingId,
-        adjudicationCount = provenByOffenderBookingId.size,
-        awards =
-        provenByOffenderBookingId.map { it.getPunishments() }.flatten().filter {
-          it.schedule.filterCutOff(punishmentCutOff) && it.filterSuspended(includeSuspended)
-        }.map {
-          val latestSchedule = it.schedule.latestSchedule()
-          Award(
-            bookingId = bookingId,
-            status = it.getStatus(latestSchedule),
-            statusDescription = it.getStatus(latestSchedule),
-            effectiveDate = latestSchedule.startDate ?: latestSchedule.createDateTime?.toLocalDate(),
-            days = latestSchedule.days,
-            sanctionCode = it.type.name,
-            sanctionCodeDescription = it.sanctionCodeDescription(),
-            limit = it.amount?.toBigDecimal() ?: it.stoppagePercentage?.toBigDecimal(),
-            comment = it.comment(),
-          )
-        },
-      )
-    }
+    val cutOff = adjudicationCutoffDate ?: LocalDate.now().minusMonths(3)
+    val punishmentCutOff = awardCutoffDate ?: LocalDate.now().minusDays(1)
+    val provenByOffenderBookingId = reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+      bookingId = bookingId,
+      status = ReportedAdjudicationStatus.CHARGE_PROVED,
+      cutOff = cutOff.atStartOfDay(),
+    )
+    return AdjudicationSummary(
+      bookingId = bookingId,
+      adjudicationCount = provenByOffenderBookingId.size,
+      awards =
+      provenByOffenderBookingId.map { it.getPunishments() }.flatten().filter {
+        it.schedule.filterCutOff(punishmentCutOff) && it.filterSuspended(includeSuspended)
+      }.map {
+        val latestSchedule = it.schedule.latestSchedule()
+        Award(
+          bookingId = bookingId,
+          status = it.getStatus(latestSchedule),
+          statusDescription = it.getStatus(latestSchedule),
+          effectiveDate = latestSchedule.startDate ?: latestSchedule.createDateTime?.toLocalDate(),
+          days = latestSchedule.days,
+          sanctionCode = it.type.name,
+          sanctionCodeDescription = it.sanctionCodeDescription(),
+          limit = it.amount?.toBigDecimal() ?: it.stoppagePercentage?.toBigDecimal(),
+          comment = it.comment(),
+        )
+      },
+    )
   }
 
   companion object {

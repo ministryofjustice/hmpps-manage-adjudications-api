@@ -6,7 +6,10 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import jakarta.validation.ValidationException
 import org.hibernate.validator.constraints.Length
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Plea
+
+enum class Plea {
+  GUILTY, NOT_GUILTY, REFUSED, UNFIT, NOT_ASKED,
+}
 
 @Entity
 @Table(name = "hearing_outcome")

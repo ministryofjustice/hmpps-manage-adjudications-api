@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -12,11 +11,8 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.util.CollectionUtils
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Award
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
@@ -31,13 +27,11 @@ import java.time.LocalDateTime
 class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
   private val legacyNomisGateway: LegacyNomisGateway = mock()
-  private val featureFlagsConfig: FeatureFlagsConfig = mock()
 
   private val prisonerNumber = "A1234AB"
 
   private val summaryAdjudicationService = SummaryAdjudicationService(
     legacyNomisGateway,
-    featureFlagsConfig,
     reportedAdjudicationRepository,
   )
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
@@ -46,11 +40,6 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
   @Nested
   inner class Legacy {
-
-    @BeforeEach
-    fun beforeEach() {
-      whenever(featureFlagsConfig.nomisSourceOfTruthSummary).thenReturn(true)
-    }
 
     @Test
     fun `can paginate results from NOMIS`() {
@@ -112,20 +101,6 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `can get results for a booking`() {
-      whenever(legacyNomisGateway.getAdjudicationsForPrisonerForBooking(1L, null, null)).thenReturn(
-        AdjudicationSummary(
-          bookingId = 1L,
-          adjudicationCount = 2,
-          awards = listOf(Award(bookingId = 1L, sanctionCode = "T3"), Award(bookingId = 1L, sanctionCode = "T1")),
-        ),
-      )
-      val adjudicationSummary = summaryAdjudicationService.getAdjudicationSummary(1L, null, null)
-
-      assertThat(adjudicationSummary.adjudicationCount).isEqualTo(2)
-    }
-
-    @Test
     fun `can get results for a prisoner number`() {
       val adjudicationNumber = 10000L
       whenever(legacyNomisGateway.getAdjudicationDetailForPrisoner(prisonerNumber = prisonerNumber, chargeId = 1L)).thenReturn(
@@ -171,11 +146,6 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           ),
         ),
       )
-    }
-
-    @BeforeEach
-    fun init() {
-      whenever(featureFlagsConfig.nomisSourceOfTruthSummary).thenReturn(false)
     }
 
     @Test
