@@ -10,8 +10,28 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDateTime
+
+enum class OicHearingType {
+  GOV_ADULT,
+  GOV_YOI,
+  INAD_YOI,
+  GOV,
+  INAD_ADULT,
+  ;
+
+  fun isValidState(isYoungOffender: Boolean) {
+    when (isYoungOffender) {
+      true -> if (listOf(GOV_ADULT, INAD_ADULT).contains(this)) throw IllegalStateException("oic hearing type is not applicable for rule set")
+      false -> if (listOf(GOV_YOI, INAD_YOI).contains(this)) throw IllegalStateException("oic hearing type is not applicable for rule set")
+    }
+  }
+
+  companion object {
+    fun inadTypes() = listOf(INAD_ADULT, INAD_YOI)
+    fun govTypes() = listOf(GOV_ADULT, GOV_YOI)
+  }
+}
 
 @Entity
 @Table(name = "hearing")

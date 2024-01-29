@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
@@ -32,18 +33,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import java.time.LocalDateTime
 
 class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
-  private val legacySyncService: LegacySyncService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val reportedAdjudicationService =
     ReportedAdjudicationService(
       reportedAdjudicationRepository,
-      legacySyncService,
       offenceCodeLookupService,
       authenticationFacade,
       telemetryClient,
@@ -279,31 +276,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               ),
             ),
           )
-          it.addPunishment(
-            Punishment(
-              type = PunishmentType.ADDITIONAL_DAYS,
-              consecutiveChargeNumber = "9999",
-              schedule = mutableListOf(
-                PunishmentSchedule(days = 10),
-              ),
-            ),
-          )
         },
-      )
-
-      whenever(reportedAdjudicationRepository.findByChargeNumberIn(any())).thenReturn(
-        listOf(
-          entityBuilder.reportedAdjudication(
-            chargeNumber = "999",
-          ),
-        ),
       )
 
       val dto = reportedAdjudicationService.getReportedAdjudicationDetails("1")
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findByChargeNumberIn(listOf("999", "9999"))
       assertThat(dto.punishments.first { it.consecutiveChargeNumber == "999" }.consecutiveReportAvailable).isTrue
-      assertThat(dto.punishments.first { it.consecutiveChargeNumber == "9999" }.consecutiveReportAvailable).isFalse
       assertThat(dto.punishments.first { it.consecutiveChargeNumber == null }.consecutiveReportAvailable).isNull()
     }
 
@@ -364,16 +342,15 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @ParameterizedTest
     @CsvSource(
-      "AWAITING_REVIEW, UNSCHEDULED, true",
-      "AWAITING_REVIEW, REJECTED, false",
-      "AWAITING_REVIEW, RETURNED, false",
-      "AWAITING_REVIEW, AWAITING_REVIEW, false",
-      "RETURNED, AWAITING_REVIEW, false",
+      "AWAITING_REVIEW, UNSCHEDULED",
+      "AWAITING_REVIEW, REJECTED",
+      "AWAITING_REVIEW, RETURNED",
+      "AWAITING_REVIEW, AWAITING_REVIEW",
+      "RETURNED, AWAITING_REVIEW",
     )
     fun `setting status for a reported adjudication for valid transitions`(
       from: ReportedAdjudicationStatus,
       to: ReportedAdjudicationStatus,
-      updatesNomis: Boolean,
     ) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
@@ -397,11 +374,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.lastModifiedAgencyId = it.originatingAgencyId
         },
       )
-      if (updatesNomis) {
-        verify(legacySyncService).publishAdjudication(any())
-      } else {
-        verify(legacySyncService, never()).publishAdjudication(any())
-      }
 
       verify(telemetryClient).trackEvent(
         ReportedAdjudicationService.TELEMETRY_EVENT,

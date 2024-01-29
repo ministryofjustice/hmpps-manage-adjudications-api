@@ -11,8 +11,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
-import org.mockito.kotlin.atLeastOnce
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
@@ -20,23 +18,19 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import java.time.LocalDateTime
 
 class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
-  private val legacySyncService: LegacySyncService = mock()
   private val hearingOutcomeService = HearingOutcomeService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
-    legacySyncService,
   )
 
   @Test
@@ -165,20 +159,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      if (listOf(HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV).contains(code)) {
-        verify(legacySyncService, atLeastOnce()).amendHearing(
-          reportedAdjudication.chargeNumber,
-          reportedAdjudication.hearings.first().oicHearingId,
-          OicHearingRequest(
-            reportedAdjudication.hearings.first().dateTimeOfHearing,
-            reportedAdjudication.hearings.first().oicHearingType,
-            reportedAdjudication.hearings.first().locationId,
-            "test",
-            code.name,
-          ),
-        )
-      }
-
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("test")
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(code)
@@ -200,18 +180,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      verify(legacySyncService, atLeastOnce()).amendHearing(
-        reportedAdjudication.chargeNumber,
-        reportedAdjudication.hearings.first().oicHearingId,
-        OicHearingRequest(
-          reportedAdjudication.hearings.first().dateTimeOfHearing,
-          reportedAdjudication.hearings.first().oicHearingType,
-          reportedAdjudication.hearings.first().locationId,
-          "test",
-          "ADJOURN",
-        ),
-      )
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("test")
@@ -305,18 +273,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      if (code == HearingOutcomeCode.REFER_INAD) {
-        verify(legacySyncService, atLeastOnce()).amendHearing(
-          reportedAdjudication.chargeNumber,
-          reportedAdjudication.hearings.first().oicHearingId,
-          OicHearingRequest(
-            reportedAdjudication.hearings.first().dateTimeOfHearing,
-            reportedAdjudication.hearings.first().oicHearingType,
-            reportedAdjudication.hearings.first().locationId,
-          ),
-        )
-      }
-
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNull()
       assertThat(response).isNotNull
     }
@@ -334,12 +290,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val response = hearingOutcomeService.removeAdjourn("1")
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      verify(legacySyncService, atLeastOnce()).amendHearing(
-        reportedAdjudication.chargeNumber,
-        reportedAdjudication.hearings.first().oicHearingId,
-        OicHearingRequest(reportedAdjudication.hearings.first().dateTimeOfHearing, reportedAdjudication.hearings.first().oicHearingType, reportedAdjudication.hearings.first().locationId),
-      )
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNull()
       assertThat(response).isNotNull
@@ -610,20 +560,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
-      if (code == HearingOutcomeCode.REFER_INAD) {
-        verify(legacySyncService, atLeastOnce()).amendHearing(
-          reportedAdjudication.chargeNumber,
-          reportedAdjudication.hearings.first().oicHearingId,
-          OicHearingRequest(
-            reportedAdjudication.hearings.first().dateTimeOfHearing,
-            reportedAdjudication.hearings.first().oicHearingType,
-            reportedAdjudication.hearings.first().locationId,
-            "updated adjudicator",
-            "REFER_INAD",
-          ),
-        )
-      }
-
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(code)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("updated adjudicator")
@@ -658,18 +594,6 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      verify(legacySyncService, atLeastOnce()).amendHearing(
-        reportedAdjudication.chargeNumber,
-        reportedAdjudication.hearings.first().oicHearingId,
-        OicHearingRequest(
-          reportedAdjudication.hearings.first().dateTimeOfHearing,
-          reportedAdjudication.hearings.first().oicHearingType,
-          reportedAdjudication.hearings.first().locationId,
-          "updated adjudicator",
-          "ADJOURN",
-        ),
-      )
 
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome).isNotNull
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)

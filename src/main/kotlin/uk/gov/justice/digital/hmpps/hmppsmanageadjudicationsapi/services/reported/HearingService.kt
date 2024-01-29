@@ -10,14 +10,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHist
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus.Companion.validateTransition
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -33,7 +31,6 @@ class HearingService(
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   private val hearingRepository: HearingRepository,
-  private val legacySyncService: LegacySyncService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -51,15 +48,6 @@ class HearingService(
       reportedAdjudication.addOutcome(Outcome(code = OutcomeCode.SCHEDULE_HEARING))
     }
 
-    val oicHearingId = legacySyncService.createHearing(
-      adjudicationNumber = chargeNumber,
-      oicHearingRequest = OicHearingRequest(
-        dateTimeOfHearing = dateTimeOfHearing,
-        hearingLocationId = locationId,
-        oicHearingType = oicHearingType,
-      ),
-    )
-
     reportedAdjudication.let {
       it.hearings.add(
         Hearing(
@@ -67,7 +55,6 @@ class HearingService(
           chargeNumber = reportedAdjudication.chargeNumber,
           locationId = locationId,
           dateTimeOfHearing = dateTimeOfHearing,
-          oicHearingId = oicHearingId,
           oicHearingType = oicHearingType,
         ),
       )
@@ -92,16 +79,6 @@ class HearingService(
     val hearingToEdit = reportedAdjudication.getHearing()
     reportedAdjudication.hearings.filter { it.id != hearingToEdit.id }.validateHearingDate(dateTimeOfHearing)
 
-    legacySyncService.amendHearing(
-      adjudicationNumber = chargeNumber,
-      oicHearingId = hearingToEdit.oicHearingId,
-      oicHearingRequest = OicHearingRequest(
-        dateTimeOfHearing = dateTimeOfHearing,
-        hearingLocationId = locationId,
-        oicHearingType = oicHearingType,
-      ),
-    )
-
     hearingToEdit.let {
       it.dateTimeOfHearing = dateTimeOfHearing
       it.locationId = locationId
@@ -118,11 +95,6 @@ class HearingService(
   fun deleteHearing(chargeNumber: String): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
     val hearingToRemove = reportedAdjudication.getHearing().canDelete()
-
-    legacySyncService.deleteHearing(
-      adjudicationNumber = chargeNumber,
-      oicHearingId = hearingToRemove.oicHearingId,
-    )
 
     reportedAdjudication.also {
       it.hearings.remove(hearingToRemove)

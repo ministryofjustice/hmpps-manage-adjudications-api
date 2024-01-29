@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.FeatureFlagsConfig
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import java.time.Clock
 import java.time.LocalDateTime
@@ -11,7 +10,6 @@ class EventPublishService(
   private val snsService: SnsService,
   private val auditService: AuditService,
   private val clock: Clock,
-  private val featureFlagsConfig: FeatureFlagsConfig,
 ) {
 
   fun publishEvent(event: AdjudicationDomainEventType, adjudication: ReportedAdjudicationDto) {

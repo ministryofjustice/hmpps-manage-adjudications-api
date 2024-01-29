@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -72,7 +71,6 @@ class AdjudicationWorkflowService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
-  private val legacySyncService: LegacySyncService,
   authenticationFacade: AuthenticationFacade,
   private val telemetryClient: TelemetryClient,
   private val draftOffenceService: DraftOffenceService,
@@ -164,7 +162,7 @@ class AdjudicationWorkflowService(
   }
 
   private fun createReportedAdjudication(draftAdjudication: DraftAdjudication): ReportedAdjudicationDto {
-    val chargeNumber = legacySyncService.requestAdjudicationCreationData() ?: reportedAdjudicationService.getChargeNumber(draftAdjudication.agencyId)
+    val chargeNumber = reportedAdjudicationService.getChargeNumber(draftAdjudication.agencyId)
 
     return reportedAdjudicationService.save(
       ReportedAdjudication(

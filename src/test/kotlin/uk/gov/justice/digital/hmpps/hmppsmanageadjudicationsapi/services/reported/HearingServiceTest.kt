@@ -11,33 +11,28 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
-import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class HearingServiceTest : ReportedAdjudicationTestBase() {
   private val hearingRepository: HearingRepository = mock()
-  private val legacySyncService: LegacySyncService = mock()
   private val hearingService = HearingService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
     hearingRepository,
-    legacySyncService,
   )
 
   @Test
@@ -79,7 +74,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-      whenever(legacySyncService.createHearing(any(), any())).thenReturn(5L)
     }
 
     @ParameterizedTest
@@ -177,21 +171,13 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(legacySyncService, atLeastOnce()).createHearing(
-        "1235",
-        OicHearingRequest(
-          dateTimeOfHearing = now,
-          hearingLocationId = 1,
-          oicHearingType = OicHearingType.GOV_ADULT,
-        ),
-      )
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now)
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.originatingAgencyId)
       assertThat(argumentCaptor.value.hearings.first().chargeNumber).isEqualTo(reportedAdjudication.chargeNumber)
-      assertThat(argumentCaptor.value.hearings.first().oicHearingId).isEqualTo(5)
+      assertThat(argumentCaptor.value.hearings.first().oicHearingId).isNull()
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
       assertThat(argumentCaptor.value.hearings.first().oicHearingType).isEqualTo(OicHearingType.GOV_ADULT)
       assertThat(argumentCaptor.value.dateTimeOfFirstHearing).isEqualTo(now)
@@ -294,7 +280,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
-      whenever(legacySyncService.createHearing(any(), any())).thenReturn(5L)
     }
 
     @ParameterizedTest
@@ -361,15 +346,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(legacySyncService, atLeastOnce()).amendHearing(
-        "1235",
-        3,
-        OicHearingRequest(
-          dateTimeOfHearing = now.plusDays(1),
-          hearingLocationId = 2,
-          oicHearingType = OicHearingType.INAD_ADULT,
-        ),
-      )
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(2)
@@ -435,7 +411,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(legacySyncService, atLeastOnce()).deleteHearing("1235", 3)
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(0)
 
@@ -469,7 +444,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(legacySyncService, atLeastOnce()).deleteHearing("1235", 2)
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
@@ -497,7 +471,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(legacySyncService, atLeastOnce()).deleteHearing("1235", 1)
 
       assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(3)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.REFER_POLICE)

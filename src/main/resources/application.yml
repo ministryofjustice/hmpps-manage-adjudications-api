@@ -95,16 +95,6 @@ management:
 api:
   health-timeout-ms: 1000
 
-feature:
-  nomis-source-of-truth:
-      summary: ${FEATURE_NOMIS_SOURCE_OF_TRUTH_SUMMARY:true}
-  async:
-      chargeNumbers: ${FEATURE_CHARGE_NUMBER:false}
-      adjudications: ${FEATURE_ASYNC_ADJUDICATIONS:false}
-      hearings:  ${FEATURE_ASYNC_HEARINGS:false}
-      outcomes: ${FEATURE_ASYNC_OUTCOMES:false}
-      punishments: ${FEATURE_ASYNC_PUNISHMENTS:false}
-
 service:
   active:
     prisons: ${SERVICE_ACTIVE_PRISONS:***}

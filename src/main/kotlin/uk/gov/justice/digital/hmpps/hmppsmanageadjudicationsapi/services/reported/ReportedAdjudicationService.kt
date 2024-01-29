@@ -5,9 +5,7 @@ import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DisIssueHistory
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
@@ -17,7 +15,6 @@ import java.time.LocalDateTime
 @Service
 class ReportedAdjudicationService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
-  private val legacySyncService: LegacySyncService,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   private val telemetryClient: TelemetryClient,
@@ -35,7 +32,7 @@ class ReportedAdjudicationService(
 
     return reportedAdjudication.toDto(
       activeCaseload = authenticationFacade.activeCaseload,
-      consecutiveReportsAvailable = reportedAdjudication.getConsecutiveReportsAvailable(),
+      consecutiveReportsAvailable = reportedAdjudication.getPunishments().filter { it.consecutiveChargeNumber != null }.map { it.consecutiveChargeNumber!! },
       hasLinkedAda = hasLinkedAda(reportedAdjudication),
       linkedChargeNumbers = if (reportedAdjudication.migratedSplitRecord) {
         findMultipleOffenceCharges(
@@ -57,9 +54,6 @@ class ReportedAdjudicationService(
     val reportedAdjudicationToReturn = reportedAdjudication.let {
       it.transition(to = status, reason = statusReason, details = statusDetails, reviewUserId = username)
       saveToDto(it)
-    }
-    if (status.isAccepted()) {
-      legacySyncService.publishAdjudication(reportedAdjudication)
     }
 
     telemetryClient.trackEvent(
@@ -101,15 +95,5 @@ class ReportedAdjudicationService(
     }
 
     return saveToDto(reportedAdjudication)
-  }
-
-  @Deprecated("this should be removed once data migration is complete - all reports will be available")
-  private fun ReportedAdjudication.getConsecutiveReportsAvailable(): List<String> {
-    val consecutiveReportsToFind = this.getPunishments().filter { it.consecutiveChargeNumber != null }.map { it.consecutiveChargeNumber!! }
-    if (consecutiveReportsToFind.isNotEmpty()) {
-      return findByChargeNumberIn(consecutiveReportsToFind).map { it.chargeNumber }
-    }
-
-    return emptyList()
   }
 }

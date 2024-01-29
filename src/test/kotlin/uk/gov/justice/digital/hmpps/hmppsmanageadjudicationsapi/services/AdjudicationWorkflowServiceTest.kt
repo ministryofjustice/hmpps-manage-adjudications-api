@@ -16,7 +16,6 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -38,7 +37,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedWitness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationServiceTest
@@ -54,7 +52,6 @@ import java.util.Optional
 
 class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
-  private val legacySyncService: LegacySyncService = mock()
   private val telemetryClient: TelemetryClient = mock()
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val draftOffenceService: DraftOffenceService = mock()
@@ -63,7 +60,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     draftAdjudicationRepository,
     reportedAdjudicationRepository,
     offenceCodeLookupService,
-    legacySyncService,
     authenticationFacade,
     telemetryClient,
     draftOffenceService,
@@ -238,7 +234,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         Optional.of(draft),
       )
 
-      whenever(legacySyncService.requestAdjudicationCreationData()).thenReturn(123456L)
       whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
         val passedInAdjudication = it.arguments[0] as ReportedAdjudication
         passedInAdjudication.createdByUserId = "A_SMITH"
@@ -257,7 +252,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting("prisonerNumber", "chargeNumber", "originatingAgencyId", "gender")
-        .contains("A12345", "123456", "MDI", Gender.MALE)
+        .contains("A12345", "MDI-000000", "MDI", Gender.MALE)
 
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting(
@@ -300,17 +295,10 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         mapOf(
           "adjudicationNumber" to "1",
           "agencyId" to "MDI",
-          "chargeNumber" to "123456",
+          "chargeNumber" to "MDI-000000",
         ),
         null,
       )
-    }
-
-    @Test
-    fun `makes a call to prison api to get creation data`() {
-      adjudicationWorkflowService.completeDraftAdjudication(1)
-
-      verify(legacySyncService).requestAdjudicationCreationData()
     }
 
     @Test
@@ -327,7 +315,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `pads new charge number correctly`() {
-      whenever(legacySyncService.requestAdjudicationCreationData()).thenReturn(null)
       whenever(reportedAdjudicationRepository.getNextChargeSequence(any())).thenReturn(1L)
       var response = adjudicationWorkflowService.completeDraftAdjudication(1L)
       assertThat(response.chargeNumber).isEqualTo("MDI-000001")
@@ -424,7 +411,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           ),
         ),
       )
-      whenever(legacySyncService.requestAdjudicationCreationData()).thenReturn(123)
       whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
         val passedInAdjudication = it.arguments[0] as ReportedAdjudication
         passedInAdjudication.createdByUserId = "A_SMITH"
@@ -515,7 +501,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           )
         },
       )
-      whenever(legacySyncService.requestAdjudicationCreationData()).thenReturn(123)
       whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
         val passedInAdjudication = it.arguments[0] as ReportedAdjudication
         passedInAdjudication.createdByUserId = "A_SMITH"
@@ -642,13 +627,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             "Rod",
           ),
         )
-    }
-
-    @Test
-    fun `does not call prison api to get creation data`() {
-      adjudicationWorkflowService.completeDraftAdjudication(1)
-
-      verify(legacySyncService, never()).requestAdjudicationCreationData()
     }
 
     @Test

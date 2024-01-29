@@ -14,7 +14,6 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -22,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.repo
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
@@ -32,24 +32,16 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReasonForChange
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OffenderOicSanctionRequest.Companion.mapPunishmentToSanction
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicSanctionCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Status
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
-  private val legacySyncService: LegacySyncService = mock()
-
   private val punishmentsService = PunishmentsService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
-    legacySyncService,
   )
 
   @Test
@@ -325,7 +317,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(legacySyncService, atLeastOnce()).createSanctions(any(), any())
 
       val removalWing = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.REMOVAL_WING }
       val additionalDays = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.ADDITIONAL_DAYS }
@@ -435,7 +426,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository, atLeastOnce()).findByChargeNumber("2")
-      verify(legacySyncService, atLeastOnce()).createSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
@@ -461,7 +451,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(legacySyncService, atLeastOnce()).createSanctions(any(), any())
 
       val caution = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.CAUTION }
 
@@ -490,7 +479,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      verify(legacySyncService, atLeastOnce()).createSanctions(any(), any())
 
       val caution = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.CAUTION }
       val damagesOwed = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.DAMAGES_OWED }
@@ -524,7 +512,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository, never()).findByChargeNumber("2")
-      verify(legacySyncService, atLeastOnce()).createSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
@@ -974,7 +961,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
-      verify(legacySyncService, atLeastOnce()).updateSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(response).isNotNull
@@ -1123,7 +1109,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository, never()).findByChargeNumber("2")
-      verify(legacySyncService, atLeastOnce()).updateSanctions(any(), any())
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
@@ -1457,187 +1442,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(additionalDaysReports.first().punishment.schedule.days).isEqualTo(10)
       assertThat(additionalDaysReports.first().punishment.consecutiveChargeNumber).isEqualTo("12345")
       assertThat(additionalDaysReports.first().chargeProvedDate).isEqualTo(reportedAdjudications.first().hearings.first().dateTimeOfHearing.toLocalDate())
-    }
-  }
-
-  @Nested
-  inner class PunishmentSanctionMapper {
-
-    @EnumSource(PunishmentType::class)
-    @ParameterizedTest
-    fun ` map all non privilege punishments to sanctions - suspended`(punishmentType: PunishmentType) {
-      if (punishmentType == PunishmentType.PRIVILEGE) return
-
-      val punishment = Punishment(
-        type = punishmentType,
-        amount = if (punishmentType == PunishmentType.DAMAGES_OWED) 0.0 else null,
-        schedule = mutableListOf(
-          PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
-        ),
-      )
-
-      val oicSanctionRequest = punishment.mapPunishmentToSanction()
-
-      assertThat(oicSanctionRequest.status).isEqualTo(if (punishmentType == PunishmentType.PROSPECTIVE_DAYS) Status.SUSP_PROSP else Status.SUSPENDED)
-    }
-
-    @EnumSource(PunishmentType::class)
-    @ParameterizedTest
-    fun ` map all non privilege punishments to sanctions - not suspended`(punishmentType: PunishmentType) {
-      if (punishmentType == PunishmentType.PRIVILEGE) return
-
-      val punishment = Punishment(
-        type = punishmentType,
-        amount = if (punishmentType == PunishmentType.DAMAGES_OWED) 10.0 else null,
-        schedule = mutableListOf(
-          PunishmentSchedule(days = 10, startDate = LocalDate.now(), endDate = LocalDate.now()),
-        ),
-      )
-
-      val oicSanctionRequest = punishment.mapPunishmentToSanction()
-
-      assertThat(oicSanctionRequest.effectiveDate).isEqualTo(LocalDate.now())
-      assertThat(oicSanctionRequest.sanctionDays).isEqualTo(10)
-      assertThat(oicSanctionRequest.status).isEqualTo(Status.IMMEDIATE)
-
-      when (punishmentType) {
-        PunishmentType.EARNINGS -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.STOP_PCT)
-        PunishmentType.CONFINEMENT -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.CC)
-        PunishmentType.REMOVAL_ACTIVITY -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.REMACT)
-        PunishmentType.EXCLUSION_WORK -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.EXTRA_WORK)
-        PunishmentType.EXTRA_WORK -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.EXTW)
-        PunishmentType.REMOVAL_WING -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.REMWIN)
-        PunishmentType.DAMAGES_OWED -> {
-          assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.OTHER)
-          assertThat(oicSanctionRequest.commentText).isEqualTo("OTHER - Damages owed £10.00")
-        }
-        PunishmentType.CAUTION -> assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.CAUTION)
-        else -> {}
-      }
-    }
-
-    @EnumSource(PrivilegeType::class)
-    @ParameterizedTest
-    fun `map all privilege punishments to sanctions - suspended`(privilegeType: PrivilegeType) {
-      val punishment = Punishment(
-        type = PunishmentType.PRIVILEGE,
-        privilegeType = privilegeType,
-        schedule = mutableListOf(
-          PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
-        ),
-      )
-
-      val oicSanctionRequest = punishment.mapPunishmentToSanction()
-
-      assertThat(oicSanctionRequest.status).isEqualTo(Status.SUSPENDED)
-    }
-
-    @EnumSource(PrivilegeType::class)
-    @ParameterizedTest
-    fun `map all privilege punishments to sanctions - not suspended`(privilegeType: PrivilegeType) {
-      val punishment = Punishment(
-        type = PunishmentType.PRIVILEGE,
-        privilegeType = privilegeType,
-        otherPrivilege = "nintendo switch",
-        schedule = mutableListOf(
-          PunishmentSchedule(days = 10, startDate = LocalDate.now(), endDate = LocalDate.now()),
-        ),
-      )
-
-      val oicSanctionRequest = punishment.mapPunishmentToSanction()
-
-      assertThat(oicSanctionRequest.effectiveDate).isEqualTo(LocalDate.now())
-      assertThat(oicSanctionRequest.sanctionDays).isEqualTo(10)
-      assertThat(oicSanctionRequest.status).isEqualTo(Status.IMMEDIATE)
-      assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.FORFEIT)
-      if (privilegeType != PrivilegeType.OTHER) assertThat(oicSanctionRequest.commentText).isEqualTo("Loss of $privilegeType")
-      if (privilegeType == PrivilegeType.OTHER) assertThat(oicSanctionRequest.commentText).isEqualTo("Loss of nintendo switch")
-    }
-
-    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
-    @ParameterizedTest
-    fun `prospective and additional days - suspended `(punishmentType: PunishmentType) {
-      val punishment = Punishment(
-        type = punishmentType,
-        schedule = mutableListOf(
-          PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
-        ),
-      )
-
-      val oicSanctionRequest = punishment.mapPunishmentToSanction()
-
-      assertThat(oicSanctionRequest.effectiveDate).isEqualTo(LocalDate.now())
-      assertThat(oicSanctionRequest.sanctionDays).isEqualTo(10)
-      assertThat(oicSanctionRequest.status).isEqualTo(if (punishmentType == PunishmentType.ADDITIONAL_DAYS) Status.SUSPENDED else Status.SUSP_PROSP)
-      assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.ADA)
-    }
-
-    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
-    @ParameterizedTest
-    fun `prospective and additional days - not suspended `(punishmentType: PunishmentType) {
-      val punishment = Punishment(
-        type = punishmentType,
-        schedule = mutableListOf(
-          PunishmentSchedule(days = 10),
-        ),
-      )
-
-      val oicSanctionRequest = punishment.mapPunishmentToSanction()
-
-      assertThat(oicSanctionRequest.effectiveDate).isEqualTo(LocalDate.now())
-      assertThat(oicSanctionRequest.sanctionDays).isEqualTo(10)
-      if (punishmentType == PunishmentType.PROSPECTIVE_DAYS) {
-        assertThat(oicSanctionRequest.status).isEqualTo(Status.PROSPECTIVE)
-      } else {
-        assertThat(oicSanctionRequest.status).isEqualTo(Status.IMMEDIATE)
-      }
-      assertThat(oicSanctionRequest.oicSanctionCode).isEqualTo(OicSanctionCode.ADA)
-    }
-
-    @Test
-    fun `consecutive report number is mapped to sanction request`() {
-      val punishment = Punishment(
-        type = PunishmentType.PROSPECTIVE_DAYS,
-        consecutiveChargeNumber = "1234",
-        schedule = mutableListOf(
-          PunishmentSchedule(days = 10),
-        ),
-      )
-
-      val oicSanctionRequest = punishment.mapPunishmentToSanction()
-
-      assertThat(oicSanctionRequest.consecutiveReportNumber).isEqualTo(1234)
-    }
-  }
-
-  @Nested
-  inner class RemoveQuashedOutcome {
-
-    @Test
-    fun `remove quashed outcome`() {
-      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.addPunishment(
-          Punishment(
-            type = PunishmentType.CAUTION,
-            schedule = mutableListOf(
-              PunishmentSchedule(days = 1),
-            ),
-          ),
-        )
-        it.addPunishment(
-          Punishment(
-            type = PunishmentType.DAMAGES_OWED,
-            amount = 10.0,
-            schedule = mutableListOf(
-              PunishmentSchedule(days = 1),
-            ),
-          ),
-        )
-      }
-
-      punishmentsService.removeQuashedFinding(reportedAdjudication)
-      verify(legacySyncService, atLeastOnce()).deleteSanctions(any())
-      verify(legacySyncService, atLeastOnce()).createSanctions(any(), any())
     }
   }
 

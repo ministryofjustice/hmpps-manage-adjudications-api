@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentS
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
@@ -20,8 +21,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
@@ -34,21 +33,11 @@ class PunishmentsService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
-  private val legacySyncService: LegacySyncService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
   authenticationFacade,
 ) {
-
-  fun removeQuashedFinding(reportedAdjudication: ReportedAdjudication) {
-    legacySyncService.deleteSanctions(adjudicationNumber = reportedAdjudication.chargeNumber)
-
-    legacySyncService.createSanctions(
-      adjudicationNumber = reportedAdjudication.chargeNumber,
-      punishments = reportedAdjudication.getPunishments(),
-    )
-  }
 
   fun create(
     chargeNumber: String,
@@ -75,11 +64,6 @@ class PunishmentsService(
         )
       }
     }
-
-    legacySyncService.createSanctions(
-      adjudicationNumber = chargeNumber,
-      punishments = reportedAdjudication.getPunishments(),
-    )
 
     return saveToDto(reportedAdjudication)
   }
@@ -148,11 +132,6 @@ class PunishmentsService(
         }
       }
     }
-
-    legacySyncService.updateSanctions(
-      adjudicationNumber = chargeNumber,
-      punishments = reportedAdjudication.getPunishments(),
-    )
 
     return saveToDto(reportedAdjudication)
   }

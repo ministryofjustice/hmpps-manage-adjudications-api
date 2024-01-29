@@ -12,12 +12,6 @@ generic-service:
     OAUTH_ENDPOINT_URL: https://sign-in-preprod.hmpps.service.justice.gov.uk/auth
     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: https://sign-in-preprod.hmpps.service.justice.gov.uk/auth/.well-known/jwks.json
     PRISON_API_ENDPOINT_URL: https://api-preprod.prison.service.justice.gov.uk
-    FEATURE_ASYNC_ADJUDICATIONS: true
-    FEATURE_CHARGE_NUMBER: true
-    FEATURE_NOMIS_SOURCE_OF_TRUTH_SUMMARY: false
-    FEATURE_ASYNC_HEARINGS: true
-    FEATURE_ASYNC_PUNISHMENTS: true
-    FEATURE_ASYNC_OUTCOMES: true
 
 # CloudPlatform AlertManager receiver to route promethues alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts

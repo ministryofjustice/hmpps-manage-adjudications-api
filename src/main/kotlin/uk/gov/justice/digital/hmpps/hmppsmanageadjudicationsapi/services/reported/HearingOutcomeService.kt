@@ -10,18 +10,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacySyncService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getHearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getLatestHearingId
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.NomisOutcomeService.Companion.getAdjudicator
 
 @Service
 @Transactional
@@ -29,7 +26,6 @@ class HearingOutcomeService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
-  private val legacySyncService: LegacySyncService,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
@@ -110,8 +106,6 @@ class HearingOutcomeService(
       plea = plea,
     )
 
-    if (code.updateOicHearingDetails()) updateOicHearingDetails(reportedAdjudication)
-
     return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus()) it.calculateStatus() })
   }
 
@@ -121,8 +115,6 @@ class HearingOutcomeService(
 
     val code = hearingToRemoveOutcome.hearingOutcome.hearingOutcomeExists().code
     hearingToRemoveOutcome.hearingOutcome = null
-
-    if (code.updateOicHearingDetails()) removeOicHearingDetails(reportedAdjudication)
 
     return saveToDto(reportedAdjudication.also { if (code.shouldRecalculateStatus() && recalculateStatus) it.calculateStatus() })
   }
@@ -160,8 +152,6 @@ class HearingOutcomeService(
       HearingOutcomeCode.NOMIS -> throw RuntimeException("unable to amend a NOMIS hearing outcome")
     }
 
-    if (outcomeCodeToAmend.updateOicHearingDetails()) updateOicHearingDetails(reportedAdjudication)
-
     return saveToDto(reportedAdjudication)
   }
 
@@ -175,38 +165,8 @@ class HearingOutcomeService(
     return matched[actualIndex].hearingOutcome
   }
 
-  private fun updateOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
-    val hearing = reportedAdjudication.getHearing()
-    legacySyncService.amendHearing(
-      adjudicationNumber = reportedAdjudication.chargeNumber,
-      oicHearingId = hearing.oicHearingId,
-      oicHearingRequest = OicHearingRequest(
-        dateTimeOfHearing = hearing.dateTimeOfHearing,
-        hearingLocationId = hearing.locationId,
-        oicHearingType = hearing.oicHearingType,
-        adjudicator = hearing.getAdjudicator(),
-        commentText = hearing.hearingOutcome?.code.toString(),
-      ),
-    )
-  }
-
-  private fun removeOicHearingDetails(reportedAdjudication: ReportedAdjudication) {
-    val hearing = reportedAdjudication.getHearing()
-    legacySyncService.amendHearing(
-      adjudicationNumber = reportedAdjudication.chargeNumber,
-      oicHearingId = hearing.oicHearingId,
-      oicHearingRequest = OicHearingRequest(
-        dateTimeOfHearing = hearing.dateTimeOfHearing,
-        hearingLocationId = hearing.locationId,
-        oicHearingType = hearing.oicHearingType,
-      ),
-    )
-  }
-
   companion object {
     fun HearingOutcome?.hearingOutcomeExists() = this ?: throw EntityNotFoundException("outcome not found for hearing")
-
-    fun HearingOutcomeCode.updateOicHearingDetails(): Boolean = listOf(HearingOutcomeCode.REFER_GOV, HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.ADJOURN).contains(this)
 
     fun ReportedAdjudication.latestOutcomeIsAdjourn() {
       val latest = this.latestHearingOutcome()
