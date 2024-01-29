@@ -342,7 +342,7 @@ class DraftAdjudicationRepositoryTest {
           // offence with minimal data set
           offenceCode = 2,
         ),
-        Offence( // offence with all data set
+        Offence(
           offenceCode = 3,
           victimPrisonersNumber = "A1234AA",
           victimStaffUsername = "ABC12D",

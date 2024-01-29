@@ -64,5 +64,4 @@ enum class Gender(
 ) {
   MALE(Pronouns.male()),
   FEMALE(Pronouns.female()),
-  ;
 }

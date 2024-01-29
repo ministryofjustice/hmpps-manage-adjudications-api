@@ -211,7 +211,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
   @Nested
   inner class WithAValidDraftAdjudication {
-    private val INCIDENT_TIME = LocalDateTime.now(clock)
+    private val incidentTime = LocalDateTime.now(clock)
 
     @BeforeEach
     fun beforeEach() {
@@ -220,7 +220,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         agencyId = "MDI",
-        incidentDetails = incidentDetails(1L, INCIDENT_TIME),
+        incidentDetails = incidentDetails(1L, incidentTime),
         incidentRole = incidentRoleWithAllValuesSet(),
         offenceDetails = mutableListOf(
           Offence(offenceCode = 1002, victimOtherPersonsName = "person", victimPrisonersNumber = "prisoner", victimStaffUsername = "staff"),
@@ -266,7 +266,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         )
         .contains(
           1L,
-          INCIDENT_TIME,
+          incidentTime,
           DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
           INCIDENT_ROLE_CODE,
           INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
@@ -388,8 +388,8 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
   @Nested
   inner class CompleteAPreviouslyCompletedAdjudicationCheckStateChange {
-    private val INCIDENT_TIME = LocalDateTime.now(clock)
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = INCIDENT_TIME)
+    private val incidentTime = LocalDateTime.now(clock)
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = incidentTime)
 
     @BeforeEach
     fun beforeEach() {
@@ -403,7 +403,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             gender = Gender.MALE,
             chargeNumber = "123",
             agencyId = "MDI",
-            incidentDetails = incidentDetails(2L, INCIDENT_TIME),
+            incidentDetails = incidentDetails(2L, incidentTime),
             incidentRole = incidentRoleWithNoValuesSet(),
             offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
             incidentStatement = IncidentStatement(statement = "test"),
