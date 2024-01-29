@@ -7,14 +7,9 @@ import jakarta.validation.ValidationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.BAD_REQUEST
-import org.springframework.http.HttpStatus.CONFLICT
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
-import org.springframework.http.HttpStatus.I_AM_A_TEAPOT
-import org.springframework.http.HttpStatus.NOT_ACCEPTABLE
 import org.springframework.http.HttpStatus.NOT_FOUND
-import org.springframework.http.HttpStatus.NOT_MODIFIED
-import org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -25,11 +20,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.DuplicateCreationException
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.ExistingRecordConflictException
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.NomisDeletedHearingsOrOutcomesException
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.SkipExistingRecordException
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.migrate.UnableToMigrateException
 
 @RestControllerAdvice
 class ApiExceptionHandler {
@@ -162,76 +152,6 @@ class ApiExceptionHandler {
       .body(
         ErrorResponse(
           status = BAD_REQUEST,
-          userMessage = e.message,
-        ),
-      )
-  }
-
-  @ExceptionHandler(ExistingRecordConflictException::class)
-  fun handleExistingRecordConflictException(e: ExistingRecordConflictException): ResponseEntity<ErrorResponse?>? {
-    log.info("ExistingRecordConflictException: {}", e.message)
-
-    return ResponseEntity
-      .status(CONFLICT)
-      .body(
-        ErrorResponse(
-          status = CONFLICT,
-          userMessage = e.message,
-        ),
-      )
-  }
-
-  @ExceptionHandler(UnableToMigrateException::class)
-  fun handleUnableToMigrateException(e: UnableToMigrateException): ResponseEntity<ErrorResponse?>? {
-    log.info("UnableToMigrateException: {}", e.message)
-
-    return ResponseEntity
-      .status(UNPROCESSABLE_ENTITY)
-      .body(
-        ErrorResponse(
-          status = UNPROCESSABLE_ENTITY,
-          userMessage = e.message,
-        ),
-      )
-  }
-
-  @ExceptionHandler(NomisDeletedHearingsOrOutcomesException::class)
-  fun handleIgnoreAsPreprodRefreshOutofSyncException(e: NomisDeletedHearingsOrOutcomesException): ResponseEntity<ErrorResponse?>? {
-    log.info("IgnoreAsPreprodRefreshOutofSyncException: {}", e.message)
-
-    return ResponseEntity
-      .status(I_AM_A_TEAPOT)
-      .body(
-        ErrorResponse(
-          status = I_AM_A_TEAPOT,
-          userMessage = e.message,
-        ),
-      )
-  }
-
-  @ExceptionHandler(DuplicateCreationException::class)
-  fun handleDuplicateCreationException(e: DuplicateCreationException): ResponseEntity<ErrorResponse?>? {
-    log.info("DuplicateCreationException: {}", e.message)
-
-    return ResponseEntity
-      .status(NOT_ACCEPTABLE)
-      .body(
-        ErrorResponse(
-          status = NOT_ACCEPTABLE,
-          userMessage = e.message,
-        ),
-      )
-  }
-
-  @ExceptionHandler(SkipExistingRecordException::class)
-  fun handleSkipExistingRecordsException(e: SkipExistingRecordException): ResponseEntity<ErrorResponse?>? {
-    log.info("SkipExistingRecordException: {}", e.message)
-
-    return ResponseEntity
-      .status(NOT_MODIFIED)
-      .body(
-        ErrorResponse(
-          status = NOT_MODIFIED,
           userMessage = e.message,
         ),
       )

@@ -17,6 +17,4 @@ class FeatureFlagsConfig(
   val outcomes: Boolean,
   @Value("\${feature.async.punishments}")
   val punishments: Boolean,
-  @Value("\${feature.skip.existing}")
-  val skipExistingRecords: Boolean,
 )

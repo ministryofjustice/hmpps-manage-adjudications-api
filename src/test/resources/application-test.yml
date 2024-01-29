@@ -49,5 +49,3 @@ feature:
     hearings: true
     outcomes: true
     punishments: true
-  skip:
-    existing: false

@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.MigrateFixtures
 import java.time.LocalDateTime
 
 interface TestsToImplement {
@@ -26,7 +25,6 @@ abstract class ReportedAdjudicationTestBase : TestsToImplement {
 
   companion object {
     val entityBuilder: EntityBuilder = EntityBuilder()
-    val migrationFixtures: MigrateFixtures = MigrateFixtures()
     val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)
   }
 }
