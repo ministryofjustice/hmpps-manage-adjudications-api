@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways
 
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -9,7 +10,6 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
 import java.time.LocalDate
 import java.util.Optional
 
@@ -18,7 +18,7 @@ enum class Finding {
 }
 
 @Service
-class LegacyNomisGateway(private val prisonApiClientCreds: WebClient) {
+class LegacyNomisGateway(@Qualifier(value = "prisonWebClientClientCredentials") private val prisonApiClient: WebClient) {
 
   fun getAdjudicationsForPrisoner(
     prisonerNumber: String,
@@ -29,7 +29,7 @@ class LegacyNomisGateway(private val prisonApiClientCreds: WebClient) {
     toDate: LocalDate?,
     pageable: Pageable,
   ): ResponseEntity<AdjudicationResponse> =
-    prisonApiClientCreds
+    prisonApiClient
       .get()
       .uri { uriBuilder ->
         uriBuilder.path("/offenders/$prisonerNumber/adjudications")
@@ -55,27 +55,10 @@ class LegacyNomisGateway(private val prisonApiClientCreds: WebClient) {
   }
 
   fun getAdjudicationDetailForPrisoner(prisonerNumber: String, chargeId: Long) =
-    prisonApiClientCreds
+    prisonApiClient
       .get()
       .uri("/offenders/$prisonerNumber/adjudications/$chargeId")
       .retrieve()
       .bodyToMono(object : ParameterizedTypeReference<AdjudicationDetail>() {})
-      .block()!!
-
-  fun getAdjudicationsForPrisonerForBooking(
-    bookingId: Long,
-    awardCutoffDate: LocalDate?,
-    adjudicationCutoffDate: LocalDate?,
-  ) =
-    prisonApiClientCreds
-      .get()
-      .uri { uriBuilder ->
-        uriBuilder.path("/bookings/$bookingId/adjudications")
-          .queryParamIfPresent("awardCutoffDate", Optional.ofNullable(awardCutoffDate))
-          .queryParamIfPresent("adjudicationCutoffDate", Optional.ofNullable(adjudicationCutoffDate))
-          .build()
-      }
-      .retrieve()
-      .bodyToMono(object : ParameterizedTypeReference<AdjudicationSummary>() {})
       .block()!!
 }
