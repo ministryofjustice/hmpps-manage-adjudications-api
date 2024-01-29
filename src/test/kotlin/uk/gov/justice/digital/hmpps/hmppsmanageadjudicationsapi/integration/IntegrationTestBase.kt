@@ -15,7 +15,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationMigrateDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.TestBase
 import java.time.LocalDateTime
@@ -132,16 +131,5 @@ abstract class IntegrationTestBase : TestBase() {
       .addWitnesses()
       .completeDraft()
       .acceptReport()
-  }
-
-  fun migrateRecord(dto: AdjudicationMigrateDto) {
-    val body = objectMapper.writeValueAsString(dto)
-
-    webTestClient.post()
-      .uri("/reported-adjudications/migrate")
-      .headers(setHeaders(username = "hmpps-prisoner-from-nomis-migration-adjudications-1", activeCaseload = null, roles = listOf("ROLE_MIGRATE_ADJUDICATIONS")))
-      .bodyValue(body)
-      .exchange()
-      .expectStatus().isCreated
   }
 }
