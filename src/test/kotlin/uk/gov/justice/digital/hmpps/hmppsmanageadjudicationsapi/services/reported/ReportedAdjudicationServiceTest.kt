@@ -34,6 +34,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
@@ -1747,13 +1748,120 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class CalculateInvalidStatuses {
+
+    @Test
+    fun `sets invalid suspended`() {
+      assertThat(
+        entityBuilder.reportedAdjudication().also {
+          it.addOutcome(
+            Outcome(code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = LocalDateTime.now()),
+          )
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.EARNINGS,
+              actualCreatedDate = LocalDate.now().atStartOfDay(),
+              suspendedUntil = LocalDate.now(),
+              schedule =
+              mutableListOf(
+                PunishmentSchedule(days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+          it.calculateStatus()
+        }.status,
+      ).isEqualTo(ReportedAdjudicationStatus.INVALID_SUSPENDED)
+    }
+
+    @Test
+    fun `does not sets invalid suspended as older than 6 months`() {
+      assertThat(
+        entityBuilder.reportedAdjudication().also {
+          it.addOutcome(
+            Outcome(code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = LocalDateTime.now()),
+          )
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.EARNINGS,
+              actualCreatedDate = LocalDate.now().atStartOfDay().minusMonths(7),
+              suspendedUntil = LocalDate.now(),
+              schedule =
+              mutableListOf(
+                PunishmentSchedule(days = 1, suspendedUntil = LocalDate.now()),
+              ),
+            ),
+          )
+          it.calculateStatus()
+        }.status,
+      ).isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED)
+    }
+
+    @Test
+    fun `sets invalid ADA`() {
+      assertThat(
+        entityBuilder.reportedAdjudication().also {
+          it.addOutcome(
+            Outcome(code = OutcomeCode.PROSECUTION, actualCreatedDate = LocalDateTime.now()),
+          )
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.ADDITIONAL_DAYS,
+              schedule =
+              mutableListOf(
+                PunishmentSchedule(days = 1),
+              ),
+            ),
+          )
+          it.calculateStatus()
+        }.status,
+      ).isEqualTo(ReportedAdjudicationStatus.INVALID_ADA)
+    }
+
+    @Test
+    fun `sets invalid outcome `() {
+      assertThat(
+        entityBuilder.reportedAdjudication().also {
+          it.addOutcome(
+            Outcome(code = OutcomeCode.NOT_PROCEED, actualCreatedDate = LocalDateTime.now()),
+          )
+          it.addOutcome(
+            Outcome(code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = LocalDateTime.now().plusDays(1)),
+          )
+          it.calculateStatus()
+        }.status,
+      ).isEqualTo(ReportedAdjudicationStatus.INVALID_OUTCOME)
+    }
+
+    @Test
+    fun `sets invalid outcome if prosecuted an punishments exc ADA `() {
+      assertThat(
+        entityBuilder.reportedAdjudication().also {
+          it.addOutcome(
+            Outcome(code = OutcomeCode.PROSECUTION, actualCreatedDate = LocalDateTime.now()),
+          )
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.DAMAGES_OWED,
+              schedule =
+              mutableListOf(
+                PunishmentSchedule(days = 1),
+              ),
+            ),
+          )
+          it.calculateStatus()
+        }.status,
+      ).isEqualTo(ReportedAdjudicationStatus.INVALID_OUTCOME)
+    }
+  }
+
   companion object {
     val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
     const val INCIDENT_STATEMENT = "Example statement"
-    val INCIDENT_ROLE_CODE = "25a"
-    val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
-    val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
+    const val INCIDENT_ROLE_CODE = "25a"
+    const val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER = "B23456"
+    const val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
   }
 
   @Test
