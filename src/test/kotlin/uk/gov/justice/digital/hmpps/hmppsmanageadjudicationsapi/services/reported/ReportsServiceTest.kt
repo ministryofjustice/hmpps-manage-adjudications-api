@@ -305,7 +305,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
   inner class AdjudicationHistoryForBooking {
 
     @Test
-    fun `gets all bookings for agency and status without any dates`() {
+    fun `gets all reports for agency and status without any dates`() {
       whenever(
         reportedAdjudicationRepository.findAdjudicationsForBooking(any(), any(), any(), any(), any(), any(), any()),
       ).thenReturn(
@@ -327,6 +327,36 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForBooking(any(), any(), any(), any(), any(), any(), any())
+
+      assertThat(response.content.size).isEqualTo(1)
+    }
+  }
+
+  @Nested
+  inner class AdjudicationHistoryForPrisoner {
+
+    @Test
+    fun `gets all reports for agency and status without any dates`() {
+      whenever(
+        reportedAdjudicationRepository.findAdjudicationsForPrisoner(any(), any(), any(), any(), any()),
+      ).thenReturn(
+        PageImpl(
+          listOf(
+            entityBuilder.reportedAdjudication().also {
+              it.createDateTime = LocalDateTime.now()
+              it.createdByUserId = ""
+            },
+          ),
+        ),
+      )
+
+      val response = reportsService.getAdjudicationsForPrisoner(
+        prisonerNumber = "A1234",
+        statuses = listOf(ReportedAdjudicationStatus.SCHEDULED),
+        pageable = Pageable.ofSize(20).withPage(0),
+      )
+
+      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForPrisoner(any(), any(), any(), any(), any())
 
       assertThat(response.content.size).isEqualTo(1)
     }

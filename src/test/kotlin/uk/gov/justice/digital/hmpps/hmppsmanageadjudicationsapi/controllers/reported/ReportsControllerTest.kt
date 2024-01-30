@@ -302,6 +302,51 @@ class ReportsControllerTest : TestControllerBase() {
   }
 
   @Nested
+  inner class AdjudicationHistoryForPrisoner {
+    @BeforeEach
+    fun `init`() {
+      val pageable = PageRequest.of(0, 20, Sort.by("date_time_of_discovery").descending())
+
+      whenever(
+        reportsService.getAdjudicationsForPrisoner(
+          any(),
+          anyOrNull(),
+          anyOrNull(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(
+        PageImpl(
+          listOf(REPORTED_ADJUDICATION_DTO),
+          pageable,
+          1,
+        ),
+      )
+    }
+
+    @Test
+    fun `responds with a unauthorised status code for history`() {
+      getAdjudicationHistory().andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
+    fun `responds with adjudication history for prisoner `() {
+      getAdjudicationHistory().andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(reportsService, atLeastOnce()).getAdjudicationsForPrisoner(any(), anyOrNull(), anyOrNull(), any(), any())
+    }
+
+    private fun getAdjudicationHistory(): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.get("/reported-adjudications/bookings/prisoner/AY12345?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=date_time_of_discovery,DESC")
+            .header("Content-Type", "application/json"),
+        )
+    }
+  }
+
+  @Nested
   inner class GetAllReportsByPrisoner {
 
     @Test
