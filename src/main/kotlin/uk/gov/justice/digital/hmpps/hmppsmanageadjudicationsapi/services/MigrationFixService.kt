@@ -136,7 +136,7 @@ class MigrationFixService(
   private fun fixStocken() {
     reportedAdjudicationRepository.findByChargeNumber(chargeNumber = "4046986")?.let {
         stoken ->
-      if (stoken.status == ReportedAdjudicationStatus.CHARGE_PROVED) return
+      if (stoken.getOutcomes().any { it.code == OutcomeCode.SCHEDULE_HEARING }) return
       // simply add a schedule hearing in after refer gov outcome
       val referBackToGov = stoken.getOutcomes().first { it.code == OutcomeCode.REFER_GOV }
       stoken.addOutcome(
