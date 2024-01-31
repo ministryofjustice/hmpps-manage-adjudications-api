@@ -19,3 +19,4 @@ spec:
                 - /bin/sh
                 - -c
                 - curl --retry 2 -XPOST http://hmpps-manage-adjudications-api/scheduled-tasks/migration-fix
+          restartPolicy: Never

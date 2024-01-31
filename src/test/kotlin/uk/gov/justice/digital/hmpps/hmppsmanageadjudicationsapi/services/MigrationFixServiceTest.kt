@@ -157,6 +157,7 @@ class MigrationFixServiceTest : ReportedAdjudicationTestBase() {
     verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
     Assertions.assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(3)
+    Assertions.assertThat(argumentCaptor.value.hearings[1].hearingOutcome?.code).isEqualTo(HearingOutcomeCode.COMPLETE)
     Assertions.assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.getCreatedDateTime() }.first().code).isEqualTo(OutcomeCode.REFER_POLICE)
     Assertions.assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.getCreatedDateTime() }[1].code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
     Assertions.assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.getCreatedDateTime() }.last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
