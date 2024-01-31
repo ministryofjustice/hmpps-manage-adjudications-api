@@ -22,6 +22,7 @@ class MigrationFixService(
     fixRefChargeProvedMaybe()
     fixRefNotProvedMaybe()
     fixRefDismissedMaybe()
+    fixRefAdjourndMaybe()
   }
 
   private fun fixRefChargeProvedMaybe() {
@@ -65,6 +66,22 @@ class MigrationFixService(
       .forEach { record ->
         fix(record)
       }
+  }
+
+  private fun fixRefAdjourndMaybe() {
+    reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(status = ReportedAdjudicationStatus.ADJOURNED)
+      .filter { it.chargeNumber != "3908780" }
+      .filter {
+        it.hearings.any { hearing ->
+          listOf(
+            HearingOutcomeCode.REFER_POLICE,
+            HearingOutcomeCode.REFER_INAD,
+            HearingOutcomeCode.REFER_GOV,
+          ).contains(hearing.hearingOutcome?.code)
+        }
+      }
+      .filter { it.getOutcomes().none { outcome -> outcome.code == OutcomeCode.SCHEDULE_HEARING } }
+      .forEach { record -> fix(record) }
   }
 
   private fun fix(record: ReportedAdjudication) {
