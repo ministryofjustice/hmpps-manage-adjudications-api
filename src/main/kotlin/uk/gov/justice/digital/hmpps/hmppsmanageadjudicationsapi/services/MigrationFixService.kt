@@ -28,12 +28,12 @@ class MigrationFixService(
       .filter { it.hearings.any { hearing -> hearing.hearingOutcome?.code == HearingOutcomeCode.REFER_POLICE } }
       .filter { it.getOutcomes().none { outcome -> outcome.code == OutcomeCode.SCHEDULE_HEARING } }
       .forEach { record ->
-        val policeReferIdx = record.hearings.indexOfLast { it.hearingOutcome?.code == HearingOutcomeCode.REFER_POLICE }
-        val nextHearingAfter = record.hearings.getOrNull(policeReferIdx + 1)
+        val policeReferIdx = record.hearings.sortedBy { it.dateTimeOfHearing }.indexOfLast { it.hearingOutcome?.code == HearingOutcomeCode.REFER_POLICE }
+        val nextHearingAfter = record.hearings.sortedBy { it.dateTimeOfHearing }.getOrNull(policeReferIdx + 1)
 
         nextHearingAfter?.let {
           it.hearingOutcome?.let { hearingOutcome ->
-            if (listOf(Finding.PROVED.name, Finding.NOT_PROCEED.name).contains(hearingOutcome.details) && hearingOutcome.code == HearingOutcomeCode.ADJOURN && record.hearings.getOrNull(policeReferIdx + 2) == null) {
+            if (listOf(Finding.PROVED.name, Finding.NOT_PROCEED.name).contains(hearingOutcome.details) && hearingOutcome.code == HearingOutcomeCode.ADJOURN && record.hearings.sortedBy { h -> h.dateTimeOfHearing }.getOrNull(policeReferIdx + 2) == null) {
               log.info("Repairing ${record.chargeNumber}")
               var policeReferOutcome = record.getOutcomes().sortedBy { outcome -> outcome.getCreatedDateTime() }.lastOrNull { outcome -> outcome.code == OutcomeCode.REFER_POLICE }
 
