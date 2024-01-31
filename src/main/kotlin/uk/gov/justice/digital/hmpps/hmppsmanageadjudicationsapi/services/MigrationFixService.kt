@@ -70,8 +70,6 @@ class MigrationFixService(
   private fun fix(record: ReportedAdjudication) {
     val referCount = record.getOutcomes().count { listOf(OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD, OutcomeCode.REFER_GOV).contains(it.code) }
     if (referCount > 1) return
-    val chargeProvedCount = record.getOutcomes().count { it.code == OutcomeCode.CHARGE_PROVED }
-    if (chargeProvedCount == 0) return
 
     val referIdx = record.hearings.sortedBy { it.dateTimeOfHearing }.indexOfLast { listOf(HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV).contains(it.hearingOutcome?.code) }
     val nextHearingAfter = record.hearings.sortedBy { it.dateTimeOfHearing }.getOrNull(referIdx + 1)
