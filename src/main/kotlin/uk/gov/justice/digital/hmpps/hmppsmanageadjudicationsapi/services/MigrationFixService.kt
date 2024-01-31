@@ -21,6 +21,7 @@ class MigrationFixService(
 
   fun repair() {
     repairReferPoliceAdjournShouldBeChargeProved()
+    fixRanbyOutstanding()
   }
 
   private fun repairReferPoliceAdjournShouldBeChargeProved() {
@@ -70,6 +71,27 @@ class MigrationFixService(
           }
         }
       }
+  }
+
+  private fun fixRanbyOutstanding() {
+    // hard code this one - 3908780
+    val ranbyIssue = reportedAdjudicationRepository.findByChargeNumber(chargeNumber = "3908780")!!
+    val referPoliceOutcome = ranbyIssue.getOutcomes().first()
+
+    // basically.  needs a schedule hearing outcome after the police refer.
+    ranbyIssue.addOutcome(
+      Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = referPoliceOutcome.getCreatedDateTime()!!.plusMinutes(1)),
+    )
+    // needs a charge proved after that/
+    ranbyIssue.addOutcome(
+      Outcome(code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = referPoliceOutcome.getCreatedDateTime()!!.plusMinutes(2)),
+    )
+    // and needs to turn the final hearing to be completed.
+    ranbyIssue.getLatestHearing()!!.hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
+
+    ranbyIssue.status = ReportedAdjudicationStatus.CHARGE_PROVED
+
+    reportedAdjudicationRepository.save(ranbyIssue)
   }
 
   companion object {
