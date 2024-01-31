@@ -5,11 +5,13 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
+import java.time.LocalDateTime
 
 @Transactional
 @Service
@@ -31,21 +33,31 @@ class MigrationFixService(
 
         nextHearingAfter?.let {
           it.hearingOutcome?.let { hearingOutcome ->
-            if (hearingOutcome.details == Finding.PROVED.name && hearingOutcome.code == HearingOutcomeCode.ADJOURN && record.hearings.getOrNull(policeReferIdx + 2) == null) {
+            if (listOf(Finding.PROVED.name, Finding.NOT_PROCEED.name).contains(hearingOutcome.details) && hearingOutcome.code == HearingOutcomeCode.ADJOURN && record.hearings.getOrNull(policeReferIdx + 2) == null) {
               log.info("Repairing ${record.chargeNumber}")
-              val policeReferOutcome = record.getOutcomes().sortedBy { outcome -> outcome.getCreatedDateTime() }.last { outcome -> outcome.code == OutcomeCode.REFER_POLICE }
+              var policeReferOutcome = record.getOutcomes().sortedBy { outcome -> outcome.getCreatedDateTime() }.lastOrNull { outcome -> outcome.code == OutcomeCode.REFER_POLICE }
+
+              if (policeReferOutcome == null) {
+                policeReferOutcome = Outcome(code = OutcomeCode.REFER_POLICE, actualCreatedDate = LocalDateTime.now())
+                record.addOutcome(policeReferOutcome)
+              }
+
               // first of all.  need to add in the referal outcome
               record.addOutcome(
-                Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = policeReferOutcome.getCreatedDateTime()!!.plusMinutes(1)),
+                Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = policeReferOutcome.getCreatedDateTime()!!.plusMinutes(2)),
               )
               // second, amend adjourn to complete
               hearingOutcome.code = HearingOutcomeCode.COMPLETE
               // add a charge proved outcome.
               record.addOutcome(
-                Outcome(code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = policeReferOutcome.getCreatedDateTime()!!.plusMinutes(2)),
+                Outcome(
+                  code = if (hearingOutcome.details == Finding.PROVED.name) OutcomeCode.CHARGE_PROVED else OutcomeCode.NOT_PROCEED,
+                  actualCreatedDate = policeReferOutcome.getCreatedDateTime()!!.plusMinutes(3),
+                  reason = if (hearingOutcome.details == Finding.NOT_PROCEED.name) NotProceedReason.OTHER else null,
+                ),
               )
               // set it to charge proved
-              record.status = ReportedAdjudicationStatus.CHARGE_PROVED
+              record.status = if (hearingOutcome.details == Finding.PROVED.name) ReportedAdjudicationStatus.CHARGE_PROVED else ReportedAdjudicationStatus.NOT_PROCEED
 
               reportedAdjudicationRepository.save(record)
             }
