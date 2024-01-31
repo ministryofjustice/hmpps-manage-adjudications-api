@@ -282,6 +282,61 @@ class ReportsController(
     pageable = pageable,
   )
 
+  @Operation(summary = "Get adjudications for all offender bookings for a prisoner")
+  @Parameters(
+    Parameter(
+      name = "page",
+      description = "Results page you want to retrieve (0..N). Default 0, e.g. the first page",
+    ),
+    Parameter(
+      name = "size",
+      description = "Number of records per page. Default 20",
+    ),
+    Parameter(
+      name = "sort",
+      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to date_time_of_discovery DESC",
+    ),
+    Parameter(
+      name = "prisonerNumber",
+      required = true,
+      description = "prisoner number",
+    ),
+    Parameter(
+      name = "startDate",
+      required = false,
+      description = "optional inclusive start date for results",
+    ),
+    Parameter(
+      name = "endDate",
+      required = false,
+      description = "optional inclusive end date for results",
+    ),
+    Parameter(
+      name = "status",
+      required = true,
+      description = "list of status filter for reports",
+    ),
+  )
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
+  @GetMapping("/bookings/prisoner/{prisonerNumber}")
+  fun getAdjudicationsForPrisoner(
+    @PathVariable(name = "prisonerNumber") prisonerNumber: String,
+    @RequestParam(name = "startDate", required = false)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    startDate: LocalDate? = null,
+    @RequestParam(name = "endDate", required = false)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    endDate: LocalDate? = null,
+    @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
+    @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
+  ): Page<ReportedAdjudicationDto> = reportsService.getAdjudicationsForPrisoner(
+    prisonerNumber = prisonerNumber,
+    startDate = startDate,
+    endDate = endDate,
+    statuses = statuses,
+    pageable = pageable,
+  )
+
   @Operation(
     summary = "Get all adjudications for a prisoner",
     responses = [

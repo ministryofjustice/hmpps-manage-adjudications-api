@@ -711,7 +711,7 @@ class ReportedAdjudicationRepositoryTest {
   }
 
   @Test
-  fun `reports by prisoner and agency`() {
+  fun `reports by booking and agency`() {
     reportedAdjudicationRepository.save(
       entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM").also {
         it.hearings.clear()
@@ -738,6 +738,37 @@ class ReportedAdjudicationRepositoryTest {
       startDate = LocalDateTime.now().minusYears(1),
       endDate = LocalDateTime.now(),
       agencies = listOf("MDI"),
+      pageable = Pageable.ofSize(10),
+    )
+    assertThat(response.content.size).isEqualTo(2)
+  }
+
+  @Test
+  fun `reports by prisoner and agency`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(1)
+        it.originatingAgencyId = "MDI"
+      },
+    )
+
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM2").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(2)
+        it.originatingAgencyId = "TJW"
+        it.overrideAgencyId = "MDI"
+      },
+    )
+
+    val response = reportedAdjudicationRepository.findAdjudicationsForPrisoner(
+      prisonerNumber = "A12345",
+      statuses = listOf(ReportedAdjudicationStatus.CHARGE_PROVED.name),
+      startDate = LocalDateTime.now().minusYears(1),
+      endDate = LocalDateTime.now(),
       pageable = Pageable.ofSize(10),
     )
     assertThat(response.content.size).isEqualTo(2)

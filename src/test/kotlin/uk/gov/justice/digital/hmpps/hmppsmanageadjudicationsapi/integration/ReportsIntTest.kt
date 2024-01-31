@@ -272,6 +272,19 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     initDataForUnScheduled()
 
     webTestClient.get()
+      .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?status=UNSCHEDULED&page=0&size=20")
+      .headers(setHeaders(username = "P_NESS"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(1)
+  }
+
+  @Test
+  fun `get all reports for prisoner`() {
+    initDataForUnScheduled()
+
+    webTestClient.get()
       .uri("/reported-adjudications/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}")
       .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ALL_ADJUDICATIONS")))
       .exchange()
