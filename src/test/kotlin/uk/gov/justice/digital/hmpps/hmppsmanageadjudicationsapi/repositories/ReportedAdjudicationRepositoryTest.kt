@@ -807,4 +807,16 @@ class ReportedAdjudicationRepositoryTest {
 
     assertThat(reportedAdjudicationRepository.findByPrisonerNumberAndChargeNumberStartsWith("A12345", "12345-").size).isEqualTo(2)
   }
+
+  @Test
+  fun `find by migrated and status`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2").also {
+        it.status = ReportedAdjudicationStatus.ADJOURNED
+        it.migrated = false
+        it.hearings.clear()
+      },
+    )
+    assertThat(reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(ReportedAdjudicationStatus.ADJOURNED).size).isEqualTo(2)
+  }
 }
