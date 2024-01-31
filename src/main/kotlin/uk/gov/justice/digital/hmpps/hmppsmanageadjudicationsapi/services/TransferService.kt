@@ -32,7 +32,7 @@ class TransferService(
   }
 
   companion object {
-    private val transferableStatuses = listOf(
+     val transferableStatuses = listOf(
       ReportedAdjudicationStatus.AWAITING_REVIEW,
       ReportedAdjudicationStatus.UNSCHEDULED,
       ReportedAdjudicationStatus.SCHEDULED,
