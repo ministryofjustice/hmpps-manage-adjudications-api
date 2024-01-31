@@ -133,7 +133,11 @@ class PunishmentsService(
       }
     }
 
-    return saveToDto(reportedAdjudication)
+    return saveToDto(
+      reportedAdjudication.also {
+        if (it.status == ReportedAdjudicationStatus.INVALID_SUSPENDED) it.calculateStatus()
+      },
+    )
   }
 
   fun getSuspendedPunishments(prisonerNumber: String, chargeNumber: String): List<SuspendedPunishmentDto> {
