@@ -177,22 +177,22 @@ class MigrationFixServiceTest : ReportedAdjudicationTestBase() {
           it.hearings.clear()
           it.hearings.add(
             Hearing(
-              dateTimeOfHearing = LocalDateTime.now().minusDays(1),
-              locationId = 1,
-              oicHearingType = OicHearingType.GOV,
-              agencyId = "",
-              chargeNumber = "",
-              hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
-            ),
-          )
-          it.hearings.add(
-            Hearing(
               dateTimeOfHearing = LocalDateTime.now(),
               locationId = 1,
               oicHearingType = OicHearingType.GOV,
               agencyId = "",
               chargeNumber = "",
               hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "", details = "PROVED"),
+            ),
+          )
+          it.hearings.add(
+            Hearing(
+              dateTimeOfHearing = LocalDateTime.now().minusDays(1),
+              locationId = 1,
+              oicHearingType = OicHearingType.GOV,
+              agencyId = "",
+              chargeNumber = "",
+              hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
             ),
           )
         },
@@ -203,7 +203,7 @@ class MigrationFixServiceTest : ReportedAdjudicationTestBase() {
     verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
 
     Assertions.assertThat(argumentCaptor.value.getOutcomes().size).isEqualTo(3)
-    Assertions.assertThat(argumentCaptor.value.hearings[1].hearingOutcome?.code).isEqualTo(HearingOutcomeCode.COMPLETE)
+    Assertions.assertThat(argumentCaptor.value.hearings.sortedBy { it.dateTimeOfHearing }[1].hearingOutcome?.code).isEqualTo(HearingOutcomeCode.COMPLETE)
     Assertions.assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.getCreatedDateTime() }.first().code).isEqualTo(OutcomeCode.REFER_POLICE)
     Assertions.assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.getCreatedDateTime() }[1].code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
     Assertions.assertThat(argumentCaptor.value.getOutcomes().sortedBy { it.getCreatedDateTime() }.last().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
