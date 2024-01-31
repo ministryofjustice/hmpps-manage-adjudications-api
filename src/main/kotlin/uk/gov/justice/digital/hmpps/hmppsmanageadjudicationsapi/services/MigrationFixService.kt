@@ -20,6 +20,8 @@ class MigrationFixService(
   fun repair() {
     fixRanbyOutstanding()
     fixRefChargeProvedMaybe()
+    fixRefNotProvedMaybe()
+    fixRefDismissedMaybe()
   }
 
   private fun fixRefChargeProvedMaybe() {
