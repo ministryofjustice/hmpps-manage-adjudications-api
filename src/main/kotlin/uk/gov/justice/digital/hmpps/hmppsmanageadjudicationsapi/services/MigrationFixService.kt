@@ -34,7 +34,6 @@ class MigrationFixService(
         nextHearingAfter?.let {
           it.hearingOutcome?.let { hearingOutcome ->
             if (listOf(Finding.PROVED.name, Finding.NOT_PROCEED.name, Finding.D.name).contains(hearingOutcome.details) && hearingOutcome.code == HearingOutcomeCode.ADJOURN && record.hearings.sortedBy { h -> h.dateTimeOfHearing }.getOrNull(policeReferIdx + 2) == null) {
-
               log.info("Repairing ${record.chargeNumber}")
               var policeReferOutcome = record.getOutcomes().sortedBy { outcome -> outcome.getCreatedDateTime() }.lastOrNull { outcome -> outcome.code == OutcomeCode.REFER_POLICE }
 
