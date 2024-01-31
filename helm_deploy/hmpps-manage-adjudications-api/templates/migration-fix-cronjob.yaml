@@ -13,9 +13,10 @@ spec:
       template:
         spec:
           containers:
-            - name: housekeeping
+            - name: migrationfix
               image: ghcr.io/ministryofjustice/hmpps-devops-tools
               args:
                 - /bin/sh
                 - -c
                 - curl --retry 2 -XPOST http://hmpps-manage-adjudications-api/scheduled-tasks/migration-fix
+          restartPolicy: Never
