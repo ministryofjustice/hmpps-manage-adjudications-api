@@ -33,7 +33,7 @@ class MigrationFixService(
 
         nextHearingAfter?.let {
           it.hearingOutcome?.let { hearingOutcome ->
-            if (listOf(Finding.PROVED.name, Finding.NOT_PROCEED.name).contains(hearingOutcome.details) && hearingOutcome.code == HearingOutcomeCode.ADJOURN && record.hearings.sortedBy { h -> h.dateTimeOfHearing }.getOrNull(policeReferIdx + 2) == null) {
+            if (listOf(Finding.PROVED.name, Finding.NOT_PROCEED.name, Finding.D.name).contains(hearingOutcome.details) && hearingOutcome.code == HearingOutcomeCode.ADJOURN && record.hearings.sortedBy { h -> h.dateTimeOfHearing }.getOrNull(policeReferIdx + 2) == null) {
               log.info("Repairing ${record.chargeNumber}")
               var policeReferOutcome = record.getOutcomes().sortedBy { outcome -> outcome.getCreatedDateTime() }.lastOrNull { outcome -> outcome.code == OutcomeCode.REFER_POLICE }
 
@@ -51,13 +51,19 @@ class MigrationFixService(
               // add a charge proved outcome.
               record.addOutcome(
                 Outcome(
-                  code = if (hearingOutcome.details == Finding.PROVED.name) OutcomeCode.CHARGE_PROVED else OutcomeCode.NOT_PROCEED,
+                  code = if (hearingOutcome.details == Finding.PROVED.name) OutcomeCode.CHARGE_PROVED else if (hearingOutcome.details == Finding.D.name) OutcomeCode.DISMISSED else OutcomeCode.NOT_PROCEED,
                   actualCreatedDate = policeReferOutcome.getCreatedDateTime()!!.plusMinutes(3),
                   reason = if (hearingOutcome.details == Finding.NOT_PROCEED.name) NotProceedReason.OTHER else null,
                 ),
               )
               // set it to charge proved
-              record.status = if (hearingOutcome.details == Finding.PROVED.name) ReportedAdjudicationStatus.CHARGE_PROVED else ReportedAdjudicationStatus.NOT_PROCEED
+              record.status = if (hearingOutcome.details == Finding.PROVED.name) {
+                ReportedAdjudicationStatus.CHARGE_PROVED
+              } else if (hearingOutcome.details == Finding.D.name) {
+                ReportedAdjudicationStatus.DISMISSED
+              } else {
+                ReportedAdjudicationStatus.NOT_PROCEED
+              }
 
               reportedAdjudicationRepository.save(record)
             }
