@@ -23,6 +23,7 @@ class MigrationFixService(
     fixRefNotProvedMaybe()
     fixRefDismissedMaybe()
     fixRefAdjourndMaybe()
+    fixStocken()
   }
 
   private fun fixRefChargeProvedMaybe() {
@@ -129,6 +130,19 @@ class MigrationFixService(
       ranbyIssue.status = ReportedAdjudicationStatus.CHARGE_PROVED
 
       reportedAdjudicationRepository.save(ranbyIssue)
+    }
+  }
+
+  private fun fixStocken() {
+    reportedAdjudicationRepository.findByChargeNumber(chargeNumber = "4046986")?.let {
+        stoken ->
+      if (stoken.status == ReportedAdjudicationStatus.CHARGE_PROVED) return
+      // simply add a schedule hearing in after refer gov outcome
+      val referBackToGov = stoken.getOutcomes().first { it.code == OutcomeCode.REFER_GOV }
+      stoken.addOutcome(
+        Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = referBackToGov.getCreatedDateTime()!!.plusMinutes(1)),
+      )
+      reportedAdjudicationRepository.save(stoken)
     }
   }
 
