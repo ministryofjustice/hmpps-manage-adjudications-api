@@ -21,7 +21,7 @@ class MigrationFixService(
 
   fun repair() {
     fixRanbyOutstanding()
-    // fixRefChargeProvedMaybe()
+    fixRefChargeProvedMaybe()
     fixRefNotProvedMaybe()
     fixRefDismissedMaybe()
     fixRefAdjourndMaybe()
@@ -123,7 +123,7 @@ class MigrationFixService(
       referOutcome?.let {
         log.info("adding scheduled hearing for ${record.chargeNumber}")
         record.addOutcome(
-          Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = it.actualCreatedDate!!.plusSeconds(10)),
+          Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = it.getCreatedDateTime()!!.plusSeconds(10)),
         )
         reportedAdjudicationRepository.save(record)
       }
