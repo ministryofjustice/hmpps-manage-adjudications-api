@@ -5,13 +5,11 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
-import java.time.LocalDateTime
 
 @Transactional
 @Service
@@ -20,56 +18,132 @@ class MigrationFixService(
 ) {
 
   fun repair() {
-    repairReferPoliceAdjournShouldBeChargeProved()
+    fixRanbyOutstanding()
+    fixRefChargeProvedMaybe()
+    fixRefNotProvedMaybe()
+    fixRefDismissedMaybe()
+    fixRefAdjourndMaybe()
+    fixStocken()
   }
 
-  private fun repairReferPoliceAdjournShouldBeChargeProved() {
-    reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(status = ReportedAdjudicationStatus.ADJOURNED)
-      .filter { it.hearings.any { hearing -> hearing.hearingOutcome?.code == HearingOutcomeCode.REFER_POLICE } }
+  private fun fixRefChargeProvedMaybe() {
+    reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(status = ReportedAdjudicationStatus.CHARGE_PROVED)
+      .filter { it.hearings.any { hearing -> listOf(HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV).contains(hearing.hearingOutcome?.code) } }
       .filter { it.getOutcomes().none { outcome -> outcome.code == OutcomeCode.SCHEDULE_HEARING } }
       .forEach { record ->
-        val policeReferIdx = record.hearings.sortedBy { it.dateTimeOfHearing }.indexOfLast { it.hearingOutcome?.code == HearingOutcomeCode.REFER_POLICE }
-        val nextHearingAfter = record.hearings.sortedBy { it.dateTimeOfHearing }.getOrNull(policeReferIdx + 1)
+        fix(record)
+      }
+  }
 
-        nextHearingAfter?.let {
-          it.hearingOutcome?.let { hearingOutcome ->
-            if (listOf(Finding.PROVED.name, Finding.NOT_PROCEED.name, Finding.D.name).contains(hearingOutcome.details) && hearingOutcome.code == HearingOutcomeCode.ADJOURN && record.hearings.sortedBy { h -> h.dateTimeOfHearing }.getOrNull(policeReferIdx + 2) == null) {
-              log.info("Repairing ${record.chargeNumber}")
-              var policeReferOutcome = record.getOutcomes().sortedBy { outcome -> outcome.getCreatedDateTime() }.lastOrNull { outcome -> outcome.code == OutcomeCode.REFER_POLICE }
-
-              if (policeReferOutcome == null) {
-                policeReferOutcome = Outcome(code = OutcomeCode.REFER_POLICE, actualCreatedDate = LocalDateTime.now())
-                record.addOutcome(policeReferOutcome)
-              }
-
-              // first of all.  need to add in the referal outcome
-              record.addOutcome(
-                Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = policeReferOutcome.getCreatedDateTime()!!.plusMinutes(2)),
-              )
-              // second, amend adjourn to complete
-              hearingOutcome.code = HearingOutcomeCode.COMPLETE
-              // add a charge proved outcome.
-              record.addOutcome(
-                Outcome(
-                  code = if (hearingOutcome.details == Finding.PROVED.name) OutcomeCode.CHARGE_PROVED else if (hearingOutcome.details == Finding.D.name) OutcomeCode.DISMISSED else OutcomeCode.NOT_PROCEED,
-                  actualCreatedDate = policeReferOutcome.getCreatedDateTime()!!.plusMinutes(3),
-                  reason = if (hearingOutcome.details == Finding.NOT_PROCEED.name) NotProceedReason.OTHER else null,
-                ),
-              )
-              // set it to charge proved
-              record.status = if (hearingOutcome.details == Finding.PROVED.name) {
-                ReportedAdjudicationStatus.CHARGE_PROVED
-              } else if (hearingOutcome.details == Finding.D.name) {
-                ReportedAdjudicationStatus.DISMISSED
-              } else {
-                ReportedAdjudicationStatus.NOT_PROCEED
-              }
-
-              reportedAdjudicationRepository.save(record)
-            }
-          }
+  private fun fixRefNotProvedMaybe() {
+    reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(status = ReportedAdjudicationStatus.NOT_PROCEED)
+      .filter {
+        it.hearings.any { hearing ->
+          listOf(
+            HearingOutcomeCode.REFER_POLICE,
+            HearingOutcomeCode.REFER_INAD,
+            HearingOutcomeCode.REFER_GOV,
+          ).contains(hearing.hearingOutcome?.code)
         }
       }
+      .filter { it.getOutcomes().none { outcome -> outcome.code == OutcomeCode.SCHEDULE_HEARING } }
+      .forEach { record ->
+        fix(record)
+      }
+  }
+
+  private fun fixRefDismissedMaybe() {
+    reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(status = ReportedAdjudicationStatus.DISMISSED)
+      .filter {
+        it.hearings.any { hearing ->
+          listOf(
+            HearingOutcomeCode.REFER_POLICE,
+            HearingOutcomeCode.REFER_INAD,
+            HearingOutcomeCode.REFER_GOV,
+          ).contains(hearing.hearingOutcome?.code)
+        }
+      }
+      .filter { it.getOutcomes().none { outcome -> outcome.code == OutcomeCode.SCHEDULE_HEARING } }
+      .forEach { record ->
+        fix(record)
+      }
+  }
+
+  private fun fixRefAdjourndMaybe() {
+    reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(status = ReportedAdjudicationStatus.ADJOURNED)
+      .filter { it.chargeNumber != "3908780" }
+      .filter {
+        it.hearings.any { hearing ->
+          listOf(
+            HearingOutcomeCode.REFER_POLICE,
+            HearingOutcomeCode.REFER_INAD,
+            HearingOutcomeCode.REFER_GOV,
+          ).contains(hearing.hearingOutcome?.code)
+        }
+      }
+      .filter { it.getOutcomes().none { outcome -> outcome.code == OutcomeCode.SCHEDULE_HEARING } }
+      .forEach { record -> fix(record) }
+  }
+
+  private fun fix(record: ReportedAdjudication) {
+    val referCount = record.getOutcomes().count { listOf(OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD, OutcomeCode.REFER_GOV).contains(it.code) }
+    if (referCount > 1) return
+
+    val referIdx = record.hearings.sortedBy { it.dateTimeOfHearing }.indexOfLast { listOf(HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV).contains(it.hearingOutcome?.code) }
+    val nextHearingAfter = record.hearings.sortedBy { it.dateTimeOfHearing }.getOrNull(referIdx + 1)
+    nextHearingAfter?.let {
+      val referOutcome = record.getOutcomes().sortedBy { outcome -> outcome.getCreatedDateTime() }.lastOrNull { outcome -> listOf(OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD, OutcomeCode.REFER_GOV).contains(outcome.code) }
+      referOutcome?.let {
+        log.info("adding scheduled hearing for ${record.chargeNumber}")
+        record.addOutcome(
+          Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = it.actualCreatedDate!!.plusSeconds(10)),
+        )
+        reportedAdjudicationRepository.save(record)
+      }
+    }
+  }
+
+  private fun fixRanbyOutstanding() {
+    // hard code this one - 3908780
+    reportedAdjudicationRepository.findByChargeNumber(chargeNumber = "3908780")?.let { ranbyIssue ->
+
+      if (ranbyIssue.status == ReportedAdjudicationStatus.CHARGE_PROVED) return
+      val referPoliceOutcome = ranbyIssue.getOutcomes().first()
+
+      // basically.  needs a schedule hearing outcome after the police refer.
+      ranbyIssue.addOutcome(
+        Outcome(
+          code = OutcomeCode.SCHEDULE_HEARING,
+          actualCreatedDate = referPoliceOutcome.getCreatedDateTime()!!.plusMinutes(1),
+        ),
+      )
+      // needs a charge proved after that/
+      ranbyIssue.addOutcome(
+        Outcome(
+          code = OutcomeCode.CHARGE_PROVED,
+          actualCreatedDate = referPoliceOutcome.getCreatedDateTime()!!.plusMinutes(2),
+        ),
+      )
+      // and needs to turn the final hearing to be completed.
+      ranbyIssue.getLatestHearing()!!.hearingOutcome!!.code = HearingOutcomeCode.COMPLETE
+
+      ranbyIssue.status = ReportedAdjudicationStatus.CHARGE_PROVED
+
+      reportedAdjudicationRepository.save(ranbyIssue)
+    }
+  }
+
+  private fun fixStocken() {
+    reportedAdjudicationRepository.findByChargeNumber(chargeNumber = "4046986")?.let {
+        stoken ->
+      if (stoken.getOutcomes().any { it.code == OutcomeCode.SCHEDULE_HEARING }) return
+      // simply add a schedule hearing in after refer gov outcome
+      val referBackToGov = stoken.getOutcomes().first { it.code == OutcomeCode.REFER_GOV }
+      stoken.addOutcome(
+        Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = referBackToGov.getCreatedDateTime()!!.plusMinutes(1)),
+      )
+      reportedAdjudicationRepository.save(stoken)
+    }
   }
 
   companion object {
