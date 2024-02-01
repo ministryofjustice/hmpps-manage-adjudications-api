@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -19,11 +21,34 @@ class MigrationFixService(
 
   fun repair() {
     fixRanbyOutstanding()
-    fixRefChargeProvedMaybe()
+    // fixRefChargeProvedMaybe()
     fixRefNotProvedMaybe()
     fixRefDismissedMaybe()
     fixRefAdjourndMaybe()
     fixStocken()
+    // fixMissingAdjourns()
+  }
+
+  private fun fixMissingAdjourns() {
+    listOf(
+      // ReportedAdjudicationStatus.CHARGE_PROVED,
+      ReportedAdjudicationStatus.NOT_PROCEED,
+      ReportedAdjudicationStatus.DISMISSED,
+      ReportedAdjudicationStatus.REFER_POLICE,
+      ReportedAdjudicationStatus.REFER_INAD,
+    ).forEach { status ->
+      reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(status).filter {
+        it.hearings.size > 1 && it.hearings.any { ho -> ho.hearingOutcome == null }
+      }.forEach {
+          record ->
+        val firstHearing = record.hearings.minByOrNull { it.dateTimeOfHearing }!!
+        if (firstHearing.hearingOutcome == null) {
+          log.info("fixing missing adjourns for ${record.chargeNumber}")
+          firstHearing.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "", reason = HearingOutcomeAdjournReason.OTHER, details = "")
+          reportedAdjudicationRepository.save(record)
+        }
+      }
+    }
   }
 
   private fun fixRefChargeProvedMaybe() {
