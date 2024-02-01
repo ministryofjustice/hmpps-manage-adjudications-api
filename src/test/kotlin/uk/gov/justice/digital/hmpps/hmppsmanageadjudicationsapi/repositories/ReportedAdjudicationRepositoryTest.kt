@@ -807,35 +807,4 @@ class ReportedAdjudicationRepositoryTest {
 
     assertThat(reportedAdjudicationRepository.findByPrisonerNumberAndChargeNumberStartsWith("A12345", "12345-").size).isEqualTo(2)
   }
-
-  @Test
-  fun `repair test`() {
-    reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2").also {
-        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
-        it.hearings.clear()
-        it.hearings.add(
-          Hearing(
-            dateTimeOfHearing = LocalDateTime.now().minusDays(1),
-            agencyId = "",
-            locationId = 1,
-            oicHearingType = OicHearingType.GOV_ADULT,
-            chargeNumber = "",
-          ),
-        )
-        it.hearings.add(
-          Hearing(
-            dateTimeOfHearing = LocalDateTime.now().plusDays(1),
-            agencyId = "",
-            locationId = 1,
-            oicHearingType = OicHearingType.GOV_ADULT,
-            chargeNumber = "",
-            hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
-          ),
-        )
-      },
-    )
-
-    assertThat(reportedAdjudicationRepository.getReportsMissingAdjourn().size).isEqualTo(1)
-  }
 }
