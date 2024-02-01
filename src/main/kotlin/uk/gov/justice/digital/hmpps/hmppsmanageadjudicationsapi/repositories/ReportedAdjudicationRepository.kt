@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -155,6 +156,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   fun findByPrisonerNumberAndChargeNumberStartsWith(prisonerNumber: String, chargeNumber: String): List<ReportedAdjudication>
 
   fun findByMigratedIsFalseAndStatus(status: ReportedAdjudicationStatus): List<ReportedAdjudication>
+
+  fun findByMigratedIsFalseAndStatusAndHearingsHearingOutcomeCodeIn(status: ReportedAdjudicationStatus, codes: List<HearingOutcomeCode>): List<ReportedAdjudication>
 
   companion object {
 

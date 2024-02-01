@@ -819,4 +819,32 @@ class ReportedAdjudicationRepositoryTest {
     )
     assertThat(reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(ReportedAdjudicationStatus.ADJOURNED).size).isEqualTo(2)
   }
+
+  @Test
+  fun `fix optimized query`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2").also {
+        it.status = ReportedAdjudicationStatus.ADJOURNED
+        it.migrated = false
+        it.hearings.clear()
+        it.hearings.add(
+          Hearing(
+            dateTimeOfHearing = LocalDateTime.now(),
+            agencyId = "",
+            locationId = 1,
+            chargeNumber = "",
+            oicHearingType = OicHearingType.GOV_ADULT,
+            hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = ""),
+          ),
+        )
+      },
+    )
+
+    assertThat(
+      reportedAdjudicationRepository.findByMigratedIsFalseAndStatusAndHearingsHearingOutcomeCodeIn(
+        ReportedAdjudicationStatus.ADJOURNED,
+        listOf(HearingOutcomeCode.ADJOURN),
+      ).size,
+    ).isEqualTo(1)
+  }
 }
