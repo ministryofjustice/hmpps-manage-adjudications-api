@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -19,16 +21,45 @@ class MigrationFixService(
 
   fun repair() {
     fixRanbyOutstanding()
-    fixRefChargeProvedMaybe()
+    // fixRefChargeProvedMaybe()
     fixRefNotProvedMaybe()
     fixRefDismissedMaybe()
     fixRefAdjourndMaybe()
     fixStocken()
+    // fixMissingAdjourns()
+  }
+
+  private fun fixMissingAdjourns() {
+    listOf(
+      // ReportedAdjudicationStatus.CHARGE_PROVED,
+      ReportedAdjudicationStatus.NOT_PROCEED,
+      ReportedAdjudicationStatus.DISMISSED,
+      ReportedAdjudicationStatus.REFER_POLICE,
+      ReportedAdjudicationStatus.REFER_INAD,
+    ).forEach { status ->
+      reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(status).filter {
+        it.hearings.size > 1 && it.hearings.any { ho -> ho.hearingOutcome == null }
+      }.forEach {
+          record ->
+        val firstHearing = record.hearings.minByOrNull { it.dateTimeOfHearing }!!
+        if (firstHearing.hearingOutcome == null) {
+          log.info("fixing missing adjourns for ${record.chargeNumber}")
+          firstHearing.hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "", reason = HearingOutcomeAdjournReason.OTHER, details = "")
+          reportedAdjudicationRepository.save(record)
+        }
+      }
+    }
   }
 
   private fun fixRefChargeProvedMaybe() {
-    reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(status = ReportedAdjudicationStatus.CHARGE_PROVED)
-      .filter { it.hearings.any { hearing -> listOf(HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV).contains(hearing.hearingOutcome?.code) } }
+    reportedAdjudicationRepository.findByMigratedIsFalseAndStatusAndHearingsHearingOutcomeCodeIn(
+      status = ReportedAdjudicationStatus.CHARGE_PROVED,
+      codes = listOf(
+        HearingOutcomeCode.REFER_POLICE,
+        HearingOutcomeCode.REFER_INAD,
+        HearingOutcomeCode.REFER_GOV,
+      ),
+    )
       .filter { it.getOutcomes().none { outcome -> outcome.code == OutcomeCode.SCHEDULE_HEARING } }
       .forEach { record ->
         fix(record)
@@ -36,16 +67,14 @@ class MigrationFixService(
   }
 
   private fun fixRefNotProvedMaybe() {
-    reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(status = ReportedAdjudicationStatus.NOT_PROCEED)
-      .filter {
-        it.hearings.any { hearing ->
-          listOf(
-            HearingOutcomeCode.REFER_POLICE,
-            HearingOutcomeCode.REFER_INAD,
-            HearingOutcomeCode.REFER_GOV,
-          ).contains(hearing.hearingOutcome?.code)
-        }
-      }
+    reportedAdjudicationRepository.findByMigratedIsFalseAndStatusAndHearingsHearingOutcomeCodeIn(
+      status = ReportedAdjudicationStatus.NOT_PROCEED,
+      codes = listOf(
+        HearingOutcomeCode.REFER_POLICE,
+        HearingOutcomeCode.REFER_INAD,
+        HearingOutcomeCode.REFER_GOV,
+      ),
+    )
       .filter { it.getOutcomes().none { outcome -> outcome.code == OutcomeCode.SCHEDULE_HEARING } }
       .forEach { record ->
         fix(record)
@@ -53,16 +82,14 @@ class MigrationFixService(
   }
 
   private fun fixRefDismissedMaybe() {
-    reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(status = ReportedAdjudicationStatus.DISMISSED)
-      .filter {
-        it.hearings.any { hearing ->
-          listOf(
-            HearingOutcomeCode.REFER_POLICE,
-            HearingOutcomeCode.REFER_INAD,
-            HearingOutcomeCode.REFER_GOV,
-          ).contains(hearing.hearingOutcome?.code)
-        }
-      }
+    reportedAdjudicationRepository.findByMigratedIsFalseAndStatusAndHearingsHearingOutcomeCodeIn(
+      status = ReportedAdjudicationStatus.DISMISSED,
+      codes = listOf(
+        HearingOutcomeCode.REFER_POLICE,
+        HearingOutcomeCode.REFER_INAD,
+        HearingOutcomeCode.REFER_GOV,
+      ),
+    )
       .filter { it.getOutcomes().none { outcome -> outcome.code == OutcomeCode.SCHEDULE_HEARING } }
       .forEach { record ->
         fix(record)
