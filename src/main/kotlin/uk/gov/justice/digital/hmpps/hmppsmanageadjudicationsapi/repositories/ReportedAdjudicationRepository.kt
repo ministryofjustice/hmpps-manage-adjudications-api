@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -155,9 +154,13 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByPrisonerNumberAndChargeNumberStartsWith(prisonerNumber: String, chargeNumber: String): List<ReportedAdjudication>
 
-  fun findByMigratedIsFalseAndStatus(status: ReportedAdjudicationStatus): List<ReportedAdjudication>
-
-  fun findByMigratedIsFalseAndStatusAndHearingsHearingOutcomeCodeIn(status: ReportedAdjudicationStatus, codes: List<HearingOutcomeCode>): List<ReportedAdjudication>
+  @Query(
+    value = "select * from reported_adjudications ra " +
+      "where ra.migrated is false and ra.status in ('CHARGE_PROVED','NOT_PROCEED','DISMISSED','REFER_POLICE','REFER_INAD')" +
+      "and (select count(1) from hearing h where h.reported_adjudication_fk_id = ra.id) > (select count(1) from hearing h join hearing_outcome ho on ho.id  = h.outcome_id  where h.reported_adjudication_fk_id = ra.id)",
+    nativeQuery = true,
+  )
+  fun getReportsMissingAdjourn(): List<ReportedAdjudication>
 
   companion object {
 

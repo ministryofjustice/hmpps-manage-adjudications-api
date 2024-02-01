@@ -809,42 +809,33 @@ class ReportedAdjudicationRepositoryTest {
   }
 
   @Test
-  fun `find by migrated and status`() {
+  fun `repair test`() {
     reportedAdjudicationRepository.save(
       entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2").also {
-        it.status = ReportedAdjudicationStatus.ADJOURNED
-        it.migrated = false
-        it.hearings.clear()
-      },
-    )
-    assertThat(reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(ReportedAdjudicationStatus.ADJOURNED).size).isEqualTo(2)
-  }
-
-  @Test
-  fun `fix optimized query`() {
-    reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2").also {
-        it.status = ReportedAdjudicationStatus.ADJOURNED
-        it.migrated = false
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
         it.hearings.clear()
         it.hearings.add(
           Hearing(
-            dateTimeOfHearing = LocalDateTime.now(),
+            dateTimeOfHearing = LocalDateTime.now().minusDays(1),
             agencyId = "",
             locationId = 1,
-            chargeNumber = "",
             oicHearingType = OicHearingType.GOV_ADULT,
-            hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = ""),
+            chargeNumber = "",
+          ),
+        )
+        it.hearings.add(
+          Hearing(
+            dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+            agencyId = "",
+            locationId = 1,
+            oicHearingType = OicHearingType.GOV_ADULT,
+            chargeNumber = "",
+            hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
           ),
         )
       },
     )
 
-    assertThat(
-      reportedAdjudicationRepository.findByMigratedIsFalseAndStatusAndHearingsHearingOutcomeCodeIn(
-        ReportedAdjudicationStatus.ADJOURNED,
-        listOf(HearingOutcomeCode.ADJOURN),
-      ).size,
-    ).isEqualTo(1)
+    assertThat(reportedAdjudicationRepository.getReportsMissingAdjourn().size).isEqualTo(1)
   }
 }
