@@ -154,6 +154,14 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByPrisonerNumberAndChargeNumberStartsWith(prisonerNumber: String, chargeNumber: String): List<ReportedAdjudication>
 
+  @Query(
+    value = "select * from reported_adjudications ra " +
+      "where ra.migrated is false and ra.status in ('CHARGE_PROVED','NOT_PROCEED','DISMISSED','REFER_POLICE','REFER_INAD')" +
+      "and (select count(1) from hearing h where h.reported_adjudication_fk_id = ra.id) > (select count(1) from hearing h join hearing_outcome ho on ho.id  = h.outcome_id  where h.reported_adjudication_fk_id = ra.id)",
+    nativeQuery = true,
+  )
+  fun getReportsMissingAdjourn(): List<ReportedAdjudication>
+
   companion object {
 
     private const val DATE_AND_STATUS_FILTER = "ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate and ra.status in :statuses "
