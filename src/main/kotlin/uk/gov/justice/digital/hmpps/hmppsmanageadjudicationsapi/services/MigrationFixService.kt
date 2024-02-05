@@ -26,7 +26,7 @@ class MigrationFixService(
     }
 
     reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(ReportedAdjudicationStatus.REFER_POLICE).filter {
-      it.hearings.size > 1 && it.getOutcomes().none { o -> o.code == OutcomeCode.SCHEDULE_HEARING }
+      it.hearings.size > 1 && it.getOutcomes().none { o -> o.code == OutcomeCode.SCHEDULE_HEARING } && it.getOutcomes().count { o -> o.code == OutcomeCode.REFER_POLICE } == 1
     }.forEach {
       missingNextStep(it, HearingOutcomeCode.REFER_POLICE)
     }
