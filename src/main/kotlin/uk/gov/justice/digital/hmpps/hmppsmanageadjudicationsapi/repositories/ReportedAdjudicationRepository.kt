@@ -139,7 +139,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("startDate") startDate: LocalDateTime,
     @Param("endDate") endDate: LocalDateTime,
     @Param("statuses") statuses: List<String>,
-    @Param("punishments") punishments: List<String>,
+    @Param("ada") ada: Boolean,
+    @Param("suspended") suspended: Boolean,
     pageable: Pageable,
   ): Page<ReportedAdjudication>
 
@@ -166,7 +167,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("startDate") startDate: LocalDateTime,
     @Param("endDate") endDate: LocalDateTime,
     @Param("statuses") statuses: List<String>,
-    @Param("punishments") punishments: List<String>,
+    @Param("ada") ada: Boolean,
+    @Param("suspended") suspended: Boolean,
     pageable: Pageable,
   ): Page<ReportedAdjudication>
 
@@ -199,12 +201,12 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     const val BOOKING_ID_REPORTS_WITH_DATE_WHERE_CLAUSE = "where ra.offender_booking_id = :offenderBookingId and $DATE_AND_STATUS_FILTER $AGENCIES_INC_TRANSFERS_FILTER"
 
     const val BOOKING_ID_AND_PUNISHMENTS_REPORTS_WITH_DATE_WHERE_CLAUSE = "join punishment p on p.reported_adjudication_fk_id = ra.id where ra.offender_booking_id = :offenderBookingId " +
-      "and p.type in :punishments and $DATE_AND_STATUS_FILTER $AGENCIES_INC_TRANSFERS_FILTER"
+      "and ((:ada is true and p.type = 'ADDITIONAL_DAYS') or (:suspended is true and p.suspended_until is not null)) and $DATE_AND_STATUS_FILTER $AGENCIES_INC_TRANSFERS_FILTER"
 
     const val PRISONER_REPORTS_WITH_DATE_WHERE_CLAUSE = "where ra.prisoner_number = :prisonerNumber and $DATE_AND_STATUS_FILTER"
 
     const val PRISONER_REPORTS_AND_PUNISHMENTS_WITH_DATE_WHERE_CLAUSE = "join punishment p on p.reported_adjudication_fk_id = ra.id where ra.prisoner_number = :prisonerNumber " +
-      "and p.type in :punishments and $DATE_AND_STATUS_FILTER"
+      "and ((:ada is true and p.type = 'ADDITIONAL_DAYS') or (:suspended is true and p.suspended_until is not null)) and $DATE_AND_STATUS_FILTER"
 
     const val ALL_REPORTS_WHERE_CLAUSE =
       "where $DATE_AND_STATUS_FILTER $AGENCY_AND_TRANSFER_STATUS_FILTER"

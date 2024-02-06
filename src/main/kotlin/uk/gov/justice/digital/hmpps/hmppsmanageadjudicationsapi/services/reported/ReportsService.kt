@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.AgencyReportCountsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -128,10 +127,11 @@ class ReportsService(
     endDate: LocalDate? = null,
     agencies: List<String>,
     statuses: List<ReportedAdjudicationStatus>,
-    punishments: List<PunishmentType>,
+    ada: Boolean,
+    suspended: Boolean,
     pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> = when (punishments.isEmpty()) {
-    true -> reportedAdjudicationRepository.findAdjudicationsForBooking(
+  ): Page<ReportedAdjudicationDto> = if (!ada && !suspended) {
+    reportedAdjudicationRepository.findAdjudicationsForBooking(
       offenderBookingId = bookingId,
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: maxDate),
@@ -139,13 +139,15 @@ class ReportsService(
       statuses = statuses.map { it.name },
       pageable = pageable,
     )
-    false -> reportedAdjudicationRepository.findAdjudicationsForBookingWithPunishments(
+  } else {
+    reportedAdjudicationRepository.findAdjudicationsForBookingWithPunishments(
       offenderBookingId = bookingId,
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: maxDate),
       agencies = agencies,
       statuses = statuses.map { it.name },
-      punishments = punishments.map { it.name },
+      ada = ada,
+      suspended = suspended,
       pageable = pageable,
     )
   }.map { it.toDto() }
@@ -155,22 +157,25 @@ class ReportsService(
     startDate: LocalDate? = null,
     endDate: LocalDate? = null,
     statuses: List<ReportedAdjudicationStatus>,
-    punishments: List<PunishmentType>,
+    ada: Boolean,
+    suspended: Boolean,
     pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> = when (punishments.isEmpty()) {
-    true -> reportedAdjudicationRepository.findAdjudicationsForPrisoner(
+  ): Page<ReportedAdjudicationDto> = if (!ada && !suspended) {
+    reportedAdjudicationRepository.findAdjudicationsForPrisoner(
       prisonerNumber = prisonerNumber,
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: maxDate),
       statuses = statuses.map { it.name },
       pageable = pageable,
     )
-    false -> reportedAdjudicationRepository.findAdjudicationsForPrisonerWithPunishments(
+  } else {
+    reportedAdjudicationRepository.findAdjudicationsForPrisonerWithPunishments(
       prisonerNumber = prisonerNumber,
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: maxDate),
       statuses = statuses.map { it.name },
-      punishments = punishments.map { it.name },
+      ada = ada,
+      suspended = suspended,
       pageable = pageable,
     )
   }.map { it.toDto() }

@@ -778,7 +778,8 @@ class ReportedAdjudicationRepositoryTest {
       startDate = LocalDateTime.now().minusYears(1),
       endDate = LocalDateTime.now(),
       agencies = listOf("MDI"),
-      punishments = listOf(PunishmentType.ADDITIONAL_DAYS.name),
+      ada = true,
+      suspended = false,
       pageable = Pageable.ofSize(10),
     )
     assertThat(response.content.size).isEqualTo(1)
@@ -850,7 +851,8 @@ class ReportedAdjudicationRepositoryTest {
       statuses = listOf(ReportedAdjudicationStatus.CHARGE_PROVED.name),
       startDate = LocalDateTime.now().minusYears(1),
       endDate = LocalDateTime.now(),
-      punishments = listOf(PunishmentType.ADDITIONAL_DAYS.name),
+      ada = true,
+      suspended = false,
       pageable = Pageable.ofSize(10),
     )
     assertThat(response.content.size).isEqualTo(1)

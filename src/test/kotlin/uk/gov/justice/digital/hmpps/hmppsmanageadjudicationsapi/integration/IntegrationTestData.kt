@@ -715,6 +715,7 @@ class IntegrationTestData(
   fun createPunishments(
     testDataSet: AdjudicationIntTestDataSet,
     startDate: LocalDate? = null,
+    punishmentType: PunishmentType,
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/punishments/v2")
@@ -724,7 +725,7 @@ class IntegrationTestData(
           "punishments" to
             listOf(
               PunishmentRequest(
-                type = PunishmentType.CONFINEMENT,
+                type = punishmentType,
                 days = 10,
                 suspendedUntil = if (startDate == null) LocalDate.now() else null,
                 startDate = startDate,

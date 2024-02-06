@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.IssuedStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService
@@ -261,9 +260,14 @@ class ReportsController(
       description = "list of agencies to filter for reports, based on current booking",
     ),
     Parameter(
-      name = "punishment",
+      name = "ada",
       required = false,
-      description = "list of punishments to filter by",
+      description = "only show reports with ADA",
+    ),
+    Parameter(
+      name = "suspended",
+      required = false,
+      description = "only show reports with suspended",
     ),
   )
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
@@ -278,7 +282,8 @@ class ReportsController(
     endDate: LocalDate? = null,
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
     @RequestParam(name = "agency", required = true) agencies: List<String>,
-    @RequestParam(name = "punishment", required = false) punishments: List<PunishmentType> = emptyList(),
+    @RequestParam(name = "ada", required = false) ada: Boolean = false,
+    @RequestParam(name = "suspended", required = false) suspended: Boolean = false,
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
   ): Page<ReportedAdjudicationDto> = reportsService.getAdjudicationsForBooking(
     bookingId = bookingId,
@@ -286,7 +291,8 @@ class ReportsController(
     endDate = endDate,
     statuses = statuses,
     agencies = agencies,
-    punishments = punishments,
+    ada = ada,
+    suspended = suspended,
     pageable = pageable,
   )
 
@@ -325,9 +331,14 @@ class ReportsController(
       description = "list of status filter for reports",
     ),
     Parameter(
-      name = "punishment",
+      name = "ada",
       required = false,
-      description = "list of punishments to filter by",
+      description = "only show reports with ADA",
+    ),
+    Parameter(
+      name = "suspended",
+      required = false,
+      description = "only show reports with suspended",
     ),
   )
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
@@ -341,14 +352,16 @@ class ReportsController(
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     endDate: LocalDate? = null,
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
-    @RequestParam(name = "punishment", required = false) punishments: List<PunishmentType> = emptyList(),
+    @RequestParam(name = "ada", required = false) ada: Boolean = false,
+    @RequestParam(name = "suspended", required = false) suspended: Boolean = false,
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
   ): Page<ReportedAdjudicationDto> = reportsService.getAdjudicationsForPrisoner(
     prisonerNumber = prisonerNumber,
     startDate = startDate,
     endDate = endDate,
     statuses = statuses,
-    punishments = punishments,
+    ada = ada,
+    suspended = suspended,
     pageable = pageable,
   )
 

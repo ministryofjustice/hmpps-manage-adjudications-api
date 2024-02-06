@@ -11,7 +11,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferIgnoreStatuses
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferReviewStatuses
@@ -324,7 +323,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         bookingId = 1,
         statuses = listOf(ReportedAdjudicationStatus.SCHEDULED),
         agencies = listOf("MDI"),
-        punishments = emptyList(),
+        ada = false,
+        suspended = false,
         pageable = Pageable.ofSize(20).withPage(0),
       )
 
@@ -336,7 +336,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `gets all reports for agency, punishment and status without any dates`() {
       whenever(
-        reportedAdjudicationRepository.findAdjudicationsForBookingWithPunishments(any(), any(), any(), any(), any(), any(), any()),
+        reportedAdjudicationRepository.findAdjudicationsForBookingWithPunishments(any(), any(), any(), any(), any(), any(), any(), any()),
       ).thenReturn(
         PageImpl(
           listOf(
@@ -352,11 +352,12 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         bookingId = 1,
         statuses = listOf(ReportedAdjudicationStatus.SCHEDULED),
         agencies = listOf("MDI"),
-        punishments = listOf(PunishmentType.ADDITIONAL_DAYS),
+        ada = true,
+        suspended = false,
         pageable = Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForBookingWithPunishments(any(), any(), any(), any(), any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForBookingWithPunishments(any(), any(), any(), any(), any(), any(), any(), any())
 
       assertThat(response.content.size).isEqualTo(1)
     }
@@ -383,7 +384,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       val response = reportsService.getAdjudicationsForPrisoner(
         prisonerNumber = "A1234",
         statuses = listOf(ReportedAdjudicationStatus.SCHEDULED),
-        punishments = emptyList(),
+        ada = false,
+        suspended = false,
         pageable = Pageable.ofSize(20).withPage(0),
       )
 
@@ -395,7 +397,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `gets all reports for agency, punishment and status without any dates`() {
       whenever(
-        reportedAdjudicationRepository.findAdjudicationsForPrisonerWithPunishments(any(), any(), any(), any(), any(), any()),
+        reportedAdjudicationRepository.findAdjudicationsForPrisonerWithPunishments(any(), any(), any(), any(), any(), any(), any()),
       ).thenReturn(
         PageImpl(
           listOf(
@@ -410,11 +412,12 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       val response = reportsService.getAdjudicationsForPrisoner(
         prisonerNumber = "A1234",
         statuses = listOf(ReportedAdjudicationStatus.SCHEDULED),
-        punishments = listOf(PunishmentType.ADDITIONAL_DAYS),
+        ada = true,
+        suspended = false,
         pageable = Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForPrisonerWithPunishments(any(), any(), any(), any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForPrisonerWithPunishments(any(), any(), any(), any(), any(), any(), any())
 
       assertThat(response.content.size).isEqualTo(1)
     }
