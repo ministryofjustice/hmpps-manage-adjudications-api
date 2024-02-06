@@ -55,7 +55,7 @@ class EvidenceControllerTest : TestControllerBase() {
     ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
   }
 
-  @CsvSource("UNSCHEDULED", "AWAITING_REVIEW")
+  @CsvSource("UNSCHEDULED", "AWAITING_REVIEW", "RETURNED")
   @ParameterizedTest
   @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
   fun `makes a call to set the evidence`(status: ReportedAdjudicationStatus) {
@@ -71,7 +71,7 @@ class EvidenceControllerTest : TestControllerBase() {
       .andExpect(MockMvcResultMatchers.status().isOk)
 
     verify(evidenceService).updateEvidence("1", EVIDENCE_REQUEST.evidence)
-    verify(eventPublishService, if (status != ReportedAdjudicationStatus.AWAITING_REVIEW) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.EVIDENCE_UPDATED, dto)
+    verify(eventPublishService, if (listOf(ReportedAdjudicationStatus.RETURNED, ReportedAdjudicationStatus.AWAITING_REVIEW).none { it == status }) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.EVIDENCE_UPDATED, dto)
   }
 
   private fun setEvidenceRequest(

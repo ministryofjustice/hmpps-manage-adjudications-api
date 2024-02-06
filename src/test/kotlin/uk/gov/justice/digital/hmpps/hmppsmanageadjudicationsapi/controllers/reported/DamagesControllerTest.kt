@@ -51,7 +51,7 @@ class DamagesControllerTest : TestControllerBase() {
     setDamagesRequest(1, DAMAGES_REQUEST).andExpect(MockMvcResultMatchers.status().isUnauthorized)
   }
 
-  @CsvSource("UNSCHEDULED", "AWAITING_REVIEW")
+  @CsvSource("UNSCHEDULED", "AWAITING_REVIEW", "RETURNED")
   @ParameterizedTest
   @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
   fun `makes a call to set the damages`(status: ReportedAdjudicationStatus) {
@@ -69,7 +69,7 @@ class DamagesControllerTest : TestControllerBase() {
 
     verify(damagesService).updateDamages("1", DAMAGES_REQUEST.damages)
 
-    verify(eventPublishService, if (status != ReportedAdjudicationStatus.AWAITING_REVIEW) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.DAMAGES_UPDATED, dto)
+    verify(eventPublishService, if (listOf(ReportedAdjudicationStatus.RETURNED, ReportedAdjudicationStatus.AWAITING_REVIEW).none { it == status }) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.DAMAGES_UPDATED, dto)
   }
 
   private fun setDamagesRequest(
