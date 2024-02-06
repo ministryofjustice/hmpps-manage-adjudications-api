@@ -33,7 +33,7 @@ class DamagesController(
     eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
-          eventRule = { it.status != ReportedAdjudicationStatus.AWAITING_REVIEW },
+          eventRule = { listOf(ReportedAdjudicationStatus.RETURNED, ReportedAdjudicationStatus.AWAITING_REVIEW).none { s -> it.status == s } },
           eventSupplier = { AdjudicationDomainEventType.DAMAGES_UPDATED },
         ),
       ),
