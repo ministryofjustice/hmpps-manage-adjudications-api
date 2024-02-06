@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.format.DateTimeFormatter
 
@@ -268,11 +270,63 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `get reports for booking with ADA`() {
+    initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.ADDITIONAL_DAYS)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}?status=CHARGE_PROVED&ada=true&agency=${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}&page=0&size=20")
+      .headers(setHeaders(username = "P_NESS"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(1)
+  }
+
+  @Test
+  fun `get reports for booking with suspended`() {
+    initDataForUnScheduled().createHearing().createChargeProved().createPunishments()
+
+    webTestClient.get()
+      .uri("/reported-adjudications/booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}?status=CHARGE_PROVED&suspended=true&agency=${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}&page=0&size=20")
+      .headers(setHeaders(username = "P_NESS"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(1)
+  }
+
+  @Test
   fun `get reports for prisoner`() {
     initDataForUnScheduled()
 
     webTestClient.get()
       .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?status=UNSCHEDULED&page=0&size=20")
+      .headers(setHeaders(username = "P_NESS"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(1)
+  }
+
+  @Test
+  fun `get reports for prisoner with ADA`() {
+    initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.ADDITIONAL_DAYS)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?status=CHARGE_PROVED&ada=true&page=0&size=20")
+      .headers(setHeaders(username = "P_NESS"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(1)
+  }
+
+  @Test
+  fun `get reports for prisoner with suspended`() {
+    initDataForUnScheduled().createHearing().createChargeProved().createPunishments()
+
+    webTestClient.get()
+      .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?status=CHARGE_PROVED&suspended=true&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk

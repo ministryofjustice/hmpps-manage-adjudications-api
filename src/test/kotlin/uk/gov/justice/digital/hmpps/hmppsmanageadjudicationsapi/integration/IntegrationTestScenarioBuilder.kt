@@ -5,6 +5,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -111,10 +112,11 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun createPunishments(startDate: LocalDate? = null): IntegrationTestScenario {
+  fun createPunishments(startDate: LocalDate? = null, punishmentType: PunishmentType = PunishmentType.CONFINEMENT): IntegrationTestScenario {
     intTestData.createPunishments(
       testDataSet = testAdjudicationDataSet,
       startDate = startDate,
+      punishmentType = punishmentType,
     )
 
     return this

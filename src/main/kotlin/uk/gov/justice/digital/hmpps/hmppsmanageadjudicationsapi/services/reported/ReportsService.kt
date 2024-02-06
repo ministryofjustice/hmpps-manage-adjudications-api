@@ -127,31 +127,58 @@ class ReportsService(
     endDate: LocalDate? = null,
     agencies: List<String>,
     statuses: List<ReportedAdjudicationStatus>,
+    ada: Boolean,
+    suspended: Boolean,
     pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> =
+  ): Page<ReportedAdjudicationDto> = if (!ada && !suspended) {
     reportedAdjudicationRepository.findAdjudicationsForBooking(
       offenderBookingId = bookingId,
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: maxDate),
       agencies = agencies,
       statuses = statuses.map { it.name },
-      transferIgnoreStatuses = transferIgnoreStatuses.map { it.name },
       pageable = pageable,
-    ).map { it.toDto() }
+    )
+  } else {
+    reportedAdjudicationRepository.findAdjudicationsForBookingWithPunishments(
+      offenderBookingId = bookingId,
+      startDate = reportsFrom(startDate ?: minDate),
+      endDate = reportsTo(endDate ?: maxDate),
+      agencies = agencies,
+      statuses = statuses.map { it.name },
+      ada = ada,
+      suspended = suspended,
+      pageable = pageable,
+    )
+  }.map { it.toDto() }
 
   fun getAdjudicationsForPrisoner(
     prisonerNumber: String,
     startDate: LocalDate? = null,
     endDate: LocalDate? = null,
     statuses: List<ReportedAdjudicationStatus>,
+    ada: Boolean,
+    suspended: Boolean,
     pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> = reportedAdjudicationRepository.findAdjudicationsForPrisoner(
-    prisonerNumber = prisonerNumber,
-    startDate = reportsFrom(startDate ?: minDate),
-    endDate = reportsTo(endDate ?: maxDate),
-    statuses = statuses.map { it.name },
-    pageable = pageable,
-  ).map { it.toDto() }
+  ): Page<ReportedAdjudicationDto> = if (!ada && !suspended) {
+    reportedAdjudicationRepository.findAdjudicationsForPrisoner(
+      prisonerNumber = prisonerNumber,
+      startDate = reportsFrom(startDate ?: minDate),
+      endDate = reportsTo(endDate ?: maxDate),
+      statuses = statuses.map { it.name },
+      pageable = pageable,
+    )
+  } else {
+    reportedAdjudicationRepository.findAdjudicationsForPrisonerWithPunishments(
+      prisonerNumber = prisonerNumber,
+      startDate = reportsFrom(startDate ?: minDate),
+      endDate = reportsTo(endDate ?: maxDate),
+      statuses = statuses.map { it.name },
+      ada = ada,
+      suspended = suspended,
+      pageable = pageable,
+    )
+  }.map { it.toDto() }
 
   fun getReportsForPrisoner(prisonerNumber: String): List<ReportedAdjudicationDto> =
     reportedAdjudicationRepository.findByPrisonerNumber(prisonerNumber = prisonerNumber).map { it.toDto() }
