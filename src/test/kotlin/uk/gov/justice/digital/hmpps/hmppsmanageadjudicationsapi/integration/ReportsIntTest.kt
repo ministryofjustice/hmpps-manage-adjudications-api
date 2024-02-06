@@ -268,11 +268,37 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `get reports for booking with CONFINEMENT`() {
+    initDataForUnScheduled().createHearing().createChargeProved().createPunishments()
+
+    webTestClient.get()
+      .uri("/reported-adjudications/booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}?status=CHARGE_PROVED&punishment=CONFINEMENT&agency=${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}&page=0&size=20")
+      .headers(setHeaders(username = "P_NESS"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(1)
+  }
+
+  @Test
   fun `get reports for prisoner`() {
     initDataForUnScheduled()
 
     webTestClient.get()
       .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?status=UNSCHEDULED&page=0&size=20")
+      .headers(setHeaders(username = "P_NESS"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(1)
+  }
+
+  @Test
+  fun `get reports for prisoner with CONFINEMENT`() {
+    initDataForUnScheduled().createHearing().createChargeProved().createPunishments()
+
+    webTestClient.get()
+      .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?status=CHARGE_PROVED&punishment=CONFINEMENT&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk

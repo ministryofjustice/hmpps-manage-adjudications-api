@@ -269,6 +269,7 @@ class ReportsControllerTest : TestControllerBase() {
           any(),
           any(),
           any(),
+          any(),
         ),
       ).thenReturn(
         PageImpl(
@@ -289,7 +290,7 @@ class ReportsControllerTest : TestControllerBase() {
     fun `responds with adjudication history for prisoner `() {
       getAdjudicationHistory().andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(reportsService, atLeastOnce()).getAdjudicationsForBooking(any(), anyOrNull(), anyOrNull(), any(), any(), any())
+      verify(reportsService, atLeastOnce()).getAdjudicationsForBooking(any(), anyOrNull(), anyOrNull(), any(), any(), any(), any())
     }
 
     private fun getAdjudicationHistory(): ResultActions {
@@ -314,6 +315,7 @@ class ReportsControllerTest : TestControllerBase() {
           anyOrNull(),
           any(),
           any(),
+          any(),
         ),
       ).thenReturn(
         PageImpl(
@@ -334,7 +336,7 @@ class ReportsControllerTest : TestControllerBase() {
     fun `responds with adjudication history for prisoner `() {
       getAdjudicationHistory().andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(reportsService, atLeastOnce()).getAdjudicationsForPrisoner(any(), anyOrNull(), anyOrNull(), any(), any())
+      verify(reportsService, atLeastOnce()).getAdjudicationsForPrisoner(any(), anyOrNull(), anyOrNull(), any(), any(), any())
     }
 
     private fun getAdjudicationHistory(): ResultActions {

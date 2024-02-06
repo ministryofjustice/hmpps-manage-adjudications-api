@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.AgencyReportCountsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -127,31 +128,52 @@ class ReportsService(
     endDate: LocalDate? = null,
     agencies: List<String>,
     statuses: List<ReportedAdjudicationStatus>,
+    punishments: List<PunishmentType>,
     pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> =
-    reportedAdjudicationRepository.findAdjudicationsForBooking(
+  ): Page<ReportedAdjudicationDto> = when (punishments.isEmpty()) {
+    true -> reportedAdjudicationRepository.findAdjudicationsForBooking(
       offenderBookingId = bookingId,
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: maxDate),
       agencies = agencies,
       statuses = statuses.map { it.name },
-      transferIgnoreStatuses = transferIgnoreStatuses.map { it.name },
       pageable = pageable,
-    ).map { it.toDto() }
+    )
+    false -> reportedAdjudicationRepository.findAdjudicationsForBookingWithPunishments(
+      offenderBookingId = bookingId,
+      startDate = reportsFrom(startDate ?: minDate),
+      endDate = reportsTo(endDate ?: maxDate),
+      agencies = agencies,
+      statuses = statuses.map { it.name },
+      punishments = punishments.map { it.name },
+      pageable = pageable,
+    )
+  }.map { it.toDto() }
 
   fun getAdjudicationsForPrisoner(
     prisonerNumber: String,
     startDate: LocalDate? = null,
     endDate: LocalDate? = null,
     statuses: List<ReportedAdjudicationStatus>,
+    punishments: List<PunishmentType>,
     pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> = reportedAdjudicationRepository.findAdjudicationsForPrisoner(
-    prisonerNumber = prisonerNumber,
-    startDate = reportsFrom(startDate ?: minDate),
-    endDate = reportsTo(endDate ?: maxDate),
-    statuses = statuses.map { it.name },
-    pageable = pageable,
-  ).map { it.toDto() }
+  ): Page<ReportedAdjudicationDto> = when (punishments.isEmpty()) {
+    true -> reportedAdjudicationRepository.findAdjudicationsForPrisoner(
+      prisonerNumber = prisonerNumber,
+      startDate = reportsFrom(startDate ?: minDate),
+      endDate = reportsTo(endDate ?: maxDate),
+      statuses = statuses.map { it.name },
+      pageable = pageable,
+    )
+    false -> reportedAdjudicationRepository.findAdjudicationsForPrisonerWithPunishments(
+      prisonerNumber = prisonerNumber,
+      startDate = reportsFrom(startDate ?: minDate),
+      endDate = reportsTo(endDate ?: maxDate),
+      statuses = statuses.map { it.name },
+      punishments = punishments.map { it.name },
+      pageable = pageable,
+    )
+  }.map { it.toDto() }
 
   fun getReportsForPrisoner(prisonerNumber: String): List<ReportedAdjudicationDto> =
     reportedAdjudicationRepository.findByPrisonerNumber(prisonerNumber = prisonerNumber).map { it.toDto() }

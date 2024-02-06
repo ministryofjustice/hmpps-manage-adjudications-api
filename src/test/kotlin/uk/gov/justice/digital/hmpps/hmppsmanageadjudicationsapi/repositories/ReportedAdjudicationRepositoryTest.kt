@@ -734,13 +734,54 @@ class ReportedAdjudicationRepositoryTest {
     val response = reportedAdjudicationRepository.findAdjudicationsForBooking(
       offenderBookingId = 3L,
       statuses = listOf(ReportedAdjudicationStatus.CHARGE_PROVED.name),
-      transferIgnoreStatuses = listOf("TEST"),
       startDate = LocalDateTime.now().minusYears(1),
       endDate = LocalDateTime.now(),
       agencies = listOf("MDI"),
       pageable = Pageable.ofSize(10),
     )
     assertThat(response.content.size).isEqualTo(2)
+  }
+
+  @Test
+  fun `reports by booking and agency with punishments`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(1)
+        it.originatingAgencyId = "MDI"
+        it.clearPunishments()
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10),
+            ),
+          ),
+        )
+      },
+    )
+
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM2").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(2)
+        it.originatingAgencyId = "TJW"
+        it.overrideAgencyId = "MDI"
+      },
+    )
+
+    val response = reportedAdjudicationRepository.findAdjudicationsForBookingWithPunishments(
+      offenderBookingId = 3L,
+      statuses = listOf(ReportedAdjudicationStatus.CHARGE_PROVED.name),
+      startDate = LocalDateTime.now().minusYears(1),
+      endDate = LocalDateTime.now(),
+      agencies = listOf("MDI"),
+      punishments = listOf(PunishmentType.ADDITIONAL_DAYS.name),
+      pageable = Pageable.ofSize(10),
+    )
+    assertThat(response.content.size).isEqualTo(1)
   }
 
   @Test
@@ -772,6 +813,47 @@ class ReportedAdjudicationRepositoryTest {
       pageable = Pageable.ofSize(10),
     )
     assertThat(response.content.size).isEqualTo(2)
+  }
+
+  @Test
+  fun `reports by prisoner and agency with punishments`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(1)
+        it.originatingAgencyId = "MDI"
+        it.clearPunishments()
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10),
+            ),
+          ),
+        )
+      },
+    )
+
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM2").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(2)
+        it.originatingAgencyId = "TJW"
+        it.overrideAgencyId = "MDI"
+      },
+    )
+
+    val response = reportedAdjudicationRepository.findAdjudicationsForPrisonerWithPunishments(
+      prisonerNumber = "A12345",
+      statuses = listOf(ReportedAdjudicationStatus.CHARGE_PROVED.name),
+      startDate = LocalDateTime.now().minusYears(1),
+      endDate = LocalDateTime.now(),
+      punishments = listOf(PunishmentType.ADDITIONAL_DAYS.name),
+      pageable = Pageable.ofSize(10),
+    )
+    assertThat(response.content.size).isEqualTo(1)
   }
 
   @Test
