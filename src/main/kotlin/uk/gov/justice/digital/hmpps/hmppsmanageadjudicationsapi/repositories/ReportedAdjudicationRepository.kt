@@ -176,6 +176,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByIncidentRoleAssociatedPrisonersNumber(prisonerNumber: String): List<ReportedAdjudication>
 
+  fun findByOffenceDetailsVictimPrisonersNumber(prisonerNumber: String): List<ReportedAdjudication>
+
   fun findByOffenderBookingId(offenderBookingId: Long): List<ReportedAdjudication>
 
   fun findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(

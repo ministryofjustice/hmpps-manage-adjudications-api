@@ -28,6 +28,11 @@ class PrisonerMergeService(
       it.incidentRoleAssociatedPrisonersNumber = prisonerTo
     }
 
+    reportedAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber(prisonerNumber = prisonerFrom).forEach {
+      log.info("prisonerMerge: updating ${it.chargeNumber} victim prisoner from $prisonerFrom to $prisonerTo")
+      it.offenceDetails.first { o -> o.victimPrisonersNumber == prisonerFrom }.victimPrisonersNumber = prisonerTo
+    }
+
     draftAdjudicationRepository.findByPrisonerNumber(prisonerNumber = prisonerFrom).forEach {
       log.info("prisonerMerge: updating draft ${it.id} from $prisonerFrom to $prisonerTo")
       it.prisonerNumber = prisonerTo
@@ -36,6 +41,11 @@ class PrisonerMergeService(
     draftAdjudicationRepository.findByIncidentRoleAssociatedPrisonersNumber(prisonerNumber = prisonerFrom).forEach {
       log.info("prisonerMerge: updating draft ${it.id} associated prisoner from $prisonerFrom to $prisonerTo")
       it.incidentRole!!.associatedPrisonersNumber = prisonerTo
+    }
+
+    draftAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber(prisonerNumber = prisonerFrom).forEach {
+      log.info("prisonerMerge: updating draft ${it.id} victim prisoner from $prisonerFrom to $prisonerTo")
+      it.offenceDetails.first { o -> o.victimPrisonersNumber == prisonerFrom }.victimPrisonersNumber = prisonerTo
     }
   }
 

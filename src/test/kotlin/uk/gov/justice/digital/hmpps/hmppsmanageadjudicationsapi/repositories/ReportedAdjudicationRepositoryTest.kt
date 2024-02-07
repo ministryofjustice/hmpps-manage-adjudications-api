@@ -904,4 +904,17 @@ class ReportedAdjudicationRepositoryTest {
       "12345-2",
     )
   }
+
+  @Test
+  fun `find by victims prisoner number`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2").also {
+        it.offenceDetails.first().victimPrisonersNumber = "FROM"
+        it.hearings.clear()
+      },
+    )
+    assertThat(reportedAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber("FROM").first().chargeNumber).isEqualTo(
+      "12345-2",
+    )
+  }
 }

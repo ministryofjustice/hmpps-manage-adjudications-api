@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAd
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationTestBase
@@ -75,6 +76,22 @@ class PrisonerMergeServiceTest : ReportedAdjudicationTestBase() {
     verify(reportedAdjudicationRepository, atLeastOnce()).findByIncidentRoleAssociatedPrisonersNumber("FROM")
     assertThat(fromReport.incidentRoleAssociatedPrisonersNumber).isEqualTo("TO")
   }
+
+  @Test
+  fun `updates victim prisoner number to prisoner to, from prisoner from`() {
+    val fromReport = entityBuilder.reportedAdjudication(prisonerNumber = "RANDOM").also {
+      it.offenceDetails.first().victimPrisonersNumber = "FROM"
+    }
+    whenever(reportedAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber(any())).thenReturn(listOf(fromReport))
+
+    prisonerMergeService.merge(
+      prisonerFrom = "FROM",
+      prisonerTo = "TO",
+    )
+
+    verify(reportedAdjudicationRepository, atLeastOnce()).findByOffenceDetailsVictimPrisonersNumber("FROM")
+    assertThat(fromReport.offenceDetails.first().victimPrisonersNumber).isEqualTo("TO")
+  }
 }
 
 class PrisonerMergeServiceDraftTest : DraftAdjudicationTestBase() {
@@ -120,6 +137,29 @@ class PrisonerMergeServiceDraftTest : DraftAdjudicationTestBase() {
 
     verify(draftAdjudicationRepository, atLeastOnce()).findByIncidentRoleAssociatedPrisonersNumber("FROM")
     assertThat(fromReport.incidentRole!!.associatedPrisonersNumber).isEqualTo("TO")
+  }
+
+  @Test
+  fun `updates draft victim prisoner number to prisoner to, from prisoner from`() {
+    val fromReport = DraftAdjudication(
+      agencyId = "",
+      prisonerNumber = "RANDOM",
+      gender = Gender.MALE,
+      incidentDetails =
+      IncidentDetails(dateTimeOfDiscovery = LocalDateTime.now(), dateTimeOfIncident = LocalDateTime.now(), handoverDeadline = LocalDateTime.now(), locationId = 1),
+      offenceDetails = mutableListOf(
+        Offence(offenceCode = 1, victimPrisonersNumber = "FROM"),
+      ),
+    )
+    whenever(draftAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber(any())).thenReturn(listOf(fromReport))
+
+    prisonerMergeService.merge(
+      prisonerFrom = "FROM",
+      prisonerTo = "TO",
+    )
+
+    verify(draftAdjudicationRepository, atLeastOnce()).findByOffenceDetailsVictimPrisonersNumber("FROM")
+    assertThat(fromReport.offenceDetails.first().victimPrisonersNumber).isEqualTo("TO")
   }
 
   override fun `throws an entity not found if the draft adjudication for the supplied id does not exists`() {

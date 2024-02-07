@@ -12,6 +12,8 @@ interface DraftAdjudicationRepository : CrudRepository<DraftAdjudication, Long> 
 
   fun findByIncidentRoleAssociatedPrisonersNumber(prisonerNumber: String): List<DraftAdjudication>
 
+  fun findByOffenceDetailsVictimPrisonersNumber(prisonerNumber: String): List<DraftAdjudication>
+
   fun findByAgencyIdAndCreatedByUserIdAndChargeNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
     agencyId: String,
     username: String,
