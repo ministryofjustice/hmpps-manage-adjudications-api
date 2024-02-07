@@ -118,13 +118,11 @@ data class ReportedAdjudication(
         if (this.getLatestHearing().isAdjourn()) {
           ReportedAdjudicationStatus.ADJOURNED
         } else {
-          if (this.isActivePrisoner() && listOf(OutcomeCode.CHARGE_PROVED, OutcomeCode.QUASHED).none { it == this.latestOutcome()?.code } && this.getPunishments().any { it.type == PunishmentType.ADDITIONAL_DAYS }) {
+          if (this.isActivePrisoner() && this.isInvalidAda()) {
             ReportedAdjudicationStatus.INVALID_ADA
-          } else if (this.isActivePrisoner() && this.getOutcomes().count { listOf(OutcomeCode.DISMISSED, OutcomeCode.CHARGE_PROVED, OutcomeCode.NOT_PROCEED).contains(it.code) } > 1 ||
-            this.latestOutcome()?.code == OutcomeCode.PROSECUTION && this.getPunishments().isNotEmpty()
-          ) {
+          } else if (this.isActivePrisoner() && this.isInvalidOutcome()) {
             ReportedAdjudicationStatus.INVALID_OUTCOME
-          } else if (this.isActivePrisoner() && this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED && this.getPunishments().any { it.isCorrupted() }) {
+          } else if (this.isActivePrisoner() && this.isInvalidSuspended()) {
             ReportedAdjudicationStatus.INVALID_SUSPENDED
           } else {
             this.getOutcomes().sortedByDescending { it.getCreatedDateTime() }.first().code.status
@@ -145,8 +143,6 @@ data class ReportedAdjudication(
   @TestOnly
   fun clearOutcomes() = this.outcomes.clear()
 
-  fun removeOutcome(outcome: Outcome) = this.outcomes.remove(outcome)
-
   fun getPunishments() = this.punishments.filter { it.deleted != true }
 
   fun addPunishment(punishment: Punishment) = this.punishments.add(punishment)
@@ -156,9 +152,16 @@ data class ReportedAdjudication(
   private fun Hearing?.isAdjourn() = this?.hearingOutcome?.code == HearingOutcomeCode.ADJOURN
 
   companion object {
+    fun ReportedAdjudication.isInvalidSuspended(): Boolean =
+      this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED && this.getPunishments().any { it.isCorrupted() }
+    fun ReportedAdjudication.isInvalidAda(): Boolean =
+      listOf(OutcomeCode.CHARGE_PROVED, OutcomeCode.QUASHED).none { it == this.latestOutcome()?.code } && this.getPunishments().any { it.type == PunishmentType.ADDITIONAL_DAYS }
+    fun ReportedAdjudication.isInvalidOutcome(): Boolean =
+      this.getOutcomes().count { listOf(OutcomeCode.DISMISSED, OutcomeCode.CHARGE_PROVED, OutcomeCode.NOT_PROCEED).contains(it.code) } > 1 ||
+        this.latestOutcome()?.code == OutcomeCode.PROSECUTION && this.getPunishments().isNotEmpty()
     fun ReportedAdjudication.isActivePrisoner(): Boolean = !this.migratedInactivePrisoner
     fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.getCreatedDateTime()!! }
-    fun Punishment.isCorrupted(): Boolean =
+    private fun Punishment.isCorrupted(): Boolean =
       this.suspendedUntil != null && this.actualCreatedDate?.toLocalDate()?.isEqual(this.suspendedUntil) == true && this.actualCreatedDate?.toLocalDate()?.isAfter(LocalDate.now().minusMonths(6)) == true
   }
 }

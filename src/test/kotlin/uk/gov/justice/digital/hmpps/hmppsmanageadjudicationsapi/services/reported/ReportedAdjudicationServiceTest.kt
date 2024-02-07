@@ -1855,6 +1855,87 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class CalculateStatuses {
+
+    @Test
+    fun `status is adjourned`() {
+      assertThat(
+        entityBuilder.reportedAdjudication().also {
+          it.clearOutcomes()
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
+          it.calculateStatus()
+        }.status,
+      ).isEqualTo(ReportedAdjudicationStatus.ADJOURNED)
+
+      assertThat(
+        entityBuilder.reportedAdjudication().also {
+          it.clearOutcomes()
+          it.addOutcome(Outcome(code = OutcomeCode.REFER_POLICE, actualCreatedDate = LocalDateTime.now()))
+          it.addOutcome(Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = LocalDateTime.now().plusDays(1)))
+
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+          it.hearings.add(
+            Hearing(
+              dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+              oicHearingType = OicHearingType.INAD_ADULT,
+              agencyId = "",
+              locationId = 1,
+              chargeNumber = "",
+              hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = ""),
+            ),
+          )
+          it.calculateStatus()
+        }.status,
+      ).isEqualTo(ReportedAdjudicationStatus.ADJOURNED)
+    }
+
+    @Test
+    fun `status is unscheduled no hearings`() {
+      assertThat(
+        entityBuilder.reportedAdjudication().also {
+          it.hearings.clear()
+          it.clearOutcomes()
+          it.calculateStatus()
+        }.status,
+      ).isEqualTo(ReportedAdjudicationStatus.UNSCHEDULED)
+    }
+
+    @Test
+    fun `status is scheduled with hearings`() {
+      assertThat(
+        entityBuilder.reportedAdjudication().also {
+          it.clearOutcomes()
+          it.calculateStatus()
+        }.status,
+      ).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
+
+      assertThat(
+        entityBuilder.reportedAdjudication().also {
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
+          it.hearings.add(
+            Hearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingType = OicHearingType.INAD_ADULT, agencyId = "", locationId = 1, chargeNumber = ""),
+          )
+          it.calculateStatus()
+        }.status,
+      ).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
+
+      assertThat(
+        entityBuilder.reportedAdjudication().also {
+          it.clearOutcomes()
+          it.addOutcome(Outcome(code = OutcomeCode.REFER_POLICE, actualCreatedDate = LocalDateTime.now()))
+          it.addOutcome(Outcome(code = OutcomeCode.SCHEDULE_HEARING, actualCreatedDate = LocalDateTime.now().plusDays(1)))
+
+          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
+          it.hearings.add(
+            Hearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingType = OicHearingType.INAD_ADULT, agencyId = "", locationId = 1, chargeNumber = ""),
+          )
+          it.calculateStatus()
+        }.status,
+      ).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
+    }
+  }
+
   companion object {
     val DATE_TIME_REPORTED_ADJUDICATION_EXPIRES = LocalDateTime.of(2010, 10, 14, 10, 0)
     val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
