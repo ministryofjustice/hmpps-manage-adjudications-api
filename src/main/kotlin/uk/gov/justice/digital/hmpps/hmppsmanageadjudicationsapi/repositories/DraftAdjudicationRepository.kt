@@ -8,6 +8,10 @@ import java.time.LocalDateTime
 interface DraftAdjudicationRepository : CrudRepository<DraftAdjudication, Long> {
   fun save(draftAdjudication: DraftAdjudication?): DraftAdjudication
 
+  fun findByPrisonerNumber(prisonerNumber: String): List<DraftAdjudication>
+
+  fun findByIncidentRoleAssociatedPrisonersNumber(prisonerNumber: String): List<DraftAdjudication>
+
   fun findByAgencyIdAndCreatedByUserIdAndChargeNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
     agencyId: String,
     username: String,
