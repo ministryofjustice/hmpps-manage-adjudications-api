@@ -69,6 +69,7 @@ data class AdditionalInformation(
   val reason: String? = null,
   val prisonId: String? = null,
   val status: String? = null,
+  val removedNomsNumber: String? = null,
 )
 
 data class HMPPSDomainEvent(

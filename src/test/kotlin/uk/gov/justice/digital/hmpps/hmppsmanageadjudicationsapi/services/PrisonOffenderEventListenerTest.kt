@@ -13,6 +13,7 @@ import org.mockito.kotlin.verify
 class PrisonOffenderEventListenerTest {
 
   private val transferService: TransferService = mock()
+  private val prisonerMergeService: PrisonerMergeService = mock()
   private lateinit var prisonOffenderEventListener: PrisonOffenderEventListener
   private val objectMapper = ObjectMapper().findAndRegisterModules().apply {
     configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -20,7 +21,7 @@ class PrisonOffenderEventListenerTest {
 
   @BeforeEach
   fun setUp() {
-    prisonOffenderEventListener = PrisonOffenderEventListener(objectMapper, transferService)
+    prisonOffenderEventListener = PrisonOffenderEventListener(objectMapper, transferService, prisonerMergeService)
   }
 
   @Test
@@ -35,6 +36,13 @@ class PrisonOffenderEventListenerTest {
     prisonOffenderEventListener.onPrisonOffenderEvent("/messages/not_transfer.json".readResourceAsText())
 
     verify(transferService, never()).processTransferEvent(any(), any())
+  }
+
+  @Test
+  fun `prisoner merge calls prisoner merge service`() {
+    prisonOffenderEventListener.onPrisonOffenderEvent("/messages/merge.json".readResourceAsText())
+
+    verify(prisonerMergeService, atLeastOnce()).merge(prisonerFrom = "A0237FC", prisonerTo = "A3203AJ")
   }
 
   private fun String.readResourceAsText(): String {

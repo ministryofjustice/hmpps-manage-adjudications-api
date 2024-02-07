@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service
 class PrisonOffenderEventListener(
   private val mapper: ObjectMapper,
   private val transferService: TransferService,
+  private val prisonerMergeService: PrisonerMergeService,
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -48,7 +49,12 @@ class PrisonOffenderEventListener(
         }
       }
       PRISONER_MERGE_EVENT_TYPE -> {
-        // TODO: call to update prisoner number
+        if (hmppsDomainEvent.additionalInformation?.reason == "MERGE") {
+          prisonerMergeService.merge(
+            prisonerFrom = hmppsDomainEvent.additionalInformation?.removedNomsNumber,
+            prisonerTo = hmppsDomainEvent.additionalInformation?.nomsNumber,
+          )
+        }
       }
       else -> {
         log.debug("Ignoring message with type $eventType")
