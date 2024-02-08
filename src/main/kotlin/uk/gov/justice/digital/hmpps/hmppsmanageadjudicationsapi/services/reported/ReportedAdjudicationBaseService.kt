@@ -420,8 +420,8 @@ open class ReportedAdjudicationBaseService(
       cutOff = LocalDate.now().minusDays(1),
     )
 
-  protected fun getReportsForProfile(offenderBookingId: Long, cutOff: LocalDateTime): List<ReportedAdjudication> =
-    reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+  protected fun getReportCountForProfile(offenderBookingId: Long, cutOff: LocalDateTime): Long =
+    reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
       bookingId = offenderBookingId,
       status = ReportedAdjudicationStatus.CHARGE_PROVED,
       cutOff = cutOff,

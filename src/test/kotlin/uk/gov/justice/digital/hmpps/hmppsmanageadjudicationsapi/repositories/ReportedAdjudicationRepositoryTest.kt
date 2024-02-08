@@ -701,13 +701,13 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    val adjudications = reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+    val adjudications = reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
       bookingId = 2L,
       status = ReportedAdjudicationStatus.CHARGE_PROVED,
       cutOff = LocalDate.now().minusDays(2).atStartOfDay(),
     )
 
-    assertThat(adjudications.size).isEqualTo(1)
+    assertThat(adjudications).isEqualTo(1L)
   }
 
   @Test

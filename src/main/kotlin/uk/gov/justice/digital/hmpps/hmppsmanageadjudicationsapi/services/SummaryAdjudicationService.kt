@@ -76,13 +76,13 @@ class SummaryAdjudicationService(
     adjudicationCutoffDate: LocalDate?,
   ): AdjudicationSummary {
     val cutOff = adjudicationCutoffDate ?: LocalDate.now().minusMonths(3)
-    val provenByOffenderBookingId = getReportsForProfile(
+    val provenByOffenderBookingId = getReportCountForProfile(
       offenderBookingId = bookingId,
       cutOff = cutOff.atStartOfDay(),
     )
     return AdjudicationSummary(
       bookingId = bookingId,
-      adjudicationCount = provenByOffenderBookingId.size,
+      adjudicationCount = provenByOffenderBookingId.toInt(),
       awards =
       getReportsWithActivePunishments(offenderBookingId = bookingId).map { it.getPunishments() }.flatten().map {
         val latestSchedule = it.schedule.latestSchedule()

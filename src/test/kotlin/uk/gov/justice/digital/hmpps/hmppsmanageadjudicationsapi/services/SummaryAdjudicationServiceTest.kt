@@ -154,17 +154,12 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `returns adjudication summary for prisoner - basic`() {
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+        reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
           1L,
           ReportedAdjudicationStatus.CHARGE_PROVED,
           LocalDate.now().minusMonths(3).atStartOfDay(),
         ),
-      ).thenReturn(
-        listOf(
-          basicData,
-          basicData,
-        ),
-      )
+      ).thenReturn(2)
 
       whenever(
         reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
@@ -203,12 +198,12 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
 
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+        reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
           1L,
           ReportedAdjudicationStatus.CHARGE_PROVED,
           LocalDate.now().minusMonths(3).atStartOfDay(),
         ),
-      ).thenReturn(listOf(basicData))
+      ).thenReturn(1)
 
       whenever(
         reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
@@ -239,12 +234,12 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
 
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+        reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
           1L,
           ReportedAdjudicationStatus.CHARGE_PROVED,
           LocalDate.now().minusMonths(3).atStartOfDay(),
         ),
-      ).thenReturn(listOf(basicData))
+      ).thenReturn(1)
 
       whenever(
         reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
@@ -277,12 +272,12 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
 
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+        reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
           1L,
           ReportedAdjudicationStatus.CHARGE_PROVED,
           LocalDate.now().minusMonths(3).atStartOfDay(),
         ),
-      ).thenReturn(listOf(basicData))
+      ).thenReturn(1)
 
       whenever(
         reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
@@ -314,12 +309,12 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
 
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+        reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
           1L,
           ReportedAdjudicationStatus.CHARGE_PROVED,
           LocalDate.now().minusMonths(3).atStartOfDay(),
         ),
-      ).thenReturn(listOf(basicData))
+      ).thenReturn(1)
 
       whenever(
         reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
@@ -351,12 +346,12 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
 
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+        reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
           1L,
           ReportedAdjudicationStatus.CHARGE_PROVED,
           LocalDate.now().minusMonths(3).atStartOfDay(),
         ),
-      ).thenReturn(listOf(basicData))
+      ).thenReturn(1)
 
       whenever(
         reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
