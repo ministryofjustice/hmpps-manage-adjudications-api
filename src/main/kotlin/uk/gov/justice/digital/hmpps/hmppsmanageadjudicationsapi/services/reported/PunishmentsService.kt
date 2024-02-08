@@ -197,14 +197,14 @@ class PunishmentsService(
 
   fun getActivePunishments(offenderBookingId: Long): List<ActivePunishmentDto> =
     getReportsWithActivePunishments(offenderBookingId = offenderBookingId)
-      .map { reportedAdjudication ->
-        reportedAdjudication.second.map {
+      .map { chargeAndPunishments ->
+        chargeAndPunishments.second.map {
           val latestSchedule = it.schedule.latestSchedule()
           ActivePunishmentDto(
             punishmentType = it.type,
             privilegeType = it.privilegeType,
             otherPrivilege = it.otherPrivilege,
-            chargeNumber = reportedAdjudication.first,
+            chargeNumber = chargeAndPunishments.first,
             startDate = latestSchedule.startDate,
             lastDay = latestSchedule.endDate,
             days = if (latestSchedule.days == 0) null else latestSchedule.days,
@@ -421,8 +421,5 @@ class PunishmentsService(
     fun ReportedAdjudication.includeAdaWithSameHearingDateAndSeparateCharge(currentAdjudication: ReportedAdjudication): Boolean =
       this.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() == currentAdjudication.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() &&
         this.chargeNumber != currentAdjudication.chargeNumber
-
-    fun Punishment.isActive(): Boolean =
-      this.suspendedUntil == null && this.schedule.latestSchedule().endDate?.isAfter(LocalDate.now().minusDays(1)) == true
   }
 }
