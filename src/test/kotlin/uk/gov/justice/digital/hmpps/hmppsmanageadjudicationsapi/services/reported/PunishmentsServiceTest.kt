@@ -1656,7 +1656,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `get damages owed`() {
       whenever(
-        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
           any(),
           any(),
           any(),
@@ -1690,7 +1690,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `get activated from with other privilege`() {
       whenever(
-        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
           any(),
           any(),
           any(),
@@ -1729,7 +1729,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `get with stoppage percentage`() {
       whenever(
-        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
           any(),
           any(),
           any(),

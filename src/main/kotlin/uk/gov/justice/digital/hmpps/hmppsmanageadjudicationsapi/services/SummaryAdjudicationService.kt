@@ -14,17 +14,24 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Award
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.LegacyNomisGateway
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationBaseService
 import java.time.LocalDate
 
 @Service
 class SummaryAdjudicationService(
   private val legacyNomisGateway: LegacyNomisGateway,
-  private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  offenceCodeLookupService: OffenceCodeLookupService,
+  authenticationFacade: AuthenticationFacade,
+) : ReportedAdjudicationBaseService(
+  reportedAdjudicationRepository,
+  offenceCodeLookupService,
+  authenticationFacade,
 ) {
   fun getAdjudication(prisonerNumber: String, chargeId: Long): AdjudicationDetail =
     legacyNomisGateway.getAdjudicationDetailForPrisoner(prisonerNumber, chargeId)
@@ -67,22 +74,17 @@ class SummaryAdjudicationService(
     bookingId: Long,
     awardCutoffDate: LocalDate?,
     adjudicationCutoffDate: LocalDate?,
-    includeSuspended: Boolean = false,
   ): AdjudicationSummary {
     val cutOff = adjudicationCutoffDate ?: LocalDate.now().minusMonths(3)
-    val punishmentCutOff = awardCutoffDate ?: LocalDate.now().minusDays(1)
-    val provenByOffenderBookingId = reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
-      bookingId = bookingId,
-      status = ReportedAdjudicationStatus.CHARGE_PROVED,
+    val provenByOffenderBookingId = getReportCountForProfile(
+      offenderBookingId = bookingId,
       cutOff = cutOff.atStartOfDay(),
     )
     return AdjudicationSummary(
       bookingId = bookingId,
-      adjudicationCount = provenByOffenderBookingId.size,
+      adjudicationCount = provenByOffenderBookingId.toInt(),
       awards =
-      provenByOffenderBookingId.map { it.getPunishments() }.flatten().filter {
-        it.schedule.filterCutOff(punishmentCutOff) && it.filterSuspended(includeSuspended)
-      }.map {
+      getReportsWithActivePunishments(offenderBookingId = bookingId).map { it.getPunishments() }.flatten().map {
         val latestSchedule = it.schedule.latestSchedule()
         Award(
           bookingId = bookingId,
@@ -100,8 +102,6 @@ class SummaryAdjudicationService(
   }
 
   companion object {
-    fun Punishment.filterSuspended(includeSuspended: Boolean): Boolean = (!includeSuspended && this.suspendedUntil == null || includeSuspended)
-    fun List<PunishmentSchedule>.filterCutOff(cutOff: LocalDate): Boolean = (this.latestSchedule().startDate ?: LocalDate.now()).isAfter(cutOff)
     fun Punishment.getStatus(latest: PunishmentSchedule): String =
       if (latest.suspendedUntil != null) "SUSPENDED" else if (this.type == PunishmentType.PROSPECTIVE_DAYS) "PROSPECTIVE" else "IMMEDIATE"
 

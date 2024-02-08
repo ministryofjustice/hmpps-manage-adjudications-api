@@ -108,11 +108,11 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("sequenceName") sequenceName: String,
   ): Long
 
-  fun findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+  fun countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
     bookingId: Long,
     status: ReportedAdjudicationStatus,
     cutOff: LocalDateTime,
-  ): List<ReportedAdjudication>
+  ): Long
 
   @Query(
     value = "select * from reported_adjudications ra $BOOKING_ID_REPORTS_WITH_DATE_WHERE_CLAUSE",
@@ -180,7 +180,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByOffenderBookingId(offenderBookingId: Long): List<ReportedAdjudication>
 
-  fun findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+  fun findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
     status: ReportedAdjudicationStatus,
     offenderBookingId: Long,
     cutOff: LocalDate,

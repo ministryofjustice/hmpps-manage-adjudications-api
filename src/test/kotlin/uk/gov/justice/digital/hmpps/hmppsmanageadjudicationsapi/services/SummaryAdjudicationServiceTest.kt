@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.data.domain.PageRequest
@@ -33,6 +34,8 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   private val summaryAdjudicationService = SummaryAdjudicationService(
     legacyNomisGateway,
     reportedAdjudicationRepository,
+    offenceCodeLookupService,
+    authenticationFacade,
   )
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // na
@@ -139,7 +142,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           mutableListOf(
             PunishmentSchedule(
               days = 0,
-              startDate = LocalDate.now().minusDays(1),
+              startDate = LocalDate.now(),
             ).also {
               it.createDateTime = LocalDateTime.now()
             },
@@ -151,17 +154,20 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `returns adjudication summary for prisoner - basic`() {
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+        reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
           1L,
           ReportedAdjudicationStatus.CHARGE_PROVED,
           LocalDate.now().minusMonths(3).atStartOfDay(),
         ),
-      ).thenReturn(
-        listOf(
-          basicData,
-          basicData,
+      ).thenReturn(2)
+
+      whenever(
+        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
+          any(),
+          any(),
+          any(),
         ),
-      )
+      ).thenReturn(listOf(basicData))
 
       val response = summaryAdjudicationService.getAdjudicationSummary(bookingId = 1L, awardCutoffDate = null, adjudicationCutoffDate = null)
       assertThat(response.adjudicationCount).isEqualTo(2)
@@ -176,9 +182,8 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
     }
 
-    @CsvSource("true", "false")
-    @ParameterizedTest
-    fun `suspended award should not return - original was filter in DPS, connect team not maintained it, but its better to be placed in api`(includeSuspended: Boolean) {
+    @Test
+    fun `suspended award should not return - original was filter in DPS, connect team not maintained it, but its better to be placed in api`() {
       basicData.also {
         it.clearPunishments()
         it.addPunishment(
@@ -193,15 +198,24 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
 
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+        reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
           1L,
           ReportedAdjudicationStatus.CHARGE_PROVED,
           LocalDate.now().minusMonths(3).atStartOfDay(),
         ),
-      ).thenReturn(listOf(basicData))
-      val response = summaryAdjudicationService.getAdjudicationSummary(bookingId = 1L, awardCutoffDate = null, adjudicationCutoffDate = null, includeSuspended = includeSuspended)
+      ).thenReturn(1)
 
-      if (includeSuspended) assertThat(response.awards).isNotEmpty else assertThat(response.awards.isEmpty())
+      whenever(
+        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
+          any(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(listOf(basicData))
+
+      val response = summaryAdjudicationService.getAdjudicationSummary(bookingId = 1L, awardCutoffDate = null, adjudicationCutoffDate = null)
+
+      assertThat(response.awards.isEmpty())
     }
 
     @Test
@@ -220,12 +234,21 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
 
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+        reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
           1L,
           ReportedAdjudicationStatus.CHARGE_PROVED,
           LocalDate.now().minusMonths(3).atStartOfDay(),
         ),
+      ).thenReturn(1)
+
+      whenever(
+        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
+          any(),
+          any(),
+          any(),
+        ),
       ).thenReturn(listOf(basicData))
+
       val response = summaryAdjudicationService.getAdjudicationSummary(bookingId = 1L, awardCutoffDate = null, adjudicationCutoffDate = null)
 
       assertThat(response.awards.first().effectiveDate).isEqualTo(LocalDate.now().plusDays(1))
@@ -249,12 +272,21 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
 
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+        reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
           1L,
           ReportedAdjudicationStatus.CHARGE_PROVED,
           LocalDate.now().minusMonths(3).atStartOfDay(),
         ),
+      ).thenReturn(1)
+
+      whenever(
+        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
+          any(),
+          any(),
+          any(),
+        ),
       ).thenReturn(listOf(basicData))
+
       val response = summaryAdjudicationService.getAdjudicationSummary(bookingId = 1L, awardCutoffDate = null, adjudicationCutoffDate = null)
 
       assertThat(response.awards.first().limit!!.toDouble()).isEqualTo(100.0)
@@ -277,12 +309,21 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
 
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+        reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
           1L,
           ReportedAdjudicationStatus.CHARGE_PROVED,
           LocalDate.now().minusMonths(3).atStartOfDay(),
         ),
+      ).thenReturn(1)
+
+      whenever(
+        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
+          any(),
+          any(),
+          any(),
+        ),
       ).thenReturn(listOf(basicData))
+
       val response = summaryAdjudicationService.getAdjudicationSummary(bookingId = 1L, awardCutoffDate = null, adjudicationCutoffDate = null)
 
       assertThat(response.awards.first().sanctionCodeDescription).contains(PrivilegeType.FACILITIES.name)
@@ -305,12 +346,21 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       }
 
       whenever(
-        reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+        reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
           1L,
           ReportedAdjudicationStatus.CHARGE_PROVED,
           LocalDate.now().minusMonths(3).atStartOfDay(),
         ),
+      ).thenReturn(1)
+
+      whenever(
+        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
+          any(),
+          any(),
+          any(),
+        ),
       ).thenReturn(listOf(basicData))
+
       val response = summaryAdjudicationService.getAdjudicationSummary(bookingId = 1L, awardCutoffDate = null, adjudicationCutoffDate = null)
 
       assertThat(response.awards.first().sanctionCodeDescription).contains("playstation")

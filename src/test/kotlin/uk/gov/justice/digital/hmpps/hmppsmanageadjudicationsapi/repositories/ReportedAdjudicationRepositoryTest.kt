@@ -189,7 +189,7 @@ class ReportedAdjudicationRepositoryTest {
           Punishment(
             type = PunishmentType.DAMAGES_OWED,
             schedule = mutableListOf(
-              PunishmentSchedule(days = 0, startDate = LocalDate.now()),
+              PunishmentSchedule(days = 0, startDate = LocalDate.now(), endDate = LocalDate.now().plusDays(1)),
             ),
           ),
         )
@@ -701,13 +701,13 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    val adjudications = reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+    val adjudications = reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
       bookingId = 2L,
       status = ReportedAdjudicationStatus.CHARGE_PROVED,
       cutOff = LocalDate.now().minusDays(2).atStartOfDay(),
     )
 
-    assertThat(adjudications.size).isEqualTo(1)
+    assertThat(adjudications).isEqualTo(1L)
   }
 
   @Test
@@ -861,7 +861,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `get active punishments`() {
     assertThat(
-      reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+      reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
         ReportedAdjudicationStatus.CHARGE_PROVED,
         1L,
         LocalDate.now().minusDays(1),
