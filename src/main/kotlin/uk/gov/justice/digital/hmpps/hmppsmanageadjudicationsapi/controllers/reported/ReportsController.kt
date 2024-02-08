@@ -262,12 +262,17 @@ class ReportsController(
     Parameter(
       name = "ada",
       required = false,
-      description = "only show reports with ADA",
+      description = "show reports with ADA",
+    ),
+    Parameter(
+      name = "pada",
+      required = false,
+      description = "show reports with PADA",
     ),
     Parameter(
       name = "suspended",
       required = false,
-      description = "only show reports with suspended",
+      description = "show reports with suspended",
     ),
   )
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
@@ -283,6 +288,7 @@ class ReportsController(
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
     @RequestParam(name = "agency", required = true) agencies: List<String>,
     @RequestParam(name = "ada", required = false) ada: Boolean = false,
+    @RequestParam(name = "pada", required = false) pada: Boolean = false,
     @RequestParam(name = "suspended", required = false) suspended: Boolean = false,
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
   ): Page<ReportedAdjudicationDto> = reportsService.getAdjudicationsForBooking(
@@ -292,6 +298,7 @@ class ReportsController(
     statuses = statuses,
     agencies = agencies,
     ada = ada,
+    pada = pada,
     suspended = suspended,
     pageable = pageable,
   )
@@ -333,12 +340,17 @@ class ReportsController(
     Parameter(
       name = "ada",
       required = false,
-      description = "only show reports with ADA",
+      description = "show reports with ADA",
+    ),
+    Parameter(
+      name = "pada",
+      required = false,
+      description = "show reports with PADA",
     ),
     Parameter(
       name = "suspended",
       required = false,
-      description = "only show reports with suspended",
+      description = "show reports with suspended",
     ),
   )
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
@@ -353,6 +365,7 @@ class ReportsController(
     endDate: LocalDate? = null,
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
     @RequestParam(name = "ada", required = false) ada: Boolean = false,
+    @RequestParam(name = "pada", required = false) pada: Boolean = false,
     @RequestParam(name = "suspended", required = false) suspended: Boolean = false,
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
   ): Page<ReportedAdjudicationDto> = reportsService.getAdjudicationsForPrisoner(
@@ -361,6 +374,7 @@ class ReportsController(
     endDate = endDate,
     statuses = statuses,
     ada = ada,
+    pada = pada,
     suspended = suspended,
     pageable = pageable,
   )

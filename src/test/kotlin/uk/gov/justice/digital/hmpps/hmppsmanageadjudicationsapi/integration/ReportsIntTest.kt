@@ -283,6 +283,19 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `get reports for booking with PADA`() {
+    initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.PROSPECTIVE_DAYS)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}?status=CHARGE_PROVED&pada=true&agency=${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}&page=0&size=20")
+      .headers(setHeaders(username = "P_NESS"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(1)
+  }
+
+  @Test
   fun `get reports for booking with suspended`() {
     initDataForUnScheduled().createHearing().createChargeProved().createPunishments()
 
@@ -314,6 +327,19 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
     webTestClient.get()
       .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?status=CHARGE_PROVED&ada=true&page=0&size=20")
+      .headers(setHeaders(username = "P_NESS"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(1)
+  }
+
+  @Test
+  fun `get reports for prisoner with PADA`() {
+    initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.PROSPECTIVE_DAYS)
+
+    webTestClient.get()
+      .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?status=CHARGE_PROVED&pada=true&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk

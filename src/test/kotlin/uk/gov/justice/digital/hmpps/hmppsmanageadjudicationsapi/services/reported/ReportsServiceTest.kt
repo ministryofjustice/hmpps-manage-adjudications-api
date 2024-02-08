@@ -324,6 +324,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         statuses = listOf(ReportedAdjudicationStatus.SCHEDULED),
         agencies = listOf("MDI"),
         ada = false,
+        pada = false,
         suspended = false,
         pageable = Pageable.ofSize(20).withPage(0),
       )
@@ -336,7 +337,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `gets all reports for agency, punishment and status without any dates`() {
       whenever(
-        reportedAdjudicationRepository.findAdjudicationsForBookingWithPunishments(any(), any(), any(), any(), any(), any(), any(), any()),
+        reportedAdjudicationRepository.findAdjudicationsForBookingWithPunishments(any(), any(), any(), any(), any(), any(), any(), any(), any()),
       ).thenReturn(
         PageImpl(
           listOf(
@@ -353,11 +354,12 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         statuses = listOf(ReportedAdjudicationStatus.SCHEDULED),
         agencies = listOf("MDI"),
         ada = true,
+        pada = false,
         suspended = false,
         pageable = Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForBookingWithPunishments(any(), any(), any(), any(), any(), any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForBookingWithPunishments(any(), any(), any(), any(), any(), any(), any(), any(), any())
 
       assertThat(response.content.size).isEqualTo(1)
     }
@@ -385,6 +387,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         prisonerNumber = "A1234",
         statuses = listOf(ReportedAdjudicationStatus.SCHEDULED),
         ada = false,
+        pada = false,
         suspended = false,
         pageable = Pageable.ofSize(20).withPage(0),
       )
@@ -397,7 +400,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `gets all reports for agency, punishment and status without any dates`() {
       whenever(
-        reportedAdjudicationRepository.findAdjudicationsForPrisonerWithPunishments(any(), any(), any(), any(), any(), any(), any()),
+        reportedAdjudicationRepository.findAdjudicationsForPrisonerWithPunishments(any(), any(), any(), any(), any(), any(), any(), any()),
       ).thenReturn(
         PageImpl(
           listOf(
@@ -413,11 +416,12 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         prisonerNumber = "A1234",
         statuses = listOf(ReportedAdjudicationStatus.SCHEDULED),
         ada = true,
+        pada = false,
         suspended = false,
         pageable = Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForPrisonerWithPunishments(any(), any(), any(), any(), any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForPrisonerWithPunishments(any(), any(), any(), any(), any(), any(), any(), any())
 
       assertThat(response.content.size).isEqualTo(1)
     }
