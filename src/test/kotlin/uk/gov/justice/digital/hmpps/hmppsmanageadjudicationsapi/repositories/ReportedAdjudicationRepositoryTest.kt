@@ -891,4 +891,30 @@ class ReportedAdjudicationRepositoryTest {
 
     assertThat(reportedAdjudicationRepository.findByPrisonerNumberAndChargeNumberStartsWith("A12345", "12345-").size).isEqualTo(2)
   }
+
+  @Test
+  fun `find by associated prisoner number`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2").also {
+        it.incidentRoleAssociatedPrisonersNumber = "FROM"
+        it.hearings.clear()
+      },
+    )
+    assertThat(reportedAdjudicationRepository.findByIncidentRoleAssociatedPrisonersNumber("FROM").first().chargeNumber).isEqualTo(
+      "12345-2",
+    )
+  }
+
+  @Test
+  fun `find by victims prisoner number`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2").also {
+        it.offenceDetails.first().victimPrisonersNumber = "FROM"
+        it.hearings.clear()
+      },
+    )
+    assertThat(reportedAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber("FROM").first().chargeNumber).isEqualTo(
+      "12345-2",
+    )
+  }
 }

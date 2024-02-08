@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Pronoun
 @Table(name = "draft_adjudications")
 data class DraftAdjudication(
   override val id: Long? = null,
-  val prisonerNumber: String,
+  var prisonerNumber: String,
   val offenderBookingId: Long? = null,
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

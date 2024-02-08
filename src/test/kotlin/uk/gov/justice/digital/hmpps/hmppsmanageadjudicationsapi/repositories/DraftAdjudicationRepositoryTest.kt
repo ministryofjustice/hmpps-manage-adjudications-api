@@ -300,6 +300,26 @@ class DraftAdjudicationRepositoryTest {
     }
   }
 
+  @Test
+  fun `find by associated prisoner number`() {
+    val draft = draftWithAllData("1")
+    entityManager.persistAndFlush(draft)
+
+    assertThat(draftAdjudicationRepository.findByIncidentRoleAssociatedPrisonersNumber("B23456").first().prisonerNumber).isEqualTo(
+      draft.prisonerNumber,
+    )
+  }
+
+  @Test
+  fun `find by victims prisoner number`() {
+    val draft = draftWithAllData("1")
+    entityManager.persistAndFlush(draft)
+
+    assertThat(draftAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber("A1234AA").first().prisonerNumber).isEqualTo(
+      draft.prisonerNumber,
+    )
+  }
+
   private fun newDraft(): DraftAdjudication {
     return DraftAdjudication(
       prisonerNumber = "A12345",
