@@ -40,6 +40,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Authent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -413,12 +414,12 @@ open class ReportedAdjudicationBaseService(
   protected fun isLinkedToReport(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean =
     reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn(consecutiveChargeNumber, types).isNotEmpty()
 
-  protected fun getReportsWithActivePunishments(offenderBookingId: Long): List<ReportedAdjudication> =
+  protected fun getReportsWithActivePunishments(offenderBookingId: Long): List<Pair<String, List<Punishment>>> =
     reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
       status = ReportedAdjudicationStatus.CHARGE_PROVED,
       offenderBookingId = offenderBookingId,
       cutOff = LocalDate.now().minusDays(1),
-    )
+    ).map { Pair(it.chargeNumber, it.getPunishments().filter { p -> p.isActive() }) }
 
   protected fun getReportCountForProfile(offenderBookingId: Long, cutOff: LocalDateTime): Long =
     reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
@@ -429,5 +430,8 @@ open class ReportedAdjudicationBaseService(
   companion object {
     fun throwEntityNotFoundException(id: String): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")
+
+    fun Punishment.isActive(): Boolean =
+      this.suspendedUntil == null && this.schedule.latestSchedule().endDate?.isAfter(LocalDate.now().minusDays(1)) == true
   }
 }

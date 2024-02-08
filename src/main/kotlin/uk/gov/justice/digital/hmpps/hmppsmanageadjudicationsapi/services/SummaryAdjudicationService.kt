@@ -84,7 +84,7 @@ class SummaryAdjudicationService(
       bookingId = bookingId,
       adjudicationCount = provenByOffenderBookingId.toInt(),
       awards =
-      getReportsWithActivePunishments(offenderBookingId = bookingId).map { it.getPunishments() }.flatten().map {
+      getReportsWithActivePunishments(offenderBookingId = bookingId).map { it.second }.flatten().map {
         val latestSchedule = it.schedule.latestSchedule()
         Award(
           bookingId = bookingId,
