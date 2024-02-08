@@ -189,7 +189,7 @@ class ReportedAdjudicationRepositoryTest {
           Punishment(
             type = PunishmentType.DAMAGES_OWED,
             schedule = mutableListOf(
-              PunishmentSchedule(days = 0, startDate = LocalDate.now()),
+              PunishmentSchedule(days = 0, startDate = LocalDate.now(), endDate = LocalDate.now().plusDays(1)),
             ),
           ),
         )
@@ -861,7 +861,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `get active punishments`() {
     assertThat(
-      reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+      reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
         ReportedAdjudicationStatus.CHARGE_PROVED,
         1L,
         LocalDate.now().minusDays(1),

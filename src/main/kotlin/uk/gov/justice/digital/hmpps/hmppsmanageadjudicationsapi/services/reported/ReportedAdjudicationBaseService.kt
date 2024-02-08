@@ -414,10 +414,17 @@ open class ReportedAdjudicationBaseService(
     reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn(consecutiveChargeNumber, types).isNotEmpty()
 
   protected fun getReportsWithActivePunishments(offenderBookingId: Long): List<ReportedAdjudication> =
-    reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+    reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
       status = ReportedAdjudicationStatus.CHARGE_PROVED,
       offenderBookingId = offenderBookingId,
       cutOff = LocalDate.now().minusDays(1),
+    )
+
+  protected fun getReportsForProfile(offenderBookingId: Long, cutOff: LocalDateTime): List<ReportedAdjudication> =
+    reportedAdjudicationRepository.findByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+      bookingId = offenderBookingId,
+      status = ReportedAdjudicationStatus.CHARGE_PROVED,
+      cutOff = cutOff,
     )
   companion object {
     fun throwEntityNotFoundException(id: String): Nothing =

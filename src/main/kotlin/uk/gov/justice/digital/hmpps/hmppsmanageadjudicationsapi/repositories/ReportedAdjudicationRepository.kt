@@ -180,7 +180,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByOffenderBookingId(offenderBookingId: Long): List<ReportedAdjudication>
 
-  fun findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleStartDateIsAfter(
+  fun findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
     status: ReportedAdjudicationStatus,
     offenderBookingId: Long,
     cutOff: LocalDate,
