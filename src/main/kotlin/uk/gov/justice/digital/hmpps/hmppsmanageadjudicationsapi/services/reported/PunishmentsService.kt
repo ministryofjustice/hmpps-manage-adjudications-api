@@ -198,13 +198,13 @@ class PunishmentsService(
   fun getActivePunishments(offenderBookingId: Long): List<ActivePunishmentDto> =
     getReportsWithActivePunishments(offenderBookingId = offenderBookingId)
       .map { reportedAdjudication ->
-        reportedAdjudication.getPunishments().filter { it.isActive() }.map {
+        reportedAdjudication.second.map {
           val latestSchedule = it.schedule.latestSchedule()
           ActivePunishmentDto(
             punishmentType = it.type,
             privilegeType = it.privilegeType,
             otherPrivilege = it.otherPrivilege,
-            chargeNumber = reportedAdjudication.chargeNumber,
+            chargeNumber = reportedAdjudication.first,
             startDate = latestSchedule.startDate,
             lastDay = latestSchedule.endDate,
             days = if (latestSchedule.days == 0) null else latestSchedule.days,
@@ -423,6 +423,6 @@ class PunishmentsService(
         this.chargeNumber != currentAdjudication.chargeNumber
 
     fun Punishment.isActive(): Boolean =
-      this.suspendedUntil == null && this.schedule.latestSchedule().startDate?.isAfter(LocalDate.now().minusDays(1)) == true
+      this.suspendedUntil == null && this.schedule.latestSchedule().endDate?.isAfter(LocalDate.now().minusDays(1)) == true
   }
 }
