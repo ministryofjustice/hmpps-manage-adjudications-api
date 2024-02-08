@@ -128,9 +128,10 @@ class ReportsService(
     agencies: List<String>,
     statuses: List<ReportedAdjudicationStatus>,
     ada: Boolean,
+    pada: Boolean,
     suspended: Boolean,
     pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> = if (!ada && !suspended) {
+  ): Page<ReportedAdjudicationDto> = if (!ada && !suspended && !pada) {
     reportedAdjudicationRepository.findAdjudicationsForBooking(
       offenderBookingId = bookingId,
       startDate = reportsFrom(startDate ?: minDate),
@@ -147,6 +148,7 @@ class ReportsService(
       agencies = agencies,
       statuses = statuses.map { it.name },
       ada = ada,
+      pada = pada,
       suspended = suspended,
       pageable = pageable,
     )
@@ -158,9 +160,10 @@ class ReportsService(
     endDate: LocalDate? = null,
     statuses: List<ReportedAdjudicationStatus>,
     ada: Boolean,
+    pada: Boolean,
     suspended: Boolean,
     pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> = if (!ada && !suspended) {
+  ): Page<ReportedAdjudicationDto> = if (!ada && !suspended && !pada) {
     reportedAdjudicationRepository.findAdjudicationsForPrisoner(
       prisonerNumber = prisonerNumber,
       startDate = reportsFrom(startDate ?: minDate),
@@ -175,6 +178,7 @@ class ReportsService(
       endDate = reportsTo(endDate ?: maxDate),
       statuses = statuses.map { it.name },
       ada = ada,
+      pada = pada,
       suspended = suspended,
       pageable = pageable,
     )

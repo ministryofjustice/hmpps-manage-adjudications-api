@@ -779,6 +779,7 @@ class ReportedAdjudicationRepositoryTest {
       endDate = LocalDateTime.now(),
       agencies = listOf("MDI"),
       ada = true,
+      pada = false,
       suspended = false,
       pageable = Pageable.ofSize(10),
     )
@@ -852,6 +853,7 @@ class ReportedAdjudicationRepositoryTest {
       startDate = LocalDateTime.now().minusYears(1),
       endDate = LocalDateTime.now(),
       ada = true,
+      pada = false,
       suspended = false,
       pageable = Pageable.ofSize(10),
     )
