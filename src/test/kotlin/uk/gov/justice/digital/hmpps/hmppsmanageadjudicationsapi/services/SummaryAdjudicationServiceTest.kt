@@ -129,7 +129,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           type = PunishmentType.CAUTION,
           schedule =
           mutableListOf(
-            PunishmentSchedule(days = 0, startDate = LocalDate.now()).also {
+            PunishmentSchedule(days = 0, startDate = LocalDate.now(), endDate = LocalDate.now()).also {
               it.createDateTime = LocalDateTime.now()
             },
           ),
@@ -143,6 +143,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             PunishmentSchedule(
               days = 0,
               startDate = LocalDate.now(),
+              endDate = LocalDate.now(),
             ).also {
               it.createDateTime = LocalDateTime.now()
             },
@@ -227,7 +228,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             type = PunishmentType.ADDITIONAL_DAYS,
             privilegeType = PrivilegeType.TV,
             schedule = mutableListOf(
-              PunishmentSchedule(days = 10, startDate = LocalDate.now().plusDays(1)),
+              PunishmentSchedule(days = 10, startDate = LocalDate.now().plusDays(1), endDate = LocalDate.now().plusDays(1)),
             ),
           ),
         )
@@ -265,7 +266,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             amount = if (punishmentType == PunishmentType.DAMAGES_OWED) 100.0 else null,
             stoppagePercentage = if (punishmentType == PunishmentType.EARNINGS) 100 else null,
             schedule = mutableListOf(
-              PunishmentSchedule(days = 10, startDate = LocalDate.now().plusDays(1)),
+              PunishmentSchedule(days = 10, startDate = LocalDate.now().plusDays(1), endDate = LocalDate.now().plusDays(1)),
             ),
           ),
         )
@@ -302,7 +303,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             type = PunishmentType.PRIVILEGE,
             privilegeType = PrivilegeType.FACILITIES,
             schedule = mutableListOf(
-              PunishmentSchedule(days = 10, startDate = LocalDate.now().plusDays(1)),
+              PunishmentSchedule(days = 10, startDate = LocalDate.now().plusDays(1), endDate = LocalDate.now().plusDays(1)),
             ),
           ),
         )
@@ -339,7 +340,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             privilegeType = PrivilegeType.OTHER,
             otherPrivilege = "playstation",
             schedule = mutableListOf(
-              PunishmentSchedule(days = 10, startDate = LocalDate.now().plusDays(1)),
+              PunishmentSchedule(days = 10, startDate = LocalDate.now().plusDays(1), endDate = LocalDate.now().plusDays(1)),
             ),
           ),
         )

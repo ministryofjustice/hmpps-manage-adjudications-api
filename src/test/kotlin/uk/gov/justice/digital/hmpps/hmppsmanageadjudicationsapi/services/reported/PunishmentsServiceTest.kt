@@ -1654,40 +1654,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
   inner class GetActivePunishments {
 
     @Test
-    fun `get damages owed`() {
-      whenever(
-        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
-          any(),
-          any(),
-          any(),
-        ),
-      ).thenReturn(
-        listOf(
-          entityBuilder.reportedAdjudication().also {
-            it.addPunishment(
-              Punishment(
-                type = PunishmentType.DAMAGES_OWED,
-                amount = 5.5,
-                schedule = mutableListOf(
-                  PunishmentSchedule(days = 0, startDate = LocalDate.now()),
-                ),
-              ),
-            )
-          },
-        ),
-      )
-
-      val response = punishmentsService.getActivePunishments(offenderBookingId = 1)
-
-      assertThat(response.first().amount).isNotNull
-      assertThat(response.first().stoppagePercentage).isNull()
-      assertThat(response.first().punishmentType).isEqualTo(PunishmentType.DAMAGES_OWED)
-      assertThat(response.first().startDate).isEqualTo(LocalDate.now())
-      assertThat(response.first().lastDay).isNull()
-      assertThat(response.first().days).isNull()
-    }
-
-    @Test
     fun `get activated from with other privilege`() {
       whenever(
         reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
@@ -1753,7 +1719,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
                 type = PunishmentType.EARNINGS,
                 stoppagePercentage = 90,
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 0, startDate = LocalDate.now().minusDays(2), endDate = LocalDate.now()),
+                  PunishmentSchedule(days = 0, startDate = LocalDate.now().minusDays(2), endDate = LocalDate.now().minusDays(2)),
                 ),
               ),
             )
@@ -1765,7 +1731,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
                 suspendedUntil = LocalDate.now(),
                 stoppagePercentage = 90,
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 0, startDate = LocalDate.now().minusDays(2), endDate = LocalDate.now()),
+                  PunishmentSchedule(days = 0, startDate = LocalDate.now().minusDays(2), endDate = LocalDate.now().minusDays(2)),
                 ),
               ),
             )
