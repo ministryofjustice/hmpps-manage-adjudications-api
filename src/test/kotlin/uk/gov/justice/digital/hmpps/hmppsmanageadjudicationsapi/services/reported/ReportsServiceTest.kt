@@ -5,6 +5,8 @@ import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.verify
@@ -362,6 +364,36 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForBookingWithPunishments(any(), any(), any(), any(), any(), any(), any(), any(), any())
 
       assertThat(response.content.size).isEqualTo(1)
+    }
+
+    @CsvSource("true", "false")
+    @ParameterizedTest
+    fun `can action from history is true`(overrideAgency: Boolean) {
+      whenever(authenticationFacade.isAlo).thenReturn(true)
+      whenever(
+        reportedAdjudicationRepository.findAdjudicationsForBooking(any(), any(), any(), any(), any(), any()),
+      ).thenReturn(
+        PageImpl(
+          listOf(
+            entityBuilder.reportedAdjudication().also {
+              it.createDateTime = LocalDateTime.now()
+              it.createdByUserId = ""
+              it.overrideAgencyId = if (overrideAgency) it.originatingAgencyId else null
+            },
+          ),
+        ),
+      )
+
+      val response = reportsService.getAdjudicationsForBooking(
+        bookingId = 1,
+        statuses = listOf(ReportedAdjudicationStatus.SCHEDULED),
+        agencies = listOf("MDI"),
+        ada = false,
+        pada = false,
+        suspended = false,
+        pageable = Pageable.ofSize(20).withPage(0),
+      )
+      assertThat(response.content.first().canActionFromHistory).isTrue
     }
   }
 

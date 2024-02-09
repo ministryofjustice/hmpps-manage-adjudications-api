@@ -51,6 +51,20 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   inner class ReportedAdjudicationDetails {
 
     @Test
+    fun `can action from history is false`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+        },
+      )
+
+      val result = reportedAdjudicationService.getReportedAdjudicationDetails("1")
+
+      assertThat(result.canActionFromHistory).isFalse
+    }
+
+    @Test
     fun `outcome entered in nomis flag is set `() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
