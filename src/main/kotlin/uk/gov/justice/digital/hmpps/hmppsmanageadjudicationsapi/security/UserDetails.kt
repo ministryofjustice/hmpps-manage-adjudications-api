@@ -19,6 +19,9 @@ class UserDetails : AuthenticationFacade {
   override val activeCaseload: String
     get() = getActiveCaseloadFromSecurityContext() ?: throw ValidationException("no active caseload set")
 
+  override val isAlo: Boolean
+    get() = SecurityContextHolder.getContext().authentication?.authorities?.map { it.authority }?.contains("ROLE_ADJUDICATIONS_REVIEWER") == true
+
   private fun getUserPrincipal(): Any? {
     val authentication = Optional.ofNullable(SecurityContextHolder.getContext().authentication)
 

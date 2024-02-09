@@ -53,6 +53,7 @@ open class ReportedDtoService(
     consecutiveReportsAvailable: List<String>? = null,
     hasLinkedAda: Boolean = false,
     linkedChargeNumbers: List<String> = emptyList(),
+    isAlo: Boolean = false,
   ): ReportedAdjudicationDto {
     val hearings = this.hearings.toHearings()
     val outcomes = this.getOutcomes().createCombinedOutcomes(hasLinkedAda = hasLinkedAda)
@@ -102,6 +103,7 @@ open class ReportedDtoService(
       createdOnBehalfOfOfficer = this.createdOnBehalfOfOfficer,
       createdOnBehalfOfReason = this.createdOnBehalfOfReason,
       linkedChargeNumbers = linkedChargeNumbers,
+      canActionFromHistory = activeCaseload != null && isAlo && listOf(this.originatingAgencyId, this.overrideAgencyId).contains(activeCaseload),
     )
   }
 

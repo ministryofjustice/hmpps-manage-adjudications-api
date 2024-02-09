@@ -92,6 +92,8 @@ data class ReportedAdjudicationDto(
   var punishmentsRemoved: Boolean = false,
   @Schema(description = "list of linked nomis charges, where multiple offences recorded on a single charge")
   val linkedChargeNumbers: List<String>,
+  @Schema(description = "flag to indicate if the user can action this item via the history page")
+  val canActionFromHistory: Boolean = false,
 )
 
 @Schema(description = "Details of an offence")

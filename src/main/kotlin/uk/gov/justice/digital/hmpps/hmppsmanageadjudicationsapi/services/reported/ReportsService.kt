@@ -51,7 +51,11 @@ class ReportsService(
         pageable = pageable,
       )
     }
-    return reportedAdjudicationsPage.map { it.toDto(authenticationFacade.activeCaseload) }
+    return reportedAdjudicationsPage.map {
+      it.toDto(
+        activeCaseload = authenticationFacade.activeCaseload,
+      )
+    }
   }
 
   fun getMyReportedAdjudications(startDate: LocalDate, endDate: LocalDate, statuses: List<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
@@ -76,7 +80,11 @@ class ReportsService(
       endDate = reportsTo(endDate),
     ).filter { ReportedAdjudicationStatus.issuableStatuses().contains(it.status) }
       .sortedBy { it.dateTimeOfDiscovery }
-      .map { it.toDto(authenticationFacade.activeCaseload) }
+      .map {
+        it.toDto(
+          activeCaseload = authenticationFacade.activeCaseload,
+        )
+      }
   }
 
   fun getAdjudicationsForPrint(startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>): List<ReportedAdjudicationDto> {
@@ -152,7 +160,12 @@ class ReportsService(
       suspended = suspended,
       pageable = pageable,
     )
-  }.map { it.toDto() }
+  }.map {
+    it.toDto(
+      activeCaseload = authenticationFacade.activeCaseload,
+      isAlo = authenticationFacade.isAlo,
+    )
+  }
 
   fun getAdjudicationsForPrisoner(
     prisonerNumber: String,
@@ -182,7 +195,12 @@ class ReportsService(
       suspended = suspended,
       pageable = pageable,
     )
-  }.map { it.toDto() }
+  }.map {
+    it.toDto(
+      activeCaseload = authenticationFacade.activeCaseload,
+      isAlo = authenticationFacade.isAlo,
+    )
+  }
 
   fun getReportsForPrisoner(prisonerNumber: String): List<ReportedAdjudicationDto> =
     reportedAdjudicationRepository.findByPrisonerNumber(prisonerNumber = prisonerNumber).map { it.toDto() }
