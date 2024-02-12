@@ -928,6 +928,7 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    assertThat(reportedAdjudicationRepository.countByOffenderBookingId(3L)).isEqualTo(1)
+    assertThat(reportedAdjudicationRepository.existsByOffenderBookingId(3L)).isTrue
+    assertThat(reportedAdjudicationRepository.existsByOffenderBookingId(4L)).isFalse
   }
 }

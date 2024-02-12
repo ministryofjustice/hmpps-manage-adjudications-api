@@ -192,7 +192,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByMigratedIsFalseAndStatus(status: ReportedAdjudicationStatus): List<ReportedAdjudication>
 
-  fun countByOffenderBookingId(offenderBookingId: Long): Long
+  fun existsByOffenderBookingId(offenderBookingId: Long): Boolean
 
   companion object {
 

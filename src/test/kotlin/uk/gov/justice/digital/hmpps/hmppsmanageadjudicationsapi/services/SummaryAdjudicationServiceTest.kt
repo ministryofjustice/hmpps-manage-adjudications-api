@@ -373,7 +373,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `prisoner has adjudications`() {
-      whenever(reportedAdjudicationRepository.countByOffenderBookingId(1)).thenReturn(1)
+      whenever(reportedAdjudicationRepository.existsByOffenderBookingId(1)).thenReturn(true)
 
       val result = summaryAdjudicationService.hasAdjudications(1)
       assertThat(result.hasAdjudications).isTrue
@@ -381,7 +381,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `prisoner has no adjudications`() {
-      whenever(reportedAdjudicationRepository.countByOffenderBookingId(1)).thenReturn(0)
+      whenever(reportedAdjudicationRepository.existsByOffenderBookingId(1)).thenReturn(false)
 
       val result = summaryAdjudicationService.hasAdjudications(1)
       assertThat(result.hasAdjudications).isFalse

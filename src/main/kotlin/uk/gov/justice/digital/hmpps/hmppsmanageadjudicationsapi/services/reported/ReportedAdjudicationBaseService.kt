@@ -430,9 +430,9 @@ open class ReportedAdjudicationBaseService(
       cutOff = cutOff,
     )
 
-  protected fun offenderHasAdjudications(offenderBookingId: Long): Boolean = reportedAdjudicationRepository.countByOffenderBookingId(
+  protected fun offenderHasAdjudications(offenderBookingId: Long): Boolean = reportedAdjudicationRepository.existsByOffenderBookingId(
     offenderBookingId = offenderBookingId,
-  ) > 0
+  )
 
   companion object {
     fun throwEntityNotFoundException(id: String): Nothing =
