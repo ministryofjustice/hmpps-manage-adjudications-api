@@ -181,7 +181,7 @@ class AdjudicationSummaryController(
     responses = [
       ApiResponse(
         responseCode = "200",
-        description = "Adjudication returned",
+        description = "Has adjudications",
       ),
     ],
   )
