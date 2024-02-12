@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.HasAdjudicationsResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationDetail
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSearchResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdjudicationSummary
@@ -100,6 +101,11 @@ class SummaryAdjudicationService(
       },
     )
   }
+
+  @Transactional(readOnly = true)
+  fun hasAdjudications(bookingId: Long): HasAdjudicationsResponse = HasAdjudicationsResponse(
+    hasAdjudications = offenderHasAdjudications(bookingId),
+  )
 
   companion object {
     fun Punishment.getStatus(latest: PunishmentSchedule): String =

@@ -390,6 +390,30 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.[0].prisonerNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber)
   }
 
+  @Test
+  fun `offender has reports`() {
+    initDataForUnScheduled()
+
+    webTestClient.get()
+      .uri("/adjudications/booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}/exists")
+      .headers(setHeaders(username = "P_NESS"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.hasAdjudications").isEqualTo(true)
+  }
+
+  @Test
+  fun `offender has no reports`() {
+    webTestClient.get()
+      .uri("/adjudications/booking/12/exists")
+      .headers(setHeaders(username = "P_NESS"))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.hasAdjudications").isEqualTo(false)
+  }
+
   private fun initMyReportData() {
     val intTestData = integrationTestData()
 

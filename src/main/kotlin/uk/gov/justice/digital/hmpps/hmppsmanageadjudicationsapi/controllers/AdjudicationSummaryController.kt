@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.constraints.NotNull
@@ -22,6 +23,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudicatio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.gateways.Finding
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.SummaryAdjudicationService
 import java.time.LocalDate
+
+@Schema(description = "Has Adjudications Response")
+data class HasAdjudicationsResponse(
+  @Schema(description = "flag to indicate the booking id has adjudications")
+  val hasAdjudications: Boolean,
+)
 
 @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
 @RestController
@@ -167,4 +174,24 @@ class AdjudicationSummaryController(
       pageable = pageable,
     )
   }
+
+  @Operation(
+    summary = "Does the booking id have any adjudications",
+    description = "Does the booking id have any adjudications",
+    responses = [
+      ApiResponse(
+        responseCode = "200",
+        description = "Has adjudications",
+      ),
+    ],
+  )
+  @GetMapping("/booking/{bookingId}/exists")
+  fun hasAdjudications(
+    @PathVariable("bookingId")
+    @Parameter(
+      description = "The prisoner booking id",
+      required = true,
+    )
+    bookingId: Long,
+  ): HasAdjudicationsResponse = summaryAdjudicationService.hasAdjudications(bookingId)
 }

@@ -919,4 +919,16 @@ class ReportedAdjudicationRepositoryTest {
       "12345-2",
     )
   }
+
+  @Test
+  fun `offender has bookings`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2").also {
+        it.hearings.clear()
+      },
+    )
+
+    assertThat(reportedAdjudicationRepository.existsByOffenderBookingId(3L)).isTrue
+    assertThat(reportedAdjudicationRepository.existsByOffenderBookingId(4L)).isFalse
+  }
 }

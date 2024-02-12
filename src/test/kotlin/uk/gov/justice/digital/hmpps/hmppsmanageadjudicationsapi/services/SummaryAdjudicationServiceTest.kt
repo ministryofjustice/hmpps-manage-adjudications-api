@@ -367,4 +367,24 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.awards.first().sanctionCodeDescription).contains("playstation")
     }
   }
+
+  @Nested
+  inner class HasAdjudications {
+
+    @Test
+    fun `prisoner has adjudications`() {
+      whenever(reportedAdjudicationRepository.existsByOffenderBookingId(1)).thenReturn(true)
+
+      val result = summaryAdjudicationService.hasAdjudications(1)
+      assertThat(result.hasAdjudications).isTrue
+    }
+
+    @Test
+    fun `prisoner has no adjudications`() {
+      whenever(reportedAdjudicationRepository.existsByOffenderBookingId(1)).thenReturn(false)
+
+      val result = summaryAdjudicationService.hasAdjudications(1)
+      assertThat(result.hasAdjudications).isFalse
+    }
+  }
 }
