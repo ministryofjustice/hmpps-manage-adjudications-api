@@ -267,6 +267,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.content.size()").isEqualTo(1)
+      .jsonPath("$.content[0].canActionFromHistory").isEqualTo(true)
   }
 
   @Test
@@ -319,6 +320,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.content.size()").isEqualTo(1)
+      .jsonPath("$.content[0].canActionFromHistory").isEqualTo(true)
   }
 
   @Test

@@ -275,7 +275,7 @@ class ReportsController(
       description = "show reports with suspended",
     ),
   )
-  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
+  @PreAuthorize("hasAnyRole('VIEW_ADJUDICATIONS','ADJUDICATIONS_REVIEWER')")
   @GetMapping("/booking/{bookingId}")
   fun getAdjudicationsForBooking(
     @PathVariable(name = "bookingId") bookingId: Long,
@@ -353,7 +353,7 @@ class ReportsController(
       description = "show reports with suspended",
     ),
   )
-  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
+  @PreAuthorize("hasAnyRole('VIEW_ADJUDICATIONS','ADJUDICATIONS_REVIEWER')")
   @GetMapping("/bookings/prisoner/{prisonerNumber}")
   fun getAdjudicationsForPrisoner(
     @PathVariable(name = "prisonerNumber") prisonerNumber: String,
