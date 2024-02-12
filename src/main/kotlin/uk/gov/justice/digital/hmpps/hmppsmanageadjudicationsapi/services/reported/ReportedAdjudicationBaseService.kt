@@ -429,6 +429,11 @@ open class ReportedAdjudicationBaseService(
       status = ReportedAdjudicationStatus.CHARGE_PROVED,
       cutOff = cutOff,
     )
+
+  protected fun offenderHasAdjudications(offenderBookingId: Long): Boolean = reportedAdjudicationRepository.countByOffenderBookingId(
+    offenderBookingId = offenderBookingId,
+  ) > 0
+
   companion object {
     fun throwEntityNotFoundException(id: String): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")
