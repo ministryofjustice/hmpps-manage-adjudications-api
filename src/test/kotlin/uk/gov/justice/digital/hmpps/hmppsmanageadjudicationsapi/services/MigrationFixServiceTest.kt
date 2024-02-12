@@ -1,12 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import org.assertj.core.api.Assertions
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentCaptor
-import org.mockito.kotlin.any
-import org.mockito.kotlin.never
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
@@ -14,9 +9,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class MigrationFixServiceTest : ReportedAdjudicationTestBase() {
@@ -27,67 +25,91 @@ class MigrationFixServiceTest : ReportedAdjudicationTestBase() {
     // na
   }
 
-  @BeforeEach
-  fun `init`() {
-    whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(null)
-    whenever(reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(ReportedAdjudicationStatus.REFER_INAD)).thenReturn(
-      emptyList(),
-    )
-  }
-
   @Test
-  fun `adds missing next step`() {
-    val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-    whenever(reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(ReportedAdjudicationStatus.REFER_POLICE)).thenReturn(
-      listOf(
-        entityBuilder.reportedAdjudication().also {
-          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
-          it.addOutcome(Outcome(code = OutcomeCode.REFER_POLICE, actualCreatedDate = LocalDateTime.now()))
-          it.hearings.add(
-            Hearing(
-              dateTimeOfHearing = LocalDateTime.now().plusDays(1),
-              agencyId = "",
-              locationId = 1,
-              oicHearingType = OicHearingType.GOV_ADULT,
-              chargeNumber = "",
-            ),
-          )
-        },
-      ),
+  fun `if we have multiple hearings at the same time, use the non adjourned status`() {
+    val report = entityBuilder.reportedAdjudication().also {
+      it.status = ReportedAdjudicationStatus.ADJOURNED
+      it.addPunishment(
+        Punishment(
+          type = PunishmentType.ADDITIONAL_DAYS,
+          schedule = mutableListOf(
+            PunishmentSchedule(days = 0),
+          ),
+        ),
+      )
+      it.hearings.clear()
+      it.hearings.add(
+        Hearing(
+          locationId = 1,
+          oicHearingType = OicHearingType.INAD_ADULT,
+          agencyId = "",
+          chargeNumber = "",
+          dateTimeOfHearing = LocalDate.now().atStartOfDay(),
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = ""),
+        ),
+      )
+      it.hearings.add(
+        Hearing(
+          locationId = 1,
+          oicHearingType = OicHearingType.INAD_ADULT,
+          agencyId = "",
+          chargeNumber = "",
+          dateTimeOfHearing = LocalDate.now().atStartOfDay(),
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
+        ),
+      )
+      it.addOutcome(
+        Outcome(code = OutcomeCode.CHARGE_PROVED),
+      )
+    }
+    whenever(reportedAdjudicationRepository.fixMigrationRecords()).thenReturn(
+      listOf(report),
     )
 
     migrationFixService.repair()
 
-    verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-    Assertions.assertThat(argumentCaptor.value.getOutcomes().sortedByDescending { it.getCreatedDateTime() }.first().code).isEqualTo(OutcomeCode.SCHEDULE_HEARING)
-    Assertions.assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
+    Assertions.assertThat(report.status).isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED)
   }
 
   @Test
-  fun `does not add missing next step`() {
-    whenever(reportedAdjudicationRepository.findByMigratedIsFalseAndStatus(ReportedAdjudicationStatus.REFER_POLICE)).thenReturn(
-      listOf(
-        entityBuilder.reportedAdjudication().also {
-          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
-          it.addOutcome(Outcome(code = OutcomeCode.REFER_POLICE, actualCreatedDate = LocalDateTime.now()))
-          it.hearings.add(
-            Hearing(
-              dateTimeOfHearing = LocalDateTime.now().plusDays(1),
-              agencyId = "",
-              locationId = 1,
-              oicHearingType = OicHearingType.GOV_ADULT,
-              chargeNumber = "",
-              hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = ""),
-            ),
-          )
-        },
-      ),
+  fun `no outcomes should with punishments should set status INVALID_OUTCOME`() {
+    val report = entityBuilder.reportedAdjudication().also {
+      it.status = ReportedAdjudicationStatus.ADJOURNED
+      it.hearings.clear()
+      it.addPunishment(
+        Punishment(
+          type = PunishmentType.ADDITIONAL_DAYS,
+          schedule = mutableListOf(
+            PunishmentSchedule(days = 0),
+          ),
+        ),
+      )
+      it.hearings.add(
+        Hearing(
+          locationId = 1,
+          oicHearingType = OicHearingType.INAD_ADULT,
+          agencyId = "",
+          chargeNumber = "",
+          dateTimeOfHearing = LocalDate.now().atStartOfDay(),
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = ""),
+        ),
+      )
+      it.hearings.add(
+        Hearing(
+          locationId = 1,
+          oicHearingType = OicHearingType.INAD_ADULT,
+          agencyId = "",
+          chargeNumber = "",
+          dateTimeOfHearing = LocalDateTime.now(),
+          hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = ""),
+        ),
+      )
+    }
+    whenever(reportedAdjudicationRepository.fixMigrationRecords()).thenReturn(
+      listOf(report),
     )
 
     migrationFixService.repair()
-
-    verify(reportedAdjudicationRepository, never()).save(any())
+    Assertions.assertThat(report.status).isEqualTo(ReportedAdjudicationStatus.INVALID_OUTCOME)
   }
 }
