@@ -194,6 +194,12 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun existsByOffenderBookingId(offenderBookingId: Long): Boolean
 
+  @Query(
+    value = "select * from reported_adjudications ra where ra.status = 'ADJOURNED' and (select count(1) from punishment p where p.reported_adjudication_fk_id = ra.id) > 0",
+    nativeQuery = true,
+  )
+  fun fixMigrationRecords(): List<ReportedAdjudication>
+
   companion object {
 
     private const val DATE_AND_STATUS_FILTER = "ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate and ra.status in :statuses "
