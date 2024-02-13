@@ -20,9 +20,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.NoContentFoundException
 
 @RestControllerAdvice
 class ApiExceptionHandler {
+
+  @ExceptionHandler(NoContentFoundException::class)
+  fun noContentFoundException(e: NoContentFoundException): ResponseEntity<Any> {
+    return ResponseEntity.noContent().build()
+  }
 
   @ExceptionHandler(NoResourceFoundException::class)
   fun handleEntityNotFoundException(e: NoResourceFoundException): ResponseEntity<ErrorResponse> {
