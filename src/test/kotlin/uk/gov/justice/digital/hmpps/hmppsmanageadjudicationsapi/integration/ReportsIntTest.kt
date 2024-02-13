@@ -414,6 +414,28 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.hasAdjudications").isEqualTo(false)
   }
 
+  @Test
+  fun `SAR has no content`() {
+    webTestClient.get()
+      .uri("/subject-access-request?prn=A12345")
+      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ALL_ADJUDICATIONS")))
+      .exchange()
+      .expectStatus().isNoContent
+  }
+
+  @Test
+  fun `SAR has content`() {
+    initDataForUnScheduled()
+    webTestClient.get()
+      .uri("/subject-access-request?prn=${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}")
+      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ALL_ADJUDICATIONS")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .consumeWith(System.out::println)
+      .jsonPath("$.content").isNotEmpty
+  }
+
   private fun initMyReportData() {
     val intTestData = integrationTestData()
 
