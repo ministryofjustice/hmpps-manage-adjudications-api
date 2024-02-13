@@ -52,20 +52,6 @@ services:
       - SPRING_PROFILES_ACTIVE=dev
       - API_BASE_URL_OAUTH=http://hmpps-auth:8080/auth
 
-  prison-api:
-    image: quay.io/hmpps/prison-api:latest
-    networks:
-      - hmpps
-    container_name: prison-api
-    depends_on:
-      - hmpps-auth
-    ports:
-      - "8082:8080"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/auth/health"]
-    environment:
-      - SPRING_PROFILES_ACTIVE=nomis-hsqldb
-
   hmpps-manage-adjudications-api-db:
     image: postgres
     container_name: hmpps-manage-adjudications-api-db
