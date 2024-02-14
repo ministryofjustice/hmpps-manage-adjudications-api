@@ -434,6 +434,12 @@ open class ReportedAdjudicationBaseService(
     offenderBookingId = offenderBookingId,
   )
 
+  protected fun offenderChargesForPrintSupport(offenderBookingId: Long, chargeNumber: String): List<ReportedAdjudication> =
+    reportedAdjudicationRepository.findByOffenderBookingIdAndStatus(
+      offenderBookingId = offenderBookingId,
+      status = ReportedAdjudicationStatus.CHARGE_PROVED,
+    ).filter { it.chargeNumber != chargeNumber }
+
   companion object {
     fun throwEntityNotFoundException(id: String): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")

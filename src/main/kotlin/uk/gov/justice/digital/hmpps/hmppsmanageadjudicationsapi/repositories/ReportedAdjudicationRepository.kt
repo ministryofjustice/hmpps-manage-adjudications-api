@@ -182,6 +182,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByOffenderBookingId(offenderBookingId: Long): List<ReportedAdjudication>
 
+  fun findByOffenderBookingIdAndStatus(offenderBookingId: Long, status: ReportedAdjudicationStatus): List<ReportedAdjudication>
+
   fun findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
     status: ReportedAdjudicationStatus,
     offenderBookingId: Long,

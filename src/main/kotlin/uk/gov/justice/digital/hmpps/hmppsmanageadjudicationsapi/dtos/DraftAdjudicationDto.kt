@@ -58,7 +58,7 @@ data class IncidentDetailsDto(
   val locationId: Long,
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   val dateTimeOfIncident: LocalDateTime,
-  @Schema(description = "Date time if discovery date different to incident date", example = "2010-10-12T10:00:00")
+  @Schema(description = "Date time of discovery if date different to incident date", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfDiscovery: LocalDateTime,
   @Schema(description = "When this report must be handed to the prisoner", example = "2010-10-14T10:00:00")
