@@ -251,8 +251,8 @@ class ReportsController(
     ),
     Parameter(
       name = "status",
-      required = true,
-      description = "list of status filter for reports",
+      required = false,
+      description = "list of status filter for reports, if null will return all",
     ),
     Parameter(
       name = "agency",
@@ -285,7 +285,7 @@ class ReportsController(
     @RequestParam(name = "endDate", required = false)
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     endDate: LocalDate? = null,
-    @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
+    @RequestParam(name = "status", required = false) statuses: List<ReportedAdjudicationStatus>? = null,
     @RequestParam(name = "agency", required = true) agencies: List<String>,
     @RequestParam(name = "ada", required = false) ada: Boolean = false,
     @RequestParam(name = "pada", required = false) pada: Boolean = false,
@@ -334,8 +334,8 @@ class ReportsController(
     ),
     Parameter(
       name = "status",
-      required = true,
-      description = "list of status filter for reports",
+      required = false,
+      description = "list of status filter for reports, if null will return all",
     ),
     Parameter(
       name = "ada",
@@ -363,7 +363,7 @@ class ReportsController(
     @RequestParam(name = "endDate", required = false)
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     endDate: LocalDate? = null,
-    @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
+    @RequestParam(name = "status", required = false) statuses: List<ReportedAdjudicationStatus>? = null,
     @RequestParam(name = "ada", required = false) ada: Boolean = false,
     @RequestParam(name = "pada", required = false) pada: Boolean = false,
     @RequestParam(name = "suspended", required = false) suspended: Boolean = false,
