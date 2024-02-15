@@ -261,7 +261,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     initDataForUnScheduled()
 
     webTestClient.get()
-      .uri("/reported-adjudications/booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}?status=UNSCHEDULED&agency=${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}&page=0&size=20")
+      .uri("/reported-adjudications/booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}?agency=${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -314,7 +314,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     initDataForUnScheduled()
 
     webTestClient.get()
-      .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?status=UNSCHEDULED&page=0&size=20")
+      .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
