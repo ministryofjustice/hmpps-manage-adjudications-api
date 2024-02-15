@@ -134,7 +134,7 @@ class ReportsService(
     startDate: LocalDate? = null,
     endDate: LocalDate? = null,
     agencies: List<String>,
-    statuses: List<ReportedAdjudicationStatus>,
+    statuses: List<ReportedAdjudicationStatus>?,
     ada: Boolean,
     pada: Boolean,
     suspended: Boolean,
@@ -145,7 +145,7 @@ class ReportsService(
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: maxDate),
       agencies = agencies,
-      statuses = statuses.map { it.name },
+      statuses = (statuses ?: ReportedAdjudicationStatus.values().toList()).map { it.name },
       pageable = pageable,
     )
   } else {
@@ -154,7 +154,7 @@ class ReportsService(
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: maxDate),
       agencies = agencies,
-      statuses = statuses.map { it.name },
+      statuses = (statuses ?: ReportedAdjudicationStatus.values().toList()).map { it.name },
       ada = ada,
       pada = pada,
       suspended = suspended,
@@ -171,7 +171,7 @@ class ReportsService(
     prisonerNumber: String,
     startDate: LocalDate? = null,
     endDate: LocalDate? = null,
-    statuses: List<ReportedAdjudicationStatus>,
+    statuses: List<ReportedAdjudicationStatus>?,
     ada: Boolean,
     pada: Boolean,
     suspended: Boolean,
@@ -181,7 +181,7 @@ class ReportsService(
       prisonerNumber = prisonerNumber,
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: maxDate),
-      statuses = statuses.map { it.name },
+      statuses = (statuses ?: ReportedAdjudicationStatus.values().toList()).map { it.name },
       pageable = pageable,
     )
   } else {
@@ -189,7 +189,7 @@ class ReportsService(
       prisonerNumber = prisonerNumber,
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: maxDate),
-      statuses = statuses.map { it.name },
+      statuses = (statuses ?: ReportedAdjudicationStatus.values().toList()).map { it.name },
       ada = ada,
       pada = pada,
       suspended = suspended,

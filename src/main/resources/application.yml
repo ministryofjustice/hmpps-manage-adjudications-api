@@ -36,19 +36,6 @@ spring:
   datasource:
     url: 'jdbc:h2:mem:restricted-patients-api-db;MODE=PostgreSQL'
 
-  security:
-    oauth2:
-      client:
-        registration:
-          manage-adjudications-api:
-            provider: hmpps-auth
-            client-id: ${manage.adjudications.api.client.id}
-            client-secret: ${manage.adjudications.api.client.secret}
-            authorization-grant-type: client_credentials
-            scope: write
-        provider:
-          hmpps-auth:
-            token-uri: ${oauth.endpoint.url}/oauth/token
   sql:
     init:
       continue-on-error: true

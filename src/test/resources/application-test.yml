@@ -8,10 +8,6 @@ management.endpoint:
   health.cache.time-to-live: 0
   info.cache.time-to-live: 0
 
-prison:
-  api:
-    endpoint:
-      url: http://localhost:8979
 oauth:
   endpoint:
     url: http://localhost:8070/auth

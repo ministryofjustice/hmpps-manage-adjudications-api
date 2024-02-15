@@ -22,11 +22,6 @@ spring:
     password: adjudications
     url: jdbc:postgresql://localhost:5432/adjudications?sslmode=prefer
 
-prison:
-  api:
-    endpoint:
-      url: http://localhost:8082
-
 oauth:
   endpoint:
     url: http://localhost:9090/auth
