@@ -1,5 +1,5 @@
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.15.1"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.15.2"
   id("jacoco")
   kotlin("plugin.spring") version "1.9.22"
   kotlin("plugin.jpa") version "1.9.22"
@@ -26,7 +26,7 @@ dependencies {
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:2.2.1")
   implementation("io.opentelemetry:opentelemetry-api:1.35.0")
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.0.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.1.0")
 
   runtimeOnly("com.h2database:h2:2.2.224")
   runtimeOnly("org.flywaydb:flyway-core")
