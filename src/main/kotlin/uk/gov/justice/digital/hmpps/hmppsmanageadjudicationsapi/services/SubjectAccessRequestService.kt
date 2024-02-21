@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedDtoService
 import java.time.LocalDate
+import java.time.LocalTime
 
 class NoContentFoundException : RuntimeException()
 
@@ -23,7 +24,7 @@ class SubjectAccessRequestService(
     val reported = reportedAdjudicationRepository.findByPrisonerNumberAndDateTimeOfDiscoveryBetween(
       prisonerNumber = prn,
       fromDate = (fromDate ?: minDate).atStartOfDay(),
-      toDate = (toDate ?: maxDate).atStartOfDay(),
+      toDate = (toDate ?: maxDate).atTime(LocalTime.MAX),
     )
 
     if (reported.isEmpty()) throw NoContentFoundException()
