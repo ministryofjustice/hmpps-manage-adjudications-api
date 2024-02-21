@@ -161,7 +161,7 @@ data class ReportedAdjudication(
         this.latestOutcome()?.code == OutcomeCode.PROSECUTION && this.getPunishments().isNotEmpty()
     fun ReportedAdjudication.isActivePrisoner(): Boolean = !this.migratedInactivePrisoner
     fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.getCreatedDateTime()!! }
-    private fun Punishment.isCorrupted(): Boolean =
+    fun Punishment.isCorrupted(): Boolean =
       this.suspendedUntil != null && this.actualCreatedDate?.toLocalDate()?.isEqual(this.suspendedUntil) == true && this.actualCreatedDate?.toLocalDate()?.isAfter(LocalDate.now().minusMonths(6)) == true
   }
 }

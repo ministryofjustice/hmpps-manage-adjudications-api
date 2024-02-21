@@ -112,9 +112,13 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun createPunishments(startDate: LocalDate? = null, punishmentType: PunishmentType = PunishmentType.CONFINEMENT): IntegrationTestScenario {
+  fun createPunishments(
+    overrideTestDataSet: AdjudicationIntTestDataSet = testAdjudicationDataSet,
+    startDate: LocalDate? = null,
+    punishmentType: PunishmentType = PunishmentType.CONFINEMENT,
+  ): IntegrationTestScenario {
     intTestData.createPunishments(
-      testDataSet = testAdjudicationDataSet,
+      testDataSet = overrideTestDataSet,
       startDate = startDate,
       punishmentType = punishmentType,
     )

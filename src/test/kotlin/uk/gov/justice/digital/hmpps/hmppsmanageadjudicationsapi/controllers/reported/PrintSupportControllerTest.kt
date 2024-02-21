@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PrintSupportService
+import java.time.LocalDate
 
 @WebMvcTest(
   PrintSupportController::class,
@@ -39,6 +40,12 @@ class PrintSupportControllerTest : TestControllerBase() {
       whenever(printSupportService.getDis5Data("12345")).thenReturn(
         Dis5DataModel(
           chargeNumber = "12345",
+          dateOfDiscovery = LocalDate.now(),
+          dateOfIncident = LocalDate.now(),
+          previousCount = 0,
+          previousAtCurrentEstablishmentCount = 0,
+          sameOffenceCount = 0,
+          suspendedPunishments = emptyList(),
         ),
       )
 

@@ -25,17 +25,25 @@ data class Dis5DataModel(
   val previousAtCurrentEstablishmentCount: Int,
   @Schema(description = "total number of charge proved for same offence")
   val sameOffenceCount: Int,
-  @Schema(description = "Last reported date of same offence")
-  val lastReportedDateOfSameOffence: LocalDate?,
-  @Schema(description = "last reported same offence charge number")
-  val lastReportedSameOffenceChargeNumber: String?,
-  @Schema(description = "The statement regarding the last reported incident")
-  val lastReportedSameOffenceStatement: String?,
-  @Schema(description = "punishments awarded on the last reported same offence")
-  val lastReportedSameOffencePunishments: List<PunishmentDto>,
-  // TODO more information required around this
+  @Schema(description = "optional last reported same offence")
+  val lastReportedOffence: LastReportedOffence? = null,
   @Schema(description = "list of current suspended punishments")
   val suspendedPunishments: List<PunishmentDto>,
+)
+
+@Schema(description = "optional last reported same offence charge")
+data class LastReportedOffence(
+  @Schema(description = "Date the incident occurred")
+  val dateOfIncident: LocalDate,
+  @Schema(description = "Date of discovery if date different to incident date")
+  val dateOfDiscovery: LocalDate,
+  @Schema(description = "last reported same offence charge number")
+  val chargeNumber: String,
+  @Schema(description = "The statement regarding the last reported incident")
+  val statement: String,
+  @Schema(description = "punishments awarded on the last reported same offence")
+  val punishments: List<PunishmentDto>,
+
 )
 
 @RestController

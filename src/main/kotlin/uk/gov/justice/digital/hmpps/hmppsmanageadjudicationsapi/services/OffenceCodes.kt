@@ -104,7 +104,10 @@ enum class OffenceCodes(val paragraph: String, private val withOthers: String? =
     fun validateOffenceCode(offenceCode: Int) =
       OffenceCodes.values().flatMap { it.uniqueOffenceCodes }.firstOrNull { it == offenceCode } ?: throw ValidationException("Invalid offence code $offenceCode")
 
-    fun findByNomisCode(nomisCode: String): List<OffenceCodes> =
-      OffenceCodes.values().filter { it.getNomisCode() == nomisCode }
+    fun Int.containsNomisCode(nomisCode: String): Boolean {
+      val offenceCode = OffenceCodes.values().first { it.uniqueOffenceCodes.contains(this) }
+
+      return offenceCode.getNomisCode() == nomisCode || offenceCode.getNomisCodeWithOthers().contains(nomisCode)
+    }
   }
 }

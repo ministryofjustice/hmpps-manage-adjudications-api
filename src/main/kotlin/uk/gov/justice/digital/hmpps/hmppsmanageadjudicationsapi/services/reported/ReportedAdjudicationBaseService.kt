@@ -271,7 +271,10 @@ open class ReportedDtoService(
       )
     }.sortedBy { it.dateTimeOfIssue }.toList()
 
-  private fun List<Punishment>.toPunishments(consecutiveReportsAvailable: List<String>?, hasLinkedAda: Boolean): List<PunishmentDto> =
+  protected fun List<Punishment>.toPunishments(
+    consecutiveReportsAvailable: List<String>? = null,
+    hasLinkedAda: Boolean = false,
+  ): List<PunishmentDto> =
     this.sortedBy { it.type }.map {
       PunishmentDto(
         id = it.id,
