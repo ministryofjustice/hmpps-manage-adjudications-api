@@ -950,4 +950,15 @@ class ReportedAdjudicationRepositoryTest {
     )
     assertThat(reportedAdjudicationRepository.fixMigrationRecords().first().chargeNumber).isEqualTo("12345-2")
   }
+
+  @Test
+  fun `find by offender booking id and status`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+      },
+    )
+    assertThat(reportedAdjudicationRepository.findByOffenderBookingIdAndStatus(3L, ReportedAdjudicationStatus.CHARGE_PROVED).size).isEqualTo(1)
+  }
 }
