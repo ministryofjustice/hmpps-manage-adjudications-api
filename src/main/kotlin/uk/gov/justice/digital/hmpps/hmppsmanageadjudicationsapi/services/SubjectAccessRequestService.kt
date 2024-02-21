@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedDtoService
+import java.time.LocalDate
 
 class NoContentFoundException : RuntimeException()
 
@@ -18,10 +19,20 @@ class SubjectAccessRequestService(
 ) : ReportedDtoService(
   offenceCodeLookupService,
 ) {
-  fun getSubjectAccessRequest(prn: String): JsonNode {
-    val reported = reportedAdjudicationRepository.findByPrisonerNumber(prisonerNumber = prn)
+  fun getSubjectAccessRequest(prn: String, fromDate: LocalDate?, toDate: LocalDate?): JsonNode {
+    val reported = reportedAdjudicationRepository.findByPrisonerNumberAndDateTimeOfDiscoveryBetween(
+      prisonerNumber = prn,
+      fromDate = (fromDate ?: minDate).atStartOfDay(),
+      toDate = (toDate ?: maxDate).atStartOfDay(),
+    )
+
     if (reported.isEmpty()) throw NoContentFoundException()
 
     return objectMapper.readTree(objectMapper.writeValueAsString(reported.map { it.toDto() }))
+  }
+
+  companion object {
+    val minDate: LocalDate = LocalDate.of(1901, 1, 1)
+    val maxDate: LocalDate = LocalDate.of(2999, 1, 1)
   }
 }

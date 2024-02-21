@@ -436,6 +436,29 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.content").isNotEmpty
   }
 
+  @Test
+  fun `SAR has content with date`() {
+    initDataForUnScheduled()
+    webTestClient.get()
+      .uri("/subject-access-request?prn=${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}&fromDate=1999-01-01")
+      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ALL_ADJUDICATIONS")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .consumeWith(System.out::println)
+      .jsonPath("$.content").isNotEmpty
+  }
+
+  @Test
+  fun `SAR has no content with date`() {
+    initDataForUnScheduled()
+    webTestClient.get()
+      .uri("/subject-access-request?prn=${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}&toDate=1999-01-01")
+      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ALL_ADJUDICATIONS")))
+      .exchange()
+      .expectStatus().isNoContent
+  }
+
   private fun initMyReportData() {
     val intTestData = integrationTestData()
 
