@@ -36,7 +36,7 @@ class PrintSupportControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
-    fun `makes a call to set the damages`() {
+    fun `gets dis5 print support successfully`() {
       whenever(printSupportService.getDis5Data("12345")).thenReturn(
         Dis5DataModel(
           chargeNumber = "12345",
