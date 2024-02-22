@@ -21,6 +21,8 @@ data class Dis5PrintSupportDto(
   val lastReportedOffence: LastReportedOffence? = null,
   @Schema(description = "charges with suspended punishments that are active")
   val chargesWithSuspendedPunishments: List<ChargeWithSuspendedPunishments>,
+  @Schema(description = "existing punishments")
+  val existingPunishments: List<PunishmentDto>,
 )
 
 @Schema(description = "suspended punishments on charge")

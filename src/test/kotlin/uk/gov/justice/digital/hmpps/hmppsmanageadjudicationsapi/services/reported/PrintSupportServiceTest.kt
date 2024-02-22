@@ -161,6 +161,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
       assertThat(data.chargesWithSuspendedPunishments.first().suspendedPunishments.first().type).isEqualTo(PunishmentType.CONFINEMENT)
       assertThat(data.chargesWithSuspendedPunishments.first().suspendedPunishments.last().type).isEqualTo(PunishmentType.ADDITIONAL_DAYS)
       assertThat(data.chargesWithSuspendedPunishments.first().offenceDetails.offenceCode).isEqualTo(1002)
+      assertThat(data.existingPunishments.isEmpty()).isTrue
     }
 
     @Test
@@ -226,6 +227,81 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
       assertThat(data.lastReportedOffence!!.dateOfIncident).isEqualTo(LocalDate.now().plusDays(11))
       assertThat(data.lastReportedOffence!!.dateOfDiscovery).isEqualTo(LocalDate.now().plusDays(10))
       assertThat(data.lastReportedOffence!!.statement).isEqualTo("the new statement")
+    }
+
+    @Test
+    fun `existing punishments for any active, ADA, PADA and filters out caution, damages owed`() {
+      val report = entityBuilder.reportedAdjudication(offenderBookingId = 1)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(report)
+      whenever(reportedAdjudicationRepository.findByOffenderBookingIdAndStatus(any(), any())).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication(chargeNumber = "777771", offenderBookingId = 1).also {
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.DAMAGES_OWED,
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 0),
+                ),
+              ),
+            )
+          },
+          entityBuilder.reportedAdjudication(chargeNumber = "777771", offenderBookingId = 1).also {
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.CAUTION,
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 0),
+                ),
+              ),
+            )
+          },
+          entityBuilder.reportedAdjudication(chargeNumber = "77777", offenderBookingId = 1).also {
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.ADDITIONAL_DAYS,
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10),
+                ),
+              ),
+            )
+          },
+          entityBuilder.reportedAdjudication(chargeNumber = "77776", offenderBookingId = 1).also {
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.PROSPECTIVE_DAYS,
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10),
+                ),
+              ),
+            )
+          },
+          entityBuilder.reportedAdjudication(chargeNumber = "99999", offenderBookingId = 1).also {
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.CONFINEMENT,
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10, endDate = LocalDate.now().plusDays(10)),
+                ),
+              ),
+            )
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.REMOVAL_ACTIVITY,
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10, endDate = LocalDate.now().minusDays(1)),
+                ),
+              ),
+            )
+          },
+        ),
+      )
+
+      val data = printSupportService.getDis5Data(chargeNumber = "12345")
+
+      assertThat(data.existingPunishments.size).isEqualTo(3)
+      assertThat(data.existingPunishments.first().type).isEqualTo(PunishmentType.ADDITIONAL_DAYS)
+      assertThat(data.existingPunishments[1].type).isEqualTo(PunishmentType.PROSPECTIVE_DAYS)
+      assertThat(data.existingPunishments.last().type).isEqualTo(PunishmentType.CONFINEMENT)
     }
   }
 }
