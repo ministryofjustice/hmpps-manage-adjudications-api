@@ -37,7 +37,7 @@ data class ChargeWithSuspendedPunishments(
   val dateOfIncident: LocalDate,
   @Schema(description = "Date of discovery if date different to incident date")
   val dateOfDiscovery: LocalDate,
-  @Schema(description = "last reported same offence charge number")
+  @Schema(description = "charge number")
   val chargeNumber: String,
   @Schema(description = "list of suspended punishments")
   val suspendedPunishments: List<PunishmentDto>,
