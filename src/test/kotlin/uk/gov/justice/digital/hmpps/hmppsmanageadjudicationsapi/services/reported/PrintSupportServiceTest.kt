@@ -78,7 +78,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `active suspended punishments are listed`() {
+    fun `active suspended punishments are listed and ordered by earliest suspended until first`() {
       val report = entityBuilder.reportedAdjudication(offenderBookingId = 1)
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(report)
       whenever(reportedAdjudicationRepository.findByOffenderBookingIdAndStatus(any(), any())).thenReturn(
@@ -86,13 +86,23 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
           entityBuilder.reportedAdjudication(chargeNumber = "99999", offenderBookingId = 1),
           entityBuilder.reportedAdjudication(chargeNumber = "88888", offenderBookingId = 1).also {
             it.overrideAgencyId = report.originatingAgencyId
-            // valid
+            // valid first
             it.addPunishment(
               Punishment(
                 type = PunishmentType.CONFINEMENT,
                 suspendedUntil = LocalDate.now().plusDays(5),
                 schedule = mutableListOf(
                   PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now().plusDays(5)),
+                ),
+              ),
+            )
+            // valid second
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.ADDITIONAL_DAYS,
+                suspendedUntil = LocalDate.now().plusDays(6),
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now().plusDays(6)),
                 ),
               ),
             )
@@ -131,7 +141,9 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
       )
 
       val data = printSupportService.getDis5Data(chargeNumber = "12345")
-      assertThat(data.suspendedPunishments.size).isEqualTo(1)
+      assertThat(data.suspendedPunishments.size).isEqualTo(2)
+      assertThat(data.suspendedPunishments.first().type).isEqualTo(PunishmentType.CONFINEMENT)
+      assertThat(data.suspendedPunishments.last().type).isEqualTo(PunishmentType.ADDITIONAL_DAYS)
     }
 
     @Test

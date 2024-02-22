@@ -37,7 +37,7 @@ class PrintSupportService(
     val suspendedCutOff = LocalDate.now().minusDays(1)
     val suspendedPunishments = otherChargesOnSentence.flatMap { it.getPunishments() }.filter {
       !it.isCorrupted() && it.suspendedUntil?.isAfter(suspendedCutOff) == true
-    }.toPunishments()
+    }.toPunishments().sortedBy { it.schedule.suspendedUntil }
 
     val offenceCode = reportedAdjudication.offenceDetails.first().offenceCode
     val sameOffenceCharges = otherChargesOnSentence.filter {
