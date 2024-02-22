@@ -54,11 +54,17 @@ class SubjectAccessRequestController(
     prn: @NotNull String,
     @RequestParam("crn", required = false)
     crn: String? = null,
-    @RequestParam(name = "frmDate", required = false)
+    @RequestParam(name = "fromDate", required = false)
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     fromDate: LocalDate? = null,
     @RequestParam(name = "toDate", required = false)
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     toDate: LocalDate? = null,
-  ): SuccessResponse = SuccessResponse(content = subjectAccessRequestService.getSubjectAccessRequest(prn = prn))
+  ): SuccessResponse = SuccessResponse(
+    content = subjectAccessRequestService.getSubjectAccessRequest(
+      prn = prn,
+      fromDate = fromDate,
+      toDate = toDate,
+    ),
+  )
 }

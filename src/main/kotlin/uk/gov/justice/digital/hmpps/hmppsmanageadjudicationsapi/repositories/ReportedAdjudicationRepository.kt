@@ -176,6 +176,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByPrisonerNumber(prisonerNumber: String): List<ReportedAdjudication>
 
+  fun findByPrisonerNumberAndDateTimeOfDiscoveryBetween(prisonerNumber: String, fromDate: LocalDateTime, toDate: LocalDateTime): List<ReportedAdjudication>
+
   fun findByIncidentRoleAssociatedPrisonersNumber(prisonerNumber: String): List<ReportedAdjudication>
 
   fun findByOffenceDetailsVictimPrisonersNumber(prisonerNumber: String): List<ReportedAdjudication>
@@ -191,8 +193,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   ): List<ReportedAdjudication>
 
   fun findByPrisonerNumberAndChargeNumberStartsWith(prisonerNumber: String, chargeNumber: String): List<ReportedAdjudication>
-
-  fun findByMigratedIsFalseAndStatus(status: ReportedAdjudicationStatus): List<ReportedAdjudication>
 
   fun existsByOffenderBookingId(offenderBookingId: Long): Boolean
 

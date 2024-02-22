@@ -961,4 +961,16 @@ class ReportedAdjudicationRepositoryTest {
     )
     assertThat(reportedAdjudicationRepository.findByOffenderBookingIdAndStatus(3L, ReportedAdjudicationStatus.CHARGE_PROVED).size).isEqualTo(1)
   }
+
+  @Test
+  fun `find by prisoner number and date time`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2", prisonerNumber = "XZY").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfDiscovery = LocalDateTime.now()
+      },
+    )
+    assertThat(reportedAdjudicationRepository.findByPrisonerNumberAndDateTimeOfDiscoveryBetween("XZY", LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1)).size).isEqualTo(1)
+  }
 }
