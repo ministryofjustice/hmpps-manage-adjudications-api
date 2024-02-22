@@ -160,6 +160,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
       assertThat(data.chargesWithSuspendedPunishments.first().suspendedPunishments.size).isEqualTo(2)
       assertThat(data.chargesWithSuspendedPunishments.first().suspendedPunishments.first().type).isEqualTo(PunishmentType.CONFINEMENT)
       assertThat(data.chargesWithSuspendedPunishments.first().suspendedPunishments.last().type).isEqualTo(PunishmentType.ADDITIONAL_DAYS)
+      assertThat(data.chargesWithSuspendedPunishments.first().offenceDetails.offenceCode).isEqualTo(1002)
     }
 
     @Test

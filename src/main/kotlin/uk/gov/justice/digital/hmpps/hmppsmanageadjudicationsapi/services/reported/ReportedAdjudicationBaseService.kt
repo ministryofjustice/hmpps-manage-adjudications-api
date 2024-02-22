@@ -174,7 +174,7 @@ open class ReportedDtoService(
     return combinedOutcomes
   }
 
-  private fun ReportedAdjudication.toReportedOffence(
+  protected fun ReportedAdjudication.toReportedOffence(
     offenceCodeLookupService: OffenceCodeLookupService,
   ): OffenceDto {
     val offence = this.offenceDetails.first()
