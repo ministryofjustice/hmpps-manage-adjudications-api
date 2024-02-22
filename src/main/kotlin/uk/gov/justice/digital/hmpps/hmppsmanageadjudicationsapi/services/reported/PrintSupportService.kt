@@ -37,7 +37,7 @@ class PrintSupportService(
       it.originatingAgencyId == currentEstablishment || it.overrideAgencyId == currentEstablishment
     }
     val suspendedCutOff = LocalDate.now().minusDays(1)
-    val chargesWithActivesuspendedPunishments = otherChargesOnSentence.filter {
+    val chargesWithActiveSuspendedPunishments = otherChargesOnSentence.filter {
       it.getPunishments().any {
           punishment ->
         punishment.isActiveSuspended(suspendedCutOff)
@@ -55,7 +55,7 @@ class PrintSupportService(
       dateOfDiscovery = reportedAdjudication.dateTimeOfDiscovery.toLocalDate(),
       previousCount = otherChargesOnSentence.size,
       previousAtCurrentEstablishmentCount = previousAtCurrentEstablishmentCount,
-      chargesWithSuspendedPunishments = chargesWithActivesuspendedPunishments.map {
+      chargesWithSuspendedPunishments = chargesWithActiveSuspendedPunishments.map {
         ChargeWithSuspendedPunishments(
           chargeNumber = it.chargeNumber,
           dateOfIncident = it.dateTimeOfIncident.toLocalDate(),
