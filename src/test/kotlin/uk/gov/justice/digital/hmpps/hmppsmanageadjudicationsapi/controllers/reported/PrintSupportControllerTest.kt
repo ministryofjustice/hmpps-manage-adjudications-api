@@ -45,7 +45,7 @@ class PrintSupportControllerTest : TestControllerBase() {
           previousCount = 0,
           previousAtCurrentEstablishmentCount = 0,
           sameOffenceCount = 0,
-          suspendedPunishments = emptyList(),
+          chargesWithSuspendedPunishments = emptyList(),
         ),
       )
 

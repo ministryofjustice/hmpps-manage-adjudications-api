@@ -27,7 +27,19 @@ data class Dis5DataModel(
   val sameOffenceCount: Int,
   @Schema(description = "optional last reported same offence")
   val lastReportedOffence: LastReportedOffence? = null,
-  @Schema(description = "list of current suspended punishments")
+  @Schema(description = "charges with suspended punishments that are active")
+  val chargesWithSuspendedPunishments: List<ChargeWithSuspendedPunishments>,
+)
+
+@Schema(description = "suspended punishments on charge")
+data class ChargeWithSuspendedPunishments(
+  @Schema(description = "Date the incident occurred")
+  val dateOfIncident: LocalDate,
+  @Schema(description = "Date of discovery if date different to incident date")
+  val dateOfDiscovery: LocalDate,
+  @Schema(description = "charge number")
+  val chargeNumber: String,
+  @Schema(description = "list of suspended punishments")
   val suspendedPunishments: List<PunishmentDto>,
 )
 
