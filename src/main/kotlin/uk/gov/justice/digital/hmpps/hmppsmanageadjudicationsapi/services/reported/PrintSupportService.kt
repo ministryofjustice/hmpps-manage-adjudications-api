@@ -2,8 +2,10 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ChargeWithSuspendedPunishments
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.Dis5DataModel
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.LastReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication.Companion.isCorrupted
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -35,9 +37,12 @@ class PrintSupportService(
       it.originatingAgencyId == currentEstablishment || it.overrideAgencyId == currentEstablishment
     }
     val suspendedCutOff = LocalDate.now().minusDays(1)
-    val suspendedPunishments = otherChargesOnSentence.flatMap { it.getPunishments() }.filter {
-      !it.isCorrupted() && it.suspendedUntil?.isAfter(suspendedCutOff) == true
-    }.toPunishments().sortedBy { it.schedule.suspendedUntil }
+    val chargesWithActivesuspendedPunishments = otherChargesOnSentence.filter {
+      it.getPunishments().any {
+          punishment ->
+        punishment.isActiveSuspended(suspendedCutOff)
+      }
+    }.sortedBy { it.dateTimeOfDiscovery }
 
     val offenceCode = reportedAdjudication.offenceDetails.first().offenceCode
     val sameOffenceCharges = otherChargesOnSentence.filter {
@@ -50,7 +55,17 @@ class PrintSupportService(
       dateOfDiscovery = reportedAdjudication.dateTimeOfDiscovery.toLocalDate(),
       previousCount = otherChargesOnSentence.size,
       previousAtCurrentEstablishmentCount = previousAtCurrentEstablishmentCount,
-      suspendedPunishments = suspendedPunishments,
+      chargesWithSuspendedPunishments = chargesWithActivesuspendedPunishments.map {
+        ChargeWithSuspendedPunishments(
+          chargeNumber = it.chargeNumber,
+          dateOfIncident = it.dateTimeOfIncident.toLocalDate(),
+          dateOfDiscovery = it.dateTimeOfDiscovery.toLocalDate(),
+          suspendedPunishments = it.getPunishments().filter {
+              punishment ->
+            punishment.isActiveSuspended(suspendedCutOff)
+          }.toPunishments().sortedBy { p -> p.schedule.suspendedUntil },
+        )
+      },
       sameOffenceCount = sameOffenceCharges.size,
       lastReportedOffence = sameOffenceCharges.maxByOrNull { it.dateTimeOfDiscovery }.toLastReportedOffence(),
     )
@@ -69,6 +84,9 @@ class PrintSupportService(
   }
 
   companion object {
+
+    fun Punishment.isActiveSuspended(suspendedCutOff: LocalDate): Boolean =
+      !this.isCorrupted() && this.suspendedUntil?.isAfter(suspendedCutOff) == true
     fun List<ReportedOffence>.matchesOffence(offenceCode: Int): Boolean =
       this.first().offenceCode != -0 && this.first().offenceCode == offenceCode
 

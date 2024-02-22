@@ -137,13 +137,29 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
               ),
             )
           },
+          entityBuilder.reportedAdjudication(chargeNumber = "888881", offenderBookingId = 1, dateTime = LocalDateTime.now()).also {
+            it.overrideAgencyId = report.originatingAgencyId
+            // valid first
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.CONFINEMENT,
+                suspendedUntil = LocalDate.now().plusDays(5),
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now().plusDays(5)),
+                ),
+              ),
+            )
+          },
         ),
       )
 
       val data = printSupportService.getDis5Data(chargeNumber = "12345")
-      assertThat(data.suspendedPunishments.size).isEqualTo(2)
-      assertThat(data.suspendedPunishments.first().type).isEqualTo(PunishmentType.CONFINEMENT)
-      assertThat(data.suspendedPunishments.last().type).isEqualTo(PunishmentType.ADDITIONAL_DAYS)
+      assertThat(data.chargesWithSuspendedPunishments.size).isEqualTo(2)
+      assertThat(data.chargesWithSuspendedPunishments.first().chargeNumber).isEqualTo("88888")
+      assertThat(data.chargesWithSuspendedPunishments.last().chargeNumber).isEqualTo("888881")
+      assertThat(data.chargesWithSuspendedPunishments.first().suspendedPunishments.size).isEqualTo(2)
+      assertThat(data.chargesWithSuspendedPunishments.first().suspendedPunishments.first().type).isEqualTo(PunishmentType.CONFINEMENT)
+      assertThat(data.chargesWithSuspendedPunishments.first().suspendedPunishments.last().type).isEqualTo(PunishmentType.ADDITIONAL_DAYS)
     }
 
     @Test
