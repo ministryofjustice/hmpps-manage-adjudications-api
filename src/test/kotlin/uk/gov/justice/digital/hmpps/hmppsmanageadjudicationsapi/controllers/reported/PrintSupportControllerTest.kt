@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Dis5PrintSupportDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PrintSupportService
 import java.time.LocalDate
 
@@ -38,7 +39,7 @@ class PrintSupportControllerTest : TestControllerBase() {
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `gets dis5 print support successfully`() {
       whenever(printSupportService.getDis5Data("12345")).thenReturn(
-        Dis5DataModel(
+        Dis5PrintSupportDto(
           chargeNumber = "12345",
           dateOfDiscovery = LocalDate.now(),
           dateOfIncident = LocalDate.now(),

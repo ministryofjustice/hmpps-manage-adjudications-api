@@ -2,9 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ChargeWithSuspendedPunishments
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.Dis5DataModel
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.LastReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ChargeWithSuspendedPunishments
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Dis5PrintSupportDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LastReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication.Companion.isCorrupted
@@ -26,7 +26,7 @@ class PrintSupportService(
   offenceCodeLookupService,
   authenticationFacade,
 ) {
-  fun getDis5Data(chargeNumber: String): Dis5DataModel {
+  fun getDis5Data(chargeNumber: String): Dis5PrintSupportDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
     val currentEstablishment = reportedAdjudication.overrideAgencyId ?: reportedAdjudication.originatingAgencyId
     val otherChargesOnSentence = offenderChargesForPrintSupport(
@@ -49,7 +49,7 @@ class PrintSupportService(
       it.offenceDetails.matchesOffence(offenceCode = offenceCode) || it.offenceDetails.matchesLegacyOffence(offenceCode = offenceCode)
     }
 
-    return Dis5DataModel(
+    return Dis5PrintSupportDto(
       chargeNumber = reportedAdjudication.chargeNumber,
       dateOfIncident = reportedAdjudication.dateTimeOfIncident.toLocalDate(),
       dateOfDiscovery = reportedAdjudication.dateTimeOfDiscovery.toLocalDate(),
@@ -60,6 +60,7 @@ class PrintSupportService(
           chargeNumber = it.chargeNumber,
           dateOfIncident = it.dateTimeOfIncident.toLocalDate(),
           dateOfDiscovery = it.dateTimeOfDiscovery.toLocalDate(),
+          offenceDetails = it.toReportedOffence(offenceCodeLookupService),
           suspendedPunishments = it.getPunishments().filter {
               punishment ->
             punishment.isActiveSuspended(suspendedCutOff)
@@ -87,6 +88,7 @@ class PrintSupportService(
 
     fun Punishment.isActiveSuspended(suspendedCutOff: LocalDate): Boolean =
       !this.isCorrupted() && this.suspendedUntil?.isAfter(suspendedCutOff) == true
+
     fun List<ReportedOffence>.matchesOffence(offenceCode: Int): Boolean =
       this.first().offenceCode != -0 && this.first().offenceCode == offenceCode
 
