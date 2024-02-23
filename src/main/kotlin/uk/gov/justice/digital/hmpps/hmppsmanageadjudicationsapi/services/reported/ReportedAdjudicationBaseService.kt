@@ -313,7 +313,7 @@ open class ReportedDtoService(
         comment = it.comment,
         reasonForChange = it.reasonForChange,
         createdByUserId = it.nomisCreatedBy ?: it.createdByUserId,
-        dateTime = it.modifiedDateTime ?: it.actualCreatedDate ?: it.createDateTime,
+        dateTime = it.actualCreatedDate ?: it.modifiedDateTime ?: it.createDateTime,
       )
     }.sortedByDescending { it.dateTime }.toList()
 
