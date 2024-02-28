@@ -63,8 +63,8 @@ class ReportsService(
     }
 
   fun getTransferReportedAdjudications(
-    startDate: LocalDate,
-    endDate: LocalDate,
+    startDate: LocalDate?,
+    endDate: LocalDate?,
     statuses: List<ReportedAdjudicationStatus>,
     transferType: TransferType,
     pageable: Pageable,
@@ -72,22 +72,22 @@ class ReportsService(
     when (transferType) {
       TransferType.IN -> reportedAdjudicationRepository.findTransfersInByAgency(
         agencyId = authenticationFacade.activeCaseload,
-        startDate = reportsFrom(startDate),
-        endDate = reportsTo(endDate),
+        startDate = reportsFrom(startDate ?: minDate),
+        endDate = reportsTo(endDate ?: maxDate),
         statuses = statuses.filter { transferReviewStatuses.contains(it) }.map { it.name },
         pageable = pageable,
       )
       TransferType.OUT -> reportedAdjudicationRepository.findTransfersOutByAgency(
         agencyId = authenticationFacade.activeCaseload,
-        startDate = reportsFrom(startDate),
-        endDate = reportsTo(endDate),
+        startDate = reportsFrom(startDate ?: minDate),
+        endDate = reportsTo(endDate ?: maxDate),
         statuses = statuses.filter { transferOutStatuses.contains(it) }.map { it.name },
         pageable = pageable,
       )
       TransferType.ALL -> reportedAdjudicationRepository.findTransfersAllByAgency(
         agencyId = authenticationFacade.activeCaseload,
-        startDate = reportsFrom(startDate),
-        endDate = reportsTo(endDate),
+        startDate = reportsFrom(startDate ?: minDate),
+        endDate = reportsTo(endDate ?: maxDate),
         statuses = statuses.filter { transferOutStatuses.plus(transferReviewStatuses).contains(it) }.map { it.name },
         pageable = pageable,
       )
