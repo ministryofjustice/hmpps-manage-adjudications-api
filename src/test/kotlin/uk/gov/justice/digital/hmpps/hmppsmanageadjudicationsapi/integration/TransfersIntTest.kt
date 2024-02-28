@@ -283,7 +283,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     fun `transfers all & in - agency BXI needs to schedule a hearing for report from MDI`() {
       // 1: transfers in / all should list the report for BXI
       webTestClient.get()
-        .uri("/reported-adjudications/transfer-reports?&status=UNSCHEDULED&type=ALL&page=0&size=20")
+        .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=ALL&page=0&size=20")
         .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
         .exchange()
         .expectStatus().isOk.expectBody()
