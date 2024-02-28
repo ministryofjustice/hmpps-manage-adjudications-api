@@ -37,6 +37,6 @@ class DamagesService(
       },
     )
 
-    return saveToDto(reportedAdjudication)
+    return saveToDto(reportedAdjudication = reportedAdjudication, logLastModified = false)
   }
 }

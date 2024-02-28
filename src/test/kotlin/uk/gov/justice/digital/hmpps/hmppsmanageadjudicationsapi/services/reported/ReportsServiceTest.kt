@@ -11,10 +11,11 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferIgnoreStatuses
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferOutStatuses
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferReviewStatuses
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -48,7 +49,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           any(),
           any(),
           any(),
-          any(),
         ),
       ).thenReturn(
         PageImpl(
@@ -72,7 +72,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         LocalDate.now().atStartOfDay(),
         LocalDate.now().atTime(LocalTime.MAX),
         ReportedAdjudicationStatus.values().toList().map { it.name },
-        transferIgnoreStatuses.map { it.name },
         Pageable.ofSize(20).withPage(0),
       )
     }
@@ -97,7 +96,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `find all reports by override agency `() {
-      whenever(reportedAdjudicationRepository.findTransfersByAgency(any(), any(), any(), any(), any()))
+      whenever(reportedAdjudicationRepository.findTransfersInByAgency(any(), any(), any(), any(), any()))
         .thenReturn(
           PageImpl(
             listOf(
@@ -117,9 +116,63 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersByAgency(any(), any(), any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersInByAgency(any(), any(), any(), any(), any())
 
       assertThat(myReportedAdjudications.size).isEqualTo(1)
+    }
+  }
+
+  @Nested
+  inner class TransferReportedAdjudications {
+    @Test
+    fun `find by transfers in `() {
+      whenever(reportedAdjudicationRepository.findTransfersInByAgency(any(), any(), any(), any(), any())).thenReturn(
+        Page.empty(),
+      )
+
+      reportsService.getTransferReportedAdjudications(
+        LocalDate.now(),
+        LocalDate.now(),
+        ReportedAdjudicationStatus.values().toList(),
+        TransferType.IN,
+        Pageable.ofSize(20).withPage(0),
+      )
+
+      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersInByAgency(any(), any(), any(), any(), any())
+    }
+
+    @Test
+    fun `find by transfers out`() {
+      whenever(reportedAdjudicationRepository.findTransfersOutByAgency(any(), any(), any(), any(), any())).thenReturn(
+        Page.empty(),
+      )
+
+      reportsService.getTransferReportedAdjudications(
+        LocalDate.now(),
+        LocalDate.now(),
+        ReportedAdjudicationStatus.values().toList(),
+        TransferType.OUT,
+        Pageable.ofSize(20).withPage(0),
+      )
+
+      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersOutByAgency(any(), any(), any(), any(), any())
+    }
+
+    @Test
+    fun `find by transfers all`() {
+      whenever(reportedAdjudicationRepository.findTransfersAllByAgency(any(), any(), any(), any(), any())).thenReturn(
+        Page.empty(),
+      )
+
+      reportsService.getTransferReportedAdjudications(
+        LocalDate.now(),
+        LocalDate.now(),
+        ReportedAdjudicationStatus.values().toList(),
+        TransferType.ALL,
+        Pageable.ofSize(20).withPage(0),
+      )
+
+      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersAllByAgency(any(), any(), any(), any(), any())
     }
   }
 
@@ -294,12 +347,15 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `get reports count for agency`() {
       whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.AWAITING_REVIEW)).thenReturn(2)
-      whenever(reportedAdjudicationRepository.countTransfers("MDI", transferReviewStatuses.map { it.name })).thenReturn(1)
+      whenever(reportedAdjudicationRepository.countTransfersIn("MDI", transferReviewStatuses.map { it.name })).thenReturn(1)
+      whenever(reportedAdjudicationRepository.countTransfersOut("MDI", transferOutStatuses.map { it.name })).thenReturn(2)
 
       val result = reportsService.getReportCounts()
 
       assertThat(result.reviewTotal).isEqualTo(2)
       assertThat(result.transferReviewTotal).isEqualTo(1)
+      assertThat(result.transferOutTotal).isEqualTo(2)
+      assertThat(result.transferAllTotal).isEqualTo(3)
     }
   }
 

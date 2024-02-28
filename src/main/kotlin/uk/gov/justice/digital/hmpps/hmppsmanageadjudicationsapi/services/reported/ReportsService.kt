@@ -19,6 +19,12 @@ enum class IssuedStatus {
   NOT_ISSUED,
 }
 
+enum class TransferType {
+  IN,
+  OUT,
+  ALL,
+}
+
 @Transactional(readOnly = true)
 @Service
 class ReportsService(
@@ -30,33 +36,66 @@ class ReportsService(
     startDate: LocalDate,
     endDate: LocalDate,
     statuses: List<ReportedAdjudicationStatus>,
+    // this will de deleted once front end uses new endpoint
     transfersOnly: Boolean,
     pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> {
-    val reportedAdjudicationsPage = if (transfersOnly) {
-      reportedAdjudicationRepository.findTransfersByAgency(
-        overrideAgencyId = authenticationFacade.activeCaseload,
-        startDate = reportsFrom(startDate),
-        endDate = reportsTo(endDate),
-        statuses = statuses.map { it.name },
-        pageable = pageable,
-      )
-    } else {
-      reportedAdjudicationRepository.findAllReportsByAgency(
+  ): Page<ReportedAdjudicationDto> =
+    when (transfersOnly) {
+      true -> reportedAdjudicationRepository.findTransfersInByAgency(
         agencyId = authenticationFacade.activeCaseload,
         startDate = reportsFrom(startDate),
         endDate = reportsTo(endDate),
         statuses = statuses.map { it.name },
-        transferIgnoreStatuses = transferIgnoreStatuses.map { it.name },
         pageable = pageable,
       )
-    }
-    return reportedAdjudicationsPage.map {
+
+      false -> reportedAdjudicationRepository.findAllReportsByAgency(
+        agencyId = authenticationFacade.activeCaseload,
+        startDate = reportsFrom(startDate),
+        endDate = reportsTo(endDate),
+        statuses = statuses.map { it.name },
+        pageable = pageable,
+      )
+    }.map {
       it.toDto(
         activeCaseload = authenticationFacade.activeCaseload,
       )
     }
-  }
+
+  fun getTransferReportedAdjudications(
+    startDate: LocalDate,
+    endDate: LocalDate,
+    statuses: List<ReportedAdjudicationStatus>,
+    transferType: TransferType,
+    pageable: Pageable,
+  ): Page<ReportedAdjudicationDto> =
+    when (transferType) {
+      TransferType.IN -> reportedAdjudicationRepository.findTransfersInByAgency(
+        agencyId = authenticationFacade.activeCaseload,
+        startDate = reportsFrom(startDate),
+        endDate = reportsTo(endDate),
+        statuses = statuses.filter { transferReviewStatuses.contains(it) }.map { it.name },
+        pageable = pageable,
+      )
+      TransferType.OUT -> reportedAdjudicationRepository.findTransfersOutByAgency(
+        agencyId = authenticationFacade.activeCaseload,
+        startDate = reportsFrom(startDate),
+        endDate = reportsTo(endDate),
+        statuses = statuses.filter { transferOutStatuses.contains(it) }.map { it.name },
+        pageable = pageable,
+      )
+      TransferType.ALL -> reportedAdjudicationRepository.findTransfersAllByAgency(
+        agencyId = authenticationFacade.activeCaseload,
+        startDate = reportsFrom(startDate),
+        endDate = reportsTo(endDate),
+        statuses = statuses.filter { transferOutStatuses.plus(transferReviewStatuses).contains(it) }.map { it.name },
+        pageable = pageable,
+      )
+    }.map {
+      it.toDto(
+        activeCaseload = authenticationFacade.activeCaseload,
+      )
+    }
 
   fun getMyReportedAdjudications(startDate: LocalDate, endDate: LocalDate, statuses: List<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
     val username = authenticationFacade.currentUsername
@@ -73,19 +112,17 @@ class ReportsService(
     return reportedAdjudicationsPage.map { it.toDto() }
   }
 
-  fun getAdjudicationsForIssue(startDate: LocalDate, endDate: LocalDate): List<ReportedAdjudicationDto> {
-    return reportedAdjudicationRepository.findReportsForIssue(
-      agencyId = authenticationFacade.activeCaseload,
-      startDate = reportsFrom(startDate),
-      endDate = reportsTo(endDate),
-    ).filter { ReportedAdjudicationStatus.issuableStatuses().contains(it.status) }
-      .sortedBy { it.dateTimeOfDiscovery }
-      .map {
-        it.toDto(
-          activeCaseload = authenticationFacade.activeCaseload,
-        )
-      }
-  }
+  fun getAdjudicationsForIssue(startDate: LocalDate, endDate: LocalDate): List<ReportedAdjudicationDto> = reportedAdjudicationRepository.findReportsForIssue(
+    agencyId = authenticationFacade.activeCaseload,
+    startDate = reportsFrom(startDate),
+    endDate = reportsTo(endDate),
+  ).filter { ReportedAdjudicationStatus.issuableStatuses().contains(it.status) }
+    .sortedBy { it.dateTimeOfDiscovery }
+    .map {
+      it.toDto(
+        activeCaseload = authenticationFacade.activeCaseload,
+      )
+    }
 
   fun getAdjudicationsForPrint(startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>): List<ReportedAdjudicationDto> {
     val reportsForPrint = reportedAdjudicationRepository.findReportsForPrint(
@@ -118,14 +155,21 @@ class ReportsService(
       status = ReportedAdjudicationStatus.AWAITING_REVIEW,
     )
 
-    val transferReviewTotal = reportedAdjudicationRepository.countTransfers(
-      overrideAgencyId = agencyId,
+    val transferReviewTotal = reportedAdjudicationRepository.countTransfersIn(
+      agencyId = agencyId,
       statuses = transferReviewStatuses.map { it.name },
+    )
+
+    val transferOutTotal = reportedAdjudicationRepository.countTransfersOut(
+      agencyId = agencyId,
+      statuses = transferOutStatuses.map { it.name },
     )
 
     return AgencyReportCountsDto(
       reviewTotal = reviewTotal,
       transferReviewTotal = transferReviewTotal,
+      transferOutTotal = transferOutTotal,
+      transferAllTotal = transferReviewTotal + transferOutTotal,
     )
   }
 
@@ -217,8 +261,7 @@ class ReportsService(
       ReportedAdjudicationStatus.ADJOURNED,
       ReportedAdjudicationStatus.REFER_INAD,
     )
-
-    val transferIgnoreStatuses = transferReviewStatuses.plus(ReportedAdjudicationStatus.AWAITING_REVIEW)
+    val transferOutStatuses = listOf(ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.SCHEDULED)
 
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
     fun reportsTo(endDate: LocalDate): LocalDateTime = endDate.atTime(LocalTime.MAX)

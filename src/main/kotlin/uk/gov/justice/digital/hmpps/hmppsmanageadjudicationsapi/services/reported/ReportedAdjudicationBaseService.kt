@@ -378,10 +378,10 @@ open class ReportedAdjudicationBaseService(
       else -> false
     }
 
-  protected fun saveToDto(reportedAdjudication: ReportedAdjudication): ReportedAdjudicationDto =
+  protected fun saveToDto(reportedAdjudication: ReportedAdjudication, logLastModified: Boolean = true): ReportedAdjudicationDto =
     reportedAdjudicationRepository.save(
       reportedAdjudication.also {
-        it.lastModifiedAgencyId = authenticationFacade.activeCaseload
+        if (logLastModified) it.lastModifiedAgencyId = authenticationFacade.activeCaseload
       },
     ).toDto(
       activeCaseload = authenticationFacade.activeCaseload,

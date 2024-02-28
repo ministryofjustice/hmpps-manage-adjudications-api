@@ -64,6 +64,7 @@ class DamagesServiceTest : ReportedAdjudicationTestBase() {
     assertThat(argumentCaptor.value.damages.last().code).isEqualTo(DamageCode.ELECTRICAL_REPAIR)
     assertThat(argumentCaptor.value.damages.last().details).isEqualTo("details 2")
     assertThat(argumentCaptor.value.damages.last().reporter).isEqualTo("Fred")
+    assertThat(argumentCaptor.value.lastModifiedAgencyId).isNull()
 
     assertThat(response).isNotNull
   }

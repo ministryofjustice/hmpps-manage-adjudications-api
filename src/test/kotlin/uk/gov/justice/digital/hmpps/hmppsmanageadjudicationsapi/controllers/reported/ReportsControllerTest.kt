@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.IssuedStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.TransferType
 import java.time.LocalDate
 
 @WebMvcTest(
@@ -169,6 +170,42 @@ class ReportsControllerTest : TestControllerBase() {
   }
 
   @Nested
+  inner class TransferReports {
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `makes a call to return transfer reported adjudications`() {
+      getTransferAdjudications().andExpect(MockMvcResultMatchers.status().isOk)
+      verify(reportsService).getTransferReportedAdjudications(
+        LocalDate.now().minusDays(3),
+        LocalDate.now(),
+        listOf(ReportedAdjudicationStatus.SCHEDULED),
+        TransferType.ALL,
+        pageRequest,
+      )
+    }
+
+    @Test
+    fun `paged responds with a unauthorised status code for transfer adjudications`() {
+      getTransferAdjudications().andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
+    fun `paged responds with a unauthorised status code for all adjudications without role for ALO`() {
+      getTransferAdjudications().andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    private fun getTransferAdjudications(): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.get("/reported-adjudications/transfer-reports?status=SCHEDULED&type=ALL&page=0&size=20&sort=date_time_of_discovery,DESC")
+            .header("Content-Type", "application/json"),
+        )
+    }
+  }
+
+  @Nested
   inner class ReportsForIssue {
     @Test
     fun `responds with a unauthorised status code for adjudications to issue`() {
@@ -229,6 +266,8 @@ class ReportsControllerTest : TestControllerBase() {
         AgencyReportCountsDto(
           reviewTotal = 1,
           transferReviewTotal = 1,
+          transferOutTotal = 1,
+          transferAllTotal = 2,
         ),
       )
     }

@@ -66,6 +66,7 @@ class EvidenceServiceTest : ReportedAdjudicationTestBase() {
     assertThat(argumentCaptor.value.evidence.last().details).isEqualTo("details 2")
     assertThat(argumentCaptor.value.evidence.last().identifier).isEqualTo("identifier 2")
     assertThat(argumentCaptor.value.evidence.last().reporter).isEqualTo("Fred")
+    assertThat(argumentCaptor.value.lastModifiedAgencyId).isNull()
 
     assertThat(response).isNotNull
   }

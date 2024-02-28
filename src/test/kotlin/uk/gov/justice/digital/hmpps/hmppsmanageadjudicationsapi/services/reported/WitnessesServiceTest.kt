@@ -64,6 +64,7 @@ class WitnessesServiceTest : ReportedAdjudicationTestBase() {
     assertThat(argumentCaptor.value.witnesses.last().code).isEqualTo(WitnessCode.OTHER_PERSON)
     assertThat(argumentCaptor.value.witnesses.last().firstName).isEqualTo("first")
     assertThat(argumentCaptor.value.witnesses.last().reporter).isEqualTo("Fred")
+    assertThat(argumentCaptor.value.lastModifiedAgencyId).isNull()
 
     assertThat(response).isNotNull
   }
