@@ -39,6 +39,6 @@ class WitnessesService(
       },
     )
 
-    return saveToDto(reportedAdjudication)
+    return saveToDto(reportedAdjudication = reportedAdjudication, logLastModified = false)
   }
 }

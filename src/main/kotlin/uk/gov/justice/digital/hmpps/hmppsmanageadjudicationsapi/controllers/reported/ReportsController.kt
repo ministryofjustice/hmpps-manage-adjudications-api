@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.IssuedStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.TransferType
 import java.time.LocalDate
 
 @Schema(description = "All issuable adjudications response")
@@ -32,8 +33,12 @@ data class IssuableAdjudicationsResponse(
 data class AgencyReportCountsDto(
   @Schema(description = "total reports to review for agency")
   val reviewTotal: Long,
-  @Schema(description = "total transferable reports to review for agency")
+  @Schema(description = "total transferable in reports to action")
   val transferReviewTotal: Long,
+  @Schema(description = "total transferable reports to action")
+  val transferOutTotal: Long,
+  @Schema(description = "total transfer in and out to action")
+  val transferAllTotal: Long,
 )
 
 @RestController
@@ -95,6 +100,62 @@ class ReportsController(
       endDate = endDate ?: LocalDate.now(),
       statuses = statuses,
       transfersOnly = transfersOnly,
+      pageable = pageable,
+    )
+
+  @Operation(summary = "Get transfer reported adjudications for caseload")
+  @Parameters(
+    Parameter(
+      name = "page",
+      description = "Results page you want to retrieve (0..N). Default 0, e.g. the first page",
+    ),
+    Parameter(
+      name = "size",
+      description = "Number of records per page. Default 20",
+    ),
+    Parameter(
+      name = "sort",
+      description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery DESC",
+    ),
+    Parameter(
+      name = "startDate",
+      required = false,
+      description = "optional inclusive start date for results, default is today - 3 days",
+    ),
+    Parameter(
+      name = "endDate",
+      required = false,
+      description = "optional inclusive end date for results, default is today",
+    ),
+    Parameter(
+      name = "status",
+      required = true,
+      description = "list of status filter for reports",
+    ),
+    Parameter(
+      name = "type",
+      required = true,
+      description = "TransferType, IN OUT or ALL",
+    ),
+  )
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
+  @GetMapping("/transfer-reports")
+  fun getReportedAdjudicationsForTransfer(
+    @RequestParam(name = "startDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    startDate: LocalDate?,
+    @RequestParam(name = "endDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    endDate: LocalDate?,
+    @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
+    @RequestParam(name = "type") transferType: TransferType,
+    @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
+  ): Page<ReportedAdjudicationDto> =
+    reportsService.getTransferReportedAdjudications(
+      startDate = startDate ?: LocalDate.now().minusDays(3),
+      endDate = endDate ?: LocalDate.now(),
+      statuses = statuses,
+      transferType = transferType,
       pageable = pageable,
     )
 

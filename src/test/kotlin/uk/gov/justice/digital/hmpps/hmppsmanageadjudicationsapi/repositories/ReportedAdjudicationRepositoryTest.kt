@@ -29,7 +29,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferIgnoreStatuses
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -77,17 +76,6 @@ class ReportedAdjudicationRepositoryTest {
         agencyId = "LEI",
         hearingId = null,
       ),
-    )
-    entityManager.persistAndFlush(
-      entityBuilder.reportedAdjudication(
-        chargeNumber = "12366",
-        dateTime = dateTimeOfIncident.plusHours(1),
-        agencyId = "BXI",
-        hearingId = null,
-      ).also {
-        it.overrideAgencyId = "LEI"
-        it.status = ReportedAdjudicationStatus.SCHEDULED
-      },
     )
     entityManager.persistAndFlush(
       entityBuilder.reportedAdjudication(
@@ -398,15 +386,13 @@ class ReportedAdjudicationRepositoryTest {
         LocalTime.MAX,
       ),
       ReportedAdjudicationStatus.values().toList().filter { it != ReportedAdjudicationStatus.UNSCHEDULED }.map { it.name },
-      transferIgnoreStatuses.map { it.name },
       Pageable.ofSize(10),
     )
 
-    assertThat(foundAdjudications.content).hasSize(3)
+    assertThat(foundAdjudications.content).hasSize(2)
       .extracting("chargeNumber")
       .contains(
         "1236",
-        "12366",
         "123666",
       )
   }
@@ -640,15 +626,31 @@ class ReportedAdjudicationRepositoryTest {
   }
 
   @Test
-  fun `count by override agency id and status`() {
+  fun `count by transfer in`() {
     assertThat(
-      reportedAdjudicationRepository.countTransfers("MDI", listOf(ReportedAdjudicationStatus.UNSCHEDULED).map { it.name }),
+      reportedAdjudicationRepository.countTransfersIn("MDI", listOf(ReportedAdjudicationStatus.UNSCHEDULED).map { it.name }),
+    ).isEqualTo(1)
+  }
+
+  @Test
+  fun `count by transfer out`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(chargeNumber = "-9999").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.SCHEDULED
+        it.overrideAgencyId = "BXI"
+        it.lastModifiedAgencyId = "MDI"
+      },
+    )
+
+    assertThat(
+      reportedAdjudicationRepository.countTransfersOut("MDI", listOf(ReportedAdjudicationStatus.SCHEDULED).map { it.name }),
     ).isEqualTo(1)
   }
 
   @Test
   fun `find by override agency id `() {
-    val page = reportedAdjudicationRepository.findTransfersByAgency(
+    val page = reportedAdjudicationRepository.findTransfersInByAgency(
       "MDI",
       LocalDateTime.now().minusYears(1),
       LocalDateTime.now().plusYears(1),
@@ -972,5 +974,80 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
     assertThat(reportedAdjudicationRepository.findByPrisonerNumberAndDateTimeOfDiscoveryBetween("XZY", LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1)).size).isEqualTo(1)
+  }
+
+  @Test
+  fun `find by transfer type all`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(agencyId = "OUT", chargeNumber = "12345-2").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.AWAITING_REVIEW
+        it.dateTimeOfDiscovery = LocalDateTime.now()
+        it.overrideAgencyId = "IN"
+      },
+    )
+
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(chargeNumber = "12345-8").also {
+        it.hearings.clear()
+        it.overrideAgencyId = "OUT"
+        it.status = ReportedAdjudicationStatus.UNSCHEDULED
+        it.dateTimeOfDiscovery = LocalDateTime.now()
+      },
+    )
+
+    assertThat(
+      reportedAdjudicationRepository.findTransfersAllByAgency(
+        agencyId = "OUT",
+        startDate = LocalDateTime.now().minusDays(1),
+        endDate = LocalDateTime.now().plusDays(1),
+        statuses = listOf(ReportedAdjudicationStatus.AWAITING_REVIEW.name, ReportedAdjudicationStatus.UNSCHEDULED.name),
+        pageable = Pageable.ofSize(10),
+      ).content.size,
+    ).isEqualTo(2)
+  }
+
+  @Test
+  fun `find by transfer type in`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(chargeNumber = "12345-8").also {
+        it.hearings.clear()
+        it.overrideAgencyId = "IN"
+        it.status = ReportedAdjudicationStatus.UNSCHEDULED
+        it.dateTimeOfDiscovery = LocalDateTime.now()
+      },
+    )
+
+    assertThat(
+      reportedAdjudicationRepository.findTransfersInByAgency(
+        agencyId = "IN",
+        endDate = LocalDateTime.now().plusDays(1),
+        startDate = LocalDateTime.now().minusDays(1),
+        statuses = listOf(ReportedAdjudicationStatus.UNSCHEDULED.name),
+        pageable = Pageable.ofSize(10),
+      ).content.size,
+    ).isEqualTo(1)
+  }
+
+  @Test
+  fun `find by transfer type out`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(agencyId = "OUT", chargeNumber = "12345-2").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.AWAITING_REVIEW
+        it.dateTimeOfDiscovery = LocalDateTime.now()
+        it.overrideAgencyId = "IN"
+      },
+    )
+
+    assertThat(
+      reportedAdjudicationRepository.findTransfersOutByAgency(
+        agencyId = "OUT",
+        startDate = LocalDateTime.now().minusDays(1),
+        endDate = LocalDateTime.now().plusDays(1),
+        statuses = listOf(ReportedAdjudicationStatus.AWAITING_REVIEW.name),
+        pageable = Pageable.ofSize(10),
+      ).content.size,
+    ).isEqualTo(1)
   }
 }
