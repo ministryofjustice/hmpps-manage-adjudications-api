@@ -152,8 +152,8 @@ class ReportsController(
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
   ): Page<ReportedAdjudicationDto> =
     reportsService.getTransferReportedAdjudications(
-      startDate = startDate ?: LocalDate.now().minusDays(3),
-      endDate = endDate ?: LocalDate.now(),
+      startDate = startDate,
+      endDate = endDate,
       statuses = statuses,
       transferType = transferType,
       pageable = pageable,
