@@ -626,6 +626,13 @@ class ReportedAdjudicationRepositoryTest {
   }
 
   @Test
+  fun `count by agency and status in `() {
+    assertThat(
+      reportedAdjudicationRepository.countByOriginatingAgencyIdOrOverrideAgencyIdAndStatusIn("LEI", "LEI", listOf(ReportedAdjudicationStatus.UNSCHEDULED)),
+    ).isEqualTo(4)
+  }
+
+  @Test
   fun `count by transfer in`() {
     assertThat(
       reportedAdjudicationRepository.countTransfersIn("MDI", listOf(ReportedAdjudicationStatus.UNSCHEDULED).map { it.name }),

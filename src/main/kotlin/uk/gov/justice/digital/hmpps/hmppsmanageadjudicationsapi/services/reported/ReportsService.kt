@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -127,30 +129,50 @@ class ReportsService(
     return emptyList()
   }
 
-  fun getReportCounts(): AgencyReportCountsDto {
+  suspend fun getReportCounts(): AgencyReportCountsDto = coroutineScope {
     val agencyId = authenticationFacade.activeCaseload
 
-    val reviewTotal = reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus(
-      agencyId = agencyId,
-      status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-    )
+    val reviewTotal = async {
+      reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus(
+        agencyId = agencyId,
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+      )
+    }
 
-    val transferReviewTotal = reportedAdjudicationRepository.countTransfersIn(
-      agencyId = agencyId,
-      statuses = transferReviewStatuses.map { it.name },
-    )
+    val transferReviewTotal = async {
+      reportedAdjudicationRepository.countTransfersIn(
+        agencyId = agencyId,
+        statuses = transferReviewStatuses.map { it.name },
+      )
+    }
 
-    val transferOutTotal = reportedAdjudicationRepository.countTransfersOut(
-      agencyId = agencyId,
-      statuses = transferOutStatuses.map { it.name },
-    )
+    val transferOutTotal = async {
+      reportedAdjudicationRepository.countTransfersOut(
+        agencyId = agencyId,
+        statuses = transferOutStatuses.map { it.name },
+      )
+    }
 
-    return AgencyReportCountsDto(
-      reviewTotal = reviewTotal,
-      transferReviewTotal = transferReviewTotal,
-      transferOutTotal = transferOutTotal,
-      transferAllTotal = transferReviewTotal + transferOutTotal,
-    )
+    val hearingsToScheduleTotal = async {
+      reportedAdjudicationRepository.countByOriginatingAgencyIdOrOverrideAgencyIdAndStatusIn(
+        agencyId = agencyId,
+        overrideAgencyId = agencyId,
+        statuses = listOf(
+          ReportedAdjudicationStatus.ADJOURNED,
+          ReportedAdjudicationStatus.UNSCHEDULED,
+          ReportedAdjudicationStatus.REFER_INAD,
+        ),
+      )
+    }
+
+    AgencyReportCountsDto(
+      reviewTotal = reviewTotal.await(),
+      transferReviewTotal = transferReviewTotal.await(),
+      transferOutTotal = transferOutTotal.await(),
+      hearingsToScheduleTotal = hearingsToScheduleTotal.await(),
+    ).also {
+      it.transferAllTotal = it.transferReviewTotal + it.transferOutTotal
+    }
   }
 
   fun getAdjudicationsForBooking(

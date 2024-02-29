@@ -38,7 +38,9 @@ data class AgencyReportCountsDto(
   @Schema(description = "total transferable reports to action")
   val transferOutTotal: Long,
   @Schema(description = "total transfer in and out to action")
-  val transferAllTotal: Long,
+  var transferAllTotal: Long? = null,
+  @Schema(description = "hearings to schedule count")
+  val hearingsToScheduleTotal: Long,
 )
 
 @RestController
@@ -254,7 +256,7 @@ class ReportsController(
   @Operation(summary = "Get report counts by agency")
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   @GetMapping("/report-counts")
-  fun getReportCounts(): AgencyReportCountsDto = reportsService.getReportCounts()
+  suspend fun getReportCounts(): AgencyReportCountsDto = reportsService.getReportCounts()
 
   @Operation(summary = "Get adjudications for an offender booking")
   @Parameters(

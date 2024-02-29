@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported
 
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -259,14 +260,17 @@ class ReportsControllerTest : TestControllerBase() {
 
     @BeforeEach
     fun `init`() {
-      whenever(reportsService.getReportCounts()).thenReturn(
-        AgencyReportCountsDto(
-          reviewTotal = 1,
-          transferReviewTotal = 1,
-          transferOutTotal = 1,
-          transferAllTotal = 2,
-        ),
-      )
+      runBlocking {
+        whenever(reportsService.getReportCounts()).thenReturn(
+          AgencyReportCountsDto(
+            reviewTotal = 1,
+            transferReviewTotal = 1,
+            transferOutTotal = 1,
+            transferAllTotal = 2,
+            hearingsToScheduleTotal = 4,
+          ),
+        )
+      }
     }
 
     @Test
@@ -276,7 +280,7 @@ class ReportsControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
-    fun `responds with report counts `() {
+    fun `responds with report counts `(): Unit = runBlocking {
       getCounters().andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(reportsService, atLeastOnce()).getReportCounts()
