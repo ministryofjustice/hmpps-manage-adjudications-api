@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
@@ -310,17 +313,20 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
   inner class ReportCounts {
 
     @Test
-    fun `get reports count for agency`() {
+    fun `get reports count for agency`(): Unit = runBlocking {
       whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.AWAITING_REVIEW)).thenReturn(2)
       whenever(reportedAdjudicationRepository.countTransfersIn("MDI", transferReviewStatuses.map { it.name })).thenReturn(1)
       whenever(reportedAdjudicationRepository.countTransfersOut("MDI", transferOutStatuses.map { it.name })).thenReturn(2)
+      whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdOrOverrideAgencyIdAndStatusIn("MDI", "MDI", listOf(ReportedAdjudicationStatus.ADJOURNED, ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.REFER_INAD))).thenReturn(3)
 
-      val result = reportsService.getReportCounts()
+      val result =
+        withContext(Dispatchers.Default) { reportsService.getReportCounts() }
 
       assertThat(result.reviewTotal).isEqualTo(2)
       assertThat(result.transferReviewTotal).isEqualTo(1)
       assertThat(result.transferOutTotal).isEqualTo(2)
       assertThat(result.transferAllTotal).isEqualTo(3)
+      assertThat(result.hearingsToScheduleTotal).isEqualTo(3)
     }
   }
 
