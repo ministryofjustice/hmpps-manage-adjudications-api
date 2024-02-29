@@ -76,11 +76,6 @@ class ReportsController(
       required = true,
       description = "list of status filter for reports",
     ),
-    Parameter(
-      name = "transfersOnly",
-      required = false,
-      description = "optional filter for transferred reports only",
-    ),
   )
   @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
   @GetMapping("/reports")
@@ -92,14 +87,12 @@ class ReportsController(
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     endDate: LocalDate?,
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
-    @RequestParam(name = "transfersOnly") transfersOnly: Boolean = false,
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
   ): Page<ReportedAdjudicationDto> =
     reportsService.getAllReportedAdjudications(
       startDate = startDate ?: LocalDate.now().minusDays(3),
       endDate = endDate ?: LocalDate.now(),
       statuses = statuses,
-      transfersOnly = transfersOnly,
       pageable = pageable,
     )
 
@@ -118,16 +111,6 @@ class ReportsController(
       description = "Sort as combined comma separated property and uppercase direction. Multiple sort params allowed to sort by multiple properties. Default to dateTimeOfDiscovery DESC",
     ),
     Parameter(
-      name = "startDate",
-      required = false,
-      description = "optional inclusive start date for results, default is today - 3 days",
-    ),
-    Parameter(
-      name = "endDate",
-      required = false,
-      description = "optional inclusive end date for results, default is today",
-    ),
-    Parameter(
       name = "status",
       required = true,
       description = "list of status filter for reports",
@@ -141,19 +124,11 @@ class ReportsController(
   @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER')")
   @GetMapping("/transfer-reports")
   fun getReportedAdjudicationsForTransfer(
-    @RequestParam(name = "startDate")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    startDate: LocalDate?,
-    @RequestParam(name = "endDate")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    endDate: LocalDate?,
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
-    @RequestParam(name = "type") transferType: TransferType,
+    @RequestParam(name = "type", required = true) transferType: TransferType,
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
   ): Page<ReportedAdjudicationDto> =
     reportsService.getTransferReportedAdjudications(
-      startDate = startDate,
-      endDate = endDate,
       statuses = statuses,
       transferType = transferType,
       pageable = pageable,

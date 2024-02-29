@@ -63,7 +63,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         LocalDate.now(),
         LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
-        false,
         Pageable.ofSize(20).withPage(0),
       )
 
@@ -82,7 +81,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         LocalDate.now(),
         LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
-        false,
         Pageable.ofSize(20).withPage(0),
       )
 
@@ -93,86 +91,53 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           Tuple.tuple("2", "A12345", "P_SMITH", REPORTED_DATE_TIME.plusDays(2)),
         )
     }
-
-    @Test
-    fun `find all reports by override agency `() {
-      whenever(reportedAdjudicationRepository.findTransfersInByAgency(any(), any(), any(), any(), any()))
-        .thenReturn(
-          PageImpl(
-            listOf(
-              entityBuilder.reportedAdjudication().also {
-                it.createDateTime = LocalDateTime.now()
-                it.createdByUserId = ""
-              },
-            ),
-          ),
-        )
-
-      val myReportedAdjudications = reportsService.getAllReportedAdjudications(
-        LocalDate.now(),
-        LocalDate.now(),
-        ReportedAdjudicationStatus.values().toList(),
-        true,
-        Pageable.ofSize(20).withPage(0),
-      )
-
-      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersInByAgency(any(), any(), any(), any(), any())
-
-      assertThat(myReportedAdjudications.size).isEqualTo(1)
-    }
   }
 
   @Nested
   inner class TransferReportedAdjudications {
     @Test
     fun `find by transfers in `() {
-      whenever(reportedAdjudicationRepository.findTransfersInByAgency(any(), any(), any(), any(), any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findTransfersInByAgency(any(), any(), any())).thenReturn(
         Page.empty(),
       )
 
       reportsService.getTransferReportedAdjudications(
-        LocalDate.now(),
-        LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
         TransferType.IN,
         Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersInByAgency(any(), any(), any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersInByAgency(any(), any(), any())
     }
 
     @Test
     fun `find by transfers out`() {
-      whenever(reportedAdjudicationRepository.findTransfersOutByAgency(any(), any(), any(), any(), any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findTransfersOutByAgency(any(), any(), any())).thenReturn(
         Page.empty(),
       )
 
       reportsService.getTransferReportedAdjudications(
-        LocalDate.now(),
-        LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
         TransferType.OUT,
         Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersOutByAgency(any(), any(), any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersOutByAgency(any(), any(), any())
     }
 
     @Test
     fun `find by transfers all`() {
-      whenever(reportedAdjudicationRepository.findTransfersAllByAgency(any(), any(), any(), any(), any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findTransfersAllByAgency(any(), any(), any())).thenReturn(
         Page.empty(),
       )
 
       reportsService.getTransferReportedAdjudications(
-        LocalDate.now(),
-        LocalDate.now(),
         ReportedAdjudicationStatus.values().toList(),
         TransferType.ALL,
         Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersAllByAgency(any(), any(), any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersAllByAgency(any(), any(), any())
     }
   }
 

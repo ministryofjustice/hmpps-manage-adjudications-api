@@ -36,35 +36,21 @@ class ReportsService(
     startDate: LocalDate,
     endDate: LocalDate,
     statuses: List<ReportedAdjudicationStatus>,
-    // this will de deleted once front end uses new endpoint
-    transfersOnly: Boolean,
     pageable: Pageable,
   ): Page<ReportedAdjudicationDto> =
-    when (transfersOnly) {
-      true -> reportedAdjudicationRepository.findTransfersInByAgency(
-        agencyId = authenticationFacade.activeCaseload,
-        startDate = reportsFrom(startDate),
-        endDate = reportsTo(endDate),
-        statuses = statuses.map { it.name },
-        pageable = pageable,
-      )
-
-      false -> reportedAdjudicationRepository.findAllReportsByAgency(
-        agencyId = authenticationFacade.activeCaseload,
-        startDate = reportsFrom(startDate),
-        endDate = reportsTo(endDate),
-        statuses = statuses.map { it.name },
-        pageable = pageable,
-      )
-    }.map {
+    reportedAdjudicationRepository.findAllReportsByAgency(
+      agencyId = authenticationFacade.activeCaseload,
+      startDate = reportsFrom(startDate),
+      endDate = reportsTo(endDate),
+      statuses = statuses.map { it.name },
+      pageable = pageable,
+    ).map {
       it.toDto(
         activeCaseload = authenticationFacade.activeCaseload,
       )
     }
 
   fun getTransferReportedAdjudications(
-    startDate: LocalDate?,
-    endDate: LocalDate?,
     statuses: List<ReportedAdjudicationStatus>,
     transferType: TransferType,
     pageable: Pageable,
@@ -72,22 +58,16 @@ class ReportsService(
     when (transferType) {
       TransferType.IN -> reportedAdjudicationRepository.findTransfersInByAgency(
         agencyId = authenticationFacade.activeCaseload,
-        startDate = reportsFrom(startDate ?: minDate),
-        endDate = reportsTo(endDate ?: maxDate),
         statuses = statuses.filter { transferReviewStatuses.contains(it) }.map { it.name },
         pageable = pageable,
       )
       TransferType.OUT -> reportedAdjudicationRepository.findTransfersOutByAgency(
         agencyId = authenticationFacade.activeCaseload,
-        startDate = reportsFrom(startDate ?: minDate),
-        endDate = reportsTo(endDate ?: maxDate),
         statuses = statuses.filter { transferOutStatuses.contains(it) }.map { it.name },
         pageable = pageable,
       )
       TransferType.ALL -> reportedAdjudicationRepository.findTransfersAllByAgency(
         agencyId = authenticationFacade.activeCaseload,
-        startDate = reportsFrom(startDate ?: minDate),
-        endDate = reportsTo(endDate ?: maxDate),
         statuses = statuses.filter { transferOutStatuses.plus(transferReviewStatuses).contains(it) }.map { it.name },
         pageable = pageable,
       )

@@ -652,8 +652,6 @@ class ReportedAdjudicationRepositoryTest {
   fun `find by override agency id `() {
     val page = reportedAdjudicationRepository.findTransfersInByAgency(
       "MDI",
-      LocalDateTime.now().minusYears(1),
-      LocalDateTime.now().plusYears(1),
       ReportedAdjudicationStatus.values().toList().map { it.name },
       Pageable.ofSize(10),
     )
@@ -999,8 +997,6 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(
       reportedAdjudicationRepository.findTransfersAllByAgency(
         agencyId = "OUT",
-        startDate = LocalDateTime.now().minusDays(1),
-        endDate = LocalDateTime.now().plusDays(1),
         statuses = listOf(ReportedAdjudicationStatus.AWAITING_REVIEW.name, ReportedAdjudicationStatus.UNSCHEDULED.name),
         pageable = Pageable.ofSize(10),
       ).content.size,
@@ -1021,8 +1017,6 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(
       reportedAdjudicationRepository.findTransfersInByAgency(
         agencyId = "IN",
-        endDate = LocalDateTime.now().plusDays(1),
-        startDate = LocalDateTime.now().minusDays(1),
         statuses = listOf(ReportedAdjudicationStatus.UNSCHEDULED.name),
         pageable = Pageable.ofSize(10),
       ).content.size,
@@ -1043,8 +1037,6 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(
       reportedAdjudicationRepository.findTransfersOutByAgency(
         agencyId = "OUT",
-        startDate = LocalDateTime.now().minusDays(1),
-        endDate = LocalDateTime.now().plusDays(1),
         statuses = listOf(ReportedAdjudicationStatus.AWAITING_REVIEW.name),
         pageable = Pageable.ofSize(10),
       ).content.size,

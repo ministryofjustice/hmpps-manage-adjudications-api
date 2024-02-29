@@ -144,7 +144,6 @@ class ReportsControllerTest : TestControllerBase() {
         LocalDate.now().minusDays(3),
         LocalDate.now(),
         listOf(ReportedAdjudicationStatus.UNSCHEDULED, ReportedAdjudicationStatus.SCHEDULED),
-        false,
         pageRequest,
       )
     }
@@ -177,8 +176,6 @@ class ReportsControllerTest : TestControllerBase() {
     fun `makes a call to return transfer reported adjudications`() {
       getTransferAdjudications().andExpect(MockMvcResultMatchers.status().isOk)
       verify(reportsService).getTransferReportedAdjudications(
-        null,
-        null,
         listOf(ReportedAdjudicationStatus.SCHEDULED),
         TransferType.ALL,
         pageRequest,
