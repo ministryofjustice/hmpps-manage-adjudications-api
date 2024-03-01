@@ -154,7 +154,14 @@ class ReportsService(
     }
 
     val hearingsToScheduleTotal = async {
-      reportedAdjudicationRepository.countByAgencyAndStatus(
+      reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatusIn(
+        agencyId = agencyId,
+        statuses = hearingsToScheduleStatuses,
+      )
+    }
+
+    val overrideHearingsToScheduleTotal = async {
+      reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn(
         agencyId = agencyId,
         statuses = hearingsToScheduleStatuses,
       )
@@ -164,7 +171,7 @@ class ReportsService(
       reviewTotal = reviewTotal.await(),
       transferReviewTotal = transferReviewTotal.await(),
       transferOutTotal = transferOutTotal.await(),
-      hearingsToScheduleTotal = hearingsToScheduleTotal.await(),
+      hearingsToScheduleTotal = hearingsToScheduleTotal.await() + overrideHearingsToScheduleTotal.await(),
     ).also {
       it.transferAllTotal = it.transferReviewTotal + it.transferOutTotal
     }
@@ -259,9 +266,9 @@ class ReportsService(
       ReportedAdjudicationStatus.REFER_INAD,
     )
     val hearingsToScheduleStatuses = listOf(
-      ReportedAdjudicationStatus.ADJOURNED.name,
-      ReportedAdjudicationStatus.UNSCHEDULED.name,
-      ReportedAdjudicationStatus.REFER_INAD.name,
+      ReportedAdjudicationStatus.ADJOURNED,
+      ReportedAdjudicationStatus.UNSCHEDULED,
+      ReportedAdjudicationStatus.REFER_INAD,
     )
 
     val transferOutStatuses = listOf(ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.SCHEDULED)

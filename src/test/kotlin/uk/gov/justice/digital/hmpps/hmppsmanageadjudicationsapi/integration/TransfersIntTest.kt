@@ -168,7 +168,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
         .jsonPath("$.transferReviewTotal").isEqualTo(1)
         .jsonPath("$.transferOutTotal").isEqualTo(0)
         .jsonPath("$.transferAllTotal").isEqualTo(1)
-        .jsonPath("$.hearingsToScheduleTotal").isEqualTo(2)
+        .jsonPath("$.hearingsToScheduleTotal").isEqualTo(1)
     }
 
     @Test
@@ -183,7 +183,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
         .jsonPath("$.transferReviewTotal").isEqualTo(0)
         .jsonPath("$.transferOutTotal").isEqualTo(2)
         .jsonPath("$.transferAllTotal").isEqualTo(2)
-        .jsonPath("$.hearingsToScheduleTotal").isEqualTo(2)
+        .jsonPath("$.hearingsToScheduleTotal").isEqualTo(0)
     }
   }
 
