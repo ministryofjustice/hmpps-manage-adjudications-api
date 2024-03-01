@@ -317,7 +317,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.AWAITING_REVIEW)).thenReturn(2)
       whenever(reportedAdjudicationRepository.countTransfersIn("MDI", transferReviewStatuses.map { it.name })).thenReturn(1)
       whenever(reportedAdjudicationRepository.countTransfersOut("MDI", transferOutStatuses.map { it.name })).thenReturn(2)
-      whenever(reportedAdjudicationRepository.countByAgencyAndStatus("MDI", ReportsService.hearingsToScheduleStatuses)).thenReturn(3)
+      whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatusIn("MDI", ReportsService.hearingsToScheduleStatuses)).thenReturn(3)
+      whenever(reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn("MDI", ReportsService.hearingsToScheduleStatuses)).thenReturn(3)
 
       val result =
         withContext(Dispatchers.Default) { reportsService.getReportCounts() }
@@ -326,7 +327,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(result.transferReviewTotal).isEqualTo(1)
       assertThat(result.transferOutTotal).isEqualTo(2)
       assertThat(result.transferAllTotal).isEqualTo(3)
-      assertThat(result.hearingsToScheduleTotal).isEqualTo(3)
+      assertThat(result.hearingsToScheduleTotal).isEqualTo(6)
     }
   }
 
