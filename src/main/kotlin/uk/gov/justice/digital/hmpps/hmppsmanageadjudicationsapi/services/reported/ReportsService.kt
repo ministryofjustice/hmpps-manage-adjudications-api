@@ -154,14 +154,9 @@ class ReportsService(
     }
 
     val hearingsToScheduleTotal = async {
-      reportedAdjudicationRepository.countByOriginatingAgencyIdOrOverrideAgencyIdAndStatusIn(
+      reportedAdjudicationRepository.countByAgencyAndStatus(
         agencyId = agencyId,
-        overrideAgencyId = agencyId,
-        statuses = listOf(
-          ReportedAdjudicationStatus.ADJOURNED,
-          ReportedAdjudicationStatus.UNSCHEDULED,
-          ReportedAdjudicationStatus.REFER_INAD,
-        ),
+        statuses = hearingsToScheduleStatuses,
       )
     }
 
@@ -263,6 +258,12 @@ class ReportsService(
       ReportedAdjudicationStatus.ADJOURNED,
       ReportedAdjudicationStatus.REFER_INAD,
     )
+    val hearingsToScheduleStatuses = listOf(
+      ReportedAdjudicationStatus.ADJOURNED.name,
+      ReportedAdjudicationStatus.UNSCHEDULED.name,
+      ReportedAdjudicationStatus.REFER_INAD.name,
+    )
+
     val transferOutStatuses = listOf(ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.SCHEDULED)
 
     fun reportsFrom(startDate: LocalDate): LocalDateTime = startDate.atStartOfDay()
