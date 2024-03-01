@@ -628,7 +628,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `count by agency and status in `() {
     assertThat(
-      reportedAdjudicationRepository.countByOriginatingAgencyIdOrOverrideAgencyIdAndStatusIn("LEI", "LEI", listOf(ReportedAdjudicationStatus.UNSCHEDULED)),
+      reportedAdjudicationRepository.countByAgencyAndStatus("LEI", listOf(ReportedAdjudicationStatus.UNSCHEDULED.name)),
     ).isEqualTo(4)
   }
 
