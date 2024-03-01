@@ -6,6 +6,8 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
@@ -1055,5 +1057,29 @@ class ReportedAdjudicationRepositoryTest {
         pageable = Pageable.ofSize(10),
       ).content.size,
     ).isEqualTo(1)
+  }
+
+  @CsvSource("IN,0", "OUT,1")
+  @ParameterizedTest
+  fun `transfers out migrated data does not mark the last updated, therefore need to join scheduled to hearings to check agency`(agencyId: String, expected: Int) {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(agencyId = "OUT", chargeNumber = "12345-2").also {
+        it.hearings.clear()
+        it.hearings.add(
+          Hearing(locationId = 1, dateTimeOfHearing = LocalDateTime.now(), chargeNumber = "12345-2", oicHearingType = OicHearingType.GOV_ADULT, agencyId = agencyId),
+        )
+        it.status = ReportedAdjudicationStatus.SCHEDULED
+        it.dateTimeOfDiscovery = LocalDateTime.now()
+        it.overrideAgencyId = "IN"
+      },
+    )
+
+    assertThat(
+      reportedAdjudicationRepository.findTransfersOutByAgency(
+        agencyId = "OUT",
+        statuses = listOf(ReportedAdjudicationStatus.SCHEDULED.name),
+        pageable = Pageable.ofSize(10),
+      ).content.size,
+    ).isEqualTo(expected)
   }
 }

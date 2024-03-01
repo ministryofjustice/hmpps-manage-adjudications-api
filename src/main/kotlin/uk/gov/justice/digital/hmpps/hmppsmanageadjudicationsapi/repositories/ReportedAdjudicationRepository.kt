@@ -249,7 +249,9 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     const val PRISONER_REPORTS_AND_PUNISHMENTS_WITH_DATE_WHERE_CLAUSE = "join punishment p on p.reported_adjudication_fk_id = ra.id where ra.prisoner_number = :prisonerNumber " +
       "and ((:ada is true and p.type = 'ADDITIONAL_DAYS') or (:suspended is true and p.suspended_until is not null) or (:pada and p.type = 'PROSPECTIVE_DAYS')) and $DATE_AND_STATUS_FILTER"
 
-    private const val TRANSFER_OUT = "and ra.override_agency_id is not null and ra.originating_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) = :agencyId"
+    private const val TRANSFER_OUT = "and ra.override_agency_id is not null and ra.originating_agency_id = :agencyId " +
+      "and (ra.status = 'AWAITING_REVIEW' or (ra.status = 'SCHEDULED' and " +
+      "0 = (select count(1) from hearing h where h.agency_id = ra.override_agency_id and h.charge_number = ra.charge_number)))"
 
     private const val TRANSFER_IN = "and ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :agencyId"
 

@@ -1,0 +1,1 @@
+create index transfer_out_hearing_idx on hearing(agency_id, charge_number);
