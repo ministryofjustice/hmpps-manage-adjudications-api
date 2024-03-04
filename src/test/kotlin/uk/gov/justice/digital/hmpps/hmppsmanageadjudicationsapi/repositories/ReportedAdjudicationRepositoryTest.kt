@@ -31,6 +31,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferOutCutOffDate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -651,7 +652,7 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `count by transfer out`() {
     reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(chargeNumber = "-9999").also {
+      entityBuilder.reportedAdjudication(dateTime = LocalDateTime.now(), chargeNumber = "-9999").also {
         it.hearings.clear()
         it.status = ReportedAdjudicationStatus.SCHEDULED
         it.overrideAgencyId = "BXI"
@@ -660,7 +661,11 @@ class ReportedAdjudicationRepositoryTest {
     )
 
     assertThat(
-      reportedAdjudicationRepository.countTransfersOut("MDI", listOf(ReportedAdjudicationStatus.SCHEDULED).map { it.name }),
+      reportedAdjudicationRepository.countTransfersOut(
+        "MDI",
+        listOf(ReportedAdjudicationStatus.SCHEDULED).map { it.name },
+        transferOutCutOffDate.atStartOfDay(),
+      ),
     ).isEqualTo(1)
   }
 
@@ -1014,6 +1019,7 @@ class ReportedAdjudicationRepositoryTest {
       reportedAdjudicationRepository.findTransfersAllByAgency(
         agencyId = "OUT",
         statuses = listOf(ReportedAdjudicationStatus.AWAITING_REVIEW.name, ReportedAdjudicationStatus.UNSCHEDULED.name),
+        cutOffDate = transferOutCutOffDate.atStartOfDay(),
         pageable = Pageable.ofSize(10),
       ).content.size,
     ).isEqualTo(2)
@@ -1054,6 +1060,7 @@ class ReportedAdjudicationRepositoryTest {
       reportedAdjudicationRepository.findTransfersOutByAgency(
         agencyId = "OUT",
         statuses = listOf(ReportedAdjudicationStatus.AWAITING_REVIEW.name),
+        cutOffDate = transferOutCutOffDate.atStartOfDay(),
         pageable = Pageable.ofSize(10),
       ).content.size,
     ).isEqualTo(1)
@@ -1078,6 +1085,7 @@ class ReportedAdjudicationRepositoryTest {
       reportedAdjudicationRepository.findTransfersOutByAgency(
         agencyId = "OUT",
         statuses = listOf(ReportedAdjudicationStatus.SCHEDULED.name),
+        cutOffDate = transferOutCutOffDate.atStartOfDay(),
         pageable = Pageable.ofSize(10),
       ).content.size,
     ).isEqualTo(expected)

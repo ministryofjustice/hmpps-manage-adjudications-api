@@ -15,7 +15,7 @@ data class AdjudicationIntTestDataSet(
   val locationId: Long,
   val dateTimeOfIncident: LocalDateTime,
   val dateTimeOfIncidentISOString: String,
-  val dateTimeOfDiscovery: LocalDateTime? = null,
+  var dateTimeOfDiscovery: LocalDateTime? = null,
   val dateTimeOfDiscoveryISOString: String? = null,
   val handoverDeadlineISOString: String,
   val isYouthOffender: Boolean,

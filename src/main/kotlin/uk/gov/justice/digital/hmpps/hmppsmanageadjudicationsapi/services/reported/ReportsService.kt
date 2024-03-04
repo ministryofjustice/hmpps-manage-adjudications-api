@@ -66,11 +66,13 @@ class ReportsService(
       TransferType.OUT -> reportedAdjudicationRepository.findTransfersOutByAgency(
         agencyId = authenticationFacade.activeCaseload,
         statuses = statuses.filter { transferOutStatuses.contains(it) }.map { it.name },
+        cutOffDate = transferOutCutOffDate.atStartOfDay(),
         pageable = pageable,
       )
       TransferType.ALL -> reportedAdjudicationRepository.findTransfersAllByAgency(
         agencyId = authenticationFacade.activeCaseload,
         statuses = statuses.filter { transferOutStatuses.plus(transferReviewStatuses).contains(it) }.map { it.name },
+        cutOffDate = transferOutCutOffDate.atStartOfDay(),
         pageable = pageable,
       )
     }.map {
@@ -150,6 +152,7 @@ class ReportsService(
       reportedAdjudicationRepository.countTransfersOut(
         agencyId = agencyId,
         statuses = transferOutStatuses.map { it.name },
+        cutOffDate = transferOutCutOffDate.atStartOfDay(),
       )
     }
 
@@ -259,6 +262,7 @@ class ReportsService(
   companion object {
     val minDate: LocalDate = LocalDate.of(1901, 1, 1)
     val maxDate: LocalDate = LocalDate.of(2999, 1, 1)
+    val transferOutCutOffDate: LocalDate = LocalDate.of(2024, 1, 1)
     val transferReviewStatuses = listOf(
       ReportedAdjudicationStatus.UNSCHEDULED,
       ReportedAdjudicationStatus.REFER_POLICE,
