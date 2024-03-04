@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferOutCutOffDate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferOutStatuses
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferReviewStatuses
 import java.time.LocalDate
@@ -115,7 +116,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `find by transfers out`() {
-      whenever(reportedAdjudicationRepository.findTransfersOutByAgency(any(), any(), any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findTransfersOutByAgency(any(), any(), any(), any())).thenReturn(
         Page.empty(),
       )
 
@@ -125,12 +126,12 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersOutByAgency(any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersOutByAgency(any(), any(), any(), any())
     }
 
     @Test
     fun `find by transfers all`() {
-      whenever(reportedAdjudicationRepository.findTransfersAllByAgency(any(), any(), any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findTransfersAllByAgency(any(), any(), any(), any())).thenReturn(
         Page.empty(),
       )
 
@@ -140,7 +141,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersAllByAgency(any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findTransfersAllByAgency(any(), any(), any(), any())
     }
   }
 
@@ -316,7 +317,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     fun `get reports count for agency`(): Unit = runBlocking {
       whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.AWAITING_REVIEW)).thenReturn(2)
       whenever(reportedAdjudicationRepository.countTransfersIn("MDI", transferReviewStatuses.map { it.name })).thenReturn(1)
-      whenever(reportedAdjudicationRepository.countTransfersOut("MDI", transferOutStatuses.map { it.name })).thenReturn(2)
+      whenever(reportedAdjudicationRepository.countTransfersOut("MDI", transferOutStatuses.map { it.name }, transferOutCutOffDate.atStartOfDay())).thenReturn(2)
       whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatusIn("MDI", ReportsService.hearingsToScheduleStatuses)).thenReturn(3)
       whenever(reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn("MDI", ReportsService.hearingsToScheduleStatuses)).thenReturn(3)
 

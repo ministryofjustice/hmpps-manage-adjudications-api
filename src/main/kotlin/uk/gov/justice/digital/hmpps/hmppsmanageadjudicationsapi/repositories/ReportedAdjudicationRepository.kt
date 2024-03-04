@@ -41,6 +41,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   fun findTransfersOutByAgency(
     @Param("agencyId") agencyId: String,
     @Param("statuses") statuses: List<String>,
+    @Param("cutOffDate") cutOffDate: LocalDateTime,
     pageable: Pageable,
   ): Page<ReportedAdjudication>
 
@@ -52,6 +53,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   fun findTransfersAllByAgency(
     @Param("agencyId") agencyId: String,
     @Param("statuses") statuses: List<String>,
+    @Param("cutOffDate") cutOffDate: LocalDateTime,
     pageable: Pageable,
   ): Page<ReportedAdjudication>
 
@@ -128,6 +130,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   fun countTransfersOut(
     @Param("agencyId") agencyId: String,
     @Param("statuses") statuses: List<String>,
+    @Param("cutOffDate") cutOffDate: LocalDateTime,
   ): Long
 
   fun findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn(consecutiveChargeNumber: String, types: List<PunishmentType>): List<ReportedAdjudication>
@@ -250,6 +253,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
       "and ((:ada is true and p.type = 'ADDITIONAL_DAYS') or (:suspended is true and p.suspended_until is not null) or (:pada and p.type = 'PROSPECTIVE_DAYS')) and $DATE_AND_STATUS_FILTER"
 
     private const val TRANSFER_OUT = "and ra.override_agency_id is not null and ra.originating_agency_id = :agencyId " +
+      "and ra.date_time_of_discovery >= :cutOffDate " +
       "and (ra.status = 'AWAITING_REVIEW' or (ra.status = 'SCHEDULED' and " +
       "0 = (select count(1) from hearing h where h.agency_id = ra.override_agency_id and h.charge_number = ra.charge_number)))"
 

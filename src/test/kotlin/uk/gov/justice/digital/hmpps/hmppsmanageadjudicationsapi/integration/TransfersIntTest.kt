@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Additio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.HMPPSDomainEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.PrisonOffenderEventListener
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.IssuedStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService
 import java.time.Instant
 import java.time.LocalDateTime
 
@@ -28,7 +29,12 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     fun setUp() {
       setAuditTime()
       chargeNumber = initDataForUnScheduled().createHearing().getGeneratedChargeNumber()
-      initDataForAccept()
+      initDataForAccept(
+        testData =
+        IntegrationTestData.DEFAULT_ADJUDICATION.also {
+          it.dateTimeOfDiscovery = ReportsService.transferOutCutOffDate.plusDays(1).atStartOfDay()
+        },
+      )
       sendEvent()
 
       Thread.sleep(500)
@@ -56,7 +62,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       adjourn(activeCaseLoad = "BXI", chargeNumber = chargeNumber!!)
 
       webTestClient.get()
-        .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2010-11-13&status=ADJOURNED&page=0&size=20")
+        .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2024-02-01&status=ADJOURNED&page=0&size=20")
         .headers(
           setHeaders(
             activeCaseload = agencyId,
@@ -72,7 +78,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     @ParameterizedTest
     fun `test access for reports for issue `(agencyId: String, total: Int) {
       webTestClient.get()
-        .uri("/reported-adjudications/for-issue?startDate=2010-11-12&endDate=2020-12-16")
+        .uri("/reported-adjudications/for-issue?startDate=2010-11-12&endDate=2024-12-16")
         .headers(setHeaders(activeCaseload = agencyId))
         .exchange()
         .expectStatus().isOk
@@ -376,7 +382,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
         .jsonPath("$.content[0].chargeNumber").isEqualTo(chargeNumberScheduled)
 
       webTestClient.get()
-        .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2010-11-13&status=SCHEDULED&page=0&size=20")
+        .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2024-11-13&status=SCHEDULED&page=0&size=20")
         .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
         .exchange()
         .expectStatus().isOk.expectBody()
