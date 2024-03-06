@@ -67,13 +67,13 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
         chargeNumber = "1",
         adjudicator = "test",
         plea = HearingOutcomePlea.UNFIT,
-        reason = NotProceedReason.NOT_FAIR,
+        notProceedReason = NotProceedReason.NOT_FAIR,
         details = "details",
       )
 
       verify(outcomeService, atLeastOnce()).createNotProceed(
         chargeNumber = "1",
-        reason = NotProceedReason.NOT_FAIR,
+        notProceedReason = NotProceedReason.NOT_FAIR,
         details = "details",
       )
 

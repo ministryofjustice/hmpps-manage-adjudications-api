@@ -24,7 +24,7 @@ data class HearingOutcome(
   @field:Length(max = 32)
   var adjudicator: String,
   @Enumerated(EnumType.STRING)
-  var reason: HearingOutcomeAdjournReason? = null,
+  var adjournReason: HearingOutcomeAdjournReason? = null,
   @Enumerated(EnumType.STRING)
   var code: HearingOutcomeCode,
   @Enumerated(EnumType.STRING)

@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 
 class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
@@ -67,6 +68,35 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
       .isEqualTo(ReportedAdjudicationStatus.REFER_INAD.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details")
       .isEqualTo("updated details")
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.details")
+      .isEqualTo("updated details")
+      .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.adjudicator")
+      .isEqualTo("updated adjudicator")
+  }
+
+  @Test
+  fun `amend hearing outcome test - before - refer gov, after - refer gov`() {
+    initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createReferral(code = HearingOutcomeCode.REFER_GOV)
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/hearing/outcome/${ReportedAdjudicationStatus.REFER_GOV.name}/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "adjudicator" to "updated adjudicator",
+          "details" to "updated details",
+          "referGovReason" to ReferGovReason.NOT_SERIOUS_FOR_INAD,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status")
+      .isEqualTo(ReportedAdjudicationStatus.REFER_GOV.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details")
+      .isEqualTo("updated details")
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.referGovReason")
+      .isEqualTo(ReferGovReason.NOT_SERIOUS_FOR_INAD.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.details")
       .isEqualTo("updated details")
       .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.adjudicator")
@@ -208,11 +238,20 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
     }
 
     when (to) {
-      ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV -> amendOutcomeRequest(
+      ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD -> amendOutcomeRequest(
         chargeNumber = scenario.getGeneratedChargeNumber(),
         AmendHearingOutcomeRequest(
           adjudicator = "updated",
           details = "updated details",
+        ),
+        to,
+      )
+      ReportedAdjudicationStatus.REFER_GOV -> amendOutcomeRequest(
+        chargeNumber = scenario.getGeneratedChargeNumber(),
+        AmendHearingOutcomeRequest(
+          adjudicator = "updated",
+          details = "updated details",
+          referGovReason = ReferGovReason.GOV_INQUIRY,
         ),
         to,
       )
@@ -260,11 +299,17 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.status")
       .isEqualTo(to.name).also {
         when (to) {
-          ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV ->
+          ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
             it.jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.details").isEqualTo("updated details")
               .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(to.name)
               .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(to.name)
               .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details").isEqualTo("updated details")
+          ReportedAdjudicationStatus.REFER_GOV ->
+            it.jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.details").isEqualTo("updated details")
+              .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(to.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(to.name)
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details").isEqualTo("updated details")
+              .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.referGovReason").isEqualTo(ReferGovReason.GOV_INQUIRY.name)
           ReportedAdjudicationStatus.DISMISSED ->
             it.jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.plea").isEqualTo(HearingOutcomePlea.GUILTY.name)
               .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.code").isEqualTo(HearingOutcomeCode.COMPLETE.name)

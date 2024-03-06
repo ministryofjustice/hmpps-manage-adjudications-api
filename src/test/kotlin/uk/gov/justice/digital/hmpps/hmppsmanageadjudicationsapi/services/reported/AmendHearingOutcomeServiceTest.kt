@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.AmendHearingOutcomeService.Companion.mapStatusToOutcomeCode
 
@@ -56,12 +57,12 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       val request = createRequest(status)
 
-      whenever(outcomeService.amendOutcomeViaService(any(), any(), anyOrNull(), anyOrNull())).thenReturn(
+      whenever(outcomeService.amendOutcomeViaService(any(), any(), anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(
         REPORTED_ADJUDICATION_DTO.also {
           it.punishmentsRemoved = false
         },
       )
-      whenever(hearingOutcomeService.amendHearingOutcome(any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(REPORTED_ADJUDICATION_DTO)
+      whenever(hearingOutcomeService.amendHearingOutcome(any(), any(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull(), anyOrNull())).thenReturn(REPORTED_ADJUDICATION_DTO)
 
       val response = amendHearingOutcomeService.amendHearingOutcome(
         chargeNumber = "1",
@@ -85,6 +86,7 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
           outcomeCodeToAmend = status.mapStatusToOutcomeCode()!!,
           details = request.details,
           notProceedReason = request.notProceedReason,
+          referGovReason = request.referGovReason,
         )
       }
 
@@ -119,6 +121,7 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       "DISMISSED, REFER_POLICE", "DISMISSED, REFER_INAD", "DISMISSED, ADJOURNED", "DISMISSED, NOT_PROCEED", "DISMISSED, CHARGE_PROVED",
       "NOT_PROCEED, REFER_POLICE", "NOT_PROCEED, REFER_INAD", "NOT_PROCEED, ADJOURNED", "NOT_PROCEED, DISMISSED", "NOT_PROCEED, CHARGE_PROVED",
       "CHARGE_PROVED, REFER_POLICE", "CHARGE_PROVED, REFER_INAD", "CHARGE_PROVED, ADJOURNED", "CHARGE_PROVED, DISMISSED", "CHARGE_PROVED, NOT_PROCEED",
+      "REFER_INAD, REFER_GOV",
     )
     @ParameterizedTest
     fun `amending hearing outcome to a new type calls correct services`(from: ReportedAdjudicationStatus, to: ReportedAdjudicationStatus) {
@@ -134,7 +137,7 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
 
-      whenever(referralService.createReferral(any(), any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
+      whenever(referralService.createReferral(any(), any(), any(), anyOrNull(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
       whenever(hearingOutcomeService.createAdjourn(any(), any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
       whenever(completedHearingService.createDismissed(any(), any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
       whenever(completedHearingService.createChargeProved(any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -160,7 +163,22 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       when (to) {
         ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD ->
-          verify(referralService, atLeastOnce()).createReferral("1", HearingOutcomeCode.valueOf(to.name), request.adjudicator!!, request.details!!, false)
+          verify(referralService, atLeastOnce()).createReferral(
+            chargeNumber = "1",
+            code = HearingOutcomeCode.valueOf(to.name),
+            adjudicator = request.adjudicator!!,
+            details = request.details!!,
+            validate = false,
+          )
+        ReportedAdjudicationStatus.REFER_GOV ->
+          verify(referralService, atLeastOnce()).createReferral(
+            chargeNumber = "1",
+            code = HearingOutcomeCode.valueOf(to.name),
+            adjudicator = request.adjudicator!!,
+            details = request.details!!,
+            referGovReason = ReferGovReason.OTHER,
+            validate = false,
+          )
         ReportedAdjudicationStatus.DISMISSED ->
           verify(completedHearingService, atLeastOnce()).createDismissed("1", request.adjudicator!!, request.plea!!, request.details!!, false)
         ReportedAdjudicationStatus.NOT_PROCEED ->
@@ -305,7 +323,8 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     fun createRequest(status: ReportedAdjudicationStatus): AmendHearingOutcomeRequest =
       when (status) {
-        ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV -> AmendHearingOutcomeRequest(adjudicator = "test", details = "details")
+        ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD -> AmendHearingOutcomeRequest(adjudicator = "test", details = "details")
+        ReportedAdjudicationStatus.REFER_GOV -> AmendHearingOutcomeRequest(adjudicator = "test", details = "details", referGovReason = ReferGovReason.OTHER)
         ReportedAdjudicationStatus.DISMISSED -> AmendHearingOutcomeRequest(adjudicator = "test", details = "details", plea = HearingOutcomePlea.GUILTY)
         ReportedAdjudicationStatus.NOT_PROCEED -> AmendHearingOutcomeRequest(adjudicator = "test", details = "details", notProceedReason = NotProceedReason.NOT_FAIR, plea = HearingOutcomePlea.GUILTY)
         ReportedAdjudicationStatus.ADJOURNED -> AmendHearingOutcomeRequest(adjudicator = "test", details = "details", adjournReason = HearingOutcomeAdjournReason.HELP, plea = HearingOutcomePlea.GUILTY)

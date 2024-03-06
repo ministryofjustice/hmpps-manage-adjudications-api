@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus.Companion.validateTransition
@@ -42,9 +43,11 @@ class OutcomeService(
 
   fun createReferGov(
     chargeNumber: String,
+    referGovReason: ReferGovReason?,
     details: String,
   ): ReportedAdjudicationDto = createOutcome(
     chargeNumber = chargeNumber,
+    referGovReason = referGovReason,
     details = details,
     code = OutcomeCode.REFER_GOV,
   )
@@ -62,13 +65,13 @@ class OutcomeService(
 
   fun createNotProceed(
     chargeNumber: String,
-    reason: NotProceedReason,
+    notProceedReason: NotProceedReason,
     details: String,
     validate: Boolean = true,
   ): ReportedAdjudicationDto = createOutcome(
     chargeNumber = chargeNumber,
     code = OutcomeCode.NOT_PROCEED,
-    reason = reason,
+    notProceedReason = notProceedReason,
     details = details,
     validate = validate,
   ).also {
@@ -78,11 +81,13 @@ class OutcomeService(
   fun createReferral(
     chargeNumber: String,
     code: OutcomeCode,
+    referGovReason: ReferGovReason? = null,
     details: String,
     validate: Boolean = true,
   ): ReportedAdjudicationDto = createOutcome(
     chargeNumber = chargeNumber,
     code = code.validateReferral(),
+    referGovReason = referGovReason,
     details = details,
     validate = validate,
   )
@@ -116,6 +121,7 @@ class OutcomeService(
     details: String,
     reason: NotProceedReason? = null,
     quashedReason: QuashedReason? = null,
+    referGovReason: ReferGovReason? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
     val isReferralOutcome = if (reportedAdjudication.hearings.isNotEmpty()) getOutcomes(chargeNumber).isLatestReferralOutcome() else false
@@ -128,8 +134,9 @@ class OutcomeService(
     return amendOutcome(
       chargeNumber = chargeNumber,
       details = details,
-      reason = reason,
+      notProceedReason = reason,
       quashedReason = quashedReason,
+      referGovReason = referGovReason,
     )
   }
 
@@ -138,6 +145,7 @@ class OutcomeService(
     outcomeCodeToAmend: OutcomeCode,
     details: String? = null,
     notProceedReason: NotProceedReason? = null,
+    referGovReason: ReferGovReason? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
 
@@ -148,7 +156,8 @@ class OutcomeService(
     return amendOutcome(
       chargeNumber = chargeNumber,
       details = details,
-      reason = notProceedReason,
+      notProceedReason = notProceedReason,
+      referGovReason = referGovReason,
     )
   }
 
@@ -156,7 +165,8 @@ class OutcomeService(
     chargeNumber: String,
     code: OutcomeCode,
     details: String? = null,
-    reason: NotProceedReason? = null,
+    referGovReason: ReferGovReason? = null,
+    notProceedReason: NotProceedReason? = null,
     quashedReason: QuashedReason? = null,
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
@@ -172,8 +182,9 @@ class OutcomeService(
     val outcomeToCreate = Outcome(
       code = code,
       details = details,
-      reason = reason,
+      notProceedReason = notProceedReason,
       quashedReason = quashedReason,
+      referGovReason = referGovReason,
     )
 
     reportedAdjudication.addOutcome(outcomeToCreate)
@@ -184,7 +195,8 @@ class OutcomeService(
   private fun amendOutcome(
     chargeNumber: String,
     details: String? = null,
-    reason: NotProceedReason? = null,
+    referGovReason: ReferGovReason? = null,
+    notProceedReason: NotProceedReason? = null,
     quashedReason: QuashedReason? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
@@ -193,7 +205,7 @@ class OutcomeService(
       when (it.code) {
         OutcomeCode.NOT_PROCEED -> {
           details?.let { updated -> it.details = updated }
-          reason?.let { updated -> it.reason = updated }
+          notProceedReason?.let { updated -> it.notProceedReason = updated }
         }
 
         OutcomeCode.QUASHED -> {
@@ -201,7 +213,11 @@ class OutcomeService(
           quashedReason?.let { updated -> it.quashedReason = updated }
         }
 
-        OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD, OutcomeCode.REFER_GOV, OutcomeCode.DISMISSED -> details?.let { updated -> it.details = updated }
+        OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD, OutcomeCode.DISMISSED -> details?.let { updated -> it.details = updated }
+        OutcomeCode.REFER_GOV -> {
+          details?.let { updated -> it.details = updated }
+          referGovReason?.let { updated -> it.referGovReason = updated }
+        }
         else -> {}
       }
     }
@@ -309,5 +325,9 @@ class OutcomeService(
 
     fun List<CombinedOutcomeDto>.isLatestReferralOutcome() =
       this.lastOrNull()?.referralOutcome != null
+
+    fun ReferGovReason?.validate(outcomeCode: OutcomeCode) {
+      if (outcomeCode == OutcomeCode.REFER_GOV) this ?: throw ValidationException("referGovReason is mandatory for code REFER_GOV")
+    }
   }
 }

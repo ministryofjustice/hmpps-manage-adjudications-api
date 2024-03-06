@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Privile
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReasonForChange
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDate
@@ -224,6 +225,8 @@ data class OutcomeDto(
   val reason: NotProceedReason? = null,
   @Schema(description = "optional quashed reason")
   val quashedReason: QuashedReason? = null,
+  @Schema(description = "optional refer to gov reason")
+  val referGovReason: ReferGovReason? = null,
   @Schema(description = "flag to indicate if the outcome can be removed")
   val canRemove: Boolean = true,
 )

@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequestItem
@@ -351,33 +350,6 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.chargeNumber").isEqualTo(intTestScenario.getGeneratedChargeNumber())
 
     intTestScenario.getDraftAdjudicationDetails().expectStatus().isNotFound
-  }
-
-  @Test
-  @Disabled
-  fun `complete draft adjudication rolls back DB if Prison API call fails`() {
-    val intTestData = integrationTestData()
-    val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
-    val intTestBuilder = IntegrationTestScenarioBuilder(
-      intTestData = intTestData,
-      intTestBase = this,
-      headers = firstDraftUserHeaders,
-    )
-
-    val intTestScenario = intTestBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
-      .setApplicableRules()
-      .setIncidentRole()
-      .setOffenceData()
-      .addIncidentStatement()
-
-    webTestClient.post()
-      .uri("/draft-adjudications/${intTestScenario.getDraftId()}/complete-draft-adjudication")
-      .headers(setHeaders())
-      .exchange()
-      .expectStatus().is5xxServerError
-
-    getReportedAdjudicationRequestStatus().isNotFound
   }
 
   @Test

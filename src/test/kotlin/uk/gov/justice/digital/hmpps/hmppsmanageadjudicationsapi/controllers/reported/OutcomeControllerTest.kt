@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHist
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
@@ -207,6 +208,7 @@ class OutcomeControllerTest : TestControllerBase() {
       whenever(
         outcomeService.createReferGov(
           anyString(),
+          anyOrNull(),
           anyString(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
@@ -243,11 +245,11 @@ class OutcomeControllerTest : TestControllerBase() {
     fun `makes a call to create a refer gov outcome`() {
       createOutcomeRequest(
         1,
-        POLICE_REFER_REQUEST,
+        REFER_GOV_REQUEST,
       )
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(outcomeService).createReferGov("1", "details")
+      verify(outcomeService).createReferGov(chargeNumber = "1", referGovReason = ReferGovReason.GOV_INQUIRY, details = "details")
       verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV, REPORTED_ADJUDICATION_DTO)
     }
 
@@ -273,6 +275,7 @@ class OutcomeControllerTest : TestControllerBase() {
         outcomeService.createReferral(
           anyString(),
           any(),
+          anyOrNull(),
           any(),
           any(),
         ),
@@ -313,7 +316,11 @@ class OutcomeControllerTest : TestControllerBase() {
         POLICE_REFER_REQUEST,
       )
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(outcomeService).createReferral("1", OutcomeCode.REFER_POLICE, "details")
+      verify(outcomeService).createReferral(
+        chargeNumber = "1",
+        code = OutcomeCode.REFER_POLICE,
+        details = "details",
+      )
       verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.REF_POLICE_OUTCOME, REPORTED_ADJUDICATION_DTO)
     }
 
@@ -463,6 +470,7 @@ class OutcomeControllerTest : TestControllerBase() {
           any(),
           anyOrNull(),
           anyOrNull(),
+          anyOrNull(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -549,6 +557,7 @@ class OutcomeControllerTest : TestControllerBase() {
 
   companion object {
     private val POLICE_REFER_REQUEST = ReferralDetailsRequest(details = "details")
+    private val REFER_GOV_REQUEST = ReferralDetailsRequest(referGovReason = ReferGovReason.GOV_INQUIRY, details = "details")
     private val NOT_PROCEED_REQUEST = NotProceedRequest(reason = NotProceedReason.NOT_FAIR, details = "details")
     private val QUASHED_REQUEST = QuashedRequest(reason = QuashedReason.APPEAL_UPHELD, details = "details")
     private val AMEND_REFER_POLICE_REQUEST = AmendOutcomeRequest(details = "details")
