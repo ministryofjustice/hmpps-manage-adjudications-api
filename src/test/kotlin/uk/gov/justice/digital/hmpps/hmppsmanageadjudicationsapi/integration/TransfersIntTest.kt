@@ -32,7 +32,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       initDataForAccept(
         testData =
         IntegrationTestData.DEFAULT_ADJUDICATION.also {
-          it.dateTimeOfDiscovery = ReportsService.transferOutCutOffDate.plusDays(1).atStartOfDay()
+          it.dateTimeOfDiscovery = ReportsService.transferOutAndHearingsToScheduledCutOffDate.plusDays(1).atStartOfDay()
         },
       )
       sendEvent()

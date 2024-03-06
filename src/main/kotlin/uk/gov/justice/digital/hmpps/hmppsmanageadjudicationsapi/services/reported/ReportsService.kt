@@ -66,13 +66,13 @@ class ReportsService(
       TransferType.OUT -> reportedAdjudicationRepository.findTransfersOutByAgency(
         agencyId = authenticationFacade.activeCaseload,
         statuses = statuses.filter { transferOutStatuses.contains(it) }.map { it.name },
-        cutOffDate = transferOutCutOffDate.atStartOfDay(),
+        cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
         pageable = pageable,
       )
       TransferType.ALL -> reportedAdjudicationRepository.findTransfersAllByAgency(
         agencyId = authenticationFacade.activeCaseload,
         statuses = statuses.filter { transferOutStatuses.plus(transferReviewStatuses).contains(it) }.map { it.name },
-        cutOffDate = transferOutCutOffDate.atStartOfDay(),
+        cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
         pageable = pageable,
       )
     }.map {
@@ -152,21 +152,23 @@ class ReportsService(
       reportedAdjudicationRepository.countTransfersOut(
         agencyId = agencyId,
         statuses = transferOutStatuses.map { it.name },
-        cutOffDate = transferOutCutOffDate.atStartOfDay(),
+        cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
       )
     }
 
     val hearingsToScheduleTotal = async {
-      reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatusIn(
+      reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(
         agencyId = agencyId,
         statuses = hearingsToScheduleStatuses,
+        cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
       )
     }
 
     val overrideHearingsToScheduleTotal = async {
-      reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusIn(
+      reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(
         agencyId = agencyId,
         statuses = hearingsToScheduleStatuses,
+        cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
       )
     }
 
@@ -262,7 +264,7 @@ class ReportsService(
   companion object {
     val minDate: LocalDate = LocalDate.of(1901, 1, 1)
     val maxDate: LocalDate = LocalDate.of(2999, 1, 1)
-    val transferOutCutOffDate: LocalDate = LocalDate.of(2024, 1, 1)
+    val transferOutAndHearingsToScheduledCutOffDate: LocalDateTime = LocalDate.now().minusMonths(6).atStartOfDay()
     val transferReviewStatuses = listOf(
       ReportedAdjudicationStatus.UNSCHEDULED,
       ReportedAdjudicationStatus.REFER_POLICE,
