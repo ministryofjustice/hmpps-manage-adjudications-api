@@ -112,7 +112,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.createAdjourn("1", adjudicator = "", reason = HearingOutcomeAdjournReason.OTHER, details = "", plea = HearingOutcomePlea.NOT_ASKED)
+        hearingOutcomeService.createAdjourn("1", adjudicator = "", adjournReason = HearingOutcomeAdjournReason.OTHER, details = "", plea = HearingOutcomePlea.NOT_ASKED)
       }.isInstanceOf(RuntimeException::class.java)
         .hasMessageContaining("back key detected")
     }
@@ -126,7 +126,12 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.createReferral("1", HearingOutcomeCode.REFER_GOV, "testing", "")
+        hearingOutcomeService.createReferral(
+          chargeNumber = "1",
+          code = HearingOutcomeCode.REFER_GOV,
+          adjudicator = "testing",
+          details = "",
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("hearing type $oicHearingType can not REFER_GOV")
     }
@@ -140,7 +145,12 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.createReferral("1", HearingOutcomeCode.REFER_INAD, "testing", "")
+        hearingOutcomeService.createReferral(
+          chargeNumber = "1",
+          code = HearingOutcomeCode.REFER_INAD,
+          adjudicator = "testing",
+          details = "",
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("hearing type $oicHearingType can not REFER_INAD")
     }
@@ -151,10 +161,10 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       val response = hearingOutcomeService.createReferral(
-        "1",
-        code,
-        "test",
-        "details",
+        chargeNumber = "1",
+        code = code,
+        adjudicator = "test",
+        details = "details",
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -185,7 +195,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("test")
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("details")
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjournReason)
         .isEqualTo(HearingOutcomeAdjournReason.LEGAL_ADVICE)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea)
         .isEqualTo(HearingOutcomePlea.UNFIT)
@@ -222,7 +232,12 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.createReferral("1", HearingOutcomeCode.REFER_POLICE, "testing", "")
+        hearingOutcomeService.createReferral(
+          chargeNumber = "1",
+          code = HearingOutcomeCode.REFER_POLICE,
+          adjudicator = "testing",
+          details = "",
+        )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Hearing not found")
     }
@@ -564,7 +579,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(code)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("updated adjudicator")
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isNull()
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isNull()
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjournReason).isNull()
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("updated details")
 
       assertThat(response).isNotNull
@@ -579,7 +594,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
             adjudicator = "adjudicator",
             details = "details",
             plea = HearingOutcomePlea.NOT_GUILTY,
-            reason = HearingOutcomeAdjournReason.MCKENZIE,
+            adjournReason = HearingOutcomeAdjournReason.MCKENZIE,
           )
         },
       )
@@ -599,7 +614,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("updated adjudicator")
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.GUILTY)
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isEqualTo(HearingOutcomeAdjournReason.HELP)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjournReason).isEqualTo(HearingOutcomeAdjournReason.HELP)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("updated details")
 
       assertThat(response).isNotNull
@@ -631,7 +646,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.COMPLETE)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("updated adjudicator")
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.GUILTY)
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.reason).isNull()
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjournReason).isNull()
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isNull()
 
       assertThat(response).isNotNull

@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferToGovReason
 
 class ReferralServiceTest : ReportedAdjudicationTestBase() {
 
@@ -33,10 +34,10 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
     whenever(outcomeService.createReferral(any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
 
     referralService.createReferral(
-      "1",
-      HearingOutcomeCode.REFER_POLICE,
-      "test",
-      "details",
+      chargeNumber = "1",
+      code = HearingOutcomeCode.REFER_POLICE,
+      adjudicator = "test",
+      details = "details",
     )
 
     verify(hearingOutcomeService, atLeastOnce()).createReferral(
@@ -47,6 +48,21 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
     )
 
     verify(outcomeService, atLeastOnce()).createReferral(chargeNumber = "1", code = OutcomeCode.REFER_POLICE, details = "details")
+  }
+
+  @Test
+  fun `refer to gov passes reason to service`() {
+    whenever(outcomeService.createReferral(any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
+
+    referralService.createReferral(
+      chargeNumber = "1",
+      code = HearingOutcomeCode.REFER_GOV,
+      adjudicator = "test",
+      details = "details",
+      referToGovReason = ReferToGovReason.OTHER,
+    )
+
+    verify(outcomeService, atLeastOnce()).createReferral(chargeNumber = "1", code = OutcomeCode.REFER_GOV, details = "details", referToGovReason = ReferToGovReason.OTHER)
   }
 
   @Test

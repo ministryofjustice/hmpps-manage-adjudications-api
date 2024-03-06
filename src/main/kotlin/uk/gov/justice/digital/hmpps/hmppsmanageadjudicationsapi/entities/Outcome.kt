@@ -15,7 +15,7 @@ data class Outcome(
   @field:Length(max = 4000)
   var details: String? = null,
   @Enumerated(EnumType.STRING)
-  var reason: NotProceedReason? = null,
+  var notProceedReason: NotProceedReason? = null,
   @Enumerated(EnumType.STRING)
   var code: OutcomeCode,
   @Enumerated(EnumType.STRING)
@@ -23,6 +23,8 @@ data class Outcome(
   var oicHearingId: Long? = null,
   var deleted: Boolean? = null,
   var actualCreatedDate: LocalDateTime? = null,
+  @Enumerated(EnumType.STRING)
+  var referGovReason: ReferToGovReason? = null,
 ) : BaseEntity() {
   fun getCreatedDateTime(): LocalDateTime? = this.actualCreatedDate ?: this.createDateTime
 }
@@ -85,5 +87,13 @@ enum class QuashedReason {
   FLAWED_CASE,
   JUDICIAL_REVIEW,
   APPEAL_UPHELD,
+  OTHER,
+}
+
+enum class ReferToGovReason {
+  REVIEW_FOR_REFER_POLICE,
+  GOV_INQUIRY,
+  CONSIDER_REFER_POLICE,
+  NOT_SERIOUS_FOR_INAD,
   OTHER,
 }

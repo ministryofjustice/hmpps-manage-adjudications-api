@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferToGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDateTime
 
@@ -349,6 +350,17 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
   inner class Referrals {
 
     @Test
+    fun `create refer gov referral outcome`() {
+      initDataForUnScheduled().createHearing().createReferral(HearingOutcomeCode.REFER_INAD).createOutcomeReferGov()
+        .expectStatus().isCreated
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.status")
+        .isEqualTo(ReportedAdjudicationStatus.REFER_GOV.name)
+        .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.reason")
+        .isEqualTo(ReferToGovReason.OTHER.name)
+    }
+
+    @Test
     fun `amend outcome - not proceed when its a referral outcome`() {
       initDataForUnScheduled().createHearing().createReferral(HearingOutcomeCode.REFER_POLICE).createOutcomeNotProceed()
 
@@ -382,6 +394,7 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
         .bodyValue(
           mapOf(
             "details" to "updated",
+            "referToGovReason" to ReferToGovReason.GOV_INQUIRY,
           ),
         )
         .exchange()
@@ -391,6 +404,8 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
         .isEqualTo(ReportedAdjudicationStatus.REFER_GOV.name)
         .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.details")
         .isEqualTo("updated")
+        .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.referToGovReason")
+        .isEqualTo(ReferToGovReason.GOV_INQUIRY)
     }
 
     @Test

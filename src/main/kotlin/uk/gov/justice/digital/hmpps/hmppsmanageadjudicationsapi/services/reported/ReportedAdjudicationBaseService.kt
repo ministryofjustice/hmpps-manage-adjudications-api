@@ -246,7 +246,7 @@ open class ReportedDtoService(
     HearingOutcomeDto(
       id = this.id,
       code = this.code,
-      reason = this.reason,
+      reason = this.adjournReason,
       details = this.details,
       adjudicator = this.adjudicator,
       plea = this.plea,
@@ -258,7 +258,7 @@ open class ReportedDtoService(
       code = this.code,
       details = this.details,
       // added due to migration - not applicable for DPS app itself
-      reason = this.reason ?: if (this.code == OutcomeCode.NOT_PROCEED) NotProceedReason.OTHER else null,
+      reason = this.notProceedReason ?: if (this.code == OutcomeCode.NOT_PROCEED) NotProceedReason.OTHER else null,
       quashedReason = this.quashedReason,
       canRemove = !hasLinkedAda,
     )

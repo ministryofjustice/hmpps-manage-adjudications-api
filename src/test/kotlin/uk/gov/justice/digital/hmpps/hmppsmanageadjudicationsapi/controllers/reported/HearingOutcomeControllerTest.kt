@@ -211,7 +211,7 @@ class HearingOutcomeControllerTest : TestControllerBase() {
       verify(hearingOutcomeService).createAdjourn(
         chargeNumber = "1",
         adjudicator = "test",
-        reason = HearingOutcomeAdjournReason.HELP,
+        adjournReason = HearingOutcomeAdjournReason.HELP,
         plea = HearingOutcomePlea.ABSTAIN,
         details = "details",
       )

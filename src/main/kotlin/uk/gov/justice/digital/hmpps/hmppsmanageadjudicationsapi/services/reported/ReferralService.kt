@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOut
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferToGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService.Companion.getLatestHearingId
 
 @Transactional
@@ -20,6 +21,7 @@ class ReferralService(
     chargeNumber: String,
     code: HearingOutcomeCode,
     adjudicator: String,
+    referToGovReason: ReferToGovReason? = null,
     details: String,
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
@@ -34,6 +36,7 @@ class ReferralService(
       code = code.outcomeCode!!,
       details = details,
       validate = validate,
+      referToGovReason = referToGovReason,
     ).also {
       it.hearingIdActioned = it.hearings.getLatestHearingId()
     }

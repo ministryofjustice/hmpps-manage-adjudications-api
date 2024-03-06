@@ -118,6 +118,7 @@ class AmendHearingOutcomeService(
           chargeNumber = chargeNumber,
           code = HearingOutcomeCode.valueOf(toStatus.name),
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
+          referToGovReason = amendHearingOutcomeRequest.referToGovReason,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
           validate = false,
         )
@@ -135,7 +136,7 @@ class AmendHearingOutcomeService(
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
-          reason = amendHearingOutcomeRequest.notProceedReason ?: throw ValidationException("missing reason"),
+          notProceedReason = amendHearingOutcomeRequest.notProceedReason ?: throw ValidationException("missing reason"),
           validate = false,
         )
       ReportedAdjudicationStatus.ADJOURNED ->
@@ -144,7 +145,7 @@ class AmendHearingOutcomeService(
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
-          reason = amendHearingOutcomeRequest.adjournReason ?: throw ValidationException("missing reason"),
+          adjournReason = amendHearingOutcomeRequest.adjournReason ?: throw ValidationException("missing reason"),
         )
       ReportedAdjudicationStatus.CHARGE_PROVED ->
         completedHearingService.createChargeProved(

@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferToGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.AmendHearingOutcomeService
@@ -30,6 +31,8 @@ data class ReferralRequest(
   val adjudicator: String,
   @Schema(description = "the outcome code")
   val code: HearingOutcomeCode,
+  @Schema(description = "optional refer back to gov reason")
+  val referToGovReason: ReferToGovReason? = null,
   @Schema(description = "details")
   val details: String,
 )
@@ -54,6 +57,8 @@ data class AmendHearingOutcomeRequest(
   val adjournReason: HearingOutcomeAdjournReason? = null,
   @Schema(description = "not proceed reason")
   val notProceedReason: NotProceedReason? = null,
+  @Schema(description = "refer back to gov reason")
+  val referToGovReason: ReferToGovReason? = null,
   @Schema(description = "details")
   val details: String? = null,
   @Schema(description = "plea")
@@ -137,6 +142,7 @@ class HearingOutcomeController(
           code = referralRequest.code.validateReferral(),
           adjudicator = referralRequest.adjudicator,
           details = referralRequest.details,
+          referToGovReason = referralRequest.referToGovReason,
         )
       },
     )
@@ -201,7 +207,7 @@ class HearingOutcomeController(
           chargeNumber = chargeNumber,
           adjudicator = adjournRequest.adjudicator,
           details = adjournRequest.details,
-          reason = adjournRequest.reason,
+          adjournReason = adjournRequest.reason,
           plea = adjournRequest.plea,
         )
       },
@@ -328,7 +334,7 @@ class HearingOutcomeController(
           chargeNumber = chargeNumber,
           adjudicator = completedNotProceedRequest.adjudicator,
           plea = completedNotProceedRequest.plea,
-          reason = completedNotProceedRequest.reason,
+          notProceedReason = completedNotProceedRequest.reason,
           details = completedNotProceedRequest.details,
         )
       },

@@ -16,12 +16,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ErrorResp
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferToGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 
 @Schema(description = "Request to add a police referral, or refer gov request")
 data class ReferralDetailsRequest(
+  @Schema(description = "optional refer back to gov reason")
+  val referToGovReason: ReferToGovReason? = null,
   @Schema(description = "details")
   val details: String,
 )
@@ -50,6 +53,8 @@ data class AmendOutcomeRequest(
   val reason: NotProceedReason? = null,
   @Schema(description = "quashed reason")
   val quashedReason: QuashedReason? = null,
+  @Schema(description = "refer back to gov reason")
+  val referToGovReason: ReferToGovReason? = null,
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
@@ -89,7 +94,7 @@ class OutcomeController(
         outcomeService.createNotProceed(
           chargeNumber = chargeNumber,
           details = notProceedRequest.details,
-          reason = notProceedRequest.reason,
+          notProceedReason = notProceedRequest.reason,
         )
       },
       events = listOf(
@@ -177,6 +182,7 @@ class OutcomeController(
         outcomeService.createReferGov(
           chargeNumber = chargeNumber,
           details = referGovRequest.details,
+          referToGovReason = referGovRequest.referToGovReason,
         )
       },
     )
