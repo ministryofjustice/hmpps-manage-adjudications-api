@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferToGovReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDateTime
 
@@ -356,8 +356,8 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
         .expectBody()
         .jsonPath("$.reportedAdjudication.status")
         .isEqualTo(ReportedAdjudicationStatus.REFER_GOV.name)
-        .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.reason")
-        .isEqualTo(ReferToGovReason.OTHER.name)
+        .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.referGovReason")
+        .isEqualTo(ReferGovReason.OTHER.name)
     }
 
     @Test
@@ -394,7 +394,7 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
         .bodyValue(
           mapOf(
             "details" to "updated",
-            "referToGovReason" to ReferToGovReason.GOV_INQUIRY,
+            "referGovReason" to ReferGovReason.GOV_INQUIRY,
           ),
         )
         .exchange()
@@ -404,8 +404,8 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
         .isEqualTo(ReportedAdjudicationStatus.REFER_GOV.name)
         .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.details")
         .isEqualTo("updated")
-        .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.referToGovReason")
-        .isEqualTo(ReferToGovReason.GOV_INQUIRY)
+        .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.referGovReason")
+        .isEqualTo(ReferGovReason.GOV_INQUIRY.name)
     }
 
     @Test

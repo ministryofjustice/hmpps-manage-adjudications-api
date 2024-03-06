@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ErrorResp
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferToGovReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 @Schema(description = "Request to add a police referral, or refer gov request")
 data class ReferralDetailsRequest(
   @Schema(description = "optional refer back to gov reason")
-  val referToGovReason: ReferToGovReason? = null,
+  val referGovReason: ReferGovReason? = null,
   @Schema(description = "details")
   val details: String,
 )
@@ -54,7 +54,7 @@ data class AmendOutcomeRequest(
   @Schema(description = "quashed reason")
   val quashedReason: QuashedReason? = null,
   @Schema(description = "refer back to gov reason")
-  val referToGovReason: ReferToGovReason? = null,
+  val referGovReason: ReferGovReason? = null,
 )
 
 @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
@@ -182,7 +182,7 @@ class OutcomeController(
         outcomeService.createReferGov(
           chargeNumber = chargeNumber,
           details = referGovRequest.details,
-          referToGovReason = referGovRequest.referToGovReason,
+          referGovReason = referGovRequest.referGovReason,
         )
       },
     )
@@ -291,7 +291,7 @@ class OutcomeController(
       ),
     )
 
-  @Operation(summary = "amend outcome without a hearing (refer police, not proceed or quashed), unless its a referral outcome - not proceed")
+  @Operation(summary = "amend outcome without a hearing (refer police, not proceed or quashed), unless its a referral outcome from next steps")
   @PutMapping(value = ["/{chargeNumber}/outcome"])
   @ResponseStatus(HttpStatus.OK)
   fun amendOutcome(
@@ -310,6 +310,7 @@ class OutcomeController(
           details = amendOutcomeRequest.details,
           reason = amendOutcomeRequest.reason,
           quashedReason = amendOutcomeRequest.quashedReason,
+          referGovReason = amendOutcomeRequest.referGovReason,
         )
       },
     )

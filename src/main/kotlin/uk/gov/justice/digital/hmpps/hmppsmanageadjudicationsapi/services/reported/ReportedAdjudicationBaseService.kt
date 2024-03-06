@@ -260,6 +260,7 @@ open class ReportedDtoService(
       // added due to migration - not applicable for DPS app itself
       reason = this.notProceedReason ?: if (this.code == OutcomeCode.NOT_PROCEED) NotProceedReason.OTHER else null,
       quashedReason = this.quashedReason,
+      referGovReason = this.referGovReason,
       canRemove = !hasLinkedAda,
     )
 

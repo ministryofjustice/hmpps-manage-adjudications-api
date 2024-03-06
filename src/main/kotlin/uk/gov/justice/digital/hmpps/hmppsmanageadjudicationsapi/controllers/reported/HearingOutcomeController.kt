@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferToGovReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.AmendHearingOutcomeService
@@ -32,7 +32,7 @@ data class ReferralRequest(
   @Schema(description = "the outcome code")
   val code: HearingOutcomeCode,
   @Schema(description = "optional refer back to gov reason")
-  val referToGovReason: ReferToGovReason? = null,
+  val referGovReason: ReferGovReason? = null,
   @Schema(description = "details")
   val details: String,
 )
@@ -58,7 +58,7 @@ data class AmendHearingOutcomeRequest(
   @Schema(description = "not proceed reason")
   val notProceedReason: NotProceedReason? = null,
   @Schema(description = "refer back to gov reason")
-  val referToGovReason: ReferToGovReason? = null,
+  val referGovReason: ReferGovReason? = null,
   @Schema(description = "details")
   val details: String? = null,
   @Schema(description = "plea")
@@ -142,7 +142,7 @@ class HearingOutcomeController(
           code = referralRequest.code.validateReferral(),
           adjudicator = referralRequest.adjudicator,
           details = referralRequest.details,
-          referToGovReason = referralRequest.referToGovReason,
+          referGovReason = referralRequest.referGovReason,
         )
       },
     )

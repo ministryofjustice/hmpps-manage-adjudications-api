@@ -24,7 +24,7 @@ data class Outcome(
   var deleted: Boolean? = null,
   var actualCreatedDate: LocalDateTime? = null,
   @Enumerated(EnumType.STRING)
-  var referGovReason: ReferToGovReason? = null,
+  var referGovReason: ReferGovReason? = null,
 ) : BaseEntity() {
   fun getCreatedDateTime(): LocalDateTime? = this.actualCreatedDate ?: this.createDateTime
 }
@@ -90,7 +90,7 @@ enum class QuashedReason {
   OTHER,
 }
 
-enum class ReferToGovReason {
+enum class ReferGovReason {
   REVIEW_FOR_REFER_POLICE,
   GOV_INQUIRY,
   CONSIDER_REFER_POLICE,

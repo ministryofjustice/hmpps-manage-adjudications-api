@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferToGovReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDateTime
 
@@ -721,7 +721,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
           "code" to HearingOutcomeCode.REFER_GOV,
           "details" to "details",
           "adjudicator" to "testing",
-          "referToGovReason" to ReferToGovReason.GOV_INQUIRY,
+          "referGovReason" to ReferGovReason.GOV_INQUIRY,
         ),
       )
       .exchange()
@@ -729,6 +729,6 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_GOV.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.referToGovReason").isEqualTo(ReferToGovReason.GOV_INQUIRY.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.referGovReason").isEqualTo(ReferGovReason.GOV_INQUIRY.name)
   }
 }

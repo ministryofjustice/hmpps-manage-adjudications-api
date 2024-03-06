@@ -75,6 +75,7 @@ class AmendHearingOutcomeService(
       outcomeCodeToAmend = outcomeCodeToAmend,
       details = amendHearingOutcomeRequest.details,
       notProceedReason = amendHearingOutcomeRequest.notProceedReason,
+      referGovReason = amendHearingOutcomeRequest.referGovReason,
     )
   }
 
@@ -118,7 +119,7 @@ class AmendHearingOutcomeService(
           chargeNumber = chargeNumber,
           code = HearingOutcomeCode.valueOf(toStatus.name),
           adjudicator = amendHearingOutcomeRequest.adjudicator ?: latestHearingOutcome.adjudicator,
-          referToGovReason = amendHearingOutcomeRequest.referToGovReason,
+          referGovReason = amendHearingOutcomeRequest.referGovReason,
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
           validate = false,
         )

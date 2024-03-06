@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferToGovReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDate
@@ -253,7 +253,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       val response = outcomeService.createReferGov(
         chargeNumber = "1235",
         details = "details",
-        referToGovReason = ReferToGovReason.OTHER,
+        referGovReason = ReferGovReason.OTHER,
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -261,7 +261,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().first()).isNotNull
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.REFER_GOV)
       assertThat(argumentCaptor.value.getOutcomes().first().details).isEqualTo("details")
-      assertThat(argumentCaptor.value.getOutcomes().first().referGovReason).isEqualTo(ReferToGovReason.OTHER)
+      assertThat(argumentCaptor.value.getOutcomes().first().referGovReason).isEqualTo(ReferGovReason.OTHER)
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.valueOf(OutcomeCode.REFER_GOV.name))
       assertThat(response).isNotNull
     }
@@ -321,7 +321,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @ParameterizedTest
-    @CsvSource("UNSCHEDULED, REFER_POLICE", "SCHEDULED, REFER_INAD")
+    @CsvSource("UNSCHEDULED, REFER_POLICE", "SCHEDULED, REFER_INAD", "SCHEDULED, REFER_GOV")
     fun `create referral`(codeFrom: ReportedAdjudicationStatus, code: OutcomeCode) {
       reportedAdjudication.status = codeFrom
 
@@ -331,6 +331,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         chargeNumber = "1235",
         code = code,
         details = "details",
+        referGovReason = if (code == OutcomeCode.REFER_GOV) ReferGovReason.OTHER else null,
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -338,6 +339,8 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().first()).isNotNull
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(code)
       assertThat(argumentCaptor.value.getOutcomes().first().details).isEqualTo("details")
+      if (code == OutcomeCode.REFER_GOV) assertThat(argumentCaptor.value.getOutcomes().first().referGovReason).isEqualTo(ReferGovReason.OTHER)
+
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.valueOf(code.name))
       assertThat(response).isNotNull
     }
@@ -854,7 +857,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       outcomeService.amendOutcomeViaApi(
         chargeNumber = "1235",
         details = "updated",
-        referToGovReason = ReferToGovReason.OTHER,
+        referGovReason = ReferGovReason.OTHER,
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -863,7 +866,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.REFER_INAD)
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.REFER_GOV)
       assertThat(argumentCaptor.value.getOutcomes().last().details).isEqualTo("updated")
-      assertThat(argumentCaptor.value.getOutcomes().last().referGovReason).isEqualTo(ReferToGovReason.OTHER)
+      assertThat(argumentCaptor.value.getOutcomes().last().referGovReason).isEqualTo(ReferGovReason.OTHER)
     }
 
     @CsvSource("REFER_INAD", "SCHEDULE_HEARING", "PROSECUTION", "CHARGE_PROVED", "DISMISSED")
@@ -967,7 +970,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         chargeNumber = "1",
         outcomeCodeToAmend = code.outcomeCode!!,
         details = "updated",
-        referToGovReason = if (code == HearingOutcomeCode.REFER_GOV) ReferToGovReason.OTHER else null,
+        referGovReason = if (code == HearingOutcomeCode.REFER_GOV) ReferGovReason.OTHER else null,
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
@@ -975,7 +978,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().first()).isNotNull
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(code.outcomeCode!!)
       assertThat(argumentCaptor.value.getOutcomes().first().details).isEqualTo("updated")
-      if (code == HearingOutcomeCode.REFER_GOV) assertThat(argumentCaptor.value.getOutcomes().first().referGovReason).isEqualTo(ReferToGovReason.OTHER)
+      if (code == HearingOutcomeCode.REFER_GOV) assertThat(argumentCaptor.value.getOutcomes().first().referGovReason).isEqualTo(ReferGovReason.OTHER)
       assertThat(argumentCaptor.value.getOutcomes().first().notProceedReason).isNull()
       assertThat(argumentCaptor.value.getOutcomes().first().quashedReason).isNull()
 

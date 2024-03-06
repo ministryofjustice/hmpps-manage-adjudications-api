@@ -92,6 +92,7 @@ class HearingOutcomeControllerTest : TestControllerBase() {
           ArgumentMatchers.anyString(),
           any(),
           any(),
+          anyOrNull(),
           any(),
           any(),
         ),
