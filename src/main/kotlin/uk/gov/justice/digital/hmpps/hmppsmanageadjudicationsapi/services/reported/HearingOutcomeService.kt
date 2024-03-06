@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -47,7 +48,7 @@ class HearingOutcomeService(
   fun createAdjourn(
     chargeNumber: String,
     adjudicator: String,
-    reason: HearingOutcomeAdjournReason,
+    adjournReason: HearingOutcomeAdjournReason,
     details: String,
     plea: HearingOutcomePlea,
   ): ReportedAdjudicationDto =
@@ -55,7 +56,7 @@ class HearingOutcomeService(
       chargeNumber = chargeNumber,
       code = HearingOutcomeCode.ADJOURN,
       adjudicator = adjudicator,
-      reason = reason,
+      adjournReason = adjournReason,
       plea = plea,
       details = details,
     ).also {
@@ -88,7 +89,7 @@ class HearingOutcomeService(
     chargeNumber: String,
     code: HearingOutcomeCode,
     adjudicator: String,
-    reason: HearingOutcomeAdjournReason? = null,
+    adjournReason: HearingOutcomeAdjournReason? = null,
     details: String? = null,
     plea: HearingOutcomePlea? = null,
   ): ReportedAdjudicationDto {
@@ -100,7 +101,7 @@ class HearingOutcomeService(
 
     reportedAdjudication.getHearing().hearingOutcome = HearingOutcome(
       code = code,
-      reason = reason,
+      adjournReason = adjournReason,
       details = details,
       adjudicator = adjudicator,
       plea = plea,
@@ -134,6 +135,7 @@ class HearingOutcomeService(
     details: String? = null,
     plea: HearingOutcomePlea? = null,
     adjournedReason: HearingOutcomeAdjournReason? = null,
+    referGovReason: ReferGovReason? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
     val hearingOutcomeToAmend = reportedAdjudication.latestHearingOutcome().isLatestSameAsAmendRequest(outcomeCodeToAmend)
@@ -146,7 +148,7 @@ class HearingOutcomeService(
       HearingOutcomeCode.ADJOURN -> {
         details?.let { hearingOutcomeToAmend.details = it }
         plea?.let { hearingOutcomeToAmend.plea = it }
-        adjournedReason?.let { hearingOutcomeToAmend.reason = it }
+        adjournedReason?.let { hearingOutcomeToAmend.adjournReason = it }
       }
 
       HearingOutcomeCode.NOMIS -> throw RuntimeException("unable to amend a NOMIS hearing outcome")

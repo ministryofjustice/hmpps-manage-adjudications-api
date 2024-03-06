@@ -43,7 +43,7 @@ class CompletedHearingService(
     chargeNumber: String,
     adjudicator: String,
     plea: HearingOutcomePlea,
-    reason: NotProceedReason,
+    notProceedReason: NotProceedReason,
     details: String,
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
@@ -55,7 +55,7 @@ class CompletedHearingService(
 
     return outcomeService.createNotProceed(
       chargeNumber = chargeNumber,
-      reason = reason,
+      notProceedReason = notProceedReason,
       details = details,
       validate = validate,
     ).also {

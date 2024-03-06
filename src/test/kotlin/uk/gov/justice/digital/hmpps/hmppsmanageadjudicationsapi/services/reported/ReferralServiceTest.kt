@@ -4,6 +4,7 @@ import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.atLeast
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
@@ -16,6 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 
 class ReferralServiceTest : ReportedAdjudicationTestBase() {
 
@@ -30,13 +32,13 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
 
   @Test
   fun `create outcome and hearing outcome for referral`() {
-    whenever(outcomeService.createReferral(any(), any(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
+    whenever(outcomeService.createReferral(any(), any(), anyOrNull(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
 
     referralService.createReferral(
-      "1",
-      HearingOutcomeCode.REFER_POLICE,
-      "test",
-      "details",
+      chargeNumber = "1",
+      code = HearingOutcomeCode.REFER_POLICE,
+      adjudicator = "test",
+      details = "details",
     )
 
     verify(hearingOutcomeService, atLeastOnce()).createReferral(
@@ -47,6 +49,21 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
     )
 
     verify(outcomeService, atLeastOnce()).createReferral(chargeNumber = "1", code = OutcomeCode.REFER_POLICE, details = "details")
+  }
+
+  @Test
+  fun `refer to gov passes reason to service`() {
+    whenever(outcomeService.createReferral(any(), any(), anyOrNull(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
+
+    referralService.createReferral(
+      chargeNumber = "1",
+      code = HearingOutcomeCode.REFER_GOV,
+      adjudicator = "test",
+      details = "details",
+      referGovReason = ReferGovReason.OTHER,
+    )
+
+    verify(outcomeService, atLeastOnce()).createReferral(chargeNumber = "1", code = OutcomeCode.REFER_GOV, details = "details", referGovReason = ReferGovReason.OTHER)
   }
 
   @Test
