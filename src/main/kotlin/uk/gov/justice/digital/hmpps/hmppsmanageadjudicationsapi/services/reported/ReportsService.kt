@@ -264,7 +264,7 @@ class ReportsService(
   companion object {
     val minDate: LocalDate = LocalDate.of(1901, 1, 1)
     val maxDate: LocalDate = LocalDate.of(2999, 1, 1)
-    val transferOutAndHearingsToScheduledCutOffDate: LocalDateTime = LocalDate.now().minusMonths(6).atStartOfDay()
+    val transferOutAndHearingsToScheduledCutOffDate: LocalDateTime = LocalDate.of(2024, 1, 1).atStartOfDay()
     val transferReviewStatuses = listOf(
       ReportedAdjudicationStatus.UNSCHEDULED,
       ReportedAdjudicationStatus.REFER_POLICE,
