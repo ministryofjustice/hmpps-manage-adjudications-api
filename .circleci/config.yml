@@ -12,7 +12,7 @@ parameters:
     default: dps-releases
   java-version:
     type: string
-    default: "19.0"
+    default: "21.0"
   node-version:
     type: string
     default: 18.16-browsers
