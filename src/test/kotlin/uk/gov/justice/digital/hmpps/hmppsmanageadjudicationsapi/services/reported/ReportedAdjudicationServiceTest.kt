@@ -277,7 +277,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.addPunishment(
             Punishment(
               type = PunishmentType.ADDITIONAL_DAYS,
-              consecutiveChargeNumber = "999",
+              consecutiveToChargeNumber = "999",
               schedule = mutableListOf(
                 PunishmentSchedule(days = 10),
               ),
@@ -1743,7 +1743,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn("12345", PunishmentType.additionalDays()))
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn("12345", PunishmentType.additionalDays()))
         .thenReturn(listOf(entityBuilder.reportedAdjudication()))
     }
 

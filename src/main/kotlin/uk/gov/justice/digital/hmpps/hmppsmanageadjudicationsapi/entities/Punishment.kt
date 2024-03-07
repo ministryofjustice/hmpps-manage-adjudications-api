@@ -35,7 +35,7 @@ data class Punishment(
   var schedule: MutableList<PunishmentSchedule>,
   var deleted: Boolean? = null,
   @field:Length(max = 16)
-  var consecutiveChargeNumber: String? = null,
+  var consecutiveToChargeNumber: String? = null,
   @field:Length(max = 32)
   var nomisStatus: String? = null,
   var actualCreatedDate: LocalDateTime? = null,

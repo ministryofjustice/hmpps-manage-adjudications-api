@@ -286,9 +286,9 @@ open class ReportedDtoService(
         damagesOwedAmount = it.amount,
         activatedFrom = it.activatedFromChargeNumber,
         activatedBy = it.activatedByChargeNumber,
-        consecutiveChargeNumber = it.consecutiveChargeNumber,
+        consecutiveChargeNumber = it.consecutiveToChargeNumber,
         canRemove = !(PunishmentType.additionalDays().contains(it.type) && hasLinkedAda),
-        consecutiveReportAvailable = isConsecutiveReportAvailable(it.consecutiveChargeNumber, consecutiveReportsAvailable),
+        consecutiveReportAvailable = isConsecutiveReportAvailable(it.consecutiveToChargeNumber, consecutiveReportsAvailable),
         schedule = it.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toPunishmentScheduleDto(),
       )
     }
@@ -418,7 +418,7 @@ open class ReportedAdjudicationBaseService(
     )
 
   protected fun isLinkedToReport(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean =
-    reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn(consecutiveChargeNumber, types).isNotEmpty()
+    reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(consecutiveChargeNumber, types).isNotEmpty()
 
   protected fun getReportsWithActivePunishments(offenderBookingId: Long): List<Pair<String, List<Punishment>>> =
     reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(

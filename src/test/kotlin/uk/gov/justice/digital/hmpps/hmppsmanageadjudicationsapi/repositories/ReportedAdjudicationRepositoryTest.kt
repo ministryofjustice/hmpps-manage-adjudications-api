@@ -692,7 +692,7 @@ class ReportedAdjudicationRepositoryTest {
         it.addPunishment(
           Punishment(
             type = PunishmentType.PROSPECTIVE_DAYS,
-            consecutiveChargeNumber = "1234",
+            consecutiveToChargeNumber = "1234",
             schedule = mutableListOf(
               PunishmentSchedule(days = 10),
             ),
@@ -701,7 +701,7 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    val result = reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn("1234", listOf(PunishmentType.PROSPECTIVE_DAYS))
+    val result = reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn("1234", listOf(PunishmentType.PROSPECTIVE_DAYS))
     assertThat(result.size).isEqualTo(1)
   }
 

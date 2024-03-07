@@ -322,7 +322,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       val additionalDays = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.ADDITIONAL_DAYS }
 
       assertThat(removalWing.suspendedUntil).isEqualTo(LocalDate.now())
-      assertThat(additionalDays.consecutiveChargeNumber).isEqualTo("999")
+      assertThat(additionalDays.consecutiveToChargeNumber).isEqualTo("999")
 
       assertThat(argumentCaptor.value.getPunishments().size).isEqualTo(4)
       assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
@@ -517,7 +517,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
       assertThat(argumentCaptor.value.getPunishments().first().id).isNull()
       assertThat(argumentCaptor.value.getPunishments().first().activatedFromChargeNumber).isEqualTo("2")
-      assertThat(argumentCaptor.value.getPunishments().first().consecutiveChargeNumber).isEqualTo("12345")
+      assertThat(argumentCaptor.value.getPunishments().first().consecutiveToChargeNumber).isEqualTo("12345")
 
       assertThat(response).isNotNull
     }
@@ -784,7 +784,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn("1", listOf(type))).thenReturn(
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn("1", listOf(type))).thenReturn(
         listOf(entityBuilder.reportedAdjudication(chargeNumber = "1234")),
       )
 
@@ -813,7 +813,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn("1", listOf(type))).thenReturn(
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn("1", listOf(type))).thenReturn(
         listOf(entityBuilder.reportedAdjudication(chargeNumber = "1234")),
       )
 
@@ -845,7 +845,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn("1", listOf(type))).thenReturn(
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn("1", listOf(type))).thenReturn(
         listOf(entityBuilder.reportedAdjudication(chargeNumber = "1234")),
       )
 
@@ -1114,7 +1114,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
       assertThat(argumentCaptor.value.getPunishments().first().id).isNull()
       assertThat(argumentCaptor.value.getPunishments().first().activatedFromChargeNumber).isEqualTo("2")
-      assertThat(argumentCaptor.value.getPunishments().first().consecutiveChargeNumber).isEqualTo("12345")
+      assertThat(argumentCaptor.value.getPunishments().first().consecutiveToChargeNumber).isEqualTo("12345")
 
       assertThat(response).isNotNull
     }
@@ -1161,7 +1161,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             Punishment(
               id = 1,
               type = PunishmentType.ADDITIONAL_DAYS,
-              consecutiveChargeNumber = "1234",
+              consecutiveToChargeNumber = "1234",
               schedule = mutableListOf(PunishmentSchedule(days = 1)),
             ),
           )
@@ -1333,7 +1333,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         it.addPunishment(
           Punishment(
             type = PunishmentType.ADDITIONAL_DAYS,
-            consecutiveChargeNumber = "12345",
+            consecutiveToChargeNumber = "12345",
             schedule = mutableListOf(
               PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
             ),
@@ -1345,7 +1345,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         it.addPunishment(
           Punishment(
             type = PunishmentType.ADDITIONAL_DAYS,
-            consecutiveChargeNumber = "12345",
+            consecutiveToChargeNumber = "12345",
             schedule = mutableListOf(
               PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
             ),
@@ -1357,7 +1357,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         it.addPunishment(
           Punishment(
             type = PunishmentType.PROSPECTIVE_DAYS,
-            consecutiveChargeNumber = "12345",
+            consecutiveToChargeNumber = "12345",
             schedule = mutableListOf(
               PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
             ),
@@ -1369,7 +1369,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         it.addPunishment(
           Punishment(
             type = PunishmentType.PROSPECTIVE_DAYS,
-            consecutiveChargeNumber = "12345",
+            consecutiveToChargeNumber = "12345",
             schedule = mutableListOf(
               PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
             ),
@@ -1381,7 +1381,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         it.addPunishment(
           Punishment(
             type = PunishmentType.PROSPECTIVE_DAYS,
-            consecutiveChargeNumber = "12345",
+            consecutiveToChargeNumber = "12345",
             schedule = mutableListOf(
               PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
             ),
@@ -1393,7 +1393,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         it.addPunishment(
           Punishment(
             type = PunishmentType.ADDITIONAL_DAYS,
-            consecutiveChargeNumber = "12345",
+            consecutiveToChargeNumber = "12345",
             schedule = mutableListOf(
               PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
             ),
