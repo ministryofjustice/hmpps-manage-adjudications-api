@@ -1,8 +1,8 @@
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.15.3"
   id("jacoco")
-  kotlin("plugin.spring") version "1.9.22"
-  kotlin("plugin.jpa") version "1.9.22"
+  kotlin("plugin.spring") version "1.9.23"
+  kotlin("plugin.jpa") version "1.9.23"
 }
 
 configurations {
@@ -40,8 +40,8 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.7")
   testImplementation("org.flywaydb:flyway-core")
-  testImplementation("org.testcontainers:localstack:1.19.6")
-  testImplementation("org.testcontainers:postgresql:1.19.6")
+  testImplementation("org.testcontainers:localstack:1.19.7")
+  testImplementation("org.testcontainers:postgresql:1.19.7")
   testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.35.0")
 }
 
