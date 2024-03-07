@@ -32,7 +32,7 @@ class ReportedAdjudicationService(
 
     return reportedAdjudication.toDto(
       activeCaseload = authenticationFacade.activeCaseload,
-      consecutiveReportsAvailable = reportedAdjudication.getPunishments().filter { it.consecutiveChargeNumber != null }.map { it.consecutiveChargeNumber!! },
+      consecutiveReportsAvailable = reportedAdjudication.getPunishments().filter { it.consecutiveToChargeNumber != null }.map { it.consecutiveToChargeNumber!! },
       hasLinkedAda = hasLinkedAda(reportedAdjudication),
       linkedChargeNumbers = if (reportedAdjudication.migratedSplitRecord) {
         findMultipleOffenceCharges(

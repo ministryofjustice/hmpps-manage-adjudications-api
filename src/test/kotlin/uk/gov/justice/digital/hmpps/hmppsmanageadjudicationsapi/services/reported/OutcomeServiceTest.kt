@@ -584,7 +584,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `delete outcome throws exception if ADA linked to another report`() {
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn(any(), any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(any(), any())).thenReturn(
         listOf(reportedAdjudication),
       )
 

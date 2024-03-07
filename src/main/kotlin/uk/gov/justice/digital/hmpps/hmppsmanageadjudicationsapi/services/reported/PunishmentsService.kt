@@ -187,7 +187,7 @@ class PunishmentsService(
             punishment = PunishmentDto(
               id = punishment.id,
               type = punishment.type,
-              consecutiveChargeNumber = punishment.consecutiveChargeNumber,
+              consecutiveChargeNumber = punishment.consecutiveToChargeNumber,
               schedule = PunishmentScheduleDto(days = schedule.days),
             ),
           )
@@ -281,7 +281,7 @@ class PunishmentsService(
       otherPrivilege = punishmentRequest.otherPrivilege,
       stoppagePercentage = punishmentRequest.stoppagePercentage,
       suspendedUntil = punishmentRequest.suspendedUntil,
-      consecutiveChargeNumber = punishmentRequest.consecutiveChargeNumber,
+      consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber,
       amount = punishmentRequest.damagesOwedAmount,
       schedule = when (punishmentRequest.type) {
         PunishmentType.CAUTION -> mutableListOf(PunishmentSchedule(days = 0))
@@ -303,7 +303,7 @@ class PunishmentsService(
       it.otherPrivilege = punishmentRequest.otherPrivilege
       it.stoppagePercentage = punishmentRequest.stoppagePercentage
       it.suspendedUntil = punishmentRequest.suspendedUntil
-      it.consecutiveChargeNumber = punishmentRequest.consecutiveChargeNumber
+      it.consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber
       it.amount = punishmentRequest.damagesOwedAmount
       if (it.schedule.latestSchedule().hasScheduleBeenUpdated(punishmentRequest) && !PunishmentType.damagesAndCaution().contains(it.type)) {
         it.schedule.add(
@@ -333,7 +333,7 @@ class PunishmentsService(
       endDate = punishmentRequest.endDate,
     ).also {
       it.activatedFromChargeNumber = punishmentRequest.activatedFrom
-      it.consecutiveChargeNumber = punishmentRequest.consecutiveChargeNumber
+      it.consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber
     }
   }
   private fun cloneSuspendedPunishment(punishment: Punishment, days: Int, startDate: LocalDate?, endDate: LocalDate?) = Punishment(

@@ -93,7 +93,5 @@ enum class QuashedReason {
 enum class ReferGovReason {
   REVIEW_FOR_REFER_POLICE,
   GOV_INQUIRY,
-  CONSIDER_REFER_POLICE,
-  NOT_SERIOUS_FOR_INAD,
   OTHER,
 }

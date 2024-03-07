@@ -133,7 +133,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("cutOffDate") cutOffDate: LocalDateTime,
   ): Long
 
-  fun findByPunishmentsConsecutiveChargeNumberAndPunishmentsTypeIn(consecutiveChargeNumber: String, types: List<PunishmentType>): List<ReportedAdjudication>
+  fun findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(chargeNumber: String, types: List<PunishmentType>): List<ReportedAdjudication>
 
   @Query(value = "SELECT nextval(:sequenceName)", nativeQuery = true)
   fun getNextChargeSequence(

@@ -265,7 +265,7 @@ data class PunishmentDto(
   val activatedFrom: String? = null,
   @Schema(description = "latest punishment schedule")
   val schedule: PunishmentScheduleDto,
-  @Schema(description = "optional consecutive charge number")
+  @Schema(description = "optional consecutive to charge number")
   val consecutiveChargeNumber: String? = null,
   @Schema(description = "optional consecutive report number is available to view in adjudications service")
   val consecutiveReportAvailable: Boolean? = null,

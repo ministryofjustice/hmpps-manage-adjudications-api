@@ -1,0 +1,1 @@
+ALTER TABLE punishment RENAME COLUMN consecutive_charge_number TO consecutive_to_charge_number;
