@@ -110,9 +110,9 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun countByOriginatingAgencyIdAndStatus(agencyId: String, status: ReportedAdjudicationStatus): Long
 
-  fun countByOverrideAgencyIdAndStatusIn(agencyId: String, statuses: List<ReportedAdjudicationStatus>): Long
+  fun countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(agencyId: String, statuses: List<ReportedAdjudicationStatus>, cutOffDate: LocalDateTime): Long
 
-  fun countByOriginatingAgencyIdAndStatusIn(agencyId: String, statuses: List<ReportedAdjudicationStatus>): Long
+  fun countByOriginatingAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(agencyId: String, statuses: List<ReportedAdjudicationStatus>, cutOffDate: LocalDateTime): Long
 
   @Query(
     value = "select count(1) from reported_adjudications ra where ra.status in :statuses $TRANSFER_IN",

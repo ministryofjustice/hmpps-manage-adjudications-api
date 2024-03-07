@@ -1,0 +1,2 @@
+CREATE index agency_hearing_to_schedule_idx2 ON reported_adjudications(originating_agency_id, status, date_time_of_discovery);
+CREATE index override_agency_hearing_to_schedule_idx2 ON reported_adjudications(override_agency_id, status, date_time_of_discovery);
