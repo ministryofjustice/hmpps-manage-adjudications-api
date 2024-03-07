@@ -85,7 +85,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
         mapOf(
           "adjudicator" to "updated adjudicator",
           "details" to "updated details",
-          "referGovReason" to ReferGovReason.NOT_SERIOUS_FOR_INAD,
+          "referGovReason" to ReferGovReason.REVIEW_FOR_REFER_POLICE,
         ),
       )
       .exchange()
@@ -96,7 +96,7 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.details")
       .isEqualTo("updated details")
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.referGovReason")
-      .isEqualTo(ReferGovReason.NOT_SERIOUS_FOR_INAD.name)
+      .isEqualTo(ReferGovReason.REVIEW_FOR_REFER_POLICE.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.details")
       .isEqualTo("updated details")
       .jsonPath("$.reportedAdjudication.outcomes[0].hearing.outcome.adjudicator")
