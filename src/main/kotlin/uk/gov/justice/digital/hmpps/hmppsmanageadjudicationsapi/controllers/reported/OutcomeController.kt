@@ -21,10 +21,16 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService
 
-@Schema(description = "Request to add a police referral, or refer gov request")
+@Schema(description = "Request to add a police referral")
 data class ReferralDetailsRequest(
-  @Schema(description = "optional refer back to gov reason")
-  val referGovReason: ReferGovReason? = null,
+  @Schema(description = "details")
+  val details: String,
+)
+
+@Schema(description = "Request to add a gov referral")
+data class ReferralGovRequest(
+  @Schema(description = "refer back to gov reason")
+  val referGovReason: ReferGovReason,
   @Schema(description = "details")
   val details: String,
 )
@@ -170,7 +176,7 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createReferGov(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-    @RequestBody referGovRequest: ReferralDetailsRequest,
+    @RequestBody referGovRequest: ReferralGovRequest,
   ): ReportedAdjudicationResponse =
     eventPublishWrapper(
       events = listOf(

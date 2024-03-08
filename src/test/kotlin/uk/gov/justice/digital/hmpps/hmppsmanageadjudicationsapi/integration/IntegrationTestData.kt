@@ -783,16 +783,25 @@ class IntegrationTestData(
     testDataSet: AdjudicationIntTestDataSet,
     code: HearingOutcomeCode,
   ): ReportedAdjudicationResponse {
+    val body = if (code == HearingOutcomeCode.REFER_GOV) {
+      mapOf(
+        "code" to code,
+        "details" to "details",
+        "adjudicator" to "testing",
+        "referGovReason" to ReferGovReason.GOV_INQUIRY,
+      )
+    } else {
+      mapOf(
+        "code" to code,
+        "details" to "details",
+        "adjudicator" to "testing",
+      )
+    }
+
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/hearing/outcome/referral")
       .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "code" to code,
-          "details" to "details",
-          "adjudicator" to "testing",
-        ),
-      )
+      .bodyValue(body)
       .exchange()
       .returnResult(ReportedAdjudicationResponse::class.java)
       .responseBody

@@ -181,7 +181,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        outcomeService.createReferral(chargeNumber = "1", code = codeTo, details = "details")
+        outcomeService.createReferral(chargeNumber = "1", code = codeTo, details = "details", referGovReason = ReferGovReason.GOV_INQUIRY)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Invalid referral transition")
     }
@@ -362,6 +362,18 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().first().code).isEqualTo(OutcomeCode.CHARGE_PROVED)
       assertThat(argumentCaptor.value.getOutcomes().first().details).isNull()
       assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `throws validation exception if refer gov is missing reason when creating refer gov referral`() {
+      Assertions.assertThatThrownBy {
+        outcomeService.createReferral(
+          chargeNumber = "1",
+          code = OutcomeCode.REFER_GOV,
+          details = "",
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("referGovReason is mandatory for code REFER_GOV")
     }
   }
 
