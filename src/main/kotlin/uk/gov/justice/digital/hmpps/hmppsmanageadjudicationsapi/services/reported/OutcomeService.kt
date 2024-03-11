@@ -43,7 +43,7 @@ class OutcomeService(
 
   fun createReferGov(
     chargeNumber: String,
-    referGovReason: ReferGovReason?,
+    referGovReason: ReferGovReason,
     details: String,
   ): ReportedAdjudicationDto = createOutcome(
     chargeNumber = chargeNumber,
@@ -87,7 +87,7 @@ class OutcomeService(
   ): ReportedAdjudicationDto = createOutcome(
     chargeNumber = chargeNumber,
     code = code.validateReferral(),
-    referGovReason = referGovReason,
+    referGovReason = referGovReason.validate(outcomeCode = code),
     details = details,
     validate = validate,
   )
@@ -326,8 +326,9 @@ class OutcomeService(
     fun List<CombinedOutcomeDto>.isLatestReferralOutcome() =
       this.lastOrNull()?.referralOutcome != null
 
-    fun ReferGovReason?.validate(outcomeCode: OutcomeCode) {
+    fun ReferGovReason?.validate(outcomeCode: OutcomeCode): ReferGovReason? {
       if (outcomeCode == OutcomeCode.REFER_GOV) this ?: throw ValidationException("referGovReason is mandatory for code REFER_GOV")
+      return this
     }
   }
 }

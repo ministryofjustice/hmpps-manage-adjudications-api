@@ -506,6 +506,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
           "code" to HearingOutcomeCode.REFER_GOV,
           "details" to "details",
           "adjudicator" to "testing",
+          "referGovReason" to ReferGovReason.GOV_INQUIRY,
         ),
       )
       .exchange()
@@ -555,6 +556,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
           "code" to HearingOutcomeCode.REFER_GOV,
           "details" to "details",
           "adjudicator" to "testing",
+          "referGovReason" to ReferGovReason.GOV_INQUIRY,
         ),
       )
       .exchange()
@@ -598,6 +600,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
           "code" to HearingOutcomeCode.REFER_GOV,
           "details" to "details",
           "adjudicator" to "testing",
+          "referGovReason" to ReferGovReason.GOV_INQUIRY,
         ),
       )
       .exchange()
@@ -645,6 +648,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
           "code" to HearingOutcomeCode.REFER_GOV,
           "details" to "details",
           "adjudicator" to "testing",
+          "referGovReason" to ReferGovReason.GOV_INQUIRY,
         ),
       )
       .exchange()

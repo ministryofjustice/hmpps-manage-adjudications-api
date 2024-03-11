@@ -218,7 +218,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun `responds with a unauthorised status code`() {
       createOutcomeRequest(
         1,
-        POLICE_REFER_REQUEST,
+        REFER_GOV_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -227,7 +227,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for non ALO`() {
       createOutcomeRequest(
         1,
-        POLICE_REFER_REQUEST,
+        REFER_GOV_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -236,7 +236,7 @@ class OutcomeControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for ALO without write scope`() {
       createOutcomeRequest(
         1,
-        POLICE_REFER_REQUEST,
+        REFER_GOV_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -255,7 +255,7 @@ class OutcomeControllerTest : TestControllerBase() {
 
     private fun createOutcomeRequest(
       id: Long,
-      referGovRequest: ReferralDetailsRequest,
+      referGovRequest: ReferralGovRequest,
     ): ResultActions {
       val body = objectMapper.writeValueAsString(referGovRequest)
       return mockMvc
@@ -557,7 +557,7 @@ class OutcomeControllerTest : TestControllerBase() {
 
   companion object {
     private val POLICE_REFER_REQUEST = ReferralDetailsRequest(details = "details")
-    private val REFER_GOV_REQUEST = ReferralDetailsRequest(referGovReason = ReferGovReason.GOV_INQUIRY, details = "details")
+    private val REFER_GOV_REQUEST = ReferralGovRequest(referGovReason = ReferGovReason.GOV_INQUIRY, details = "details")
     private val NOT_PROCEED_REQUEST = NotProceedRequest(reason = NotProceedReason.NOT_FAIR, details = "details")
     private val QUASHED_REQUEST = QuashedRequest(reason = QuashedReason.APPEAL_UPHELD, details = "details")
     private val AMEND_REFER_POLICE_REQUEST = AmendOutcomeRequest(details = "details")
