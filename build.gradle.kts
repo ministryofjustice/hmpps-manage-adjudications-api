@@ -25,7 +25,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:3.1.1")
-  implementation("io.opentelemetry:opentelemetry-api:1.35.0")
+  implementation("io.opentelemetry:opentelemetry-api:1.36.0")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.1.0")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.0")
@@ -42,7 +42,7 @@ dependencies {
   testImplementation("org.flywaydb:flyway-core")
   testImplementation("org.testcontainers:localstack:1.19.7")
   testImplementation("org.testcontainers:postgresql:1.19.7")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.35.0")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.36.0")
 }
 
 allOpen {
