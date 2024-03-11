@@ -275,6 +275,8 @@ class ReportsService(
       ReportedAdjudicationStatus.ADJOURNED,
       ReportedAdjudicationStatus.UNSCHEDULED,
       ReportedAdjudicationStatus.REFER_INAD,
+      ReportedAdjudicationStatus.REFER_GOV,
+      ReportedAdjudicationStatus.REFER_POLICE,
     )
 
     val transferOutStatuses = listOf(ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.SCHEDULED)
