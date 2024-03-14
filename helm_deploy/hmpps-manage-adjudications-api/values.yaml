@@ -17,7 +17,7 @@ generic-service:
     tlsSecretName: hmpps-manage-adjudications-api-cert
     annotations:
       # Secure the all scheduled task endpoints from outside the Kubernetes ingress
-      nginx.ingress.kubernetes.io/configuration-snippet: |
+      nginx.ingress.kubernetes.io/server-snippet: |
         server_tokens off;
         location /scheduled-tasks/ {
           deny all;
