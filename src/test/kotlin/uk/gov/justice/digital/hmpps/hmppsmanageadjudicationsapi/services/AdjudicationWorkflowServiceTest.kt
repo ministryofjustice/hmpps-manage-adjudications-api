@@ -672,10 +672,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       )
 
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.createDateTime = LocalDateTime.now()
-          it.createdByUserId = ""
-        },
+        entityBuilder.reportedAdjudication(),
       )
 
       adjudicationWorkflowService.setOffenceDetailsAndCompleteDraft(

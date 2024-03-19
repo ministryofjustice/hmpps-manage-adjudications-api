@@ -320,7 +320,7 @@ class PunishmentsService(
   private fun activateSuspendedPunishment(chargeNumber: String, punishmentRequest: PunishmentRequest): Punishment {
     var suspendedPunishment: Punishment? = null
     punishmentRequest.id?.run {
-      val activatedFromReport = findByChargeNumber(punishmentRequest.activatedFrom!!)
+      val activatedFromReport = findByChargeNumber(chargeNumber = punishmentRequest.activatedFrom!!, ignoreSecurityCheck = true)
       suspendedPunishment = activatedFromReport.getPunishments().getSuspendedPunishment(punishmentRequest.id).also {
         it.activatedByChargeNumber = chargeNumber
       }
