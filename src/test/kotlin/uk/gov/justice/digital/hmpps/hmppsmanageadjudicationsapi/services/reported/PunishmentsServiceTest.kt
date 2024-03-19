@@ -1089,34 +1089,38 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `activate manual suspended punishment`() {
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      val response = punishmentsService.update(
-        chargeNumber = "1",
-        listOf(
-          PunishmentRequest(
-            type = PunishmentType.PRIVILEGE,
-            privilegeType = PrivilegeType.OTHER,
-            otherPrivilege = "other",
-            days = 1,
-            startDate = LocalDate.now(),
-            endDate = LocalDate.now().plusDays(1),
-            activatedFrom = "2",
-            consecutiveChargeNumber = "12345",
-          ),
-        ),
+    fun `removing a punishment that was activated from a suspended punishment, should rmove the acitvated by flag on the original record` () {
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.clearPunishments()
+          it.addPunishment(
+            Punishment(type = PunishmentType.REMOVAL_ACTIVITY,  schedule = mutableListOf(PunishmentSchedule(days = 0,))
+            ).also {
+              it.activatedFromChargeNumber = "2"
+            }
+          )
+        }
       )
 
-      verify(reportedAdjudicationRepository, never()).findByChargeNumber("2")
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      val activatedFrom =   entityBuilder.reportedAdjudication().also {
+        it.clearPunishments()
+        it.addPunishment(
+          Punishment(type = PunishmentType.REMOVAL_ACTIVITY,  schedule = mutableListOf(PunishmentSchedule(days = 0,))
+          ).also {
+            it.activatedByChargeNumber = "1"
+          }
+        )
+      }
 
-      assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
-      assertThat(argumentCaptor.value.getPunishments().first().id).isNull()
-      assertThat(argumentCaptor.value.getPunishments().first().activatedFromChargeNumber).isEqualTo("2")
-      assertThat(argumentCaptor.value.getPunishments().first().consecutiveToChargeNumber).isEqualTo("12345")
+      whenever(reportedAdjudicationRepository.findByChargeNumber("2")).thenReturn(activatedFrom)
 
-      assertThat(response).isNotNull
+      punishmentsService.update(
+        chargeNumber = "1",
+        punishments = emptyList()
+      )
+
+      assertThat(activatedFrom.getPunishments().first().activatedByChargeNumber).isNull()
     }
 
     @Test
