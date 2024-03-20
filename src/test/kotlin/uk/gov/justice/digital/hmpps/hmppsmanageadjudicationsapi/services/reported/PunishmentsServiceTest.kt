@@ -732,7 +732,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @ParameterizedTest
     fun `throws validation exception when deleting a punishment linked to another report`(type: PunishmentType) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
+        entityBuilder.reportedAdjudication(chargeNumber = "1").also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.addPunishment(
             Punishment(
@@ -1050,7 +1050,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `removing a punishment that was activated from a suspended punishment, should remove the activated by flag on the original record`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
-        entityBuilder.reportedAdjudication().also {
+        entityBuilder.reportedAdjudication(chargeNumber = "1").also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.clearPunishments()
           it.addPunishment(
@@ -1064,7 +1064,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      val activatedFrom = entityBuilder.reportedAdjudication().also {
+      val activatedFrom = entityBuilder.reportedAdjudication(chargeNumber = "2").also {
         it.clearPunishments()
         it.addPunishment(
           Punishment(

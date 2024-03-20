@@ -219,11 +219,11 @@ class PunishmentsService(
 
   private fun ReportedAdjudication.deletePunishments(idsToUpdate: List<Long>) {
     this.getPunishments().filter { idsToUpdate.none { id -> id == it.id } }.forEach { punishment ->
-      punishment.type.consecutiveReportValidation(chargeNumber).let {
+      punishment.type.consecutiveReportValidation(this.chargeNumber).let {
         punishment.deleted = true
       }
       punishment.activatedFromChargeNumber?.let {
-        findByChargeNumber(chargeNumber = it, ignoreSecurityCheck = true).removeActivatedByLink(activatedFrom = chargeNumber)
+        findByChargeNumber(chargeNumber = it, ignoreSecurityCheck = true).removeActivatedByLink(activatedFrom = this.chargeNumber)
       }
     }
   }
