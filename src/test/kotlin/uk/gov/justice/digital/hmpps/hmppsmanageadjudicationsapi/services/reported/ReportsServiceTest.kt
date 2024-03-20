@@ -342,10 +342,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       ).thenReturn(
         PageImpl(
           listOf(
-            entityBuilder.reportedAdjudication().also {
-              it.createDateTime = LocalDateTime.now()
-              it.createdByUserId = ""
-            },
+            entityBuilder.reportedAdjudication(),
           ),
         ),
       )
@@ -372,10 +369,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       ).thenReturn(
         PageImpl(
           listOf(
-            entityBuilder.reportedAdjudication().also {
-              it.createDateTime = LocalDateTime.now()
-              it.createdByUserId = ""
-            },
+            entityBuilder.reportedAdjudication(),
           ),
         ),
       )
@@ -405,8 +399,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         PageImpl(
           listOf(
             entityBuilder.reportedAdjudication().also {
-              it.createDateTime = LocalDateTime.now()
-              it.createdByUserId = ""
               it.overrideAgencyId = if (overrideAgency) it.originatingAgencyId else null
             },
           ),
@@ -436,10 +428,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       ).thenReturn(
         PageImpl(
           listOf(
-            entityBuilder.reportedAdjudication().also {
-              it.createDateTime = LocalDateTime.now()
-              it.createdByUserId = ""
-            },
+            entityBuilder.reportedAdjudication(),
           ),
         ),
       )
@@ -465,10 +454,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       ).thenReturn(
         PageImpl(
           listOf(
-            entityBuilder.reportedAdjudication().also {
-              it.createDateTime = LocalDateTime.now()
-              it.createdByUserId = ""
-            },
+            entityBuilder.reportedAdjudication(),
           ),
         ),
       )
@@ -495,10 +481,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     fun `returns reports for a prisoner`() {
       whenever(reportedAdjudicationRepository.findByPrisonerNumber("A12345")).thenReturn(
         listOf(
-          entityBuilder.reportedAdjudication().also {
-            it.createDateTime = LocalDateTime.now()
-            it.createdByUserId = ""
-          },
+          entityBuilder.reportedAdjudication(),
         ),
       )
       val response = reportsService.getReportsForPrisoner("A12345")
@@ -513,10 +496,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     fun `returns reports for a booking`() {
       whenever(reportedAdjudicationRepository.findByOffenderBookingId(12345)).thenReturn(
         listOf(
-          entityBuilder.reportedAdjudication().also {
-            it.createDateTime = LocalDateTime.now()
-            it.createdByUserId = ""
-          },
+          entityBuilder.reportedAdjudication(),
         ),
       )
       val response = reportsService.getReportsForBooking(12345)
