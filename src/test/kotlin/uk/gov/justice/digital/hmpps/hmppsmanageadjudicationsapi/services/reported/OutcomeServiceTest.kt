@@ -391,12 +391,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun init() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.findByChargeNumber("3")).thenReturn(reportedAdjudicationWithOutcomeAndNoHearings)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-        reportedAdjudication.also {
-          it.createDateTime = LocalDateTime.now()
-          it.createdByUserId = "test"
-        },
-      )
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
     }
 
     @CsvSource("REFER_POLICE", "PROSECUTION", "CHARGE_PROVED", "NOT_PROCEED", "DISMISSED")
@@ -596,9 +591,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `delete outcome throws exception if ADA linked to another report`() {
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(any(), any())).thenReturn(
-        listOf(reportedAdjudication),
-      )
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(any(), any())).thenReturn(listOf(reportedAdjudication))
 
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         reportedAdjudication
@@ -623,6 +616,45 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("is linked to another report")
+    }
+
+    @Test
+    fun `delete outcome removes any reference to activated from report`() {
+      val activatedFrom = entityBuilder.reportedAdjudication(chargeNumber = "2").also {
+        it.clearPunishments()
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.CONFINEMENT,
+            activatedByChargeNumber = "1",
+            suspendedUntil = LocalDate.now(),
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10),
+            ),
+          ),
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("2")).thenReturn(activatedFrom)
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
+        reportedAdjudication
+          .also {
+            it.chargeNumber = "1"
+            it.addOutcome(Outcome(id = 1, code = OutcomeCode.CHARGE_PROVED).also { o -> o.createDateTime = LocalDateTime.now() })
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.CONFINEMENT,
+                activatedFromChargeNumber = "2",
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10),
+                ),
+              ),
+            )
+          },
+      )
+
+      outcomeService.deleteOutcome("1", 1)
+
+      assertThat(activatedFrom.getPunishments().first().activatedByChargeNumber).isNull()
     }
   }
 

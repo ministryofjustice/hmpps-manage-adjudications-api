@@ -14,10 +14,8 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentCommentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -26,13 +24,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReasonForChange
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -58,33 +53,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       punishmentsService.update(
         chargeNumber = "1",
         listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1)),
-      )
-    }.isInstanceOf(EntityNotFoundException::class.java)
-      .hasMessageContaining("ReportedAdjudication not found for 1")
-
-    assertThatThrownBy {
-      punishmentsService.createPunishmentComment(
-        chargeNumber = "1",
-        punishmentComment = PunishmentCommentRequest(comment = ""),
-
-      )
-    }.isInstanceOf(EntityNotFoundException::class.java)
-      .hasMessageContaining("ReportedAdjudication not found for 1")
-
-    assertThatThrownBy {
-      punishmentsService.updatePunishmentComment(
-        chargeNumber = "1",
-        punishmentComment = PunishmentCommentRequest(comment = ""),
-
-      )
-    }.isInstanceOf(EntityNotFoundException::class.java)
-      .hasMessageContaining("ReportedAdjudication not found for 1")
-
-    assertThatThrownBy {
-      punishmentsService.deletePunishmentComment(
-        chargeNumber = "1",
-        punishmentCommentId = 1,
-
       )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
@@ -492,34 +460,25 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `activate manual suspended punishment`() {
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      val response = punishmentsService.create(
-        chargeNumber = "1",
-        listOf(
-          PunishmentRequest(
-            type = PunishmentType.PRIVILEGE,
-            privilegeType = PrivilegeType.OTHER,
-            otherPrivilege = "other",
-            days = 1,
-            startDate = LocalDate.now(),
-            endDate = LocalDate.now().plusDays(1),
-            activatedFrom = "2",
-            consecutiveChargeNumber = "12345",
+    fun `exception is raised if no punishment id is provided for activation`() {
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(
+            PunishmentRequest(
+              type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.OTHER,
+              otherPrivilege = "other",
+              days = 1,
+              startDate = LocalDate.now(),
+              endDate = LocalDate.now().plusDays(1),
+              activatedFrom = "2",
+              consecutiveChargeNumber = "12345",
+            ),
           ),
-        ),
-      )
-
-      verify(reportedAdjudicationRepository, never()).findByChargeNumber("2")
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-
-      assertThat(argumentCaptor.value.getPunishments().first()).isNotNull
-      assertThat(argumentCaptor.value.getPunishments().first().id).isNull()
-      assertThat(argumentCaptor.value.getPunishments().first().activatedFromChargeNumber).isEqualTo("2")
-      assertThat(argumentCaptor.value.getPunishments().first().consecutiveToChargeNumber).isEqualTo("12345")
-
-      assertThat(response).isNotNull
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Suspended punishment activation missing punishment id to activate")
     }
   }
 
@@ -1089,27 +1048,31 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `removing a punishment that was activated from a suspended punishment, should rmove the acitvated by flag on the original record` () {
+    fun `removing a punishment that was activated from a suspended punishment, should remove the activated by flag on the original record`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
           it.clearPunishments()
           it.addPunishment(
-            Punishment(type = PunishmentType.REMOVAL_ACTIVITY,  schedule = mutableListOf(PunishmentSchedule(days = 0,))
+            Punishment(
+              type = PunishmentType.REMOVAL_ACTIVITY,
+              schedule = mutableListOf(PunishmentSchedule(days = 0)),
             ).also {
               it.activatedFromChargeNumber = "2"
-            }
+            },
           )
-        }
+        },
       )
 
-      val activatedFrom =   entityBuilder.reportedAdjudication().also {
+      val activatedFrom = entityBuilder.reportedAdjudication().also {
         it.clearPunishments()
         it.addPunishment(
-          Punishment(type = PunishmentType.REMOVAL_ACTIVITY,  schedule = mutableListOf(PunishmentSchedule(days = 0,))
+          Punishment(
+            type = PunishmentType.REMOVAL_ACTIVITY,
+            schedule = mutableListOf(PunishmentSchedule(days = 0)),
           ).also {
             it.activatedByChargeNumber = "1"
-          }
+          },
         )
       }
 
@@ -1117,7 +1080,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       punishmentsService.update(
         chargeNumber = "1",
-        punishments = emptyList()
+        punishments = emptyList(),
       )
 
       assertThat(activatedFrom.getPunishments().first().activatedByChargeNumber).isNull()
@@ -1446,205 +1409,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(additionalDaysReports.first().punishment.schedule.days).isEqualTo(10)
       assertThat(additionalDaysReports.first().punishment.consecutiveChargeNumber).isEqualTo("12345")
       assertThat(additionalDaysReports.first().chargeProvedDate).isEqualTo(reportedAdjudications.first().hearings.first().dateTimeOfHearing.toLocalDate())
-    }
-  }
-
-  @Nested
-  inner class CreatePunishmentComment {
-
-    @Test
-    fun `Punishment comment created`() {
-      val reportedAdjudication = entityBuilder.reportedAdjudication()
-
-      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(reportedAdjudication)).thenReturn(reportedAdjudication)
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      punishmentsService.createPunishmentComment(
-        chargeNumber = "1",
-        punishmentComment = PunishmentCommentRequest(comment = "some text"),
-      )
-
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      assertThat(argumentCaptor.value.punishmentComments[0].comment).isEqualTo("some text")
-    }
-
-    @Test
-    fun `punishment comment with reason for change`() {
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-        entityBuilder.reportedAdjudication(),
-      )
-
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      punishmentsService.createPunishmentComment(
-        chargeNumber = "1",
-        punishmentComment = PunishmentCommentRequest(comment = "some text", reasonForChange = ReasonForChange.APPEAL),
-      )
-
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      assertThat(argumentCaptor.value.punishmentComments[0].reasonForChange).isEqualTo(ReasonForChange.APPEAL)
-    }
-  }
-
-  @Nested
-  inner class UpdatePunishmentComment {
-
-    @Test
-    fun `Punishment comment not found`() {
-      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.createDateTime = LocalDateTime.now()
-        it.createdByUserId = ""
-        it.punishmentComments.add(
-          PunishmentComment(id = 2, comment = "old text").also { punishmentComment ->
-            punishmentComment.createdByUserId = "author"
-            punishmentComment.createDateTime = LocalDateTime.now()
-          },
-        )
-      }
-
-      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
-
-      assertThatThrownBy {
-        punishmentsService.updatePunishmentComment(
-          chargeNumber = "1",
-          punishmentComment = PunishmentCommentRequest(id = -1, comment = "new text"),
-        )
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("Punishment comment id -1 is not found")
-    }
-
-    @Test
-    fun `Only author can update comment`() {
-      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.createDateTime = LocalDateTime.now()
-        it.createdByUserId = ""
-        it.punishmentComments.add(
-          PunishmentComment(id = 2, comment = "old text").also { punishmentComment ->
-            punishmentComment.createdByUserId = "author"
-            punishmentComment.createDateTime = LocalDateTime.now()
-          },
-        )
-      }
-
-      whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
-      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
-
-      assertThatThrownBy {
-        punishmentsService.updatePunishmentComment(
-          chargeNumber = "1",
-          punishmentComment = PunishmentCommentRequest(id = 2, comment = "new text"),
-        )
-      }.isInstanceOf(ForbiddenException::class.java)
-        .hasMessageContaining("Only author can carry out action on punishment comment. attempt by ITAG_USER")
-    }
-
-    @Test
-    fun `Update punishment comment`() {
-      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.createDateTime = LocalDateTime.now()
-        it.createdByUserId = ""
-        it.punishmentComments.add(
-          PunishmentComment(id = 2, comment = "old text").also { punishmentComment ->
-            punishmentComment.createdByUserId = "author"
-            punishmentComment.createDateTime = LocalDateTime.now()
-          },
-        )
-      }
-
-      whenever(authenticationFacade.currentUsername).thenReturn("author")
-      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(reportedAdjudication)).thenReturn(reportedAdjudication)
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      punishmentsService.updatePunishmentComment(
-        chargeNumber = "1",
-        punishmentComment = PunishmentCommentRequest(id = 2, comment = "new text"),
-      )
-
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      assertThat(argumentCaptor.value.punishmentComments[0].comment).isEqualTo("new text")
-    }
-  }
-
-  @Nested
-  inner class DeletePunishmentComment {
-
-    @Test
-    fun `Punishment comment not found`() {
-      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.createDateTime = LocalDateTime.now()
-        it.createdByUserId = ""
-        it.punishmentComments.add(
-          PunishmentComment(id = 2, comment = "old text").also { punishmentComment ->
-            punishmentComment.createdByUserId = "author"
-            punishmentComment.createDateTime = LocalDateTime.now()
-          },
-        )
-      }
-
-      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
-
-      assertThatThrownBy {
-        punishmentsService.deletePunishmentComment(
-          chargeNumber = "1",
-          punishmentCommentId = -1,
-        )
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("Punishment comment id -1 is not found")
-    }
-
-    @Test
-    fun `Only author can delete comment`() {
-      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.createDateTime = LocalDateTime.now()
-        it.createdByUserId = ""
-        it.punishmentComments.add(
-          PunishmentComment(id = 2, comment = "old text").also { punishmentComment ->
-            punishmentComment.createdByUserId = "author"
-            punishmentComment.createDateTime = LocalDateTime.now()
-          },
-        )
-      }
-
-      whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
-      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
-
-      assertThatThrownBy {
-        punishmentsService.deletePunishmentComment(
-          chargeNumber = "1",
-          punishmentCommentId = 2,
-        )
-      }.isInstanceOf(ForbiddenException::class.java)
-        .hasMessageContaining("Only author can carry out action on punishment comment. attempt by ITAG_USER")
-    }
-
-    @Test
-    fun `Delete punishment comment`() {
-      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.createDateTime = LocalDateTime.now()
-        it.createdByUserId = ""
-        it.punishmentComments.add(
-          PunishmentComment(id = 2, comment = "some text").also { punishmentComment ->
-            punishmentComment.createdByUserId = "author"
-            punishmentComment.createDateTime = LocalDateTime.now()
-          },
-        )
-      }
-
-      whenever(authenticationFacade.currentUsername).thenReturn("author")
-      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(reportedAdjudication)).thenReturn(reportedAdjudication)
-      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
-
-      punishmentsService.deletePunishmentComment(
-        chargeNumber = "1",
-        punishmentCommentId = 2,
-      )
-
-      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      assertThat(argumentCaptor.value.punishmentComments.size).isEqualTo(0)
     }
   }
 

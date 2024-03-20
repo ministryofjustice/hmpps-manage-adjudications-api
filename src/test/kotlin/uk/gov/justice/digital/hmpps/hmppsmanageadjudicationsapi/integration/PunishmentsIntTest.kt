@@ -373,7 +373,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
-  fun `activate a suspended punishment, remove it and ensure the punishment is now available in suspended punishments list` () {
+  fun `activate a suspended punishment, remove it and ensure the punishment is now available in suspended punishments list`() {
     val dummyCharge = initDataForUnScheduled().getGeneratedChargeNumber()
     val suspended = initDataForUnScheduled().createHearing().createChargeProved().getGeneratedChargeNumber()
 
@@ -389,22 +389,19 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     getSuspendedPunishments(chargeNumber = activated).expectStatus().isOk
       .expectBody().jsonPath("$.size()").isEqualTo(0)
 
-      //now update it and remove the activated record.
-      webTestClient.post()
+    // now update it and remove the activated record.
+    webTestClient.put()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
-          "punishments" to emptyList<PunishmentRequest>()
+          "punishments" to emptyList<PunishmentRequest>(),
         ),
       )
       .exchange().expectStatus().isOk
 
-
     getSuspendedPunishments(chargeNumber = activated).expectStatus().isOk
       .expectBody().jsonPath("$.size()").isEqualTo(1)
-
-
   }
 
   fun createPunishments(
@@ -425,7 +422,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
           "punishments" to
             listOf(
               PunishmentRequest(
-                id = if(activatedFrom.isNullOrBlank()) null else id,
+                id = if (activatedFrom.isNullOrBlank()) null else id,
                 type = type,
                 days = 10,
                 suspendedUntil = if (isSuspended) suspendedUntil else null,
@@ -457,8 +454,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   private fun getSuspendedPunishments(chargeNumber: String): WebTestClient.ResponseSpec =
     webTestClient.get()
-      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended/v2?chargeNumber=${chargeNumber}")
+      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended/v2?chargeNumber=$chargeNumber")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
-
 }
