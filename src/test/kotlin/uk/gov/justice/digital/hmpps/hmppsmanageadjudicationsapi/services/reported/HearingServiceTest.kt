@@ -267,10 +267,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
   inner class AmendHearing {
 
     private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = LocalDateTime.now())
-      .also {
-        it.createdByUserId = ""
-        it.createDateTime = LocalDateTime.now()
-      }
 
     @BeforeEach
     fun init() {
@@ -375,10 +371,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class DeleteHearing {
     private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
-      .also {
-        it.createdByUserId = ""
-        it.createDateTime = LocalDateTime.now()
-      }
 
     @BeforeEach
     fun init() {

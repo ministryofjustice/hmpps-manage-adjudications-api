@@ -343,11 +343,12 @@ open class ReportedAdjudicationBaseService(
   protected val authenticationFacade: AuthenticationFacade,
 ) : ReportedDtoService(offenceCodeLookupService) {
 
-  protected fun findByChargeNumber(chargeNumber: String): ReportedAdjudication {
+  protected fun findByChargeNumber(chargeNumber: String, ignoreSecurityCheck: Boolean = false): ReportedAdjudication {
     val reportedAdjudication =
       reportedAdjudicationRepository.findByChargeNumber(chargeNumber) ?: throwEntityNotFoundException(
         chargeNumber,
       )
+    if (ignoreSecurityCheck) return reportedAdjudication
 
     val overrideAgencyId = reportedAdjudication.overrideAgencyId ?: reportedAdjudication.originatingAgencyId
 

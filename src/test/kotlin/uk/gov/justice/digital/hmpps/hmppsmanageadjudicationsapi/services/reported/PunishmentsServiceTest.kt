@@ -1454,10 +1454,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `Punishment comment created`() {
-      val reportedAdjudication = entityBuilder.reportedAdjudication().also {
-        it.createDateTime = LocalDateTime.now()
-        it.createdByUserId = ""
-      }
+      val reportedAdjudication = entityBuilder.reportedAdjudication()
 
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
       whenever(reportedAdjudicationRepository.save(reportedAdjudication)).thenReturn(reportedAdjudication)
@@ -1476,10 +1473,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `punishment comment with reason for change`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.createDateTime = LocalDateTime.now()
-          it.createdByUserId = ""
-        },
+        entityBuilder.reportedAdjudication(),
       )
 
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
@@ -1748,6 +1742,39 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.size).isEqualTo(1)
       assertThat(response.first().amount).isNull()
       assertThat(response.first().stoppagePercentage).isNotNull
+    }
+  }
+
+  @Nested
+  inner class TransferRelatedActivations {
+
+    @Test
+    fun `activate suspended punishments from a report in a previous prison should not apply the security check when updating record`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber("2")).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.originatingAgencyId = "RDI"
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.clearPunishments()
+          it.addPunishment(
+            Punishment(id = 1, type = PunishmentType.REMOVAL_ACTIVITY, schedule = mutableListOf(PunishmentSchedule(days = 10))),
+          )
+        },
+      )
+
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(entityBuilder.reportedAdjudication())
+
+      assertDoesNotThrow {
+        punishmentsService.create(
+          chargeNumber = "2",
+          listOf(PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 1, activatedFrom = "1", id = 1, startDate = LocalDate.now(), endDate = LocalDate.now().plusDays(1))),
+        )
+      }
     }
   }
 

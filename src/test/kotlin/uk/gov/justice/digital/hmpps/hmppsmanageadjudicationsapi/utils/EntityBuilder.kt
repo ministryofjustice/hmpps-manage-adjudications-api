@@ -83,7 +83,10 @@ class EntityBuilder {
       punishmentComments = mutableListOf(),
       createdOnBehalfOfOfficer = "officer",
       createdOnBehalfOfReason = "some reason",
-    )
+    ).also {
+      it.createDateTime = LocalDateTime.now()
+      it.createdByUserId = ""
+    }
   }
 
   fun createHearing(
