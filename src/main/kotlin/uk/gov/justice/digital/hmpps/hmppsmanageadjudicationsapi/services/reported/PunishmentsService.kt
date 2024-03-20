@@ -5,7 +5,6 @@ import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ActivePunishmentDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentCommentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdditionalDaysDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
@@ -16,14 +15,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDate
 
@@ -77,18 +74,13 @@ class PunishmentsService(
     }
 
     punishments.validateCaution()
-
-    val idsToUpdate = punishments.filter { it.id != null }.map { it.id }
-    reportedAdjudication.getPunishments().filter { !idsToUpdate.contains(it.id) }.forEach { punishment ->
-      punishment.type.consecutiveReportValidation(chargeNumber).let {
-        punishment.deleted = true
-      }
-    }
+    reportedAdjudication.deletePunishments(idsToUpdate = punishments.filter { it.id != null }.map { it.id!! })
 
     punishments.forEach { punishmentRequest ->
       punishmentRequest.validateRequest(reportedAdjudication.getLatestHearing())
 
       when (punishmentRequest.id) {
+        // its a new punishment on the charge
         null -> when (punishmentRequest.activatedFrom) {
           null -> reportedAdjudication.addPunishment(
             createNewPunishment(
@@ -99,6 +91,7 @@ class PunishmentsService(
           // this is related to manual activation (to be removed post migration) where there is no id to clone
           else -> reportedAdjudication.addPunishment(activateSuspendedPunishment(chargeNumber = chargeNumber, punishmentRequest = punishmentRequest))
         }
+        // its an existing punishment on the charge
         else -> {
           when (punishmentRequest.activatedFrom) {
             null -> {
@@ -110,6 +103,7 @@ class PunishmentsService(
                   }
                   updatePunishment(punishmentToAmend, punishmentRequest)
                 }
+                // punishment type has changed, so needs to be removed and recreated
                 else -> {
                   punishmentToAmend.type.consecutiveReportValidation(chargeNumber).let {
                     punishmentToAmend.deleted = true
@@ -215,56 +209,21 @@ class PunishmentsService(
         }
       }.flatten().sortedByDescending { it.startDate }
 
-  fun createPunishmentComment(
-    chargeNumber: String,
-    punishmentComment: PunishmentCommentRequest,
-  ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByChargeNumber(chargeNumber)
-
-    reportedAdjudication.punishmentComments.add(
-      PunishmentComment(
-        comment = punishmentComment.comment,
-        reasonForChange = punishmentComment.reasonForChange,
-      ),
-    )
-
-    return saveToDto(reportedAdjudication)
-  }
-
-  fun updatePunishmentComment(
-    chargeNumber: String,
-    punishmentComment: PunishmentCommentRequest,
-  ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByChargeNumber(chargeNumber)
-    val punishmentCommentToUpdate = reportedAdjudication.punishmentComments.getPunishmentComment(punishmentComment.id!!)
-      .also {
-        it.createdByUserId?.validatePunishmentCommentAction(authenticationFacade.currentUsername!!)
-      }
-
-    punishmentCommentToUpdate.comment = punishmentComment.comment
-
-    return saveToDto(reportedAdjudication)
-  }
-
-  fun deletePunishmentComment(
-    chargeNumber: String,
-    punishmentCommentId: Long,
-  ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByChargeNumber(chargeNumber)
-    val punishmentComment = reportedAdjudication.punishmentComments.getPunishmentComment(punishmentCommentId)
-      .also {
-        it.createdByUserId?.validatePunishmentCommentAction(authenticationFacade.currentUsername!!)
-      }
-
-    reportedAdjudication.punishmentComments.remove(punishmentComment)
-
-    return saveToDto(reportedAdjudication)
-  }
-
   private fun PunishmentType.consecutiveReportValidation(chargeNumber: String) {
     if (PunishmentType.additionalDays().contains(this)) {
       if (isLinkedToReport(chargeNumber, listOf(this))) {
         throw ValidationException("Unable to modify: $this is linked to another report")
+      }
+    }
+  }
+
+  private fun ReportedAdjudication.deletePunishments(idsToUpdate: List<Long>) {
+    this.getPunishments().filter { idsToUpdate.none { id -> id == it.id } }.forEach { punishment ->
+      punishment.type.consecutiveReportValidation(this.chargeNumber).let {
+        punishment.deleted = true
+      }
+      punishment.activatedFromChargeNumber?.let {
+        findByChargeNumber(chargeNumber = it, ignoreSecurityCheck = true).removeActivatedByLink(activatedFrom = this.chargeNumber)
       }
     }
   }
@@ -318,16 +277,14 @@ class PunishmentsService(
     }
 
   private fun activateSuspendedPunishment(chargeNumber: String, punishmentRequest: PunishmentRequest): Punishment {
-    var suspendedPunishment: Punishment? = null
-    punishmentRequest.id?.run {
-      val activatedFromReport = findByChargeNumber(chargeNumber = punishmentRequest.activatedFrom!!, ignoreSecurityCheck = true)
-      suspendedPunishment = activatedFromReport.getPunishments().getSuspendedPunishment(punishmentRequest.id).also {
-        it.activatedByChargeNumber = chargeNumber
-      }
+    punishmentRequest.id ?: throw ValidationException("Suspended punishment activation missing punishment id to activate")
+    val activatedFromReport = findByChargeNumber(chargeNumber = punishmentRequest.activatedFrom!!, ignoreSecurityCheck = true)
+    val suspendedPunishment = activatedFromReport.getPunishments().getSuspendedPunishment(punishmentRequest.id).also {
+      it.activatedByChargeNumber = chargeNumber
     }
 
     return cloneSuspendedPunishment(
-      punishment = suspendedPunishment ?: createNewPunishment(punishmentRequest = punishmentRequest),
+      punishment = suspendedPunishment,
       days = punishmentRequest.days!!,
       startDate = punishmentRequest.startDate,
       endDate = punishmentRequest.endDate,
@@ -364,9 +321,6 @@ class PunishmentsService(
     fun List<Punishment>.getPunishmentToAmend(id: Long): Punishment =
       this.getPunishment(id) ?: throw EntityNotFoundException("Punishment $id is not associated with ReportedAdjudication")
 
-    fun List<PunishmentComment>.getPunishmentComment(id: Long): PunishmentComment =
-      this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Punishment comment id $id is not found")
-
     fun PunishmentRequest.validateRequest(latestHearing: Hearing?) {
       when (this.type) {
         PunishmentType.DAMAGES_OWED -> this.damagesOwedAmount ?: throw ValidationException("amount missing for type DAMAGES_OWED")
@@ -393,12 +347,6 @@ class PunishmentsService(
     fun ReportedAdjudication.validateCanAddPunishments() {
       if (!listOf(ReportedAdjudicationStatus.CHARGE_PROVED, ReportedAdjudicationStatus.INVALID_SUSPENDED, ReportedAdjudicationStatus.INVALID_SUSPENDED).contains(this.status)) {
         throw ValidationException("status is not CHARGE_PROVED")
-      }
-    }
-
-    fun String.validatePunishmentCommentAction(username: String) {
-      if (this != username) {
-        throw ForbiddenException("Only $this can carry out action on punishment comment. attempt by $username")
       }
     }
 

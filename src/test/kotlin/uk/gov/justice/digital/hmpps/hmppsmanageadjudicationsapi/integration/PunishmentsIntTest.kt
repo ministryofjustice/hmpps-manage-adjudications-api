@@ -372,11 +372,45 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.punishmentComments.size()").isEqualTo(0)
   }
 
+  @Test
+  fun `activate a suspended punishment, remove it and ensure the punishment is now available in suspended punishments list`() {
+    val dummyCharge = initDataForUnScheduled().getGeneratedChargeNumber()
+    val suspended = initDataForUnScheduled().createHearing().createChargeProved().getGeneratedChargeNumber()
+
+    createPunishments(suspended).expectStatus().isCreated
+
+    getSuspendedPunishments(chargeNumber = dummyCharge).expectStatus().isOk
+      .expectBody().jsonPath("$.size()").isEqualTo(1)
+
+    val activated = initDataForUnScheduled().createHearing().createChargeProved().getGeneratedChargeNumber()
+
+    createPunishments(chargeNumber = activated, activatedFrom = suspended, isSuspended = false, id = 1).expectStatus().isCreated
+
+    getSuspendedPunishments(chargeNumber = activated).expectStatus().isOk
+      .expectBody().jsonPath("$.size()").isEqualTo(0)
+
+    // now update it and remove the activated record.
+    webTestClient.put()
+      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to emptyList<PunishmentRequest>(),
+        ),
+      )
+      .exchange().expectStatus().isOk
+
+    getSuspendedPunishments(chargeNumber = activated).expectStatus().isOk
+      .expectBody().jsonPath("$.size()").isEqualTo(1)
+  }
+
   fun createPunishments(
     chargeNumber: String,
     type: PunishmentType = PunishmentType.CONFINEMENT,
     consecutiveChargeNumber: String? = null,
     isSuspended: Boolean = true,
+    activatedFrom: String? = null,
+    id: Long? = null,
   ): WebTestClient.ResponseSpec {
     val suspendedUntil = LocalDate.now().plusMonths(1)
 
@@ -388,12 +422,14 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
           "punishments" to
             listOf(
               PunishmentRequest(
+                id = if (activatedFrom.isNullOrBlank()) null else id,
                 type = type,
                 days = 10,
                 suspendedUntil = if (isSuspended) suspendedUntil else null,
                 startDate = if (isSuspended) null else suspendedUntil,
                 endDate = if (isSuspended) null else suspendedUntil.plusDays(10),
                 consecutiveChargeNumber = consecutiveChargeNumber,
+                activatedFrom = activatedFrom,
               ),
             ),
         ),
@@ -415,4 +451,10 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       )
       .exchange()
   }
+
+  private fun getSuspendedPunishments(chargeNumber: String): WebTestClient.ResponseSpec =
+    webTestClient.get()
+      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended/v2?chargeNumber=$chargeNumber")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
 }

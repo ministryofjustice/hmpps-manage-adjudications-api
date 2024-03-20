@@ -161,6 +161,49 @@ class OutcomeService(
     )
   }
 
+  fun deleteOutcome(chargeNumber: String, id: Long? = null): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
+
+    val outcomeToDelete = when (id) {
+      null -> {
+        reportedAdjudication.latestOutcome()?.canDelete(
+          hasHearings = reportedAdjudication.hearings.isNotEmpty(),
+          outcomeReferGovReferral = reportedAdjudication.previousOutcomeIsReferGovReferral(),
+          status = reportedAdjudication.status,
+        ) ?: throw EntityNotFoundException("Outcome not found for $chargeNumber")
+      }
+      else -> reportedAdjudication.getOutcome(id)
+    }.also {
+      it.deleted = true
+    }
+
+    reportedAdjudication.calculateStatus()
+
+    if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) {
+      if (isLinkedToReport(chargeNumber, PunishmentType.additionalDays())) throw ValidationException("Unable to remove: $chargeNumber is linked to another report")
+      reportedAdjudication.removePunishments()
+    }
+
+    return saveToDto(reportedAdjudication)
+  }
+
+  fun getOutcomes(chargeNumber: String): List<CombinedOutcomeDto> {
+    val reportedAdjudication = findByChargeNumber(chargeNumber)
+    return reportedAdjudication.getOutcomes().createCombinedOutcomes(false)
+  }
+
+  fun getLatestOutcome(chargeNumber: String): Outcome? = findByChargeNumber(chargeNumber).latestOutcome()
+
+  private fun ReportedAdjudication.removePunishments() {
+    this.getPunishments().filter { it.activatedFromChargeNumber != null }.forEach {
+      findByChargeNumber(chargeNumber = it.activatedFromChargeNumber!!, ignoreSecurityCheck = true)
+        .removeActivatedByLink(activatedFrom = chargeNumber)
+    }
+
+    this.clearPunishments()
+    this.punishmentComments.clear()
+  }
+
   private fun createOutcome(
     chargeNumber: String,
     code: OutcomeCode,
@@ -224,43 +267,6 @@ class OutcomeService(
 
     return saveToDto(reportedAdjudication)
   }
-
-  fun deleteOutcome(chargeNumber: String, id: Long? = null): ReportedAdjudicationDto {
-    val reportedAdjudication = findByChargeNumber(chargeNumber)
-
-    val outcomeToDelete = when (id) {
-      null -> {
-        reportedAdjudication.latestOutcome()?.canDelete(
-          hasHearings = reportedAdjudication.hearings.isNotEmpty(),
-          outcomeReferGovReferral = reportedAdjudication.previousOutcomeIsReferGovReferral(),
-          status = reportedAdjudication.status,
-        ) ?: throw EntityNotFoundException("Outcome not found for $chargeNumber")
-      }
-      else -> reportedAdjudication.getOutcome(id)
-    }.also {
-      it.deleted = true
-    }
-
-    reportedAdjudication.calculateStatus()
-
-    when (outcomeToDelete.code) {
-      OutcomeCode.CHARGE_PROVED -> {
-        if (this.isLinkedToReport(chargeNumber, PunishmentType.additionalDays())) throw ValidationException("Unable to remove: $chargeNumber is linked to another report")
-        reportedAdjudication.clearPunishments()
-        reportedAdjudication.punishmentComments.clear()
-      }
-      else -> {}
-    }
-
-    return saveToDto(reportedAdjudication)
-  }
-
-  fun getOutcomes(chargeNumber: String): List<CombinedOutcomeDto> {
-    val reportedAdjudication = findByChargeNumber(chargeNumber)
-    return reportedAdjudication.getOutcomes().createCombinedOutcomes(false)
-  }
-
-  fun getLatestOutcome(chargeNumber: String): Outcome? = findByChargeNumber(chargeNumber).latestOutcome()
 
   private fun ReportedAdjudication.previousOutcomeIsReferGovReferral(): Boolean {
     val outcomeHistory = this.getOutcomeHistory()
