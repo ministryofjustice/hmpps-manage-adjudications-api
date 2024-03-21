@@ -528,4 +528,26 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.punishments.size()")
       .isEqualTo(0)
   }
+
+  @Test
+  fun `activate a suspended punishment, then remove the charge proved outcome and ensure the suspended punishment is available for selection again`() {
+    val dummyCharge = initDataForUnScheduled().getGeneratedChargeNumber()
+    val suspended = initDataForUnScheduled().createHearing().createChargeProved().getGeneratedChargeNumber()
+    createPunishments(suspended).expectStatus().isCreated
+
+    val activated = initDataForUnScheduled().createHearing().createChargeProved().getGeneratedChargeNumber()
+    createPunishments(chargeNumber = activated, activatedFrom = suspended, isSuspended = false, id = 1).expectStatus().isCreated
+
+    getSuspendedPunishments(chargeNumber = dummyCharge).expectStatus().isOk
+      .expectBody().jsonPath("$.size()").isEqualTo(0)
+
+    webTestClient.delete()
+      .uri("/reported-adjudications/$activated/remove-completed-hearing")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+
+    getSuspendedPunishments(chargeNumber = dummyCharge).expectStatus().isOk
+      .expectBody().jsonPath("$.size()").isEqualTo(1)
+  }
 }

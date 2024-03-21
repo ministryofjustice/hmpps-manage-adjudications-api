@@ -195,10 +195,7 @@ class OutcomeService(
   fun getLatestOutcome(chargeNumber: String): Outcome? = findByChargeNumber(chargeNumber).latestOutcome()
 
   private fun ReportedAdjudication.removePunishments() {
-    this.getPunishments().filter { it.activatedFromChargeNumber != null }.forEach {
-      findByChargeNumber(chargeNumber = it.activatedFromChargeNumber!!, ignoreSecurityCheck = true)
-        .removeActivatedByLink(activatedFrom = chargeNumber)
-    }
+    this.getPunishments().checkAndRemoveActivatedByLinks(this.chargeNumber)
 
     this.clearPunishments()
     this.punishmentComments.clear()

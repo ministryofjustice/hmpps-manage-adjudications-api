@@ -218,14 +218,14 @@ class PunishmentsService(
   }
 
   private fun ReportedAdjudication.deletePunishments(idsToUpdate: List<Long>) {
-    this.getPunishments().filter { idsToUpdate.none { id -> id == it.id } }.forEach { punishment ->
+    val punishmentsToRemove = this.getPunishments().filter { idsToUpdate.none { id -> id == it.id } }
+    punishmentsToRemove.forEach { punishment ->
       punishment.type.consecutiveReportValidation(this.chargeNumber).let {
         punishment.deleted = true
       }
-      punishment.activatedFromChargeNumber?.let {
-        findByChargeNumber(chargeNumber = it, ignoreSecurityCheck = true).removeActivatedByLink(activatedFrom = this.chargeNumber)
-      }
     }
+
+    punishmentsToRemove.checkAndRemoveActivatedByLinks(this.chargeNumber)
   }
 
   private fun includeAdditionalDays(chargeNumber: String): Boolean {
@@ -278,10 +278,7 @@ class PunishmentsService(
 
   private fun activateSuspendedPunishment(chargeNumber: String, punishmentRequest: PunishmentRequest): Punishment {
     punishmentRequest.id ?: throw ValidationException("Suspended punishment activation missing punishment id to activate")
-    val activatedFromReport = findByChargeNumber(chargeNumber = punishmentRequest.activatedFrom!!, ignoreSecurityCheck = true)
-    val suspendedPunishment = activatedFromReport.getPunishments().getSuspendedPunishment(punishmentRequest.id).also {
-      it.activatedByChargeNumber = chargeNumber
-    }
+    val suspendedPunishment = punishmentRequest.updateAndGetSuspendedPunishment(activatedBy = chargeNumber)
 
     return cloneSuspendedPunishment(
       punishment = suspendedPunishment,

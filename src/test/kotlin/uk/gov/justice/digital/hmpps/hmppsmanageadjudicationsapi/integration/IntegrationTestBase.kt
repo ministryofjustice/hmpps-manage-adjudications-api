@@ -15,8 +15,11 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.TestBase
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Optional
 
@@ -131,5 +134,44 @@ abstract class IntegrationTestBase : TestBase() {
       .addWitnesses()
       .completeDraft()
       .acceptReport()
+  }
+
+  protected fun getSuspendedPunishments(chargeNumber: String): WebTestClient.ResponseSpec =
+    webTestClient.get()
+      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended/v2?chargeNumber=$chargeNumber")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+
+  protected fun createPunishments(
+    chargeNumber: String,
+    type: PunishmentType = PunishmentType.CONFINEMENT,
+    consecutiveChargeNumber: String? = null,
+    isSuspended: Boolean = true,
+    activatedFrom: String? = null,
+    id: Long? = null,
+  ): WebTestClient.ResponseSpec {
+    val suspendedUntil = LocalDate.now().plusMonths(1)
+
+    return webTestClient.post()
+      .uri("/reported-adjudications/$chargeNumber/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to
+            listOf(
+              PunishmentRequest(
+                id = if (activatedFrom.isNullOrBlank()) null else id,
+                type = type,
+                days = 10,
+                suspendedUntil = if (isSuspended) suspendedUntil else null,
+                startDate = if (isSuspended) null else suspendedUntil,
+                endDate = if (isSuspended) null else suspendedUntil.plusDays(10),
+                consecutiveChargeNumber = consecutiveChargeNumber,
+                activatedFrom = activatedFrom,
+              ),
+            ),
+        ),
+      )
+      .exchange()
   }
 }
