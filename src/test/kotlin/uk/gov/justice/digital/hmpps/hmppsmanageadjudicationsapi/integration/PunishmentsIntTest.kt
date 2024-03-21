@@ -404,39 +404,6 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectBody().jsonPath("$.size()").isEqualTo(1)
   }
 
-  fun createPunishments(
-    chargeNumber: String,
-    type: PunishmentType = PunishmentType.CONFINEMENT,
-    consecutiveChargeNumber: String? = null,
-    isSuspended: Boolean = true,
-    activatedFrom: String? = null,
-    id: Long? = null,
-  ): WebTestClient.ResponseSpec {
-    val suspendedUntil = LocalDate.now().plusMonths(1)
-
-    return webTestClient.post()
-      .uri("/reported-adjudications/$chargeNumber/punishments/v2")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .bodyValue(
-        mapOf(
-          "punishments" to
-            listOf(
-              PunishmentRequest(
-                id = if (activatedFrom.isNullOrBlank()) null else id,
-                type = type,
-                days = 10,
-                suspendedUntil = if (isSuspended) suspendedUntil else null,
-                startDate = if (isSuspended) null else suspendedUntil,
-                endDate = if (isSuspended) null else suspendedUntil.plusDays(10),
-                consecutiveChargeNumber = consecutiveChargeNumber,
-                activatedFrom = activatedFrom,
-              ),
-            ),
-        ),
-      )
-      .exchange()
-  }
-
   private fun createPunishmentComment(
     chargeNumber: String,
   ): WebTestClient.ResponseSpec {
@@ -451,10 +418,4 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       )
       .exchange()
   }
-
-  private fun getSuspendedPunishments(chargeNumber: String): WebTestClient.ResponseSpec =
-    webTestClient.get()
-      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended/v2?chargeNumber=$chargeNumber")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .exchange()
 }
