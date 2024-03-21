@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import jakarta.persistence.EntityNotFoundException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DisIssueHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
@@ -40,6 +41,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Authent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.getSuspendedPunishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -343,7 +345,9 @@ open class ReportedAdjudicationBaseService(
   protected val authenticationFacade: AuthenticationFacade,
 ) : ReportedDtoService(offenceCodeLookupService) {
 
-  protected fun findByChargeNumber(chargeNumber: String, ignoreSecurityCheck: Boolean = false): ReportedAdjudication {
+  protected fun findByChargeNumber(chargeNumber: String): ReportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber, ignoreSecurityCheck = false)
+
+  private fun findByChargeNumber(chargeNumber: String, ignoreSecurityCheck: Boolean): ReportedAdjudication {
     val reportedAdjudication =
       reportedAdjudicationRepository.findByChargeNumber(chargeNumber) ?: throwEntityNotFoundException(
         chargeNumber,
@@ -445,11 +449,27 @@ open class ReportedAdjudicationBaseService(
       status = ReportedAdjudicationStatus.CHARGE_PROVED,
     ).filter { it.chargeNumber != chargeNumber }
 
+  protected fun List<Punishment>.checkAndRemoveActivatedByLinks(activatedFrom: String) {
+    this.getDistinctActivatedFromLinks().forEach {
+      findByChargeNumber(chargeNumber = it, ignoreSecurityCheck = true).removeActivatedByLink(activatedFrom = activatedFrom)
+    }
+  }
+
+  protected fun PunishmentRequest.updateAndGetSuspendedPunishment(activatedBy: String): Punishment {
+    val activatedFromReport = findByChargeNumber(chargeNumber = this.activatedFrom!!, ignoreSecurityCheck = true)
+    return activatedFromReport.getPunishments().getSuspendedPunishment(this.id!!).also {
+      it.activatedByChargeNumber = activatedBy
+    }
+  }
+
   companion object {
     fun throwEntityNotFoundException(id: String): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")
 
     fun Punishment.isActive(): Boolean =
       this.suspendedUntil == null && this.schedule.latestSchedule().endDate?.isAfter(LocalDate.now().minusDays(1)) == true
+
+    fun List<Punishment>.getDistinctActivatedFromLinks(): List<String> =
+      this.filter { it.activatedFromChargeNumber != null }.map { it.activatedFromChargeNumber!! }.distinct()
   }
 }

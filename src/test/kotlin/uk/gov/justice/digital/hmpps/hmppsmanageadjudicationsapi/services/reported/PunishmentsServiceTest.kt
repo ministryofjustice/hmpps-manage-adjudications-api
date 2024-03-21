@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.atMost
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
@@ -1061,6 +1062,14 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               it.activatedFromChargeNumber = "2"
             },
           )
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.REMOVAL_ACTIVITY,
+              schedule = mutableListOf(PunishmentSchedule(days = 0)),
+            ).also {
+              it.activatedFromChargeNumber = "2"
+            },
+          )
         },
       )
 
@@ -1082,6 +1091,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         chargeNumber = "1",
         punishments = emptyList(),
       )
+
+      verify(reportedAdjudicationRepository, atMost(1)).findByChargeNumber("2")
 
       assertThat(activatedFrom.getPunishments().first().activatedByChargeNumber).isNull()
     }

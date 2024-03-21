@@ -11,6 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.atMost
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
@@ -632,6 +633,16 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
             ),
           ),
         )
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.CONFINEMENT,
+            activatedByChargeNumber = "1",
+            suspendedUntil = LocalDate.now(),
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10),
+            ),
+          ),
+        )
       }
       whenever(reportedAdjudicationRepository.findByChargeNumber("2")).thenReturn(activatedFrom)
 
@@ -649,12 +660,24 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
                 ),
               ),
             )
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.CONFINEMENT,
+                activatedFromChargeNumber = "2",
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10),
+                ),
+              ),
+            )
           },
       )
 
       outcomeService.deleteOutcome("1", 1)
 
+      verify(reportedAdjudicationRepository, atMost(1)).findByChargeNumber("2")
+
       assertThat(activatedFrom.getPunishments().first().activatedByChargeNumber).isNull()
+      assertThat(activatedFrom.getPunishments().last().activatedByChargeNumber).isNull()
     }
   }
 
