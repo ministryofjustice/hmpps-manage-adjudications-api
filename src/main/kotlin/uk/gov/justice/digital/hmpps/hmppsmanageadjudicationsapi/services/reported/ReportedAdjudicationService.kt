@@ -71,18 +71,17 @@ class ReportedAdjudicationService(
   }
 
   fun setIssued(chargeNumber: String, dateTimeOfIssue: LocalDateTime): ReportedAdjudicationDto {
-    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
-      it.status.canBeIssuedValidation()
-      if (it.dateTimeOfIssue != null) {
-        it.disIssueHistory.add(
+    val reportedAdjudication = findByChargeNumber(chargeNumber).also { report ->
+      report.dateTimeOfIssue?.let {
+        report.disIssueHistory.add(
           DisIssueHistory(
-            issuingOfficer = it.issuingOfficer!!,
-            dateTimeOfIssue = it.dateTimeOfIssue!!,
+            issuingOfficer = report.issuingOfficer!!,
+            dateTimeOfIssue = it,
           ),
         )
       }
-      it.issuingOfficer = authenticationFacade.currentUsername
-      it.dateTimeOfIssue = dateTimeOfIssue
+      report.issuingOfficer = authenticationFacade.currentUsername
+      report.dateTimeOfIssue = dateTimeOfIssue
     }
 
     return saveToDto(reportedAdjudication)

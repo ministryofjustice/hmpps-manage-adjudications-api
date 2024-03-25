@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 
 import com.microsoft.applicationinsights.TelemetryClient
 import jakarta.persistence.EntityNotFoundException
-import jakarta.validation.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions
@@ -537,19 +536,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.disIssueHistory[0].issuingOfficer).isEqualTo("B_JOHNSON")
       assertThat(argumentCaptor.value.disIssueHistory[0].dateTimeOfIssue).isEqualTo(now.minusHours(1))
       assertThat(response).isNotNull
-    }
-
-    @ParameterizedTest
-    @CsvSource("AWAITING_REVIEW", "REJECTED", "RETURNED")
-    fun `throws exception when issuing DIS is wrong status`(status: ReportedAdjudicationStatus) {
-      reportedAdjudication.status = status
-
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
-
-      assertThatThrownBy {
-        reportedAdjudicationService.setIssued("1", now)
-      }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("$status not valid status for DIS issue")
     }
   }
 
