@@ -18,7 +18,7 @@ data class SuccessResponse(
   val content: JsonNode,
 )
 
-@PreAuthorize("hasRole('ALL_ADJUDICATIONS')")
+@PreAuthorize("hasRole('SAR_DATA_ACCESS')")
 @RestController
 @Tag(name = "66. Subject Access Request Controller")
 class SubjectAccessRequestController(
