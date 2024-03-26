@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.springframework.http.HttpStatusCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -412,6 +413,15 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.hasAdjudications").isEqualTo(false)
+  }
+
+  @Test
+  fun `SAR returns a 209 if no prn is set`() {
+    webTestClient.get()
+      .uri("/subject-access-request")
+      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_SAR_DATA_ACCESS")))
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatusCode.valueOf(209))
   }
 
   @Test

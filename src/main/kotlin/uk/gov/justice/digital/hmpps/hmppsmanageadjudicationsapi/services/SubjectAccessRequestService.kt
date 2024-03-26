@@ -10,6 +10,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 class NoContentFoundException : RuntimeException()
+class MissingPRN : RuntimeException()
 
 @Transactional(readOnly = true)
 @Service
