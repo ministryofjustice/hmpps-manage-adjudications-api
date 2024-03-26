@@ -106,6 +106,17 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
                 ),
               ),
             )
+            // suspended but activated
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.ADDITIONAL_DAYS,
+                suspendedUntil = LocalDate.now().plusDays(6),
+                activatedByChargeNumber = "1",
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now().plusDays(6)),
+                ),
+              ),
+            )
             // suspended but cut off
             it.addPunishment(
               Punishment(

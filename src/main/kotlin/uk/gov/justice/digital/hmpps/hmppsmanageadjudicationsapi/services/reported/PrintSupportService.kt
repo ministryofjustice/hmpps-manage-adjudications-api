@@ -94,7 +94,7 @@ class PrintSupportService(
   companion object {
 
     fun Punishment.isActiveSuspended(punishmentCutOff: LocalDate): Boolean =
-      !this.isCorrupted() && this.suspendedUntil?.isAfter(punishmentCutOff) == true
+      !this.isCorrupted() && this.suspendedUntil?.isAfter(punishmentCutOff) == true && this.activatedByChargeNumber == null
 
     fun Punishment.isActivePunishment(punishmentCutOff: LocalDate): Boolean =
       PunishmentType.damagesAndCaution().none { it == this.type } && this.suspendedUntil == null && (
