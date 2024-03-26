@@ -418,7 +418,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   fun `SAR has no content`() {
     webTestClient.get()
       .uri("/subject-access-request?prn=A12345")
-      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ALL_ADJUDICATIONS")))
+      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_SAR_DATA_ACCESS")))
       .exchange()
       .expectStatus().isNoContent
   }
@@ -428,7 +428,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     initDataForUnScheduled()
     webTestClient.get()
       .uri("/subject-access-request?prn=${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}")
-      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ALL_ADJUDICATIONS")))
+      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_SAR_DATA_ACCESS")))
       .exchange()
       .expectStatus().isOk
       .expectBody()
@@ -441,7 +441,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     initDataForUnScheduled()
     webTestClient.get()
       .uri("/subject-access-request?prn=${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}&fromDate=1999-01-01")
-      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ALL_ADJUDICATIONS")))
+      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_SAR_DATA_ACCESS")))
       .exchange()
       .expectStatus().isOk
       .expectBody()
@@ -454,7 +454,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     initDataForUnScheduled()
     webTestClient.get()
       .uri("/subject-access-request?prn=${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}&toDate=1999-01-01")
-      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ALL_ADJUDICATIONS")))
+      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_SAR_DATA_ACCESS")))
       .exchange()
       .expectStatus().isNoContent
   }
