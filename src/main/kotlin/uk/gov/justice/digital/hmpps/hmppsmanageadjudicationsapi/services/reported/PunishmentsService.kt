@@ -325,7 +325,6 @@ class PunishmentsService(
     }
   }
 
-
   companion object {
 
     val suspendedCutOff: LocalDate = LocalDate.now().minusDays(1)
