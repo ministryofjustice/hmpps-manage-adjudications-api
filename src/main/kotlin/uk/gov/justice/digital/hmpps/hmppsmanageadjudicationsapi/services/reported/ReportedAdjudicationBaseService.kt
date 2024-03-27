@@ -41,8 +41,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Authent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.corruptedSuspendedCutOff
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.getSuspendedPunishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.suspendedCutOff
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -405,14 +407,14 @@ open class ReportedAdjudicationBaseService(
   protected fun getReportsWithSuspendedPunishments(prisonerNumber: String) = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
     status = ReportedAdjudicationStatus.CHARGE_PROVED,
     prisonerNumber = prisonerNumber,
-    date = LocalDate.now().minusDays(1),
+    date = suspendedCutOff,
   )
 
   protected fun getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber: String) =
     reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(
       prisonerNumber = prisonerNumber,
       statuses = ReportedAdjudicationStatus.corruptedStatuses(),
-      date = LocalDate.now().minusMonths(6),
+      date = corruptedSuspendedCutOff,
     )
 
   protected fun getReportsWithActiveAdditionalDays(prisonerNumber: String, punishmentType: PunishmentType) =

@@ -142,13 +142,15 @@ class PunishmentsService(
     val includeAdditionalDays = includeAdditionalDays(chargeNumber)
 
     return reportsWithSuspendedPunishments.map {
-      it.getPunishments().suspendedPunishmentsToActivate()
+      val corrupted = ReportedAdjudicationStatus.corruptedStatuses().contains(it.status)
+      val cutOff = if (corrupted) corruptedSuspendedCutOff else suspendedCutOff
+      it.getPunishments().suspendedPunishmentsToActivate(cutOff)
         .filter { punishment -> punishment.type.includeInSuspendedPunishments(includeAdditionalDays) }.map { punishment ->
           val schedule = punishment.schedule.latestSchedule()
 
           SuspendedPunishmentDto(
             chargeNumber = it.chargeNumber,
-            corrupted = ReportedAdjudicationStatus.corruptedStatuses().contains(it.status),
+            corrupted = corrupted,
             punishment = PunishmentDto(
               id = punishment.id,
               type = punishment.type,
@@ -300,12 +302,38 @@ class PunishmentsService(
     ),
   )
 
+  private fun PunishmentRequest.validateRequest(latestHearing: Hearing?) {
+    when (this.type) {
+      PunishmentType.DAMAGES_OWED -> this.damagesOwedAmount ?: throw ValidationException("amount missing for type DAMAGES_OWED")
+      PunishmentType.PRIVILEGE -> {
+        this.privilegeType ?: throw ValidationException("subtype missing for type PRIVILEGE")
+        if (this.privilegeType == PrivilegeType.OTHER) {
+          this.otherPrivilege ?: throw ValidationException("description missing for type PRIVILEGE - sub type OTHER")
+        }
+      }
+      PunishmentType.EARNINGS -> this.stoppagePercentage ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
+      PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> if (!OicHearingType.inadTypes().contains(latestHearing?.oicHearingType)) throw ValidationException("Punishment ${this.type} is invalid as the punishment decision was not awarded by an independent adjudicator")
+      else -> {}
+    }
+    when (this.type) {
+      PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS, PunishmentType.DAMAGES_OWED, PunishmentType.CAUTION -> {}
+      else -> {
+        this.suspendedUntil ?: this.startDate ?: this.endDate ?: throw ValidationException("missing all schedule data")
+        this.suspendedUntil ?: this.startDate ?: throw ValidationException("missing start date for schedule")
+        this.suspendedUntil ?: this.endDate ?: throw ValidationException("missing end date for schedule")
+      }
+    }
+  }
+
   companion object {
+
+    val suspendedCutOff: LocalDate = LocalDate.now().minusDays(1)
+    val corruptedSuspendedCutOff: LocalDate = LocalDate.now().minusMonths(6)
 
     fun List<PunishmentSchedule>.latestSchedule() = this.maxBy { it.createDateTime!! }
 
-    fun List<Punishment>.suspendedPunishmentsToActivate() =
-      this.filter { p -> p.activatedFromChargeNumber == null && p.activatedByChargeNumber == null && p.schedule.latestSchedule().suspendedUntil != null }
+    fun List<Punishment>.suspendedPunishmentsToActivate(cutOff: LocalDate) =
+      this.filter { it.isActiveSuspended(cutOff) }
 
     fun List<Punishment>.getSuspendedPunishment(id: Long): Punishment = this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("suspended punishment not found")
 
@@ -317,29 +345,6 @@ class PunishmentsService(
       this.firstOrNull { it.id == id }
     fun List<Punishment>.getPunishmentToAmend(id: Long): Punishment =
       this.getPunishment(id) ?: throw EntityNotFoundException("Punishment $id is not associated with ReportedAdjudication")
-
-    fun PunishmentRequest.validateRequest(latestHearing: Hearing?) {
-      when (this.type) {
-        PunishmentType.DAMAGES_OWED -> this.damagesOwedAmount ?: throw ValidationException("amount missing for type DAMAGES_OWED")
-        PunishmentType.PRIVILEGE -> {
-          this.privilegeType ?: throw ValidationException("subtype missing for type PRIVILEGE")
-          if (this.privilegeType == PrivilegeType.OTHER) {
-            this.otherPrivilege ?: throw ValidationException("description missing for type PRIVILEGE - sub type OTHER")
-          }
-        }
-        PunishmentType.EARNINGS -> this.stoppagePercentage ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
-        PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> if (!OicHearingType.inadTypes().contains(latestHearing?.oicHearingType)) throw ValidationException("Punishment ${this.type} is invalid as the punishment decision was not awarded by an independent adjudicator")
-        else -> {}
-      }
-      when (this.type) {
-        PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS, PunishmentType.DAMAGES_OWED, PunishmentType.CAUTION -> {}
-        else -> {
-          this.suspendedUntil ?: this.startDate ?: this.endDate ?: throw ValidationException("missing all schedule data")
-          this.suspendedUntil ?: this.startDate ?: throw ValidationException("missing start date for schedule")
-          this.suspendedUntil ?: this.endDate ?: throw ValidationException("missing end date for schedule")
-        }
-      }
-    }
 
     fun ReportedAdjudication.validateCanAddPunishments() {
       if (!listOf(ReportedAdjudicationStatus.CHARGE_PROVED, ReportedAdjudicationStatus.INVALID_SUSPENDED, ReportedAdjudicationStatus.INVALID_SUSPENDED).contains(this.status)) {
