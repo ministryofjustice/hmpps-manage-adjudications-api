@@ -42,7 +42,7 @@ class PrintSupportService(
     val chargesWithActiveSuspendedPunishments = otherChargesOnSentence.filter {
       it.getPunishments().any {
           punishment ->
-        punishment.isActiveSuspended(punishmentCutOff)
+        punishment.isActiveSuspended(punishmentCutOff) && !punishment.isCorrupted()
       }
     }.sortedBy { it.dateTimeOfDiscovery }
 
@@ -69,7 +69,7 @@ class PrintSupportService(
           offenceDetails = it.toReportedOffence(offenceCodeLookupService),
           suspendedPunishments = it.getPunishments().filter {
               punishment ->
-            punishment.isActiveSuspended(punishmentCutOff)
+            punishment.isActiveSuspended(punishmentCutOff) && !punishment.isCorrupted()
           }.toPunishments().sortedBy { p -> p.schedule.suspendedUntil },
         )
       },
@@ -92,9 +92,6 @@ class PrintSupportService(
   }
 
   companion object {
-
-    fun Punishment.isActiveSuspended(punishmentCutOff: LocalDate): Boolean =
-      !this.isCorrupted() && this.suspendedUntil?.isAfter(punishmentCutOff) == true && this.activatedByChargeNumber == null
 
     fun Punishment.isActivePunishment(punishmentCutOff: LocalDate): Boolean =
       PunishmentType.damagesAndCaution().none { it == this.type } && this.suspendedUntil == null && (

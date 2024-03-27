@@ -39,7 +39,10 @@ data class Punishment(
   @field:Length(max = 32)
   var nomisStatus: String? = null,
   var actualCreatedDate: LocalDateTime? = null,
-) : BaseEntity()
+) : BaseEntity() {
+  fun isActiveSuspended(punishmentCutOff: LocalDate): Boolean =
+    this.suspendedUntil?.isAfter(punishmentCutOff) == true && this.activatedByChargeNumber == null
+}
 
 enum class PunishmentType {
   PRIVILEGE,

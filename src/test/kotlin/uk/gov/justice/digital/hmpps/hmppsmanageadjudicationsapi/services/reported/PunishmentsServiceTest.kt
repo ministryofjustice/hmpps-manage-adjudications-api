@@ -1210,18 +1210,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           ),
         )
       },
-      entityBuilder.reportedAdjudication(chargeNumber = "3").also {
-        it.addPunishment(
-          Punishment(
-            type = PunishmentType.PROSPECTIVE_DAYS,
-            suspendedUntil = LocalDate.now(),
-            activatedFromChargeNumber = "1234",
-            schedule = mutableListOf(
-              PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
-            ),
-          ),
-        )
-      },
       entityBuilder.reportedAdjudication(chargeNumber = "4").also {
         it.addPunishment(
           Punishment(
@@ -1245,6 +1233,39 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       },
     )
+
+    @Test
+    fun `get suspended punishments only returns the active ones from a charge`() {
+      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication().also {
+            it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.REMOVAL_WING,
+                suspendedUntil = LocalDate.now(),
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now()),
+                ),
+              ),
+            )
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.CONFINEMENT,
+                suspendedUntil = LocalDate.now().minusDays(2),
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now().minusDays(2)),
+                ),
+              ),
+            )
+          },
+        ),
+      )
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
+
+      val suspended = punishmentsService.getSuspendedPunishments("AE1234", chargeNumber = "1")
+      assertThat(suspended.size).isEqualTo(1)
+    }
 
     @Test
     fun `get suspended punishments `() {
