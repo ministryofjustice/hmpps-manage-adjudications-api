@@ -142,8 +142,8 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.hearings[0].chargeNumber")
       .isEqualTo(scenario.getGeneratedChargeNumber())
       .jsonPath("$.hearings[0].dateTimeOfDiscovery")
-      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfDiscoveryISOString)
+      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfDiscoveryISOString!!)
       .jsonPath("$.hearings[0].dateTimeOfHearing")
-      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearingISOString)
+      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearingISOString!!)
   }
 }

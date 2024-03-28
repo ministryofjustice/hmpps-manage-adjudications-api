@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -32,19 +33,21 @@ class AdjudicationSummaryControllerTest : TestControllerBase() {
   inner class Profile {
     @BeforeEach
     fun beforeEach() {
-      whenever(
-        summaryAdjudicationService.getAdjudicationSummary(
-          any(),
-          anyOrNull(),
-          anyOrNull(),
-        ),
-      ).thenReturn(
-        AdjudicationSummary(
-          adjudicationCount = 1,
-          awards = emptyList(),
-          bookingId = 1,
-        ),
-      )
+      runBlocking {
+        whenever(
+          summaryAdjudicationService.getAdjudicationSummary(
+            any(),
+            anyOrNull(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
+          AdjudicationSummary(
+            adjudicationCount = 1,
+            awards = emptyList(),
+            bookingId = 1,
+          ),
+        )
+      }
     }
 
     @Test
@@ -54,7 +57,7 @@ class AdjudicationSummaryControllerTest : TestControllerBase() {
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
-    fun `makes a call to get the profile`() {
+    fun `makes a call to get the profile`(): Unit = runBlocking {
       profileRequest()
         .andExpect(MockMvcResultMatchers.status().isOk)
 

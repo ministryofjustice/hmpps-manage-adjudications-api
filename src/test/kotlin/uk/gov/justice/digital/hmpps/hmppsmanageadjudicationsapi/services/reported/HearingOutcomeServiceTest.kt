@@ -278,7 +278,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("2")).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.hearings.first().hearingOutcome =
-            HearingOutcome(id = 1, code = HearingOutcomeCode.REFER_INAD, adjudicator = "test")
+            HearingOutcome(id = 1, code = code, adjudicator = "test")
         },
       )
 

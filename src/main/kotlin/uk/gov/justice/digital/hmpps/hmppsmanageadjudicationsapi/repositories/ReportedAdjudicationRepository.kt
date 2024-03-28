@@ -72,7 +72,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   @Query(
     value = "select * from reported_adjudications ra " +
-      "where ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate " +
+      "where ra.status in :statuses and ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate " +
       "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId)",
     nativeQuery = true,
   )
@@ -80,6 +80,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("agencyId") agencyId: String,
     @Param("startDate") startDate: LocalDateTime,
     @Param("endDate") endDate: LocalDateTime,
+    @Param("statuses") statuses: List<String>,
   ): List<ReportedAdjudication>
 
   @Query(

@@ -14,7 +14,7 @@ abstract class HealthCheck(private val webClient: WebClient, private val timeout
       .retrieve()
       .toEntity(String::class.java)
       .block(timeout)
-    Health.up().withDetail("HttpStatus", responseEntity.statusCode).build()
+    Health.up().withDetail("HttpStatus", responseEntity?.statusCode).build()
   } catch (e: WebClientResponseException) {
     log.info(e.message)
     Health.down(e).withDetail("body", e.responseBodyAsString).build()

@@ -31,9 +31,9 @@ enum class TransferType {
 @Service
 class ReportsService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  private val offenceCodeLookupService: OffenceCodeLookupService,
   private val authenticationFacade: AuthenticationFacade,
-  offenceCodeLookupService: OffenceCodeLookupService,
-) : ReportedDtoService(offenceCodeLookupService) {
+) {
   fun getAllReportedAdjudications(
     startDate: LocalDate,
     endDate: LocalDate,
@@ -48,6 +48,7 @@ class ReportsService(
       pageable = pageable,
     ).map {
       it.toDto(
+        offenceCodeLookupService = offenceCodeLookupService,
         activeCaseload = authenticationFacade.activeCaseload,
       )
     }
@@ -77,6 +78,7 @@ class ReportsService(
       )
     }.map {
       it.toDto(
+        offenceCodeLookupService = offenceCodeLookupService,
         activeCaseload = authenticationFacade.activeCaseload,
       )
     }
@@ -93,17 +95,18 @@ class ReportsService(
         statuses = statuses,
         pageable = pageable,
       )
-    return reportedAdjudicationsPage.map { it.toDto() }
+    return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
   fun getAdjudicationsForIssue(startDate: LocalDate, endDate: LocalDate): List<ReportedAdjudicationDto> = reportedAdjudicationRepository.findReportsForIssue(
     agencyId = authenticationFacade.activeCaseload,
     startDate = reportsFrom(startDate),
     endDate = reportsTo(endDate),
-  ).filter { ReportedAdjudicationStatus.issuableStatuses().contains(it.status) }
-    .sortedBy { it.dateTimeOfDiscovery }
+    statuses = ReportedAdjudicationStatus.issuableStatuses().map { it.name },
+  ).sortedBy { it.dateTimeOfDiscovery }
     .map {
       it.toDto(
+        offenceCodeLookupService = offenceCodeLookupService,
         activeCaseload = authenticationFacade.activeCaseload,
       )
     }
@@ -117,15 +120,30 @@ class ReportsService(
     )
 
     if (issueStatuses.containsAll(IssuedStatus.values().toList())) {
-      return reportsForPrint.sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto(authenticationFacade.activeCaseload) }
+      return reportsForPrint.sortedBy { it.dateTimeOfFirstHearing }.map {
+        it.toDto(
+          offenceCodeLookupService = offenceCodeLookupService,
+          activeCaseload = authenticationFacade.activeCaseload,
+        )
+      }
     }
 
     if (issueStatuses.contains(IssuedStatus.ISSUED)) {
-      return reportsForPrint.filter { it.dateTimeOfIssue != null }.sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto(authenticationFacade.activeCaseload) }
+      return reportsForPrint.filter { it.dateTimeOfIssue != null }.sortedBy { it.dateTimeOfFirstHearing }.map {
+        it.toDto(
+          offenceCodeLookupService = offenceCodeLookupService,
+          activeCaseload = authenticationFacade.activeCaseload,
+        )
+      }
     }
 
     if (issueStatuses.contains(IssuedStatus.NOT_ISSUED)) {
-      return reportsForPrint.filter { it.dateTimeOfIssue == null }.sortedBy { it.dateTimeOfFirstHearing }.map { it.toDto(authenticationFacade.activeCaseload) }
+      return reportsForPrint.filter { it.dateTimeOfIssue == null }.sortedBy { it.dateTimeOfFirstHearing }.map {
+        it.toDto(
+          offenceCodeLookupService = offenceCodeLookupService,
+          activeCaseload = authenticationFacade.activeCaseload,
+        )
+      }
     }
 
     return emptyList()
@@ -215,6 +233,7 @@ class ReportsService(
     )
   }.map {
     it.toDto(
+      offenceCodeLookupService = offenceCodeLookupService,
       activeCaseload = authenticationFacade.activeCaseload,
       isAlo = authenticationFacade.isAlo,
     )
@@ -250,20 +269,21 @@ class ReportsService(
     )
   }.map {
     it.toDto(
+      offenceCodeLookupService = offenceCodeLookupService,
       activeCaseload = authenticationFacade.activeCaseload,
       isAlo = authenticationFacade.isAlo,
     )
   }
 
   fun getReportsForPrisoner(prisonerNumber: String): List<ReportedAdjudicationDto> =
-    reportedAdjudicationRepository.findByPrisonerNumber(prisonerNumber = prisonerNumber).map { it.toDto() }
+    reportedAdjudicationRepository.findByPrisonerNumber(prisonerNumber = prisonerNumber).map { it.toDto(offenceCodeLookupService) }
 
   fun getReportsForBooking(offenderBookingId: Long): List<ReportedAdjudicationDto> =
-    reportedAdjudicationRepository.findByOffenderBookingId(offenderBookingId).map { it.toDto() }
+    reportedAdjudicationRepository.findByOffenderBookingId(offenderBookingId).map { it.toDto(offenceCodeLookupService) }
 
   companion object {
-    val minDate: LocalDate = LocalDate.of(1901, 1, 1)
-    val maxDate: LocalDate = LocalDate.of(2999, 1, 1)
+    val minDate: LocalDate = LocalDate.EPOCH
+    val maxDate: LocalDate = LocalDate.now()
     val transferOutAndHearingsToScheduledCutOffDate: LocalDateTime = LocalDate.of(2024, 1, 1).atStartOfDay()
     val transferReviewStatuses = listOf(
       ReportedAdjudicationStatus.UNSCHEDULED,

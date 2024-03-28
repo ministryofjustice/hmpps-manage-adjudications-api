@@ -117,14 +117,16 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
 
     val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(testAdjudication, headers = setHeaders(activeCaseload = testAdjudication.agencyId))
 
-    webTestClient.get()
-      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}")
-      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .expectBody()
-      .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.chargeNumber").isEqualTo(testAdjudication.chargeNumber)
+    testAdjudication.chargeNumber?.let {
+      webTestClient.get()
+        .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}")
+        .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
+        .exchange()
+        .expectStatus().is2xxSuccessful
+        .expectBody()
+        .jsonPath("$.draftAdjudication.id").isNumber
+        .jsonPath("$.draftAdjudication.chargeNumber").isEqualTo(it)
+    }
   }
 
   @Test
@@ -789,28 +791,30 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
 
-    webTestClient.post()
-      .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/alo-offence-details")
-      .headers(
-        setHeaders(
-          username = "ITAG_ALO",
-          roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
-          activeCaseload = IntegrationTestData.ADJUDICATION_1.agencyId,
-        ),
-      )
-      .bodyValue(
-        mapOf(
-          "offenceDetails" to IntegrationTestData.ADJUDICATION_2.offence,
-        ),
-      )
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.chargeNumber").isEqualTo(testAdjudication.chargeNumber)
-      .jsonPath("$.offenceDetails.offenceRule.paragraphNumber")
-      .isEqualTo(IntegrationTestData.ADJUDICATION_2.offence.paragraphNumber)
-      .jsonPath("$.offenceDetails.offenceRule.paragraphDescription")
-      .isEqualTo(IntegrationTestData.ADJUDICATION_2.offence.paragraphDescription)
+    testAdjudication.chargeNumber?.let {
+      webTestClient.post()
+        .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/alo-offence-details")
+        .headers(
+          setHeaders(
+            username = "ITAG_ALO",
+            roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+            activeCaseload = IntegrationTestData.ADJUDICATION_1.agencyId,
+          ),
+        )
+        .bodyValue(
+          mapOf(
+            "offenceDetails" to IntegrationTestData.ADJUDICATION_2.offence,
+          ),
+        )
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.chargeNumber").isEqualTo(it)
+        .jsonPath("$.offenceDetails.offenceRule.paragraphNumber")
+        .isEqualTo(IntegrationTestData.ADJUDICATION_2.offence.paragraphNumber)
+        .jsonPath("$.offenceDetails.offenceRule.paragraphDescription")
+        .isEqualTo(IntegrationTestData.ADJUDICATION_2.offence.paragraphDescription)
+    }
   }
 
   private fun getReportedAdjudicationRequestStatus() =

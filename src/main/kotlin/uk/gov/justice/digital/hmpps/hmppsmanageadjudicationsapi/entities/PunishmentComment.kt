@@ -5,6 +5,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentCommentDto
 import java.time.LocalDateTime
 
 @Entity
@@ -17,7 +18,16 @@ data class PunishmentComment(
   var reasonForChange: ReasonForChange? = null,
   val nomisCreatedBy: String? = null,
   var actualCreatedDate: LocalDateTime? = null,
-) : BaseEntity()
+) : BaseEntity() {
+  fun toDto(): PunishmentCommentDto =
+    PunishmentCommentDto(
+      id = this.id,
+      comment = this.comment,
+      reasonForChange = this.reasonForChange,
+      createdByUserId = this.nomisCreatedBy ?: this.createdByUserId,
+      dateTime = this.actualCreatedDate ?: this.modifiedDateTime ?: this.createDateTime,
+    )
+}
 
 enum class ReasonForChange {
   APPEAL,

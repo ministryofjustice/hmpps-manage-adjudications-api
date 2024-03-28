@@ -6,6 +6,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import jakarta.validation.ValidationException
 import org.hibernate.validator.constraints.Length
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDto
 import java.time.LocalDateTime
 
 @Entity
@@ -27,6 +28,18 @@ data class Outcome(
   var referGovReason: ReferGovReason? = null,
 ) : BaseEntity() {
   fun getCreatedDateTime(): LocalDateTime? = this.actualCreatedDate ?: this.createDateTime
+
+  fun toDto(hasLinkedAda: Boolean): OutcomeDto =
+    OutcomeDto(
+      id = this.id,
+      code = this.code,
+      details = this.details,
+      // added due to migration - not applicable for DPS app itself
+      reason = this.notProceedReason ?: if (this.code == OutcomeCode.NOT_PROCEED) NotProceedReason.OTHER else null,
+      quashedReason = this.quashedReason,
+      referGovReason = this.referGovReason,
+      canRemove = !hasLinkedAda,
+    )
 }
 
 enum class OutcomeCode(val status: ReportedAdjudicationStatus) {

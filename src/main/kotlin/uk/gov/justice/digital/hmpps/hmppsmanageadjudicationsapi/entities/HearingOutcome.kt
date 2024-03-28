@@ -6,6 +6,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import jakarta.validation.ValidationException
 import org.hibernate.validator.constraints.Length
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingOutcomeDto
 
 enum class Plea {
   GUILTY,
@@ -31,7 +32,17 @@ data class HearingOutcome(
   var plea: HearingOutcomePlea? = null,
   var nomisOutcome: Boolean = false,
   var migrated: Boolean = false,
-) : BaseEntity()
+) : BaseEntity() {
+  fun toDto(): HearingOutcomeDto =
+    HearingOutcomeDto(
+      id = this.id,
+      code = this.code,
+      reason = this.adjournReason,
+      details = this.details,
+      adjudicator = this.adjudicator,
+      plea = this.plea,
+    )
+}
 
 enum class HearingOutcomeCode(val outcomeCode: OutcomeCode? = null) {
   COMPLETE,

@@ -17,7 +17,8 @@ import java.time.LocalDateTime
 
 class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
 
-  private val printSupportService = PrintSupportService(reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
+  private val printSupportQueryService = PrintSupportQueryService(reportedAdjudicationRepository)
+  private val printSupportService = PrintSupportService(printSupportQueryService, reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
 
   @Test
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {

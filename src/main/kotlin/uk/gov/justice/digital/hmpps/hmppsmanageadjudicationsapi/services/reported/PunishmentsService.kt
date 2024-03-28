@@ -4,13 +4,8 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ActivePunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdditionalDaysDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
@@ -134,83 +129,6 @@ class PunishmentsService(
     )
   }
 
-  fun getSuspendedPunishments(prisonerNumber: String, chargeNumber: String): List<SuspendedPunishmentDto> {
-    val reportsWithSuspendedPunishments = getReportsWithSuspendedPunishments(prisonerNumber = prisonerNumber).toMutableList()
-      .union(getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber = prisonerNumber))
-      .filter { it.chargeNumber != chargeNumber }
-
-    val includeAdditionalDays = includeAdditionalDays(chargeNumber)
-
-    return reportsWithSuspendedPunishments.map {
-      val corrupted = ReportedAdjudicationStatus.corruptedStatuses().contains(it.status)
-      val cutOff = if (corrupted) corruptedSuspendedCutOff else suspendedCutOff
-      it.getPunishments().suspendedPunishmentsToActivate(cutOff)
-        .filter { punishment -> punishment.type.includeInSuspendedPunishments(includeAdditionalDays) }.map { punishment ->
-          val schedule = punishment.schedule.latestSchedule()
-
-          SuspendedPunishmentDto(
-            chargeNumber = it.chargeNumber,
-            corrupted = corrupted,
-            punishment = PunishmentDto(
-              id = punishment.id,
-              type = punishment.type,
-              privilegeType = punishment.privilegeType,
-              otherPrivilege = punishment.otherPrivilege,
-              stoppagePercentage = punishment.stoppagePercentage,
-              schedule = PunishmentScheduleDto(days = schedule.days, suspendedUntil = schedule.suspendedUntil),
-            ),
-          )
-        }
-    }.flatten()
-  }
-
-  fun getReportsWithAdditionalDays(chargeNumber: String, prisonerNumber: String, punishmentType: PunishmentType): List<AdditionalDaysDto> {
-    if (!PunishmentType.additionalDays().contains(punishmentType)) throw ValidationException("Punishment type must be ADDITIONAL_DAYS or PROSPECTIVE_DAYS")
-
-    val reportedAdjudication = findByChargeNumber(chargeNumber)
-
-    return getReportsWithActiveAdditionalDays(
-      prisonerNumber = prisonerNumber,
-      punishmentType = punishmentType,
-    ).filter { it.includeAdaWithSameHearingDateAndSeparateCharge(reportedAdjudication) }
-      .map {
-        it.getPunishments().filter { punishment -> punishment.type == punishmentType }.map { punishment ->
-          val schedule = punishment.schedule.latestSchedule()
-
-          AdditionalDaysDto(
-            chargeNumber = it.chargeNumber,
-            chargeProvedDate = it.getLatestHearing()?.dateTimeOfHearing?.toLocalDate()!!,
-            punishment = PunishmentDto(
-              id = punishment.id,
-              type = punishment.type,
-              consecutiveChargeNumber = punishment.consecutiveToChargeNumber,
-              schedule = PunishmentScheduleDto(days = schedule.days),
-            ),
-          )
-        }
-      }.flatten()
-  }
-
-  fun getActivePunishments(offenderBookingId: Long): List<ActivePunishmentDto> =
-    getReportsWithActivePunishments(offenderBookingId = offenderBookingId)
-      .map { chargeAndPunishments ->
-        chargeAndPunishments.second.map {
-          val latestSchedule = it.schedule.latestSchedule()
-          ActivePunishmentDto(
-            punishmentType = it.type,
-            privilegeType = it.privilegeType,
-            otherPrivilege = it.otherPrivilege,
-            chargeNumber = chargeAndPunishments.first,
-            startDate = latestSchedule.startDate,
-            lastDay = latestSchedule.endDate,
-            days = if (latestSchedule.days == 0) null else latestSchedule.days,
-            amount = it.amount,
-            stoppagePercentage = it.stoppagePercentage,
-            activatedFrom = it.activatedFromChargeNumber,
-          )
-        }
-      }.flatten().sortedByDescending { it.startDate }
-
   private fun PunishmentType.consecutiveReportValidation(chargeNumber: String) {
     if (PunishmentType.additionalDays().contains(this)) {
       if (isLinkedToReport(chargeNumber, listOf(this))) {
@@ -228,11 +146,6 @@ class PunishmentsService(
     }
 
     punishmentsToRemove.checkAndRemoveActivatedByLinks(this.chargeNumber)
-  }
-
-  private fun includeAdditionalDays(chargeNumber: String): Boolean {
-    val reportedAdjudication = findByChargeNumber(chargeNumber)
-    return OicHearingType.inadTypes().contains(reportedAdjudication.getLatestHearing()?.oicHearingType)
   }
 
   private fun createNewPunishment(punishmentRequest: PunishmentRequest, hearingDate: LocalDate? = null): Punishment =
@@ -327,13 +240,7 @@ class PunishmentsService(
 
   companion object {
 
-    val suspendedCutOff: LocalDate = LocalDate.now().minusDays(1)
-    val corruptedSuspendedCutOff: LocalDate = LocalDate.now().minusMonths(6)
-
     fun List<PunishmentSchedule>.latestSchedule() = this.maxBy { it.createDateTime!! }
-
-    fun List<Punishment>.suspendedPunishmentsToActivate(cutOff: LocalDate) =
-      this.filter { it.isActiveSuspended(cutOff) }
 
     fun List<Punishment>.getSuspendedPunishment(id: Long): Punishment = this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("suspended punishment not found")
 
@@ -352,14 +259,6 @@ class PunishmentsService(
       }
     }
 
-    fun PunishmentType.includeInSuspendedPunishments(includeAdditionalDays: Boolean): Boolean {
-      return if (!PunishmentType.additionalDays().contains(this)) {
-        true
-      } else {
-        includeAdditionalDays
-      }
-    }
-
     fun List<PunishmentRequest>.validateCaution() {
       if (this.any { it.type == PunishmentType.CAUTION }) {
         if (!this.all { PunishmentType.damagesAndCaution().contains(it.type) }) {
@@ -367,9 +266,5 @@ class PunishmentsService(
         }
       }
     }
-
-    fun ReportedAdjudication.includeAdaWithSameHearingDateAndSeparateCharge(currentAdjudication: ReportedAdjudication): Boolean =
-      this.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() == currentAdjudication.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() &&
-        this.chargeNumber != currentAdjudication.chargeNumber
   }
 }

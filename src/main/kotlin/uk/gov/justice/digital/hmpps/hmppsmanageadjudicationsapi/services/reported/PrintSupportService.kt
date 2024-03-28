@@ -9,6 +9,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication.Companion.isCorrupted
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication.Companion.toPunishmentsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -19,7 +21,20 @@ import java.time.LocalDate
 
 @Transactional(readOnly = true)
 @Service
+class PrintSupportQueryService(
+  private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+) {
+  fun offenderChargesForPrintSupport(offenderBookingId: Long, chargeNumber: String): List<ReportedAdjudication> =
+    reportedAdjudicationRepository.findByOffenderBookingIdAndStatus(
+      offenderBookingId = offenderBookingId,
+      status = ReportedAdjudicationStatus.CHARGE_PROVED,
+    ).filter { it.chargeNumber != chargeNumber }
+}
+
+@Transactional(readOnly = true)
+@Service
 class PrintSupportService(
+  private val printSupportQueryService: PrintSupportQueryService,
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
@@ -31,7 +46,7 @@ class PrintSupportService(
   fun getDis5Data(chargeNumber: String): Dis5PrintSupportDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
     val currentEstablishment = reportedAdjudication.overrideAgencyId ?: reportedAdjudication.originatingAgencyId
-    val otherChargesOnSentence = offenderChargesForPrintSupport(
+    val otherChargesOnSentence = printSupportQueryService.offenderChargesForPrintSupport(
       offenderBookingId = reportedAdjudication.offenderBookingId!!,
       chargeNumber = chargeNumber,
     )
@@ -66,16 +81,16 @@ class PrintSupportService(
           chargeNumber = it.chargeNumber,
           dateOfIncident = it.dateTimeOfIncident.toLocalDate(),
           dateOfDiscovery = it.dateTimeOfDiscovery.toLocalDate(),
-          offenceDetails = it.toReportedOffence(offenceCodeLookupService),
+          offenceDetails = it.offenceDetails.first().toDto(offenceCodeLookupService, it.isYouthOffender, it.gender),
           suspendedPunishments = it.getPunishments().filter {
               punishment ->
             punishment.isActiveSuspended(punishmentCutOff) && !punishment.isCorrupted()
-          }.toPunishments().sortedBy { p -> p.schedule.suspendedUntil },
+          }.toPunishmentsDto(false).sortedBy { p -> p.schedule.suspendedUntil },
         )
       },
       sameOffenceCount = sameOffenceCharges.size,
       lastReportedOffence = sameOffenceCharges.maxByOrNull { it.dateTimeOfDiscovery }.toLastReportedOffence(),
-      existingPunishments = existingPunishments.toPunishments().sortedBy { it.schedule.endDate },
+      existingPunishments = existingPunishments.toPunishmentsDto(false).sortedBy { it.schedule.endDate },
     )
   }
 
@@ -87,7 +102,7 @@ class PrintSupportService(
       dateOfDiscovery = this.dateTimeOfDiscovery.toLocalDate(),
       chargeNumber = this.chargeNumber,
       statement = this.statement,
-      punishments = this.getPunishments().toPunishments(),
+      punishments = this.getPunishments().toPunishmentsDto(false),
     )
   }
 
