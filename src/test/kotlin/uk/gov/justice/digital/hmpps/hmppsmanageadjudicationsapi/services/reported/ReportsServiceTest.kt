@@ -201,6 +201,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           "MDI",
           LocalDate.now().atStartOfDay().minusDays(2),
           LocalDate.now().atTime(LocalTime.MAX),
+          ReportedAdjudicationStatus.issuableStatuses().map { it.name },
         ),
       ).thenReturn(
         listOf(first, second),

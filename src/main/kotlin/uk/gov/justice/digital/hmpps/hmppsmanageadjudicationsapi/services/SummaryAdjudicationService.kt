@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.HasAdjudicationsResponse
@@ -24,25 +26,31 @@ class SummaryAdjudicationService(
 ) {
 
   @Transactional(readOnly = true)
-  fun getAdjudicationSummary(
+  suspend fun getAdjudicationSummary(
     bookingId: Long,
     awardCutoffDate: LocalDate?,
     adjudicationCutoffDate: LocalDate?,
-  ): AdjudicationSummary {
+  ): AdjudicationSummary = coroutineScope {
     val cutOff = adjudicationCutoffDate ?: LocalDate.now().minusMonths(3)
-    val provenByOffenderBookingId = getReportCountForProfile(
-      offenderBookingId = bookingId,
-      cutOff = cutOff.atStartOfDay(),
-    )
-    return AdjudicationSummary(
-      bookingId = bookingId,
-      adjudicationCount = provenByOffenderBookingId.toInt(),
-      awards =
+    val provenByOffenderBookingId = async {
+      getReportCountForProfile(
+        offenderBookingId = bookingId,
+        cutOff = cutOff.atStartOfDay(),
+      )
+    }
+    val awards = async {
       punishmentsReportQueryService.getReportsWithActivePunishments(offenderBookingId = bookingId).map { it.second }.flatten().map {
         Award(
           bookingId = bookingId,
         )
-      },
+      }
+    }
+
+    AdjudicationSummary(
+      bookingId = bookingId,
+      adjudicationCount = provenByOffenderBookingId.await().toInt(),
+      awards = awards.await(),
+
     )
   }
 

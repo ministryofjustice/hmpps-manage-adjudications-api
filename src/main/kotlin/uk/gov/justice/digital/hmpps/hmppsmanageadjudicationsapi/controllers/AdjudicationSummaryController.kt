@@ -43,7 +43,7 @@ class AdjudicationSummaryController(
     ],
   )
   @GetMapping("/by-booking-id/{bookingId}")
-  fun getAdjudicationSummary(
+  suspend fun getAdjudicationSummary(
     @PathVariable("bookingId")
     @Parameter(
       description = "The prisoner booking id",

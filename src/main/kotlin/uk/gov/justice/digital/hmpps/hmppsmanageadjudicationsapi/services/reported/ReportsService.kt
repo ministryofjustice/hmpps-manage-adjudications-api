@@ -102,8 +102,8 @@ class ReportsService(
     agencyId = authenticationFacade.activeCaseload,
     startDate = reportsFrom(startDate),
     endDate = reportsTo(endDate),
-  ).filter { ReportedAdjudicationStatus.issuableStatuses().contains(it.status) }
-    .sortedBy { it.dateTimeOfDiscovery }
+    statuses = ReportedAdjudicationStatus.issuableStatuses().map { it.name },
+  ).sortedBy { it.dateTimeOfDiscovery }
     .map {
       it.toDto(
         offenceCodeLookupService = offenceCodeLookupService,
