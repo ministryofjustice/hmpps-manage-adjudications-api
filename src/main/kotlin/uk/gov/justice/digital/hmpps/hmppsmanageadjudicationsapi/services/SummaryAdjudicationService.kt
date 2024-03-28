@@ -7,11 +7,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Adjudicatio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Award
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsReportQueryService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationBaseService
 import java.time.LocalDate
 
 @Service
 class SummaryAdjudicationService(
+  private val punishmentsReportQueryService: PunishmentsReportQueryService,
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
@@ -36,7 +38,7 @@ class SummaryAdjudicationService(
       bookingId = bookingId,
       adjudicationCount = provenByOffenderBookingId.toInt(),
       awards =
-      getReportsWithActivePunishments(offenderBookingId = bookingId).map { it.second }.flatten().map {
+      punishmentsReportQueryService.getReportsWithActivePunishments(offenderBookingId = bookingId).map { it.second }.flatten().map {
         Award(
           bookingId = bookingId,
         )

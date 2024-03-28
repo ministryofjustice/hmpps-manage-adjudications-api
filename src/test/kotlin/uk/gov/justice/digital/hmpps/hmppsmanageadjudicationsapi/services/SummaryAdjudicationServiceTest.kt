@@ -9,13 +9,16 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsReportQueryService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
+  private val punishmentsReportQueryService = PunishmentsReportQueryService(reportedAdjudicationRepository)
   private val summaryAdjudicationService = SummaryAdjudicationService(
+    punishmentsReportQueryService,
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,

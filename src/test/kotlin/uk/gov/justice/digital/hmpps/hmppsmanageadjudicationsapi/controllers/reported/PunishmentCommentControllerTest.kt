@@ -48,7 +48,7 @@ class PunishmentCommentControllerTest : TestControllerBase() {
     fun `responds with a unauthorised status code`() {
       createPunishmentCommentRequest(
         1,
-        PunishmentsControllerTest.PUNISHMENT_COMMENT_REQUEST,
+        PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -57,7 +57,7 @@ class PunishmentCommentControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for non ALO`() {
       createPunishmentCommentRequest(
         1,
-        PunishmentsControllerTest.PUNISHMENT_COMMENT_REQUEST,
+        PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -66,19 +66,19 @@ class PunishmentCommentControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for ALO without write scope`() {
       createPunishmentCommentRequest(
         1,
-        PunishmentsControllerTest.PUNISHMENT_COMMENT_REQUEST,
+        PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to create punishment comment`() {
-      createPunishmentCommentRequest(1, PunishmentsControllerTest.PUNISHMENT_COMMENT_REQUEST)
+      createPunishmentCommentRequest(1, PUNISHMENT_COMMENT_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(punishmentCommentService).createPunishmentComment(
         chargeNumber = "1",
-        PunishmentsControllerTest.PUNISHMENT_COMMENT_REQUEST,
+        PUNISHMENT_COMMENT_REQUEST,
       )
     }
 
@@ -113,7 +113,7 @@ class PunishmentCommentControllerTest : TestControllerBase() {
     fun `responds with a unauthorised status code`() {
       updatePunishmentCommentRequest(
         1,
-        PunishmentsControllerTest.PUNISHMENT_COMMENT_REQUEST,
+        PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
     }
 
@@ -122,7 +122,7 @@ class PunishmentCommentControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for non ALO`() {
       updatePunishmentCommentRequest(
         1,
-        PunishmentsControllerTest.PUNISHMENT_COMMENT_REQUEST,
+        PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -131,7 +131,7 @@ class PunishmentCommentControllerTest : TestControllerBase() {
     fun `responds with a forbidden status code for ALO without write scope`() {
       updatePunishmentCommentRequest(
         1,
-        PunishmentsControllerTest.PUNISHMENT_COMMENT_REQUEST,
+        PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
@@ -143,7 +143,7 @@ class PunishmentCommentControllerTest : TestControllerBase() {
 
       updatePunishmentCommentRequest(
         1,
-        PunishmentsControllerTest.PUNISHMENT_COMMENT_REQUEST,
+        PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isNotFound)
     }
 
@@ -155,19 +155,19 @@ class PunishmentCommentControllerTest : TestControllerBase() {
 
       updatePunishmentCommentRequest(
         1,
-        PunishmentsControllerTest.PUNISHMENT_COMMENT_REQUEST,
+        PUNISHMENT_COMMENT_REQUEST,
       ).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to update punishment comment`() {
-      updatePunishmentCommentRequest(1, PunishmentsControllerTest.PUNISHMENT_COMMENT_REQUEST)
+      updatePunishmentCommentRequest(1, PUNISHMENT_COMMENT_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
 
       verify(punishmentCommentService).updatePunishmentComment(
         chargeNumber = "1",
-        PunishmentsControllerTest.PUNISHMENT_COMMENT_REQUEST,
+        PUNISHMENT_COMMENT_REQUEST,
       )
     }
 
@@ -270,5 +270,9 @@ class PunishmentCommentControllerTest : TestControllerBase() {
             .header("Content-Type", "application/json"),
         )
     }
+  }
+
+  companion object {
+    val PUNISHMENT_COMMENT_REQUEST = PunishmentCommentRequest(comment = "some text")
   }
 }

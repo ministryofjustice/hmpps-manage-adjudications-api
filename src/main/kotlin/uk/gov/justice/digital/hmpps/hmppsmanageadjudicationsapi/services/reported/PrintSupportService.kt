@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication.Companion.isCorrupted
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication.Companion.toPunishmentsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
@@ -20,7 +21,20 @@ import java.time.LocalDate
 
 @Transactional(readOnly = true)
 @Service
+class PrintSupportQueryService(
+  private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+) {
+  fun offenderChargesForPrintSupport(offenderBookingId: Long, chargeNumber: String): List<ReportedAdjudication> =
+    reportedAdjudicationRepository.findByOffenderBookingIdAndStatus(
+      offenderBookingId = offenderBookingId,
+      status = ReportedAdjudicationStatus.CHARGE_PROVED,
+    ).filter { it.chargeNumber != chargeNumber }
+}
+
+@Transactional(readOnly = true)
+@Service
 class PrintSupportService(
+  private val printSupportQueryService: PrintSupportQueryService,
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
@@ -32,7 +46,7 @@ class PrintSupportService(
   fun getDis5Data(chargeNumber: String): Dis5PrintSupportDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
     val currentEstablishment = reportedAdjudication.overrideAgencyId ?: reportedAdjudication.originatingAgencyId
-    val otherChargesOnSentence = offenderChargesForPrintSupport(
+    val otherChargesOnSentence = printSupportQueryService.offenderChargesForPrintSupport(
       offenderBookingId = reportedAdjudication.offenderBookingId!!,
       chargeNumber = chargeNumber,
     )
