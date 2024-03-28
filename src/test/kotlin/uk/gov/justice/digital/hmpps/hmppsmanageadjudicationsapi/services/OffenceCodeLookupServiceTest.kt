@@ -4,8 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 
-class OffenceCodeLookupTest {
-  private val offenceCodeLookup: OffenceCodeLookup = OffenceCodeLookup()
+class OffenceCodeLookupServiceTest {
+  private val offenceCodeLookupService: OffenceCodeLookupService = OffenceCodeLookupService()
 
   @Test
   fun `offence codes have values set for all items`() {
@@ -44,12 +44,12 @@ class OffenceCodeLookupTest {
 
   @Test
   fun `get offence code for yoi`() {
-    assertThat(offenceCodeLookup.getOffenceCode(1002, true)).isEqualTo(OffenceCodes.YOI_55_1A)
+    assertThat(offenceCodeLookupService.getOffenceCode(1002, true)).isEqualTo(OffenceCodes.YOI_55_1A)
   }
 
   @Test
   fun `get offence code for adult`() {
-    assertThat(offenceCodeLookup.getOffenceCode(1002, false)).isEqualTo(OffenceCodes.ADULT_51_1B)
+    assertThat(offenceCodeLookupService.getOffenceCode(1002, false)).isEqualTo(OffenceCodes.ADULT_51_1B)
   }
 
   private fun assertValuesSetForAllItems(offenceCodes: IntRange) {
@@ -60,10 +60,10 @@ class OffenceCodeLookupTest {
   }
 
   private fun assertValuesSetForItem(code: Int, isYouthOffender: Boolean, nomisCodePrefix: String) {
-    assertThat(offenceCodeLookup.getOffenceCode(code, isYouthOffender).paragraph).isNotBlank
-    assertThat(offenceCodeLookup.getOffenceCode(code, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE)).isNotBlank
-    assertThat(offenceCodeLookup.getOffenceCode(code, isYouthOffender).getNomisCode()).hasSizeGreaterThan(0)
-    assertThat(offenceCodeLookup.getOffenceCode(code, isYouthOffender).getNomisCode()).startsWith(nomisCodePrefix)
-    assertThat(offenceCodeLookup.getOffenceCode(code, isYouthOffender).getNomisCodeWithOthers()).startsWith(nomisCodePrefix)
+    assertThat(offenceCodeLookupService.getOffenceCode(code, isYouthOffender).paragraph).isNotBlank
+    assertThat(offenceCodeLookupService.getOffenceCode(code, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE)).isNotBlank
+    assertThat(offenceCodeLookupService.getOffenceCode(code, isYouthOffender).getNomisCode()).hasSizeGreaterThan(0)
+    assertThat(offenceCodeLookupService.getOffenceCode(code, isYouthOffender).getNomisCode()).startsWith(nomisCodePrefix)
+    assertThat(offenceCodeLookupService.getOffenceCode(code, isYouthOffender).getNomisCodeWithOthers()).startsWith(nomisCodePrefix)
   }
 }

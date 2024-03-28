@@ -29,6 +29,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
   private val reportsService = ReportsService(
     reportedAdjudicationRepository,
+    offenceCodeLookupService,
     authenticationFacade,
   )
 

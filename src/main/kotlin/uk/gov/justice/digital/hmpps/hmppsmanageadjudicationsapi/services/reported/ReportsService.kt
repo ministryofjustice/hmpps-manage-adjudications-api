@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookup
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -31,9 +31,9 @@ enum class TransferType {
 @Service
 class ReportsService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  private val offenceCodeLookupService: OffenceCodeLookupService,
   private val authenticationFacade: AuthenticationFacade,
 ) {
-  private val offenceCodeLookup: OffenceCodeLookup = OffenceCodeLookup()
   fun getAllReportedAdjudications(
     startDate: LocalDate,
     endDate: LocalDate,
@@ -48,7 +48,7 @@ class ReportsService(
       pageable = pageable,
     ).map {
       it.toDto(
-        offenceCodeLookup = offenceCodeLookup,
+        offenceCodeLookupService = offenceCodeLookupService,
         activeCaseload = authenticationFacade.activeCaseload,
       )
     }
@@ -78,7 +78,7 @@ class ReportsService(
       )
     }.map {
       it.toDto(
-        offenceCodeLookup = offenceCodeLookup,
+        offenceCodeLookupService = offenceCodeLookupService,
         activeCaseload = authenticationFacade.activeCaseload,
       )
     }
@@ -95,7 +95,7 @@ class ReportsService(
         statuses = statuses,
         pageable = pageable,
       )
-    return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookup) }
+    return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
   fun getAdjudicationsForIssue(startDate: LocalDate, endDate: LocalDate): List<ReportedAdjudicationDto> = reportedAdjudicationRepository.findReportsForIssue(
@@ -106,7 +106,7 @@ class ReportsService(
     .sortedBy { it.dateTimeOfDiscovery }
     .map {
       it.toDto(
-        offenceCodeLookup = offenceCodeLookup,
+        offenceCodeLookupService = offenceCodeLookupService,
         activeCaseload = authenticationFacade.activeCaseload,
       )
     }
@@ -122,7 +122,7 @@ class ReportsService(
     if (issueStatuses.containsAll(IssuedStatus.values().toList())) {
       return reportsForPrint.sortedBy { it.dateTimeOfFirstHearing }.map {
         it.toDto(
-          offenceCodeLookup = offenceCodeLookup,
+          offenceCodeLookupService = offenceCodeLookupService,
           activeCaseload = authenticationFacade.activeCaseload,
         )
       }
@@ -131,7 +131,7 @@ class ReportsService(
     if (issueStatuses.contains(IssuedStatus.ISSUED)) {
       return reportsForPrint.filter { it.dateTimeOfIssue != null }.sortedBy { it.dateTimeOfFirstHearing }.map {
         it.toDto(
-          offenceCodeLookup = offenceCodeLookup,
+          offenceCodeLookupService = offenceCodeLookupService,
           activeCaseload = authenticationFacade.activeCaseload,
         )
       }
@@ -140,7 +140,7 @@ class ReportsService(
     if (issueStatuses.contains(IssuedStatus.NOT_ISSUED)) {
       return reportsForPrint.filter { it.dateTimeOfIssue == null }.sortedBy { it.dateTimeOfFirstHearing }.map {
         it.toDto(
-          offenceCodeLookup = offenceCodeLookup,
+          offenceCodeLookupService = offenceCodeLookupService,
           activeCaseload = authenticationFacade.activeCaseload,
         )
       }
@@ -233,7 +233,7 @@ class ReportsService(
     )
   }.map {
     it.toDto(
-      offenceCodeLookup = offenceCodeLookup,
+      offenceCodeLookupService = offenceCodeLookupService,
       activeCaseload = authenticationFacade.activeCaseload,
       isAlo = authenticationFacade.isAlo,
     )
@@ -269,17 +269,17 @@ class ReportsService(
     )
   }.map {
     it.toDto(
-      offenceCodeLookup = offenceCodeLookup,
+      offenceCodeLookupService = offenceCodeLookupService,
       activeCaseload = authenticationFacade.activeCaseload,
       isAlo = authenticationFacade.isAlo,
     )
   }
 
   fun getReportsForPrisoner(prisonerNumber: String): List<ReportedAdjudicationDto> =
-    reportedAdjudicationRepository.findByPrisonerNumber(prisonerNumber = prisonerNumber).map { it.toDto(offenceCodeLookup) }
+    reportedAdjudicationRepository.findByPrisonerNumber(prisonerNumber = prisonerNumber).map { it.toDto(offenceCodeLookupService) }
 
   fun getReportsForBooking(offenderBookingId: Long): List<ReportedAdjudicationDto> =
-    reportedAdjudicationRepository.findByOffenderBookingId(offenderBookingId).map { it.toDto(offenceCodeLookup) }
+    reportedAdjudicationRepository.findByOffenderBookingId(offenderBookingId).map { it.toDto(offenceCodeLookupService) }
 
   companion object {
     val minDate: LocalDate = LocalDate.EPOCH

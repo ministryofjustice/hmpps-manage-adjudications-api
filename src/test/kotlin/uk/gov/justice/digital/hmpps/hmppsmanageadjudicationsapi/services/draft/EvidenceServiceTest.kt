@@ -22,6 +22,7 @@ class EvidenceServiceTest : DraftAdjudicationTestBase() {
 
   private val evidenceService = DraftEvidenceService(
     draftAdjudicationRepository,
+    offenceCodeLookupService,
     authenticationFacade,
   )
 

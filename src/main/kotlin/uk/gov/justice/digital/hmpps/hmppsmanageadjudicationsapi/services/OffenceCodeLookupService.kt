@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
-class OffenceCodeLookup {
+import org.springframework.stereotype.Service
+
+@Service
+class OffenceCodeLookupService {
   private val youthOffenceCodes = OffenceCodes.getYouthOffenceCodes()
   private val adultOffenceCodes = OffenceCodes.getAdultOffenceCodes()
 

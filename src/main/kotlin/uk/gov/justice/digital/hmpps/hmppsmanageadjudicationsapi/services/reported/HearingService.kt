@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.lastOutcomeIsRefer
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -28,10 +29,12 @@ import java.time.LocalDateTime
 @Service
 class HearingService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   private val hearingRepository: HearingRepository,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
+  offenceCodeLookupService,
   authenticationFacade,
 ) {
 

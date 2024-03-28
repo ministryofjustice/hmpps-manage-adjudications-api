@@ -32,9 +32,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 
 private class DraftAdjudicationServiceWrapper(
   draftAdjudicationRepository: DraftAdjudicationRepository,
+  offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
   draftAdjudicationRepository,
+  offenceCodeLookupService,
   authenticationFacade,
 ) {
   fun get(id: Long) =
@@ -46,9 +48,11 @@ private class DraftAdjudicationServiceWrapper(
 
 private class ReportedAdjudicationServiceWrapper(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
+  offenceCodeLookupService,
   authenticationFacade,
 ) {
   fun get(chargeNumber: String) =
@@ -66,13 +70,14 @@ private class ReportedAdjudicationServiceWrapper(
 class AdjudicationWorkflowService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   private val telemetryClient: TelemetryClient,
   private val draftOffenceService: DraftOffenceService,
 ) {
 
-  private val draftAdjudicationService = DraftAdjudicationServiceWrapper(draftAdjudicationRepository, authenticationFacade)
-  private val reportedAdjudicationService = ReportedAdjudicationServiceWrapper(reportedAdjudicationRepository, authenticationFacade)
+  private val draftAdjudicationService = DraftAdjudicationServiceWrapper(draftAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
+  private val reportedAdjudicationService = ReportedAdjudicationServiceWrapper(reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
 
   fun completeDraftAdjudication(id: Long): ReportedAdjudicationDto {
     val draftAdjudication = draftAdjudicationService.get(id)

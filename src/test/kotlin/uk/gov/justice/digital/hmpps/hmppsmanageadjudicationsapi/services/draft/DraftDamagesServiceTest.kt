@@ -22,6 +22,7 @@ class DraftDamagesServiceTest : DraftAdjudicationTestBase() {
   private val damagesService =
     DraftDamagesService(
       draftAdjudicationRepository,
+      offenceCodeLookupService,
       authenticationFacade,
     )
   private val draftAdjudication =

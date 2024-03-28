@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookup
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.corruptedSuspendedCutOff
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.getSuspendedPunishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
@@ -17,11 +17,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+
 open class ReportedAdjudicationBaseService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  protected val offenceCodeLookupService: OffenceCodeLookupService,
   protected val authenticationFacade: AuthenticationFacade,
 ) {
-  protected val offenceCodeLookup: OffenceCodeLookup = OffenceCodeLookup()
 
   protected fun findByChargeNumber(chargeNumber: String): ReportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber, ignoreSecurityCheck = false)
 
@@ -68,7 +69,7 @@ open class ReportedAdjudicationBaseService(
         if (logLastModified) it.lastModifiedAgencyId = authenticationFacade.activeCaseload
       },
     ).toDto(
-      offenceCodeLookup = offenceCodeLookup,
+      offenceCodeLookupService = offenceCodeLookupService,
       activeCaseload = authenticationFacade.activeCaseload,
       hasLinkedAda = hasLinkedAda(reportedAdjudication),
     )

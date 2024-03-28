@@ -9,16 +9,21 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDateTime
+
+
 
 @Transactional
 @Service
 class ReportedAdjudicationService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   private val telemetryClient: TelemetryClient,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
+  offenceCodeLookupService,
   authenticationFacade,
 ) {
   companion object {
@@ -29,7 +34,7 @@ class ReportedAdjudicationService(
     val reportedAdjudication = findByChargeNumber(chargeNumber)
 
     return reportedAdjudication.toDto(
-      offenceCodeLookup = offenceCodeLookup,
+      offenceCodeLookupService = offenceCodeLookupService,
       activeCaseload = authenticationFacade.activeCaseload,
       consecutiveReportsAvailable = reportedAdjudication.getPunishments().filter { it.consecutiveToChargeNumber != null }.map { it.consecutiveToChargeNumber!! },
       hasLinkedAda = hasLinkedAda(reportedAdjudication),

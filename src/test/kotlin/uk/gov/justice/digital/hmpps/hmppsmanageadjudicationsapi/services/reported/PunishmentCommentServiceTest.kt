@@ -19,6 +19,7 @@ class PunishmentCommentServiceTest : ReportedAdjudicationTestBase() {
 
   private val punishmentCommentService = PunishmentCommentService(
     reportedAdjudicationRepository,
+    offenceCodeLookupService,
     authenticationFacade,
   )
 

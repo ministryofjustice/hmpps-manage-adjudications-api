@@ -29,6 +29,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
   private val hearingOutcomeService = HearingOutcomeService(
     reportedAdjudicationRepository,
+    offenceCodeLookupService,
     authenticationFacade,
   )
 

@@ -41,6 +41,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
   private val draftAdjudicationService =
     DraftAdjudicationService(
       draftAdjudicationRepository,
+      offenceCodeLookupService,
       authenticationFacade,
     )
 
@@ -206,8 +207,8 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         )
         .contains(
           1002,
-          offenceCodeLookup.getOffenceCode(1002, isYouthOffender).paragraph,
-          offenceCodeLookup.getOffenceCode(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
+          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraph,
+          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
           "x",
           "y",
           "z",
@@ -1053,8 +1054,8 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       )
       .contains(
         1002,
-        offenceCodeLookup.getOffenceCode(1002, false).paragraph,
-        offenceCodeLookup.getOffenceCode(1002, false).paragraphDescription.getParagraphDescription(Gender.MALE),
+        offenceCodeLookupService.getOffenceCode(1002, false).paragraph,
+        offenceCodeLookupService.getOffenceCode(1002, false).paragraphDescription.getParagraphDescription(Gender.MALE),
       )
 
     assertThat(draftAdjudicationDto.incidentStatement)

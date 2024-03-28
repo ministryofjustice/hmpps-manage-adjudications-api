@@ -7,14 +7,17 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudi
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 
 @Transactional
 @Service
 class DraftEvidenceService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
+  offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
   draftAdjudicationRepository,
+  offenceCodeLookupService,
   authenticationFacade,
 ) {
 

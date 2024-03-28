@@ -5,7 +5,7 @@ import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookup
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 
 @Entity
@@ -24,10 +24,10 @@ data class ReportedOffence(
   var nomisOffenceDescription: String? = null,
   var actualOffenceCode: Int? = null,
 ) : BaseEntity() {
-  fun toDto(offenceCodeLookup: OffenceCodeLookup, isYouthOffender: Boolean, gender: Gender): OffenceDto {
+  fun toDto(offenceCodeLookupService: OffenceCodeLookupService, isYouthOffender: Boolean, gender: Gender): OffenceDto {
     val offenceRuleDto = when (
       val offenceCode =
-        offenceCodeLookup.getOffenceCode(offenceCode = this.offenceCode, isYouthOffender = isYouthOffender)
+        offenceCodeLookupService.getOffenceCode(offenceCode = this.offenceCode, isYouthOffender = isYouthOffender)
     ) {
       OffenceCodes.MIGRATED_OFFENCE -> OffenceRuleDto(
         paragraphNumber = this.nomisOffenceCode!!,

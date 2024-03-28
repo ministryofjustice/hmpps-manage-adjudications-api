@@ -11,9 +11,9 @@ import java.time.LocalTime
 @Transactional(readOnly = true)
 @Service
 class SubjectAccessRequestService(
-  val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  private val offenceCodeLookupService: OffenceCodeLookupService,
 ) : HmppsPrisonSubjectAccessRequestService {
-  private val offenceCodeLookup: OffenceCodeLookup = OffenceCodeLookup()
 
   companion object {
     val minDate: LocalDate = LocalDate.EPOCH
@@ -32,6 +32,6 @@ class SubjectAccessRequestService(
     )
     if (reported.isEmpty()) return null
 
-    return HmppsSubjectAccessRequestContent(content = reported.map { it.toDto(offenceCodeLookup) })
+    return HmppsSubjectAccessRequestContent(content = reported.map { it.toDto(offenceCodeLookupService) })
   }
 }

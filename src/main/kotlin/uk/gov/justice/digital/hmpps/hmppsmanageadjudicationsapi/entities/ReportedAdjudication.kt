@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHist
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookup
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 import java.lang.IllegalStateException
 import java.time.LocalDate
@@ -166,7 +166,7 @@ data class ReportedAdjudication(
   private fun Hearing?.isAdjourn() = this?.hearingOutcome?.code == HearingOutcomeCode.ADJOURN
 
   fun toDto(
-    offenceCodeLookup: OffenceCodeLookup,
+    offenceCodeLookupService: OffenceCodeLookupService,
     activeCaseload: String? = null,
     consecutiveReportsAvailable: List<String>? = null,
     hasLinkedAda: Boolean = false,
@@ -191,7 +191,7 @@ data class ReportedAdjudication(
         associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
         associatedPrisonersName = incidentRoleAssociatedPrisonersName,
       ),
-      offenceDetails = this.offenceDetails.first().toDto(offenceCodeLookup, isYouthOffender, gender),
+      offenceDetails = this.offenceDetails.first().toDto(offenceCodeLookupService, isYouthOffender, gender),
       incidentStatement = IncidentStatementDto(
         statement = statement,
         completed = true,

@@ -36,6 +36,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
   private val punishmentsService = PunishmentsService(
     reportedAdjudicationRepository,
+    offenceCodeLookupService,
     authenticationFacade,
   )
 

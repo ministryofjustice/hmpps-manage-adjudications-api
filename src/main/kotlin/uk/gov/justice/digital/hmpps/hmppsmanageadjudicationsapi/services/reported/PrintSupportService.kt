@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes.Companion.containsNomisCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
 import java.time.LocalDate
@@ -21,9 +22,11 @@ import java.time.LocalDate
 @Service
 class PrintSupportService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
+  offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
+  offenceCodeLookupService,
   authenticationFacade,
 ) {
   fun getDis5Data(chargeNumber: String): Dis5PrintSupportDto {
@@ -64,7 +67,7 @@ class PrintSupportService(
           chargeNumber = it.chargeNumber,
           dateOfIncident = it.dateTimeOfIncident.toLocalDate(),
           dateOfDiscovery = it.dateTimeOfDiscovery.toLocalDate(),
-          offenceDetails = it.offenceDetails.first().toDto(offenceCodeLookup, it.isYouthOffender, it.gender),
+          offenceDetails = it.offenceDetails.first().toDto(offenceCodeLookupService, it.isYouthOffender, it.gender),
           suspendedPunishments = it.getPunishments().filter {
               punishment ->
             punishment.isActiveSuspended(punishmentCutOff) && !punishment.isCorrupted()
