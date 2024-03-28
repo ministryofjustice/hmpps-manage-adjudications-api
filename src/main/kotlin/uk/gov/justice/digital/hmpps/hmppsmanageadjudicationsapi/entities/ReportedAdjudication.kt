@@ -277,7 +277,7 @@ data class ReportedAdjudication(
 
       do {
         val hearing = if (outcomes.firstOrNull().isScheduleHearing()) null else hearings.removeFirstOrNull()
-        val outcome = if (hearing != null && hearing.hearingHasNoAssociatedOutcome()) null else outcomes.removeFirstOrNull()!!
+        val outcome = if (hearing != null && hearing.hearingHasNoAssociatedOutcome()) null else outcomes.removeFirstOrNull()
 
         history.add(
           OutcomeHistoryDto(hearing = hearing, outcome = outcome),
@@ -334,7 +334,7 @@ enum class ReportedAdjudicationStatus {
   REJECTED,
   AWAITING_REVIEW {
     override fun nextStates(): List<ReportedAdjudicationStatus> {
-      return listOf(UNSCHEDULED, REJECTED, RETURNED, AWAITING_REVIEW, ACCEPTED) // Accepted re-enabled for phase 1 testing
+      return listOf(UNSCHEDULED, REJECTED, RETURNED, AWAITING_REVIEW)
     }
   },
   RETURNED {
@@ -401,9 +401,6 @@ enum class ReportedAdjudicationStatus {
   fun canTransitionTo(to: ReportedAdjudicationStatus): Boolean {
     val from = this
     return from.nextStates().contains(to)
-  }
-  fun isAccepted(): Boolean {
-    return this == UNSCHEDULED
   }
 
   companion object {
