@@ -33,6 +33,10 @@ class PunishmentsReportQueryService(
     date = suspendedCutOff,
   )
 
+  @Deprecated(
+    "this can be removed at some point in the near future ie after 1.9.2024 approximately. " +
+      "Its purpose is to include nomis records where nomis allowed the user to incorrectly specify suspended until dates ",
+  )
   fun getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber: String) =
     reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(
       prisonerNumber = prisonerNumber,
