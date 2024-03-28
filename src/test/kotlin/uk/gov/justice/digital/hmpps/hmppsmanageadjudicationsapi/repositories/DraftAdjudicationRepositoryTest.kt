@@ -286,7 +286,7 @@ class DraftAdjudicationRepositoryTest {
   @Test
   fun `delete orphaned adjudications should completely remove orphaned adjudications if they are old enough`() {
     val draft = draftWithAllData("1")
-    val saved = entityManager.persistAndFlush(draft)
+    entityManager.persistAndFlush(draft)
     val deleteBefore = LocalDateTime.now().plusSeconds(1)
     // We should delete the saved adjudication because the time we use is in the future, after the draft was created.
     val allDeleted =
@@ -295,7 +295,7 @@ class DraftAdjudicationRepositoryTest {
     val deleted = allDeleted[0]
     assertThat(entityManager.find(IncidentDetails::class.java, deleted.incidentDetails.id)).isNull()
     assertThat(entityManager.find(IncidentStatement::class.java, deleted.incidentStatement?.id)).isNull()
-    deleted.offenceDetails?.forEach {
+    deleted.offenceDetails.forEach {
       assertThat(entityManager.find(Offence::class.java, it.id)).isNull()
     }
   }

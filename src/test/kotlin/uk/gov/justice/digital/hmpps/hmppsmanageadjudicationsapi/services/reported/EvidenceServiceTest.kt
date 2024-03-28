@@ -18,7 +18,6 @@ import java.time.LocalDateTime
 class EvidenceServiceTest : ReportedAdjudicationTestBase() {
   private val evidenceService = EvidenceService(
     reportedAdjudicationRepository,
-    offenceCodeLookupService,
     authenticationFacade,
   )
 

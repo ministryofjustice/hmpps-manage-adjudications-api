@@ -13,11 +13,9 @@ import java.time.LocalDate
 @Service
 class SummaryAdjudicationService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
-  offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
-  offenceCodeLookupService,
   authenticationFacade,
 ) {
 

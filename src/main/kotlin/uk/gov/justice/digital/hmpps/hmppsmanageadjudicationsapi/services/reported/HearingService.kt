@@ -14,12 +14,12 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHear
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication.Companion.getOutcomeHistory
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus.Companion.validateTransition
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.lastOutcomeIsRefer
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -28,12 +28,10 @@ import java.time.LocalDateTime
 @Service
 class HearingService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
-  offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
   private val hearingRepository: HearingRepository,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
-  offenceCodeLookupService,
   authenticationFacade,
 ) {
 
@@ -100,7 +98,7 @@ class HearingService(
       it.hearings.remove(hearingToRemove)
       it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
 
-      if (it.getOutcomeHistory().shouldRemoveLastScheduleHearing()) it.getOutcomeToRemove().deleted = true
+      if (reportedAdjudication.getOutcomeHistory().shouldRemoveLastScheduleHearing()) it.getOutcomeToRemove().deleted = true
     }.calculateStatus()
 
     return saveToDto(reportedAdjudication).also {

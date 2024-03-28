@@ -9,23 +9,20 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 
 @Transactional
 @Service
 class DraftOffenceService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
-  offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
 ) : DraftAdjudicationBaseService(
   draftAdjudicationRepository,
-  offenceCodeLookupService,
   authenticationFacade,
 ) {
 
   fun getRule(offenceCode: Int, isYouthOffender: Boolean, gender: Gender): OffenceRuleDetailsDto {
-    val offenceDetails = offenceCodeLookupService.getOffenceCode(
+    val offenceDetails = offenceCodeLookup.getOffenceCode(
       offenceCode = offenceCode,
       isYouthOffender = isYouthOffender,
     )

@@ -19,7 +19,6 @@ class DamagesServiceTest : ReportedAdjudicationTestBase() {
 
   private val damagesService = DamagesService(
     reportedAdjudicationRepository,
-    offenceCodeLookupService,
     authenticationFacade,
   )
 

@@ -30,7 +30,6 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
   private val reportsService = ReportsService(
     reportedAdjudicationRepository,
     authenticationFacade,
-    offenceCodeLookupService,
   )
 
   @Nested

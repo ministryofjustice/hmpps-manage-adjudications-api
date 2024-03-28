@@ -6,6 +6,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedDamageDto
 
 enum class DamageCode {
   ELECTRICAL_REPAIR,
@@ -42,4 +43,11 @@ data class ReportedDamage(
   @field:Length(max = 32)
   var reporter: String,
   var repairCost: Double? = null,
-) : BaseEntity()
+) : BaseEntity() {
+  fun toDto(): ReportedDamageDto =
+    ReportedDamageDto(
+      code = this.code,
+      details = this.details,
+      reporter = this.reporter,
+    )
+}

@@ -41,7 +41,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   private val reportedAdjudicationService =
     ReportedAdjudicationService(
       reportedAdjudicationRepository,
-      offenceCodeLookupService,
       authenticationFacade,
       telemetryClient,
     )
@@ -240,8 +239,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         )
         .contains(
           1002,
-          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraph,
-          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraphDescription.getParagraphDescription(
+          offenceCodeLookup.getOffenceCode(1002, isYouthOffender).paragraph,
+          offenceCodeLookup.getOffenceCode(1002, isYouthOffender).paragraphDescription.getParagraphDescription(
             Gender.MALE,
           ),
           null,

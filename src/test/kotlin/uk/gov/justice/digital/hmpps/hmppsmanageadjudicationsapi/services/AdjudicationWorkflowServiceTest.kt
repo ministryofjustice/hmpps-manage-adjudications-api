@@ -59,7 +59,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
   private val adjudicationWorkflowService = AdjudicationWorkflowService(
     draftAdjudicationRepository,
     reportedAdjudicationRepository,
-    offenceCodeLookupService,
     authenticationFacade,
     telemetryClient,
     draftOffenceService,
@@ -168,8 +167,8 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         )
         .contains(
           1002,
-          offenceCodeLookupService.getOffenceCode(1002, false).paragraph,
-          offenceCodeLookupService.getOffenceCode(1002, false).paragraphDescription.getParagraphDescription(Gender.MALE),
+          offenceCodeLookup.getOffenceCode(1002, false).paragraph,
+          offenceCodeLookup.getOffenceCode(1002, false).paragraphDescription.getParagraphDescription(Gender.MALE),
           "A1234AA",
           "ABC12D",
           "A Person",

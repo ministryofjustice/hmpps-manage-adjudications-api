@@ -17,7 +17,6 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
   private val summaryAdjudicationService = SummaryAdjudicationService(
     reportedAdjudicationRepository,
-    offenceCodeLookupService,
     authenticationFacade,
   )
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {

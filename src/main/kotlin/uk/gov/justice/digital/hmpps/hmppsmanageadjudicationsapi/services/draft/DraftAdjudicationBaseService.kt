@@ -24,16 +24,16 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookup
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
 open class DraftAdjudicationBaseService(
   private val draftAdjudicationRepository: DraftAdjudicationRepository,
-  protected val offenceCodeLookupService: OffenceCodeLookupService,
   protected val authenticationFacade: AuthenticationFacade,
 ) {
+  protected val offenceCodeLookup: OffenceCodeLookup = OffenceCodeLookup()
 
   protected fun find(id: Long): DraftAdjudication {
     val draftAdjudication = draftAdjudicationRepository.findById(id).orElseThrow { throwEntityNotFoundException(id) }
@@ -79,7 +79,7 @@ open class DraftAdjudicationBaseService(
       incidentDetails = this.incidentDetails.toDto(),
       incidentRole = this.incidentRole?.toDto(this.isYouthOffender!!),
       offenceDetails = this.offenceDetails.firstOrNull()
-        ?.toDto(offenceCodeLookupService, this.isYouthOffender!!, this.gender),
+        ?.toDto(offenceCodeLookup, this.isYouthOffender!!, this.gender),
       chargeNumber = this.chargeNumber,
       startedByUserId = this.chargeNumber?.let { this.reportByUserId } ?: this.createdByUserId,
       isYouthOffender = this.isYouthOffender,
@@ -110,11 +110,11 @@ open class DraftAdjudicationBaseService(
   )
 
   private fun Offence.toDto(
-    offenceCodeLookupService: OffenceCodeLookupService,
+    offenceCodeLookup: OffenceCodeLookup,
     isYouthOffender: Boolean,
     gender: Gender,
   ): OffenceDetailsDto {
-    val offenceDetails = offenceCodeLookupService.getOffenceCode(
+    val offenceDetails = offenceCodeLookup.getOffenceCode(
       offenceCode = offenceCode,
       isYouthOffender = isYouthOffender,
     )

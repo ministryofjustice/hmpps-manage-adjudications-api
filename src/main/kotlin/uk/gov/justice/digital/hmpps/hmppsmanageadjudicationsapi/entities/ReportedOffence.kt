@@ -3,6 +3,10 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookup
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 
 @Entity
 @Table(name = "reported_offence")
@@ -19,4 +23,31 @@ data class ReportedOffence(
   @field:Length(max = 350)
   var nomisOffenceDescription: String? = null,
   var actualOffenceCode: Int? = null,
-) : BaseEntity()
+) : BaseEntity() {
+  fun toDto(offenceCodeLookup: OffenceCodeLookup, isYouthOffender: Boolean, gender: Gender): OffenceDto {
+    val offenceRuleDto = when (
+      val offenceCode =
+        offenceCodeLookup.getOffenceCode(offenceCode = this.offenceCode, isYouthOffender = isYouthOffender)
+    ) {
+      OffenceCodes.MIGRATED_OFFENCE -> OffenceRuleDto(
+        paragraphNumber = this.nomisOffenceCode!!,
+        paragraphDescription = this.nomisOffenceDescription!!,
+      )
+
+      else -> OffenceRuleDto(
+        paragraphNumber = offenceCode.paragraph,
+        paragraphDescription = offenceCode.paragraphDescription.getParagraphDescription(gender),
+        nomisCode = offenceCode.getNomisCode(),
+        withOthersNomisCode = offenceCode.getNomisCodeWithOthers(),
+      )
+    }
+
+    return OffenceDto(
+      offenceCode = this.offenceCode,
+      offenceRule = offenceRuleDto,
+      victimPrisonersNumber = this.victimPrisonersNumber,
+      victimStaffUsername = this.victimStaffUsername,
+      victimOtherPersonsName = this.victimOtherPersonsName,
+    )
+  }
+}

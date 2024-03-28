@@ -35,7 +35,6 @@ import java.time.LocalDateTime
 class OutcomeServiceTest : ReportedAdjudicationTestBase() {
   private val outcomeService = OutcomeService(
     reportedAdjudicationRepository,
-    offenceCodeLookupService,
     authenticationFacade,
   )
 

@@ -418,7 +418,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `SAR returns a 209 if no prn is set`() {
     webTestClient.get()
-      .uri("/subject-access-request")
+      .uri("/subject-access-request?crn=12345")
       .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_SAR_DATA_ACCESS")))
       .exchange()
       .expectStatus().isEqualTo(HttpStatusCode.valueOf(209))
@@ -427,7 +427,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `SAR has no content`() {
     webTestClient.get()
-      .uri("/subject-access-request?prn=A12345")
+      .uri("/subject-access-request?prn=A123459")
       .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_SAR_DATA_ACCESS")))
       .exchange()
       .expectStatus().isNoContent

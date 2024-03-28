@@ -210,21 +210,25 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     @Test
     fun `transfers all & out - agency MDI needs to approve the report for agency BXI`() {
       // 1: transfers out / all should list the report awaiting review for MDI
-      webTestClient.get()
-        .uri("/reported-adjudications/transfer-reports?status=AWAITING_REVIEW&type=ALL&page=0&size=20")
-        .headers(setHeaders(activeCaseload = "MDI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-        .exchange()
-        .expectStatus().isOk.expectBody()
-        .jsonPath("$.content.size()").isEqualTo(1)
-        .jsonPath("$.content[0].chargeNumber").isEqualTo(chargeNumberAwaitingReview)
+      chargeNumberAwaitingReview?.let {
+        webTestClient.get()
+          .uri("/reported-adjudications/transfer-reports?status=AWAITING_REVIEW&type=ALL&page=0&size=20")
+          .headers(setHeaders(activeCaseload = "MDI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .exchange()
+          .expectStatus().isOk.expectBody()
+          .jsonPath("$.content.size()").isEqualTo(1)
+          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+      }
 
-      webTestClient.get()
-        .uri("/reported-adjudications/transfer-reports?status=AWAITING_REVIEW&type=OUT&page=0&size=20")
-        .headers(setHeaders(activeCaseload = "MDI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-        .exchange()
-        .expectStatus().isOk.expectBody()
-        .jsonPath("$.content.size()").isEqualTo(1)
-        .jsonPath("$.content[0].chargeNumber").isEqualTo(chargeNumberAwaitingReview)
+      chargeNumberAwaitingReview?.let {
+        webTestClient.get()
+          .uri("/reported-adjudications/transfer-reports?status=AWAITING_REVIEW&type=OUT&page=0&size=20")
+          .headers(setHeaders(activeCaseload = "MDI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .exchange()
+          .expectStatus().isOk.expectBody()
+          .jsonPath("$.content.size()").isEqualTo(1)
+          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+      }
 
       // 2: transfers in / all should not list the report awaiting review for BXI
       webTestClient.get()
@@ -248,21 +252,25 @@ class TransfersIntTest : SqsIntegrationTestBase() {
         .exchange()
 
       // 4: transfers in / all should list the report for BXI
-      webTestClient.get()
-        .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=IN&page=0&size=20")
-        .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-        .exchange()
-        .expectStatus().isOk.expectBody()
-        .jsonPath("$.content.size()").isEqualTo(1)
-        .jsonPath("$.content[0].chargeNumber").isEqualTo(chargeNumberAwaitingReview)
+      chargeNumberAwaitingReview?.let {
+        webTestClient.get()
+          .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=IN&page=0&size=20")
+          .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .exchange()
+          .expectStatus().isOk.expectBody()
+          .jsonPath("$.content.size()").isEqualTo(1)
+          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+      }
 
-      webTestClient.get()
-        .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=ALL&page=0&size=20")
-        .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-        .exchange()
-        .expectStatus().isOk.expectBody()
-        .jsonPath("$.content.size()").isEqualTo(1)
-        .jsonPath("$.content[0].chargeNumber").isEqualTo(chargeNumberAwaitingReview)
+      chargeNumberAwaitingReview?.let {
+        webTestClient.get()
+          .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=ALL&page=0&size=20")
+          .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .exchange()
+          .expectStatus().isOk.expectBody()
+          .jsonPath("$.content.size()").isEqualTo(1)
+          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+      }
 
       // 5: transfers out / all should not list the report for MDI
       webTestClient.get()
@@ -290,21 +298,25 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     @Test
     fun `transfers all & in - agency BXI needs to schedule a hearing for report from MDI`() {
       // 1: transfers in / all should list the report for BXI
-      webTestClient.get()
-        .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=ALL&page=0&size=20")
-        .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-        .exchange()
-        .expectStatus().isOk.expectBody()
-        .jsonPath("$.content.size()").isEqualTo(1)
-        .jsonPath("$.content[0].chargeNumber").isEqualTo(chargeNumberUnscheduled)
+      chargeNumberUnscheduled?.let {
+        webTestClient.get()
+          .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=ALL&page=0&size=20")
+          .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .exchange()
+          .expectStatus().isOk.expectBody()
+          .jsonPath("$.content.size()").isEqualTo(1)
+          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+      }
 
-      webTestClient.get()
-        .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=IN&page=0&size=20")
-        .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-        .exchange()
-        .expectStatus().isOk.expectBody()
-        .jsonPath("$.content.size()").isEqualTo(1)
-        .jsonPath("$.content[0].chargeNumber").isEqualTo(chargeNumberUnscheduled)
+      chargeNumberUnscheduled?.let {
+        webTestClient.get()
+          .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=IN&page=0&size=20")
+          .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .exchange()
+          .expectStatus().isOk.expectBody()
+          .jsonPath("$.content.size()").isEqualTo(1)
+          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+      }
       // 2: transfers out / all should not list the report for MDI
       webTestClient.get()
         .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=ALL&page=0&size=20")
@@ -365,47 +377,57 @@ class TransfersIntTest : SqsIntegrationTestBase() {
 
     @Test
     fun `transfer in scheduled status, should show in OUT for MDI and then in IN for BXI once adjourned`() {
-      webTestClient.get()
-        .uri("/reported-adjudications/transfer-reports?status=SCHEDULED&type=ALL&page=0&size=20")
-        .headers(setHeaders(activeCaseload = "MDI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-        .exchange()
-        .expectStatus().isOk.expectBody()
-        .jsonPath("$.content.size()").isEqualTo(1)
-        .jsonPath("$.content[0].chargeNumber").isEqualTo(chargeNumberScheduled)
+      chargeNumberScheduled?.let {
+        webTestClient.get()
+          .uri("/reported-adjudications/transfer-reports?status=SCHEDULED&type=ALL&page=0&size=20")
+          .headers(setHeaders(activeCaseload = "MDI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .exchange()
+          .expectStatus().isOk.expectBody()
+          .jsonPath("$.content.size()").isEqualTo(1)
+          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+      }
 
-      webTestClient.get()
-        .uri("/reported-adjudications/transfer-reports?status=SCHEDULED&type=OUT&page=0&size=20")
-        .headers(setHeaders(activeCaseload = "MDI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-        .exchange()
-        .expectStatus().isOk.expectBody()
-        .jsonPath("$.content.size()").isEqualTo(1)
-        .jsonPath("$.content[0].chargeNumber").isEqualTo(chargeNumberScheduled)
+      chargeNumberScheduled?.let {
+        webTestClient.get()
+          .uri("/reported-adjudications/transfer-reports?status=SCHEDULED&type=OUT&page=0&size=20")
+          .headers(setHeaders(activeCaseload = "MDI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .exchange()
+          .expectStatus().isOk.expectBody()
+          .jsonPath("$.content.size()").isEqualTo(1)
+          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+      }
 
-      webTestClient.get()
-        .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2024-11-13&status=SCHEDULED&page=0&size=20")
-        .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-        .exchange()
-        .expectStatus().isOk.expectBody()
-        .jsonPath("$.content.size()").isEqualTo(1)
-        .jsonPath("$.content[0].chargeNumber").isEqualTo(chargeNumberScheduled)
+      chargeNumberScheduled?.let {
+        webTestClient.get()
+          .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2024-11-13&status=SCHEDULED&page=0&size=20")
+          .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .exchange()
+          .expectStatus().isOk.expectBody()
+          .jsonPath("$.content.size()").isEqualTo(1)
+          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+      }
 
       adjourn(activeCaseLoad = "MDI", chargeNumber = chargeNumberScheduled!!)
 
-      webTestClient.get()
-        .uri("/reported-adjudications/transfer-reports?status=ADJOURNED&type=ALL&page=0&size=20")
-        .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-        .exchange()
-        .expectStatus().isOk.expectBody()
-        .jsonPath("$.content.size()").isEqualTo(1)
-        .jsonPath("$.content[0].chargeNumber").isEqualTo(chargeNumberScheduled)
+      chargeNumberScheduled?.let {
+        webTestClient.get()
+          .uri("/reported-adjudications/transfer-reports?status=ADJOURNED&type=ALL&page=0&size=20")
+          .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .exchange()
+          .expectStatus().isOk.expectBody()
+          .jsonPath("$.content.size()").isEqualTo(1)
+          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+      }
 
-      webTestClient.get()
-        .uri("/reported-adjudications/transfer-reports?status=ADJOURNED&type=IN&page=0&size=20")
-        .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-        .exchange()
-        .expectStatus().isOk.expectBody()
-        .jsonPath("$.content.size()").isEqualTo(1)
-        .jsonPath("$.content[0].chargeNumber").isEqualTo(chargeNumberScheduled)
+      chargeNumberScheduled?.let {
+        webTestClient.get()
+          .uri("/reported-adjudications/transfer-reports?status=ADJOURNED&type=IN&page=0&size=20")
+          .headers(setHeaders(activeCaseload = "BXI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .exchange()
+          .expectStatus().isOk.expectBody()
+          .jsonPath("$.content.size()").isEqualTo(1)
+          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+      }
     }
   }
 

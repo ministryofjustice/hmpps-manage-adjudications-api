@@ -30,7 +30,6 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
   private val hearingRepository: HearingRepository = mock()
   private val hearingService = HearingService(
     reportedAdjudicationRepository,
-    offenceCodeLookupService,
     authenticationFacade,
     hearingRepository,
   )

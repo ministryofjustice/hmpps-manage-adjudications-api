@@ -13,6 +13,16 @@ import jakarta.persistence.Table
 import jakarta.validation.ValidationException
 import org.hibernate.validator.constraints.Length
 import org.jetbrains.annotations.TestOnly
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentRoleDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentStatementDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHistoryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 import java.lang.IllegalStateException
 import java.time.LocalDate
@@ -155,6 +165,66 @@ data class ReportedAdjudication(
 
   private fun Hearing?.isAdjourn() = this?.hearingOutcome?.code == HearingOutcomeCode.ADJOURN
 
+  fun toDto(
+    offenceCodeLookup: OffenceCodeLookup,
+    activeCaseload: String? = null,
+    consecutiveReportsAvailable: List<String>? = null,
+    hasLinkedAda: Boolean = false,
+    linkedChargeNumbers: List<String> = emptyList(),
+    isAlo: Boolean = false,
+  ): ReportedAdjudicationDto {
+    val hearings = this.toHearingsDto()
+    val outcomes = this.getOutcomes().createCombinedOutcomes(hasLinkedAda = hasLinkedAda)
+    return ReportedAdjudicationDto(
+      chargeNumber = chargeNumber,
+      prisonerNumber = prisonerNumber,
+      incidentDetails = IncidentDetailsDto(
+        locationId = locationId,
+        dateTimeOfIncident = dateTimeOfIncident,
+        dateTimeOfDiscovery = dateTimeOfDiscovery,
+        handoverDeadline = handoverDeadline,
+      ),
+      isYouthOffender = isYouthOffender,
+      incidentRole = IncidentRoleDto(
+        roleCode = incidentRoleCode,
+        offenceRule = IncidentRoleRuleLookup.getOffenceRuleDetails(incidentRoleCode, isYouthOffender),
+        associatedPrisonersNumber = incidentRoleAssociatedPrisonersNumber,
+        associatedPrisonersName = incidentRoleAssociatedPrisonersName,
+      ),
+      offenceDetails = this.offenceDetails.first().toDto(offenceCodeLookup, isYouthOffender, gender),
+      incidentStatement = IncidentStatementDto(
+        statement = statement,
+        completed = true,
+      ),
+      createdByUserId = createdByUserId!!,
+      createdDateTime = createDateTime!!,
+      reviewedByUserId = reviewUserId,
+      damages = this.damages.map { it.toDto() },
+      evidence = this.evidence.map { it.toDto() },
+      witnesses = this.witnesses.map { it.toDto() },
+      status = status,
+      statusReason = statusReason,
+      statusDetails = statusDetails,
+      hearings = hearings,
+      issuingOfficer = issuingOfficer,
+      dateTimeOfIssue = dateTimeOfIssue,
+      disIssueHistory = this.disIssueHistory.map { it.toDto() }.sortedBy { it.dateTimeOfIssue },
+      gender = gender,
+      dateTimeOfFirstHearing = dateTimeOfFirstHearing,
+      outcomes = createOutcomeHistory(hearings.toMutableList(), outcomes.toMutableList()),
+      punishments = this.getPunishments().toPunishmentsDto(hasLinkedAda, consecutiveReportsAvailable),
+      punishmentComments = this.punishmentComments.map { it.toDto() }.sortedByDescending { it.dateTime },
+      outcomeEnteredInNomis = hearings.any { it.outcome?.code == HearingOutcomeCode.NOMIS },
+      overrideAgencyId = this.overrideAgencyId,
+      originatingAgencyId = this.originatingAgencyId,
+      transferableActionsAllowed = this.isActionable(activeCaseload),
+      createdOnBehalfOfOfficer = this.createdOnBehalfOfOfficer,
+      createdOnBehalfOfReason = this.createdOnBehalfOfReason,
+      linkedChargeNumbers = linkedChargeNumbers,
+      canActionFromHistory = activeCaseload != null && isAlo && listOf(this.originatingAgencyId, this.overrideAgencyId).contains(activeCaseload),
+    )
+  }
+
   companion object {
     fun ReportedAdjudication.isInvalidSuspended(): Boolean =
       this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED && this.getPunishments().any { it.isCorrupted() }
@@ -167,6 +237,93 @@ data class ReportedAdjudication(
     fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.getCreatedDateTime()!! }
     fun Punishment.isCorrupted(): Boolean =
       this.suspendedUntil != null && this.actualCreatedDate?.toLocalDate()?.isEqual(this.suspendedUntil) == true && this.actualCreatedDate?.toLocalDate()?.isAfter(LocalDate.now().minusMonths(6)) == true
+
+    fun ReportedAdjudication.toHearingsDto() = this.hearings.map { it.toDto() }.sortedBy { it.dateTimeOfHearing }
+    fun ReportedAdjudication.isActionable(activeCaseload: String?): Boolean? {
+      activeCaseload ?: return null
+      this.overrideAgencyId ?: return null
+      return when (this.status) {
+        ReportedAdjudicationStatus.REJECTED, ReportedAdjudicationStatus.ACCEPTED -> false
+        ReportedAdjudicationStatus.AWAITING_REVIEW, ReportedAdjudicationStatus.RETURNED -> this.originatingAgencyId == activeCaseload
+        ReportedAdjudicationStatus.SCHEDULED -> this.getLatestHearing()?.agencyId == activeCaseload
+        else -> this.overrideAgencyId == activeCaseload
+      }
+    }
+
+    fun List<Punishment>.toPunishmentsDto(hasLinkedAda: Boolean, consecutiveReportsAvailable: List<String>? = null): List<PunishmentDto> =
+      this.sortedBy { it.type }.map { it.toDto(hasLinkedAda, consecutiveReportsAvailable) }
+
+    private fun HearingDto.hearingHasNoAssociatedOutcome() =
+      this.outcome == null || this.outcome.code == HearingOutcomeCode.ADJOURN
+
+    private fun CombinedOutcomeDto?.isScheduleHearing() = this?.outcome?.code == OutcomeCode.SCHEDULE_HEARING
+
+    fun ReportedAdjudication.getOutcomeHistory(): List<OutcomeHistoryDto> =
+      createOutcomeHistory(this.toHearingsDto().toMutableList(), this.getOutcomes().createCombinedOutcomes(false).toMutableList())
+
+    fun createOutcomeHistory(hearings: MutableList<HearingDto>, outcomes: MutableList<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
+      if (hearings.isEmpty() && outcomes.isEmpty()) return listOf()
+      if (outcomes.isEmpty()) return hearings.map { OutcomeHistoryDto(hearing = it) }
+      if (hearings.isEmpty()) return outcomes.map { OutcomeHistoryDto(outcome = it) }
+
+      val history = mutableListOf<OutcomeHistoryDto>()
+      val referPoliceOutcomeCount = outcomes.count { it.outcome.code == OutcomeCode.REFER_POLICE }
+      val referPoliceHearingOutcomeCount = hearings.count { it.outcome?.code == HearingOutcomeCode.REFER_POLICE }
+
+      // special case.  if we have more refer police outcomes than hearing outcomes, it means the first action was to refer to police
+      if (referPoliceOutcomeCount > referPoliceHearingOutcomeCount) {
+        history.add(OutcomeHistoryDto(outcome = outcomes.removeFirst()))
+      }
+
+      do {
+        val hearing = if (outcomes.firstOrNull().isScheduleHearing()) null else hearings.removeFirst()
+        val outcome = if (hearing != null && hearing.hearingHasNoAssociatedOutcome()) null else outcomes.removeFirstOrNull()
+
+        history.add(
+          OutcomeHistoryDto(hearing = hearing, outcome = outcome),
+        )
+      } while (hearings.isNotEmpty())
+
+      // quashed or referral when removing a next steps scheduled hearing, due to 1 more outcome than hearing
+      outcomes.removeFirstOrNull()?.let {
+        history.add(
+          OutcomeHistoryDto(outcome = it),
+        )
+      }
+
+      return history.toList()
+    }
+
+    fun List<Outcome>.createCombinedOutcomes(hasLinkedAda: Boolean): List<CombinedOutcomeDto> {
+      if (this.isEmpty()) return emptyList()
+
+      val combinedOutcomes = mutableListOf<CombinedOutcomeDto>()
+      val orderedOutcomes = this.sortedBy { it.getCreatedDateTime() }.toMutableList()
+
+      do {
+        val outcome = orderedOutcomes.removeFirst()
+        when (outcome.code) {
+          OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD, OutcomeCode.REFER_GOV -> {
+            // a referral can only ever be followed by a referral outcome, or nothing (ie referral is current final state)
+            val referralOutcome = orderedOutcomes.removeFirstOrNull()
+
+            combinedOutcomes.add(
+              CombinedOutcomeDto(
+                outcome = outcome.toDto(hasLinkedAda = hasLinkedAda && outcome.code == OutcomeCode.CHARGE_PROVED),
+                referralOutcome = referralOutcome?.toDto(false),
+              ),
+            )
+          }
+          else -> combinedOutcomes.add(
+            CombinedOutcomeDto(
+              outcome = outcome.toDto(hasLinkedAda = hasLinkedAda && outcome.code == OutcomeCode.CHARGE_PROVED),
+            ),
+          )
+        }
+      } while (orderedOutcomes.isNotEmpty())
+
+      return combinedOutcomes
+    }
   }
 }
 
