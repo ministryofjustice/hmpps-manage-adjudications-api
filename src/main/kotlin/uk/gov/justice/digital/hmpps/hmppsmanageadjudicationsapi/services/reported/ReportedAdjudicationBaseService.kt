@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-
 open class ReportedAdjudicationBaseService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   protected val offenceCodeLookupService: OffenceCodeLookupService,

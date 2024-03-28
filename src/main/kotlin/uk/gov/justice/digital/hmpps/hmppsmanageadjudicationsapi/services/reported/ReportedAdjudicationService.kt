@@ -12,8 +12,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Authent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDateTime
 
-
-
 @Transactional
 @Service
 class ReportedAdjudicationService(
