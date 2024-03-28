@@ -272,12 +272,12 @@ data class ReportedAdjudication(
 
       // special case.  if we have more refer police outcomes than hearing outcomes, it means the first action was to refer to police
       if (referPoliceOutcomeCount > referPoliceHearingOutcomeCount) {
-        history.add(OutcomeHistoryDto(outcome = outcomes.removeFirst()))
+        history.add(OutcomeHistoryDto(outcome = outcomes.removeFirstOrNull()!!))
       }
 
       do {
-        val hearing = if (outcomes.firstOrNull().isScheduleHearing()) null else hearings.removeFirst()
-        val outcome = if (hearing != null && hearing.hearingHasNoAssociatedOutcome()) null else outcomes.removeFirstOrNull()
+        val hearing = if (outcomes.firstOrNull().isScheduleHearing()) null else hearings.removeFirstOrNull()
+        val outcome = if (hearing != null && hearing.hearingHasNoAssociatedOutcome()) null else outcomes.removeFirstOrNull()!!
 
         history.add(
           OutcomeHistoryDto(hearing = hearing, outcome = outcome),
@@ -301,7 +301,7 @@ data class ReportedAdjudication(
       val orderedOutcomes = this.sortedBy { it.getCreatedDateTime() }.toMutableList()
 
       do {
-        val outcome = orderedOutcomes.removeFirst()
+        val outcome = orderedOutcomes.removeFirstOrNull()!!
         when (outcome.code) {
           OutcomeCode.REFER_POLICE, OutcomeCode.REFER_INAD, OutcomeCode.REFER_GOV -> {
             // a referral can only ever be followed by a referral outcome, or nothing (ie referral is current final state)
