@@ -213,11 +213,11 @@ class ReportsControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `get adjudications for issue with defaulted dates`() {
-      whenever(reportsService.getAdjudicationsForIssueV2(LocalDate.now().minusDays(2), LocalDate.now()))
+      whenever(reportsService.getAdjudicationsForIssue(LocalDate.now().minusDays(2), LocalDate.now()))
         .thenReturn(emptyList())
 
       getAdjudicationsForIssue().andExpect(MockMvcResultMatchers.status().isOk)
-      verify(reportsService).getAdjudicationsForIssueV2(LocalDate.now().minusDays(2), LocalDate.now())
+      verify(reportsService).getAdjudicationsForIssue(LocalDate.now().minusDays(2), LocalDate.now())
     }
 
     private fun getAdjudicationsForIssue(): ResultActions {
