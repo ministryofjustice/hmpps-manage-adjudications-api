@@ -25,8 +25,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-@Schema(description = "All issuable adjudications response")
-data class IssuableAdjudicationsResponse(
+@Schema(description = "All adjudications for print response")
+data class PrintableAdjudicationsResponse(
   @Schema(description = "Th reported adjudications response")
   val reportedAdjudications: List<ReportedAdjudicationDto>,
 )
@@ -229,38 +229,8 @@ class ReportsController(
     ),
   )
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
-  @GetMapping("/for-issue")
-  fun getReportedAdjudicationsForIssue(
-    @RequestParam(name = "startDate")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    startDate: LocalDate?,
-    @RequestParam(name = "endDate")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    endDate: LocalDate?,
-  ): IssuableAdjudicationsResponse =
-    IssuableAdjudicationsResponse(
-      reportsService.getAdjudicationsForIssue(
-        startDate = startDate ?: LocalDate.now().minusDays(2),
-        endDate = endDate ?: LocalDate.now(),
-      ),
-    )
-
-  @Operation(summary = "Get all reported adjudications for issue")
-  @Parameters(
-    Parameter(
-      name = "startDate",
-      required = false,
-      description = "optional inclusive start date for results, default is today - 2 days",
-    ),
-    Parameter(
-      name = "endDate",
-      required = false,
-      description = "optional inclusive end date for results, default is today",
-    ),
-  )
-  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   @GetMapping("/for-issue/v2")
-  fun getReportedAdjudicationsForIssueV2(
+  fun getReportedAdjudicationsForIssue(
     @RequestParam(name = "startDate")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     startDate: LocalDate?,
@@ -269,7 +239,7 @@ class ReportsController(
     endDate: LocalDate?,
   ): IssuableAdjudicationsResponseV2 =
     IssuableAdjudicationsResponseV2(
-      reportsService.getAdjudicationsForIssueV2(
+      reportsService.getAdjudicationsForIssue(
         startDate = startDate ?: LocalDate.now().minusDays(2),
         endDate = endDate ?: LocalDate.now(),
       ),
@@ -303,8 +273,8 @@ class ReportsController(
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     endDate: LocalDate?,
     @RequestParam(name = "issueStatus") issueStatuses: List<IssuedStatus>,
-  ): IssuableAdjudicationsResponse =
-    IssuableAdjudicationsResponse(
+  ): PrintableAdjudicationsResponse =
+    PrintableAdjudicationsResponse(
       reportsService.getAdjudicationsForPrint(
         startDate = startDate ?: LocalDate.now(),
         endDate = endDate ?: LocalDate.now().plusDays(2),

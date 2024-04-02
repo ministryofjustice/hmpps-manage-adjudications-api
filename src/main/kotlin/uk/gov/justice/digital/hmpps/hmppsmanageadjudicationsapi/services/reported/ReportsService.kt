@@ -99,19 +99,7 @@ class ReportsService(
     return reportedAdjudicationsPage.map { it.toDto(offenceCodeLookupService) }
   }
 
-  fun getAdjudicationsForIssue(startDate: LocalDate, endDate: LocalDate): List<ReportedAdjudicationDto> = reportedAdjudicationRepository.findReportsForIssue(
-    agencyId = authenticationFacade.activeCaseload,
-    startDate = reportsFrom(startDate),
-    endDate = reportsTo(endDate),
-    statuses = ReportedAdjudicationStatus.issuableStatuses().map { it.name },
-  ).map {
-    it.toDto(
-      offenceCodeLookupService = offenceCodeLookupService,
-      activeCaseload = authenticationFacade.activeCaseload,
-    )
-  }
-
-  fun getAdjudicationsForIssueV2(startDate: LocalDate, endDate: LocalDate): List<ReportsForIssueDto> = reportedAdjudicationRepository.findReportsForIssue(
+  fun getAdjudicationsForIssue(startDate: LocalDate, endDate: LocalDate): List<ReportsForIssueDto> = reportedAdjudicationRepository.findReportsForIssue(
     agencyId = authenticationFacade.activeCaseload,
     startDate = reportsFrom(startDate),
     endDate = reportsTo(endDate),
@@ -124,7 +112,7 @@ class ReportsService(
       dateTimeOfDiscovery = it.dateTimeOfDiscovery,
       issuingOfficer = it.issuingOfficer,
       dateTimeOfIssue = it.dateTimeOfIssue,
-      disIssueHistory = it.disIssueHistory.map { it.toDto() },
+      disIssueHistory = it.disIssueHistory.map { dih -> dih.toDto() },
       dateTimeOfFirstHearing = it.dateTimeOfFirstHearing,
     )
   }

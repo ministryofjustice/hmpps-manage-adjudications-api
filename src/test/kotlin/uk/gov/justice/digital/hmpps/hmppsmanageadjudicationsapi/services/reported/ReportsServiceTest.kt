@@ -210,7 +210,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `returns adjudications for issue (All locations) with correct issue details and order for status SCHEDULED and UNSCHEDULED only `() {
-      val response = reportsService.getAdjudicationsForIssueV2(
+      val response = reportsService.getAdjudicationsForIssue(
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
       )
