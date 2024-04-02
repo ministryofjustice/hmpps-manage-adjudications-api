@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.AgencyReportCountsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportsForIssueDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -103,13 +104,30 @@ class ReportsService(
     startDate = reportsFrom(startDate),
     endDate = reportsTo(endDate),
     statuses = ReportedAdjudicationStatus.issuableStatuses().map { it.name },
-  ).sortedBy { it.dateTimeOfDiscovery }
-    .map {
-      it.toDto(
-        offenceCodeLookupService = offenceCodeLookupService,
-        activeCaseload = authenticationFacade.activeCaseload,
-      )
-    }
+  ).map {
+    it.toDto(
+      offenceCodeLookupService = offenceCodeLookupService,
+      activeCaseload = authenticationFacade.activeCaseload,
+    )
+  }
+
+  fun getAdjudicationsForIssueV2(startDate: LocalDate, endDate: LocalDate): List<ReportsForIssueDto> = reportedAdjudicationRepository.findReportsForIssue(
+    agencyId = authenticationFacade.activeCaseload,
+    startDate = reportsFrom(startDate),
+    endDate = reportsTo(endDate),
+    statuses = ReportedAdjudicationStatus.issuableStatuses().map { it.name },
+  ).map {
+    ReportsForIssueDto(
+      chargeNumber = it.chargeNumber,
+      prisonerNumber = it.prisonerNumber,
+      dateTimeOfIncident = it.dateTimeOfIncident,
+      dateTimeOfDiscovery = it.dateTimeOfDiscovery,
+      issuingOfficer = it.issuingOfficer,
+      dateTimeOfIssue = it.dateTimeOfIssue,
+      disIssueHistory = it.disIssueHistory.map { it.toDto() },
+      dateTimeOfFirstHearing = it.dateTimeOfFirstHearing,
+    )
+  }
 
   fun getAdjudicationsForPrint(startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>): List<ReportedAdjudicationDto> {
     val reportsForPrint = reportedAdjudicationRepository.findReportsForPrint(
@@ -120,7 +138,7 @@ class ReportsService(
     )
 
     if (issueStatuses.containsAll(IssuedStatus.values().toList())) {
-      return reportsForPrint.sortedBy { it.dateTimeOfFirstHearing }.map {
+      return reportsForPrint.map {
         it.toDto(
           offenceCodeLookupService = offenceCodeLookupService,
           activeCaseload = authenticationFacade.activeCaseload,
@@ -129,7 +147,7 @@ class ReportsService(
     }
 
     if (issueStatuses.contains(IssuedStatus.ISSUED)) {
-      return reportsForPrint.filter { it.dateTimeOfIssue != null }.sortedBy { it.dateTimeOfFirstHearing }.map {
+      return reportsForPrint.filter { it.dateTimeOfIssue != null }.map {
         it.toDto(
           offenceCodeLookupService = offenceCodeLookupService,
           activeCaseload = authenticationFacade.activeCaseload,
@@ -138,7 +156,7 @@ class ReportsService(
     }
 
     if (issueStatuses.contains(IssuedStatus.NOT_ISSUED)) {
-      return reportsForPrint.filter { it.dateTimeOfIssue == null }.sortedBy { it.dateTimeOfFirstHearing }.map {
+      return reportsForPrint.filter { it.dateTimeOfIssue == null }.map {
         it.toDto(
           offenceCodeLookupService = offenceCodeLookupService,
           activeCaseload = authenticationFacade.activeCaseload,

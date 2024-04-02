@@ -210,7 +210,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `returns adjudications for issue (All locations) with correct issue details and order for status SCHEDULED and UNSCHEDULED only `() {
-      val response = reportsService.getAdjudicationsForIssue(
+      val response = reportsService.getAdjudicationsForIssueV2(
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
       )
@@ -222,9 +222,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
           Tuple.tuple("2", "A12345", null, null),
         )
 
-      assertThat(response.first().incidentDetails)
-        .extracting("dateTimeOfDiscovery", "locationId")
-        .contains(first.dateTimeOfDiscovery, 2L)
+      assertThat(response.first().dateTimeOfDiscovery).isEqualTo(first.dateTimeOfDiscovery)
     }
   }
 

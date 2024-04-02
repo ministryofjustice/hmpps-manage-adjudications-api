@@ -78,7 +78,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     @ParameterizedTest
     fun `test access for reports for issue `(agencyId: String, total: Int) {
       webTestClient.get()
-        .uri("/reported-adjudications/for-issue?startDate=2010-11-12&endDate=2024-12-16")
+        .uri("/reported-adjudications/for-issue/v2?startDate=2010-11-12&endDate=2024-12-16")
         .headers(setHeaders(activeCaseload = agencyId))
         .exchange()
         .expectStatus().isOk

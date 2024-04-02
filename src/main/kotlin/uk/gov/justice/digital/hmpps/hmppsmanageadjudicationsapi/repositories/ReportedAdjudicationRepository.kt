@@ -73,7 +73,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   @Query(
     value = "select * from reported_adjudications ra " +
       "where ra.status in :statuses and ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate " +
-      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId)",
+      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId) order by ra.date_time_of_discovery asc",
     nativeQuery = true,
   )
   fun findReportsForIssue(
@@ -87,7 +87,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     value = "select * from reported_adjudications ra " +
       "where ra.date_time_of_first_hearing > :startDate and ra.date_time_of_first_hearing <= :endDate " +
       "and ra.status in :statuses " +
-      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId)",
+      "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId) order by ra.date_time_of_first_hearing asc",
     nativeQuery = true,
   )
   fun findReportsForPrint(
