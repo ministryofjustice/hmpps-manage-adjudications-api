@@ -168,7 +168,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .issueReport()
 
     webTestClient.get()
-      .uri("/reported-adjudications/for-issue?startDate=2010-11-12&endDate=2020-12-16")
+      .uri("/reported-adjudications/for-issue/v2?startDate=2010-11-12&endDate=2020-12-16")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk

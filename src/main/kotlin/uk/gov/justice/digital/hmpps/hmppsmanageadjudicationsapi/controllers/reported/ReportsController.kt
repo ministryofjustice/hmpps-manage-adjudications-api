@@ -16,17 +16,25 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DisIssueHistoryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.IssuedStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.TransferType
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Schema(description = "All issuable adjudications response")
 data class IssuableAdjudicationsResponse(
   @Schema(description = "Th reported adjudications response")
   val reportedAdjudications: List<ReportedAdjudicationDto>,
+)
+
+@Schema(description = "All issuable adjudications response v2")
+data class IssuableAdjudicationsResponseV2(
+  @Schema(description = "Th reported adjudications response")
+  val reportedAdjudications: List<ReportsForIssueDto>,
 )
 
 @Schema(description = "Agency Report counts DTO")
@@ -41,6 +49,27 @@ data class AgencyReportCountsDto(
   var transferAllTotal: Long? = null,
   @Schema(description = "hearings to schedule count")
   val hearingsToScheduleTotal: Long,
+)
+
+@Schema(description = "reports for issue DTO")
+data class ReportsForIssueDto(
+  @Schema(description = "The charge number for the reported adjudication")
+  val chargeNumber: String,
+  @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
+  val prisonerNumber: String,
+  @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
+  val dateTimeOfIncident: LocalDateTime,
+  @Schema(description = "Date time of discovery if date different to incident date", example = "2010-10-12T10:00:00")
+  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+  val dateTimeOfDiscovery: LocalDateTime,
+  @Schema(description = "The last issuing officer")
+  val issuingOfficer: String? = null,
+  @Schema(description = "The last date time of form issued")
+  val dateTimeOfIssue: LocalDateTime? = null,
+  @Schema(description = "Previous DIS1/2 issues")
+  val disIssueHistory: List<DisIssueHistoryDto>,
+  @Schema(description = "date time of first hearing")
+  val dateTimeOfFirstHearing: LocalDateTime? = null,
 )
 
 @RestController
@@ -211,6 +240,36 @@ class ReportsController(
   ): IssuableAdjudicationsResponse =
     IssuableAdjudicationsResponse(
       reportsService.getAdjudicationsForIssue(
+        startDate = startDate ?: LocalDate.now().minusDays(2),
+        endDate = endDate ?: LocalDate.now(),
+      ),
+    )
+
+  @Operation(summary = "Get all reported adjudications for issue")
+  @Parameters(
+    Parameter(
+      name = "startDate",
+      required = false,
+      description = "optional inclusive start date for results, default is today - 2 days",
+    ),
+    Parameter(
+      name = "endDate",
+      required = false,
+      description = "optional inclusive end date for results, default is today",
+    ),
+  )
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
+  @GetMapping("/for-issue/v2")
+  fun getReportedAdjudicationsForIssueV2(
+    @RequestParam(name = "startDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    startDate: LocalDate?,
+    @RequestParam(name = "endDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    endDate: LocalDate?,
+  ): IssuableAdjudicationsResponseV2 =
+    IssuableAdjudicationsResponseV2(
+      reportsService.getAdjudicationsForIssueV2(
         startDate = startDate ?: LocalDate.now().minusDays(2),
         endDate = endDate ?: LocalDate.now(),
       ),
