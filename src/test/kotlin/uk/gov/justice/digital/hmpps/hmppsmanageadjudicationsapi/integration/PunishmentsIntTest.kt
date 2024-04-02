@@ -83,40 +83,42 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
     val punishmentToAmend = reportedAdjudicationResponse.reportedAdjudication.punishments.first { it.type == PunishmentType.CONFINEMENT }.id
 
-    webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/v2")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .bodyValue(
-        mapOf(
-          "punishments" to
-            listOf(
-              PunishmentRequest(
-                id = punishmentToAmend,
-                type = PunishmentType.CONFINEMENT,
-                days = 15,
-                startDate = suspendedUntil,
-                endDate = suspendedUntil,
+    punishmentToAmend?.let {
+      webTestClient.put()
+        .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/v2")
+        .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+        .bodyValue(
+          mapOf(
+            "punishments" to
+              listOf(
+                PunishmentRequest(
+                  id = punishmentToAmend,
+                  type = PunishmentType.CONFINEMENT,
+                  days = 15,
+                  startDate = suspendedUntil,
+                  endDate = suspendedUntil,
+                ),
+                PunishmentRequest(
+                  type = PunishmentType.EXCLUSION_WORK,
+                  days = 8,
+                  suspendedUntil = suspendedUntil,
+                ),
               ),
-              PunishmentRequest(
-                type = PunishmentType.EXCLUSION_WORK,
-                days = 8,
-                suspendedUntil = suspendedUntil,
-              ),
-            ),
-        ),
-      )
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(2)
-      .jsonPath("$.reportedAdjudication.punishments[0].id").isEqualTo(punishmentToAmend)
-      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.CONFINEMENT.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].schedule.days").isEqualTo(15)
-      .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo(formattedDate)
-      .jsonPath("$.reportedAdjudication.punishments[0].schedule.endDate").isEqualTo(formattedDate)
-      .jsonPath("$.reportedAdjudication.punishments[1].type").isEqualTo(PunishmentType.EXCLUSION_WORK.name)
-      .jsonPath("$.reportedAdjudication.punishments[1].schedule.days").isEqualTo(8)
-      .jsonPath("$.reportedAdjudication.punishments[1].schedule.suspendedUntil").isEqualTo(formattedDate)
+          ),
+        )
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(2)
+        .jsonPath("$.reportedAdjudication.punishments[0].id").isEqualTo(it)
+        .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.CONFINEMENT.name)
+        .jsonPath("$.reportedAdjudication.punishments[0].schedule.days").isEqualTo(15)
+        .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo(formattedDate)
+        .jsonPath("$.reportedAdjudication.punishments[0].schedule.endDate").isEqualTo(formattedDate)
+        .jsonPath("$.reportedAdjudication.punishments[1].type").isEqualTo(PunishmentType.EXCLUSION_WORK.name)
+        .jsonPath("$.reportedAdjudication.punishments[1].schedule.days").isEqualTo(8)
+        .jsonPath("$.reportedAdjudication.punishments[1].schedule.suspendedUntil").isEqualTo(formattedDate)
+    }
   }
 
   @Test

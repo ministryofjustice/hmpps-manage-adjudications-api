@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
 import java.time.LocalDateTime
 
 enum class OicHearingType {
@@ -52,4 +53,14 @@ data class Hearing(
   var hearingOutcome: HearingOutcome? = null,
   @field:Length(max = 240)
   var representative: String? = null,
-) : BaseEntity()
+) : BaseEntity() {
+  fun toDto(): HearingDto =
+    HearingDto(
+      id = this.id,
+      locationId = this.locationId,
+      dateTimeOfHearing = this.dateTimeOfHearing,
+      oicHearingType = this.oicHearingType,
+      outcome = this.hearingOutcome?.toDto(),
+      agencyId = this.agencyId,
+    )
+}

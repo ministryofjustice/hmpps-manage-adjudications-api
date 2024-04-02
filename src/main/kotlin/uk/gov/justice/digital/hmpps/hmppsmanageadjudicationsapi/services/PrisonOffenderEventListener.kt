@@ -51,8 +51,8 @@ class PrisonOffenderEventListener(
       PRISONER_MERGE_EVENT_TYPE -> {
         if (hmppsDomainEvent.additionalInformation?.reason == "MERGE") {
           prisonerMergeService.merge(
-            prisonerFrom = hmppsDomainEvent.additionalInformation?.removedNomsNumber,
-            prisonerTo = hmppsDomainEvent.additionalInformation?.nomsNumber,
+            prisonerFrom = hmppsDomainEvent.additionalInformation.removedNomsNumber,
+            prisonerTo = hmppsDomainEvent.additionalInformation.nomsNumber,
           )
         }
       }

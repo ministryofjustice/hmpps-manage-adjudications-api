@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
 import java.time.LocalDate
 
 @Entity
@@ -12,4 +13,12 @@ data class PunishmentSchedule(
   var startDate: LocalDate? = null,
   var endDate: LocalDate? = null,
   var suspendedUntil: LocalDate? = null,
-) : BaseEntity()
+) : BaseEntity() {
+  fun toDto(): PunishmentScheduleDto =
+    PunishmentScheduleDto(
+      days = this.days,
+      startDate = this.startDate,
+      endDate = this.endDate,
+      suspendedUntil = this.suspendedUntil,
+    )
+}

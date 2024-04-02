@@ -6,6 +6,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedEvidenceDto
 import java.time.LocalDateTime
 
 enum class EvidenceCode {
@@ -45,4 +46,12 @@ data class ReportedEvidence(
   @field:Length(max = 32)
   var reporter: String,
   var dateAdded: LocalDateTime? = null,
-) : BaseEntity()
+) : BaseEntity() {
+  fun toDto(): ReportedEvidenceDto =
+    ReportedEvidenceDto(
+      code = this.code,
+      identifier = this.identifier,
+      details = this.details,
+      reporter = this.reporter,
+    )
+}

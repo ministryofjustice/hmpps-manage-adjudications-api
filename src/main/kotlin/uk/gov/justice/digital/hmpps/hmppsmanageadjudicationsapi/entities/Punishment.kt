@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -42,6 +43,28 @@ data class Punishment(
 ) : BaseEntity() {
   fun isActiveSuspended(punishmentCutOff: LocalDate): Boolean =
     this.suspendedUntil?.isAfter(punishmentCutOff) == true && this.activatedByChargeNumber == null
+
+  fun toDto(hasLinkedAda: Boolean, consecutiveReportsAvailable: List<String>?): PunishmentDto =
+    PunishmentDto(
+      id = this.id,
+      type = this.type,
+      privilegeType = this.privilegeType,
+      otherPrivilege = this.otherPrivilege,
+      stoppagePercentage = this.stoppagePercentage,
+      damagesOwedAmount = this.amount,
+      activatedFrom = this.activatedFromChargeNumber,
+      activatedBy = this.activatedByChargeNumber,
+      consecutiveChargeNumber = this.consecutiveToChargeNumber,
+      canRemove = !(PunishmentType.additionalDays().contains(this.type) && hasLinkedAda),
+      consecutiveReportAvailable = isConsecutiveReportAvailable(this.consecutiveToChargeNumber, consecutiveReportsAvailable),
+      schedule = this.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toDto(),
+    )
+
+  private fun isConsecutiveReportAvailable(consecutiveChargeNumber: String?, consecutiveReportsAvailable: List<String>?): Boolean? {
+    consecutiveChargeNumber ?: return null
+    consecutiveReportsAvailable ?: return null
+    return consecutiveReportsAvailable.any { it == consecutiveChargeNumber }
+  }
 }
 
 enum class PunishmentType {
