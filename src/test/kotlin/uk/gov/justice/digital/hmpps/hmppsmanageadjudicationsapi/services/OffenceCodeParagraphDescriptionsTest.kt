@@ -96,7 +96,7 @@ class OffenceCodeParagraphDescriptionsTest {
     "51:17A,ADULT_17A",
   )
   fun `get paragraph by offence code`(code: String, answer: Descriptions) {
-    assert(OffenceCodes.values().first { it.getNomisCode() == code }.paragraphDescription == answer)
+    assert(OffenceCodes.values().first { it.nomisCode == code }.paragraphDescription == answer)
   }
 
   @ParameterizedTest

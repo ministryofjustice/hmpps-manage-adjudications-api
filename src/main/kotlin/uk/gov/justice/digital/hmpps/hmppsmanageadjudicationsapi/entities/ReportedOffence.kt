@@ -37,7 +37,7 @@ data class ReportedOffence(
       else -> OffenceRuleDto(
         paragraphNumber = offenceCode.paragraph,
         paragraphDescription = offenceCode.paragraphDescription.getParagraphDescription(gender),
-        nomisCode = offenceCode.getNomisCode(),
+        nomisCode = offenceCode.nomisCode,
         withOthersNomisCode = offenceCode.getNomisCodeWithOthers(),
       )
     }

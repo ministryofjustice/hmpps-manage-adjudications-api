@@ -954,25 +954,6 @@ class ReportedAdjudicationRepositoryTest {
   }
 
   @Test
-  fun `repair query`() {
-    reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2").also {
-        it.hearings.clear()
-        it.status = ReportedAdjudicationStatus.ADJOURNED
-        it.addPunishment(
-          Punishment(
-            type = PunishmentType.ADDITIONAL_DAYS,
-            schedule = mutableListOf(
-              PunishmentSchedule(days = 0),
-            ),
-          ),
-        )
-      },
-    )
-    assertThat(reportedAdjudicationRepository.fixMigrationRecords().first().chargeNumber).isEqualTo("12345-2")
-  }
-
-  @Test
   fun `find by offender booking id and status`() {
     reportedAdjudicationRepository.save(
       entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2").also {

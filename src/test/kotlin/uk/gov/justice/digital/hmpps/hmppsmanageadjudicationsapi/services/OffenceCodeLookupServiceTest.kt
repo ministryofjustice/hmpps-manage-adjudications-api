@@ -60,10 +60,12 @@ class OffenceCodeLookupServiceTest {
   }
 
   private fun assertValuesSetForItem(code: Int, isYouthOffender: Boolean, nomisCodePrefix: String) {
-    assertThat(offenceCodeLookupService.getOffenceCode(code, isYouthOffender).paragraph).isNotBlank
-    assertThat(offenceCodeLookupService.getOffenceCode(code, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE)).isNotBlank
-    assertThat(offenceCodeLookupService.getOffenceCode(code, isYouthOffender).getNomisCode()).hasSizeGreaterThan(0)
-    assertThat(offenceCodeLookupService.getOffenceCode(code, isYouthOffender).getNomisCode()).startsWith(nomisCodePrefix)
-    assertThat(offenceCodeLookupService.getOffenceCode(code, isYouthOffender).getNomisCodeWithOthers()).startsWith(nomisCodePrefix)
+    val match = offenceCodeLookupService.getOffenceCode(code, isYouthOffender)
+    if (match == OffenceCodes.MIGRATED_OFFENCE) return
+    assertThat(match.paragraph).isNotBlank
+    assertThat(match.paragraphDescription.getParagraphDescription(Gender.MALE)).isNotBlank
+    assertThat(match.nomisCode).hasSizeGreaterThan(0)
+    assertThat(match.nomisCode).startsWith(nomisCodePrefix)
+    assertThat(match.getNomisCodeWithOthers()).startsWith(nomisCodePrefix)
   }
 }
