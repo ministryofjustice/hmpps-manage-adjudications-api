@@ -90,8 +90,8 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
         .jsonPath("$.reportedAdjudication.witnesses[0].reporter")
         .isEqualTo("B_MILLS")
         .jsonPath("$.reportedAdjudication.gender").isEqualTo(Gender.MALE.name)
-        .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.nomisCode").isEqualTo(OffenceCodes.ADULT_51_4.getNomisCode())
-        .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.withOthersNomisCode").isEqualTo(OffenceCodes.ADULT_51_4.getNomisCode())
+        .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.nomisCode").isEqualTo(OffenceCodes.ADULT_51_4.nomisCode)
+        .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.withOthersNomisCode").isEqualTo(OffenceCodes.ADULT_51_4.nomisCode)
     }
   }
 

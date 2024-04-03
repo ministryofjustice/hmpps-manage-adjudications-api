@@ -24,7 +24,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   @Query(
     value = "select * from reported_adjudications ra $TRANSFER_IN_REPORTS_WHERE_CLAUSE",
-    countQuery = "select count(1) from reported_adjudications ra $TRANSFER_IN_REPORTS_WHERE_CLAUSE",
     nativeQuery = true,
   )
   fun findTransfersInByAgency(
@@ -35,7 +34,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   @Query(
     value = "select * from reported_adjudications ra $TRANSFER_OUT_REPORTS_WHERE_CLAUSE",
-    countQuery = "select count(1) from reported_adjudications ra $TRANSFER_OUT_REPORTS_WHERE_CLAUSE",
     nativeQuery = true,
   )
   fun findTransfersOutByAgency(
@@ -47,7 +45,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   @Query(
     value = "select * from reported_adjudications ra $TRANSFER_ALL_REPORTS_WHERE_CLAUSE",
-    countQuery = "select count(1) from reported_adjudications ra $TRANSFER_ALL_REPORTS_WHERE_CLAUSE",
     nativeQuery = true,
   )
   fun findTransfersAllByAgency(
@@ -59,7 +56,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   @Query(
     value = "select * from reported_adjudications ra $ALL_REPORTS_WHERE_CLAUSE",
-    countQuery = "select count(1) from reported_adjudications ra $ALL_REPORTS_WHERE_CLAUSE",
     nativeQuery = true,
   )
   fun findAllReportsByAgency(
@@ -153,7 +149,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   @Query(
     value = "select * from reported_adjudications ra $BOOKING_ID_REPORTS_WITH_DATE_WHERE_CLAUSE",
-    countQuery = "select count(1) from reported_adjudications ra $BOOKING_ID_REPORTS_WITH_DATE_WHERE_CLAUSE",
     nativeQuery = true,
   )
   fun findAdjudicationsForBooking(
@@ -167,7 +162,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   @Query(
     value = "select ra.* from reported_adjudications ra $BOOKING_ID_AND_PUNISHMENTS_REPORTS_WITH_DATE_WHERE_CLAUSE",
-    countQuery = "select count(1) from reported_adjudications ra $BOOKING_ID_AND_PUNISHMENTS_REPORTS_WITH_DATE_WHERE_CLAUSE",
     nativeQuery = true,
   )
   fun findAdjudicationsForBookingWithPunishments(
@@ -184,7 +178,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   @Query(
     value = "select * from reported_adjudications ra $PRISONER_REPORTS_WITH_DATE_WHERE_CLAUSE",
-    countQuery = "select count(1) from reported_adjudications ra $PRISONER_REPORTS_WITH_DATE_WHERE_CLAUSE",
     nativeQuery = true,
   )
   fun findAdjudicationsForPrisoner(
@@ -197,7 +190,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   @Query(
     value = "select ra.* from reported_adjudications ra $PRISONER_REPORTS_AND_PUNISHMENTS_WITH_DATE_WHERE_CLAUSE",
-    countQuery = "select count(1) from reported_adjudications ra $PRISONER_REPORTS_AND_PUNISHMENTS_WITH_DATE_WHERE_CLAUSE",
     nativeQuery = true,
   )
   fun findAdjudicationsForPrisonerWithPunishments(
@@ -233,12 +225,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun existsByOffenderBookingId(offenderBookingId: Long): Boolean
 
-  @Query(
-    value = "select * from reported_adjudications ra where ra.status = 'ADJOURNED' and (select count(1) from punishment p where p.reported_adjudication_fk_id = ra.id) > 0",
-    nativeQuery = true,
-  )
-  fun fixMigrationRecords(): List<ReportedAdjudication>
-
   companion object {
 
     private const val STATUS_FILTER = "ra.status in :statuses "
@@ -247,30 +233,22 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
     private const val AGENCIES_INC_TRANSFERS_FILTER = "and (ra.originating_agency_id in :agencies or ra.override_agency_id in :agencies)"
 
+    private const val TRANSFER_OUT = "and ra.override_agency_id is not null and ra.originating_agency_id = :agencyId " +
+      "and ra.date_time_of_discovery >= :cutOffDate " +
+      "and (ra.status = 'AWAITING_REVIEW' or (ra.status = 'SCHEDULED' and " +
+      "0 = (select count(1) from hearing h where h.agency_id = ra.override_agency_id and h.charge_number = ra.charge_number)))"
+
+    private const val TRANSFER_IN = "and ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :agencyId"
+
     const val BOOKING_ID_REPORTS_WITH_DATE_WHERE_CLAUSE = "where ra.offender_booking_id = :offenderBookingId and $DATE_AND_STATUS_FILTER $AGENCIES_INC_TRANSFERS_FILTER"
 
-    const val BOOKING_ID_AND_PUNISHMENTS_REPORTS_WITH_DATE_WHERE_CLAUSE = """
-      join punishment p on p.reported_adjudication_fk_id = ra.id where ra.offender_booking_id = :offenderBookingId 
-      and ((:ada is true and p.type = 'ADDITIONAL_DAYS') or (:suspended is true and p.suspended_until is not null) or (:pada is true and p.type = 'PROSPECTIVE_DAYS')) 
-      and $DATE_AND_STATUS_FILTER $AGENCIES_INC_TRANSFERS_FILTER
-      """
+    const val BOOKING_ID_AND_PUNISHMENTS_REPORTS_WITH_DATE_WHERE_CLAUSE = "join punishment p on p.reported_adjudication_fk_id = ra.id where ra.offender_booking_id = :offenderBookingId " +
+      "and ((:ada is true and p.type = 'ADDITIONAL_DAYS') or (:suspended is true and p.suspended_until is not null) or (:pada is true and p.type = 'PROSPECTIVE_DAYS')) and $DATE_AND_STATUS_FILTER $AGENCIES_INC_TRANSFERS_FILTER"
 
     const val PRISONER_REPORTS_WITH_DATE_WHERE_CLAUSE = "where ra.prisoner_number = :prisonerNumber and $DATE_AND_STATUS_FILTER"
 
-    const val PRISONER_REPORTS_AND_PUNISHMENTS_WITH_DATE_WHERE_CLAUSE = """
-      join punishment p on p.reported_adjudication_fk_id = ra.id where ra.prisoner_number = :prisonerNumber 
-      and ((:ada is true and p.type = 'ADDITIONAL_DAYS') or (:suspended is true and p.suspended_until is not null) or (:pada and p.type = 'PROSPECTIVE_DAYS')) 
-      and $DATE_AND_STATUS_FILTER
-      """
-
-    private const val TRANSFER_OUT = """
-      and ra.override_agency_id is not null and ra.originating_agency_id = :agencyId 
-      and ra.date_time_of_discovery >= :cutOffDate 
-      and (ra.status = 'AWAITING_REVIEW' or (ra.status = 'SCHEDULED' and 
-      0 = (select count(1) from hearing h where h.agency_id = ra.override_agency_id and h.charge_number = ra.charge_number)))
-      """
-
-    private const val TRANSFER_IN = "and ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :agencyId"
+    const val PRISONER_REPORTS_AND_PUNISHMENTS_WITH_DATE_WHERE_CLAUSE = "join punishment p on p.reported_adjudication_fk_id = ra.id where ra.prisoner_number = :prisonerNumber " +
+      "and ((:ada is true and p.type = 'ADDITIONAL_DAYS') or (:suspended is true and p.suspended_until is not null) or (:pada and p.type = 'PROSPECTIVE_DAYS')) and $DATE_AND_STATUS_FILTER"
 
     const val ALL_REPORTS_WHERE_CLAUSE = "where $DATE_AND_STATUS_FILTER $AGENCY_AND_TRANSFER_STATUS_FILTER"
 
@@ -278,10 +256,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
     const val TRANSFER_OUT_REPORTS_WHERE_CLAUSE = "where $STATUS_FILTER $TRANSFER_OUT"
 
-    const val TRANSFER_ALL_REPORTS_WHERE_CLAUSE = """
-      where $STATUS_FILTER
-      and ((ra.status in ('AWAITING_REVIEW','SCHEDULED') $TRANSFER_OUT) 
-       or (ra.status in ('REFER_POLICE', 'REFER_INAD','UNSCHEDULED', 'ADJOURNED') $TRANSFER_IN)
-       """
+    const val TRANSFER_ALL_REPORTS_WHERE_CLAUSE = "where $STATUS_FILTER" +
+      "and ((ra.status in ('AWAITING_REVIEW','SCHEDULED') $TRANSFER_OUT) " +
+      " or (ra.status in ('REFER_POLICE', 'REFER_INAD','UNSCHEDULED', 'ADJOURNED') $TRANSFER_IN))"
   }
 }
