@@ -86,7 +86,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   ): List<ReportedAdjudication>
 
   @Query(
-    value = """"
+    value = """
       select * from reported_adjudications ra 
       where ra.date_time_of_first_hearing > :startDate and ra.date_time_of_first_hearing <= :endDate 
       and ra.status in :statuses 
