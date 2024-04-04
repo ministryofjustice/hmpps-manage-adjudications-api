@@ -36,6 +36,7 @@ class PunishmentsService(
     punishments: List<PunishmentRequest>,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber).also {
+      if (it.getPunishments().isNotEmpty()) throw RuntimeException("This charge already has punishments - back key detected")
       it.validateCanAddPunishments()
     }
 
