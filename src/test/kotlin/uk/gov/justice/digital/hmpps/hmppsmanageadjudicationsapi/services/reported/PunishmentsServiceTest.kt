@@ -93,6 +93,22 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
     }
 
+    @Test
+    fun `throws a runtime exception if punishments already exist - ie the user has pressed back and resubmitted`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.addPunishment(Punishment(type = PunishmentType.CONFINEMENT, schedule = mutableListOf(PunishmentSchedule(days = 0))))
+        },
+      )
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(PunishmentRequest(type = PunishmentType.CONFINEMENT, days = 1)),
+        )
+      }.isInstanceOf(RuntimeException::class.java)
+        .hasMessageContaining("This charge already has punishments - back key detected")
+    }
+
     @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
     @ParameterizedTest
     fun `throws exception if not inad hearing `(punishmentType: PunishmentType) {
