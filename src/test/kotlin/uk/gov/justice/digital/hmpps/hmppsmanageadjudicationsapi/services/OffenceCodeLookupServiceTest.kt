@@ -52,6 +52,20 @@ class OffenceCodeLookupServiceTest {
     assertThat(offenceCodeLookupService.getOffenceCode(1002, false)).isEqualTo(OffenceCodes.ADULT_51_1B)
   }
 
+  @Test
+  fun `ensure we do not make up duplicate offence codes when adding new offences`() {
+    /*
+     due to the nature of the offence code, ie someone tried to mirror the paragraph, then realised they change by yoi and adult,
+     need to ensure the numbers we make up do not clash with existing ones.
+
+     ie the offence code "magic" number, is used by both the YOI and Adult decision paths, for the same offence, but will have a different para title.
+     The codes, such as 1001 are designed to represent para 1(a) for instance, but para 2 for yoi
+
+     Ideally we would not have used such a system, but its now linked to the front end, api and database.
+     */
+    assertThat(OffenceCodes.values().flatMap { it.uniqueOffenceCodes }.groupBy { it }.values.any { it.size > 2 }).isFalse
+  }
+
   private fun assertValuesSetForAllItems(offenceCodes: IntRange) {
     offenceCodes.forEach {
       assertValuesSetForItem(it, false, "51:")
