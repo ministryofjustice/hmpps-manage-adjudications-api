@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 
 class OffenceCodeLookupServiceTest {
-  private val offenceCodeLookupService: OffenceCodeLookupService = OffenceCodeLookupService()
+  private val offenceCodeLookupService: OffenceCodeLookupService = OffenceCodeLookupService(offencesVersion = 1)
 
   @Test
   fun `offence codes have values set for all items`() {
@@ -50,6 +50,96 @@ class OffenceCodeLookupServiceTest {
   @Test
   fun `get offence code for adult`() {
     assertThat(offenceCodeLookupService.getOffenceCode(1002, false)).isEqualTo(OffenceCodes.ADULT_51_1B)
+  }
+
+  @Test
+  fun `ensure we do not make up duplicate offence codes when adding new offences`() {
+    /*
+     due to the nature of the offence code, ie someone tried to mirror the paragraph, then realised they change by yoi and adult,
+     need to ensure the numbers we make up do not clash with existing ones.
+
+     ie the offence code "magic" number, is used by both the YOI and Adult decision paths, for the same offence, but will have a different para title.
+     The codes, such as 1001 are designed to represent para 1(a) for instance, but para 2 for yoi
+
+     Ideally we would not have used such a system, but its now linked to the front end, api and database.
+     */
+    assertThat(OffenceCodes.values().flatMap { it.uniqueOffenceCodes }.groupBy { it }.values.any { it.size > 2 }).isFalse
+  }
+
+  @Test
+  fun `get version 1 codes`() {
+    val adultOffences = offenceCodeLookupService.adultOffenceCodes
+    val youthOffences = offenceCodeLookupService.youthOffenceCodes
+
+    assertThat(
+      youthOffences.none {
+        listOf(
+          OffenceCodes.YOI_55_19_24,
+          OffenceCodes.YOI_55_23_24,
+          OffenceCodes.YOI_55_28_24,
+          OffenceCodes.YOI_55_26A_24,
+          OffenceCodes.YOI_55_2_24,
+          OffenceCodes.YOI_55_2A_24,
+          OffenceCodes.YOI_55_2B_24,
+          OffenceCodes.YOI_55_2C_24,
+        ).contains(it)
+      },
+    ).isTrue
+
+    assertThat(
+      adultOffences.none {
+        listOf(
+          OffenceCodes.ADULT_51_17A_24,
+          OffenceCodes.ADULT_51_1A_24,
+          OffenceCodes.ADULT_51_1B_24,
+          OffenceCodes.ADULT_51_1C_24,
+          OffenceCodes.ADULT_51_1D_24,
+          OffenceCodes.ADULT_51_20A_24,
+          OffenceCodes.ADULT_51_23A_24,
+          OffenceCodes.ADULT_51_24A_24,
+        ).contains(it)
+      },
+    ).isTrue
+  }
+
+  @Test
+  fun `get version 2 codes`() {
+    val offenceCodeLookupServiceV2 = OffenceCodeLookupService(2)
+    val adultOffences = offenceCodeLookupServiceV2.adultOffenceCodes
+    val youthOffences = offenceCodeLookupServiceV2.youthOffenceCodes
+
+    assertThat(
+      youthOffences.containsAll(
+        listOf(
+          OffenceCodes.YOI_55_19_24,
+          OffenceCodes.YOI_55_23_24,
+          OffenceCodes.YOI_55_28_24,
+          OffenceCodes.YOI_55_26A_24,
+          OffenceCodes.YOI_55_2_24,
+          OffenceCodes.YOI_55_2A_24,
+          OffenceCodes.YOI_55_2B_24,
+          OffenceCodes.YOI_55_2C_24,
+        ),
+      ),
+    ).isTrue
+
+    assertThat(
+      adultOffences.containsAll(
+        listOf(
+          OffenceCodes.ADULT_51_17A_24,
+          OffenceCodes.ADULT_51_1A_24,
+          OffenceCodes.ADULT_51_1B_24,
+          OffenceCodes.ADULT_51_1C_24,
+          OffenceCodes.ADULT_51_1D_24,
+          OffenceCodes.ADULT_51_20A_24,
+          OffenceCodes.ADULT_51_23A_24,
+          OffenceCodes.ADULT_51_24A_24,
+        ),
+      ),
+    ).isTrue
+
+    assertThat(adultOffences.none { it.applicableVersions == listOf(1) }).isTrue
+    assertThat(youthOffences.none { it.applicableVersions == listOf(1) }).isTrue
   }
 
   private fun assertValuesSetForAllItems(offenceCodes: IntRange) {

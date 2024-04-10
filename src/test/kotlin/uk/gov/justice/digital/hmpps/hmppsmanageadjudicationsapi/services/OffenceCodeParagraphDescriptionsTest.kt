@@ -94,6 +94,22 @@ class OffenceCodeParagraphDescriptionsTest {
     "51:18B,ADULT_18",
     "51:21,YOI_24_ADULT_21",
     "51:17A,ADULT_17A",
+    "51:1A (24),YOI_2A_24_ADULT_1A_24",
+    "51:24A (24),ADULT_24A_24",
+    "51:17A (24),ADULT_17A_24",
+    "51:20A (24),YOI_23_24_ADULT_20A_24",
+    "55:2 (24),YOI_2A_24_ADULT_1A_24",
+    "55:28 (24),YOI_28_24",
+    "55:19 (24),YOI_19_24",
+    "55:23 (24),YOI_23_24_ADULT_20A_24",
+    "51:1B (24),YOI_2A_24_ADULT_1B_24",
+    "55:2A (24),YOI_2A_24_ADULT_1B_24",
+    "51:1C (24),YOI_2B_24_ADULT_1C_24",
+    "55:2B (24),YOI_2B_24_ADULT_1C_24",
+    "51:1D (24),YOI_2C_24_ADULT_1D_24",
+    "55:2C (24),YOI_2C_24_ADULT_1D_24",
+    "51:23A (24),YOI_26A_24_ADULT_23A_24",
+    "55:26A (24),YOI_26A_24_ADULT_23A_24",
   )
   fun `get paragraph by offence code`(code: String, answer: Descriptions) {
     assert(OffenceCodes.values().first { it.nomisCode == code }.paragraphDescription == answer)
