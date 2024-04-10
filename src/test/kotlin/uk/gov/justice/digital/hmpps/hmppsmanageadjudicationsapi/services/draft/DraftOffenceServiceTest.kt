@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAd
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import java.time.LocalDateTime
 import java.util.Optional
 
@@ -156,13 +155,13 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
   fun `gets all offence adult rules`() {
     val offenceRules = incidentOffenceService.getRules(isYouthOffender = false, gender = Gender.MALE)
 
-    assertThat(offenceRules.size).isEqualTo(OffenceCodes.getAdultOffenceCodes().distinctBy { it.paragraph }.size)
+    assertThat(offenceRules.size).isEqualTo(offenceCodeLookupService.adultOffenceCodes.distinctBy { it.paragraph }.size)
   }
 
   @Test
   fun `gets all yoi offence rules`() {
     val offenceRules = incidentOffenceService.getRules(isYouthOffender = true, gender = Gender.MALE)
 
-    assertThat(offenceRules.size).isEqualTo(OffenceCodes.getYouthOffenceCodes().distinctBy { it.paragraph }.size)
+    assertThat(offenceRules.size).isEqualTo(offenceCodeLookupService.youthOffenceCodes.distinctBy { it.paragraph }.size)
   }
 }
