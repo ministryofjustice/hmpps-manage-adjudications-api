@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftProtectedCharacteristics
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
@@ -59,6 +60,9 @@ class DraftOffenceService(
         victimPrisonersNumber = offenceDetails.victimPrisonersNumber?.ifBlank { null },
         victimStaffUsername = offenceDetails.victimStaffUsername?.ifBlank { null },
         victimOtherPersonsName = offenceDetails.victimOtherPersonsName?.ifBlank { null },
+        protectedCharacteristics = offenceDetails.protectedCharacteristics?.map {
+          DraftProtectedCharacteristics(characteristic = it)
+        }?.toMutableList() ?: mutableListOf(),
       )
 
     draftAdjudication.offenceDetails.clear()

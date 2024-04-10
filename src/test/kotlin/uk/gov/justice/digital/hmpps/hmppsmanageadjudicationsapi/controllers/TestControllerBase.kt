@@ -66,7 +66,8 @@ open class TestControllerBase {
         offenceDetails =
         OffenceDto(
           offenceCode = 2,
-          OffenceRuleDto(
+          protectedCharacteristics = emptyList(),
+          offenceRule = OffenceRuleDto(
             paragraphNumber = "3",
             paragraphDescription = "A paragraph description",
             nomisCode = null,
@@ -113,7 +114,8 @@ open class TestControllerBase {
         offenceDetails =
         OffenceDto(
           offenceCode = 2,
-          OffenceRuleDto(
+          protectedCharacteristics = emptyList(),
+          offenceRule = OffenceRuleDto(
             paragraphNumber = "3",
             paragraphDescription = "A paragraph description",
             nomisCode = null,
@@ -147,6 +149,7 @@ open class TestControllerBase {
 
     val BASIC_OFFENCE_RESPONSE_DTO = OffenceDetailsDto(
       offenceCode = 3,
+      protectedCharacteristics = emptyList(),
       offenceRule = OffenceRuleDetailsDto(
         paragraphNumber = "3",
         paragraphDescription = "A description",

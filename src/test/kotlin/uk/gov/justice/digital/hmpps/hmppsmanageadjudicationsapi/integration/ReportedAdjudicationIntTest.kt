@@ -6,6 +6,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
@@ -25,7 +26,12 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reported adjudication details v2`() {
-    val scenario = initDataForAccept(testData = IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "BXI" })
+    val scenario = initDataForAccept(
+      testData = IntegrationTestData.DEFAULT_ADJUDICATION.also {
+        it.protectedCharacteristics = null
+        it.overrideAgencyId = "BXI"
+      },
+    )
 
     IntegrationTestData.DEFAULT_ADJUDICATION.offence.victimOtherPersonsName?.let {
       webTestClient.get()
@@ -89,9 +95,30 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
         .isEqualTo("prison")
         .jsonPath("$.reportedAdjudication.witnesses[0].reporter")
         .isEqualTo("B_MILLS")
+        .jsonPath("\$.reportedAdjudication.offenceDetails.protectedCharacteristics.size()").isEqualTo(0)
         .jsonPath("$.reportedAdjudication.gender").isEqualTo(Gender.MALE.name)
         .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.nomisCode").isEqualTo(OffenceCodes.ADULT_51_4.nomisCode)
         .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.withOthersNomisCode").isEqualTo(OffenceCodes.ADULT_51_4.nomisCode)
+    }
+  }
+
+  @Test
+  fun `get reported adjudication with protected characteristics`() {
+    val scenario = initDataForAccept(
+      testData = IntegrationTestData.DEFAULT_ADJUDICATION.also {
+        it.overrideAgencyId = "BXI"
+        it.protectedCharacteristics = mutableListOf(Characteristic.AGE)
+      },
+    )
+
+    IntegrationTestData.DEFAULT_ADJUDICATION.offence.victimOtherPersonsName?.let {
+      webTestClient.get()
+        .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/v2")
+        .headers(setHeaders())
+        .exchange()
+        .expectStatus().is2xxSuccessful
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.offenceDetails.protectedCharacteristics[0]").isEqualTo(Characteristic.AGE.name)
     }
   }
 

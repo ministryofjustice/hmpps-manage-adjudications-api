@@ -148,7 +148,10 @@ class PrisonerMergeServiceDraftTest : DraftAdjudicationTestBase() {
       incidentDetails =
       IncidentDetails(dateTimeOfDiscovery = LocalDateTime.now(), dateTimeOfIncident = LocalDateTime.now(), handoverDeadline = LocalDateTime.now(), locationId = 1),
       offenceDetails = mutableListOf(
-        Offence(offenceCode = 1, victimPrisonersNumber = "FROM"),
+        Offence(
+          offenceCode = 1,
+          victimPrisonersNumber = "FROM",
+        ),
       ),
     )
     whenever(draftAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber(any())).thenReturn(listOf(fromReport))

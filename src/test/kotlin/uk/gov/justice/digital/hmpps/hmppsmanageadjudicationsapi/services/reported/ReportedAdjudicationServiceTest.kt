@@ -462,7 +462,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         )
       } else {
         mutableListOf(
-          ReportedOffence(offenceCode = 1002),
+          ReportedOffence(
+            offenceCode = 1002,
+          ),
         )
       }
 

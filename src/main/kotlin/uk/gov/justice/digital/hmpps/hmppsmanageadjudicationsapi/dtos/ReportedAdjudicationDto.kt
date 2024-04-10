@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.swagger.v3.oas.annotations.media.Schema
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
@@ -109,6 +110,8 @@ data class OffenceDto(
   val victimStaffUsername: String? = null,
   @Schema(description = "The name of the victim (who is not a member of staff or a prisoner) involved in the incident, if relevant", example = "Bob Hope")
   val victimOtherPersonsName: String? = null,
+  @Schema(description = "list of protected characteristics for offence, empty if non involved in offence")
+  val protectedCharacteristics: List<Characteristic>,
 )
 
 @Schema(description = "Details of a rule they have broken")

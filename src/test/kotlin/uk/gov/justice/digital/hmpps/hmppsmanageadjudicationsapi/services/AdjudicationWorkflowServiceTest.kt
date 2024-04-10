@@ -20,9 +20,11 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftProtectedCharacteristics
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
@@ -30,6 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ProtectedCharacteristics
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
@@ -67,7 +70,11 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
   @Nested
   inner class CreateDraftFromReported {
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
+    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+      it.offenceDetails.first().protectedCharacteristics.add(
+        ProtectedCharacteristics(characteristic = Characteristic.AGE),
+      )
+    }
 
     private val expectedSavedDraftAdjudication = DraftAdjudication(
       prisonerNumber = "A12345",
@@ -93,6 +100,9 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           victimPrisonersNumber = "A1234AA",
           victimStaffUsername = "ABC12D",
           victimOtherPersonsName = "A Person",
+          protectedCharacteristics = mutableListOf(
+            DraftProtectedCharacteristics(characteristic = Characteristic.AGE),
+          ),
         ),
       ),
       incidentStatement = IncidentStatement(
@@ -165,6 +175,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           "victimPrisonersNumber",
           "victimStaffUsername",
           "victimOtherPersonsName",
+          "protectedCharacteristics",
         )
         .contains(
           1002,
@@ -173,6 +184,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           "A1234AA",
           "ABC12D",
           "A Person",
+          listOf(Characteristic.AGE),
         )
       assertThat(createdDraft.incidentStatement)
         .extracting("completed", "statement")
@@ -223,7 +235,12 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         incidentDetails = incidentDetails(1L, incidentTime),
         incidentRole = incidentRoleWithAllValuesSet(),
         offenceDetails = mutableListOf(
-          Offence(offenceCode = 1002, victimOtherPersonsName = "person", victimPrisonersNumber = "prisoner", victimStaffUsername = "staff"),
+          Offence(
+            offenceCode = 1002,
+            victimOtherPersonsName = "person",
+            victimPrisonersNumber = "prisoner",
+            victimStaffUsername = "staff",
+          ),
         ),
         incidentStatement = IncidentStatement(statement = "test"),
         isYouthOffender = false,
@@ -370,7 +387,9 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
               ValidationChecks.INCIDENT_STATEMENT -> {
                 it.isYouthOffender = false
                 it.incidentRole = incidentRoleWithAllValuesSet()
-                it.offenceDetails = mutableListOf(Offence(offenceCode = 1002))
+                it.offenceDetails = mutableListOf(
+                  Offence(offenceCode = 1002),
+                )
               }
 
               else -> {}
@@ -405,7 +424,11 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             agencyId = "MDI",
             incidentDetails = incidentDetails(2L, incidentTime),
             incidentRole = incidentRoleWithNoValuesSet(),
-            offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
+            offenceDetails = mutableListOf(
+              Offence(
+                offenceCode = 1002,
+              ),
+            ),
             incidentStatement = IncidentStatement(statement = "test"),
             isYouthOffender = true,
           ),
@@ -473,7 +496,14 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             agencyId = "MDI",
             incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, clock),
             incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
-            offenceDetails = mutableListOf(Offence(offenceCode = 1002, victimStaffUsername = "staff", victimPrisonersNumber = "prisoner", victimOtherPersonsName = "person")),
+            offenceDetails = mutableListOf(
+              Offence(
+                offenceCode = 1002,
+                victimStaffUsername = "staff",
+                victimPrisonersNumber = "prisoner",
+                victimOtherPersonsName = "person",
+              ),
+            ),
             incidentStatement = IncidentStatement(statement = "test"),
             isYouthOffender = false,
             damages = mutableListOf(
@@ -659,7 +689,9 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, clock),
             incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
             offenceDetails = mutableListOf(
-              Offence(offenceCode = 1002),
+              Offence(
+                offenceCode = 1002,
+              ),
             ),
             incidentStatement = IncidentStatement(statement = "test"),
             isYouthOffender = false,

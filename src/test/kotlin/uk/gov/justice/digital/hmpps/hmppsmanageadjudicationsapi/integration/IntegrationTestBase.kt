@@ -76,7 +76,11 @@ abstract class IntegrationTestBase : TestBase() {
     return IntegrationTestData(webTestClient, jwtAuthHelper)
   }
 
-  protected fun initDataForAccept(overrideAgencyId: String? = null, testData: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION, incDamagesEvidenceWitnesses: Boolean = true): IntegrationTestScenario {
+  protected fun initDataForAccept(
+    overrideAgencyId: String? = null,
+    testData: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION,
+    incDamagesEvidenceWitnesses: Boolean = true,
+  ): IntegrationTestScenario {
     val intTestData = integrationTestData()
 
     val draftUserHeaders = if (overrideAgencyId != null) {

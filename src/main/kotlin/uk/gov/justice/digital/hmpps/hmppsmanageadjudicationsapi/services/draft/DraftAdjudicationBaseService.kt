@@ -127,6 +127,7 @@ open class DraftAdjudicationBaseService(
       victimPrisonersNumber = this.victimPrisonersNumber,
       victimStaffUsername = this.victimStaffUsername,
       victimOtherPersonsName = this.victimOtherPersonsName,
+      protectedCharacteristics = this.protectedCharacteristics.map { it.characteristic },
     )
   }
 

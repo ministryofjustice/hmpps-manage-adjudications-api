@@ -407,7 +407,9 @@ class IntegrationTestData(
       .headers(headers)
       .bodyValue(
         mapOf(
-          "offenceDetails" to testDataSet.offence,
+          "offenceDetails" to testDataSet.offence.also {
+            it.protectedCharacteristics = testDataSet.protectedCharacteristics
+          },
         ),
       )
       .exchange()

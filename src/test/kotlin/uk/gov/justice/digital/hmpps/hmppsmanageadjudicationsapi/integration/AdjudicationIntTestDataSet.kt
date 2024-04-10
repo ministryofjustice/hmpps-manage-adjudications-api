@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
@@ -32,6 +33,7 @@ data class AdjudicationIntTestDataSet(
   val dateTimeOfHearing: LocalDateTime? = null,
   val dateTimeOfHearingISOString: String? = null,
   var overrideAgencyId: String? = null,
+  var protectedCharacteristics: List<Characteristic>? = null,
 )
 
 data class OffenceTestDataSet(
@@ -41,6 +43,7 @@ data class OffenceTestDataSet(
   val victimPrisonersNumber: String? = null,
   val victimStaffUsername: String? = null,
   val victimOtherPersonsName: String? = null,
+  var protectedCharacteristics: List<Characteristic>? = null,
 )
 
 data class DamagesTestDataSet(
