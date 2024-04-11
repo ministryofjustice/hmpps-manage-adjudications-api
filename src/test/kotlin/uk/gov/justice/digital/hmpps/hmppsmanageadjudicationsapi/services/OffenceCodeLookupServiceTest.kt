@@ -104,9 +104,8 @@ class OffenceCodeLookupServiceTest {
 
   @Test
   fun `get version 2 codes`() {
-    val offenceCodeLookupServiceV2 = OffenceCodeLookupService()
-    val adultOffences = offenceCodeLookupServiceV2.getAdultOffenceCodesByVersion(1)
-    val youthOffences = offenceCodeLookupServiceV2.getYouthOffenceCodesByVersion(1)
+    val adultOffences = offenceCodeLookupService.getAdultOffenceCodesByVersion(2)
+    val youthOffences = offenceCodeLookupService.getYouthOffenceCodesByVersion(2)
 
     assertThat(
       youthOffences.containsAll(
