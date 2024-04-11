@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftOffenceService
 
@@ -33,6 +34,8 @@ data class OffenceDetailsRequestItem(
   val victimStaffUsername: String? = null,
   @Schema(description = "The name of the victim (who is not a member of staff or a prisoner) involved in the incident, if relevant", example = "Bob Hope")
   val victimOtherPersonsName: String? = null,
+  @Schema(description = "optional list of protected characteristics involved in the offence")
+  val protectedCharacteristics: List<Characteristic>? = null,
 )
 
 @RestController

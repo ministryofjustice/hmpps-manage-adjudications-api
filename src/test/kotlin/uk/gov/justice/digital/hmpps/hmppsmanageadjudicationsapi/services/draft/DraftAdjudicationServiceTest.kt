@@ -229,7 +229,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, now),
-        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
+        offenceDetails = mutableListOf(
+          Offence(
+            offenceCode = 1002,
+          ),
+        ),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
           completed = false,
@@ -244,7 +248,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         gender = Gender.MALE,
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, now),
-        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
+        offenceDetails = mutableListOf(
+          Offence(
+            offenceCode = 1002,
+          ),
+        ),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
           completed = false,
@@ -340,7 +348,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
             agencyId = "MDI",
             incidentDetails = incidentDetails(2L, now),
             incidentRole = IncidentRole(null, "25a", null, null),
-            offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
+            offenceDetails = mutableListOf(
+              Offence(
+                offenceCode = 1002,
+              ),
+            ),
             incidentStatement = IncidentStatement(
               statement = "Example statement",
               completed = false,
@@ -369,7 +381,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, now),
         incidentRole = incidentRoleWithNoValuesSet(),
-        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
+        offenceDetails = mutableListOf(
+          Offence(
+            offenceCode = 1002,
+          ),
+        ),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
           completed = false,
@@ -752,7 +768,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
               ),
               incidentRole = incidentRoleWithAllValuesSet(),
-              offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
+              offenceDetails = mutableListOf(
+                Offence(
+                  offenceCode = 1002,
+                ),
+              ),
               incidentStatement = IncidentStatement(
                 statement = "Example statement",
                 completed = false,
@@ -819,7 +839,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           statement = "Example statement",
           completed = false,
         ),
-        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
+        offenceDetails = mutableListOf(
+          Offence(
+            offenceCode = 1002,
+          ),
+        ),
         isYouthOffender = true,
       )
 
@@ -860,7 +884,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           statement = "Example statement",
           completed = false,
         ),
-        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
+        offenceDetails = mutableListOf(
+          Offence(
+            offenceCode = 1002,
+          ),
+        ),
         isYouthOffender = true,
       )
 
@@ -893,7 +921,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
             statement = "Example statement",
             completed = false,
           ),
-          offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
+          offenceDetails = mutableListOf(
+            Offence(
+              offenceCode = 1002,
+            ),
+          ),
           isYouthOffender = true,
         ).apply { createdByUserId = "ITAG_USER" }
 
@@ -939,7 +971,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           statement = "Example statement",
           completed = false,
         ),
-        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
+        offenceDetails = mutableListOf(
+          Offence(
+            offenceCode = 1002,
+          ),
+        ),
         isYouthOffender = true,
       )
 
@@ -1010,7 +1046,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         agencyId = "MDI",
         incidentDetails = incidentDetails(2L, now),
         incidentRole = incidentRoleWithAllValuesSet(),
-        offenceDetails = mutableListOf(Offence(offenceCode = 1002)),
+        offenceDetails = mutableListOf(
+          Offence(
+            offenceCode = 1002,
+          ),
+        ),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
           completed = false,

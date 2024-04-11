@@ -1,6 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceDto
@@ -23,6 +27,10 @@ data class ReportedOffence(
   @field:Length(max = 350)
   var nomisOffenceDescription: String? = null,
   var actualOffenceCode: Int? = null,
+  @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "reported_offence_fk_id")
+  var protectedCharacteristics: MutableList<ProtectedCharacteristics> = mutableListOf(),
+
 ) : BaseEntity() {
   fun toDto(offenceCodeLookupService: OffenceCodeLookupService, isYouthOffender: Boolean, gender: Gender): OffenceDto {
     val offenceRuleDto = when (
@@ -48,6 +56,7 @@ data class ReportedOffence(
       victimPrisonersNumber = this.victimPrisonersNumber,
       victimStaffUsername = this.victimStaffUsername,
       victimOtherPersonsName = this.victimOtherPersonsName,
+      protectedCharacteristics = this.protectedCharacteristics.map { it.characteristic },
     )
   }
 }

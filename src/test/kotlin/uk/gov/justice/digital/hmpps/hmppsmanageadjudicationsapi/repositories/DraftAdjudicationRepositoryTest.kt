@@ -11,9 +11,11 @@ import org.springframework.data.domain.Pageable
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConfiguration
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Damage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftProtectedCharacteristics
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
@@ -318,6 +320,17 @@ class DraftAdjudicationRepositoryTest {
     assertThat(draftAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber("A1234AA").first().prisonerNumber).isEqualTo(
       draft.prisonerNumber,
     )
+  }
+
+  @Test
+  fun `draft protected characteristics`() {
+    val draft = draftWithAllData("1").also {
+      it.offenceDetails.first().protectedCharacteristics = mutableListOf(
+        DraftProtectedCharacteristics(characteristic = Characteristic.AGE),
+      )
+    }
+    val id = draftAdjudicationRepository.save(draft).id
+    assertThat(draftAdjudicationRepository.findById(id).get().offenceDetails.first().protectedCharacteristics.first().characteristic == Characteristic.AGE).isTrue
   }
 
   private fun newDraft(): DraftAdjudication {

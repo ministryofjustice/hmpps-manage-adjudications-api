@@ -47,6 +47,7 @@ class EntityBuilder {
           victimPrisonersNumber = "A1234AA",
           victimStaffUsername = "ABC12D",
           victimOtherPersonsName = "A Person",
+          protectedCharacteristics = mutableListOf(),
         ),
       ),
       statement = "Example statement",

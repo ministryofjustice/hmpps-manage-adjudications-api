@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.AuditConfiguration
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
@@ -23,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ProtectedCharacteristics
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
@@ -1070,5 +1072,27 @@ class ReportedAdjudicationRepositoryTest {
         pageable = Pageable.ofSize(10),
       ).content.size,
     ).isEqualTo(expected)
+  }
+
+  @Test
+  fun `protected characteristics`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(chargeNumber = "PROTECTED").also {
+        it.hearings.clear()
+        it.offenceDetails.clear()
+        it.offenceDetails.add(
+          ReportedOffence(
+            offenceCode = 1,
+            protectedCharacteristics = mutableListOf(
+              ProtectedCharacteristics(characteristic = Characteristic.AGE),
+            ),
+          ),
+        )
+      },
+    )
+    assertThat(
+      reportedAdjudicationRepository.findByChargeNumber("PROTECTED")!!.offenceDetails.first().protectedCharacteristics.first().characteristic
+        == Characteristic.AGE,
+    ).isTrue
   }
 }

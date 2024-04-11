@@ -254,6 +254,7 @@ class AdjudicationWorkflowService(
         victimPrisonersNumber = offence.victimPrisonersNumber,
         victimStaffUsername = offence.victimStaffUsername,
         victimOtherPersonsName = offence.victimOtherPersonsName,
+        protectedCharacteristics = offence.protectedCharacteristics.map { it.toDraftProtectedCharacteristics() }.toMutableList(),
       )
     }.toMutableList()
 
@@ -294,6 +295,7 @@ class AdjudicationWorkflowService(
         victimPrisonersNumber = it.victimPrisonersNumber,
         victimStaffUsername = it.victimStaffUsername,
         victimOtherPersonsName = it.victimOtherPersonsName,
+        protectedCharacteristics = it.protectedCharacteristics.map { pc -> pc.toProtectedCharacteristics() }.toMutableList(),
       )
     }.toMutableList()
   }

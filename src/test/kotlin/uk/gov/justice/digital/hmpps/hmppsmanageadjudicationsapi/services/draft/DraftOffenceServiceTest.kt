@@ -12,6 +12,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.OffenceDetailsRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
@@ -163,5 +164,40 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     val offenceRules = incidentOffenceService.getRules(isYouthOffender = true, gender = Gender.MALE)
 
     assertThat(offenceRules.size).isEqualTo(offenceCodeLookupService.youthOffenceCodes.distinctBy { it.paragraph }.size)
+  }
+
+  @Test
+  fun `adds protected characteristics to the offence`() {
+    val existingDraftAdjudicationEntity = DraftAdjudication(
+      id = 1,
+      prisonerNumber = "A12345",
+      gender = Gender.MALE,
+      agencyId = "MDI",
+      incidentDetails = IncidentDetails(
+        locationId = 1,
+        dateTimeOfIncident = LocalDateTime.now(clock),
+        dateTimeOfDiscovery = LocalDateTime.now(clock).plusDays(1),
+        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
+      ),
+      incidentRole = DraftAdjudicationServiceTest.incidentRoleWithNoValuesSet(),
+      isYouthOffender = false,
+    )
+
+    whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(existingDraftAdjudicationEntity))
+    whenever(draftAdjudicationRepository.save(any())).thenReturn(existingDraftAdjudicationEntity)
+    val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
+
+    incidentOffenceService.setOffenceDetails(
+      id = 1,
+      offenceDetails = OffenceDetailsRequestItem(
+        offenceCode = 1001,
+        protectedCharacteristics = listOf(Characteristic.AGE),
+      ),
+    )
+    verify(draftAdjudicationRepository).save(argumentCaptor.capture())
+
+    assertThat(argumentCaptor.value.offenceDetails.first().protectedCharacteristics.first().characteristic).isEqualTo(
+      Characteristic.AGE,
+    )
   }
 }

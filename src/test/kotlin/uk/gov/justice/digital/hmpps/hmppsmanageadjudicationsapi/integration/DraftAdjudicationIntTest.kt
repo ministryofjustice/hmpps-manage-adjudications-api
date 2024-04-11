@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
@@ -167,6 +168,40 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .isEqualTo(testAdjudication.offence.victimStaffUsername!!)
       .jsonPath("$.draftAdjudication.offenceDetails.victimOtherPersonsName")
       .isEqualTo(testAdjudication.offence.victimOtherPersonsName!!)
+  }
+
+  @Test
+  fun `add offence details with protected characteristics`() {
+    val testAdjudication = IntegrationTestData.ADJUDICATION_1
+    val intTestData = integrationTestData()
+    val userHeaders = setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = intTestData,
+      intTestBase = this,
+      headers = userHeaders,
+    )
+
+    val intTestScenario = intTestBuilder
+      .startDraft(testAdjudication)
+      .setApplicableRules()
+      .setIncidentRole()
+
+    webTestClient.put()
+      .uri("/draft-adjudications/${intTestScenario.getDraftId()}/offence-details")
+      .headers(setHeaders(activeCaseload = testAdjudication.agencyId))
+      .bodyValue(
+        mapOf(
+          "offenceDetails" to testAdjudication.offence.also {
+            it.protectedCharacteristics = mutableListOf(
+              Characteristic.AGE,
+            )
+          },
+        ),
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.draftAdjudication.offenceDetails.protectedCharacteristics[0]").isEqualTo(Characteristic.AGE.name)
   }
 
   @Test
