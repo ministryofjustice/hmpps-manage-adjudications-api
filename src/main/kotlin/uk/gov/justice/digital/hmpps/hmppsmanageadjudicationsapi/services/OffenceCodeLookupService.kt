@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class OffenceCodeLookupService {
-  private val youthOffenceCodes: List<OffenceCodes> = getYouthOffenceCodes()
-  private val adultOffenceCodes: List<OffenceCodes> = getAdultOffenceCodes()
+  private val youthOffenceCodes: List<OffenceCodes> = OffenceCodes.values().filter { it.nomisCode.startsWith("55:") }
+  private val adultOffenceCodes: List<OffenceCodes> = OffenceCodes.values().filter { it.nomisCode.startsWith("51:") }
 
   fun getOffenceCode(offenceCode: Int, isYouthOffender: Boolean): OffenceCodes =
     when (isYouthOffender) {
@@ -15,7 +15,4 @@ class OffenceCodeLookupService {
 
   fun getAdultOffenceCodesByVersion(version: Int) = adultOffenceCodes.filter { it.applicableVersions.contains(version) }
   fun getYouthOffenceCodesByVersion(version: Int) = youthOffenceCodes.filter { it.applicableVersions.contains(version) }
-
-  private fun getAdultOffenceCodes() = OffenceCodes.values().filter { it.nomisCode.startsWith("51:") }
-  private fun getYouthOffenceCodes() = OffenceCodes.values().filter { it.nomisCode.startsWith("55:") }
 }
