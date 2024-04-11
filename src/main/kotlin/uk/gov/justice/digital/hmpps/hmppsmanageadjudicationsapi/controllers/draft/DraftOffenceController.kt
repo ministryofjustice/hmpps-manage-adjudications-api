@@ -78,5 +78,9 @@ class DraftOffenceController(
   fun getOffenceRules(
     @RequestParam(value = "youthOffender") isYouthOffender: Boolean,
     @RequestParam(value = "gender", required = false) gender: Gender?,
-  ): List<OffenceRuleDetailsDto> = incidentOffenceService.getRules(isYouthOffender, gender ?: Gender.MALE)
+    @RequestParam(value = "version", required = false) version: Int?,
+  ): List<OffenceRuleDetailsDto> = incidentOffenceService.getRules(
+    isYouthOffender = isYouthOffender,
+    gender = gender ?: Gender.MALE,
+  )
 }
