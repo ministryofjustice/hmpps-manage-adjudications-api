@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 
 class OffenceCodeLookupServiceTest {
-  private val offenceCodeLookupService: OffenceCodeLookupService = OffenceCodeLookupService(offencesVersion = 1)
+  private val offenceCodeLookupService: OffenceCodeLookupService = OffenceCodeLookupService()
 
   @Test
   fun `offence codes have values set for all items`() {
@@ -68,8 +68,8 @@ class OffenceCodeLookupServiceTest {
 
   @Test
   fun `get version 1 codes`() {
-    val adultOffences = offenceCodeLookupService.adultOffenceCodes
-    val youthOffences = offenceCodeLookupService.youthOffenceCodes
+    val adultOffences = offenceCodeLookupService.getAdultOffenceCodesByVersion(1)
+    val youthOffences = offenceCodeLookupService.getYouthOffenceCodesByVersion(1)
 
     assertThat(
       youthOffences.none {
@@ -104,9 +104,9 @@ class OffenceCodeLookupServiceTest {
 
   @Test
   fun `get version 2 codes`() {
-    val offenceCodeLookupServiceV2 = OffenceCodeLookupService(2)
-    val adultOffences = offenceCodeLookupServiceV2.adultOffenceCodes
-    val youthOffences = offenceCodeLookupServiceV2.youthOffenceCodes
+    val offenceCodeLookupServiceV2 = OffenceCodeLookupService()
+    val adultOffences = offenceCodeLookupServiceV2.getAdultOffenceCodesByVersion(1)
+    val youthOffences = offenceCodeLookupServiceV2.getYouthOffenceCodesByVersion(1)
 
     assertThat(
       youthOffences.containsAll(

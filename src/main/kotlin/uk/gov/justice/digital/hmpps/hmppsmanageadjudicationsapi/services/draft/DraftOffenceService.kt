@@ -37,10 +37,10 @@ class DraftOffenceService(
     )
   }
 
-  fun getRules(isYouthOffender: Boolean, gender: Gender): List<OffenceRuleDetailsDto> =
+  fun getRules(isYouthOffender: Boolean, gender: Gender, version: Int): List<OffenceRuleDetailsDto> =
     when (isYouthOffender) {
-      true -> offenceCodeLookupService.youthOffenceCodes
-      false -> offenceCodeLookupService.adultOffenceCodes
+      true -> offenceCodeLookupService.getYouthOffenceCodesByVersion(version)
+      false -> offenceCodeLookupService.getAdultOffenceCodesByVersion(version)
     }.distinctBy { it.paragraph }.map {
       OffenceRuleDetailsDto(
         paragraphNumber = it.paragraph,

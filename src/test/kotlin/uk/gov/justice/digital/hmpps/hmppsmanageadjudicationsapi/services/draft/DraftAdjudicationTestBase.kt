@@ -17,7 +17,7 @@ interface TestsToImplement {
 
 abstract class DraftAdjudicationTestBase : TestsToImplement {
   internal val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
-  internal val offenceCodeLookupService: OffenceCodeLookupService = OffenceCodeLookupService(offencesVersion = 1)
+  internal val offenceCodeLookupService: OffenceCodeLookupService = OffenceCodeLookupService()
   internal val authenticationFacade: AuthenticationFacade = mock()
 
   @BeforeEach

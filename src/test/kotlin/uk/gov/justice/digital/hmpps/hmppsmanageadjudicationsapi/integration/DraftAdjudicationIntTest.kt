@@ -502,7 +502,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
   @Test
   fun `gets all adult offence rules`() {
     webTestClient.get()
-      .uri("/draft-adjudications/offence-rules?youthOffender=false")
+      .uri("/draft-adjudications/offence-rules?youthOffender=false&version=1")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isOk

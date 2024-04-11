@@ -139,13 +139,13 @@ class DraftOffenceControllerTest : TestControllerBase() {
       getAllOffenceRulesRequest()
         .andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(incidentOffenceService, atLeastOnce()).getRules(any(), any())
+      verify(incidentOffenceService, atLeastOnce()).getRules(any(), any(), any())
     }
 
     private fun getAllOffenceRulesRequest(): ResultActions {
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.get("/draft-adjudications/offence-rules?youthOffender=false")
+          MockMvcRequestBuilders.get("/draft-adjudications/offence-rules?youthOffender=false&version=1")
             .header("Content-Type", "application/json"),
         )
     }
