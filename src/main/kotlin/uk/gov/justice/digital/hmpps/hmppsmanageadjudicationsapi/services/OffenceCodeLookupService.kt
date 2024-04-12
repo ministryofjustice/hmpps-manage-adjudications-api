@@ -1,17 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @Service
-class OffenceCodeLookupService(
-  @Value("\${service.offences.version}")
-  val offencesVersion: Int,
-) {
-  val youthOffenceCodes: List<OffenceCodes>
-    get() = getYouthOffenceCodes(offencesVersion)
-  val adultOffenceCodes: List<OffenceCodes>
-    get() = getAdultOffenceCodes(offencesVersion)
+class OffenceCodeLookupService {
+  private val youthOffenceCodes: List<OffenceCodes> = OffenceCodes.values().filter { it.nomisCode.startsWith("55:") }
+  private val adultOffenceCodes: List<OffenceCodes> = OffenceCodes.values().filter { it.nomisCode.startsWith("51:") }
 
   fun getOffenceCode(offenceCode: Int, isYouthOffender: Boolean): OffenceCodes =
     when (isYouthOffender) {
@@ -19,6 +13,6 @@ class OffenceCodeLookupService(
       false -> adultOffenceCodes.firstOrNull { it.uniqueOffenceCodes.contains(offenceCode) }
     } ?: OffenceCodes.MIGRATED_OFFENCE
 
-  private fun getAdultOffenceCodes(version: Int) = OffenceCodes.values().filter { it.nomisCode.startsWith("51:") && it.applicableVersions.contains(version) }
-  private fun getYouthOffenceCodes(version: Int) = OffenceCodes.values().filter { it.nomisCode.startsWith("55:") && it.applicableVersions.contains(version) }
+  fun getAdultOffenceCodesByVersion(version: Int) = adultOffenceCodes.filter { it.applicableVersions.contains(version) }
+  fun getYouthOffenceCodesByVersion(version: Int) = youthOffenceCodes.filter { it.applicableVersions.contains(version) }
 }

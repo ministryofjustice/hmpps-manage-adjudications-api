@@ -83,8 +83,6 @@ api:
   health-timeout-ms: 1000
 
 service:
-  offences:
-    version: ${SERVICE_OFFENCES_VERSION:1}
   active:
     prisons: ${SERVICE_ACTIVE_PRISONS:***}
 
