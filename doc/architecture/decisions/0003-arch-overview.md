@@ -1,5 +1,5 @@
 # 3. Architecture Overview
-[Next >>](9999-end.md)
+[Next >>](0004-db-schema.md)
 
 
 Date: 2023-11-29
@@ -302,4 +302,4 @@ flowchart TB
     classDef description stroke-width:0px, color:#fff, fill:transparent, font-size:13px
     
 ```
-[Next >>](9999-end.md)
+[Next >>](0004-db-schema.md)
