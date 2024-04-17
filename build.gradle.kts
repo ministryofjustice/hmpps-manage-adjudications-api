@@ -1,8 +1,14 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import uk.gov.justice.digital.hmpps.gradle.PortForwardRDSTask
+import uk.gov.justice.digital.hmpps.gradle.PortForwardRedisTask
+import uk.gov.justice.digital.hmpps.gradle.RevealSecretsTask
+
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "5.15.5"
   id("jacoco")
   kotlin("plugin.spring") version "1.9.23"
   kotlin("plugin.jpa") version "1.9.23"
+  idea
 }
 
 configurations {
@@ -59,6 +65,18 @@ java {
 }
 
 tasks {
+  register<PortForwardRDSTask>("portForwardRDS") {
+    namespacePrefix = "hmpps-manage-adjudications-api"
+  }
+
+  register<PortForwardRedisTask>("portForwardRedis") {
+    namespacePrefix = "hmpps-manage-adjudications-api"
+  }
+
+  register<RevealSecretsTask>("revealSecrets") {
+    namespacePrefix = "hmpps-manage-adjudications-api"
+  }
+
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
       jvmTarget = "21"
