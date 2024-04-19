@@ -220,7 +220,7 @@ class ReportsService(
     reportedAdjudicationRepository.findAdjudicationsForBooking(
       offenderBookingId = bookingId,
       startDate = reportsFrom(startDate ?: minDate),
-      endDate = reportsTo(endDate ?: maxDate),
+      endDate = reportsTo(endDate ?: LocalDate.now()),
       agencies = agencies,
       statuses = (statuses ?: ReportedAdjudicationStatus.values().toList()).map { it.name },
       pageable = pageable,
@@ -229,7 +229,7 @@ class ReportsService(
     reportedAdjudicationRepository.findAdjudicationsForBookingWithPunishments(
       offenderBookingId = bookingId,
       startDate = reportsFrom(startDate ?: minDate),
-      endDate = reportsTo(endDate ?: maxDate),
+      endDate = reportsTo(endDate ?: LocalDate.now()),
       agencies = agencies,
       statuses = (statuses ?: ReportedAdjudicationStatus.values().toList()).map { it.name },
       ada = ada,
@@ -258,7 +258,7 @@ class ReportsService(
     reportedAdjudicationRepository.findAdjudicationsForPrisoner(
       prisonerNumber = prisonerNumber,
       startDate = reportsFrom(startDate ?: minDate),
-      endDate = reportsTo(endDate ?: maxDate),
+      endDate = reportsTo(endDate ?: LocalDate.now()),
       statuses = (statuses ?: ReportedAdjudicationStatus.values().toList()).map { it.name },
       pageable = pageable,
     )
@@ -266,7 +266,7 @@ class ReportsService(
     reportedAdjudicationRepository.findAdjudicationsForPrisonerWithPunishments(
       prisonerNumber = prisonerNumber,
       startDate = reportsFrom(startDate ?: minDate),
-      endDate = reportsTo(endDate ?: maxDate),
+      endDate = reportsTo(endDate ?: LocalDate.now()),
       statuses = (statuses ?: ReportedAdjudicationStatus.values().toList()).map { it.name },
       ada = ada,
       pada = pada,
@@ -289,7 +289,6 @@ class ReportsService(
 
   companion object {
     val minDate: LocalDate = LocalDate.EPOCH
-    val maxDate: LocalDate = LocalDate.now()
     val transferOutAndHearingsToScheduledCutOffDate: LocalDateTime = LocalDate.of(2024, 1, 1).atStartOfDay()
     val transferReviewStatuses = listOf(
       ReportedAdjudicationStatus.UNSCHEDULED,
