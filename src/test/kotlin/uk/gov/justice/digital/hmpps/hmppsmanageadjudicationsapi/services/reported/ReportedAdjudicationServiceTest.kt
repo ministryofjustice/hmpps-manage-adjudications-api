@@ -40,6 +40,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   private val telemetryClient: TelemetryClient = mock()
   private val reportedAdjudicationService =
     ReportedAdjudicationService(
+      1,
       reportedAdjudicationRepository,
       offenceCodeLookupService,
       authenticationFacade,
@@ -1850,6 +1851,19 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.calculateStatus()
         }.status,
       ).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
+    }
+  }
+
+  @Nested
+  inner class GetReportedAdjudicationV2 {
+    @Test
+    fun `get reported adjudications with activated punishments merged in`() {
+      TODO("implement me")
+    }
+
+    @Test
+    fun `get reported adjudications will not merge (duplicate) punishments activated the previous way via cloning`() {
+      TODO("implement me")
     }
   }
 
