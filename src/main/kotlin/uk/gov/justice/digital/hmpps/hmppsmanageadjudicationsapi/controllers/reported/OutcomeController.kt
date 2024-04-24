@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -67,6 +68,7 @@ data class AmendOutcomeRequest(
 @RestController
 @Tag(name = "31. Outcomes")
 class OutcomeController(
+  @Value("\${service.punishments.version}") private val punishmentsVersion: Int,
   private val outcomeService: OutcomeService,
 ) : ReportedAdjudicationBaseController() {
 
@@ -217,8 +219,8 @@ class OutcomeController(
   fun createQuashed(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody quashedRequest: QuashedRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = when (punishmentsVersion) {
+    1 -> eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.QUASHED },
@@ -232,6 +234,9 @@ class OutcomeController(
         )
       },
     )
+
+    else -> TODO("implement me")
+  }
 
   @Operation(
     summary = "create a police refer outcome",
@@ -278,8 +283,8 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.OK)
   fun removeNotProceedWithoutReferralOrQuashed(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = when (punishmentsVersion) {
+    1 -> eventPublishWrapper(
       controllerAction = {
         outcomeService.deleteOutcome(
           chargeNumber = chargeNumber,
@@ -296,6 +301,9 @@ class OutcomeController(
         ),
       ),
     )
+
+    else -> TODO("implement me")
+  }
 
   @Operation(summary = "amend outcome without a hearing (refer police, not proceed or quashed), unless its a referral outcome from next steps")
   @PutMapping(value = ["/{chargeNumber}/outcome"])

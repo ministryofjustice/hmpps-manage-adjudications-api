@@ -140,4 +140,12 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
       verify(hearingOutcomeService, never()).deleteHearingOutcome(chargeNumber = "1")
     }
   }
+
+  @Nested
+  inner class RemoveChargeProvedV2 {
+    @Test
+    fun `remove a charge proved restores any activated punishments`() {
+      TODO("implement me")
+    }
+  }
 }

@@ -555,6 +555,22 @@ class OutcomeControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class QuashedV2 {
+    @Test
+    fun `quashed sends event to quash activated punishments`() {
+      TODO("implement me")
+    }
+  }
+
+  @Nested
+  inner class UnQuashedV2 {
+    @Test
+    fun `unquashed sends event to unquash activated punishments`() {
+      TODO("implement me")
+    }
+  }
+
   companion object {
     private val POLICE_REFER_REQUEST = ReferralDetailsRequest(details = "details")
     private val REFER_GOV_REQUEST = ReferralGovRequest(referGovReason = ReferGovReason.GOV_INQUIRY, details = "details")

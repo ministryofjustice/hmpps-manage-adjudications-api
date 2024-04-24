@@ -1213,6 +1213,27 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class CreatePunishmentsV2 {
+    @Test
+    fun `activated suspended punishments are not persisted (cloned) and the parent record is updated instead`() {
+      TODO("implement me")
+    }
+  }
+
+  @Nested
+  inner class UpdatePunishmentsV2 {
+    @Test
+    fun `activated suspended punishments are not persisted (cloned) and the parent record is updated instead`() {
+      TODO("implement me")
+    }
+
+    @Test
+    fun `deactivated suspended punishments are not persisted (cloned) and the parent record is updated instead`() {
+      TODO("implement me")
+    }
+  }
+
   companion object {
 
     fun getRequest(id: Long? = null, type: PunishmentType, startDate: LocalDate? = null, endDate: LocalDate? = null): PunishmentRequest =

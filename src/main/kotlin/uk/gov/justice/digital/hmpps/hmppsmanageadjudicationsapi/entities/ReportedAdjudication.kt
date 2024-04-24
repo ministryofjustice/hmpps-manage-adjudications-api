@@ -225,6 +225,15 @@ data class ReportedAdjudication(
     )
   }
 
+  fun toDtoV2(
+    offenceCodeLookupService: OffenceCodeLookupService,
+    activeCaseload: String? = null,
+    consecutiveReportsAvailable: List<String>? = null,
+    hasLinkedAda: Boolean = false,
+    linkedChargeNumbers: List<String> = emptyList(),
+    isAlo: Boolean = false,
+  ): ReportedAdjudicationDto = TODO("implement me")
+
   companion object {
     fun ReportedAdjudication.isInvalidSuspended(): Boolean =
       this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED && this.getPunishments().any { it.isCorrupted() }

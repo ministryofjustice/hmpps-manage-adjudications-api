@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -99,6 +100,7 @@ data class HearingCompletedChargeProvedRequest(
 @RestController
 @Tag(name = "26. Hearing outcomes")
 class HearingOutcomeController(
+  @Value("\${service.punishments.version}") private val punishmentsVersion: Int,
   private val hearingOutcomeService: HearingOutcomeService,
   private val referralService: ReferralService,
   private val amendHearingOutcomeService: AmendHearingOutcomeService,
@@ -366,8 +368,8 @@ class HearingOutcomeController(
   @ResponseStatus(HttpStatus.OK)
   fun removeCompletedHearingOutcome(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = when (punishmentsVersion) {
+    1 -> eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_DELETED },
@@ -383,4 +385,6 @@ class HearingOutcomeController(
         )
       },
     )
+    else -> TODO("implement me")
+  }
 }

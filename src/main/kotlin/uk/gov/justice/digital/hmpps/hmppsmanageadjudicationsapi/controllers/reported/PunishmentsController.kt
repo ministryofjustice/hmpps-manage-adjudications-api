@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PathVariable
@@ -54,6 +55,7 @@ data class PunishmentRequest(
 @RestController
 @Tag(name = "30. Punishments")
 class PunishmentsController(
+  @Value("\${service.punishments.version}") private val punishmentsVersion: Int,
   private val punishmentsService: PunishmentsService,
 ) : ReportedAdjudicationBaseController() {
 
@@ -63,8 +65,8 @@ class PunishmentsController(
   fun createV2(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody punishmentsRequest: PunishmentsRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = when (punishmentsVersion) {
+    1 -> eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_CREATED },
@@ -78,6 +80,9 @@ class PunishmentsController(
       },
     )
 
+    else -> TODO("implement me")
+  }
+
   @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @Operation(summary = "updates a set of punishments")
   @PutMapping(value = ["/{chargeNumber}/punishments/v2"])
@@ -85,8 +90,8 @@ class PunishmentsController(
   fun updateV2(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody punishmentsRequest: PunishmentsRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = when (punishmentsVersion) {
+    1 -> eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_UPDATED },
@@ -99,4 +104,7 @@ class PunishmentsController(
         )
       },
     )
+
+    else -> TODO("implement me")
+  }
 }

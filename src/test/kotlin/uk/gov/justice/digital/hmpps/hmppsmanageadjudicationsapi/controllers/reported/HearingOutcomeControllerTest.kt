@@ -577,6 +577,15 @@ class HearingOutcomeControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class DeleteChargeProved {
+
+    @Test
+    fun `delete charge proved also sends event to restore suspended punishments`() {
+      TODO("implement me")
+    }
+  }
+
   companion object {
     private fun referralRequest(code: HearingOutcomeCode? = HearingOutcomeCode.REFER_POLICE) = ReferralRequest(adjudicator = "test", code = code!!, details = "details")
     private val adjournRequest = AdjournRequest(adjudicator = "test", details = "details", reason = HearingOutcomeAdjournReason.HELP, plea = HearingOutcomePlea.ABSTAIN)

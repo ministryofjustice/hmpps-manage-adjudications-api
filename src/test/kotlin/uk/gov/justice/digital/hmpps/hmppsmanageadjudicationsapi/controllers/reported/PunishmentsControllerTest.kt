@@ -170,6 +170,24 @@ class PunishmentsControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class CreatePunishmentsV2 {
+
+    @Test
+    fun `sends additional events for activated or deactivated suspended punishments`() {
+      TODO("implement me")
+    }
+  }
+
+  @Nested
+  inner class UpdatePunishmentsV2 {
+
+    @Test
+    fun `sends additional events for activated or deactivated suspended punishments`() {
+      TODO("implement me")
+    }
+  }
+
   companion object {
     val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 10)
   }
