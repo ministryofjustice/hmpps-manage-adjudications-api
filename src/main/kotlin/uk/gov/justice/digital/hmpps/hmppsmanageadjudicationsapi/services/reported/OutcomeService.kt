@@ -189,7 +189,7 @@ class OutcomeService(
       if (isLinkedToReport(chargeNumber, PunishmentType.additionalDays())) throw ValidationException("Unable to remove: $chargeNumber is linked to another report")
       reportedAdjudication.removePunishments()
       if (punishmentsVersion == 2) {
-        suspendedPunishmentEvents.addAll(restoreActivatedByReports(chargeNumber = chargeNumber, idsToUpdate = emptyList()))
+        suspendedPunishmentEvents.addAll(deactivateActivatedPunishments(chargeNumber = chargeNumber, idsToUpdate = emptyList()))
       }
     }
 

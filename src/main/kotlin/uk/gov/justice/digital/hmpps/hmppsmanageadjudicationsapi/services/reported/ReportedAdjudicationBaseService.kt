@@ -113,7 +113,7 @@ open class ReportedAdjudicationBaseService(
         .map { toPair -> Pair(it.chargeNumber, toPair) }
     }.flatten()
 
-  protected fun restoreActivatedByReports(chargeNumber: String, idsToUpdate: List<Long>): Set<SuspendedPunishmentEvent> {
+  protected fun deactivateActivatedPunishments(chargeNumber: String, idsToUpdate: List<Long>): Set<SuspendedPunishmentEvent> {
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
     reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber)
       .forEach {

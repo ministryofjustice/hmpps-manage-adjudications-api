@@ -88,7 +88,7 @@ class PunishmentsService(
     punishments.validateCaution()
     val idsToUpdate = punishments.filter { it.id != null }.map { it.id!! }
     if (punishmentsVersion == 2) {
-      suspendedPunishmentEvents.addAll(restoreActivatedByReports(chargeNumber = chargeNumber, idsToUpdate = idsToUpdate))
+      suspendedPunishmentEvents.addAll(deactivateActivatedPunishments(chargeNumber = chargeNumber, idsToUpdate = idsToUpdate))
     }
     reportedAdjudication.deletePunishments(idsToUpdate = idsToUpdate)
 
