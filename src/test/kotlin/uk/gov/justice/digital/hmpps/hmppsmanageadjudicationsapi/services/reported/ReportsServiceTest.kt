@@ -66,7 +66,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       reportsService.getAllReportedAdjudications(
         LocalDate.now(),
         LocalDate.now(),
-        ReportedAdjudicationStatus.values().toList(),
+        ReportedAdjudicationStatus.entries,
         Pageable.ofSize(20).withPage(0),
       )
 
@@ -74,7 +74,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         "MDI",
         LocalDate.now().atStartOfDay(),
         LocalDate.now().atTime(LocalTime.MAX),
-        ReportedAdjudicationStatus.values().toList().map { it.name },
+        ReportedAdjudicationStatus.entries.map { it.name },
         Pageable.ofSize(20).withPage(0),
       )
     }
@@ -84,7 +84,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       val myReportedAdjudications = reportsService.getAllReportedAdjudications(
         LocalDate.now(),
         LocalDate.now(),
-        ReportedAdjudicationStatus.values().toList(),
+        ReportedAdjudicationStatus.entries,
         Pageable.ofSize(20).withPage(0),
       )
 
@@ -106,7 +106,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       reportsService.getTransferReportedAdjudications(
-        ReportedAdjudicationStatus.values().toList(),
+        ReportedAdjudicationStatus.entries,
         TransferType.IN,
         Pageable.ofSize(20).withPage(0),
       )
@@ -121,7 +121,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       reportsService.getTransferReportedAdjudications(
-        ReportedAdjudicationStatus.values().toList(),
+        ReportedAdjudicationStatus.entries,
         TransferType.OUT,
         Pageable.ofSize(20).withPage(0),
       )
@@ -136,7 +136,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       reportsService.getTransferReportedAdjudications(
-        ReportedAdjudicationStatus.values().toList(),
+        ReportedAdjudicationStatus.entries,
         TransferType.ALL,
         Pageable.ofSize(20).withPage(0),
       )
@@ -178,7 +178,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       val myReportedAdjudications = reportsService.getMyReportedAdjudications(
         LocalDate.now(),
         LocalDate.now(),
-        ReportedAdjudicationStatus.values().toList(),
+        ReportedAdjudicationStatus.entries,
         Pageable.ofSize(20).withPage(0),
       )
 
@@ -248,7 +248,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
       val response = reportsService.getAdjudicationsForPrint(
         startDate = LocalDate.now().minusDays(2),
         endDate = LocalDate.now(),
-        issueStatuses = IssuedStatus.values().toList(),
+        issueStatuses = IssuedStatus.entries,
       )
 
       assertThat(response.size).isEqualTo(3)

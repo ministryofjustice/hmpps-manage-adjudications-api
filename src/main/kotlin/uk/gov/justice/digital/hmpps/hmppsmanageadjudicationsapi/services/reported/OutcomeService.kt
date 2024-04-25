@@ -3,9 +3,11 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -25,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 @Transactional
 @Service
 class OutcomeService(
+  @Value("\${service.punishments.version}") private val punishmentsVersion: Int,
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
@@ -165,6 +168,7 @@ class OutcomeService(
 
   fun deleteOutcome(chargeNumber: String, id: Long? = null): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
+    val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
 
     val outcomeToDelete = when (id) {
       null -> {
@@ -184,9 +188,14 @@ class OutcomeService(
     if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) {
       if (isLinkedToReport(chargeNumber, PunishmentType.additionalDays())) throw ValidationException("Unable to remove: $chargeNumber is linked to another report")
       reportedAdjudication.removePunishments()
+      if (punishmentsVersion == 2) {
+        suspendedPunishmentEvents.addAll(deactivateActivatedPunishments(chargeNumber = chargeNumber, idsToUpdate = emptyList()))
+      }
     }
 
-    return saveToDto(reportedAdjudication)
+    return saveToDto(reportedAdjudication).also {
+      it.suspendedPunishmentEvents = suspendedPunishmentEvents
+    }
   }
 
   fun getOutcomes(chargeNumber: String): List<CombinedOutcomeDto> {

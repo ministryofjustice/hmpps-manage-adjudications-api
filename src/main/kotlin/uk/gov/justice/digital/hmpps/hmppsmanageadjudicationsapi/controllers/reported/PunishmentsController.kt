@@ -63,20 +63,19 @@ class PunishmentsController(
   fun createV2(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody punishmentsRequest: PunishmentsRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_CREATED },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_CREATED },
       ),
-      controllerAction = {
-        punishmentsService.create(
-          chargeNumber = chargeNumber,
-          punishments = punishmentsRequest.punishments,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      punishmentsService.create(
+        chargeNumber = chargeNumber,
+        punishments = punishmentsRequest.punishments,
+      )
+    },
+  )
 
   @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @Operation(summary = "updates a set of punishments")
@@ -85,18 +84,17 @@ class PunishmentsController(
   fun updateV2(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody punishmentsRequest: PunishmentsRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_UPDATED },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_UPDATED },
       ),
-      controllerAction = {
-        punishmentsService.update(
-          chargeNumber = chargeNumber,
-          punishments = punishmentsRequest.punishments,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      punishmentsService.update(
+        chargeNumber = chargeNumber,
+        punishments = punishmentsRequest.punishments,
+      )
+    },
+  )
 }

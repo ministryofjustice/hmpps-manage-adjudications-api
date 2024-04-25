@@ -217,21 +217,20 @@ class OutcomeController(
   fun createQuashed(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody quashedRequest: QuashedRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.QUASHED },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.QUASHED },
       ),
-      controllerAction = {
-        outcomeService.createQuashed(
-          chargeNumber = chargeNumber,
-          reason = quashedRequest.reason,
-          details = quashedRequest.details,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      outcomeService.createQuashed(
+        chargeNumber = chargeNumber,
+        reason = quashedRequest.reason,
+        details = quashedRequest.details,
+      )
+    },
+  )
 
   @Operation(
     summary = "create a police refer outcome",
@@ -278,24 +277,23 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.OK)
   fun removeNotProceedWithoutReferralOrQuashed(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      controllerAction = {
-        outcomeService.deleteOutcome(
-          chargeNumber = chargeNumber,
-        )
-      },
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = {
-            when (it.status) {
-              ReportedAdjudicationStatus.CHARGE_PROVED -> AdjudicationDomainEventType.UNQUASHED
-              else -> AdjudicationDomainEventType.NOT_PROCEED_OUTCOME_DELETED
-            }
-          },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    controllerAction = {
+      outcomeService.deleteOutcome(
+        chargeNumber = chargeNumber,
+      )
+    },
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = {
+          when (it.status) {
+            ReportedAdjudicationStatus.CHARGE_PROVED -> AdjudicationDomainEventType.UNQUASHED
+            else -> AdjudicationDomainEventType.NOT_PROCEED_OUTCOME_DELETED
+          }
+        },
       ),
-    )
+    ),
+  )
 
   @Operation(summary = "amend outcome without a hearing (refer police, not proceed or quashed), unless its a referral outcome from next steps")
   @PutMapping(value = ["/{chargeNumber}/outcome"])

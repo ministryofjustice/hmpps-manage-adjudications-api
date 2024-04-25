@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import jakarta.persistence.EntityNotFoundException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -103,6 +104,32 @@ open class ReportedAdjudicationBaseService(
     return activatedFromReport.getPunishments().getSuspendedPunishment(this.id!!).also {
       it.activatedByChargeNumber = activatedBy
     }
+  }
+
+  protected fun getActivatedPunishments(chargeNumber: String): List<Pair<String, Punishment>> =
+    reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).map {
+      // existing records pre correction will have the suspended until still set.  Can be removed after data correction
+      it.getPunishments().filter { p -> p.activatedByChargeNumber == chargeNumber && p.suspendedUntil == null }
+        .map { toPair -> Pair(it.chargeNumber, toPair) }
+    }.flatten()
+
+  protected fun deactivateActivatedPunishments(chargeNumber: String, idsToUpdate: List<Long>): Set<SuspendedPunishmentEvent> {
+    val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
+    reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber)
+      .forEach {
+        it.getPunishments()
+          .filter { p -> p.activatedByChargeNumber == chargeNumber && idsToUpdate.none { id -> id == it.id } }
+          .forEach { punishmentToRestore ->
+            punishmentToRestore.activatedByChargeNumber = null
+            punishmentToRestore.schedule.remove(punishmentToRestore.schedule.latestSchedule())
+            punishmentToRestore.suspendedUntil = punishmentToRestore.schedule.latestSchedule().suspendedUntil
+            suspendedPunishmentEvents.add(
+              SuspendedPunishmentEvent(agencyId = it.originatingAgencyId, chargeNumber = it.chargeNumber, status = it.status),
+            )
+          }
+      }
+
+    return suspendedPunishmentEvents
   }
 
   companion object {

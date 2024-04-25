@@ -82,7 +82,7 @@ class AdjudicationWorkflowService(
   fun completeDraftAdjudication(id: Long): ReportedAdjudicationDto {
     val draftAdjudication = draftAdjudicationService.get(id)
 
-    ValidationChecks.values().toList().stream()
+    ValidationChecks.entries.stream()
       .forEach { it.validate(draftAdjudication) }
 
     val isNew = draftAdjudication.chargeNumber == null

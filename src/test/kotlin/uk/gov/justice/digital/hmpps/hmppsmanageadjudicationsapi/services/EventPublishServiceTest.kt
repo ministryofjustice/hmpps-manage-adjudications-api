@@ -7,6 +7,8 @@ import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase.Companion.REPORTED_ADJUDICATION_DTO
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 import java.time.Clock
 import java.time.Instant
@@ -20,6 +22,7 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
   private val clock: Clock = Clock.fixed(Instant.ofEpochMilli(0), ZoneId.systemDefault())
 
   private val eventPublishService = EventPublishService(
+    punishmentsVersion = 1,
     snsService = snsService,
     auditService = auditService,
     clock = clock,
@@ -60,6 +63,49 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
         prisonerNumber = REPORTED_ADJUDICATION_DTO.prisonerNumber,
         hearingId = 1,
         status = REPORTED_ADJUDICATION_DTO.status.name,
+      ),
+    )
+  }
+
+  @Test
+  fun `send additional events if punishments version = 2 and additional events are present to be sent`() {
+    val eventPublishServiceV2 = EventPublishService(
+      punishmentsVersion = 2,
+      snsService = snsService,
+      auditService = auditService,
+      clock = clock,
+    )
+
+    eventPublishServiceV2.publishEvent(
+      AdjudicationDomainEventType.PUNISHMENTS_CREATED,
+      REPORTED_ADJUDICATION_DTO.also {
+        it.suspendedPunishmentEvents = setOf(
+          SuspendedPunishmentEvent(agencyId = "LEI", chargeNumber = "suspended", status = ReportedAdjudicationStatus.CHARGE_PROVED),
+        )
+      },
+    )
+
+    verify(snsService, atLeastOnce()).publishDomainEvent(
+      AdjudicationDomainEventType.PUNISHMENTS_CREATED,
+      "${AdjudicationDomainEventType.PUNISHMENTS_CREATED.description} ${REPORTED_ADJUDICATION_DTO.chargeNumber}",
+      LocalDateTime.now(clock),
+      AdditionalInformation(
+        chargeNumber = REPORTED_ADJUDICATION_DTO.chargeNumber,
+        prisonId = REPORTED_ADJUDICATION_DTO.originatingAgencyId,
+        prisonerNumber = REPORTED_ADJUDICATION_DTO.prisonerNumber,
+        status = REPORTED_ADJUDICATION_DTO.status.name,
+      ),
+    )
+
+    verify(snsService, atLeastOnce()).publishDomainEvent(
+      AdjudicationDomainEventType.PUNISHMENTS_UPDATED,
+      "${AdjudicationDomainEventType.PUNISHMENTS_UPDATED.description} suspended",
+      LocalDateTime.now(clock),
+      AdditionalInformation(
+        chargeNumber = "suspended",
+        prisonId = "LEI",
+        prisonerNumber = REPORTED_ADJUDICATION_DTO.prisonerNumber,
+        status = ReportedAdjudicationStatus.CHARGE_PROVED.name,
       ),
     )
   }

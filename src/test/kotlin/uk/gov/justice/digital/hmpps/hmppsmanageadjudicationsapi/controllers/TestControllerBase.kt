@@ -40,8 +40,8 @@ open class TestControllerBase {
     val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
     const val INCIDENT_STATEMENT = "A statement"
     val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0, 0)
-    val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
-    val INCIDENT_ROLE_WITH_ALL_VALUES = IncidentRoleDto(
+    private val REPORTED_DATE_TIME = DATE_TIME_OF_INCIDENT.plusDays(1)
+    private val INCIDENT_ROLE_WITH_ALL_VALUES = IncidentRoleDto(
       "25a",
       OffenceRuleDetailsDto(
         "25(a)",
@@ -88,7 +88,7 @@ open class TestControllerBase {
         disIssueHistory = listOf(),
         gender = Gender.MALE,
         outcomes = listOf(),
-        punishments = listOf(),
+        punishments = mutableListOf(),
         punishmentComments = listOf(),
         overrideAgencyId = null,
         originatingAgencyId = "MDI",
@@ -136,7 +136,7 @@ open class TestControllerBase {
         disIssueHistory = listOf(),
         gender = Gender.MALE,
         outcomes = outcomes,
-        punishments = listOf(),
+        punishments = mutableListOf(),
         punishmentComments = listOf(),
         overrideAgencyId = null,
         originatingAgencyId = "MDI",

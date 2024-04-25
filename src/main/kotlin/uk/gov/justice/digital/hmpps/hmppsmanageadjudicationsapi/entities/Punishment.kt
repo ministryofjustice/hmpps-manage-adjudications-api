@@ -44,7 +44,7 @@ data class Punishment(
   fun isActiveSuspended(punishmentCutOff: LocalDate): Boolean =
     this.suspendedUntil?.isAfter(punishmentCutOff) == true && this.activatedByChargeNumber == null
 
-  fun toDto(hasLinkedAda: Boolean, consecutiveReportsAvailable: List<String>?): PunishmentDto =
+  fun toDto(hasLinkedAda: Boolean, consecutiveReportsAvailable: List<String>?, actuallyActivatedFrom: String? = null): PunishmentDto =
     PunishmentDto(
       id = this.id,
       type = this.type,
@@ -52,7 +52,7 @@ data class Punishment(
       otherPrivilege = this.otherPrivilege,
       stoppagePercentage = this.stoppagePercentage,
       damagesOwedAmount = this.amount,
-      activatedFrom = this.activatedFromChargeNumber,
+      activatedFrom = actuallyActivatedFrom ?: this.activatedFromChargeNumber,
       activatedBy = this.activatedByChargeNumber,
       consecutiveChargeNumber = this.consecutiveToChargeNumber,
       canRemove = !(PunishmentType.additionalDays().contains(this.type) && hasLinkedAda),

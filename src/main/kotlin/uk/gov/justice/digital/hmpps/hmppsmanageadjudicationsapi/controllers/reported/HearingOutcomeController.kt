@@ -366,21 +366,20 @@ class HearingOutcomeController(
   @ResponseStatus(HttpStatus.OK)
   fun removeCompletedHearingOutcome(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_DELETED },
-        ),
-        EventRuleAndSupplier(
-          eventRule = { it.punishmentsRemoved },
-          eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_DELETED },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_DELETED },
       ),
-      controllerAction = {
-        completedHearingService.removeOutcome(
-          chargeNumber = chargeNumber,
-        )
-      },
-    )
+      EventRuleAndSupplier(
+        eventRule = { it.punishmentsRemoved },
+        eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_DELETED },
+      ),
+    ),
+    controllerAction = {
+      completedHearingService.removeOutcome(
+        chargeNumber = chargeNumber,
+      )
+    },
+  )
 }

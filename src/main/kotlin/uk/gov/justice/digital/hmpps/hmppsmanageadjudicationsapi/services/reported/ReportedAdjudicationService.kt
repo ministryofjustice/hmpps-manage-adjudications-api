@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import com.microsoft.applicationinsights.TelemetryClient
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -15,6 +16,7 @@ import java.time.LocalDateTime
 @Transactional
 @Service
 class ReportedAdjudicationService(
+  @Value("\${service.punishments.version}") private val punishmentsVersion: Int,
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
@@ -30,12 +32,13 @@ class ReportedAdjudicationService(
 
   fun getReportedAdjudicationDetails(chargeNumber: String): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
-
+    val hasLinkedAda = hasLinkedAda(reportedAdjudication)
+    val consecutiveReportsAvailable = reportedAdjudication.getPunishments().filter { it.consecutiveToChargeNumber != null }.map { it.consecutiveToChargeNumber!! }
     return reportedAdjudication.toDto(
       offenceCodeLookupService = offenceCodeLookupService,
       activeCaseload = authenticationFacade.activeCaseload,
-      consecutiveReportsAvailable = reportedAdjudication.getPunishments().filter { it.consecutiveToChargeNumber != null }.map { it.consecutiveToChargeNumber!! },
-      hasLinkedAda = hasLinkedAda(reportedAdjudication),
+      consecutiveReportsAvailable = consecutiveReportsAvailable,
+      hasLinkedAda = hasLinkedAda,
       linkedChargeNumbers = if (reportedAdjudication.migratedSplitRecord) {
         findMultipleOffenceCharges(
           prisonerNumber = reportedAdjudication.prisonerNumber,
@@ -44,7 +47,20 @@ class ReportedAdjudicationService(
       } else {
         emptyList()
       },
-    )
+    ).also {
+      if (punishmentsVersion == 2) {
+        it.punishments.addAll(
+          getActivatedPunishments(chargeNumber = chargeNumber)
+            .map { activated ->
+              activated.second.toDto(
+                hasLinkedAda = hasLinkedAda,
+                consecutiveReportsAvailable = consecutiveReportsAvailable,
+                actuallyActivatedFrom = activated.first,
+              )
+            },
+        )
+      }
+    }
   }
 
   fun lastOutcomeHasReferralOutcome(chargeNumber: String): Boolean =
