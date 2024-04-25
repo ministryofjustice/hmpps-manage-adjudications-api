@@ -49,15 +49,16 @@ class ReportedAdjudicationService(
       },
     ).also {
       if (punishmentsVersion == 2) {
-        getActivatedPunishments(chargeNumber = chargeNumber).forEach { activated ->
-          it.punishments.add(
-            activated.second.toDto(
-              hasLinkedAda = hasLinkedAda,
-              consecutiveReportsAvailable = consecutiveReportsAvailable,
-              actuallyActivatedFrom = activated.first,
-            ),
-          )
-        }
+        it.punishments.addAll(
+          getActivatedPunishments(chargeNumber = chargeNumber)
+            .map { activated ->
+              activated.second.toDto(
+                hasLinkedAda = hasLinkedAda,
+                consecutiveReportsAvailable = consecutiveReportsAvailable,
+                actuallyActivatedFrom = activated.first,
+              )
+            },
+        )
       }
     }
   }
