@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.report
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -22,6 +23,7 @@ import java.time.LocalDate
 @Transactional
 @Service
 class PunishmentsService(
+  @Value("\${service.punishments.version}") private val punishmentsVersion: Int,
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
@@ -42,13 +44,19 @@ class PunishmentsService(
 
     punishments.validateCaution()
 
+    if (punishmentsVersion == 2) {
+      punishments.filter { it.activatedFrom != null }.let {
+        if (it.isNotEmpty()) activateSuspendedPunishments(reportedAdjudication = reportedAdjudication, toActivate = it)
+      }
+    }
+
     punishments.forEach {
       it.validateRequest(reportedAdjudication.getLatestHearing())
-      if (it.activatedFrom != null) {
+      if (it.activatedFrom != null && punishmentsVersion == 1) {
         reportedAdjudication.addPunishment(
           activateSuspendedPunishment(chargeNumber = chargeNumber, punishmentRequest = it),
         )
-      } else {
+      } else if (it.activatedFrom == null) {
         reportedAdjudication.addPunishment(
           createNewPunishment(
             punishmentRequest = it,
@@ -70,23 +78,38 @@ class PunishmentsService(
     }
 
     punishments.validateCaution()
-    reportedAdjudication.deletePunishments(idsToUpdate = punishments.filter { it.id != null }.map { it.id!! })
+    val idsToUpdate = punishments.filter { it.id != null }.map { it.id!! }
+    if (punishmentsVersion == 2) {
+      getActivatedFromReports(chargeNumber = chargeNumber).forEach {
+          activatedFrom ->
+        activatedFrom.getPunishments()
+          .filter { it.activatedByChargeNumber == chargeNumber && idsToUpdate.none { id -> id == it.id } }
+          .forEach { punishmentToRestore ->
+            punishmentToRestore.activatedByChargeNumber = null
+            punishmentToRestore.schedule.remove(punishmentToRestore.schedule.latestSchedule())
+            punishmentToRestore.suspendedUntil = punishmentToRestore.schedule.latestSchedule().suspendedUntil
+          }
+      }
+    }
+    reportedAdjudication.deletePunishments(idsToUpdate = idsToUpdate)
+
+    if (punishmentsVersion == 2) {
+      punishments.filter { it.activatedFrom != null }.let {
+        if (it.isNotEmpty()) activateSuspendedPunishments(reportedAdjudication = reportedAdjudication, toActivate = it)
+      }
+    }
 
     punishments.forEach { punishmentRequest ->
       punishmentRequest.validateRequest(reportedAdjudication.getLatestHearing())
 
       when (punishmentRequest.id) {
         // its a new punishment on the charge
-        null -> when (punishmentRequest.activatedFrom) {
-          null -> reportedAdjudication.addPunishment(
-            createNewPunishment(
-              punishmentRequest = punishmentRequest,
-              hearingDate = reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate(),
-            ),
-          )
-          // this is related to manual activation (to be removed post migration) where there is no id to clone
-          else -> reportedAdjudication.addPunishment(activateSuspendedPunishment(chargeNumber = chargeNumber, punishmentRequest = punishmentRequest))
-        }
+        null -> reportedAdjudication.addPunishment(
+          createNewPunishment(
+            punishmentRequest = punishmentRequest,
+            hearingDate = reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate(),
+          ),
+        )
         // its an existing punishment on the charge
         else -> {
           when (punishmentRequest.activatedFrom) {
@@ -115,7 +138,7 @@ class PunishmentsService(
             }
             else ->
               // this check is stop activating it again if the id exists.  otherwise the id is reference to the item it will clone
-              if (reportedAdjudication.getPunishments().getPunishment(punishmentRequest.id) == null) {
+              if (punishmentsVersion == 1 && reportedAdjudication.getPunishments().getPunishment(punishmentRequest.id) == null) {
                 reportedAdjudication.addPunishment(activateSuspendedPunishment(chargeNumber = chargeNumber, punishmentRequest = punishmentRequest))
               }
           }
@@ -128,6 +151,24 @@ class PunishmentsService(
         if (it.status == ReportedAdjudicationStatus.INVALID_SUSPENDED) it.calculateStatus()
       },
     )
+  }
+
+  private fun activateSuspendedPunishments(
+    reportedAdjudication: ReportedAdjudication,
+    toActivate: List<PunishmentRequest>,
+  ) {
+    val reportsActivatedFrom = findByChargeNumberIn(toActivate.map { it.activatedFrom!! }.distinct())
+    toActivate.forEach { punishment ->
+      punishment.validateRequest(reportedAdjudication.getLatestHearing())
+      val reportToUpdate = reportsActivatedFrom.first { it.chargeNumber == punishment.activatedFrom!! }
+      reportToUpdate.getPunishments().firstOrNull { it.id == punishment.id && it.activatedByChargeNumber == null }?.let {
+        it.suspendedUntil = null
+        it.activatedByChargeNumber = reportedAdjudication.chargeNumber
+        it.schedule.add(
+          PunishmentSchedule(days = it.schedule.latestSchedule().days, startDate = punishment.startDate, endDate = punishment.endDate),
+        )
+      }
+    }
   }
 
   private fun PunishmentType.consecutiveReportValidation(chargeNumber: String) {

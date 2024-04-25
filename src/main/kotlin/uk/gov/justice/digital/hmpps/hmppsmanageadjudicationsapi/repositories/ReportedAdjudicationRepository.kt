@@ -115,6 +115,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun countByOriginatingAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(agencyId: String, statuses: List<ReportedAdjudicationStatus>, cutOffDate: LocalDateTime): Long
 
+  fun findByPunishmentsActivatedByChargeNumber(chargeNumber: String): List<ReportedAdjudication>
+
   @Query(
     value = "select count(1) from reported_adjudications ra where ra.status in :statuses $TRANSFER_IN",
     nativeQuery = true,

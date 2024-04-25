@@ -105,6 +105,9 @@ open class ReportedAdjudicationBaseService(
     }
   }
 
+  protected fun getActivatedFromReports(chargeNumber: String): List<ReportedAdjudication> =
+    reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber)
+
   companion object {
     fun throwEntityNotFoundException(id: String): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")

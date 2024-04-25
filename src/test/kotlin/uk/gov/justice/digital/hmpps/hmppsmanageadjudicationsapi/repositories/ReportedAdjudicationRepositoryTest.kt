@@ -1095,4 +1095,24 @@ class ReportedAdjudicationRepositoryTest {
         == Characteristic.AGE,
     ).isTrue
   }
+
+  @Test
+  fun `find reports activated from `() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(chargeNumber = "activated").also {
+        it.hearings.clear()
+        it.clearPunishments()
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.EXCLUSION_WORK,
+            activatedByChargeNumber = "12345",
+            schedule =
+            mutableListOf(PunishmentSchedule(days = 0)),
+          ),
+        )
+      },
+    )
+
+    assertThat(reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber("12345").size).isEqualTo(1)
+  }
 }

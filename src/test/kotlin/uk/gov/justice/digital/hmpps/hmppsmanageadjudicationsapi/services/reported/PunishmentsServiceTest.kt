@@ -28,12 +28,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
   private val punishmentsService = PunishmentsService(
+    1,
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
@@ -1214,23 +1216,167 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
   }
 
   @Nested
-  inner class CreatePunishmentsV2 {
-    @Test
-    fun `activated suspended punishments are not persisted (cloned) and the parent record is updated instead`() {
-      TODO("implement me")
-    }
-  }
+  inner class ActivatePunishmentsV2 {
 
-  @Nested
-  inner class UpdatePunishmentsV2 {
+    val punishmentsServiceV2 = PunishmentsService(
+      2,
+      reportedAdjudicationRepository,
+      offenceCodeLookupService,
+      authenticationFacade,
+    )
+
+    val currentCharge = entityBuilder.reportedAdjudication(chargeNumber = "12345").also {
+      it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+      it.clearPunishments()
+      it.hearings.first().oicHearingType = OicHearingType.INAD_ADULT
+    }
+
+    val reportToActivateFrom = entityBuilder.reportedAdjudication(chargeNumber = "activated").also {
+      it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+      it.clearPunishments()
+      it.addPunishment(
+        Punishment(
+          id = 1,
+          type = PunishmentType.ADDITIONAL_DAYS,
+          suspendedUntil = LocalDate.now(),
+          schedule =
+          mutableListOf(
+            PunishmentSchedule(id = 1, days = 10, suspendedUntil = LocalDate.now())
+              .also { s -> s.createDateTime = LocalDateTime.now() },
+          ),
+        ),
+      )
+      it.addPunishment(
+        Punishment(
+          id = 2,
+          type = PunishmentType.CONFINEMENT,
+          suspendedUntil = LocalDate.now(),
+          schedule =
+          mutableListOf(
+            PunishmentSchedule(id = 1, days = 10, suspendedUntil = LocalDate.now())
+              .also { s -> s.createDateTime = LocalDateTime.now() },
+          ),
+        ),
+      )
+    }
+
     @Test
     fun `activated suspended punishments are not persisted (cloned) and the parent record is updated instead`() {
-      TODO("implement me")
+      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(currentCharge)
+      whenever(reportedAdjudicationRepository.findByChargeNumberIn(listOf("activated"))).thenReturn(
+        listOf(reportToActivateFrom),
+      )
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(currentCharge)
+
+      punishmentsServiceV2.create(
+        chargeNumber = "12345",
+        punishments = listOf(
+          PunishmentRequest(id = 1, type = PunishmentType.ADDITIONAL_DAYS, days = 10, activatedFrom = "activated"),
+          PunishmentRequest(
+            id = 2,
+            type = PunishmentType.CONFINEMENT,
+            days = 10,
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(10),
+            activatedFrom = "activated",
+          ),
+        ),
+      )
+
+      assertThat(currentCharge.getPunishments()).isEmpty()
+      val ada = reportToActivateFrom.getPunishments().first { it.id == 1L }
+      val cc = reportToActivateFrom.getPunishments().first { it.id == 2L }
+      assertThat(ada.suspendedUntil).isNull()
+      assertThat(cc.suspendedUntil).isNull()
+      assertThat(ada.activatedByChargeNumber).isEqualTo(currentCharge.chargeNumber)
+      assertThat(cc.activatedByChargeNumber).isEqualTo(currentCharge.chargeNumber)
+      assertThat(cc.schedule.first { it.id == null }.startDate).isEqualTo(LocalDate.now())
+      assertThat(ada.schedule.first { it.id == null }.startDate).isNull()
+      assertThat(ada.schedule.first { it.id == null }.endDate).isNull()
+      assertThat(ada.schedule.first { it.id == null }.suspendedUntil).isNull()
+      assertThat(cc.schedule.first { it.id == null }.suspendedUntil).isNull()
+      assertThat(cc.schedule.first { it.id == null }.endDate).isEqualTo(LocalDate.now().plusDays(10))
+    }
+
+    @Test
+    fun `update activated suspended punishments are not persisted (cloned) and the parent record is updated instead`() {
+      reportToActivateFrom.also {
+        // ensure this is not updated again
+        it.getPunishments().first { p -> p.id == 2L }.activatedByChargeNumber = "activated"
+      }
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(currentCharge)
+      whenever(reportedAdjudicationRepository.findByChargeNumberIn(listOf("activated"))).thenReturn(
+        listOf(reportToActivateFrom),
+      )
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(currentCharge)
+
+      punishmentsServiceV2.update(
+        chargeNumber = "12345",
+        punishments = listOf(
+          PunishmentRequest(id = 1, type = PunishmentType.ADDITIONAL_DAYS, days = 10, activatedFrom = "activated"),
+          PunishmentRequest(
+            id = 2,
+            type = PunishmentType.CONFINEMENT,
+            days = 10,
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(10),
+            activatedFrom = "activated",
+          ),
+        ),
+      )
+
+      assertThat(currentCharge.getPunishments()).isEmpty()
+      val ada = reportToActivateFrom.getPunishments().first { it.id == 1L }
+      val cc = reportToActivateFrom.getPunishments().first { it.id == 2L }
+      assertThat(cc.schedule.size).isEqualTo(1)
+      assertThat(ada.suspendedUntil).isNull()
+      assertThat(ada.activatedByChargeNumber).isEqualTo(currentCharge.chargeNumber)
+      assertThat(ada.schedule.first { it.id == null }.startDate).isNull()
+      assertThat(ada.schedule.first { it.id == null }.endDate).isNull()
+      assertThat(ada.schedule.first { it.id == null }.suspendedUntil).isNull()
     }
 
     @Test
     fun `deactivated suspended punishments are not persisted (cloned) and the parent record is updated instead`() {
-      TODO("implement me")
+      // need to activate them.
+      reportToActivateFrom.also {
+        it.getPunishments().forEach {
+          it.suspendedUntil = null
+          it.activatedByChargeNumber = currentCharge.chargeNumber
+          it.schedule.add(
+            PunishmentSchedule(id = 2, startDate = LocalDate.now(), endDate = LocalDate.now(), days = 10).also {
+                s ->
+              s.createDateTime = LocalDateTime.now().plusDays(1)
+            },
+          )
+        }
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(currentCharge)
+      whenever(reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber("12345")).thenReturn(
+        listOf(reportToActivateFrom),
+      )
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(currentCharge)
+
+      punishmentsServiceV2.update(
+        chargeNumber = "12345",
+        punishments = listOf(
+          PunishmentRequest(type = PunishmentType.EXCLUSION_WORK, days = 10, startDate = LocalDate.now(), endDate = LocalDate.now()),
+        ),
+      )
+      assertThat(currentCharge.getPunishments().size).isEqualTo(1)
+      val ada = reportToActivateFrom.getPunishments().first { it.id == 1L }
+      val cc = reportToActivateFrom.getPunishments().first { it.id == 2L }
+      assertThat(ada.suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(cc.suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(ada.activatedByChargeNumber).isNull()
+      assertThat(cc.activatedByChargeNumber).isNull()
+      assertThat(ada.schedule.latestSchedule().startDate).isNull()
+      assertThat(ada.schedule.latestSchedule().endDate).isNull()
+      assertThat(ada.schedule.latestSchedule().suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(cc.schedule.latestSchedule().startDate).isNull()
+      assertThat(cc.schedule.latestSchedule().endDate).isNull()
+      assertThat(cc.schedule.latestSchedule().suspendedUntil).isEqualTo(LocalDate.now())
     }
   }
 
