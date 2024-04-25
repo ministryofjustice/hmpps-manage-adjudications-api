@@ -24,7 +24,7 @@ class PrisonOffenderEventListener(
       val toTest = reason ?: return false
 
       return try {
-        Reason.values().any { it == Reason.valueOf(toTest) }
+        Reason.entries.any { it == Reason.valueOf(toTest) }
       } catch (e: IllegalArgumentException) {
         false
       }

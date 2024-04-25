@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.rep
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -68,7 +67,6 @@ data class AmendOutcomeRequest(
 @RestController
 @Tag(name = "31. Outcomes")
 class OutcomeController(
-  @Value("\${service.punishments.version}") private val punishmentsVersion: Int,
   private val outcomeService: OutcomeService,
 ) : ReportedAdjudicationBaseController() {
 
@@ -219,24 +217,20 @@ class OutcomeController(
   fun createQuashed(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody quashedRequest: QuashedRequest,
-  ): ReportedAdjudicationResponse = when (punishmentsVersion) {
-    1 -> eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.QUASHED },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.QUASHED },
       ),
-      controllerAction = {
-        outcomeService.createQuashed(
-          chargeNumber = chargeNumber,
-          reason = quashedRequest.reason,
-          details = quashedRequest.details,
-        )
-      },
-    )
-
-    else -> TODO("implement me")
-  }
+    ),
+    controllerAction = {
+      outcomeService.createQuashed(
+        chargeNumber = chargeNumber,
+        reason = quashedRequest.reason,
+        details = quashedRequest.details,
+      )
+    },
+  )
 
   @Operation(
     summary = "create a police refer outcome",
@@ -283,27 +277,23 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.OK)
   fun removeNotProceedWithoutReferralOrQuashed(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-  ): ReportedAdjudicationResponse = when (punishmentsVersion) {
-    1 -> eventPublishWrapper(
-      controllerAction = {
-        outcomeService.deleteOutcome(
-          chargeNumber = chargeNumber,
-        )
-      },
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = {
-            when (it.status) {
-              ReportedAdjudicationStatus.CHARGE_PROVED -> AdjudicationDomainEventType.UNQUASHED
-              else -> AdjudicationDomainEventType.NOT_PROCEED_OUTCOME_DELETED
-            }
-          },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    controllerAction = {
+      outcomeService.deleteOutcome(
+        chargeNumber = chargeNumber,
+      )
+    },
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = {
+          when (it.status) {
+            ReportedAdjudicationStatus.CHARGE_PROVED -> AdjudicationDomainEventType.UNQUASHED
+            else -> AdjudicationDomainEventType.NOT_PROCEED_OUTCOME_DELETED
+          }
+        },
       ),
-    )
-
-    else -> TODO("implement me")
-  }
+    ),
+  )
 
   @Operation(summary = "amend outcome without a hearing (refer police, not proceed or quashed), unless its a referral outcome from next steps")
   @PutMapping(value = ["/{chargeNumber}/outcome"])

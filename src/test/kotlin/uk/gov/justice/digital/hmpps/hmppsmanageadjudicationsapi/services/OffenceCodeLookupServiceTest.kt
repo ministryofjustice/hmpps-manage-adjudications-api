@@ -63,7 +63,7 @@ class OffenceCodeLookupServiceTest {
 
      Ideally we would not have used such a system, but its now linked to the front end, api and database.
      */
-    assertThat(OffenceCodes.values().flatMap { it.uniqueOffenceCodes }.groupBy { it }.values.any { it.size > 2 }).isFalse
+    assertThat(OffenceCodes.entries.flatMap { it.uniqueOffenceCodes }.groupBy { it }.values.any { it.size > 2 }).isFalse
   }
 
   @Test

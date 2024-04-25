@@ -547,7 +547,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `throws validation exception if the latest outcome is not of the correct type `(code: HearingOutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.hearings.first().hearingOutcome = HearingOutcome(adjudicator = "", code = HearingOutcomeCode.values().first { hoc -> hoc != code })
+          it.hearings.first().hearingOutcome = HearingOutcome(adjudicator = "", code = HearingOutcomeCode.entries.first { hoc -> hoc != code })
         },
       )
       Assertions.assertThatThrownBy {

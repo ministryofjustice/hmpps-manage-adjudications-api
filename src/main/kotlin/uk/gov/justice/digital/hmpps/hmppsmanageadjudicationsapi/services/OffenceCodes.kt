@@ -115,10 +115,10 @@ enum class OffenceCodes(val applicableVersions: List<Int> = listOf(1, 2), val no
 
   companion object {
     fun validateOffenceCode(offenceCode: Int) =
-      OffenceCodes.values().flatMap { it.uniqueOffenceCodes }.firstOrNull { it == offenceCode } ?: throw ValidationException("Invalid offence code $offenceCode")
+      entries.flatMap { it.uniqueOffenceCodes }.firstOrNull { it == offenceCode } ?: throw ValidationException("Invalid offence code $offenceCode")
 
     fun Int.containsNomisCode(nomisCode: String): Boolean {
-      val offenceCode = OffenceCodes.values().first { it.uniqueOffenceCodes.contains(this) }
+      val offenceCode = entries.first { it.uniqueOffenceCodes.contains(this) }
 
       return offenceCode.nomisCode == nomisCode || offenceCode.getNomisCodeWithOthers().contains(nomisCode)
     }

@@ -125,7 +125,7 @@ class ReportsService(
       statuses = ReportedAdjudicationStatus.issuableStatusesForPrint().map { it.name },
     )
 
-    if (issueStatuses.containsAll(IssuedStatus.values().toList())) {
+    if (issueStatuses.containsAll(IssuedStatus.entries)) {
       return reportsForPrint.map {
         it.toDto(
           offenceCodeLookupService = offenceCodeLookupService,
@@ -222,7 +222,7 @@ class ReportsService(
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: LocalDate.now()),
       agencies = agencies,
-      statuses = (statuses ?: ReportedAdjudicationStatus.values().toList()).map { it.name },
+      statuses = (statuses ?: ReportedAdjudicationStatus.entries).map { it.name },
       pageable = pageable,
     )
   } else {
@@ -231,7 +231,7 @@ class ReportsService(
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: LocalDate.now()),
       agencies = agencies,
-      statuses = (statuses ?: ReportedAdjudicationStatus.values().toList()).map { it.name },
+      statuses = (statuses ?: ReportedAdjudicationStatus.entries).map { it.name },
       ada = ada,
       pada = pada,
       suspended = suspended,
@@ -259,7 +259,7 @@ class ReportsService(
       prisonerNumber = prisonerNumber,
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: LocalDate.now()),
-      statuses = (statuses ?: ReportedAdjudicationStatus.values().toList()).map { it.name },
+      statuses = (statuses ?: ReportedAdjudicationStatus.entries).map { it.name },
       pageable = pageable,
     )
   } else {
@@ -267,7 +267,7 @@ class ReportsService(
       prisonerNumber = prisonerNumber,
       startDate = reportsFrom(startDate ?: minDate),
       endDate = reportsTo(endDate ?: LocalDate.now()),
-      statuses = (statuses ?: ReportedAdjudicationStatus.values().toList()).map { it.name },
+      statuses = (statuses ?: ReportedAdjudicationStatus.entries).map { it.name },
       ada = ada,
       pada = pada,
       suspended = suspended,

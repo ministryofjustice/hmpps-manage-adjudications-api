@@ -239,11 +239,21 @@ class ReportsControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `get adjudications for print with defaulted dates`() {
-      whenever(reportsService.getAdjudicationsForPrint(LocalDate.now(), LocalDate.now().plusDays(2), IssuedStatus.values().toList()))
+      whenever(
+        reportsService.getAdjudicationsForPrint(
+          LocalDate.now(),
+          LocalDate.now().plusDays(2),
+          IssuedStatus.entries,
+        ),
+      )
         .thenReturn(emptyList())
 
       getAdjudicationsForPrint().andExpect(MockMvcResultMatchers.status().isOk)
-      verify(reportsService).getAdjudicationsForPrint(LocalDate.now(), LocalDate.now().plusDays(2), IssuedStatus.values().toList())
+      verify(reportsService).getAdjudicationsForPrint(
+        LocalDate.now(),
+        LocalDate.now().plusDays(2),
+        IssuedStatus.entries,
+      )
     }
 
     private fun getAdjudicationsForPrint(): ResultActions {

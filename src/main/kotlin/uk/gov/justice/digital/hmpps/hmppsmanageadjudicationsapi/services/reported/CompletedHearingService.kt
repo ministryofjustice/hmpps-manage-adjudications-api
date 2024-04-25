@@ -83,8 +83,6 @@ class CompletedHearingService(
     }
   }
 
-  fun removeOutcomeV2(): ReportedAdjudicationDto = TODO("implement me")
-
   fun removeOutcome(
     chargeNumber: String,
   ): ReportedAdjudicationDto {

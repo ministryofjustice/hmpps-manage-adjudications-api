@@ -112,14 +112,14 @@ class OffenceCodeParagraphDescriptionsTest {
     "55:26A (24),YOI_26A_24_ADULT_23A_24",
   )
   fun `get paragraph by offence code`(code: String, answer: Descriptions) {
-    assert(OffenceCodes.values().first { it.nomisCode == code }.paragraphDescription == answer)
+    assert(OffenceCodes.entries.first { it.nomisCode == code }.paragraphDescription == answer)
   }
 
   @ParameterizedTest
   @EnumSource(Descriptions::class)
   fun `ensure all descriptions have a mapping `(description: Descriptions) {
     if (description != Descriptions.DEFAULT) {
-      assert(OffenceCodes.values().map { it.paragraphDescription }.contains(description))
+      assert(OffenceCodes.entries.map { it.paragraphDescription }.contains(description))
     }
   }
 

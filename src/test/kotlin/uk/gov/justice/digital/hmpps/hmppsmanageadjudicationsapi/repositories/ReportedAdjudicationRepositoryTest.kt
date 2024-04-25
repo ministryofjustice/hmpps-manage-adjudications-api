@@ -390,7 +390,7 @@ class ReportedAdjudicationRepositoryTest {
       LocalDate.now().plusDays(1).atTime(
         LocalTime.MAX,
       ),
-      ReportedAdjudicationStatus.values().toList().filter { it != ReportedAdjudicationStatus.UNSCHEDULED }.map { it.name },
+      ReportedAdjudicationStatus.entries.filter { it != ReportedAdjudicationStatus.UNSCHEDULED }.map { it.name },
       Pageable.ofSize(10),
     )
 
@@ -430,7 +430,7 @@ class ReportedAdjudicationRepositoryTest {
         LocalDate.now().plusDays(1).atTime(
           LocalTime.MAX,
         ),
-        ReportedAdjudicationStatus.values().toList(),
+        ReportedAdjudicationStatus.entries,
         Pageable.ofSize(10),
       )
 
@@ -675,7 +675,7 @@ class ReportedAdjudicationRepositoryTest {
   fun `find by override agency id `() {
     val page = reportedAdjudicationRepository.findTransfersInByAgency(
       "MDI",
-      ReportedAdjudicationStatus.values().toList().map { it.name },
+      ReportedAdjudicationStatus.entries.map { it.name },
       Pageable.ofSize(10),
     )
 

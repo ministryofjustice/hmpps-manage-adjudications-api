@@ -996,7 +996,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.addOutcome(
-            Outcome(code = OutcomeCode.values().first { oc -> oc != code }),
+            Outcome(code = OutcomeCode.entries.first { oc -> oc != code }),
           )
         },
       )

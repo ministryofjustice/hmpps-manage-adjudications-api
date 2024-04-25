@@ -330,7 +330,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.status = from
         },
       )
-      ReportedAdjudicationStatus.values().filter { it != ReportedAdjudicationStatus.ACCEPTED }.filter { !from.nextStates().contains(it) }.forEach {
+      ReportedAdjudicationStatus.entries.filter { it != ReportedAdjudicationStatus.ACCEPTED }.filter { !from.nextStates().contains(it) }.forEach {
         Assertions.assertThrows(IllegalStateException::class.java) {
           reportedAdjudicationService.setStatus("1", it)
         }
@@ -339,8 +339,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `ensure all status are connected - should catch any new status not wired up - if this test fails you need to add the status to the correct next states `() {
-      val endStatus = ReportedAdjudicationStatus.values().filter { it.nextStates().isEmpty() }
-      val transitionStatus = ReportedAdjudicationStatus.values().filter { it.nextStates().isNotEmpty() }
+      val endStatus = ReportedAdjudicationStatus.entries.filter { it.nextStates().isEmpty() }
+      val transitionStatus = ReportedAdjudicationStatus.entries.filter { it.nextStates().isNotEmpty() }
       repeat(endStatus.size) {
         assertThat(transitionStatus.any { it.nextStates().contains(it) }).isTrue()
       }
