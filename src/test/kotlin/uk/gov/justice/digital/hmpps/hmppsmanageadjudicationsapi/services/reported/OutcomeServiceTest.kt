@@ -14,6 +14,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.atMost
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -29,11 +30,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Quashed
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class OutcomeServiceTest : ReportedAdjudicationTestBase() {
   private val outcomeService = OutcomeService(
+    1,
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
@@ -678,6 +681,61 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(activatedFrom.getPunishments().first().activatedByChargeNumber).isNull()
       assertThat(activatedFrom.getPunishments().last().activatedByChargeNumber).isNull()
+    }
+
+    @Test
+    fun `delete outcome restores activated from punishments`() {
+      val outcomeServiceV2 = OutcomeService(
+        2,
+        reportedAdjudicationRepository,
+        offenceCodeLookupService,
+        authenticationFacade,
+      )
+
+      val currentCharge = entityBuilder.reportedAdjudication(chargeNumber = "12345").also {
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.addOutcome(
+          Outcome(id = 1, code = OutcomeCode.CHARGE_PROVED, actualCreatedDate = LocalDateTime.now()),
+        )
+      }
+
+      val reportToActivateFrom = entityBuilder.reportedAdjudication(chargeNumber = "activated").also {
+        it.clearPunishments()
+        it.addPunishment(
+          Punishment(
+            id = 1,
+            type = PunishmentType.ADDITIONAL_DAYS,
+            suspendedUntil = null,
+            activatedByChargeNumber = currentCharge.chargeNumber,
+            schedule =
+            mutableListOf(
+              PunishmentSchedule(id = 1, days = 10, suspendedUntil = LocalDate.now())
+                .also { s -> s.createDateTime = LocalDateTime.now() },
+              PunishmentSchedule(id = 2, days = 10, startDate = LocalDate.now(), endDate = LocalDate.now())
+                .also { s -> s.createDateTime = LocalDateTime.now().plusDays(1) },
+            ),
+          ),
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(currentCharge)
+      whenever(reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber("12345")).thenReturn(
+        listOf(reportToActivateFrom),
+      )
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(currentCharge)
+
+      val response = outcomeServiceV2.deleteOutcome(chargeNumber = currentCharge.chargeNumber, id = 1)
+
+      val ada = reportToActivateFrom.getPunishments().first { it.id == 1L }
+      assertThat(ada.suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(ada.activatedByChargeNumber).isNull()
+      assertThat(ada.schedule.latestSchedule().startDate).isNull()
+      assertThat(ada.schedule.latestSchedule().endDate).isNull()
+      assertThat(ada.schedule.latestSchedule().suspendedUntil).isEqualTo(LocalDate.now())
+
+      assertThat(response.suspendedPunishmentEvents!!.size).isEqualTo(1)
+      assertThat(response.suspendedPunishmentEvents!!.first()).isEqualTo(
+        SuspendedPunishmentEvent(chargeNumber = reportToActivateFrom.chargeNumber, agencyId = reportToActivateFrom.originatingAgencyId, status = reportToActivateFrom.status),
+      )
     }
   }
 

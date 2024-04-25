@@ -225,15 +225,6 @@ data class ReportedAdjudication(
     )
   }
 
-  fun toDtoV2(
-    offenceCodeLookupService: OffenceCodeLookupService,
-    activeCaseload: String? = null,
-    consecutiveReportsAvailable: List<String>? = null,
-    hasLinkedAda: Boolean = false,
-    linkedChargeNumbers: List<String> = emptyList(),
-    isAlo: Boolean = false,
-  ): ReportedAdjudicationDto = TODO("implement me")
-
   companion object {
     fun ReportedAdjudication.isInvalidSuspended(): Boolean =
       this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED && this.getPunishments().any { it.isCorrupted() }
@@ -259,8 +250,8 @@ data class ReportedAdjudication(
       }
     }
 
-    fun List<Punishment>.toPunishmentsDto(hasLinkedAda: Boolean, consecutiveReportsAvailable: List<String>? = null): List<PunishmentDto> =
-      this.sortedBy { it.type }.map { it.toDto(hasLinkedAda, consecutiveReportsAvailable) }
+    fun List<Punishment>.toPunishmentsDto(hasLinkedAda: Boolean, consecutiveReportsAvailable: List<String>? = null): MutableList<PunishmentDto> =
+      this.sortedBy { it.type }.map { it.toDto(hasLinkedAda, consecutiveReportsAvailable) }.toMutableList()
 
     private fun HearingDto.hearingHasNoAssociatedOutcome() =
       this.outcome == null || this.outcome.code == HearingOutcomeCode.ADJOURN

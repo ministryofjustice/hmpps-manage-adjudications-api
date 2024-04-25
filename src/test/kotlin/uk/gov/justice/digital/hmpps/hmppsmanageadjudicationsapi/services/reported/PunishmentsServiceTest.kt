@@ -17,6 +17,7 @@ import org.mockito.kotlin.atMost
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
@@ -1218,7 +1219,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class ActivatePunishmentsV2 {
 
-    val punishmentsServiceV2 = PunishmentsService(
+    private val punishmentsServiceV2 = PunishmentsService(
       2,
       reportedAdjudicationRepository,
       offenceCodeLookupService,
@@ -1268,7 +1269,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(currentCharge)
 
-      punishmentsServiceV2.create(
+      val response = punishmentsServiceV2.create(
         chargeNumber = "12345",
         punishments = listOf(
           PunishmentRequest(id = 1, type = PunishmentType.ADDITIONAL_DAYS, days = 10, activatedFrom = "activated"),
@@ -1296,6 +1297,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(ada.schedule.first { it.id == null }.suspendedUntil).isNull()
       assertThat(cc.schedule.first { it.id == null }.suspendedUntil).isNull()
       assertThat(cc.schedule.first { it.id == null }.endDate).isEqualTo(LocalDate.now().plusDays(10))
+
+      assertThat(response.suspendedPunishmentEvents!!.size).isEqualTo(1)
+      assertThat(response.suspendedPunishmentEvents!!.first()).isEqualTo(
+        SuspendedPunishmentEvent(chargeNumber = reportToActivateFrom.chargeNumber, agencyId = reportToActivateFrom.originatingAgencyId, status = reportToActivateFrom.status),
+      )
     }
 
     @Test
@@ -1311,7 +1317,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(currentCharge)
 
-      punishmentsServiceV2.update(
+      val response = punishmentsServiceV2.update(
         chargeNumber = "12345",
         punishments = listOf(
           PunishmentRequest(id = 1, type = PunishmentType.ADDITIONAL_DAYS, days = 10, activatedFrom = "activated"),
@@ -1335,6 +1341,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(ada.schedule.first { it.id == null }.startDate).isNull()
       assertThat(ada.schedule.first { it.id == null }.endDate).isNull()
       assertThat(ada.schedule.first { it.id == null }.suspendedUntil).isNull()
+
+      assertThat(response.suspendedPunishmentEvents!!.size).isEqualTo(1)
+      assertThat(response.suspendedPunishmentEvents!!.first()).isEqualTo(
+        SuspendedPunishmentEvent(chargeNumber = reportToActivateFrom.chargeNumber, agencyId = reportToActivateFrom.originatingAgencyId, status = reportToActivateFrom.status),
+      )
     }
 
     @Test
@@ -1358,7 +1369,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
       whenever(reportedAdjudicationRepository.save(any())).thenReturn(currentCharge)
 
-      punishmentsServiceV2.update(
+      val response = punishmentsServiceV2.update(
         chargeNumber = "12345",
         punishments = listOf(
           PunishmentRequest(type = PunishmentType.EXCLUSION_WORK, days = 10, startDate = LocalDate.now(), endDate = LocalDate.now()),
@@ -1377,6 +1388,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(cc.schedule.latestSchedule().startDate).isNull()
       assertThat(cc.schedule.latestSchedule().endDate).isNull()
       assertThat(cc.schedule.latestSchedule().suspendedUntil).isEqualTo(LocalDate.now())
+
+      assertThat(response.suspendedPunishmentEvents!!.size).isEqualTo(1)
+      assertThat(response.suspendedPunishmentEvents!!.first()).isEqualTo(
+        SuspendedPunishmentEvent(chargeNumber = reportToActivateFrom.chargeNumber, agencyId = reportToActivateFrom.originatingAgencyId, status = reportToActivateFrom.status),
+      )
     }
   }
 

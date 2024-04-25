@@ -71,7 +71,7 @@ data class ReportedAdjudicationDto(
   @Schema(description = "Hearings, hearing outcomes, referrals and outcomes in chronological order")
   val outcomes: List<OutcomeHistoryDto>,
   @Schema(description = "punishments")
-  val punishments: List<PunishmentDto>,
+  val punishments: MutableList<PunishmentDto>,
   @Schema(description = "punishments")
   val punishmentComments: List<PunishmentCommentDto>,
   @Schema(description = "flag to indicate a hearing outcome was entered in NOMIS")
@@ -98,7 +98,7 @@ data class ReportedAdjudicationDto(
   val canActionFromHistory: Boolean = false,
   @Schema(description = "array of additional events to send for suspended punishments")
   @JsonIgnore
-  var suspendedPunishmentEvents: List<SuspendedPunishmentEvent>? = null,
+  var suspendedPunishmentEvents: Set<SuspendedPunishmentEvent>? = null,
 )
 
 @Schema(description = "suspended punishment event")

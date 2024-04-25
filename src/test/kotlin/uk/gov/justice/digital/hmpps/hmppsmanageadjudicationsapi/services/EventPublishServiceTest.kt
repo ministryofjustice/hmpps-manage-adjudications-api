@@ -79,7 +79,7 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
     eventPublishServiceV2.publishEvent(
       AdjudicationDomainEventType.PUNISHMENTS_CREATED,
       REPORTED_ADJUDICATION_DTO.also {
-        it.suspendedPunishmentEvents = listOf(
+        it.suspendedPunishmentEvents = setOf(
           SuspendedPunishmentEvent(agencyId = "LEI", chargeNumber = "suspended", status = ReportedAdjudicationStatus.CHARGE_PROVED),
         )
       },

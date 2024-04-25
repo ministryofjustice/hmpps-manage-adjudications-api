@@ -1856,14 +1856,79 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
   @Nested
   inner class GetReportedAdjudicationV2 {
+    private val reportedAdjudicationServiceV2 =
+      ReportedAdjudicationService(
+        2,
+        reportedAdjudicationRepository,
+        offenceCodeLookupService,
+        authenticationFacade,
+        telemetryClient,
+      )
+
+    @BeforeEach
+    fun `init activated response`() {
+      whenever(reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber("12345")).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication(chargeNumber = "activated").also {
+            it.clearPunishments()
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.EXCLUSION_WORK,
+                activatedByChargeNumber = "12345",
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 0).also { s -> s.createDateTime = LocalDateTime.now() },
+                ),
+              ),
+            )
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.EXTRA_WORK,
+                suspendedUntil = LocalDate.now(),
+                activatedByChargeNumber = "12345",
+                schedule = mutableListOf(
+                  PunishmentSchedule(days = 0).also { s -> s.createDateTime = LocalDateTime.now() },
+                ),
+              ),
+            )
+          },
+        ),
+      )
+    }
+
     @Test
     fun `get reported adjudications with activated punishments merged in`() {
-      TODO("implement me")
+      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.clearPunishments()
+        },
+      )
+      val response = reportedAdjudicationServiceV2.getReportedAdjudicationDetails(chargeNumber = "12345")
+
+      assertThat(response.punishments).isNotEmpty
+      assertThat(response.punishments.first().activatedFrom).isEqualTo("activated")
     }
 
     @Test
     fun `get reported adjudications will not merge (duplicate) punishments activated the previous way via cloning`() {
-      TODO("implement me")
+      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.clearPunishments()
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.EXCLUSION_WORK,
+              activatedFromChargeNumber = "activated",
+              schedule = mutableListOf(
+                PunishmentSchedule(days = 0).also { s -> s.createDateTime = LocalDateTime.now() },
+              ),
+            ),
+          )
+        },
+      )
+      val response = reportedAdjudicationServiceV2.getReportedAdjudicationDetails(chargeNumber = "12345")
+
+      assertThat(response.punishments.size).isEqualTo(2)
+      assertThat(response.punishments.first().activatedFrom).isEqualTo("activated")
+      assertThat(response.punishments.last().activatedFrom).isEqualTo("activated")
     }
   }
 

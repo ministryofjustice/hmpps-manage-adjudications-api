@@ -32,12 +32,13 @@ class ReportedAdjudicationService(
 
   fun getReportedAdjudicationDetails(chargeNumber: String): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
-
+    val hasLinkedAda = hasLinkedAda(reportedAdjudication)
+    val consecutiveReportsAvailable = reportedAdjudication.getPunishments().filter { it.consecutiveToChargeNumber != null }.map { it.consecutiveToChargeNumber!! }
     return reportedAdjudication.toDto(
       offenceCodeLookupService = offenceCodeLookupService,
       activeCaseload = authenticationFacade.activeCaseload,
-      consecutiveReportsAvailable = reportedAdjudication.getPunishments().filter { it.consecutiveToChargeNumber != null }.map { it.consecutiveToChargeNumber!! },
-      hasLinkedAda = hasLinkedAda(reportedAdjudication),
+      consecutiveReportsAvailable = consecutiveReportsAvailable,
+      hasLinkedAda = hasLinkedAda,
       linkedChargeNumbers = if (reportedAdjudication.migratedSplitRecord) {
         findMultipleOffenceCharges(
           prisonerNumber = reportedAdjudication.prisonerNumber,
@@ -46,7 +47,19 @@ class ReportedAdjudicationService(
       } else {
         emptyList()
       },
-    )
+    ).also {
+      if (punishmentsVersion == 2) {
+        getActivatedPunishments(chargeNumber = chargeNumber).forEach { activated ->
+          it.punishments.add(
+            activated.second.toDto(
+              hasLinkedAda = hasLinkedAda,
+              consecutiveReportsAvailable = consecutiveReportsAvailable,
+              actuallyActivatedFrom = activated.first,
+            ),
+          )
+        }
+      }
+    }
   }
 
   fun lastOutcomeHasReferralOutcome(chargeNumber: String): Boolean =
