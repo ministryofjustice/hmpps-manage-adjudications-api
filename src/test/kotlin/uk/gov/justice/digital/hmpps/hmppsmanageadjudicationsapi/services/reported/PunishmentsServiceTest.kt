@@ -1396,7 +1396,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `deactivate punishment does not remove schedule when a record pre data fix (ie only one schedule present)`() {
+    fun `deactivate punishment does not remove schedule when a record pre data fix (ie only one schedule present, or more and the latest has a suspended until present)`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("current")).thenReturn(
         entityBuilder.reportedAdjudication(chargeNumber = "current").also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
