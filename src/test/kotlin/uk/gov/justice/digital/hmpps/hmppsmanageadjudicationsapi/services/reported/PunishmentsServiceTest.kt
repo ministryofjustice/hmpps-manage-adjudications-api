@@ -1394,6 +1394,67 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         SuspendedPunishmentEvent(chargeNumber = reportToActivateFrom.chargeNumber, agencyId = reportToActivateFrom.originatingAgencyId, status = reportToActivateFrom.status),
       )
     }
+
+    @Test
+    fun `deactivate punishment does not remove schedule when a record pre data fix (ie only one schedule present)`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber("current")).thenReturn(
+        entityBuilder.reportedAdjudication(chargeNumber = "current").also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        },
+      )
+      val historicActivated = entityBuilder.reportedAdjudication().also {
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.clearPunishments()
+        it.addPunishment(
+          Punishment(
+            id = 1,
+            type = PunishmentType.ADDITIONAL_DAYS,
+            suspendedUntil = LocalDate.now(),
+            activatedByChargeNumber = "current",
+            schedule =
+            mutableListOf(
+              PunishmentSchedule(id = 1, days = 10, suspendedUntil = LocalDate.now())
+                .also { s -> s.createDateTime = LocalDateTime.now() },
+            ),
+          ),
+        )
+        it.addPunishment(
+          Punishment(
+            id = 2,
+            type = PunishmentType.ADDITIONAL_DAYS,
+            suspendedUntil = LocalDate.now(),
+            activatedByChargeNumber = "current",
+            schedule =
+            mutableListOf(
+              PunishmentSchedule(id = 2, days = 0, suspendedUntil = LocalDate.now()).also {
+                  s ->
+                s.createDateTime = LocalDateTime.now().minusDays(1)
+              },
+              PunishmentSchedule(id = 1, days = 10, suspendedUntil = LocalDate.now())
+                .also { s -> s.createDateTime = LocalDateTime.now() },
+            ),
+          ),
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber("current")).thenReturn(listOf(historicActivated))
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(currentCharge)
+
+      punishmentsServiceV2.update(
+        chargeNumber = "current",
+        punishments = listOf(
+          PunishmentRequest(type = PunishmentType.EXCLUSION_WORK, days = 10, startDate = LocalDate.now(), endDate = LocalDate.now()),
+        ),
+      )
+
+      val punishment1 = historicActivated.getPunishments().first { it.id == 1L }
+      val punishment2 = historicActivated.getPunishments().first { it.id == 2L }
+      assertThat(punishment1.schedule.size).isEqualTo(1)
+      assertThat(punishment1.activatedByChargeNumber).isNull()
+      assertThat(punishment1.suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(punishment2.schedule.size).isEqualTo(2)
+      assertThat(punishment2.activatedByChargeNumber).isNull()
+      assertThat(punishment2.suspendedUntil).isEqualTo(LocalDate.now())
+    }
   }
 
   companion object {
