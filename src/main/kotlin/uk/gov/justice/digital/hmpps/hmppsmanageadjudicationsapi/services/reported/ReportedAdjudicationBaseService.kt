@@ -121,8 +121,12 @@ open class ReportedAdjudicationBaseService(
           .filter { p -> p.activatedByChargeNumber == chargeNumber && idsToUpdate.none { id -> id == it.id } }
           .forEach { punishmentToRestore ->
             punishmentToRestore.activatedByChargeNumber = null
-            punishmentToRestore.schedule.remove(punishmentToRestore.schedule.latestSchedule())
-            punishmentToRestore.suspendedUntil = punishmentToRestore.schedule.latestSchedule().suspendedUntil
+            val latestSchedule = punishmentToRestore.schedule.latestSchedule()
+            // this check is required until the historic data is corrected
+            if (punishmentToRestore.schedule.size > 1 && latestSchedule.suspendedUntil == null) {
+              punishmentToRestore.schedule.remove(latestSchedule)
+              punishmentToRestore.suspendedUntil = punishmentToRestore.schedule.latestSchedule().suspendedUntil
+            }
             suspendedPunishmentEvents.add(
               SuspendedPunishmentEvent(agencyId = it.originatingAgencyId, chargeNumber = it.chargeNumber, status = it.status),
             )
