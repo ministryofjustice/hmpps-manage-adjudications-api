@@ -809,6 +809,44 @@ class ReportedAdjudicationRepositoryTest {
     assertThat(response.content.size).isEqualTo(1)
   }
 
+  @CsvSource(",1", "testing,0")
+  @ParameterizedTest
+  fun `reports by booking id with suspended punishments`(activatedBy: String?, expected: Int) {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 103L, chargeNumber = "TESTING_SUM").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(1)
+        it.originatingAgencyId = "MDI"
+        it.clearPunishments()
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            suspendedUntil = LocalDate.now(),
+            activatedByChargeNumber = activatedBy,
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10),
+            ),
+          ),
+        )
+      },
+    )
+
+    assertThat(
+      reportedAdjudicationRepository.findAdjudicationsForBookingWithPunishments(
+        offenderBookingId = 103L,
+        statuses = listOf(ReportedAdjudicationStatus.CHARGE_PROVED.name),
+        startDate = LocalDateTime.now().minusYears(1),
+        endDate = LocalDateTime.now(),
+        agencies = listOf("MDI"),
+        ada = false,
+        pada = false,
+        suspended = true,
+        pageable = Pageable.ofSize(10),
+      ).content.size,
+    ).isEqualTo(expected)
+  }
+
   @Test
   fun `reports by prisoner and agency`() {
     reportedAdjudicationRepository.save(
@@ -881,6 +919,43 @@ class ReportedAdjudicationRepositoryTest {
       pageable = Pageable.ofSize(10),
     )
     assertThat(response.content.size).isEqualTo(1)
+  }
+
+  @CsvSource(",1", "testing,0")
+  @ParameterizedTest
+  fun `reports for prisoner with punishments excludes suspended activated`(activatedBy: String?, expected: Int) {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM", prisonerNumber = "testing").also {
+        it.hearings.clear()
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(1)
+        it.originatingAgencyId = "MDI"
+        it.clearPunishments()
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            suspendedUntil = LocalDate.now(),
+            activatedByChargeNumber = activatedBy,
+            schedule = mutableListOf(
+              PunishmentSchedule(days = 10),
+            ),
+          ),
+        )
+      },
+    )
+
+    assertThat(
+      reportedAdjudicationRepository.findAdjudicationsForPrisonerWithPunishments(
+        prisonerNumber = "testing",
+        statuses = listOf(ReportedAdjudicationStatus.CHARGE_PROVED.name),
+        startDate = LocalDateTime.now().minusYears(1),
+        endDate = LocalDateTime.now(),
+        ada = false,
+        pada = false,
+        suspended = true,
+        pageable = Pageable.ofSize(10),
+      ).content.size,
+    ).isEqualTo(expected)
   }
 
   @Test

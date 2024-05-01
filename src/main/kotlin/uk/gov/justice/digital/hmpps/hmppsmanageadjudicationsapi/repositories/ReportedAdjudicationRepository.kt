@@ -249,18 +249,22 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
     private const val TRANSFER_IN = "and ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :agencyId"
 
+    private const val PUNISHMENTS_FILTER = """
+      (
+       (:ada is true and p.type = 'ADDITIONAL_DAYS') 
+       or 
+       (:suspended is true and p.suspended_until is not null and p.activated_by_charge_number is null) 
+       or 
+       (:pada is true and p.type = 'PROSPECTIVE_DAYS')
+       )
+    """
+
     const val BOOKING_ID_REPORTS_WITH_DATE_WHERE_CLAUSE = "where ra.offender_booking_id = :offenderBookingId and $DATE_AND_STATUS_FILTER $AGENCIES_INC_TRANSFERS_FILTER"
 
     const val BOOKING_ID_AND_PUNISHMENTS_REPORTS_WITH_DATE_WHERE_CLAUSE = """
       join punishment p on p.reported_adjudication_fk_id = ra.id 
       where ra.offender_booking_id = :offenderBookingId 
-      and (
-       (:ada is true and p.type = 'ADDITIONAL_DAYS') 
-       or 
-       (:suspended is true and p.suspended_until is not null) 
-       or 
-       (:pada is true and p.type = 'PROSPECTIVE_DAYS')
-       ) and $DATE_AND_STATUS_FILTER $AGENCIES_INC_TRANSFERS_FILTER
+      and $PUNISHMENTS_FILTER and $DATE_AND_STATUS_FILTER $AGENCIES_INC_TRANSFERS_FILTER
       """
 
     const val PRISONER_REPORTS_WITH_DATE_WHERE_CLAUSE = "where ra.prisoner_number = :prisonerNumber and $DATE_AND_STATUS_FILTER"
@@ -268,13 +272,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     const val PRISONER_REPORTS_AND_PUNISHMENTS_WITH_DATE_WHERE_CLAUSE = """
       join punishment p on p.reported_adjudication_fk_id = ra.id 
       where ra.prisoner_number = :prisonerNumber 
-      and (
-        (:ada is true and p.type = 'ADDITIONAL_DAYS') 
-        or 
-        (:suspended is true and p.suspended_until is not null) 
-        or 
-        (:pada and p.type = 'PROSPECTIVE_DAYS')
-       ) and $DATE_AND_STATUS_FILTER
+      and $PUNISHMENTS_FILTER and $DATE_AND_STATUS_FILTER
       """
 
     const val ALL_REPORTS_WHERE_CLAUSE = "where $DATE_AND_STATUS_FILTER $AGENCY_AND_TRANSFER_STATUS_FILTER"
