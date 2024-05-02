@@ -50,10 +50,7 @@ class PunishmentsService(
       punishments.filter { it.activatedFrom != null }.let {
         if (it.isNotEmpty()) {
           suspendedPunishmentEvents.addAll(
-            activateSuspendedPunishments(
-              reportedAdjudication = reportedAdjudication,
-              toActivate = it,
-            ),
+            activateSuspendedPunishments(reportedAdjudication = reportedAdjudication, toActivate = it),
           )
         }
       }
@@ -100,12 +97,7 @@ class PunishmentsService(
     if (punishmentsVersion == 2) {
       punishments.filter { it.activatedFrom != null }.let {
         if (it.isNotEmpty()) {
-          suspendedPunishmentEvents.addAll(
-            activateSuspendedPunishments(
-              reportedAdjudication = reportedAdjudication,
-              toActivate = it,
-            ),
-          )
+          suspendedPunishmentEvents.addAll(activateSuspendedPunishments(reportedAdjudication = reportedAdjudication, toActivate = it))
         }
       }
     }
@@ -164,6 +156,30 @@ class PunishmentsService(
     ).also {
       it.suspendedPunishmentEvents = suspendedPunishmentEvents
     }
+  }
+
+  private fun activateSuspendedPunishments(
+    reportedAdjudication: ReportedAdjudication,
+    toActivate: List<PunishmentRequest>,
+  ): Set<SuspendedPunishmentEvent> {
+    val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
+    val reportsActivatedFrom = findByChargeNumberIn(toActivate.map { it.activatedFrom!! }.distinct())
+    toActivate.forEach { punishment ->
+      punishment.validateRequest(reportedAdjudication.getLatestHearing())
+      val reportToUpdate = reportsActivatedFrom.first { it.chargeNumber == punishment.activatedFrom!! }
+      reportToUpdate.getPunishments().firstOrNull { it.id == punishment.id && it.activatedByChargeNumber == null }?.let {
+        it.suspendedUntil = null
+        it.activatedByChargeNumber = reportedAdjudication.chargeNumber
+        it.schedule.add(
+          PunishmentSchedule(days = it.schedule.latestSchedule().days, startDate = punishment.startDate, endDate = punishment.endDate),
+        )
+        suspendedPunishmentEvents.add(
+          SuspendedPunishmentEvent(agencyId = reportToUpdate.originatingAgencyId, chargeNumber = reportToUpdate.chargeNumber, status = reportToUpdate.status),
+        )
+      }
+    }
+
+    return suspendedPunishmentEvents
   }
 
   private fun PunishmentType.consecutiveReportValidation(chargeNumber: String) {
@@ -227,30 +243,6 @@ class PunishmentsService(
         )
       }
     }
-
-  protected fun activateSuspendedPunishments(
-    reportedAdjudication: ReportedAdjudication,
-    toActivate: List<PunishmentRequest>,
-  ): Set<SuspendedPunishmentEvent> {
-    val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
-    val reportsActivatedFrom = findByChargeNumberIn(toActivate.map { it.activatedFrom!! }.distinct())
-    toActivate.forEach { punishment ->
-      punishment.validateRequest(reportedAdjudication.getLatestHearing())
-      val reportToUpdate = reportsActivatedFrom.first { it.chargeNumber == punishment.activatedFrom!! }
-      reportToUpdate.getPunishments().firstOrNull { it.id == punishment.id && it.activatedByChargeNumber == null }?.let {
-        it.suspendedUntil = null
-        it.activatedByChargeNumber = reportedAdjudication.chargeNumber
-        it.schedule.add(
-          PunishmentSchedule(days = it.schedule.latestSchedule().days, startDate = punishment.startDate, endDate = punishment.endDate),
-        )
-        suspendedPunishmentEvents.add(
-          SuspendedPunishmentEvent(agencyId = reportToUpdate.originatingAgencyId, chargeNumber = reportToUpdate.chargeNumber, status = reportToUpdate.status),
-        )
-      }
-    }
-
-    return suspendedPunishmentEvents
-  }
 
   private fun activateSuspendedPunishment(chargeNumber: String, punishmentRequest: PunishmentRequest): Punishment {
     punishmentRequest.id ?: throw ValidationException("Suspended punishment activation missing punishment id to activate")
