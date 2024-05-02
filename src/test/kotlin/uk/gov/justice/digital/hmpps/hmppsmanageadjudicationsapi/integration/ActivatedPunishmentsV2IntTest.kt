@@ -6,6 +6,7 @@ import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import java.time.LocalDate
 
 @ActiveProfiles("test-v2")
@@ -132,6 +133,39 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
+
+    confirmPunishmentIsDeActivated(
+      chargeNumber = activatedFrom.first,
+    )
+  }
+
+  @Test
+  fun `quashed deactivates an activated punishment `() {
+    val activatedFrom = createSuspendedPunishmentCharge()
+
+    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+
+    createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false, activatedFrom = activatedFrom.first, id = activatedFrom.second)
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(0)
+
+    confirmPunishmentIsActivated(
+      chargeNumber = activatedFrom.first,
+      activatedByChargeNumber = scenario.getGeneratedChargeNumber(),
+    )
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/outcome/quashed")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "reason" to QuashedReason.APPEAL_UPHELD,
+          "details" to "details",
+        ),
+      )
+      .exchange()
+      .expectStatus().isCreated
 
     confirmPunishmentIsDeActivated(
       chargeNumber = activatedFrom.first,

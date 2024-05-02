@@ -123,11 +123,11 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `activate suspended punishment on create `() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
-    val scenario2 = initDataForUnScheduled(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(oicHearingType = OicHearingType.INAD_YOI, dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
-      .createChargeProved(overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
+    val scenarioChargeNumber = initDataForUnScheduled().createHearing().createChargeProved().getGeneratedChargeNumber()
+    val scenario2 = initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1))
+      .createChargeProved()
 
-    val result = createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), type = PunishmentType.REMOVAL_WING)
+    val result = createPunishments(chargeNumber = scenarioChargeNumber, type = PunishmentType.REMOVAL_WING)
       .returnResult(ReportedAdjudicationResponse::class.java)
       .responseBody
       .blockFirst()!!
@@ -145,7 +145,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
                 days = 10,
                 startDate = LocalDate.now(),
                 endDate = LocalDate.now().plusDays(5),
-                activatedFrom = scenario.getGeneratedChargeNumber(),
+                activatedFrom = scenarioChargeNumber,
               ),
             ),
         ),
@@ -154,10 +154,10 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.REMOVAL_WING.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].activatedFrom").isEqualTo(scenario.getGeneratedChargeNumber())
+      .jsonPath("$.reportedAdjudication.punishments[0].activatedFrom").isEqualTo(scenarioChargeNumber)
 
     webTestClient.get()
-      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/v2")
+      .uri("/reported-adjudications/$scenarioChargeNumber/v2")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -168,11 +168,11 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `activate suspended punishment on update `() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
-    val scenario2 = initDataForUnScheduled(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(oicHearingType = OicHearingType.INAD_YOI, dateTimeOfHearing = LocalDateTime.now().plusDays(1), overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
-      .createChargeProved(overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
+    val scenarioChargeNumber = initDataForUnScheduled().createHearing().createChargeProved().getGeneratedChargeNumber()
+    val scenario2 = initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(1))
+      .createChargeProved()
 
-    val result = createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), type = PunishmentType.REMOVAL_WING)
+    val result = createPunishments(chargeNumber = scenarioChargeNumber, type = PunishmentType.REMOVAL_WING)
       .returnResult(ReportedAdjudicationResponse::class.java)
       .responseBody
       .blockFirst()!!
@@ -192,7 +192,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
                 days = 10,
                 startDate = LocalDate.now(),
                 endDate = LocalDate.now().plusDays(5),
-                activatedFrom = scenario.getGeneratedChargeNumber(),
+                activatedFrom = scenarioChargeNumber,
               ),
             ),
         ),
@@ -202,10 +202,10 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(1)
       .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.REMOVAL_WING.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].activatedFrom").isEqualTo(scenario.getGeneratedChargeNumber())
+      .jsonPath("$.reportedAdjudication.punishments[0].activatedFrom").isEqualTo(scenarioChargeNumber)
 
     webTestClient.get()
-      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/v2")
+      .uri("/reported-adjudications/$scenarioChargeNumber/v2")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
