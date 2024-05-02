@@ -49,9 +49,7 @@ class PunishmentsService(
     if (punishmentsVersion == 2) {
       punishments.filter { it.activatedFrom != null }.let {
         if (it.isNotEmpty()) {
-          suspendedPunishmentEvents.addAll(
-            activateSuspendedPunishments(reportedAdjudication = reportedAdjudication, toActivate = it),
-          )
+          suspendedPunishmentEvents.addAll(activateSuspendedPunishments(reportedAdjudication = reportedAdjudication, toActivate = it))
         }
       }
     }
