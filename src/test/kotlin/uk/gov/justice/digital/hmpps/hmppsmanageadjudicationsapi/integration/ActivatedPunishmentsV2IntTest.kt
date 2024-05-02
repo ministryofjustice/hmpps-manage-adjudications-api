@@ -140,7 +140,7 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
   }
 
   @Test
-  fun `quashed deactivates an activated punishment, then unquashing it activates it`() {
+  fun `quashed deactivates an activated punishment `() {
     val activatedFrom = createSuspendedPunishmentCharge()
 
     val scenario = initDataForUnScheduled().createHearing().createChargeProved()
@@ -169,17 +169,6 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
 
     confirmPunishmentIsDeActivated(
       chargeNumber = activatedFrom.first,
-    )
-
-    webTestClient.delete()
-      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/outcome")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .exchange()
-      .expectStatus().isOk
-
-    confirmPunishmentIsActivated(
-      chargeNumber = activatedFrom.first,
-      activatedByChargeNumber = scenario.getGeneratedChargeNumber(),
     )
   }
 

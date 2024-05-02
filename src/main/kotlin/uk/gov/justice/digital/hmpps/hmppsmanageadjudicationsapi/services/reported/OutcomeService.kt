@@ -221,6 +221,7 @@ class OutcomeService(
     quashedReason: QuashedReason? = null,
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
+    val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
     val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       if (validate) it.status.validateTransition(code.status)
       it.status = code.status
@@ -240,7 +241,15 @@ class OutcomeService(
 
     reportedAdjudication.addOutcome(outcomeToCreate)
 
-    return saveToDto(reportedAdjudication)
+    if (code == OutcomeCode.QUASHED) {
+      if (punishmentsVersion == 2) {
+        suspendedPunishmentEvents.addAll(deactivateActivatedPunishments(chargeNumber = chargeNumber, idsToUpdate = emptyList()))
+      }
+    }
+
+    return saveToDto(reportedAdjudication).also {
+      it.suspendedPunishmentEvents = suspendedPunishmentEvents
+    }
   }
 
   private fun amendOutcome(
