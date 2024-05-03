@@ -1,10 +1,13 @@
-package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported
+package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.ActivatedSuspendedRepairService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPublishService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 
 @RestController
@@ -13,9 +16,15 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.D
 @RequestMapping("/scheduled-tasks")
 class ScheduleTaskController(
   private val draftAdjudicationService: DraftAdjudicationService,
+  private val eventPublishService: EventPublishService,
+  private val activatedSuspendedRepairService: ActivatedSuspendedRepairService,
 ) {
 
   @DeleteMapping(value = ["/delete-orphaned-draft-adjudications"])
   fun deleteOrphanedDraftAdjudications(): Unit =
     draftAdjudicationService.deleteOrphanedDraftAdjudications()
+
+  @PostMapping(value = ["/suspended-repair"])
+  fun repairSuspendedActivated(): Unit =
+    eventPublishService.publishEvents(activatedSuspendedRepairService.repair())
 }

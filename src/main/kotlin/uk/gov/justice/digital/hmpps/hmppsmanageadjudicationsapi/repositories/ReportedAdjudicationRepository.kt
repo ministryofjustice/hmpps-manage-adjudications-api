@@ -227,6 +227,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun existsByOffenderBookingId(offenderBookingId: Long): Boolean
 
+  fun findByPunishmentsActivatedFromChargeNumberIsNotNull(): List<ReportedAdjudication>
+
   companion object {
 
     private const val STATUS_FILTER = "ra.status in :statuses "

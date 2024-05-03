@@ -106,6 +106,7 @@ data class SuspendedPunishmentEvent(
   val agencyId: String,
   val chargeNumber: String,
   val status: ReportedAdjudicationStatus,
+  val prisonerNumber: String? = null,
 )
 
 @Schema(description = "Details of an offence")

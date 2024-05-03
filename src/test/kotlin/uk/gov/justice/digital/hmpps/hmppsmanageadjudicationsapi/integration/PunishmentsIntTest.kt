@@ -406,6 +406,54 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectBody().jsonPath("$.size()").isEqualTo(1)
   }
 
+  @Test
+  fun `repair suspended task`() {
+    val activatedFrom = createSuspendedPunishmentCharge()
+
+    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+
+    createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false, activatedFrom = activatedFrom.first, id = activatedFrom.second)
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(1)
+
+    webTestClient.post().uri("/scheduled-tasks/suspended-repair")
+      .exchange()
+      .expectStatus().isOk
+
+    // now go get report confirm its zero, ie clone has been removed
+    webTestClient.get()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/v2")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(0)
+
+    // confirm parent is now not suspended
+    webTestClient.get()
+      .uri("/reported-adjudications/${activatedFrom.first}/v2")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(1)
+      .jsonPath("$.reportedAdjudication.punishments[0].suspendedUntil").doesNotExist()
+  }
+
+  private fun createSuspendedPunishmentCharge(): Pair<String, Long> {
+    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+
+    val punishmentId = createPunishments(scenario.getGeneratedChargeNumber())
+      .expectStatus().isCreated
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+      .reportedAdjudication.punishments.first().id
+
+    return Pair(scenario.getGeneratedChargeNumber(), punishmentId!!)
+  }
+
   private fun createPunishmentComment(
     chargeNumber: String,
   ): WebTestClient.ResponseSpec {
