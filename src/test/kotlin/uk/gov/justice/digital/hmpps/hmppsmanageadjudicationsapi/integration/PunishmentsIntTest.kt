@@ -438,7 +438,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudication.punishments[0].suspendedUntil").doesNotExist()
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.suspendedUntil").doesNotExist()
   }
 
   private fun createSuspendedPunishmentCharge(): Pair<String, Long> {
