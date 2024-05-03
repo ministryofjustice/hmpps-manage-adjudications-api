@@ -26,9 +26,9 @@ class ActivatedSuspendedRepairService(
         // it could have been manually activated before migration with made up data so ignore if this happens,  nothing that can be done now
         activatedFrom?.let { parent ->
 
-          // try and match as closely as possible.  easy to review end result in preprod, as to which records get left (if any)
+          // try and match as closely as possible.  easy to review end result in preprod, as to which records get left (if any).  Problem records will also have suspended until still set
           parent.getPunishments()
-            .firstOrNull { it.activatedByChargeNumber == child.chargeNumber && it.type == activated.type && it.privilegeType == activated.privilegeType }?.let {
+            .firstOrNull { it.activatedByChargeNumber == child.chargeNumber && it.type == activated.type && it.privilegeType == activated.privilegeType && it.suspendedUntil != null }?.let {
                 punishmentToRepair ->
               punishmentToRepair.suspendedUntil = null
               punishmentToRepair.schedule.add(
