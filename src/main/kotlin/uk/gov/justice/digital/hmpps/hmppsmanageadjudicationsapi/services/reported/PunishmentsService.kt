@@ -88,9 +88,9 @@ class PunishmentsService(
     punishments.validateCaution()
     val idsToUpdate = punishments.filter { it.id != null }.map { it.id!! }
     if (punishmentsVersion == 2) {
-      suspendedPunishmentEvents.addAll(deactivateActivatedPunishments(chargeNumber = chargeNumber, idsToUpdate = idsToUpdate))
+      suspendedPunishmentEvents.addAll(deactivateActivatedPunishments(chargeNumber = chargeNumber, idsToIgnore = idsToUpdate))
     }
-    reportedAdjudication.deletePunishments(idsToUpdate = idsToUpdate)
+    reportedAdjudication.deletePunishments(idsToIgnore = idsToUpdate)
 
     if (punishmentsVersion == 2) {
       punishments.filter { it.activatedFrom != null }.let {
@@ -186,8 +186,8 @@ class PunishmentsService(
     }
   }
 
-  private fun ReportedAdjudication.deletePunishments(idsToUpdate: List<Long>) {
-    val punishmentsToRemove = this.getPunishments().filter { idsToUpdate.none { id -> id == it.id } }
+  private fun ReportedAdjudication.deletePunishments(idsToIgnore: List<Long>) {
+    val punishmentsToRemove = this.getPunishments().filter { idsToIgnore.none { id -> id == it.id } }
     punishmentsToRemove.forEach { punishment ->
       punishment.type.consecutiveReportValidation(this.chargeNumber).let {
         punishment.deleted = true

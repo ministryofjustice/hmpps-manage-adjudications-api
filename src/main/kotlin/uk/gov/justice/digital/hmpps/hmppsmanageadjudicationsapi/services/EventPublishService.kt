@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.Clock
 import java.time.LocalDateTime
@@ -37,6 +38,18 @@ class EventPublishService(
           )
         }
       }
+    }
+  }
+
+  fun publishEvents(suspendedPunishmentEvents: Set<SuspendedPunishmentEvent>) {
+    suspendedPunishmentEvents.parallelStream().forEach {
+      publish(
+        event = AdjudicationDomainEventType.PUNISHMENTS_UPDATED,
+        chargeNumber = it.chargeNumber,
+        agencyId = it.agencyId,
+        prisonerNumber = it.prisonerNumber!!,
+        status = it.status,
+      )
     }
   }
 
