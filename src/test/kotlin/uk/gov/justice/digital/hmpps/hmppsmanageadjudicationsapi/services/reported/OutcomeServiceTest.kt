@@ -11,7 +11,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
-import org.mockito.kotlin.atMost
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -37,7 +36,6 @@ import java.time.LocalDateTime
 
 class OutcomeServiceTest : ReportedAdjudicationTestBase() {
   private val outcomeService = OutcomeService(
-    1,
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
@@ -622,67 +620,6 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("is linked to another report")
     }
-
-    @Test
-    fun `delete outcome removes any reference to activated from report`() {
-      val activatedFrom = entityBuilder.reportedAdjudication(chargeNumber = "2").also {
-        it.clearPunishments()
-        it.addPunishment(
-          Punishment(
-            type = PunishmentType.CONFINEMENT,
-            activatedByChargeNumber = "1",
-            suspendedUntil = LocalDate.now(),
-            schedule = mutableListOf(
-              PunishmentSchedule(days = 10),
-            ),
-          ),
-        )
-        it.addPunishment(
-          Punishment(
-            type = PunishmentType.CONFINEMENT,
-            activatedByChargeNumber = "1",
-            suspendedUntil = LocalDate.now(),
-            schedule = mutableListOf(
-              PunishmentSchedule(days = 10),
-            ),
-          ),
-        )
-      }
-      whenever(reportedAdjudicationRepository.findByChargeNumber("2")).thenReturn(activatedFrom)
-
-      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
-        reportedAdjudication
-          .also {
-            it.chargeNumber = "1"
-            it.addOutcome(Outcome(id = 1, code = OutcomeCode.CHARGE_PROVED).also { o -> o.createDateTime = LocalDateTime.now() })
-            it.addPunishment(
-              Punishment(
-                type = PunishmentType.CONFINEMENT,
-                activatedFromChargeNumber = "2",
-                schedule = mutableListOf(
-                  PunishmentSchedule(days = 10),
-                ),
-              ),
-            )
-            it.addPunishment(
-              Punishment(
-                type = PunishmentType.CONFINEMENT,
-                activatedFromChargeNumber = "2",
-                schedule = mutableListOf(
-                  PunishmentSchedule(days = 10),
-                ),
-              ),
-            )
-          },
-      )
-
-      outcomeService.deleteOutcome("1", 1)
-
-      verify(reportedAdjudicationRepository, atMost(1)).findByChargeNumber("2")
-
-      assertThat(activatedFrom.getPunishments().first().activatedByChargeNumber).isNull()
-      assertThat(activatedFrom.getPunishments().last().activatedByChargeNumber).isNull()
-    }
   }
 
   @Nested
@@ -1156,7 +1093,6 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `quash outcome deactivates activated suspended from punishments`() {
       val outcomeServiceV2 = OutcomeService(
-        2,
         reportedAdjudicationRepository,
         offenceCodeLookupService,
         authenticationFacade,
@@ -1176,7 +1112,6 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `delete outcome deactivates activated suspended from punishments`() {
       val outcomeServiceV2 = OutcomeService(
-        2,
         reportedAdjudicationRepository,
         offenceCodeLookupService,
         authenticationFacade,

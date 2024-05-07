@@ -36,7 +36,6 @@ import java.time.LocalDateTime
 class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
   private val punishmentsService = PunishmentsService(
-    1,
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
@@ -1220,7 +1219,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
   inner class ActivatePunishmentsV2 {
 
     private val punishmentsServiceV2 = PunishmentsService(
-      2,
       reportedAdjudicationRepository,
       offenceCodeLookupService,
       authenticationFacade,

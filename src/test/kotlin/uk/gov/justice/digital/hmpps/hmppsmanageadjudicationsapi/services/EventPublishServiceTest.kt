@@ -22,7 +22,6 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
   private val clock: Clock = Clock.fixed(Instant.ofEpochMilli(0), ZoneId.systemDefault())
 
   private val eventPublishService = EventPublishService(
-    punishmentsVersion = 1,
     snsService = snsService,
     auditService = auditService,
     clock = clock,
@@ -70,7 +69,6 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
   @Test
   fun `send additional events if punishments version = 2 and additional events are present to be sent`() {
     val eventPublishServiceV2 = EventPublishService(
-      punishmentsVersion = 2,
       snsService = snsService,
       auditService = auditService,
       clock = clock,

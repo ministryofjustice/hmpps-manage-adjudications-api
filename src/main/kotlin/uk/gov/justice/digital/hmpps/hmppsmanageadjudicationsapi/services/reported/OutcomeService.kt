@@ -185,10 +185,7 @@ class OutcomeService(
 
     if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) {
       if (isLinkedToReport(chargeNumber, PunishmentType.additionalDays())) throw ValidationException("Unable to remove: $chargeNumber is linked to another report")
-      reportedAdjudication.removePunishments()
-      if (punishmentsVersion == 2) {
-        suspendedPunishmentEvents.addAll(deactivateActivatedPunishments(chargeNumber = chargeNumber, idsToIgnore = emptyList()))
-      }
+      suspendedPunishmentEvents.addAll(reportedAdjudication.removePunishments())
     }
 
     return saveToDto(reportedAdjudication).also {
@@ -203,11 +200,10 @@ class OutcomeService(
 
   fun getLatestOutcome(chargeNumber: String): Outcome? = findByChargeNumber(chargeNumber).latestOutcome()
 
-  private fun ReportedAdjudication.removePunishments() {
-    this.getPunishments().checkAndRemoveActivatedByLinks(this.chargeNumber)
-
+  private fun ReportedAdjudication.removePunishments(): Set<SuspendedPunishmentEvent> {
     this.clearPunishments()
     this.punishmentComments.clear()
+    return deactivateActivatedPunishments(chargeNumber = chargeNumber, idsToIgnore = emptyList())
   }
 
   private fun createOutcome(
@@ -240,9 +236,12 @@ class OutcomeService(
     reportedAdjudication.addOutcome(outcomeToCreate)
 
     if (code == OutcomeCode.QUASHED) {
-      if (punishmentsVersion == 2) {
-        suspendedPunishmentEvents.addAll(deactivateActivatedPunishments(chargeNumber = chargeNumber, idsToIgnore = emptyList()))
-      }
+      suspendedPunishmentEvents.addAll(
+        deactivateActivatedPunishments(
+          chargeNumber = chargeNumber,
+          idsToIgnore = emptyList(),
+        ),
+      )
     }
 
     return saveToDto(reportedAdjudication).also {

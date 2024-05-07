@@ -44,28 +44,25 @@ class PunishmentsService(
     punishments.validateCaution()
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
 
-    if (punishmentsVersion == 2) {
-      punishments.filter { it.activatedFrom != null }.let {
-        if (it.isNotEmpty()) {
-          suspendedPunishmentEvents.addAll(activateSuspendedPunishments(reportedAdjudication = reportedAdjudication, toActivate = it))
-        }
-      }
-    }
-
-    punishments.forEach {
-      it.validateRequest(reportedAdjudication.getLatestHearing())
-      if (it.activatedFrom != null && punishmentsVersion == 1) {
-        reportedAdjudication.addPunishment(
-          activateSuspendedPunishment(chargeNumber = chargeNumber, punishmentRequest = it),
-        )
-      } else if (it.activatedFrom == null) {
-        reportedAdjudication.addPunishment(
-          createNewPunishment(
-            punishmentRequest = it,
-            hearingDate = reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate(),
+    punishments.filter { it.activatedFrom != null }.let {
+      if (it.isNotEmpty()) {
+        suspendedPunishmentEvents.addAll(
+          activateSuspendedPunishments(
+            reportedAdjudication = reportedAdjudication,
+            toActivate = it,
           ),
         )
       }
+    }
+
+    punishments.filter { it.activatedFrom == null }.forEach {
+      it.validateRequest(reportedAdjudication.getLatestHearing())
+      reportedAdjudication.addPunishment(
+        createNewPunishment(
+          punishmentRequest = it,
+          hearingDate = reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate(),
+        ),
+      )
     }
 
     return saveToDto(reportedAdjudication).also {
@@ -85,61 +82,55 @@ class PunishmentsService(
 
     punishments.validateCaution()
     val idsToUpdate = punishments.filter { it.id != null }.map { it.id!! }
-    if (punishmentsVersion == 2) {
-      suspendedPunishmentEvents.addAll(deactivateActivatedPunishments(chargeNumber = chargeNumber, idsToIgnore = idsToUpdate))
-    }
+    suspendedPunishmentEvents.addAll(
+      deactivateActivatedPunishments(
+        chargeNumber = chargeNumber,
+        idsToIgnore = idsToUpdate,
+      ),
+    )
     reportedAdjudication.deletePunishments(idsToIgnore = idsToUpdate)
 
-    if (punishmentsVersion == 2) {
-      punishments.filter { it.activatedFrom != null }.let {
-        if (it.isNotEmpty()) {
-          suspendedPunishmentEvents.addAll(activateSuspendedPunishments(reportedAdjudication = reportedAdjudication, toActivate = it))
-        }
+    punishments.filter { it.activatedFrom != null }.let {
+      if (it.isNotEmpty()) {
+        suspendedPunishmentEvents.addAll(
+          activateSuspendedPunishments(
+            reportedAdjudication = reportedAdjudication,
+            toActivate = it,
+          ),
+        )
       }
     }
 
-    punishments.forEach { punishmentRequest ->
+    punishments.filter { it.activatedFrom == null }.forEach { punishmentRequest ->
       punishmentRequest.validateRequest(reportedAdjudication.getLatestHearing())
 
-      when (punishmentRequest.id) {
-        // its a new punishment on the charge
-        null -> reportedAdjudication.addPunishment(
+      if (punishmentRequest.id == null) {
+        reportedAdjudication.addPunishment(
           createNewPunishment(
             punishmentRequest = punishmentRequest,
             hearingDate = reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate(),
           ),
         )
-        // its an existing punishment on the charge
-        else -> {
-          when (punishmentRequest.activatedFrom) {
-            null -> {
-              val punishmentToAmend = reportedAdjudication.getPunishments().getPunishmentToAmend(punishmentRequest.id)
-              when (punishmentToAmend.type) {
-                punishmentRequest.type -> {
-                  punishmentRequest.suspendedUntil?.let {
-                    punishmentRequest.type.consecutiveReportValidation(chargeNumber)
-                  }
-                  updatePunishment(punishmentToAmend, punishmentRequest)
-                }
-                // punishment type has changed, so needs to be removed and recreated
-                else -> {
-                  punishmentToAmend.type.consecutiveReportValidation(chargeNumber).let {
-                    punishmentToAmend.deleted = true
-                    reportedAdjudication.addPunishment(
-                      createNewPunishment(
-                        punishmentRequest = punishmentRequest,
-                        hearingDate = reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate(),
-                      ),
-                    )
-                  }
-                }
-              }
+      } else {
+        val punishmentToAmend = reportedAdjudication.getPunishments().getPunishmentToAmend(punishmentRequest.id)
+        when (punishmentToAmend.type) {
+          punishmentRequest.type -> {
+            punishmentRequest.suspendedUntil?.let {
+              punishmentRequest.type.consecutiveReportValidation(chargeNumber)
             }
-            else ->
-              // this check is stop activating it again if the id exists.  otherwise the id is reference to the item it will clone
-              if (punishmentsVersion == 1 && reportedAdjudication.getPunishments().getPunishment(punishmentRequest.id) == null) {
-                reportedAdjudication.addPunishment(activateSuspendedPunishment(chargeNumber = chargeNumber, punishmentRequest = punishmentRequest))
-              }
+            updatePunishment(punishmentToAmend, punishmentRequest)
+          }
+          // punishment type has changed, so needs to be removed and recreated
+          else -> {
+            punishmentToAmend.type.consecutiveReportValidation(chargeNumber).let {
+              punishmentToAmend.deleted = true
+              reportedAdjudication.addPunishment(
+                createNewPunishment(
+                  punishmentRequest = punishmentRequest,
+                  hearingDate = reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate(),
+                ),
+              )
+            }
           }
         }
       }
@@ -191,8 +182,6 @@ class PunishmentsService(
         punishment.deleted = true
       }
     }
-
-    punishmentsToRemove.checkAndRemoveActivatedByLinks(this.chargeNumber)
   }
 
   private fun createNewPunishment(punishmentRequest: PunishmentRequest, hearingDate: LocalDate? = null): Punishment =
@@ -237,30 +226,6 @@ class PunishmentsService(
         )
       }
     }
-
-  private fun activateSuspendedPunishment(chargeNumber: String, punishmentRequest: PunishmentRequest): Punishment {
-    punishmentRequest.id ?: throw ValidationException("Suspended punishment activation missing punishment id to activate")
-    val suspendedPunishment = punishmentRequest.updateAndGetSuspendedPunishment(activatedBy = chargeNumber)
-
-    return cloneSuspendedPunishment(
-      punishment = suspendedPunishment,
-      days = punishmentRequest.days!!,
-      startDate = punishmentRequest.startDate,
-      endDate = punishmentRequest.endDate,
-    ).also {
-      it.activatedFromChargeNumber = punishmentRequest.activatedFrom
-      it.consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber
-    }
-  }
-  private fun cloneSuspendedPunishment(punishment: Punishment, days: Int, startDate: LocalDate?, endDate: LocalDate?) = Punishment(
-    type = punishment.type,
-    privilegeType = punishment.privilegeType,
-    otherPrivilege = punishment.otherPrivilege,
-    stoppagePercentage = punishment.stoppagePercentage,
-    schedule = mutableListOf(
-      PunishmentSchedule(days = days, startDate = startDate, endDate = endDate),
-    ),
-  )
 
   private fun PunishmentRequest.validateRequest(latestHearing: Hearing?) {
     when (this.type) {

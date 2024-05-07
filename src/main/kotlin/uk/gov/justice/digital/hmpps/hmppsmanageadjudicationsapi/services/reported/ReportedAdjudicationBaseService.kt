@@ -93,12 +93,6 @@ open class ReportedAdjudicationBaseService(
     offenderBookingId = offenderBookingId,
   )
 
-  protected fun List<Punishment>.checkAndRemoveActivatedByLinks(activatedFrom: String) {
-    this.getDistinctActivatedFromLinks().forEach {
-      findByChargeNumber(chargeNumber = it, ignoreSecurityCheck = true).removeActivatedByLink(activatedFrom = activatedFrom)
-    }
-  }
-
   protected fun PunishmentRequest.updateAndGetSuspendedPunishment(activatedBy: String): Punishment {
     val activatedFromReport = findByChargeNumber(chargeNumber = this.activatedFrom!!, ignoreSecurityCheck = true)
     return activatedFromReport.getPunishments().getSuspendedPunishment(this.id!!).also {
@@ -108,7 +102,7 @@ open class ReportedAdjudicationBaseService(
 
   protected fun getActivatedPunishments(chargeNumber: String): List<Pair<String, Punishment>> =
     reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).map {
-      // existing records pre correction will have the suspended until still set.  Can be removed after data correction
+      // a handful of records were amended to a state they can not be repaired so this check will persist.  Address again with UI updates
       it.getPunishments().filter { p -> p.activatedByChargeNumber == chargeNumber && p.suspendedUntil == null }
         .map { toPair -> Pair(it.chargeNumber, toPair) }
     }.flatten()
@@ -142,8 +136,5 @@ open class ReportedAdjudicationBaseService(
 
     fun Punishment.isActive(): Boolean =
       this.suspendedUntil == null && this.schedule.latestSchedule().endDate?.isAfter(LocalDate.now().minusDays(1)) == true
-
-    fun List<Punishment>.getDistinctActivatedFromLinks(): List<String> =
-      this.filter { it.activatedFromChargeNumber != null }.map { it.activatedFromChargeNumber!! }.distinct()
   }
 }
