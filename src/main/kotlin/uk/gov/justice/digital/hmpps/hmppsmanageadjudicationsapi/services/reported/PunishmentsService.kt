@@ -152,9 +152,10 @@ class PunishmentsService(
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
     val reportsActivatedFrom = findByChargeNumberIn(toActivate.map { it.activatedFrom!! }.distinct())
     toActivate.forEach { punishment ->
+      punishment.id ?: throw ValidationException("Suspended punishment activation missing punishment id to activate")
       punishment.validateRequest(reportedAdjudication.getLatestHearing())
-      val reportToUpdate = reportsActivatedFrom.first { it.chargeNumber == punishment.activatedFrom!! }
-      reportToUpdate.getPunishments().firstOrNull { it.id == punishment.id && it.activatedByChargeNumber == null }?.let {
+      val reportToUpdate = reportsActivatedFrom.firstOrNull { it.chargeNumber == punishment.activatedFrom!! } ?: throw EntityNotFoundException("activated from charge ${punishment.activatedFrom} not found")
+      reportToUpdate.getPunishments().getSuspendedPunishmentToActivate(id = punishment.id)?.let {
         it.suspendedUntil = null
         it.activatedByChargeNumber = reportedAdjudication.chargeNumber
         it.schedule.add(
@@ -254,7 +255,11 @@ class PunishmentsService(
 
     fun List<PunishmentSchedule>.latestSchedule() = this.maxBy { it.createDateTime!! }
 
-    fun List<Punishment>.getSuspendedPunishment(id: Long): Punishment = this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("suspended punishment not found")
+    fun List<Punishment>.getSuspendedPunishmentToActivate(id: Long): Punishment? {
+      val punishmentToActivate = this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("suspended punishment not found")
+      // we do no activate punishments if already activated.  Can be presented again via batch update
+      return if (punishmentToActivate.activatedByChargeNumber == null) punishmentToActivate else null
+    }
 
     fun PunishmentSchedule.hasScheduleBeenUpdated(punishmentRequest: PunishmentRequest): Boolean =
       this.days != punishmentRequest.days || this.endDate != punishmentRequest.endDate || this.startDate != punishmentRequest.startDate ||
