@@ -97,20 +97,23 @@ open class ReportedAdjudicationBaseService(
 
   protected fun deactivateActivatedPunishments(chargeNumber: String, idsToIgnore: List<Long>): Set<SuspendedPunishmentEvent> {
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
-    reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber)
-      .forEach {
+
+    reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).forEach {
         it.getPunishments()
           .filter { p -> p.activatedByChargeNumber == chargeNumber && idsToIgnore.none { id -> id == it.id } }
           .forEach { punishmentToRestore ->
             punishmentToRestore.activatedByChargeNumber = null
             val latestSchedule = punishmentToRestore.schedule.latestSchedule()
-            // this check is required until the historic data is corrected
+            // this check is required as unable to repair all legacy records
             if (punishmentToRestore.schedule.size > 1 && latestSchedule.suspendedUntil == null) {
               punishmentToRestore.schedule.remove(latestSchedule)
               punishmentToRestore.suspendedUntil = punishmentToRestore.schedule.latestSchedule().suspendedUntil
             }
             suspendedPunishmentEvents.add(
-              SuspendedPunishmentEvent(agencyId = it.originatingAgencyId, chargeNumber = it.chargeNumber, status = it.status),
+              SuspendedPunishmentEvent(
+                agencyId = it.originatingAgencyId,
+                chargeNumber = it.chargeNumber,
+                status = it.status),
             )
           }
       }

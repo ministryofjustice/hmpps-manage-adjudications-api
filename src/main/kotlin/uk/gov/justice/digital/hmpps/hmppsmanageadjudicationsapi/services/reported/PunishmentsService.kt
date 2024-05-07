@@ -151,17 +151,25 @@ class PunishmentsService(
   ): Set<SuspendedPunishmentEvent> {
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
     val reportsActivatedFrom = findByChargeNumberIn(toActivate.map { it.activatedFrom!! }.distinct())
+
     toActivate.forEach { punishment ->
       punishment.id ?: throw ValidationException("Suspended punishment activation missing punishment id to activate")
       punishment.validateRequest(reportedAdjudication.getLatestHearing())
       val reportToUpdate = reportsActivatedFrom.firstOrNull { it.chargeNumber == punishment.activatedFrom!! } ?: throw EntityNotFoundException("activated from charge ${punishment.activatedFrom} not found")
+
       reportToUpdate.getPunishments().getSuspendedPunishmentToActivate(id = punishment.id)?.let {
         it.suspendedUntil = null
         it.activatedByChargeNumber = reportedAdjudication.chargeNumber
         it.schedule.add(
-          PunishmentSchedule(days = it.schedule.latestSchedule().days, startDate = punishment.startDate, endDate = punishment.endDate),
+          PunishmentSchedule(
+            days = it.schedule.latestSchedule().days,
+            startDate = punishment.startDate,
+            endDate = punishment.endDate),
         )
-        suspendedPunishmentEvents.add(SuspendedPunishmentEvent(agencyId = reportToUpdate.originatingAgencyId, chargeNumber = reportToUpdate.chargeNumber, status = reportToUpdate.status))
+        suspendedPunishmentEvents.add(SuspendedPunishmentEvent(
+          agencyId = reportToUpdate.originatingAgencyId,
+          chargeNumber = reportToUpdate.chargeNumber,
+          status = reportToUpdate.status))
       }
     }
 
