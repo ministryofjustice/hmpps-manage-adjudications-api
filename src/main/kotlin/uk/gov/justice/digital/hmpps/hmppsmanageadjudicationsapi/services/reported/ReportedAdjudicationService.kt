@@ -28,7 +28,7 @@ class ReportedAdjudicationService(
     const val TELEMETRY_EVENT = "ReportedAdjudicationStatusEvent"
   }
 
-  fun getReportedAdjudicationDetails(chargeNumber: String): ReportedAdjudicationDto {
+  fun getReportedAdjudicationDetails(chargeNumber: String, includeActivated: Boolean = false): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
     val hasLinkedAda = hasLinkedAda(reportedAdjudication)
     val consecutiveReportsAvailable = reportedAdjudication.getPunishments().filter { it.consecutiveToChargeNumber != null }.map { it.consecutiveToChargeNumber!! }
@@ -46,19 +46,18 @@ class ReportedAdjudicationService(
         emptyList()
       },
     ).also {
-      /* this will be addressed if the UI is altered to split punishments and activated punishments into separate views
-         currently this is merging the activated from another report back into the DTO
-       */
-      it.punishments.addAll(
-        getActivatedPunishments(chargeNumber = chargeNumber)
-          .map { activated ->
-            activated.second.toDto(
-              hasLinkedAda = hasLinkedAda,
-              consecutiveReportsAvailable = consecutiveReportsAvailable,
-              actuallyActivatedFrom = activated.first,
-            )
-          },
-      )
+      if (includeActivated) {
+        it.punishments.addAll(
+          getActivatedPunishments(chargeNumber = chargeNumber)
+            .map { activated ->
+              activated.second.toDto(
+                hasLinkedAda = hasLinkedAda,
+                consecutiveReportsAvailable = consecutiveReportsAvailable,
+                actuallyActivatedFrom = activated.first,
+              )
+            },
+        )
+      }
     }
   }
 
