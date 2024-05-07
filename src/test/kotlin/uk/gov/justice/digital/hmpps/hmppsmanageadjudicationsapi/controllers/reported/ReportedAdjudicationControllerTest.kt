@@ -48,19 +48,19 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `returns the adjudication for a given id`() {
-      whenever(reportedAdjudicationService.getReportedAdjudicationDetails(anyString())).thenReturn(
+      whenever(reportedAdjudicationService.getReportedAdjudicationDetails(anyString(), any())).thenReturn(
         REPORTED_ADJUDICATION_DTO,
       )
       makeGetAdjudicationRequest(1)
         .andExpect(status().isOk)
         .andExpect(jsonPath("$.reportedAdjudication.chargeNumber").value("1"))
-      verify(reportedAdjudicationService).getReportedAdjudicationDetails("1")
+      verify(reportedAdjudicationService).getReportedAdjudicationDetails("1", false)
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `responds with an not found status code`() {
-      whenever(reportedAdjudicationService.getReportedAdjudicationDetails(anyString())).thenThrow(EntityNotFoundException::class.java)
+      whenever(reportedAdjudicationService.getReportedAdjudicationDetails(anyString(), any())).thenThrow(EntityNotFoundException::class.java)
 
       makeGetAdjudicationRequest(1).andExpect(status().isNotFound)
     }

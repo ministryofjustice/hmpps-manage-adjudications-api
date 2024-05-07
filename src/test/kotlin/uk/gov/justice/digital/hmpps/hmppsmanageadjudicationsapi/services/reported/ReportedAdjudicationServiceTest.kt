@@ -1902,7 +1902,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.clearPunishments()
         },
       )
-      val response = reportedAdjudicationServiceV2.getReportedAdjudicationDetails(chargeNumber = "12345")
+      val response = reportedAdjudicationServiceV2.getReportedAdjudicationDetails(chargeNumber = "12345", includeActivated = true)
 
       assertThat(response.punishments).isNotEmpty
       assertThat(response.punishments.first().activatedFrom).isEqualTo("activated")
@@ -1924,7 +1924,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           )
         },
       )
-      val response = reportedAdjudicationServiceV2.getReportedAdjudicationDetails(chargeNumber = "12345")
+      val response = reportedAdjudicationServiceV2.getReportedAdjudicationDetails(chargeNumber = "12345", includeActivated = true)
 
       assertThat(response.punishments.size).isEqualTo(2)
       assertThat(response.punishments.first().activatedFrom).isEqualTo("activated")
