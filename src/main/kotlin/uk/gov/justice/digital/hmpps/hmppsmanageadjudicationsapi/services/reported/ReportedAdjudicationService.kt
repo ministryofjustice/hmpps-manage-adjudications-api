@@ -30,7 +30,7 @@ class ReportedAdjudicationService(
     const val TELEMETRY_EVENT = "ReportedAdjudicationStatusEvent"
   }
 
-  fun getReportedAdjudicationDetails(chargeNumber: String): ReportedAdjudicationDto {
+  fun getReportedAdjudicationDetails(chargeNumber: String, includeActivated: Boolean = false): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
     val hasLinkedAda = hasLinkedAda(reportedAdjudication)
     val consecutiveReportsAvailable = reportedAdjudication.getPunishments().filter { it.consecutiveToChargeNumber != null }.map { it.consecutiveToChargeNumber!! }
@@ -48,7 +48,7 @@ class ReportedAdjudicationService(
         emptyList()
       },
     ).also {
-      if (punishmentsVersion == 2) {
+      if (includeActivated && punishmentsVersion == 2) {
         it.punishments.addAll(
           getActivatedPunishments(chargeNumber = chargeNumber)
             .map { activated ->

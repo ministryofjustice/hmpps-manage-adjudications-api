@@ -184,7 +184,7 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(0)
 
     webTestClient.get()
-      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/v2")
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/v2?includeActivated=true")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -208,7 +208,7 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
 
   private fun confirmPunishmentIsActivated(chargeNumber: String, activatedByChargeNumber: String) {
     webTestClient.get()
-      .uri("/reported-adjudications/$chargeNumber/v2")
+      .uri("/reported-adjudications/$chargeNumber/v2?includeActivated=true")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -220,7 +220,7 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
 
   private fun confirmPunishmentIsDeActivated(chargeNumber: String) {
     webTestClient.get()
-      .uri("/reported-adjudications/$chargeNumber/v2")
+      .uri("/reported-adjudications/$chargeNumber/v2?includeActivated=true")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful

@@ -35,7 +35,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
     IntegrationTestData.DEFAULT_ADJUDICATION.offence.victimOtherPersonsName?.let {
       webTestClient.get()
-        .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/v2")
+        .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/v2?includeActivated=true")
         .headers(setHeaders())
         .exchange()
         .expectStatus().is2xxSuccessful

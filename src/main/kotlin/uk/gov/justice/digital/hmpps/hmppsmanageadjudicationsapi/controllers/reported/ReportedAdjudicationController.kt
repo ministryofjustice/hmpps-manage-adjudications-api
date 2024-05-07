@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.CreatedOnBehalfOfRequest
@@ -53,8 +54,14 @@ class ReportedAdjudicationController(
 
   @GetMapping(value = ["/{chargeNumber}/v2"])
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
-  fun getReportedAdjudicationDetailsV2(@PathVariable(name = "chargeNumber") chargeNumber: String): ReportedAdjudicationResponse =
-    reportedAdjudicationService.getReportedAdjudicationDetails(chargeNumber).toResponse()
+  fun getReportedAdjudicationDetailsV2(
+    @PathVariable(name = "chargeNumber") chargeNumber: String,
+    @RequestParam(name = "includeActivated", required = false) includeActivated: Boolean = false,
+  ): ReportedAdjudicationResponse =
+    reportedAdjudicationService.getReportedAdjudicationDetails(
+      chargeNumber = chargeNumber,
+      includeActivated = includeActivated,
+    ).toResponse()
 
   @PutMapping(value = ["/{chargeNumber}/status"])
   @Operation(summary = "Set the status for the reported adjudication.")
