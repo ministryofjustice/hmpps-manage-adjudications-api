@@ -26,6 +26,7 @@ data class Punishment(
   var stoppagePercentage: Int? = null,
   @field:Length(max = 16)
   var activatedByChargeNumber: String? = null,
+  @Deprecated("SAA-1673 this field should no longer be populated, but left due to some residual data for 30 records that were not repaired")
   @field:Length(max = 16)
   var activatedFromChargeNumber: String? = null,
   var suspendedUntil: LocalDate? = null,

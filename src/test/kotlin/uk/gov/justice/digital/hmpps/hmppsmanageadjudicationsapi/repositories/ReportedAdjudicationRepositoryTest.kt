@@ -1190,24 +1190,4 @@ class ReportedAdjudicationRepositoryTest {
 
     assertThat(reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber("12345").size).isEqualTo(1)
   }
-
-  @Test
-  fun `find reports activated from is not null `() {
-    reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(chargeNumber = "activated").also {
-        it.hearings.clear()
-        it.clearPunishments()
-        it.addPunishment(
-          Punishment(
-            type = PunishmentType.EXCLUSION_WORK,
-            activatedFromChargeNumber = "12345",
-            schedule =
-            mutableListOf(PunishmentSchedule(days = 0)),
-          ),
-        )
-      },
-    )
-
-    assertThat(reportedAdjudicationRepository.findByPunishmentsActivatedFromChargeNumberIsNotNull().size).isEqualTo(1)
-  }
 }
