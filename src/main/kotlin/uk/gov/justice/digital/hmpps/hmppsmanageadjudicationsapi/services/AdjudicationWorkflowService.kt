@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
-import com.microsoft.applicationinsights.TelemetryClient
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
@@ -25,7 +24,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Dra
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationBaseService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftOffenceService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.ValidationChecks
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationBaseService
@@ -72,7 +70,6 @@ class AdjudicationWorkflowService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
-  private val telemetryClient: TelemetryClient,
   private val draftOffenceService: DraftOffenceService,
 ) {
 
@@ -87,7 +84,6 @@ class AdjudicationWorkflowService(
 
     val isNew = draftAdjudication.chargeNumber == null
     val generatedReportedAdjudication = saveAdjudication(draftAdjudication, isNew)
-    telemetryCapture(draftAdjudication, generatedReportedAdjudication.chargeNumber)
 
     draftAdjudicationService.remove(draftAdjudication)
 
@@ -146,8 +142,6 @@ class AdjudicationWorkflowService(
     if (isNew) {
       return createReportedAdjudication(draftAdjudication)
     }
-    // We need to check that the already reported adjudication is in the correct status here even though it happens
-    // later when we save from the draft. This is because we do not want to call nomis only later to fail validation.
     checkStateTransition(draftAdjudication)
     return updateReportedAdjudication(draftAdjudication)
   }
@@ -166,7 +160,7 @@ class AdjudicationWorkflowService(
 
     return reportedAdjudicationService.save(
       ReportedAdjudication(
-        chargeNumber = chargeNumber.toString(),
+        chargeNumber = chargeNumber,
         offenderBookingId = draftAdjudication.offenderBookingId,
         prisonerNumber = draftAdjudication.prisonerNumber,
         gender = draftAdjudication.gender,
@@ -331,17 +325,5 @@ class AdjudicationWorkflowService(
         username = it.username,
       )
     }.toMutableList()
-  }
-
-  private fun telemetryCapture(draftAdjudication: DraftAdjudication, chargeNumber: String?) {
-    telemetryClient.trackEvent(
-      DraftAdjudicationService.TELEMETRY_EVENT,
-      mapOf(
-        "adjudicationNumber" to draftAdjudication.id.toString(),
-        "agencyId" to draftAdjudication.agencyId,
-        "chargeNumber" to chargeNumber,
-      ),
-      null,
-    )
   }
 }

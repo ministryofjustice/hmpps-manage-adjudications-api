@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
-import com.microsoft.applicationinsights.TelemetryClient
 import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -14,7 +13,6 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -37,13 +35,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
-  private val telemetryClient: TelemetryClient = mock()
   private val reportedAdjudicationService =
     ReportedAdjudicationService(
       reportedAdjudicationRepository,
       offenceCodeLookupService,
       authenticationFacade,
-      telemetryClient,
     )
 
   @Nested
@@ -379,17 +375,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.lastModifiedAgencyId = it.originatingAgencyId
         },
       )
-
-      verify(telemetryClient).trackEvent(
-        ReportedAdjudicationService.TELEMETRY_EVENT,
-        mapOf(
-          "chargeNumber" to entityBuilder.reportedAdjudication().chargeNumber.toString(),
-          "agencyId" to entityBuilder.reportedAdjudication().originatingAgencyId,
-          "status" to to.name,
-          "reason" to null,
-        ),
-        null,
-      )
     }
 
     @Test
@@ -424,17 +409,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(actualReturnedReportedAdjudication.reviewedByUserId).isEqualTo("ITAG_USER")
       assertThat(actualReturnedReportedAdjudication.statusReason).isEqualTo("Status Reason")
       assertThat(actualReturnedReportedAdjudication.statusDetails).isEqualTo("Status Reason String")
-
-      verify(telemetryClient).trackEvent(
-        ReportedAdjudicationService.TELEMETRY_EVENT,
-        mapOf(
-          "chargeNumber" to existingReportedAdjudication.chargeNumber,
-          "agencyId" to existingReportedAdjudication.originatingAgencyId,
-          "status" to ReportedAdjudicationStatus.REJECTED.name,
-          "reason" to "Status Reason",
-        ),
-        null,
-      )
     }
 
     private fun existingReportedAdjudication(
@@ -1860,7 +1834,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudicationRepository,
         offenceCodeLookupService,
         authenticationFacade,
-        telemetryClient,
       )
 
     @BeforeEach

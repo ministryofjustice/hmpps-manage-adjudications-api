@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
-import com.microsoft.applicationinsights.TelemetryClient
 import jakarta.persistence.EntityNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -41,7 +40,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationServiceTest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftOffenceService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.ValidationChecks
@@ -55,7 +53,6 @@ import java.util.Optional
 
 class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
-  private val telemetryClient: TelemetryClient = mock()
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   private val draftOffenceService: DraftOffenceService = mock()
 
@@ -64,7 +61,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
-    telemetryClient,
     draftOffenceService,
   )
 
@@ -306,16 +302,6 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             "person",
           ),
         )
-
-      verify(telemetryClient).trackEvent(
-        DraftAdjudicationService.TELEMETRY_EVENT,
-        mapOf(
-          "adjudicationNumber" to "1",
-          "agencyId" to "MDI",
-          "chargeNumber" to "MDI-000000",
-        ),
-        null,
-      )
     }
 
     @Test
