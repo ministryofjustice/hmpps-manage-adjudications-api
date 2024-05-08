@@ -90,8 +90,7 @@ open class ReportedAdjudicationBaseService(
 
   protected fun getActivatedPunishments(chargeNumber: String): List<Pair<String, Punishment>> =
     reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).map {
-      // a handful of records were amended to a state they can not be repaired so this check will persist.  Address again with UI updates
-      it.getPunishments().filter { p -> p.activatedByChargeNumber == chargeNumber && p.suspendedUntil == null }
+      it.getPunishments().filter { p -> p.activatedByChargeNumber == chargeNumber }
         .map { toPair -> Pair(it.chargeNumber, toPair) }
     }.flatten()
 
@@ -100,15 +99,13 @@ open class ReportedAdjudicationBaseService(
 
     reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).forEach {
       it.getPunishments()
-        .filter { p -> p.activatedByChargeNumber == chargeNumber && idsToIgnore.none { id -> id == it.id } }
+        .filter { p -> p.activatedByChargeNumber == chargeNumber && idsToIgnore.none { id -> id == it.id } && p.schedule.size > 1 }
         .forEach { punishmentToRestore ->
+
+          punishmentToRestore.schedule.remove(punishmentToRestore.schedule.latestSchedule())
+          punishmentToRestore.suspendedUntil = punishmentToRestore.schedule.latestSchedule().suspendedUntil
           punishmentToRestore.activatedByChargeNumber = null
-          val latestSchedule = punishmentToRestore.schedule.latestSchedule()
-          // this check is required as unable to repair all legacy records
-          if (punishmentToRestore.schedule.size > 1 && latestSchedule.suspendedUntil == null) {
-            punishmentToRestore.schedule.remove(latestSchedule)
-            punishmentToRestore.suspendedUntil = punishmentToRestore.schedule.latestSchedule().suspendedUntil
-          }
+
           suspendedPunishmentEvents.add(
             SuspendedPunishmentEvent(
               agencyId = it.originatingAgencyId,

@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
-import com.microsoft.applicationinsights.TelemetryClient
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -18,15 +17,11 @@ class ReportedAdjudicationService(
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
-  private val telemetryClient: TelemetryClient,
 ) : ReportedAdjudicationBaseService(
   reportedAdjudicationRepository,
   offenceCodeLookupService,
   authenticationFacade,
 ) {
-  companion object {
-    const val TELEMETRY_EVENT = "ReportedAdjudicationStatusEvent"
-  }
 
   fun getReportedAdjudicationDetails(chargeNumber: String, includeActivated: Boolean = false): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
@@ -53,7 +48,7 @@ class ReportedAdjudicationService(
               activated.second.toDto(
                 hasLinkedAda = hasLinkedAda,
                 consecutiveReportsAvailable = consecutiveReportsAvailable,
-                actuallyActivatedFrom = activated.first,
+                activatedFrom = activated.first,
               )
             },
         )
@@ -71,18 +66,6 @@ class ReportedAdjudicationService(
       it.transition(to = status, reason = statusReason, details = statusDetails, reviewUserId = username)
       saveToDto(it)
     }
-
-    telemetryClient.trackEvent(
-      TELEMETRY_EVENT,
-      mapOf(
-        "chargeNumber" to reportedAdjudication.chargeNumber,
-        "agencyId" to reportedAdjudication.originatingAgencyId,
-        "status" to status.name,
-        "reason" to statusReason,
-      ),
-      null,
-    )
-
     return reportedAdjudicationToReturn
   }
 

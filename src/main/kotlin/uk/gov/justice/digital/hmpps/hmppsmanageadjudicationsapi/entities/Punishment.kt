@@ -26,9 +26,6 @@ data class Punishment(
   var stoppagePercentage: Int? = null,
   @field:Length(max = 16)
   var activatedByChargeNumber: String? = null,
-  @Deprecated("SAA-1673 this field should no longer be populated, but left due to some residual data for 30 records that were not repaired")
-  @field:Length(max = 16)
-  var activatedFromChargeNumber: String? = null,
   var suspendedUntil: LocalDate? = null,
   var amount: Double? = null,
   var sanctionSeq: Long? = null,
@@ -45,7 +42,7 @@ data class Punishment(
   fun isActiveSuspended(punishmentCutOff: LocalDate): Boolean =
     this.suspendedUntil?.isAfter(punishmentCutOff) == true && this.activatedByChargeNumber == null
 
-  fun toDto(hasLinkedAda: Boolean, consecutiveReportsAvailable: List<String>?, actuallyActivatedFrom: String? = null): PunishmentDto =
+  fun toDto(hasLinkedAda: Boolean, consecutiveReportsAvailable: List<String>?, activatedFrom: String? = null): PunishmentDto =
     PunishmentDto(
       id = this.id,
       type = this.type,
@@ -53,7 +50,7 @@ data class Punishment(
       otherPrivilege = this.otherPrivilege,
       stoppagePercentage = this.stoppagePercentage,
       damagesOwedAmount = this.amount,
-      activatedFrom = actuallyActivatedFrom ?: this.activatedFromChargeNumber,
+      activatedFrom = activatedFrom,
       activatedBy = this.activatedByChargeNumber,
       consecutiveChargeNumber = this.consecutiveToChargeNumber,
       canRemove = !(PunishmentType.additionalDays().contains(this.type) && hasLinkedAda),

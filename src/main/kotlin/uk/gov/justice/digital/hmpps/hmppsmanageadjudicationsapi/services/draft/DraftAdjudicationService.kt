@@ -80,7 +80,6 @@ class DraftAdjudicationService(
   companion object {
     private const val DAYS_TO_ACTION = 2L
     const val DAYS_TO_DELETE = 1L
-    const val TELEMETRY_EVENT = "DraftAdjudicationEvent"
 
     fun daysToActionFromIncident(incidentDate: LocalDateTime): LocalDateTime = incidentDate.plusDays(DAYS_TO_ACTION)
     fun dateOfDiscoveryValidation(dateTimeOfDiscovery: LocalDateTime?, dateTimeOfIncident: LocalDateTime) {
