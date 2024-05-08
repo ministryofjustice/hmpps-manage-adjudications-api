@@ -164,12 +164,16 @@ class PunishmentsService(
           PunishmentSchedule(
             days = it.schedule.latestSchedule().days,
             startDate = punishment.startDate,
-            endDate = punishment.endDate),
+            endDate = punishment.endDate,
+          ),
         )
-        suspendedPunishmentEvents.add(SuspendedPunishmentEvent(
-          agencyId = reportToUpdate.originatingAgencyId,
-          chargeNumber = reportToUpdate.chargeNumber,
-          status = reportToUpdate.status))
+        suspendedPunishmentEvents.add(
+          SuspendedPunishmentEvent(
+            agencyId = reportToUpdate.originatingAgencyId,
+            chargeNumber = reportToUpdate.chargeNumber,
+            status = reportToUpdate.status,
+          ),
+        )
       }
     }
 
