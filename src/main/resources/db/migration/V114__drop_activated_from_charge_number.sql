@@ -1,0 +1,1 @@
+alter table punishment drop column activated_from_charge_number;

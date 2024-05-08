@@ -1905,29 +1905,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.punishments).isNotEmpty
       assertThat(response.punishments.first().activatedFrom).isEqualTo("activated")
     }
-
-    @Test
-    fun `get reported adjudications will not merge (duplicate) punishments activated the previous way via cloning`() {
-      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.clearPunishments()
-          it.addPunishment(
-            Punishment(
-              type = PunishmentType.EXCLUSION_WORK,
-              activatedFromChargeNumber = "activated",
-              schedule = mutableListOf(
-                PunishmentSchedule(days = 0).also { s -> s.createDateTime = LocalDateTime.now() },
-              ),
-            ),
-          )
-        },
-      )
-      val response = reportedAdjudicationServiceV2.getReportedAdjudicationDetails(chargeNumber = "12345", includeActivated = true)
-
-      assertThat(response.punishments.size).isEqualTo(2)
-      assertThat(response.punishments.first().activatedFrom).isEqualTo("activated")
-      assertThat(response.punishments.last().activatedFrom).isEqualTo("activated")
-    }
   }
 
   companion object {

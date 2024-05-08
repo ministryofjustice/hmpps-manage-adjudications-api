@@ -339,7 +339,6 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
               Punishment(
                 type = PunishmentType.PRIVILEGE,
                 privilegeType = PrivilegeType.OTHER,
-                activatedFromChargeNumber = "12345",
                 otherPrivilege = "test",
                 schedule = mutableListOf(
                   PunishmentSchedule(days = 5, startDate = LocalDate.now(), endDate = LocalDate.now().plusDays(5)),
@@ -360,7 +359,7 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.first().startDate).isEqualTo(LocalDate.now())
       assertThat(response.first().lastDay).isEqualTo(LocalDate.now().plusDays(5))
       assertThat(response.first().days).isNotNull
-      assertThat(response.first().activatedFrom).isEqualTo("12345")
+      assertThat(response.first().activatedFrom).isNull()
     }
 
     @Test

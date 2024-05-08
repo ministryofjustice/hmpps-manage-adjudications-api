@@ -143,7 +143,8 @@ class PunishmentsReportService(
             days = if (latestSchedule.days == 0) null else latestSchedule.days,
             amount = it.amount,
             stoppagePercentage = it.stoppagePercentage,
-            activatedFrom = it.activatedFromChargeNumber,
+            // TODO this should really be activated by charge number, set to null for now until UI is updated post design review
+            activatedFrom = null,
           )
         }
       }.flatten().sortedByDescending { it.startDate }

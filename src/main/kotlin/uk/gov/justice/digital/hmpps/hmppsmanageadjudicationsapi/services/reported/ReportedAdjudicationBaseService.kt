@@ -104,7 +104,7 @@ open class ReportedAdjudicationBaseService(
         .forEach { punishmentToRestore ->
           punishmentToRestore.activatedByChargeNumber = null
           val latestSchedule = punishmentToRestore.schedule.latestSchedule()
-          // this check is required as unable to repair all legacy records
+          // need to put exception in at this point i think.
           if (punishmentToRestore.schedule.size > 1 && latestSchedule.suspendedUntil == null) {
             punishmentToRestore.schedule.remove(latestSchedule)
             punishmentToRestore.suspendedUntil = punishmentToRestore.schedule.latestSchedule().suspendedUntil

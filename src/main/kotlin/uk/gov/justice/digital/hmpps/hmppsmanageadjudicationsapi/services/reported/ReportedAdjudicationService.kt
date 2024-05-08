@@ -53,7 +53,7 @@ class ReportedAdjudicationService(
               activated.second.toDto(
                 hasLinkedAda = hasLinkedAda,
                 consecutiveReportsAvailable = consecutiveReportsAvailable,
-                actuallyActivatedFrom = activated.first,
+                activatedFrom = activated.first,
               )
             },
         )
