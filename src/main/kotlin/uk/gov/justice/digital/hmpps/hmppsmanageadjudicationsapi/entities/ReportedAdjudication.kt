@@ -155,14 +155,6 @@ data class ReportedAdjudication(
 
   fun getPunishments() = this.punishments.filter { it.deleted != true }
 
-  fun removePunishment(punishment: Punishment) {
-    this.punishments.remove(punishment)
-  }
-
-  fun removeActivatedByLink(activatedFrom: String) {
-    this.getPunishments().filter { p -> p.activatedByChargeNumber == activatedFrom }.forEach { p -> p.activatedByChargeNumber = null }
-  }
-
   fun addPunishment(punishment: Punishment) = this.punishments.add(punishment)
 
   fun clearPunishments() = this.punishments.clear()

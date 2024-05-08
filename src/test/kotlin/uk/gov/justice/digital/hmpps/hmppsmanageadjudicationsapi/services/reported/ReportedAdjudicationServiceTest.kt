@@ -40,7 +40,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   private val telemetryClient: TelemetryClient = mock()
   private val reportedAdjudicationService =
     ReportedAdjudicationService(
-      1,
       reportedAdjudicationRepository,
       offenceCodeLookupService,
       authenticationFacade,
@@ -1858,7 +1857,6 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   inner class GetReportedAdjudicationV2 {
     private val reportedAdjudicationServiceV2 =
       ReportedAdjudicationService(
-        2,
         reportedAdjudicationRepository,
         offenceCodeLookupService,
         authenticationFacade,

@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import com.microsoft.applicationinsights.TelemetryClient
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -16,7 +15,6 @@ import java.time.LocalDateTime
 @Transactional
 @Service
 class ReportedAdjudicationService(
-  @Value("\${service.punishments.version}") private val punishmentsVersion: Int,
   reportedAdjudicationRepository: ReportedAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
@@ -48,7 +46,7 @@ class ReportedAdjudicationService(
         emptyList()
       },
     ).also {
-      if (includeActivated && punishmentsVersion == 2) {
+      if (includeActivated) {
         it.punishments.addAll(
           getActivatedPunishments(chargeNumber = chargeNumber)
             .map { activated ->
