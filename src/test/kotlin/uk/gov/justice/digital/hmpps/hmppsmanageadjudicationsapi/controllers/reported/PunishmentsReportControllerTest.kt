@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdditionalD
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsReportService
 import java.time.LocalDate
@@ -181,6 +182,8 @@ class PunishmentsReportControllerTest : TestControllerBase() {
           schedule = PunishmentScheduleDto(
             days = 10,
             suspendedUntil = LocalDate.now(),
+            duration = 10,
+            measurement = Measurement.DAYS,
           ),
         ),
       ),
@@ -193,6 +196,8 @@ class PunishmentsReportControllerTest : TestControllerBase() {
           type = PunishmentType.ADDITIONAL_DAYS,
           schedule = PunishmentScheduleDto(
             days = 10,
+            duration = 10,
+            measurement = Measurement.DAYS,
           ),
         ),
       ),

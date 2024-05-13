@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdditionalDaysDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsReportService
@@ -29,6 +30,10 @@ data class ActivePunishmentDto(
   val otherPrivilege: String? = null,
   @Schema(description = "days applied")
   val days: Int? = null,
+  @Schema(description = "duration of punishment")
+  val duration: Int? = null,
+  @Schema(description = "measurement of duration")
+  val measurement: Measurement? = null,
   @Schema(description = "start date")
   val startDate: LocalDate? = null,
   @Schema(description = "last day")

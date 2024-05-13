@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -293,6 +294,10 @@ data class PunishmentDto(
 data class PunishmentScheduleDto(
   @Schema(description = "days punishment will last")
   val days: Int,
+  @Schema(description = "duration of punishment")
+  val duration: Int,
+  @Schema(description = "measurement of duration")
+  val measurement: Measurement,
   @Schema(description = "optional start date of punishment")
   val startDate: LocalDate? = null,
   @Schema(description = "optional end date of punishment")
