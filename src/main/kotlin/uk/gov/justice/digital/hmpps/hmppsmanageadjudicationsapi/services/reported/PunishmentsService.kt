@@ -211,7 +211,7 @@ class PunishmentsService(
         PunishmentType.DAMAGES_OWED -> mutableListOf(PunishmentSchedule(days = 0, startDate = hearingDate))
         else -> mutableListOf(
           PunishmentSchedule(
-            days = punishmentRequest.days!!,
+            days = punishmentRequest.days ?: punishmentRequest.duration!!,
             startDate = punishmentRequest.startDate,
             endDate = punishmentRequest.endDate,
             suspendedUntil = punishmentRequest.suspendedUntil,
@@ -231,7 +231,7 @@ class PunishmentsService(
       if (it.schedule.latestSchedule().hasScheduleBeenUpdated(punishmentRequest) && !PunishmentType.damagesAndCaution().contains(it.type)) {
         it.schedule.add(
           PunishmentSchedule(
-            days = punishmentRequest.days!!,
+            days = punishmentRequest.days ?: punishmentRequest.duration!!,
             startDate = punishmentRequest.startDate,
             endDate = punishmentRequest.endDate,
             suspendedUntil = punishmentRequest.suspendedUntil,

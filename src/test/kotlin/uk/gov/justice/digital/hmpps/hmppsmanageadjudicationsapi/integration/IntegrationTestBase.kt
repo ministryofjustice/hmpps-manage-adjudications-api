@@ -16,6 +16,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.TestBase
@@ -153,6 +154,7 @@ abstract class IntegrationTestBase : TestBase() {
     isSuspended: Boolean = true,
     activatedFrom: String? = null,
     id: Long? = null,
+    useDuration: Boolean = false,
   ): WebTestClient.ResponseSpec {
     val suspendedUntil = LocalDate.now().plusMonths(1)
 
@@ -166,12 +168,14 @@ abstract class IntegrationTestBase : TestBase() {
               PunishmentRequest(
                 id = if (activatedFrom.isNullOrBlank()) null else id,
                 type = type,
-                days = 10,
+                days = if (useDuration) null else 10,
                 suspendedUntil = if (isSuspended) suspendedUntil else null,
                 startDate = if (isSuspended) null else suspendedUntil,
                 endDate = if (isSuspended) null else suspendedUntil.plusDays(10),
                 consecutiveChargeNumber = consecutiveChargeNumber,
                 activatedFrom = activatedFrom,
+                duration = if (useDuration) 10 else null,
+                measurement = if (useDuration) Measurement.DAYS else null,
               ),
             ),
         ),

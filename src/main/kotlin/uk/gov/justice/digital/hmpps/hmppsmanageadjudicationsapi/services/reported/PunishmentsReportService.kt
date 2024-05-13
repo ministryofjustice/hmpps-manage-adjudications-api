@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.AdditionalD
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentScheduleDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
@@ -34,8 +35,8 @@ class PunishmentsReportQueryService(
   )
 
   @Deprecated(
-    "this can be removed at some point in the near future ie after 1.9.2024 approximately. " +
-      "Its purpose is to include nomis records where nomis allowed the user to incorrectly specify suspended until dates ",
+    """this can be removed at some point in the near future ie after 1.9.2024 approximately. 
+      Its purpose is to include nomis records where nomis allowed the user to incorrectly specify suspended until dates """,
   )
   fun getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber: String) =
     reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(
@@ -94,7 +95,7 @@ class PunishmentsReportService(
               privilegeType = punishment.privilegeType,
               otherPrivilege = punishment.otherPrivilege,
               stoppagePercentage = punishment.stoppagePercentage,
-              schedule = PunishmentScheduleDto(days = schedule.days, suspendedUntil = schedule.suspendedUntil),
+              schedule = PunishmentScheduleDto(days = schedule.days, suspendedUntil = schedule.suspendedUntil, duration = schedule.days, measurement = Measurement.DAYS),
             ),
           )
         }
@@ -121,7 +122,7 @@ class PunishmentsReportService(
               id = punishment.id,
               type = punishment.type,
               consecutiveChargeNumber = punishment.consecutiveToChargeNumber,
-              schedule = PunishmentScheduleDto(days = schedule.days),
+              schedule = PunishmentScheduleDto(days = schedule.days, duration = schedule.days, measurement = Measurement.DAYS),
             ),
           )
         }
@@ -141,6 +142,8 @@ class PunishmentsReportService(
             startDate = latestSchedule.startDate,
             lastDay = latestSchedule.endDate,
             days = if (latestSchedule.days == 0) null else latestSchedule.days,
+            duration = if (latestSchedule.days == 0) null else latestSchedule.days,
+            measurement = if (latestSchedule.days == 0) null else Measurement.DAYS,
             amount = it.amount,
             stoppagePercentage = it.stoppagePercentage,
             // TODO this should really be activated by charge number, set to null for now until UI is updated post design review

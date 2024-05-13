@@ -20,5 +20,12 @@ data class PunishmentSchedule(
       startDate = this.startDate,
       endDate = this.endDate,
       suspendedUntil = this.suspendedUntil,
+      duration = this.days,
+      measurement = Measurement.DAYS,
     )
+}
+
+enum class Measurement {
+  DAYS,
+  HOURS,
 }
