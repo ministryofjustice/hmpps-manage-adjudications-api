@@ -288,6 +288,8 @@ data class PunishmentDto(
   val damagesOwedAmount: Double? = null,
   @Schema(description = "flag to indicate if the punishment can be removed")
   val canRemove: Boolean = true,
+  @Schema(description = "payback notes")
+  val paybackNotes: String? = null,
 )
 
 @Schema(description = "punishment schedule")

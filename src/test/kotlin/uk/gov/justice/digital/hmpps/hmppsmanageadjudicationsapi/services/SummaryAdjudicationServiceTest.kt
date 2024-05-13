@@ -42,7 +42,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           type = PunishmentType.CAUTION,
           schedule =
           mutableListOf(
-            PunishmentSchedule(days = 0, startDate = LocalDate.now(), endDate = LocalDate.now()).also {
+            PunishmentSchedule(duration = 0, startDate = LocalDate.now(), endDate = LocalDate.now()).also {
               it.createDateTime = LocalDateTime.now()
             },
           ),
@@ -54,7 +54,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           schedule =
           mutableListOf(
             PunishmentSchedule(
-              days = 0,
+              duration = 0,
               startDate = LocalDate.now(),
               endDate = LocalDate.now(),
             ).also {

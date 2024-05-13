@@ -28,8 +28,6 @@ data class ActivePunishmentDto(
   val privilegeType: PrivilegeType? = null,
   @Schema(description = "other privilege description")
   val otherPrivilege: String? = null,
-  @Schema(description = "days applied")
-  val days: Int? = null,
   @Schema(description = "duration of punishment")
   val duration: Int? = null,
   @Schema(description = "measurement of duration")

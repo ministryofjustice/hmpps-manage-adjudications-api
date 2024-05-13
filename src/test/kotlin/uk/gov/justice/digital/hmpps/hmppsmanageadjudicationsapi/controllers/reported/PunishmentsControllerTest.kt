@@ -78,7 +78,7 @@ class PunishmentsControllerTest : TestControllerBase() {
 
       verify(punishmentsService).create(
         chargeNumber = "1",
-        listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
+        listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, duration = PUNISHMENT_REQUEST.duration)),
       )
       verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.PUNISHMENTS_CREATED, REPORTED_ADJUDICATION_DTO)
     }
@@ -147,7 +147,7 @@ class PunishmentsControllerTest : TestControllerBase() {
 
       verify(punishmentsService).update(
         chargeNumber = "1",
-        listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, days = PUNISHMENT_REQUEST.days)),
+        listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, duration = PUNISHMENT_REQUEST.duration)),
       )
       verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.PUNISHMENTS_UPDATED, REPORTED_ADJUDICATION_DTO)
     }
@@ -171,6 +171,6 @@ class PunishmentsControllerTest : TestControllerBase() {
   }
 
   companion object {
-    val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, days = 10)
+    val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, duration = 10)
   }
 }

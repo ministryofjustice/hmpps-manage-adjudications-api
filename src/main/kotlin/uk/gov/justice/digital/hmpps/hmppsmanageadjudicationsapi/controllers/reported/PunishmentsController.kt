@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
@@ -36,12 +35,8 @@ data class PunishmentRequest(
   val otherPrivilege: String? = null,
   @Schema(description = "stoppage percentage - use if punishment type is EARNINGS")
   val stoppagePercentage: Int? = null,
-  @Schema(description = "days punishment to last")
-  val days: Int? = null,
   @Schema(description = "duration of punishment")
   val duration: Int? = null,
-  @Schema(description = "measurement of duration")
-  val measurement: Measurement? = null,
   @Schema(description = "punishment start date, required if punishment is not suspended")
   val startDate: LocalDate? = null,
   @Schema(description = "punishment end date, required if punishment is not suspended")
@@ -54,6 +49,8 @@ data class PunishmentRequest(
   val consecutiveChargeNumber: String? = null,
   @Schema(description = "optional amount - money being recovered for damages - only use if type is DAMAGED_OWED")
   val damagesOwedAmount: Double? = null,
+  @Schema(description = "payback punishment notes")
+  val paybackNotes: String? = null,
 )
 
 @RestController
