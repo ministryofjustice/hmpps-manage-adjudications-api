@@ -294,6 +294,8 @@ data class PunishmentDto(
 
 @Schema(description = "punishment schedule")
 data class PunishmentScheduleDto(
+  @Schema(description = "days punishment will last")
+  val days: Int,
   @Schema(description = "duration of punishment")
   val duration: Int,
   @Schema(description = "measurement of duration")
