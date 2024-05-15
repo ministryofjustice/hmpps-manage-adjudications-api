@@ -81,7 +81,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             Punishment(
               type = PunishmentType.DAMAGES_OWED,
               schedule = mutableListOf(
-                PunishmentSchedule(days = 0),
+                PunishmentSchedule(duration = 0),
               ),
             ),
           )
@@ -89,7 +89,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             Punishment(
               type = PunishmentType.CAUTION,
               schedule = mutableListOf(
-                PunishmentSchedule(days = 0),
+                PunishmentSchedule(duration = 0),
               ),
             ),
           )
@@ -267,7 +267,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               type = PunishmentType.ADDITIONAL_DAYS,
               consecutiveToChargeNumber = "999",
               schedule = mutableListOf(
-                PunishmentSchedule(days = 10),
+                PunishmentSchedule(duration = 10),
               ),
             ),
           )
@@ -275,7 +275,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             Punishment(
               type = PunishmentType.ADDITIONAL_DAYS,
               schedule = mutableListOf(
-                PunishmentSchedule(days = 10),
+                PunishmentSchedule(duration = 10),
               ),
             ),
           )
@@ -1613,7 +1613,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             Punishment(
               type = PunishmentType.ADDITIONAL_DAYS,
               schedule = mutableListOf(
-                PunishmentSchedule(days = 1),
+                PunishmentSchedule(duration = 1),
               ),
             ),
           )
@@ -1656,7 +1656,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               suspendedUntil = LocalDate.now(),
               schedule =
               mutableListOf(
-                PunishmentSchedule(days = 1, suspendedUntil = LocalDate.now()),
+                PunishmentSchedule(duration = 1, suspendedUntil = LocalDate.now()),
               ),
             ),
           )
@@ -1679,7 +1679,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               suspendedUntil = LocalDate.now(),
               schedule =
               mutableListOf(
-                PunishmentSchedule(days = 1, suspendedUntil = LocalDate.now()),
+                PunishmentSchedule(duration = 1, suspendedUntil = LocalDate.now()),
               ),
             ),
           )
@@ -1700,7 +1700,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               type = PunishmentType.ADDITIONAL_DAYS,
               schedule =
               mutableListOf(
-                PunishmentSchedule(days = 1),
+                PunishmentSchedule(duration = 1),
               ),
             ),
           )
@@ -1736,7 +1736,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               type = PunishmentType.DAMAGES_OWED,
               schedule =
               mutableListOf(
-                PunishmentSchedule(days = 1),
+                PunishmentSchedule(duration = 1),
               ),
             ),
           )
@@ -1847,7 +1847,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
                 type = PunishmentType.EXCLUSION_WORK,
                 activatedByChargeNumber = "12345",
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 0).also { s -> s.createDateTime = LocalDateTime.now() },
+                  PunishmentSchedule(duration = 0).also { s -> s.createDateTime = LocalDateTime.now() },
                 ),
               ),
             )
@@ -1857,7 +1857,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
                 suspendedUntil = LocalDate.now(),
                 activatedByChargeNumber = "12345",
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 0).also { s -> s.createDateTime = LocalDateTime.now() },
+                  PunishmentSchedule(duration = 0).also { s -> s.createDateTime = LocalDateTime.now() },
                 ),
               ),
             )

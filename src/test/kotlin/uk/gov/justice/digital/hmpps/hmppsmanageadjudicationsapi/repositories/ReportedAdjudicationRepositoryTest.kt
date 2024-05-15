@@ -182,7 +182,7 @@ class ReportedAdjudicationRepositoryTest {
           Punishment(
             type = PunishmentType.DAMAGES_OWED,
             schedule = mutableListOf(
-              PunishmentSchedule(days = 0, startDate = LocalDate.now(), endDate = LocalDate.now().plusDays(1)),
+              PunishmentSchedule(duration = 0, startDate = LocalDate.now(), endDate = LocalDate.now().plusDays(1)),
             ),
           ),
         )
@@ -526,7 +526,7 @@ class ReportedAdjudicationRepositoryTest {
       Punishment(
         type = PunishmentType.ADDITIONAL_DAYS,
         schedule = mutableListOf(
-          PunishmentSchedule(days = 10, startDate = LocalDate.now()),
+          PunishmentSchedule(duration = 10, startDate = LocalDate.now()),
         ),
       ),
     )
@@ -535,7 +535,7 @@ class ReportedAdjudicationRepositoryTest {
 
     assertThat(savedEntity.getPunishments().first().type).isEqualTo(PunishmentType.ADDITIONAL_DAYS)
     assertThat(savedEntity.getPunishments().first().schedule.first().startDate).isEqualTo(LocalDate.now())
-    assertThat(savedEntity.getPunishments().first().schedule.first().days).isEqualTo(10)
+    assertThat(savedEntity.getPunishments().first().schedule.first().duration).isEqualTo(10)
   }
 
   @Test
@@ -550,7 +550,7 @@ class ReportedAdjudicationRepositoryTest {
             Punishment(
               type = PunishmentType.CONFINEMENT,
               suspendedUntil = LocalDate.now().minusDays(2).plusDays(i.toLong()),
-              schedule = mutableListOf(PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now().minusDays(2).plusDays(i.toLong()))),
+              schedule = mutableListOf(PunishmentSchedule(duration = 10, suspendedUntil = LocalDate.now().minusDays(2).plusDays(i.toLong()))),
             ),
           )
         },
@@ -573,7 +573,7 @@ class ReportedAdjudicationRepositoryTest {
           Punishment(
             type = PunishmentType.ADDITIONAL_DAYS,
             schedule = mutableListOf(
-              PunishmentSchedule(days = 10),
+              PunishmentSchedule(duration = 10),
             ),
           ),
         )
@@ -590,7 +590,7 @@ class ReportedAdjudicationRepositoryTest {
             type = PunishmentType.ADDITIONAL_DAYS,
             suspendedUntil = LocalDate.now(),
             schedule = mutableListOf(
-              PunishmentSchedule(days = 10),
+              PunishmentSchedule(duration = 10),
             ),
           ),
         )
@@ -696,7 +696,7 @@ class ReportedAdjudicationRepositoryTest {
             type = PunishmentType.PROSPECTIVE_DAYS,
             consecutiveToChargeNumber = "1234",
             schedule = mutableListOf(
-              PunishmentSchedule(days = 10),
+              PunishmentSchedule(duration = 10),
             ),
           ),
         )
@@ -778,7 +778,7 @@ class ReportedAdjudicationRepositoryTest {
           Punishment(
             type = PunishmentType.ADDITIONAL_DAYS,
             schedule = mutableListOf(
-              PunishmentSchedule(days = 10),
+              PunishmentSchedule(duration = 10),
             ),
           ),
         )
@@ -825,7 +825,7 @@ class ReportedAdjudicationRepositoryTest {
             suspendedUntil = LocalDate.now(),
             activatedByChargeNumber = activatedBy,
             schedule = mutableListOf(
-              PunishmentSchedule(days = 10),
+              PunishmentSchedule(duration = 10),
             ),
           ),
         )
@@ -891,7 +891,7 @@ class ReportedAdjudicationRepositoryTest {
           Punishment(
             type = PunishmentType.ADDITIONAL_DAYS,
             schedule = mutableListOf(
-              PunishmentSchedule(days = 10),
+              PunishmentSchedule(duration = 10),
             ),
           ),
         )
@@ -937,7 +937,7 @@ class ReportedAdjudicationRepositoryTest {
             suspendedUntil = LocalDate.now(),
             activatedByChargeNumber = activatedBy,
             schedule = mutableListOf(
-              PunishmentSchedule(days = 10),
+              PunishmentSchedule(duration = 10),
             ),
           ),
         )
@@ -1182,7 +1182,7 @@ class ReportedAdjudicationRepositoryTest {
             type = PunishmentType.EXCLUSION_WORK,
             activatedByChargeNumber = "12345",
             schedule =
-            mutableListOf(PunishmentSchedule(days = 0)),
+            mutableListOf(PunishmentSchedule(duration = 0)),
           ),
         )
       },

@@ -409,7 +409,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
             type = PunishmentType.CONFINEMENT,
             suspendedUntil = LocalDate.now(),
             schedule = mutableListOf(
-              PunishmentSchedule(days = 10),
+              PunishmentSchedule(duration = 10),
             ),
           ),
         )
@@ -546,7 +546,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
                 Punishment(
                   type = PunishmentType.DAMAGES_OWED,
                   schedule = mutableListOf(
-                    PunishmentSchedule(days = 10),
+                    PunishmentSchedule(duration = 10),
                   ),
                 ),
               )
@@ -604,7 +604,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
               Punishment(
                 type = PunishmentType.DAMAGES_OWED,
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 10),
+                  PunishmentSchedule(duration = 10),
                 ),
               ),
             )
@@ -1067,9 +1067,9 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
           activatedByChargeNumber = chargeNumber,
           schedule =
           mutableListOf(
-            PunishmentSchedule(id = 1, days = 10, suspendedUntil = LocalDate.now())
+            PunishmentSchedule(id = 1, duration = 10, suspendedUntil = LocalDate.now())
               .also { s -> s.createDateTime = LocalDateTime.now() },
-            PunishmentSchedule(id = 2, days = 10, startDate = LocalDate.now(), endDate = LocalDate.now())
+            PunishmentSchedule(id = 2, duration = 10, startDate = LocalDate.now(), endDate = LocalDate.now())
               .also { s -> s.createDateTime = LocalDateTime.now().plusDays(1) },
           ),
         ),

@@ -53,7 +53,7 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
               PunishmentRequest(
                 id = activatedFrom.second,
                 type = PunishmentType.CONFINEMENT,
-                days = 15,
+                duration = 15,
                 activatedFrom = activatedFrom.first,
                 startDate = LocalDate.now(),
                 endDate = LocalDate.now().plusDays(10),
@@ -96,7 +96,7 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
             listOf(
               PunishmentRequest(
                 type = PunishmentType.EXCLUSION_WORK,
-                days = 15,
+                duration = 15,
                 startDate = LocalDate.now(),
                 endDate = LocalDate.now().plusDays(10),
               ),

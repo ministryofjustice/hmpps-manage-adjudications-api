@@ -32,7 +32,6 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.CONFINEMENT.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].schedule.days").isEqualTo(10)
       .jsonPath("$.reportedAdjudication.punishments[0].schedule.duration").isEqualTo(10)
       .jsonPath("$.reportedAdjudication.punishments[0].schedule.measurement").isEqualTo(Measurement.DAYS.name)
       .jsonPath("$.reportedAdjudication.punishments[0].schedule.suspendedUntil").isEqualTo(
@@ -43,21 +42,87 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
-  fun `create punishments v2 using new duration`() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+  fun `create a payback punishment`() {
+    val hearingDate = LocalDate.of(2024, 1, 1)
+    val scenario = initDataForUnScheduled().createHearing(dateTimeOfHearing = hearingDate.atStartOfDay()).createChargeProved()
 
-    createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), useDuration = true)
-      .expectStatus().isCreated
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.CONFINEMENT.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].schedule.days").isEqualTo(10)
-      .jsonPath("$.reportedAdjudication.punishments[0].schedule.duration").isEqualTo(10)
-      .jsonPath("$.reportedAdjudication.punishments[0].schedule.measurement").isEqualTo(Measurement.DAYS.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].schedule.suspendedUntil").isEqualTo(
-        LocalDate.now().plusMonths(1).format(
-          DateTimeFormatter.ISO_DATE,
+    webTestClient.post()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to
+            listOf(
+              PunishmentRequest(
+                id = null,
+                type = PunishmentType.PAYBACK,
+                suspendedUntil = null,
+                startDate = null,
+                endDate = LocalDate.now().plusDays(10),
+                duration = 10,
+                paybackNotes = "some payback notes",
+              ),
+            ),
         ),
       )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.PAYBACK.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.duration").isEqualTo(10)
+      .jsonPath("$.reportedAdjudication.punishments[0].paybackNotes").isEqualTo("some payback notes")
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.measurement").isEqualTo(Measurement.HOURS.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo("2024-01-01")
+  }
+
+  @Test
+  fun `update a payback punishment`() {
+    val hearingDate = LocalDate.of(2024, 1, 1)
+    val scenario = initDataForUnScheduled().createHearing(dateTimeOfHearing = hearingDate.atStartOfDay()).createChargeProved()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to
+            listOf(
+              PunishmentRequest(
+                type = PunishmentType.PAYBACK,
+                endDate = LocalDate.now().plusDays(10),
+                duration = 10,
+                paybackNotes = "some payback notes",
+              ),
+            ),
+        ),
+      )
+      .exchange()
+      .expectStatus().isCreated
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to
+            listOf(
+              PunishmentRequest(
+                id = 1,
+                type = PunishmentType.PAYBACK,
+                endDate = LocalDate.now().plusDays(10),
+                duration = 12,
+                paybackNotes = "update payback notes",
+              ),
+            ),
+        ),
+      )
+      .exchange()
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.PAYBACK.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.duration").isEqualTo(12)
+      .jsonPath("$.reportedAdjudication.punishments[0].paybackNotes").isEqualTo("update payback notes")
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.measurement").isEqualTo(Measurement.HOURS.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo("2024-01-01")
   }
 
   @Test
@@ -71,9 +136,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.punishments[0].consecutiveChargeNumber").isEqualTo(9999)
   }
 
-  @CsvSource("true", "false")
-  @ParameterizedTest
-  fun `update punishments - amends one record, removes a record, and creates a record v2`(useDuration: Boolean) {
+  @Test
+  fun `update punishments - amends one record, removes a record, and creates a record v2`() {
     initDataForUnScheduled().createHearing().createChargeProved()
 
     val suspendedUntil = LocalDate.now().plusMonths(1)
@@ -87,12 +151,12 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
             listOf(
               PunishmentRequest(
                 type = PunishmentType.CONFINEMENT,
-                days = 10,
+                duration = 10,
                 suspendedUntil = suspendedUntil,
               ),
               PunishmentRequest(
                 type = PunishmentType.REMOVAL_ACTIVITY,
-                days = 10,
+                duration = 10,
                 suspendedUntil = suspendedUntil,
               ),
             ),
@@ -116,15 +180,13 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
                 PunishmentRequest(
                   id = punishmentToAmend,
                   type = PunishmentType.CONFINEMENT,
-                  days = if (useDuration) null else 15,
                   startDate = suspendedUntil,
                   endDate = suspendedUntil,
-                  duration = if (useDuration) 15 else null,
-                  measurement = if (useDuration) Measurement.DAYS else null,
+                  duration = 15,
                 ),
                 PunishmentRequest(
                   type = PunishmentType.EXCLUSION_WORK,
-                  days = 8,
+                  duration = 8,
                   suspendedUntil = suspendedUntil,
                 ),
               ),
@@ -136,13 +198,12 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
         .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(2)
         .jsonPath("$.reportedAdjudication.punishments[0].id").isEqualTo(it)
         .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.CONFINEMENT.name)
-        .jsonPath("$.reportedAdjudication.punishments[0].schedule.days").isEqualTo(15)
         .jsonPath("$.reportedAdjudication.punishments[0].schedule.duration").isEqualTo(15)
         .jsonPath("$.reportedAdjudication.punishments[0].schedule.measurement").isEqualTo(Measurement.DAYS.name)
         .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo(formattedDate)
         .jsonPath("$.reportedAdjudication.punishments[0].schedule.endDate").isEqualTo(formattedDate)
         .jsonPath("$.reportedAdjudication.punishments[1].type").isEqualTo(PunishmentType.EXCLUSION_WORK.name)
-        .jsonPath("$.reportedAdjudication.punishments[1].schedule.days").isEqualTo(8)
+        .jsonPath("$.reportedAdjudication.punishments[1].schedule.duration").isEqualTo(8)
         .jsonPath("$.reportedAdjudication.punishments[1].schedule.suspendedUntil").isEqualTo(formattedDate)
     }
   }
@@ -164,7 +225,6 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.size()").isEqualTo(1)
       .jsonPath("$.[0].chargeNumber").isEqualTo(scenario.getGeneratedChargeNumber())
       .jsonPath("$.[0].punishment.type").isEqualTo(PunishmentType.CONFINEMENT.name)
-      .jsonPath("$.[0].punishment.schedule.days").isEqualTo(10)
       .jsonPath("$.[0].punishment.schedule.duration").isEqualTo(10)
       .jsonPath("$.[0].punishment.schedule.measurement").isEqualTo(Measurement.DAYS.name)
       .jsonPath("$.[0].punishment.schedule.suspendedUntil").isEqualTo(
@@ -189,7 +249,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
             listOf(
               PunishmentRequest(
                 type = punishmentType,
-                days = 10,
+                duration = 10,
               ),
             ),
         ),
@@ -206,7 +266,6 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.size()").isEqualTo(1)
       .jsonPath("$.[0].chargeNumber").isEqualTo(scenario.getGeneratedChargeNumber())
       .jsonPath("$.[0].punishment.type").isEqualTo(punishmentType.name)
-      .jsonPath("$.[0].punishment.schedule.days").isEqualTo(10)
       .jsonPath("$.[0].punishment.schedule.duration").isEqualTo(10)
       .jsonPath("$.[0].punishment.schedule.measurement").isEqualTo(Measurement.DAYS.name)
       .jsonPath("$.[0].chargeProvedDate").isEqualTo("2010-11-19")
@@ -229,7 +288,6 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.size()").isEqualTo(1)
       .jsonPath("$.[0].chargeNumber").isEqualTo(scenario.getGeneratedChargeNumber())
       .jsonPath("$.[0].punishmentType").isEqualTo(PunishmentType.CONFINEMENT.name)
-      .jsonPath("$.[0].days").isEqualTo(10)
       .jsonPath("$.[0].duration").isEqualTo(10)
       .jsonPath("$.[0].measurement").isEqualTo(Measurement.DAYS.name)
       .jsonPath("$.[0].startDate").isEqualTo(

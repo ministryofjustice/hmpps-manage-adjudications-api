@@ -38,6 +38,8 @@ data class Punishment(
   @field:Length(max = 32)
   var nomisStatus: String? = null,
   var actualCreatedDate: LocalDateTime? = null,
+  @field:Length(max = 4000)
+  var paybackNotes: String? = null,
 ) : BaseEntity() {
   fun isActiveSuspended(punishmentCutOff: LocalDate): Boolean =
     this.suspendedUntil?.isAfter(punishmentCutOff) == true && this.activatedByChargeNumber == null
@@ -56,6 +58,7 @@ data class Punishment(
       canRemove = !(PunishmentType.additionalDays().contains(this.type) && hasLinkedAda),
       consecutiveReportAvailable = isConsecutiveReportAvailable(this.consecutiveToChargeNumber, consecutiveReportsAvailable),
       schedule = this.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toDto(),
+      paybackNotes = this.paybackNotes,
     )
 
   private fun isConsecutiveReportAvailable(consecutiveChargeNumber: String?, consecutiveReportsAvailable: List<String>?): Boolean? {
@@ -65,7 +68,7 @@ data class Punishment(
   }
 }
 
-enum class PunishmentType {
+enum class PunishmentType(val measurement: Measurement = Measurement.DAYS) {
   PRIVILEGE,
   EARNINGS,
   CONFINEMENT,
@@ -77,6 +80,7 @@ enum class PunishmentType {
   PROSPECTIVE_DAYS,
   CAUTION,
   DAMAGES_OWED,
+  PAYBACK(Measurement.HOURS),
   ;
 
   companion object {

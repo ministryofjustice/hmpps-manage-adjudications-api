@@ -95,7 +95,7 @@ class PunishmentsReportService(
               privilegeType = punishment.privilegeType,
               otherPrivilege = punishment.otherPrivilege,
               stoppagePercentage = punishment.stoppagePercentage,
-              schedule = PunishmentScheduleDto(days = schedule.days, suspendedUntil = schedule.suspendedUntil, duration = schedule.days, measurement = Measurement.DAYS),
+              schedule = PunishmentScheduleDto(days = schedule.duration, suspendedUntil = schedule.suspendedUntil, duration = schedule.duration, measurement = Measurement.DAYS),
             ),
           )
         }
@@ -122,7 +122,7 @@ class PunishmentsReportService(
               id = punishment.id,
               type = punishment.type,
               consecutiveChargeNumber = punishment.consecutiveToChargeNumber,
-              schedule = PunishmentScheduleDto(days = schedule.days, duration = schedule.days, measurement = Measurement.DAYS),
+              schedule = PunishmentScheduleDto(days = schedule.duration, duration = schedule.duration, measurement = Measurement.DAYS),
             ),
           )
         }
@@ -141,9 +141,8 @@ class PunishmentsReportService(
             chargeNumber = chargeAndPunishments.first,
             startDate = latestSchedule.startDate,
             lastDay = latestSchedule.endDate,
-            days = if (latestSchedule.days == 0) null else latestSchedule.days,
-            duration = if (latestSchedule.days == 0) null else latestSchedule.days,
-            measurement = if (latestSchedule.days == 0) null else Measurement.DAYS,
+            duration = if (latestSchedule.duration == 0) null else latestSchedule.duration,
+            measurement = if (latestSchedule.duration == 0) null else Measurement.DAYS,
             amount = it.amount,
             stoppagePercentage = it.stoppagePercentage,
             // TODO this should really be activated by charge number, set to null for now until UI is updated post design review

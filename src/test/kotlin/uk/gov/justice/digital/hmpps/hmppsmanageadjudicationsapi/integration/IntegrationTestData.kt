@@ -730,7 +730,7 @@ class IntegrationTestData(
             listOf(
               PunishmentRequest(
                 type = punishmentType,
-                days = 10,
+                duration = 10,
                 suspendedUntil = if (startDate == null) LocalDate.now() else null,
                 startDate = startDate,
                 endDate = startDate?.plusDays(1),

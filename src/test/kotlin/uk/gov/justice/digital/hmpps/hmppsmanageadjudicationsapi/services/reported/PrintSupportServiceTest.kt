@@ -93,7 +93,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
                 type = PunishmentType.CONFINEMENT,
                 suspendedUntil = LocalDate.now().plusDays(5),
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now().plusDays(5)),
+                  PunishmentSchedule(duration = 10, suspendedUntil = LocalDate.now().plusDays(5)),
                 ),
               ),
             )
@@ -103,7 +103,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
                 type = PunishmentType.ADDITIONAL_DAYS,
                 suspendedUntil = LocalDate.now().plusDays(6),
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now().plusDays(6)),
+                  PunishmentSchedule(duration = 10, suspendedUntil = LocalDate.now().plusDays(6)),
                 ),
               ),
             )
@@ -114,7 +114,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
                 suspendedUntil = LocalDate.now().plusDays(6),
                 activatedByChargeNumber = "1",
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now().plusDays(6)),
+                  PunishmentSchedule(duration = 10, suspendedUntil = LocalDate.now().plusDays(6)),
                 ),
               ),
             )
@@ -124,7 +124,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
                 type = PunishmentType.CONFINEMENT,
                 suspendedUntil = LocalDate.now().minusDays(5),
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now().minusDays(5)),
+                  PunishmentSchedule(duration = 10, suspendedUntil = LocalDate.now().minusDays(5)),
                 ),
               ),
             )
@@ -133,7 +133,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
               Punishment(
                 type = PunishmentType.CONFINEMENT,
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 10),
+                  PunishmentSchedule(duration = 10),
                 ),
               ),
             )
@@ -144,7 +144,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
                 actualCreatedDate = LocalDateTime.now().plusDays(5),
                 suspendedUntil = LocalDate.now().plusDays(5),
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now().plusDays(5)),
+                  PunishmentSchedule(duration = 10, suspendedUntil = LocalDate.now().plusDays(5)),
                 ),
               ),
             )
@@ -157,7 +157,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
                 type = PunishmentType.CONFINEMENT,
                 suspendedUntil = LocalDate.now().plusDays(5),
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 10, suspendedUntil = LocalDate.now().plusDays(5)),
+                  PunishmentSchedule(duration = 10, suspendedUntil = LocalDate.now().plusDays(5)),
                 ),
               ),
             )
@@ -224,7 +224,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
               Punishment(
                 type = PunishmentType.CONFINEMENT,
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 10),
+                  PunishmentSchedule(duration = 10),
                 ),
               ),
             )
@@ -252,7 +252,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
               Punishment(
                 type = PunishmentType.DAMAGES_OWED,
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 0),
+                  PunishmentSchedule(duration = 0),
                 ),
               ),
             )
@@ -262,7 +262,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
               Punishment(
                 type = PunishmentType.CAUTION,
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 0),
+                  PunishmentSchedule(duration = 0),
                 ),
               ),
             )
@@ -272,7 +272,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
               Punishment(
                 type = PunishmentType.ADDITIONAL_DAYS,
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 10),
+                  PunishmentSchedule(duration = 10),
                 ),
               ),
             )
@@ -282,7 +282,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
               Punishment(
                 type = PunishmentType.PROSPECTIVE_DAYS,
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 10),
+                  PunishmentSchedule(duration = 10),
                 ),
               ),
             )
@@ -292,7 +292,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
               Punishment(
                 type = PunishmentType.CONFINEMENT,
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 10, endDate = LocalDate.now().plusDays(10)),
+                  PunishmentSchedule(duration = 10, endDate = LocalDate.now().plusDays(10)),
                 ),
               ),
             )
@@ -300,7 +300,7 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
               Punishment(
                 type = PunishmentType.REMOVAL_ACTIVITY,
                 schedule = mutableListOf(
-                  PunishmentSchedule(days = 10, endDate = LocalDate.now().minusDays(1)),
+                  PunishmentSchedule(duration = 10, endDate = LocalDate.now().minusDays(1)),
                 ),
               ),
             )

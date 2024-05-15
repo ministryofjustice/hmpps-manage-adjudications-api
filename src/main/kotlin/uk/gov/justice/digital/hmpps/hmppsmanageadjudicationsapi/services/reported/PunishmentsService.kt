@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.repo
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
@@ -162,9 +163,10 @@ class PunishmentsService(
         it.activatedByChargeNumber = reportedAdjudication.chargeNumber
         it.schedule.add(
           PunishmentSchedule(
-            days = it.schedule.latestSchedule().days,
+            duration = it.schedule.latestSchedule().duration,
             startDate = punishment.startDate,
             endDate = punishment.endDate,
+            measurement = punishment.type.measurement,
           ),
         )
         suspendedPunishmentEvents.add(
@@ -206,15 +208,36 @@ class PunishmentsService(
       suspendedUntil = punishmentRequest.suspendedUntil,
       consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber,
       amount = punishmentRequest.damagesOwedAmount,
+      paybackNotes = punishmentRequest.paybackNotes,
       schedule = when (punishmentRequest.type) {
-        PunishmentType.CAUTION -> mutableListOf(PunishmentSchedule(days = 0))
-        PunishmentType.DAMAGES_OWED -> mutableListOf(PunishmentSchedule(days = 0, startDate = hearingDate))
+        PunishmentType.CAUTION -> mutableListOf(
+          PunishmentSchedule(
+            duration = 0,
+            measurement = Measurement.DAYS,
+          ),
+        )
+        PunishmentType.DAMAGES_OWED -> mutableListOf(
+          PunishmentSchedule(
+            duration = 0,
+            startDate = hearingDate,
+            measurement = Measurement.DAYS,
+          ),
+        )
+        PunishmentType.PAYBACK -> mutableListOf(
+          PunishmentSchedule(
+            duration = punishmentRequest.duration!!,
+            measurement = punishmentRequest.type.measurement,
+            startDate = hearingDate,
+            endDate = punishmentRequest.endDate,
+          ),
+        )
         else -> mutableListOf(
           PunishmentSchedule(
-            days = punishmentRequest.days ?: punishmentRequest.duration!!,
+            duration = punishmentRequest.duration!!,
             startDate = punishmentRequest.startDate,
             endDate = punishmentRequest.endDate,
             suspendedUntil = punishmentRequest.suspendedUntil,
+            measurement = punishmentRequest.type.measurement,
           ),
         )
       },
@@ -228,13 +251,16 @@ class PunishmentsService(
       it.suspendedUntil = punishmentRequest.suspendedUntil
       it.consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber
       it.amount = punishmentRequest.damagesOwedAmount
-      if (it.schedule.latestSchedule().hasScheduleBeenUpdated(punishmentRequest) && !PunishmentType.damagesAndCaution().contains(it.type)) {
+      it.paybackNotes = punishmentRequest.paybackNotes
+      val latestSchedule = it.schedule.latestSchedule()
+      if (latestSchedule.hasScheduleBeenUpdated(punishmentRequest) && !PunishmentType.damagesAndCaution().contains(it.type)) {
         it.schedule.add(
           PunishmentSchedule(
-            days = punishmentRequest.days ?: punishmentRequest.duration!!,
-            startDate = punishmentRequest.startDate,
+            duration = punishmentRequest.duration!!,
+            startDate = if (it.type == PunishmentType.PAYBACK) latestSchedule.startDate else punishmentRequest.startDate,
             endDate = punishmentRequest.endDate,
             suspendedUntil = punishmentRequest.suspendedUntil,
+            measurement = punishmentRequest.type.measurement,
           ),
         )
       }
@@ -251,10 +277,12 @@ class PunishmentsService(
       }
       PunishmentType.EARNINGS -> this.stoppagePercentage ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
       PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> if (!OicHearingType.inadTypes().contains(latestHearing?.oicHearingType)) throw ValidationException("Punishment ${this.type} is invalid as the punishment decision was not awarded by an independent adjudicator")
+      PunishmentType.PAYBACK -> this.paybackNotes ?: throw ValidationException("paybackNotes missing for type PAYBACK")
       else -> {}
     }
     when (this.type) {
       PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS, PunishmentType.DAMAGES_OWED, PunishmentType.CAUTION -> {}
+      PunishmentType.PAYBACK -> this.endDate ?: throw ValidationException("missing end date for schedule")
       else -> {
         this.suspendedUntil ?: this.startDate ?: this.endDate ?: throw ValidationException("missing all schedule data")
         this.suspendedUntil ?: this.startDate ?: throw ValidationException("missing start date for schedule")
@@ -274,7 +302,7 @@ class PunishmentsService(
     }
 
     fun PunishmentSchedule.hasScheduleBeenUpdated(punishmentRequest: PunishmentRequest): Boolean =
-      this.days != punishmentRequest.days || this.endDate != punishmentRequest.endDate || this.startDate != punishmentRequest.startDate ||
+      this.duration != punishmentRequest.duration || this.endDate != punishmentRequest.endDate || this.startDate != punishmentRequest.startDate ||
         this.suspendedUntil != punishmentRequest.suspendedUntil
 
     private fun List<Punishment>.getPunishment(id: Long): Punishment? =
