@@ -1196,6 +1196,7 @@ class ReportedAdjudicationRepositoryTest {
   fun `rehabilitative activities mapping`() {
     reportedAdjudicationRepository.save(
       entityBuilder.reportedAdjudication(chargeNumber = "rehab").also {
+        it.hearings.clear()
         it.addPunishment(
           Punishment(
             type = PunishmentType.PAYBACK,
