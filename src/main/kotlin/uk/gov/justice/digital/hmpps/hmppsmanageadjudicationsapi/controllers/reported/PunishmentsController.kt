@@ -51,6 +51,20 @@ data class PunishmentRequest(
   val damagesOwedAmount: Double? = null,
   @Schema(description = "payback punishment notes")
   val paybackNotes: String? = null,
+  @Schema(description = "optional rehabilitative activities associated to suspended punishment")
+  val rehabilitativeActivities: List<RehabilitativeActivityRequest> = emptyList(),
+)
+
+@Schema(description = "rehabilitative activity")
+data class RehabilitativeActivityRequest(
+  @Schema(description = "details")
+  val details: String? = null,
+  @Schema(description = "who is monitoring it")
+  val monitor: String? = null,
+  @Schema(description = "end date")
+  val endDate: LocalDate? = null,
+  @Schema(description = "optional number of sessions")
+  val totalSessions: Int? = null,
 )
 
 @RestController

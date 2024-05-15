@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Privile
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.RehabilitativeActivity
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -209,6 +210,14 @@ class PunishmentsService(
       consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber,
       amount = punishmentRequest.damagesOwedAmount,
       paybackNotes = punishmentRequest.paybackNotes,
+      rehabilitativeActivities = punishmentRequest.rehabilitativeActivities.map {
+        RehabilitativeActivity(
+          details = it.details,
+          monitor = it.monitor,
+          endDate = it.endDate,
+          totalSessions = it.totalSessions,
+        )
+      }.toMutableList(),
       schedule = when (punishmentRequest.type) {
         PunishmentType.CAUTION -> mutableListOf(
           PunishmentSchedule(
@@ -288,6 +297,12 @@ class PunishmentsService(
         this.suspendedUntil ?: this.startDate ?: throw ValidationException("missing start date for schedule")
         this.suspendedUntil ?: this.endDate ?: throw ValidationException("missing end date for schedule")
       }
+    }
+    if (this.rehabilitativeActivities.isNotEmpty()) {
+      if (OicHearingType.govTypes().none { it == latestHearing?.oicHearingType }) {
+        throw ValidationException("only GOV can award rehabilitative activities")
+      }
+      this.suspendedUntil ?: throw ValidationException("only suspended punishments can have rehabilitative activities")
     }
   }
 

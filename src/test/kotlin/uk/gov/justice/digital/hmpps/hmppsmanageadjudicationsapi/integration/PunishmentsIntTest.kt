@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentCommentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.RehabilitativeActivityRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
@@ -73,6 +74,46 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.punishments[0].paybackNotes").isEqualTo("some payback notes")
       .jsonPath("$.reportedAdjudication.punishments[0].schedule.measurement").isEqualTo(Measurement.HOURS.name)
       .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo("2024-01-01")
+  }
+
+  @CsvSource("true", "false")
+  @ParameterizedTest
+  fun `create a rehabilitative activity punishment`(hasDetails: Boolean) {
+    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+
+    val rehabRequest = if (hasDetails) RehabilitativeActivityRequest(details = "some details", monitor = "monitor", endDate = LocalDate.now().plusDays(10)) else RehabilitativeActivityRequest()
+
+    val body = webTestClient.post()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to
+            listOf(
+              PunishmentRequest(
+                type = PunishmentType.CONFINEMENT,
+                suspendedUntil = LocalDate.now(),
+                duration = 10,
+                rehabilitativeActivities = listOf(rehabRequest),
+              ),
+            ),
+        ),
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+    if (hasDetails) {
+      body.jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.CONFINEMENT.name)
+        .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].details")
+        .isEqualTo("some details")
+        .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].monitor")
+        .isEqualTo("monitor")
+        .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].endDate")
+        .exists()
+    } else {
+      body.jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.CONFINEMENT.name)
+        .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0]").exists()
+    }
   }
 
   @Test
