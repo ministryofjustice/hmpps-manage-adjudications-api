@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReasonForChange
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.RehabilitativeActivityOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDate
@@ -290,6 +291,26 @@ data class PunishmentDto(
   val canRemove: Boolean = true,
   @Schema(description = "payback notes")
   val paybackNotes: String? = null,
+  @Schema(description = "rehabilitative activities associated to suspended punishment")
+  val rehabilitativeActivities: List<RehabilitativeActivityDto> = emptyList(),
+)
+
+@Schema(description = "rehabilitative activity dto")
+data class RehabilitativeActivityDto(
+  @Schema(description = "id")
+  val id: Long? = null,
+  @Schema(description = "details")
+  val details: String? = null,
+  @Schema(description = "who is monitoring it")
+  val monitor: String? = null,
+  @Schema(description = "end date")
+  val endDate: LocalDate? = null,
+  @Schema(description = "optional number of sessions")
+  val totalSessions: Int? = null,
+  @Schema(description = "completed")
+  val completed: Boolean? = null,
+  @Schema(description = "outcome")
+  val outcome: RehabilitativeActivityOutcome? = null,
 )
 
 @Schema(description = "punishment schedule")

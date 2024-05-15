@@ -14,6 +14,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.RehabilitativeActivityRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -498,6 +499,126 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Suspended punishment activation missing punishment id to activate")
+    }
+
+    @Test
+    fun `validation error - rehabilitative activity requires suspended punishment `() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.GOV_YOI
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(
+            PunishmentRequest(
+              type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.OTHER,
+              otherPrivilege = "other",
+              duration = 1,
+              startDate = LocalDate.now(),
+              endDate = LocalDate.now(),
+              rehabilitativeActivities = listOf(RehabilitativeActivityRequest()),
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("only suspended punishments can have rehabilitative activities")
+    }
+
+    @CsvSource("INAD_ADULT", "INAD_YOI")
+    @ParameterizedTest
+    fun `validation error - rehabilitative activity needs to be a governor hearing `(oicHearingType: OicHearingType) {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = oicHearingType
+        },
+      )
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(
+            PunishmentRequest(
+              type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.OTHER,
+              otherPrivilege = "other",
+              duration = 1,
+              suspendedUntil = LocalDate.now(),
+              rehabilitativeActivities = listOf(RehabilitativeActivityRequest()),
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("only GOV can award rehabilitative activities")
+    }
+
+    @Test
+    fun `saves a rehabilitative activity when user does not have all the details`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.GOV_YOI
+        },
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      punishmentsService.create(
+        chargeNumber = "1",
+        listOf(
+          PunishmentRequest(
+            type = PunishmentType.PRIVILEGE,
+            privilegeType = PrivilegeType.OTHER,
+            otherPrivilege = "other",
+            duration = 1,
+            suspendedUntil = LocalDate.now(),
+            rehabilitativeActivities = listOf(
+              RehabilitativeActivityRequest(),
+            ),
+          ),
+        ),
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities).isNotEmpty
+    }
+
+    @Test
+    fun `saves a rehabilitative activity when user has details`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.GOV_YOI
+        },
+      )
+
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      punishmentsService.create(
+        chargeNumber = "1",
+        listOf(
+          PunishmentRequest(
+            type = PunishmentType.PRIVILEGE,
+            privilegeType = PrivilegeType.OTHER,
+            otherPrivilege = "other",
+            duration = 1,
+            suspendedUntil = LocalDate.now(),
+            rehabilitativeActivities = listOf(
+              RehabilitativeActivityRequest(details = "details", monitor = "monitor", endDate = LocalDate.now(), totalSessions = 10),
+            ),
+          ),
+        ),
+      )
+
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.first().details).isEqualTo("details")
+      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.first().monitor).isEqualTo("monitor")
+      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.first().totalSessions).isEqualTo(10)
+      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.first().endDate).isEqualTo(LocalDate.now())
     }
   }
 
