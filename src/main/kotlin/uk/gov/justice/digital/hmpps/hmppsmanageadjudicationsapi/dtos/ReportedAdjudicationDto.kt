@@ -294,7 +294,8 @@ data class PunishmentDto(
 
 @Schema(description = "punishment schedule")
 data class PunishmentScheduleDto(
-  @Schema(description = "days punishment will last")
+  @Schema(description = "days punishment will last - use duration for new integrations")
+  @Deprecated("this is for live services such as sync, please use duration from now on")
   val days: Int,
   @Schema(description = "duration of punishment")
   val duration: Int,
