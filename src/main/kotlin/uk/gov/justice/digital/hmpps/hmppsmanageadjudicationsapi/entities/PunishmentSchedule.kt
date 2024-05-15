@@ -20,10 +20,11 @@ data class PunishmentSchedule(
 ) : BaseEntity() {
   fun toDto(): PunishmentScheduleDto =
     PunishmentScheduleDto(
-      duration = this.duration,
+      days = this.duration,
       startDate = this.startDate,
       endDate = this.endDate,
       suspendedUntil = this.suspendedUntil,
+      duration = this.duration,
       measurement = this.measurement,
     )
 }
