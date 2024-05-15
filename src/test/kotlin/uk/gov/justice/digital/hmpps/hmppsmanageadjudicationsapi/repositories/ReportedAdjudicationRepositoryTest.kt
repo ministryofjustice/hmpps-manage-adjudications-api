@@ -29,6 +29,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentComment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.RehabilitativeActivity
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedDamage
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -1189,5 +1190,24 @@ class ReportedAdjudicationRepositoryTest {
     )
 
     assertThat(reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber("12345").size).isEqualTo(1)
+  }
+
+  @Test
+  fun `rehabilitative activities mapping`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(chargeNumber = "rehab").also {
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.PAYBACK,
+            schedule = mutableListOf(PunishmentSchedule(duration = 1)),
+            rehabilitativeActivities = mutableListOf(
+              RehabilitativeActivity(details = "rehab", monitor = "monitor", endDate = LocalDate.now()),
+            ),
+          ),
+        )
+      },
+    )
+
+    assertThat(reportedAdjudicationRepository.findByChargeNumber("rehab")!!.getPunishments().first().rehabilitativeActivities).isNotEmpty
   }
 }
