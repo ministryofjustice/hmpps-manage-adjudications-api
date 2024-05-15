@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
@@ -166,7 +167,8 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(suspended.any { it.corrupted }).isTrue
       assertThat(removalWing.chargeNumber).isEqualTo("2")
       assertThat(removalWing.punishment.type).isEqualTo(PunishmentType.REMOVAL_WING)
-      assertThat(removalWing.punishment.schedule.days).isEqualTo(10)
+      assertThat(removalWing.punishment.schedule.duration).isEqualTo(10)
+      assertThat(removalWing.punishment.schedule.measurement).isEqualTo(Measurement.DAYS)
       assertThat(removalWing.punishment.schedule.suspendedUntil).isEqualTo(LocalDate.now())
     }
 
@@ -315,7 +317,8 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(additionalDaysReports.size).isEqualTo(1)
       assertThat(additionalDaysReports.first().punishment.type).isEqualTo(punishmentType)
       assertThat(additionalDaysReports.first().chargeNumber).isEqualTo("1")
-      assertThat(additionalDaysReports.first().punishment.schedule.days).isEqualTo(10)
+      assertThat(additionalDaysReports.first().punishment.schedule.duration).isEqualTo(10)
+      assertThat(additionalDaysReports.first().punishment.schedule.measurement).isEqualTo(Measurement.DAYS)
       assertThat(additionalDaysReports.first().punishment.consecutiveChargeNumber).isEqualTo("12345")
       assertThat(additionalDaysReports.first().chargeProvedDate).isEqualTo(reportedAdjudications.first().hearings.first().dateTimeOfHearing.toLocalDate())
     }

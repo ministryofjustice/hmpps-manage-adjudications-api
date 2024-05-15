@@ -180,7 +180,6 @@ class PunishmentsReportControllerTest : TestControllerBase() {
         PunishmentDto(
           type = PunishmentType.REMOVAL_WING,
           schedule = PunishmentScheduleDto(
-            days = 10,
             suspendedUntil = LocalDate.now(),
             duration = 10,
             measurement = Measurement.DAYS,
@@ -195,7 +194,6 @@ class PunishmentsReportControllerTest : TestControllerBase() {
         punishment = PunishmentDto(
           type = PunishmentType.ADDITIONAL_DAYS,
           schedule = PunishmentScheduleDto(
-            days = 10,
             duration = 10,
             measurement = Measurement.DAYS,
           ),
