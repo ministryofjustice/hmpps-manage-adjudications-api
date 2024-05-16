@@ -95,7 +95,7 @@ class PunishmentsReportService(
               privilegeType = punishment.privilegeType,
               otherPrivilege = punishment.otherPrivilege,
               stoppagePercentage = punishment.stoppagePercentage,
-              schedule = PunishmentScheduleDto(days = schedule.duration, suspendedUntil = schedule.suspendedUntil, duration = schedule.duration, measurement = Measurement.DAYS),
+              schedule = PunishmentScheduleDto(days = schedule.duration ?: 0, suspendedUntil = schedule.suspendedUntil, duration = schedule.duration, measurement = Measurement.DAYS),
             ),
           )
         }
@@ -122,7 +122,7 @@ class PunishmentsReportService(
               id = punishment.id,
               type = punishment.type,
               consecutiveChargeNumber = punishment.consecutiveToChargeNumber,
-              schedule = PunishmentScheduleDto(days = schedule.duration, duration = schedule.duration, measurement = Measurement.DAYS),
+              schedule = PunishmentScheduleDto(days = schedule.duration ?: 0, duration = schedule.duration, measurement = Measurement.DAYS),
             ),
           )
         }
