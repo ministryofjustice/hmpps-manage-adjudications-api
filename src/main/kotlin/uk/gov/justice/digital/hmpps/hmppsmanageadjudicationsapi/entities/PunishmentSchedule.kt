@@ -11,7 +11,7 @@ import java.time.LocalDate
 @Table(name = "punishment_schedule")
 data class PunishmentSchedule(
   override val id: Long? = null,
-  var duration: Int,
+  var duration: Int? = null,
   @Enumerated(EnumType.STRING)
   var measurement: Measurement = Measurement.DAYS,
   var startDate: LocalDate? = null,
