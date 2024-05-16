@@ -106,6 +106,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       body.jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.CONFINEMENT.name)
         .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].details")
         .isEqualTo("some details")
+        .jsonPath("$.reportedAdjudication.punishments[0].canEdit")
+        .isEqualTo(false)
         .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].monitor")
         .isEqualTo("monitor")
         .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].endDate")

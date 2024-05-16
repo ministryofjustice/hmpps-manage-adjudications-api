@@ -170,6 +170,72 @@ class PunishmentsControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class UpdateRehabilitativeActivity {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        punishmentsService.updateRehabilitativeActivity(
+          ArgumentMatchers.anyString(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      updateRehabilitativeActivityRequest(
+        1,
+        RehabilitativeActivityRequest(),
+      ).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      updateRehabilitativeActivityRequest(
+        1,
+        RehabilitativeActivityRequest(),
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      updateRehabilitativeActivityRequest(
+        1,
+        RehabilitativeActivityRequest(),
+      ).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to update a rehabilitative activity`() {
+      updateRehabilitativeActivityRequest(1, RehabilitativeActivityRequest())
+        .andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(punishmentsService).updateRehabilitativeActivity(
+        chargeNumber = "1",
+        id = 1,
+        rehabilitativeActivityRequest = RehabilitativeActivityRequest(),
+      )
+    }
+
+    private fun updateRehabilitativeActivityRequest(
+      id: Long,
+      rehabilitativeActivityRequest: RehabilitativeActivityRequest,
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(rehabilitativeActivityRequest)
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.put("/reported-adjudications/$id/punishments/rehabilitative-activity/1")
+            .header("Content-Type", "application/json")
+            .content(body),
+        )
+    }
+  }
+
   companion object {
     val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, duration = 10)
   }

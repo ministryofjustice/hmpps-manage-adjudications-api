@@ -113,4 +113,18 @@ class PunishmentsController(
       )
     },
   )
+
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
+  @Operation(summary = "updates a rehabilitative activity")
+  @PutMapping(value = ["/{chargeNumber}/punishments/rehabilitative-activity/{id}"])
+  @ResponseStatus(HttpStatus.OK)
+  fun updateRehabilitativeActivity(
+    @PathVariable(name = "chargeNumber") chargeNumber: String,
+    @PathVariable(name = "id") id: Long,
+    @RequestBody rehabilitativeActivityRequest: RehabilitativeActivityRequest,
+  ): ReportedAdjudicationResponse = punishmentsService.updateRehabilitativeActivity(
+    chargeNumber = chargeNumber,
+    id = id,
+    rehabilitativeActivityRequest = rehabilitativeActivityRequest,
+  ).toResponse()
 }
