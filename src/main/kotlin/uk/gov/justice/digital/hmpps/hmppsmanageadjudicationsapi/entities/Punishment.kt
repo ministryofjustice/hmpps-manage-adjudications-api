@@ -59,6 +59,7 @@ data class Punishment(
       activatedBy = this.activatedByChargeNumber,
       consecutiveChargeNumber = this.consecutiveToChargeNumber,
       canRemove = !(PunishmentType.additionalDays().contains(this.type) && hasLinkedAda),
+      canEdit = this.rehabilitativeActivities.isEmpty(),
       consecutiveReportAvailable = isConsecutiveReportAvailable(this.consecutiveToChargeNumber, consecutiveReportsAvailable),
       schedule = this.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toDto(),
       paybackNotes = this.paybackNotes,
@@ -72,7 +73,7 @@ data class Punishment(
   }
 }
 
-enum class PunishmentType(val measurement: Measurement = Measurement.DAYS) {
+enum class PunishmentType(val measurement: Measurement = Measurement.DAYS, val rehabilitativeActivitiesAllowed: Boolean = true) {
   PRIVILEGE,
   EARNINGS,
   CONFINEMENT,
@@ -80,11 +81,11 @@ enum class PunishmentType(val measurement: Measurement = Measurement.DAYS) {
   EXCLUSION_WORK,
   EXTRA_WORK,
   REMOVAL_WING,
-  ADDITIONAL_DAYS,
-  PROSPECTIVE_DAYS,
-  CAUTION,
-  DAMAGES_OWED,
-  PAYBACK(Measurement.HOURS),
+  ADDITIONAL_DAYS(rehabilitativeActivitiesAllowed = false),
+  PROSPECTIVE_DAYS(rehabilitativeActivitiesAllowed = false),
+  CAUTION(rehabilitativeActivitiesAllowed = false),
+  DAMAGES_OWED(rehabilitativeActivitiesAllowed = false),
+  PAYBACK(measurement = Measurement.HOURS, rehabilitativeActivitiesAllowed = false),
   ;
 
   companion object {

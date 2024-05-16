@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EntityNotFoundException
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
@@ -154,6 +155,9 @@ data class ReportedAdjudication(
   fun clearOutcomes() = this.outcomes.clear()
 
   fun getPunishments() = this.punishments.filter { it.deleted != true }
+
+  fun getPunishmentForRehabilitativeActivity(id: Long): Punishment =
+    this.getPunishments().firstOrNull { p -> p.rehabilitativeActivities.any { it.id == id } } ?: throw EntityNotFoundException("rehabilitative activity not found for charge $chargeNumber id $id")
 
   fun addPunishment(punishment: Punishment) = this.punishments.add(punishment)
 

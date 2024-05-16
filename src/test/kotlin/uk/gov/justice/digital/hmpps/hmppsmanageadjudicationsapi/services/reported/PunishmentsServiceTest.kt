@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Privile
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.RehabilitativeActivity
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
@@ -248,6 +249,34 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("missing all schedule data")
+    }
+
+    @CsvSource("CAUTION", "DAMAGES_OWED", "PAYBACK")
+    @ParameterizedTest
+    fun `validation error - punishment does not all rehab activities`(punishmentType: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.GOV_YOI
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(
+            PunishmentRequest(
+              type = punishmentType,
+              suspendedUntil = LocalDate.now(),
+              damagesOwedAmount = 1.0,
+              paybackNotes = "",
+              endDate = LocalDate.now(),
+              rehabilitativeActivities = listOf(RehabilitativeActivityRequest()),
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("punishment type does not support rehabilitative activities")
     }
 
     @Test
@@ -938,6 +967,34 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `validation exception - amending rehab linked punishment is currently not supported`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.GOV_YOI
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = PunishmentType.CONFINEMENT,
+              rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+              schedule = mutableListOf(PunishmentSchedule(duration = 10)),
+            ),
+          )
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.update(
+          chargeNumber = "1",
+          punishments = listOf(
+            PunishmentRequest(id = 1, type = PunishmentType.CONFINEMENT, duration = 10, suspendedUntil = LocalDate.now()),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Edit of a punishment linked to rehabilitative activities is currently not supported")
+    }
+
+    @Test
     fun `throws exception if id for punishment is not located `() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
@@ -1240,6 +1297,45 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(response.punishments.first().damagesOwedAmount).isEqualTo(99.9)
+    }
+
+    @Test
+    fun `update rehabilitative activity throws entity not found if no activity for id`() {
+      assertThatThrownBy {
+        punishmentsService.updateRehabilitativeActivity(
+          chargeNumber = "1",
+          id = 10,
+          rehabilitativeActivityRequest = RehabilitativeActivityRequest(),
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("rehabilitative activity not found for charge 1235 id 10")
+    }
+
+    @Test
+    fun `update rehabilitative activity`() {
+      val punishment = Punishment(
+        type = PunishmentType.CONFINEMENT,
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity(id = 1)),
+        schedule = mutableListOf(PunishmentSchedule(duration = 10, suspendedUntil = LocalDate.now())),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.addPunishment(punishment)
+        },
+      )
+
+      punishmentsService.updateRehabilitativeActivity(
+        chargeNumber = "1",
+        id = 1L,
+        rehabilitativeActivityRequest =
+        RehabilitativeActivityRequest(details = "details", monitor = "monitor", endDate = LocalDate.now(), totalSessions = 4),
+      )
+
+      assertThat(punishment.rehabilitativeActivities.first().totalSessions).isEqualTo(4)
+      assertThat(punishment.rehabilitativeActivities.first().endDate).isEqualTo(LocalDate.now())
+      assertThat(punishment.rehabilitativeActivities.first().monitor).isEqualTo("monitor")
+      assertThat(punishment.rehabilitativeActivities.first().details).isEqualTo("details")
     }
   }
 

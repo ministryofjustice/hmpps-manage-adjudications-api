@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.RehabilitativeActivityRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
@@ -115,6 +116,7 @@ class PunishmentsService(
         )
       } else {
         val punishmentToAmend = reportedAdjudication.getPunishments().getPunishmentToAmend(punishmentRequest.id)
+        if (punishmentToAmend.rehabilitativeActivities.isNotEmpty()) throw ValidationException("Edit of a punishment linked to rehabilitative activities is currently not supported")
         when (punishmentToAmend.type) {
           punishmentRequest.type -> {
             punishmentRequest.suspendedUntil?.let {
@@ -145,6 +147,19 @@ class PunishmentsService(
     ).also {
       it.suspendedPunishmentEvents = suspendedPunishmentEvents
     }
+  }
+
+  fun updateRehabilitativeActivity(chargeNumber: String, id: Long, rehabilitativeActivityRequest: RehabilitativeActivityRequest): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
+    reportedAdjudication.getPunishmentForRehabilitativeActivity(id = id)
+      .rehabilitativeActivities.first { it.id == id }.let {
+        it.details = rehabilitativeActivityRequest.details
+        it.endDate = rehabilitativeActivityRequest.endDate
+        it.monitor = rehabilitativeActivityRequest.monitor
+        it.totalSessions = rehabilitativeActivityRequest.totalSessions
+      }
+
+    return saveToDto(reportedAdjudication)
   }
 
   private fun activateSuspendedPunishments(
@@ -300,6 +315,7 @@ class PunishmentsService(
       if (OicHearingType.govTypes().none { it == latestHearing?.oicHearingType }) {
         throw ValidationException("only GOV can award rehabilitative activities")
       }
+      if (!this.type.rehabilitativeActivitiesAllowed) throw ValidationException("punishment type does not support rehabilitative activities")
       this.suspendedUntil ?: throw ValidationException("only suspended punishments can have rehabilitative activities")
     }
   }
