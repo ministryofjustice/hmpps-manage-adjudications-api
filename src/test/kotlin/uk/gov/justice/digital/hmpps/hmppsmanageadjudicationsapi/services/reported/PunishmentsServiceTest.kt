@@ -1298,6 +1298,45 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response.punishments.first().damagesOwedAmount).isEqualTo(99.9)
     }
+
+    @Test
+    fun `update rehabilitative activity throws entity not found if no activity for id`() {
+      assertThatThrownBy {
+        punishmentsService.updateRehabilitativeActivity(
+          chargeNumber = "1",
+          id = 10,
+          rehabilitativeActivityRequest = RehabilitativeActivityRequest(),
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("rehabilitative activity not found for charge 1235 id 10")
+    }
+
+    @Test
+    fun `update rehabilitative activity`() {
+      val punishment = Punishment(
+        type = PunishmentType.CONFINEMENT,
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity(id = 1)),
+        schedule = mutableListOf(PunishmentSchedule(duration = 10, suspendedUntil = LocalDate.now())),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.addPunishment(punishment)
+        },
+      )
+
+      punishmentsService.updateRehabilitativeActivity(
+        chargeNumber = "1",
+        id = 1L,
+        rehabilitativeActivityRequest =
+        RehabilitativeActivityRequest(details = "details", monitor = "monitor", endDate = LocalDate.now(), totalSessions = 4),
+      )
+
+      assertThat(punishment.rehabilitativeActivities.first().totalSessions).isEqualTo(4)
+      assertThat(punishment.rehabilitativeActivities.first().endDate).isEqualTo(LocalDate.now())
+      assertThat(punishment.rehabilitativeActivities.first().monitor).isEqualTo("monitor")
+      assertThat(punishment.rehabilitativeActivities.first().details).isEqualTo("details")
+    }
   }
 
   @Nested

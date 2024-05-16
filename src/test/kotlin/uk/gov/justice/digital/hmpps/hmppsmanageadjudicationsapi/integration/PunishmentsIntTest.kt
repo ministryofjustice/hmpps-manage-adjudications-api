@@ -126,6 +126,49 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `update a rehabilitative activity`() {
+    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to
+            listOf(
+              PunishmentRequest(
+                type = PunishmentType.CONFINEMENT,
+                suspendedUntil = LocalDate.now(),
+                duration = 10,
+                rehabilitativeActivities = listOf(RehabilitativeActivityRequest()),
+              ),
+            ),
+        ),
+      )
+      .exchange()
+      .expectStatus().isCreated
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/rehabilitative-activity/1")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "details" to "details",
+          "monitor" to "monitor",
+          "endDate" to LocalDate.now().plusDays(10),
+          "totalSessions" to 4,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].details").isEqualTo("details")
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].monitor").isEqualTo("monitor")
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].endDate").exists()
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].totalSessions").isEqualTo(4)
+  }
+
+  @Test
   fun `update a payback punishment`() {
     val hearingDate = LocalDate.of(2024, 1, 1)
     val scenario = initDataForUnScheduled().createHearing(dateTimeOfHearing = hearingDate.atStartOfDay()).createChargeProved()

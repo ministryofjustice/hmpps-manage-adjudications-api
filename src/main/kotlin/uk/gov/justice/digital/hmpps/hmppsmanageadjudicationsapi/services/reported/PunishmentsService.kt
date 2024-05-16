@@ -150,7 +150,16 @@ class PunishmentsService(
   }
 
   fun updateRehabilitativeActivity(chargeNumber: String, id: Long, rehabilitativeActivityRequest: RehabilitativeActivityRequest): ReportedAdjudicationDto {
-    TODO("implement me")
+    val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
+    reportedAdjudication.getPunishmentForRehabilitativeActivity(id = id)
+      .rehabilitativeActivities.first { it.id == id }.let {
+        it.details = rehabilitativeActivityRequest.details
+        it.endDate = rehabilitativeActivityRequest.endDate
+        it.monitor = rehabilitativeActivityRequest.monitor
+        it.totalSessions = rehabilitativeActivityRequest.totalSessions
+      }
+
+    return saveToDto(reportedAdjudication)
   }
 
   private fun activateSuspendedPunishments(
