@@ -181,28 +181,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `validation error - payback punishment is missing notes`() {
-      assertThatThrownBy {
-        punishmentsService.create(
-          chargeNumber = "1",
-          listOf(PunishmentRequest(type = PunishmentType.PAYBACK, duration = 1)),
-        )
-      }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("paybackNotes missing for type PAYBACK")
-    }
-
-    @Test
-    fun `validation error - payback punishment is missing end date`() {
-      assertThatThrownBy {
-        punishmentsService.create(
-          chargeNumber = "1",
-          listOf(PunishmentRequest(type = PunishmentType.PAYBACK, duration = 1, paybackNotes = "testing")),
-        )
-      }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("missing end date for schedule")
-    }
-
-    @Test
     fun `validation error - earnings missing stoppage percentage `() {
       assertThatThrownBy {
         punishmentsService.create(

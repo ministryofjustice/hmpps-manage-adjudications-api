@@ -321,7 +321,7 @@ data class PunishmentScheduleDto(
   @Deprecated("this is for live services such as sync, please use duration from now on")
   val days: Int,
   @Schema(description = "duration of punishment")
-  val duration: Int,
+  val duration: Int? = null,
   @Schema(description = "measurement of duration")
   val measurement: Measurement,
   @Schema(description = "optional start date of punishment")
