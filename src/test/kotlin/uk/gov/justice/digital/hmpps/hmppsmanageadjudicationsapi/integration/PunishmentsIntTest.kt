@@ -42,12 +42,13 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       )
   }
 
-  @Test
-  fun `create a payback punishment`() {
+  @CsvSource("true", "false")
+  @ParameterizedTest
+  fun `create a payback punishment`(hasDetails: Boolean) {
     val hearingDate = LocalDate.of(2024, 1, 1)
     val scenario = initDataForUnScheduled().createHearing(dateTimeOfHearing = hearingDate.atStartOfDay()).createChargeProved()
 
-    webTestClient.post()
+    val body = webTestClient.post()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
@@ -59,9 +60,9 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
                 type = PunishmentType.PAYBACK,
                 suspendedUntil = null,
                 startDate = null,
-                endDate = LocalDate.now().plusDays(10),
-                duration = 10,
-                paybackNotes = "some payback notes",
+                endDate = if (hasDetails) LocalDate.now().plusDays(10) else null,
+                duration = if (hasDetails) 10 else null,
+                paybackNotes = if (hasDetails) "some payback notes" else null,
               ),
             ),
         ),
@@ -69,11 +70,17 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isCreated
       .expectBody()
-      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.PAYBACK.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].schedule.duration").isEqualTo(10)
-      .jsonPath("$.reportedAdjudication.punishments[0].paybackNotes").isEqualTo("some payback notes")
-      .jsonPath("$.reportedAdjudication.punishments[0].schedule.measurement").isEqualTo(Measurement.HOURS.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo("2024-01-01")
+
+    if (hasDetails) {
+      body.jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.PAYBACK.name)
+        .jsonPath("$.reportedAdjudication.punishments[0].schedule.duration").isEqualTo(10)
+        .jsonPath("$.reportedAdjudication.punishments[0].paybackNotes").isEqualTo("some payback notes")
+        .jsonPath("$.reportedAdjudication.punishments[0].schedule.measurement").isEqualTo(Measurement.HOURS.name)
+        .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo("2024-01-01")
+    } else {
+      body.jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.PAYBACK.name)
+        .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo("2024-01-01")
+    }
   }
 
   @CsvSource("true", "false")

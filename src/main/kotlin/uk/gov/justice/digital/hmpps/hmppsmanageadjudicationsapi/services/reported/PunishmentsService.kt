@@ -234,7 +234,7 @@ class PunishmentsService(
         )
         PunishmentType.PAYBACK -> mutableListOf(
           PunishmentSchedule(
-            duration = punishmentRequest.duration!!,
+            duration = punishmentRequest.duration,
             measurement = punishmentRequest.type.measurement,
             startDate = hearingDate,
             endDate = punishmentRequest.endDate,
@@ -286,12 +286,10 @@ class PunishmentsService(
       }
       PunishmentType.EARNINGS -> this.stoppagePercentage ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
       PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> if (!OicHearingType.inadTypes().contains(latestHearing?.oicHearingType)) throw ValidationException("Punishment ${this.type} is invalid as the punishment decision was not awarded by an independent adjudicator")
-      PunishmentType.PAYBACK -> this.paybackNotes ?: throw ValidationException("paybackNotes missing for type PAYBACK")
       else -> {}
     }
     when (this.type) {
-      PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS, PunishmentType.DAMAGES_OWED, PunishmentType.CAUTION -> {}
-      PunishmentType.PAYBACK -> this.endDate ?: throw ValidationException("missing end date for schedule")
+      PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS, PunishmentType.DAMAGES_OWED, PunishmentType.CAUTION, PunishmentType.PAYBACK -> {}
       else -> {
         this.suspendedUntil ?: this.startDate ?: this.endDate ?: throw ValidationException("missing all schedule data")
         this.suspendedUntil ?: this.startDate ?: throw ValidationException("missing start date for schedule")

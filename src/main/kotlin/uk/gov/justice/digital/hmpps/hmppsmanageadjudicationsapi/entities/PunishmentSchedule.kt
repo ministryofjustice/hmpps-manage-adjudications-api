@@ -11,7 +11,7 @@ import java.time.LocalDate
 @Table(name = "punishment_schedule")
 data class PunishmentSchedule(
   override val id: Long? = null,
-  var duration: Int,
+  var duration: Int? = null,
   @Enumerated(EnumType.STRING)
   var measurement: Measurement = Measurement.DAYS,
   var startDate: LocalDate? = null,
@@ -20,7 +20,7 @@ data class PunishmentSchedule(
 ) : BaseEntity() {
   fun toDto(): PunishmentScheduleDto =
     PunishmentScheduleDto(
-      days = this.duration,
+      days = this.duration ?: 0,
       startDate = this.startDate,
       endDate = this.endDate,
       suspendedUntil = this.suspendedUntil,
