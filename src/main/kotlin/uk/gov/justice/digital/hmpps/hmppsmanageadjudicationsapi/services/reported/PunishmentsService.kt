@@ -280,7 +280,7 @@ class PunishmentsService(
       if (latestSchedule.hasScheduleBeenUpdated(punishmentRequest) && !PunishmentType.damagesAndCaution().contains(it.type)) {
         it.schedule.add(
           PunishmentSchedule(
-            duration = punishmentRequest.duration!!,
+            duration = punishmentRequest.duration,
             startDate = if (it.type == PunishmentType.PAYBACK) latestSchedule.startDate else punishmentRequest.startDate,
             endDate = punishmentRequest.endDate,
             suspendedUntil = punishmentRequest.suspendedUntil,
