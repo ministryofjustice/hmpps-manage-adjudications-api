@@ -47,8 +47,9 @@ data class Punishment(
   fun isActiveSuspended(punishmentCutOff: LocalDate): Boolean =
     this.suspendedUntil?.isAfter(punishmentCutOff) == true && this.activatedByChargeNumber == null
 
-  fun toDto(hasLinkedAda: Boolean, consecutiveReportsAvailable: List<String>?, activatedFrom: String? = null): PunishmentDto =
-    PunishmentDto(
+  fun toDto(hasLinkedAda: Boolean, consecutiveReportsAvailable: List<String>?, activatedFrom: String? = null): PunishmentDto {
+    val canRemove = !(PunishmentType.additionalDays().contains(this.type) && hasLinkedAda)
+    return PunishmentDto(
       id = this.id,
       type = this.type,
       privilegeType = this.privilegeType,
@@ -58,13 +59,14 @@ data class Punishment(
       activatedFrom = activatedFrom,
       activatedBy = this.activatedByChargeNumber,
       consecutiveChargeNumber = this.consecutiveToChargeNumber,
-      canRemove = !(PunishmentType.additionalDays().contains(this.type) && hasLinkedAda),
-      canEdit = this.rehabilitativeActivities.isEmpty(),
+      canRemove = canRemove,
+      canEdit = this.rehabilitativeActivities.isEmpty() || canRemove,
       consecutiveReportAvailable = isConsecutiveReportAvailable(this.consecutiveToChargeNumber, consecutiveReportsAvailable),
       schedule = this.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toDto(),
       paybackNotes = this.paybackNotes,
       rehabilitativeActivities = this.rehabilitativeActivities.map { it.toDto() },
     )
+  }
 
   private fun isConsecutiveReportAvailable(consecutiveChargeNumber: String?, consecutiveReportsAvailable: List<String>?): Boolean? {
     consecutiveChargeNumber ?: return null

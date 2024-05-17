@@ -168,6 +168,38 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].totalSessions").isEqualTo(4)
   }
 
+  @Test
+  fun `delete a rehabilitative activity`() {
+    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to
+            listOf(
+              PunishmentRequest(
+                type = PunishmentType.CONFINEMENT,
+                suspendedUntil = LocalDate.now(),
+                duration = 10,
+                rehabilitativeActivities = listOf(RehabilitativeActivityRequest()),
+              ),
+            ),
+        ),
+      )
+      .exchange()
+      .expectStatus().isCreated
+
+    webTestClient.delete()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/rehabilitative-activity/1")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities.size()").isEqualTo(0)
+  }
+
   @CsvSource("true", "false")
   @ParameterizedTest
   fun `update a payback punishment`(hasDuration: Boolean) {

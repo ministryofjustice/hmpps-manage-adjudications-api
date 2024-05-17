@@ -236,6 +236,55 @@ class PunishmentsControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class DeleteRehabilitativeActivity {
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        punishmentsService.deleteRehabilitativeActivity(
+          ArgumentMatchers.anyString(),
+          any(),
+        ),
+      ).thenReturn(REPORTED_ADJUDICATION_DTO)
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      deleteRehabilitativeActivityRequest(1).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["SCOPE_write"])
+    fun `responds with a forbidden status code for non ALO`() {
+      deleteRehabilitativeActivityRequest(1).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER"])
+    fun `responds with a forbidden status code for ALO without write scope`() {
+      deleteRehabilitativeActivityRequest(1).andExpect(MockMvcResultMatchers.status().isForbidden)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `makes a call to delete a rehabilitative activity`() {
+      deleteRehabilitativeActivityRequest(1)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(punishmentsService).deleteRehabilitativeActivity(chargeNumber = "1", id = 1)
+    }
+
+    private fun deleteRehabilitativeActivityRequest(
+      id: Long,
+    ): ResultActions {
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.delete("/reported-adjudications/$id/punishments/rehabilitative-activity/1")
+            .header("Content-Type", "application/json"),
+        )
+    }
+  }
+
   companion object {
     val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, duration = 10)
   }

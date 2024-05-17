@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -129,4 +130,13 @@ class PunishmentsController(
     id = id,
     rehabilitativeActivityRequest = rehabilitativeActivityRequest,
   ).toResponse()
+
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
+  @Operation(summary = "updates a rehabilitative activity")
+  @DeleteMapping(value = ["/{chargeNumber}/punishments/rehabilitative-activity/{id}"])
+  @ResponseStatus(HttpStatus.OK)
+  fun deleteRehabilitativeActivity(
+    @PathVariable(name = "chargeNumber") chargeNumber: String,
+    @PathVariable(name = "id") id: Long,
+  ): ReportedAdjudicationResponse = punishmentsService.deleteRehabilitativeActivity(chargeNumber = chargeNumber, id = id).toResponse()
 }
