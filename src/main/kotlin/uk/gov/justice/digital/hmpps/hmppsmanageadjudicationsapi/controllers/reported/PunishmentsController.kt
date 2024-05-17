@@ -57,6 +57,8 @@ data class PunishmentRequest(
 
 @Schema(description = "rehabilitative activity")
 data class RehabilitativeActivityRequest(
+  @Schema(description = "id")
+  val id: Long? = null,
   @Schema(description = "details")
   val details: String? = null,
   @Schema(description = "who is monitoring it")

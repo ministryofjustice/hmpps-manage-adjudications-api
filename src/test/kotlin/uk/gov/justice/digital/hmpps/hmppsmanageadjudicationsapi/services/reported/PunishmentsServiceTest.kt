@@ -1309,6 +1309,44 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(punishment.rehabilitativeActivities.first().monitor).isEqualTo("monitor")
       assertThat(punishment.rehabilitativeActivities.first().details).isEqualTo("details")
     }
+
+    @Test
+    fun `update a punishment also adds rehabilitative activities if present, and no id set`() {
+      val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        reportedAdjudication.also {
+          it.hearings.first().oicHearingType = OicHearingType.GOV_YOI
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = PunishmentType.CONFINEMENT,
+              schedule = mutableListOf(
+                PunishmentSchedule(id = 1, duration = 1, suspendedUntil = LocalDate.now()).also {
+                  it.createDateTime = LocalDateTime.now()
+                },
+              ),
+            ),
+          )
+        },
+      )
+
+      punishmentsService.update(
+        chargeNumber = "1",
+        listOf(
+          PunishmentRequest(
+            id = 1,
+            type = PunishmentType.CONFINEMENT,
+            duration = 1,
+            suspendedUntil = LocalDate.now(),
+            rehabilitativeActivities = listOf(RehabilitativeActivityRequest(), RehabilitativeActivityRequest(id = 1)),
+          ),
+        ),
+      )
+      verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
+      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities).isNotEmpty
+      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.size).isEqualTo(1)
+    }
   }
 
   @Nested
