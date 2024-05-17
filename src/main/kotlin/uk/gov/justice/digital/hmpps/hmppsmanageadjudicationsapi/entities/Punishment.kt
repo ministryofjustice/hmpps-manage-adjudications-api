@@ -60,7 +60,7 @@ data class Punishment(
       activatedBy = this.activatedByChargeNumber,
       consecutiveChargeNumber = this.consecutiveToChargeNumber,
       canRemove = canRemove,
-      canEdit = this.rehabilitativeActivities.isEmpty() || canRemove,
+      canEdit = this.rehabilitativeActivities.isEmpty() && canRemove,
       consecutiveReportAvailable = isConsecutiveReportAvailable(this.consecutiveToChargeNumber, consecutiveReportsAvailable),
       schedule = this.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toDto(),
       paybackNotes = this.paybackNotes,
