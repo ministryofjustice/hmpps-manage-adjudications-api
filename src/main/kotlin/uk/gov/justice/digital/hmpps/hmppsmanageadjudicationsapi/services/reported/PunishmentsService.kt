@@ -116,7 +116,6 @@ class PunishmentsService(
         )
       } else {
         val punishmentToAmend = reportedAdjudication.getPunishments().getPunishmentToAmend(punishmentRequest.id)
-        if (punishmentToAmend.rehabilitativeActivities.isNotEmpty()) throw ValidationException("Edit of a punishment linked to rehabilitative activities is currently not supported")
         when (punishmentToAmend.type) {
           punishmentRequest.type -> {
             punishmentRequest.suspendedUntil?.let {

@@ -967,34 +967,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `validation exception - amending rehab linked punishment is currently not supported`() {
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
-          it.hearings.first().oicHearingType = OicHearingType.GOV_YOI
-          it.addPunishment(
-            Punishment(
-              id = 1,
-              type = PunishmentType.CONFINEMENT,
-              rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
-              schedule = mutableListOf(PunishmentSchedule(duration = 10)),
-            ),
-          )
-        },
-      )
-
-      assertThatThrownBy {
-        punishmentsService.update(
-          chargeNumber = "1",
-          punishments = listOf(
-            PunishmentRequest(id = 1, type = PunishmentType.CONFINEMENT, duration = 10, suspendedUntil = LocalDate.now()),
-          ),
-        )
-      }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("Edit of a punishment linked to rehabilitative activities is currently not supported")
-    }
-
-    @Test
     fun `throws exception if id for punishment is not located `() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
