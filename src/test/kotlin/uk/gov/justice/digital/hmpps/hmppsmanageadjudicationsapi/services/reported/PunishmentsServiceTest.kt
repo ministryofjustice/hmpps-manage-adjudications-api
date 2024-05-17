@@ -1311,7 +1311,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `update a punishment also adds rehabilitative activities if present`() {
+    fun `update a punishment also adds rehabilitative activities if present, and no id set`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
@@ -1339,12 +1339,13 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             type = PunishmentType.CONFINEMENT,
             duration = 1,
             suspendedUntil = LocalDate.now(),
-            rehabilitativeActivities = listOf(RehabilitativeActivityRequest()),
+            rehabilitativeActivities = listOf(RehabilitativeActivityRequest(), RehabilitativeActivityRequest(id = 1)),
           ),
         ),
       )
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities).isNotEmpty
+      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.size).isEqualTo(1)
     }
   }
 
