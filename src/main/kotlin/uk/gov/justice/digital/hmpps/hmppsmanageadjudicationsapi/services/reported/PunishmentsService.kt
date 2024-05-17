@@ -275,6 +275,14 @@ class PunishmentsService(
       it.consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber
       it.amount = punishmentRequest.damagesOwedAmount
       it.paybackNotes = punishmentRequest.paybackNotes
+      it.rehabilitativeActivities = punishmentRequest.rehabilitativeActivities.map { ra ->
+        RehabilitativeActivity(
+          details = ra.details,
+          monitor = ra.monitor,
+          endDate = ra.endDate,
+          totalSessions = ra.totalSessions,
+        )
+      }.toMutableList()
       val latestSchedule = it.schedule.latestSchedule()
       if (latestSchedule.hasScheduleBeenUpdated(punishmentRequest) && !PunishmentType.damagesAndCaution().contains(it.type)) {
         it.schedule.add(
