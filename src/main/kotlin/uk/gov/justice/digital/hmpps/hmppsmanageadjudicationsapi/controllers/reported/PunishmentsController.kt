@@ -132,7 +132,7 @@ class PunishmentsController(
   ).toResponse()
 
   @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
-  @Operation(summary = "updates a rehabilitative activity")
+  @Operation(summary = "deletes a rehabilitative activity")
   @DeleteMapping(value = ["/{chargeNumber}/punishments/rehabilitative-activity/{id}"])
   @ResponseStatus(HttpStatus.OK)
   fun deleteRehabilitativeActivity(
