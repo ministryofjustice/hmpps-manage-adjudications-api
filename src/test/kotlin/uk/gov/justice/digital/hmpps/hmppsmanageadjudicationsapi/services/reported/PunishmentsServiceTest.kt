@@ -1311,6 +1311,35 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `delete rehabilitative activity throws entity not found if no activity for id`() {
+      assertThatThrownBy {
+        punishmentsService.deleteRehabilitativeActivity(
+          chargeNumber = "1",
+          id = 10,
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("rehabilitative activity not found for charge 1235 id 10")
+    }
+
+    @Test
+    fun `delete rehabilitative activity`() {
+      val punishment = Punishment(
+        type = PunishmentType.CONFINEMENT,
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity(id = 1)),
+        schedule = mutableListOf(PunishmentSchedule(duration = 10, suspendedUntil = LocalDate.now())),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.addPunishment(punishment)
+        },
+      )
+
+      punishmentsService.deleteRehabilitativeActivity(chargeNumber = "1", id = 1L)
+      assertThat(punishment.rehabilitativeActivities).isEmpty()
+    }
+
+    @Test
     fun `update a punishment also adds rehabilitative activities if present, and no id set`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 

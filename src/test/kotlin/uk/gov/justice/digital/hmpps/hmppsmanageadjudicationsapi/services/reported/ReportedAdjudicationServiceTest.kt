@@ -1636,6 +1636,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       val dto = reportedAdjudicationService.getReportedAdjudicationDetails(chargeNumber = "12345")
 
       assertThat(dto.punishments.first().canRemove).isFalse
+      assertThat(dto.punishments.first().canEdit).isFalse
     }
   }
 

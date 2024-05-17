@@ -161,6 +161,15 @@ class PunishmentsService(
     return saveToDto(reportedAdjudication)
   }
 
+  fun deleteRehabilitativeActivity(chargeNumber: String, id: Long): ReportedAdjudicationDto {
+    val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
+    val punishment = reportedAdjudication.getPunishmentForRehabilitativeActivity(id = id)
+    val rehabilitativeActivity = punishment.rehabilitativeActivities.first { it.id == id }
+    punishment.rehabilitativeActivities.remove(rehabilitativeActivity)
+
+    return saveToDto(reportedAdjudication)
+  }
+
   private fun activateSuspendedPunishments(
     reportedAdjudication: ReportedAdjudication,
     toActivate: List<PunishmentRequest>,
