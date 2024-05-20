@@ -5,7 +5,6 @@ import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.RehabilitativeActivityRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
@@ -148,28 +147,6 @@ class PunishmentsService(
     }
   }
 
-  fun updateRehabilitativeActivity(chargeNumber: String, id: Long, rehabilitativeActivityRequest: RehabilitativeActivityRequest): ReportedAdjudicationDto {
-    val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
-    reportedAdjudication.getPunishmentForRehabilitativeActivity(id = id)
-      .rehabilitativeActivities.first { it.id == id }.let {
-        it.details = rehabilitativeActivityRequest.details
-        it.endDate = rehabilitativeActivityRequest.endDate
-        it.monitor = rehabilitativeActivityRequest.monitor
-        it.totalSessions = rehabilitativeActivityRequest.totalSessions
-      }
-
-    return saveToDto(reportedAdjudication)
-  }
-
-  fun deleteRehabilitativeActivity(chargeNumber: String, id: Long): ReportedAdjudicationDto {
-    val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
-    val punishment = reportedAdjudication.getPunishmentForRehabilitativeActivity(id = id)
-    val rehabilitativeActivity = punishment.rehabilitativeActivities.first { it.id == id }
-    punishment.rehabilitativeActivities.remove(rehabilitativeActivity)
-
-    return saveToDto(reportedAdjudication)
-  }
-
   private fun activateSuspendedPunishments(
     reportedAdjudication: ReportedAdjudication,
     toActivate: List<PunishmentRequest>,
@@ -284,8 +261,10 @@ class PunishmentsService(
       it.consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber
       it.amount = punishmentRequest.damagesOwedAmount
       it.paybackNotes = punishmentRequest.paybackNotes
+      // due to edit of activities in session, simpler to delete and insert
+      it.rehabilitativeActivities.clear()
       it.rehabilitativeActivities.addAll(
-        punishmentRequest.rehabilitativeActivities.filter { f -> f.id == null }.map { ra ->
+        punishmentRequest.rehabilitativeActivities.map { ra ->
           RehabilitativeActivity(
             details = ra.details,
             monitor = ra.monitor,
