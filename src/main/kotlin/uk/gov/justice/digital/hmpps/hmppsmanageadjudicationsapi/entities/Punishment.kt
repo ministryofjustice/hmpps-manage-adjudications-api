@@ -43,6 +43,9 @@ data class Punishment(
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "punishment_fk_id")
   var rehabilitativeActivities: MutableList<RehabilitativeActivity> = mutableListOf(),
+  var rehabCompleted: Boolean? = null,
+  @Enumerated(EnumType.STRING)
+  var rehabNotCompletedOutcome: NotCompletedOutcome? = null,
 ) : BaseEntity() {
   fun isActiveSuspended(punishmentCutOff: LocalDate): Boolean =
     this.suspendedUntil?.isAfter(punishmentCutOff) == true && this.activatedByChargeNumber == null

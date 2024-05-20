@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.CompleteRehabilitativeActivityRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.RehabilitativeActivityRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -168,6 +169,14 @@ class PunishmentsService(
     punishment.rehabilitativeActivities.remove(rehabilitativeActivity)
 
     return saveToDto(reportedAdjudication)
+  }
+
+  fun completeRehabilitativeActivity(
+    chargeNumber: String,
+    punishmentId: Long,
+    completeRehabilitativeActivityRequest: CompleteRehabilitativeActivityRequest,
+  ): ReportedAdjudicationDto {
+    TODO("implement me")
   }
 
   private fun activateSuspendedPunishments(

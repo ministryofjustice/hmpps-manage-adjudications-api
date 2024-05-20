@@ -1557,6 +1557,35 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  @Nested
+  inner class CompleteRehabilitativeActivity {
+
+    @Test
+    fun `completed = yes`() {
+      TODO()
+    }
+
+    @Test
+    fun `completed = no - full activation`() {
+      TODO()
+    }
+
+    @Test
+    fun `completed = no - partial activation`() {
+      TODO()
+    }
+
+    @Test
+    fun `completed = no - suspended extension`() {
+      TODO()
+    }
+
+    @Test
+    fun `completed = no - no action`() {
+      TODO()
+    }
+  }
+
   companion object {
 
     fun getRequest(id: Long? = null, type: PunishmentType, startDate: LocalDate? = null, endDate: LocalDate? = null): PunishmentRequest =

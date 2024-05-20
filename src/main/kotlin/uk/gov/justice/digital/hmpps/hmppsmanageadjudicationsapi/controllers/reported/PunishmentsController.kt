@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotCompletedOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
@@ -68,6 +69,18 @@ data class RehabilitativeActivityRequest(
   val endDate: LocalDate? = null,
   @Schema(description = "optional number of sessions")
   val totalSessions: Int? = null,
+)
+
+@Schema(description = "complete a rehabilitative activity")
+data class CompleteRehabilitativeActivityRequest(
+  @Schema(description = "did they complete it")
+  val completed: Boolean,
+  @Schema(description = "outcome if they did not complete it")
+  val outcome: NotCompletedOutcome? = null,
+  @Schema(description = "optional days to activate it for")
+  val daysToActivate: Int? = null,
+  @Schema(description = "optional new suspended until date")
+  val suspendedUntil: LocalDate? = null,
 )
 
 @RestController
@@ -139,4 +152,28 @@ class PunishmentsController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @PathVariable(name = "id") id: Long,
   ): ReportedAdjudicationResponse = punishmentsService.deleteRehabilitativeActivity(chargeNumber = chargeNumber, id = id).toResponse()
+
+  @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
+  @Operation(summary = "completes a rehabilitative punishment's activities")
+  @PostMapping(value = ["/{chargeNumber}/punishments/{punishmentId}/complete-rehabilitative-activity"])
+  @ResponseStatus(HttpStatus.OK)
+  fun completeRehabilitativeActivity(
+    @PathVariable(name = "chargeNumber") chargeNumber: String,
+    @PathVariable(name = "punishmentId") punishmentId: Long,
+    @RequestBody completeRehabilitativeActivityRequest: CompleteRehabilitativeActivityRequest,
+  ): ReportedAdjudicationResponse =
+    eventPublishWrapper(
+      events = listOf(
+        EventRuleAndSupplier(
+          eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_UPDATED },
+        ),
+      ),
+      controllerAction = {
+        punishmentsService.completeRehabilitativeActivity(
+          chargeNumber = chargeNumber,
+          punishmentId = punishmentId,
+          completeRehabilitativeActivityRequest = completeRehabilitativeActivityRequest,
+        )
+      },
+    )
 }
