@@ -161,12 +161,11 @@ class PunishmentsService(
     punishment.rehabCompleted = completeRehabilitativeActivityRequest.completed
     punishment.rehabNotCompletedOutcome = completeRehabilitativeActivityRequest.outcome
 
-    val latestSchedule = punishment.schedule.latestSchedule()
+    val latestSchedule = punishment.latestSchedule()
 
     when (completeRehabilitativeActivityRequest.outcome) {
       NotCompletedOutcome.FULL_ACTIVATE -> {
-        punishment.suspendedUntil = null
-        punishment.schedule.add(
+        punishment.addSchedule(
           PunishmentSchedule(
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(latestSchedule.duration!!.toLong()),
@@ -176,8 +175,7 @@ class PunishmentsService(
       }
       NotCompletedOutcome.PARTIAL_ACTIVATE -> {
         completeRehabilitativeActivityRequest.daysToActivate ?: throw ValidationException("PARTIAL_ACTIVATE requires daysToActivate")
-        punishment.suspendedUntil = null
-        punishment.schedule.add(
+        punishment.addSchedule(
           PunishmentSchedule(
             startDate = LocalDate.now(),
             endDate = LocalDate.now().plusDays(completeRehabilitativeActivityRequest.daysToActivate.toLong()),
@@ -187,7 +185,7 @@ class PunishmentsService(
       }
       NotCompletedOutcome.EXT_SUSPEND -> {
         completeRehabilitativeActivityRequest.suspendedUntil ?: throw ValidationException("EXT_SUSPEND requires a suspendedUntil")
-        punishment.schedule.add(
+        punishment.addSchedule(
           PunishmentSchedule(suspendedUntil = completeRehabilitativeActivityRequest.suspendedUntil, duration = latestSchedule.duration),
         )
       }
@@ -210,11 +208,10 @@ class PunishmentsService(
       val reportToUpdate = reportsActivatedFrom.firstOrNull { it.chargeNumber == punishment.activatedFrom!! } ?: throw EntityNotFoundException("activated from charge ${punishment.activatedFrom} not found")
 
       reportToUpdate.getPunishments().getSuspendedPunishmentToActivate(id = punishment.id)?.let {
-        it.suspendedUntil = null
         it.activatedByChargeNumber = reportedAdjudication.chargeNumber
-        it.schedule.add(
+        it.addSchedule(
           PunishmentSchedule(
-            duration = it.schedule.latestSchedule().duration,
+            duration = it.latestSchedule().duration,
             startDate = punishment.startDate,
             endDate = punishment.endDate,
             measurement = punishment.type.measurement,
@@ -307,7 +304,6 @@ class PunishmentsService(
       it.privilegeType = punishmentRequest.privilegeType
       it.otherPrivilege = punishmentRequest.otherPrivilege
       it.stoppagePercentage = punishmentRequest.stoppagePercentage
-      it.suspendedUntil = punishmentRequest.suspendedUntil
       it.consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber
       it.amount = punishmentRequest.damagesOwedAmount
       it.paybackNotes = punishmentRequest.paybackNotes
@@ -323,9 +319,9 @@ class PunishmentsService(
           )
         },
       )
-      val latestSchedule = it.schedule.latestSchedule()
+      val latestSchedule = it.latestSchedule()
       if (latestSchedule.hasScheduleBeenUpdated(punishmentRequest) && !PunishmentType.damagesAndCaution().contains(it.type)) {
-        it.schedule.add(
+        it.addSchedule(
           PunishmentSchedule(
             duration = punishmentRequest.duration,
             startDate = if (it.type == PunishmentType.PAYBACK) latestSchedule.startDate else punishmentRequest.startDate,
@@ -368,8 +364,6 @@ class PunishmentsService(
   }
 
   companion object {
-
-    fun List<PunishmentSchedule>.latestSchedule() = this.maxBy { it.createDateTime!! }
 
     fun List<Punishment>.getSuspendedPunishmentToActivate(id: Long): Punishment? {
       val punishmentToActivate = this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("suspended punishment not found")

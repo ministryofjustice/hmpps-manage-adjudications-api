@@ -535,8 +535,8 @@ class ReportedAdjudicationRepositoryTest {
     val savedEntity = reportedAdjudicationRepository.save(adjudication)
 
     assertThat(savedEntity.getPunishments().first().type).isEqualTo(PunishmentType.ADDITIONAL_DAYS)
-    assertThat(savedEntity.getPunishments().first().schedule.first().startDate).isEqualTo(LocalDate.now())
-    assertThat(savedEntity.getPunishments().first().schedule.first().duration).isEqualTo(10)
+    assertThat(savedEntity.getPunishments().first().getSchedule().first().startDate).isEqualTo(LocalDate.now())
+    assertThat(savedEntity.getPunishments().first().getSchedule().first().duration).isEqualTo(10)
   }
 
   @Test

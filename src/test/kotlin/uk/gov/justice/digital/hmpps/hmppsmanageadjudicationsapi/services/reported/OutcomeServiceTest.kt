@@ -30,7 +30,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Quashed
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -1078,11 +1077,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     private fun assertDeactivation(response: ReportedAdjudicationDto, report: ReportedAdjudication) {
       val ada = report.getPunishments().first { it.id == 1L }
-      assertThat(ada.suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(ada.getSuspendedUntil()).isEqualTo(LocalDate.now())
       assertThat(ada.activatedByChargeNumber).isNull()
-      assertThat(ada.schedule.latestSchedule().startDate).isNull()
-      assertThat(ada.schedule.latestSchedule().endDate).isNull()
-      assertThat(ada.schedule.latestSchedule().suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(ada.latestSchedule().startDate).isNull()
+      assertThat(ada.latestSchedule().endDate).isNull()
+      assertThat(ada.latestSchedule().suspendedUntil).isEqualTo(LocalDate.now())
 
       assertThat(response.suspendedPunishmentEvents!!.size).isEqualTo(1)
       assertThat(response.suspendedPunishmentEvents!!.first()).isEqualTo(
