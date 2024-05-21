@@ -133,14 +133,26 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
 
     webTestClient.put()
-      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/rehabilitative-activity/1")
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
-          "details" to "details",
-          "monitor" to "monitor",
-          "endDate" to LocalDate.now().plusDays(10),
-          "totalSessions" to 4,
+          "punishments" to
+            listOf(
+              PunishmentRequest(
+                type = PunishmentType.CONFINEMENT,
+                suspendedUntil = LocalDate.now(),
+                duration = 10,
+                rehabilitativeActivities = listOf(
+                  RehabilitativeActivityRequest(
+                    details = "details",
+                    monitor = "monitor",
+                    endDate = LocalDate.now().plusDays(10),
+                    totalSessions = 4,
+                  ),
+                ),
+              ),
+            ),
         ),
       )
       .exchange()
@@ -158,9 +170,22 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
     createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
 
-    webTestClient.delete()
-      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/rehabilitative-activity/1")
+    webTestClient.put()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to
+            listOf(
+              PunishmentRequest(
+                type = PunishmentType.CONFINEMENT,
+                suspendedUntil = LocalDate.now(),
+                duration = 10,
+                rehabilitativeActivities = emptyList(),
+              ),
+            ),
+        ),
+      )
       .exchange()
       .expectStatus().isOk
       .expectBody()
