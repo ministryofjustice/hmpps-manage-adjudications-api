@@ -158,9 +158,6 @@ class PunishmentsService(
     val punishment = reportedAdjudication.getPunishments().firstOrNull { it.id == punishmentId } ?: throw EntityNotFoundException("punishment $punishmentId not found for charge $chargeNumber")
     if (punishment.rehabilitativeActivities.isEmpty()) throw ValidationException("punishment $punishmentId on charge $chargeNumber has no rehabilitative activities")
 
-    punishment.rehabCompleted = completeRehabilitativeActivityRequest.completed
-    punishment.rehabNotCompletedOutcome = completeRehabilitativeActivityRequest.outcome
-
     val latestSchedule = punishment.latestSchedule()
 
     when (completeRehabilitativeActivityRequest.outcome) {
@@ -189,8 +186,22 @@ class PunishmentsService(
           PunishmentSchedule(suspendedUntil = completeRehabilitativeActivityRequest.suspendedUntil, duration = latestSchedule.duration),
         )
       }
-      NotCompletedOutcome.NO_ACTION, null -> {}
+      // SPIKE this logic is present in case we allow replay, and it will remove the activation
+      NotCompletedOutcome.NO_ACTION, null -> {
+        punishment.rehabCompleted?.let {
+          punishment.rehabNotCompletedOutcome?.let {
+            when (it) {
+              NotCompletedOutcome.FULL_ACTIVATE, NotCompletedOutcome.PARTIAL_ACTIVATE -> punishment.removeSchedule(
+                punishment.latestSchedule(),
+              )
+              else -> {}
+            }
+          }
+        }
+      }
     }
+    punishment.rehabCompleted = completeRehabilitativeActivityRequest.completed
+    punishment.rehabNotCompletedOutcome = completeRehabilitativeActivityRequest.outcome
 
     return saveToDto(reportedAdjudication)
   }

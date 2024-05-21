@@ -1742,6 +1742,46 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(punishment.getSuspendedUntil()).isEqualTo(LocalDate.now())
       assertThat(punishment.getSchedule().size).isEqualTo(1)
     }
+
+    @CsvSource("FULL_ACTIVATE", "PARTIAL_ACTIVATE")
+    @ParameterizedTest
+    fun `SPIKE calling endpoint twice, case to handle is switch to no action, remove latest schedule`(notCompletedOutcome: NotCompletedOutcome) {
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.CONFINEMENT,
+        suspendedUntil = LocalDate.now(),
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        rehabCompleted = false,
+        rehabNotCompletedOutcome = notCompletedOutcome,
+        schedule = mutableListOf(
+          PunishmentSchedule(id = 1, suspendedUntil = LocalDate.now(), duration = 10).also {
+            it.createDateTime = LocalDateTime.now()
+          },
+          PunishmentSchedule(id = 2, startDate = LocalDate.now(), endDate = LocalDate.now(), duration = 10).also {
+            it.createDateTime = LocalDateTime.now().plusDays(1)
+          },
+        ),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication()
+          .also {
+            it.clearPunishments()
+            it.addPunishment(punishment)
+          },
+      )
+
+      punishmentsService.completeRehabilitativeActivity(
+        chargeNumber = "1",
+        punishmentId = 1,
+        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.NO_ACTION),
+      )
+
+      assertThat(punishment.rehabCompleted).isFalse()
+      assertThat(punishment.rehabNotCompletedOutcome).isEqualTo(NotCompletedOutcome.NO_ACTION)
+      assertThat(punishment.getSuspendedUntil()).isEqualTo(LocalDate.now())
+      assertThat(punishment.getSchedule().size).isEqualTo(1)
+    }
   }
 
   companion object {
