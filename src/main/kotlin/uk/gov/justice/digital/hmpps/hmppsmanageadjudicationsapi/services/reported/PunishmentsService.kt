@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdj
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotCompletedOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
@@ -153,7 +154,47 @@ class PunishmentsService(
     punishmentId: Long,
     completeRehabilitativeActivityRequest: CompleteRehabilitativeActivityRequest,
   ): ReportedAdjudicationDto {
-    TODO("implement me")
+    val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
+    val punishment = reportedAdjudication.getPunishments().firstOrNull { it.id == punishmentId } ?: throw EntityNotFoundException("punishment $punishmentId not found for charge $chargeNumber")
+    if (punishment.rehabilitativeActivities.isEmpty()) throw ValidationException("punishment $punishmentId on charge $chargeNumber has no rehabilitative activities")
+
+    punishment.rehabCompleted = completeRehabilitativeActivityRequest.completed
+    punishment.rehabNotCompletedOutcome = completeRehabilitativeActivityRequest.outcome
+
+    val latestSchedule = punishment.schedule.latestSchedule()
+
+    when (completeRehabilitativeActivityRequest.outcome) {
+      NotCompletedOutcome.FULL_ACTIVATE -> {
+        punishment.suspendedUntil = null
+        punishment.schedule.add(
+          PunishmentSchedule(
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(latestSchedule.duration!!.toLong()),
+            duration = latestSchedule.duration,
+          ),
+        )
+      }
+      NotCompletedOutcome.PARTIAL_ACTIVATE -> {
+        completeRehabilitativeActivityRequest.daysToActivate ?: throw ValidationException("PARTIAL_ACTIVATE requires daysToActivate")
+        punishment.suspendedUntil = null
+        punishment.schedule.add(
+          PunishmentSchedule(
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(completeRehabilitativeActivityRequest.daysToActivate.toLong()),
+            duration = completeRehabilitativeActivityRequest.daysToActivate,
+          ),
+        )
+      }
+      NotCompletedOutcome.EXT_SUSPEND -> {
+        completeRehabilitativeActivityRequest.suspendedUntil ?: throw ValidationException("EXT_SUSPEND requires a suspendedUntil")
+        punishment.schedule.add(
+          PunishmentSchedule(suspendedUntil = completeRehabilitativeActivityRequest.suspendedUntil, duration = latestSchedule.duration),
+        )
+      }
+      NotCompletedOutcome.NO_ACTION, null -> {}
+    }
+
+    return saveToDto(reportedAdjudication)
   }
 
   private fun activateSuspendedPunishments(

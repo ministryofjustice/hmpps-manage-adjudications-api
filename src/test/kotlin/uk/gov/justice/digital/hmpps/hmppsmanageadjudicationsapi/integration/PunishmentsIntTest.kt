@@ -92,7 +92,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
     val rehabRequest = if (hasDetails) RehabilitativeActivityRequest(details = "some details", monitor = "monitor", endDate = LocalDate.now().plusDays(10)) else RehabilitativeActivityRequest()
 
-    val body =   webTestClient.post()
+    val body = webTestClient.post()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
@@ -116,6 +116,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
         .isEqualTo("some details")
         .jsonPath("$.reportedAdjudication.punishments[0].canEdit")
         .isEqualTo(false)
+        .jsonPath("$.reportedAdjudication.punishments[0].canRemove")
+        .isEqualTo(true)
         .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].monitor")
         .isEqualTo("monitor")
         .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].endDate")
@@ -204,7 +206,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     ).expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesCompleted").isEqualTo(true)
-
+      .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
   }
 
   @Test
@@ -215,12 +218,14 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     completeRehabilitativeActivity(
       chargeNumber = scenario.getGeneratedChargeNumber(),
       punishmentId = punishmentId,
-      completed = true,
-      notCompletedOutcome = NotCompletedOutcome.NO_ACTION
+      completed = false,
+      notCompletedOutcome = NotCompletedOutcome.NO_ACTION,
     ).expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesCompleted").isEqualTo(false)
       .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesNotCompletedOutcome").isEqualTo(NotCompletedOutcome.NO_ACTION.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
   }
 
   @Test
@@ -231,12 +236,17 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     completeRehabilitativeActivity(
       chargeNumber = scenario.getGeneratedChargeNumber(),
       punishmentId = punishmentId,
-      completed = true,
-      notCompletedOutcome = NotCompletedOutcome.FULL_ACTIVATE
+      completed = false,
+      notCompletedOutcome = NotCompletedOutcome.FULL_ACTIVATE,
     ).expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesCompleted").isEqualTo(false)
       .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesNotCompletedOutcome").isEqualTo(NotCompletedOutcome.FULL_ACTIVATE.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.suspendedUntil").doesNotExist()
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.days").isEqualTo(10)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+      .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
   }
 
   @Test
@@ -248,12 +258,17 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       chargeNumber = scenario.getGeneratedChargeNumber(),
       punishmentId = punishmentId,
       completed = false,
-      days = 10,
+      days = 5,
       notCompletedOutcome = NotCompletedOutcome.PARTIAL_ACTIVATE,
     ).expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesCompleted").isEqualTo(false)
       .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesNotCompletedOutcome").isEqualTo(NotCompletedOutcome.PARTIAL_ACTIVATE.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.suspendedUntil").doesNotExist()
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.days").isEqualTo(5)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+      .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
   }
 
   @Test
@@ -271,6 +286,13 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesCompleted").isEqualTo(false)
       .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesNotCompletedOutcome").isEqualTo(NotCompletedOutcome.EXT_SUSPEND.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.suspendedUntil").isEqualTo(
+        LocalDate.now().plusDays(10).format(
+          DateTimeFormatter.ISO_DATE,
+        ),
+      )
+      .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
   }
 
   @CsvSource("true", "false")

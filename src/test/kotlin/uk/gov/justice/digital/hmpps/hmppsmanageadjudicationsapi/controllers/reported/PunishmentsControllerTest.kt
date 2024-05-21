@@ -229,8 +229,6 @@ class PunishmentsControllerTest : TestControllerBase() {
     }
   }
 
-=======
->>>>>>> main
   companion object {
     val PUNISHMENT_REQUEST = PunishmentRequest(type = PunishmentType.REMOVAL_ACTIVITY, duration = 10)
   }

@@ -51,7 +51,7 @@ data class Punishment(
     this.suspendedUntil?.isAfter(punishmentCutOff) == true && this.activatedByChargeNumber == null
 
   fun toDto(hasLinkedAda: Boolean, consecutiveReportsAvailable: List<String>?, activatedFrom: String? = null): PunishmentDto {
-    val canRemove = !(PunishmentType.additionalDays().contains(this.type) && hasLinkedAda)
+    val canRemove = !(PunishmentType.additionalDays().contains(this.type) && hasLinkedAda) && this.rehabCompleted == null
     return PunishmentDto(
       id = this.id,
       type = this.type,
@@ -68,6 +68,8 @@ data class Punishment(
       schedule = this.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toDto(),
       paybackNotes = this.paybackNotes,
       rehabilitativeActivities = this.rehabilitativeActivities.map { it.toDto() },
+      rehabilitativeActivitiesCompleted = this.rehabCompleted,
+      rehabilitativeActivitiesNotCompletedOutcome = this.rehabNotCompletedOutcome,
     )
   }
 
