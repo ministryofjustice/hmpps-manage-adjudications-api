@@ -1743,7 +1743,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(punishment.getSchedule().size).isEqualTo(1)
     }
 
-    @CsvSource("FULL_ACTIVATE", "PARTIAL_ACTIVATE")
+    @CsvSource("FULL_ACTIVATE", "PARTIAL_ACTIVATE", "EXT_SUSPEND")
     @ParameterizedTest
     fun `SPIKE calling endpoint twice, case to handle is switch to no action, remove latest schedule`(notCompletedOutcome: NotCompletedOutcome) {
       val punishment = Punishment(

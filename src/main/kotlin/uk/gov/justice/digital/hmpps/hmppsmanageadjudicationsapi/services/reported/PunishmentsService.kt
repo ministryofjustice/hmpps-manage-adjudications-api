@@ -191,7 +191,7 @@ class PunishmentsService(
         punishment.rehabCompleted?.let {
           punishment.rehabNotCompletedOutcome?.let {
             when (it) {
-              NotCompletedOutcome.FULL_ACTIVATE, NotCompletedOutcome.PARTIAL_ACTIVATE -> punishment.removeSchedule(
+              NotCompletedOutcome.FULL_ACTIVATE, NotCompletedOutcome.PARTIAL_ACTIVATE, NotCompletedOutcome.EXT_SUSPEND -> punishment.removeSchedule(
                 punishment.latestSchedule(),
               )
               else -> {}
