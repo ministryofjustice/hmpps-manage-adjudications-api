@@ -189,7 +189,7 @@ class PunishmentsService(
       // SPIKE this logic is present in case we allow replay, and it will remove the activation
       NotCompletedOutcome.NO_ACTION, null -> {
         punishment.rehabCompleted?.let {
-          punishment.rehabNotCompletedOutcome?.let {
+          punishment.rehabNotCompletedOutcome.let {
             when (it) {
               NotCompletedOutcome.FULL_ACTIVATE, NotCompletedOutcome.PARTIAL_ACTIVATE, NotCompletedOutcome.EXT_SUSPEND -> punishment.removeSchedule(
                 punishment.latestSchedule(),
