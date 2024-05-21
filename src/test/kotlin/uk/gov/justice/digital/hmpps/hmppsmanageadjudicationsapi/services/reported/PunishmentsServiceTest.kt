@@ -1272,75 +1272,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `update rehabilitative activity throws entity not found if no activity for id`() {
-      assertThatThrownBy {
-        punishmentsService.updateRehabilitativeActivity(
-          chargeNumber = "1",
-          id = 10,
-          rehabilitativeActivityRequest = RehabilitativeActivityRequest(),
-        )
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("rehabilitative activity not found for charge 1235 id 10")
-    }
-
-    @Test
-    fun `update rehabilitative activity`() {
-      val punishment = Punishment(
-        type = PunishmentType.CONFINEMENT,
-        rehabilitativeActivities = mutableListOf(RehabilitativeActivity(id = 1)),
-        schedule = mutableListOf(PunishmentSchedule(duration = 10, suspendedUntil = LocalDate.now())),
-      )
-
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.addPunishment(punishment)
-        },
-      )
-
-      punishmentsService.updateRehabilitativeActivity(
-        chargeNumber = "1",
-        id = 1L,
-        rehabilitativeActivityRequest =
-        RehabilitativeActivityRequest(details = "details", monitor = "monitor", endDate = LocalDate.now(), totalSessions = 4),
-      )
-
-      assertThat(punishment.rehabilitativeActivities.first().totalSessions).isEqualTo(4)
-      assertThat(punishment.rehabilitativeActivities.first().endDate).isEqualTo(LocalDate.now())
-      assertThat(punishment.rehabilitativeActivities.first().monitor).isEqualTo("monitor")
-      assertThat(punishment.rehabilitativeActivities.first().details).isEqualTo("details")
-    }
-
-    @Test
-    fun `delete rehabilitative activity throws entity not found if no activity for id`() {
-      assertThatThrownBy {
-        punishmentsService.deleteRehabilitativeActivity(
-          chargeNumber = "1",
-          id = 10,
-        )
-      }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("rehabilitative activity not found for charge 1235 id 10")
-    }
-
-    @Test
-    fun `delete rehabilitative activity`() {
-      val punishment = Punishment(
-        type = PunishmentType.CONFINEMENT,
-        rehabilitativeActivities = mutableListOf(RehabilitativeActivity(id = 1)),
-        schedule = mutableListOf(PunishmentSchedule(duration = 10, suspendedUntil = LocalDate.now())),
-      )
-
-      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-        entityBuilder.reportedAdjudication().also {
-          it.addPunishment(punishment)
-        },
-      )
-
-      punishmentsService.deleteRehabilitativeActivity(chargeNumber = "1", id = 1L)
-      assertThat(punishment.rehabilitativeActivities).isEmpty()
-    }
-
-    @Test
-    fun `update a punishment also adds rehabilitative activities if present, and no id set`() {
+    fun `update a punishment and overwrites all rehab activities`() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
 
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
@@ -1350,6 +1282,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             Punishment(
               id = 1,
               type = PunishmentType.CONFINEMENT,
+              rehabilitativeActivities = mutableListOf(RehabilitativeActivity(), RehabilitativeActivity(), RehabilitativeActivity()),
               schedule = mutableListOf(
                 PunishmentSchedule(id = 1, duration = 1, suspendedUntil = LocalDate.now()).also {
                   it.createDateTime = LocalDateTime.now()
@@ -1374,7 +1307,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities).isNotEmpty
-      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.size).isEqualTo(1)
+      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.size).isEqualTo(2)
     }
   }
 
