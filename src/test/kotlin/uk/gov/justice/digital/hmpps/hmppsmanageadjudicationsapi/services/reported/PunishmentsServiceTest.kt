@@ -1539,6 +1539,31 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `throws exception - completed false missing outcome `() {
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.CONFINEMENT,
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        schedule = mutableListOf(PunishmentSchedule(suspendedUntil = LocalDate.now(), duration = 10)),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication(chargeNumber = "1").also {
+          it.addPunishment(punishment)
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.completeRehabilitativeActivity(
+          chargeNumber = "1",
+          punishmentId = 1,
+          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("completed false needs outcome")
+    }
+
+    @Test
     fun `throws exception if partial activate missing days`() {
       val punishment = Punishment(
         id = 1,

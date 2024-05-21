@@ -157,6 +157,7 @@ class PunishmentsService(
     val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
     val punishment = reportedAdjudication.getPunishments().firstOrNull { it.id == punishmentId } ?: throw EntityNotFoundException("punishment $punishmentId not found for charge $chargeNumber")
     if (punishment.rehabilitativeActivities.isEmpty()) throw ValidationException("punishment $punishmentId on charge $chargeNumber has no rehabilitative activities")
+    if (!completeRehabilitativeActivityRequest.completed && completeRehabilitativeActivityRequest.outcome == null) throw ValidationException("completed false needs outcome")
 
     val latestSchedule = punishment.latestSchedule()
 
