@@ -558,7 +558,7 @@ class ReportedAdjudicationRepositoryTest {
       )
     }
 
-    val suspendedResult = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(ReportedAdjudicationStatus.CHARGE_PROVED, "TEST", LocalDate.now())
+    val suspendedResult = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfterAndPunishmentsRehabilitativeActivitiesIsEmpty(ReportedAdjudicationStatus.CHARGE_PROVED, "TEST", LocalDate.now())
 
     assertThat(suspendedResult.size).isEqualTo(8)
   }

@@ -101,7 +101,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByChargeNumberIn(chargeNumbers: List<String>): List<ReportedAdjudication>
 
-  fun findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(status: ReportedAdjudicationStatus, prisonerNumber: String, date: LocalDate): List<ReportedAdjudication>
+  fun findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfterAndPunishmentsRehabilitativeActivitiesIsEmpty(status: ReportedAdjudicationStatus, prisonerNumber: String, date: LocalDate): List<ReportedAdjudication>
 
   fun findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(prisonerNumber: String, statuses: List<ReportedAdjudicationStatus>, date: LocalDate): List<ReportedAdjudication>
 

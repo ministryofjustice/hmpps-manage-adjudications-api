@@ -59,7 +59,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
-    whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(
+    whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfterAndPunishmentsRehabilitativeActivitiesIsEmpty(any(), any(), any())).thenReturn(
       listOf(
         entityBuilder.reportedAdjudication().also {
           it.addPunishment(

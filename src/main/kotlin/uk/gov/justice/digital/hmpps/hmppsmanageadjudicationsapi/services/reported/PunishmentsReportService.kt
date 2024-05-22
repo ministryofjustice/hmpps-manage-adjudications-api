@@ -26,7 +26,7 @@ import java.time.LocalDate
 class PunishmentsReportQueryService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
-  fun getReportsWithSuspendedPunishments(prisonerNumber: String) = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
+  fun getReportsWithSuspendedPunishments(prisonerNumber: String) = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfterAndPunishmentsRehabilitativeActivitiesIsEmpty(
     status = ReportedAdjudicationStatus.CHARGE_PROVED,
     prisonerNumber = prisonerNumber,
     date = suspendedCutOff,

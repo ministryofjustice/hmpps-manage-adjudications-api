@@ -107,7 +107,7 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get suspended punishments only returns the active ones from a charge`() {
-      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(
+      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfterAndPunishmentsRehabilitativeActivitiesIsEmpty(any(), any(), any())).thenReturn(
         listOf(
           entityBuilder.reportedAdjudication().also {
             it.status = ReportedAdjudicationStatus.CHARGE_PROVED
@@ -140,7 +140,7 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get suspended punishments `() {
-      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(reportedAdjudications)
+      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfterAndPunishmentsRehabilitativeActivitiesIsEmpty(any(), any(), any())).thenReturn(reportedAdjudications)
       whenever(reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(
         listOf(
           entityBuilder.reportedAdjudication(chargeNumber = "5").also {
@@ -173,7 +173,7 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("INAD_ADULT", "INAD_YOI")
     @ParameterizedTest
     fun `get suspended punishments for reported adjudication from independent adjudicator `(oicHearingType: OicHearingType) {
-      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(reportedAdjudications)
+      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfterAndPunishmentsRehabilitativeActivitiesIsEmpty(any(), any(), any())).thenReturn(reportedAdjudications)
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.hearings.first().oicHearingType = oicHearingType
