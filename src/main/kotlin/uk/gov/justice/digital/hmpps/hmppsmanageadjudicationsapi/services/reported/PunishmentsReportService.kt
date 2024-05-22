@@ -172,6 +172,6 @@ class PunishmentsReportService(
         this.chargeNumber != currentAdjudication.chargeNumber
 
     fun List<Punishment>.suspendedPunishmentsToActivate(cutOff: LocalDate) =
-      this.filter { it.isActiveSuspended(cutOff) }
+      this.filter { it.isActiveSuspended(cutOff) && it.rehabilitativeActivities.isEmpty() }
   }
 }
