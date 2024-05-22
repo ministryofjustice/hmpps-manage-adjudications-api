@@ -464,6 +464,22 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       )
   }
 
+  @Test
+  fun `get suspended punishments should not include any with rehabilitative activities`() {
+    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
+
+    initDataForUnScheduled(IntegrationTestData.DEFAULT_ADJUDICATION_OVERRIDE).createHearing().createChargeProved()
+
+    webTestClient.get()
+      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended/v2?chargeNumber=${IntegrationTestData.DEFAULT_ADJUDICATION_OVERRIDE.chargeNumber}")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.size()").isEqualTo(0)
+  }
+
   @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
   @ParameterizedTest
   fun `get additional days punishments `(punishmentType: PunishmentType) {

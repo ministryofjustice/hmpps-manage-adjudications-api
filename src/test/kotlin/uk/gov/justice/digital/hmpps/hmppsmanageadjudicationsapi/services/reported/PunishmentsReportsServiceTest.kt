@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Privile
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.RehabilitativeActivity
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -191,6 +192,36 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(prospectiveDays).isNotNull
 
       assertThat(suspended.size).isEqualTo(3)
+    }
+
+    @Test
+    fun `get suspended punishments filters out any with rehabilitative activities`() {
+      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication().also {
+            it.clearPunishments()
+            it.addPunishment(Punishment(type = PunishmentType.CONFINEMENT, suspendedUntil = LocalDate.now().plusDays(10), schedule = mutableListOf(PunishmentSchedule(duration = 10))))
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.REMOVAL_WING,
+                suspendedUntil = LocalDate.now().plusDays(10),
+                rehabilitativeActivities = mutableListOf(
+                  RehabilitativeActivity(),
+                ),
+                schedule = mutableListOf(PunishmentSchedule(duration = 10)),
+              ),
+            )
+          },
+        ),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication(),
+      )
+
+      val suspended = punishmentsReportService.getSuspendedPunishments("AE1234", chargeNumber = "1")
+      assertThat(suspended.size).isEqualTo(1)
+      assertThat(suspended.first().punishment.type).isEqualTo(PunishmentType.CONFINEMENT)
     }
   }
 
