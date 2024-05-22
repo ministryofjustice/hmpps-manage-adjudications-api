@@ -5,10 +5,7 @@ import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ChargeWithSuspendedPunishments
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.Dis5PrintSupportDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LastReportedOffence
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication.Companion.isCorrupted
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication.Companion.toPunishmentsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
@@ -16,7 +13,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes.Companion.containsNomisCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
 import java.time.LocalDate
 
 @Transactional(readOnly = true)
@@ -107,11 +103,6 @@ class PrintSupportService(
   }
 
   companion object {
-
-    fun Punishment.isActivePunishment(punishmentCutOff: LocalDate): Boolean =
-      PunishmentType.damagesAndCaution().none { it == this.type } && this.suspendedUntil == null && (
-        this.schedule.latestSchedule().endDate?.isAfter(punishmentCutOff) == true || PunishmentType.additionalDays().contains(this.type)
-        )
 
     fun List<ReportedOffence>.matchesOffence(offenceCode: Int): Boolean =
       this.first().offenceCode != -0 && this.first().offenceCode == offenceCode

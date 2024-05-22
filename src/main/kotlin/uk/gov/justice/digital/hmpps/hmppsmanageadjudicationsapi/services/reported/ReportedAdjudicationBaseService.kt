@@ -10,8 +10,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 open class ReportedAdjudicationBaseService(
@@ -99,11 +97,10 @@ open class ReportedAdjudicationBaseService(
 
     reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).forEach {
       it.getPunishments()
-        .filter { p -> p.activatedByChargeNumber == chargeNumber && idsToIgnore.none { id -> id == it.id } && p.schedule.size > 1 }
+        .filter { p -> p.activatedByChargeNumber == chargeNumber && idsToIgnore.none { id -> id == it.id } && p.getSchedule().size > 1 }
         .forEach { punishmentToRestore ->
 
-          punishmentToRestore.schedule.remove(punishmentToRestore.schedule.latestSchedule())
-          punishmentToRestore.suspendedUntil = punishmentToRestore.schedule.latestSchedule().suspendedUntil
+          punishmentToRestore.removeSchedule(punishmentToRestore.latestSchedule())
           punishmentToRestore.activatedByChargeNumber = null
 
           suspendedPunishmentEvents.add(
@@ -122,8 +119,5 @@ open class ReportedAdjudicationBaseService(
   companion object {
     fun throwEntityNotFoundException(id: String): Nothing =
       throw EntityNotFoundException("ReportedAdjudication not found for $id")
-
-    fun Punishment.isActive(): Boolean =
-      this.suspendedUntil == null && this.schedule.latestSchedule().endDate?.isAfter(LocalDate.now().minusDays(1)) == true
   }
 }

@@ -19,8 +19,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Authent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsReportService.Companion.corruptedSuspendedCutOff
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsReportService.Companion.suspendedCutOff
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationBaseService.Companion.isActive
 import java.time.LocalDate
 
 @Transactional(readOnly = true)
@@ -84,7 +82,7 @@ class PunishmentsReportService(
       val cutOff = if (corrupted) corruptedSuspendedCutOff else suspendedCutOff
       it.getPunishments().suspendedPunishmentsToActivate(cutOff)
         .filter { punishment -> punishment.type.includeInSuspendedPunishments(includeAdditionalDays) }.map { punishment ->
-          val schedule = punishment.schedule.latestSchedule()
+          val schedule = punishment.latestSchedule()
 
           SuspendedPunishmentDto(
             chargeNumber = it.chargeNumber,
@@ -113,7 +111,7 @@ class PunishmentsReportService(
     ).filter { it.includeAdaWithSameHearingDateAndSeparateCharge(reportedAdjudication) }
       .map {
         it.getPunishments().filter { punishment -> punishment.type == punishmentType }.map { punishment ->
-          val schedule = punishment.schedule.latestSchedule()
+          val schedule = punishment.latestSchedule()
 
           AdditionalDaysDto(
             chargeNumber = it.chargeNumber,
@@ -133,7 +131,7 @@ class PunishmentsReportService(
     punishmentsReportQueryService.getReportsWithActivePunishments(offenderBookingId = offenderBookingId)
       .map { chargeAndPunishments ->
         chargeAndPunishments.second.map {
-          val latestSchedule = it.schedule.latestSchedule()
+          val latestSchedule = it.latestSchedule()
           ActivePunishmentDto(
             punishmentType = it.type,
             privilegeType = it.privilegeType,

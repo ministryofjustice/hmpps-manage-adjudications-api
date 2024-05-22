@@ -13,11 +13,13 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.CompleteRehabilitativeActivityRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.RehabilitativeActivityRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotCompletedOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -28,7 +30,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.RehabilitativeActivity
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService.Companion.latestSchedule
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -296,7 +297,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().startDate).isEqualTo(reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate())
+      assertThat(argumentCaptor.value.getPunishments().first().getSchedule().first().startDate).isEqualTo(reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate())
       assertThat(argumentCaptor.value.getPunishments().first().paybackNotes).isEqualTo("notes")
     }
 
@@ -337,7 +338,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       val removalWing = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.REMOVAL_WING }
       val additionalDays = argumentCaptor.value.getPunishments().first { it.type == PunishmentType.ADDITIONAL_DAYS }
 
-      assertThat(removalWing.suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(removalWing.getSuspendedUntil()).isEqualTo(LocalDate.now())
       assertThat(additionalDays.consecutiveToChargeNumber).isEqualTo("999")
 
       assertThat(argumentCaptor.value.getPunishments().size).isEqualTo(4)
@@ -345,12 +346,12 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first().type).isEqualTo(PunishmentType.PRIVILEGE)
       assertThat(argumentCaptor.value.getPunishments().first().privilegeType).isEqualTo(PrivilegeType.OTHER)
       assertThat(argumentCaptor.value.getPunishments().first().otherPrivilege).isEqualTo("other")
-      assertThat(argumentCaptor.value.getPunishments().first().schedule.first()).isNotNull
-      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().startDate)
+      assertThat(argumentCaptor.value.getPunishments().first().getSchedule().first()).isNotNull
+      assertThat(argumentCaptor.value.getPunishments().first().getSchedule().first().startDate)
         .isEqualTo(LocalDate.now())
-      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().endDate)
+      assertThat(argumentCaptor.value.getPunishments().first().getSchedule().first().endDate)
         .isEqualTo(LocalDate.now().plusDays(1))
-      assertThat(argumentCaptor.value.getPunishments().first().schedule.first().duration).isEqualTo(1)
+      assertThat(argumentCaptor.value.getPunishments().first().getSchedule().first().duration).isEqualTo(1)
 
       assertThat(response).isNotNull
     }
@@ -1024,7 +1025,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      argumentCaptor.value.getPunishments().first().schedule.forEach {
+      argumentCaptor.value.getPunishments().first().getSchedule().forEach {
         assertThat(it.startDate).isEqualTo(reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate())
       }
       assertThat(argumentCaptor.value.getPunishments().first().paybackNotes).isEqualTo("notes")
@@ -1066,7 +1067,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               id = 4,
               type = PunishmentType.REMOVAL_WING,
               schedule = mutableListOf(
-                PunishmentSchedule(id = 1, duration = 1, suspendedUntil = LocalDate.now()).also {
+                PunishmentSchedule(id = 1, duration = 1, suspendedUntil = LocalDate.now().minusDays(1)).also {
                   it.createDateTime = LocalDateTime.now()
                 },
               ),
@@ -1119,13 +1120,13 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(privilege.id).isNull()
       assertThat(additionalDays.id).isEqualTo(3)
-      assertThat(additionalDays.schedule.size).isEqualTo(2)
-      assertThat(prospectiveDays.schedule.size).isEqualTo(1)
-      assertThat(removalWing.schedule.size).isEqualTo(1)
-      assertThat(removalWing.suspendedUntil).isEqualTo(LocalDate.now())
-      assertThat(prospectiveDays.schedule.first().duration).isEqualTo(1)
-      assertThat(privilege.schedule.first().startDate).isEqualTo(LocalDate.now())
-      assertThat(privilege.schedule.first().endDate).isEqualTo(LocalDate.now().plusDays(1))
+      assertThat(additionalDays.getSchedule().size).isEqualTo(2)
+      assertThat(prospectiveDays.getSchedule().size).isEqualTo(1)
+      assertThat(removalWing.getSchedule().size).isEqualTo(2)
+      assertThat(removalWing.getSuspendedUntil()).isEqualTo(LocalDate.now())
+      assertThat(prospectiveDays.getSchedule().first().duration).isEqualTo(1)
+      assertThat(privilege.getSchedule().first().startDate).isEqualTo(LocalDate.now())
+      assertThat(privilege.getSchedule().first().endDate).isEqualTo(LocalDate.now().plusDays(1))
       assertThat(privilege.otherPrivilege).isEqualTo("other")
       assertThat(privilege.privilegeType).isEqualTo(PrivilegeType.OTHER)
     }
@@ -1381,16 +1382,16 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(currentCharge.getPunishments()).isEmpty()
       val ada = reportToActivateFrom.getPunishments().first { it.id == 1L }
       val cc = reportToActivateFrom.getPunishments().first { it.id == 2L }
-      assertThat(ada.suspendedUntil).isNull()
-      assertThat(cc.suspendedUntil).isNull()
+      assertThat(ada.getSuspendedUntil()).isNull()
+      assertThat(cc.getSuspendedUntil()).isNull()
       assertThat(ada.activatedByChargeNumber).isEqualTo(currentCharge.chargeNumber)
       assertThat(cc.activatedByChargeNumber).isEqualTo(currentCharge.chargeNumber)
-      assertThat(cc.schedule.first { it.id == null }.startDate).isEqualTo(LocalDate.now())
-      assertThat(ada.schedule.first { it.id == null }.startDate).isNull()
-      assertThat(ada.schedule.first { it.id == null }.endDate).isNull()
-      assertThat(ada.schedule.first { it.id == null }.suspendedUntil).isNull()
-      assertThat(cc.schedule.first { it.id == null }.suspendedUntil).isNull()
-      assertThat(cc.schedule.first { it.id == null }.endDate).isEqualTo(LocalDate.now().plusDays(10))
+      assertThat(cc.getSchedule().first { it.id == null }.startDate).isEqualTo(LocalDate.now())
+      assertThat(ada.getSchedule().first { it.id == null }.startDate).isNull()
+      assertThat(ada.getSchedule().first { it.id == null }.endDate).isNull()
+      assertThat(ada.getSchedule().first { it.id == null }.suspendedUntil).isNull()
+      assertThat(cc.getSchedule().first { it.id == null }.suspendedUntil).isNull()
+      assertThat(cc.getSchedule().first { it.id == null }.endDate).isEqualTo(LocalDate.now().plusDays(10))
 
       assertThat(response.suspendedPunishmentEvents!!.size).isEqualTo(1)
       assertThat(response.suspendedPunishmentEvents!!.first()).isEqualTo(
@@ -1429,12 +1430,12 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(currentCharge.getPunishments()).isEmpty()
       val ada = reportToActivateFrom.getPunishments().first { it.id == 1L }
       val cc = reportToActivateFrom.getPunishments().first { it.id == 2L }
-      assertThat(cc.schedule.size).isEqualTo(1)
-      assertThat(ada.suspendedUntil).isNull()
+      assertThat(cc.getSchedule().size).isEqualTo(1)
+      assertThat(ada.getSuspendedUntil()).isNull()
       assertThat(ada.activatedByChargeNumber).isEqualTo(currentCharge.chargeNumber)
-      assertThat(ada.schedule.first { it.id == null }.startDate).isNull()
-      assertThat(ada.schedule.first { it.id == null }.endDate).isNull()
-      assertThat(ada.schedule.first { it.id == null }.suspendedUntil).isNull()
+      assertThat(ada.getSchedule().first { it.id == null }.startDate).isNull()
+      assertThat(ada.getSchedule().first { it.id == null }.endDate).isNull()
+      assertThat(ada.getSchedule().first { it.id == null }.suspendedUntil).isNull()
 
       assertThat(response.suspendedPunishmentEvents!!.size).isEqualTo(1)
       assertThat(response.suspendedPunishmentEvents!!.first()).isEqualTo(
@@ -1447,9 +1448,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       // need to activate them.
       reportToActivateFrom.also {
         it.getPunishments().forEach {
-          it.suspendedUntil = null
           it.activatedByChargeNumber = currentCharge.chargeNumber
-          it.schedule.add(
+          it.addSchedule(
             PunishmentSchedule(id = 2, startDate = LocalDate.now(), endDate = LocalDate.now(), duration = 10).also {
                 s ->
               s.createDateTime = LocalDateTime.now().plusDays(1)
@@ -1472,21 +1472,340 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(currentCharge.getPunishments().size).isEqualTo(1)
       val ada = reportToActivateFrom.getPunishments().first { it.id == 1L }
       val cc = reportToActivateFrom.getPunishments().first { it.id == 2L }
-      assertThat(ada.suspendedUntil).isEqualTo(LocalDate.now())
-      assertThat(cc.suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(ada.getSuspendedUntil()).isEqualTo(LocalDate.now())
+      assertThat(cc.getSuspendedUntil()).isEqualTo(LocalDate.now())
       assertThat(ada.activatedByChargeNumber).isNull()
       assertThat(cc.activatedByChargeNumber).isNull()
-      assertThat(ada.schedule.latestSchedule().startDate).isNull()
-      assertThat(ada.schedule.latestSchedule().endDate).isNull()
-      assertThat(ada.schedule.latestSchedule().suspendedUntil).isEqualTo(LocalDate.now())
-      assertThat(cc.schedule.latestSchedule().startDate).isNull()
-      assertThat(cc.schedule.latestSchedule().endDate).isNull()
-      assertThat(cc.schedule.latestSchedule().suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(ada.latestSchedule().startDate).isNull()
+      assertThat(ada.latestSchedule().endDate).isNull()
+      assertThat(ada.latestSchedule().suspendedUntil).isEqualTo(LocalDate.now())
+      assertThat(cc.latestSchedule().startDate).isNull()
+      assertThat(cc.latestSchedule().endDate).isNull()
+      assertThat(cc.latestSchedule().suspendedUntil).isEqualTo(LocalDate.now())
 
       assertThat(response.suspendedPunishmentEvents!!.size).isEqualTo(1)
       assertThat(response.suspendedPunishmentEvents!!.first()).isEqualTo(
         SuspendedPunishmentEvent(chargeNumber = reportToActivateFrom.chargeNumber, agencyId = reportToActivateFrom.originatingAgencyId, status = reportToActivateFrom.status),
       )
+    }
+  }
+
+  @Nested
+  inner class CompleteRehabilitativeActivity {
+
+    @BeforeEach
+    fun `init`() {
+      whenever(reportedAdjudicationRepository.save(any())).thenReturn(entityBuilder.reportedAdjudication())
+    }
+
+    @Test
+    fun `throws exception if punishment id is not found`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication(chargeNumber = "1"),
+      )
+
+      assertThatThrownBy {
+        punishmentsService.completeRehabilitativeActivity(
+          chargeNumber = "1",
+          punishmentId = 1,
+          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = true),
+        )
+      }.isInstanceOf(EntityNotFoundException::class.java)
+        .hasMessageContaining("Punishment 1 is not associated with ReportedAdjudication")
+    }
+
+    @Test
+    fun `throws exception if punishment has no rehabilitative activities`() {
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.CONFINEMENT,
+        schedule = mutableListOf(PunishmentSchedule(suspendedUntil = LocalDate.now(), duration = 10)),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication(chargeNumber = "1").also {
+          it.addPunishment(punishment)
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.completeRehabilitativeActivity(
+          chargeNumber = "1",
+          punishmentId = 1,
+          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.PARTIAL_ACTIVATE),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("punishment 1 on charge 1 has no rehabilitative activities")
+    }
+
+    @Test
+    fun `throws exception - completed false missing outcome `() {
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.CONFINEMENT,
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        schedule = mutableListOf(PunishmentSchedule(suspendedUntil = LocalDate.now(), duration = 10)),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication(chargeNumber = "1").also {
+          it.addPunishment(punishment)
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.completeRehabilitativeActivity(
+          chargeNumber = "1",
+          punishmentId = 1,
+          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("completed false needs outcome")
+    }
+
+    @Test
+    fun `throws exception if partial activate missing days`() {
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.CONFINEMENT,
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        schedule = mutableListOf(PunishmentSchedule(suspendedUntil = LocalDate.now(), duration = 10)),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication(chargeNumber = "2").also {
+          it.addPunishment(punishment)
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.completeRehabilitativeActivity(
+          chargeNumber = "1",
+          punishmentId = 1,
+          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.PARTIAL_ACTIVATE),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("PARTIAL_ACTIVATE requires daysToActivate")
+    }
+
+    @Test
+    fun `throws exception if suspended extension missing date`() {
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.CONFINEMENT,
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        schedule = mutableListOf(PunishmentSchedule(suspendedUntil = LocalDate.now(), duration = 10)),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication(chargeNumber = "2").also {
+          it.addPunishment(punishment)
+        },
+      )
+
+      assertThatThrownBy {
+        punishmentsService.completeRehabilitativeActivity(
+          chargeNumber = "1",
+          punishmentId = 1,
+          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.EXT_SUSPEND),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("EXT_SUSPEND requires a suspendedUntil")
+    }
+
+    @Test
+    fun `completed = yes`() {
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.CONFINEMENT,
+        suspendedUntil = LocalDate.now(),
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        schedule = mutableListOf(PunishmentSchedule(suspendedUntil = LocalDate.now(), duration = 10)),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication()
+          .also {
+            it.clearPunishments()
+            it.addPunishment(punishment)
+          },
+      )
+
+      punishmentsService.completeRehabilitativeActivity(
+        chargeNumber = "1",
+        punishmentId = 1,
+        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = true),
+      )
+
+      assertThat(punishment.rehabCompleted).isTrue()
+    }
+
+    @Test
+    fun `completed = no - full activation`() {
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.CONFINEMENT,
+        suspendedUntil = LocalDate.now(),
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        schedule = mutableListOf(PunishmentSchedule(id = 1, suspendedUntil = LocalDate.now(), duration = 10)),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication()
+          .also {
+            it.clearPunishments()
+            it.addPunishment(punishment)
+          },
+      )
+
+      punishmentsService.completeRehabilitativeActivity(
+        chargeNumber = "1",
+        punishmentId = 1,
+        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.FULL_ACTIVATE),
+      )
+
+      assertThat(punishment.rehabCompleted).isFalse()
+      assertThat(punishment.rehabNotCompletedOutcome).isEqualTo(NotCompletedOutcome.FULL_ACTIVATE)
+      assertThat(punishment.getSuspendedUntil()).isNull()
+      assertThat(punishment.getSchedule().size).isEqualTo(2)
+      assertThat(punishment.getSchedule().first { it.id == null }.suspendedUntil).isNull()
+      assertThat(punishment.getSchedule().first { it.id == null }.startDate).isEqualTo(LocalDate.now())
+      assertThat(punishment.getSchedule().first { it.id == null }.endDate).isEqualTo(LocalDate.now().plusDays(10))
+    }
+
+    @Test
+    fun `completed = no - partial activation`() {
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.CONFINEMENT,
+        suspendedUntil = LocalDate.now(),
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        schedule = mutableListOf(PunishmentSchedule(id = 1, suspendedUntil = LocalDate.now(), duration = 10)),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication()
+          .also {
+            it.clearPunishments()
+            it.addPunishment(punishment)
+          },
+      )
+
+      punishmentsService.completeRehabilitativeActivity(
+        chargeNumber = "1",
+        punishmentId = 1,
+        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.PARTIAL_ACTIVATE, daysToActivate = 5),
+      )
+
+      assertThat(punishment.rehabCompleted).isFalse()
+      assertThat(punishment.rehabNotCompletedOutcome).isEqualTo(NotCompletedOutcome.PARTIAL_ACTIVATE)
+      assertThat(punishment.getSuspendedUntil()).isNull()
+      assertThat(punishment.getSchedule().size).isEqualTo(2)
+      assertThat(punishment.getSchedule().first { it.id == null }.duration).isEqualTo(5)
+      assertThat(punishment.getSchedule().first { it.id == null }.startDate).isEqualTo(LocalDate.now())
+      assertThat(punishment.getSchedule().first { it.id == null }.endDate).isEqualTo(LocalDate.now().plusDays(5))
+    }
+
+    @Test
+    fun `completed = no - suspended extension`() {
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.CONFINEMENT,
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        suspendedUntil = LocalDate.now(),
+        schedule = mutableListOf(PunishmentSchedule(id = 1, suspendedUntil = LocalDate.now(), duration = 10)),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication()
+          .also {
+            it.clearPunishments()
+            it.addPunishment(punishment)
+          },
+      )
+
+      punishmentsService.completeRehabilitativeActivity(
+        chargeNumber = "1",
+        punishmentId = 1,
+        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.EXT_SUSPEND, suspendedUntil = LocalDate.now().plusDays(10)),
+      )
+
+      assertThat(punishment.rehabCompleted).isFalse()
+      assertThat(punishment.rehabNotCompletedOutcome).isEqualTo(NotCompletedOutcome.EXT_SUSPEND)
+      assertThat(punishment.getSuspendedUntil()).isEqualTo(LocalDate.now().plusDays(10))
+      assertThat(punishment.getSchedule().size).isEqualTo(2)
+      assertThat(punishment.getSchedule().first { it.id == null }.duration).isEqualTo(10)
+      assertThat(punishment.getSchedule().first { it.id == null }.suspendedUntil).isEqualTo(LocalDate.now().plusDays(10))
+    }
+
+    @Test
+    fun `completed = no - no action`() {
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.CONFINEMENT,
+        suspendedUntil = LocalDate.now(),
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        schedule = mutableListOf(PunishmentSchedule(id = 1, suspendedUntil = LocalDate.now(), duration = 10)),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication()
+          .also {
+            it.clearPunishments()
+            it.addPunishment(punishment)
+          },
+      )
+
+      punishmentsService.completeRehabilitativeActivity(
+        chargeNumber = "1",
+        punishmentId = 1,
+        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.NO_ACTION),
+      )
+
+      assertThat(punishment.rehabCompleted).isFalse()
+      assertThat(punishment.rehabNotCompletedOutcome).isEqualTo(NotCompletedOutcome.NO_ACTION)
+      assertThat(punishment.getSuspendedUntil()).isEqualTo(LocalDate.now())
+      assertThat(punishment.getSchedule().size).isEqualTo(1)
+    }
+
+    @CsvSource("FULL_ACTIVATE, NO_ACTION", "PARTIAL_ACTIVATE, NO_ACTION", "EXT_SUSPEND, NO_ACTION", "FULL_ACTIVATE,", "PARTIAL_ACTIVATE,", "EXT_SUSPEND,")
+    @ParameterizedTest
+    fun `SPIKE calling endpoint twice, case to handle is switch to no action, remove latest schedule`(notCompletedOutcome: NotCompletedOutcome, newOutcome: NotCompletedOutcome?) {
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.CONFINEMENT,
+        suspendedUntil = LocalDate.now(),
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        rehabCompleted = newOutcome == null,
+        rehabNotCompletedOutcome = notCompletedOutcome,
+        schedule = mutableListOf(
+          PunishmentSchedule(id = 1, suspendedUntil = LocalDate.now(), duration = 10).also {
+            it.createDateTime = LocalDateTime.now()
+          },
+          PunishmentSchedule(id = 2, startDate = LocalDate.now(), endDate = LocalDate.now(), duration = 10).also {
+            it.createDateTime = LocalDateTime.now().plusDays(1)
+          },
+        ),
+      )
+
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication()
+          .also {
+            it.clearPunishments()
+            it.addPunishment(punishment)
+          },
+      )
+
+      punishmentsService.completeRehabilitativeActivity(
+        chargeNumber = "1",
+        punishmentId = 1,
+        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.NO_ACTION),
+      )
+
+      assertThat(punishment.rehabCompleted).isFalse()
+      assertThat(punishment.rehabNotCompletedOutcome).isEqualTo(NotCompletedOutcome.NO_ACTION)
+      assertThat(punishment.getSuspendedUntil()).isEqualTo(LocalDate.now())
+      assertThat(punishment.getSchedule().size).isEqualTo(1)
     }
   }
 

@@ -6,11 +6,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.CompleteRehabilitativeActivityRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentCommentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.RehabilitativeActivityRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotCompletedOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReasonForChange
@@ -107,7 +109,6 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
         ),
       )
       .exchange()
-      .expectStatus().isCreated
       .expectBody()
     if (hasDetails) {
       body.jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.CONFINEMENT.name)
@@ -115,6 +116,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
         .isEqualTo("some details")
         .jsonPath("$.reportedAdjudication.punishments[0].canEdit")
         .isEqualTo(false)
+        .jsonPath("$.reportedAdjudication.punishments[0].canRemove")
+        .isEqualTo(true)
         .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].monitor")
         .isEqualTo("monitor")
         .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities[0].endDate")
@@ -129,24 +132,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   fun `update a rehabilitative activity`() {
     val scenario = initDataForUnScheduled().createHearing().createChargeProved()
 
-    webTestClient.post()
-      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .bodyValue(
-        mapOf(
-          "punishments" to
-            listOf(
-              PunishmentRequest(
-                type = PunishmentType.CONFINEMENT,
-                suspendedUntil = LocalDate.now(),
-                duration = 10,
-                rehabilitativeActivities = listOf(RehabilitativeActivityRequest()),
-              ),
-            ),
-        ),
-      )
-      .exchange()
-      .expectStatus().isCreated
+    createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
 
     webTestClient.put()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
@@ -184,24 +170,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   fun `delete a rehabilitative activity`() {
     val scenario = initDataForUnScheduled().createHearing().createChargeProved()
 
-    webTestClient.post()
-      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .bodyValue(
-        mapOf(
-          "punishments" to
-            listOf(
-              PunishmentRequest(
-                type = PunishmentType.CONFINEMENT,
-                suspendedUntil = LocalDate.now(),
-                duration = 10,
-                rehabilitativeActivities = listOf(RehabilitativeActivityRequest()),
-              ),
-            ),
-        ),
-      )
-      .exchange()
-      .expectStatus().isCreated
+    createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
 
     webTestClient.put()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
@@ -223,6 +192,107 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivities.size()").isEqualTo(0)
+  }
+
+  @Test
+  fun `completes a rehabilitative activity successfully`() {
+    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val punishmentId = createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
+
+    completeRehabilitativeActivity(
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      punishmentId = punishmentId,
+      completed = true,
+    ).expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesCompleted").isEqualTo(true)
+      .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
+  }
+
+  @Test
+  fun `completes a rehabilitative activity - no action`() {
+    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val punishmentId = createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
+
+    completeRehabilitativeActivity(
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      punishmentId = punishmentId,
+      completed = false,
+      notCompletedOutcome = NotCompletedOutcome.NO_ACTION,
+    ).expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesCompleted").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesNotCompletedOutcome").isEqualTo(NotCompletedOutcome.NO_ACTION.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
+  }
+
+  @Test
+  fun `completes a rehabilitative activity - full activation`() {
+    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val punishmentId = createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
+
+    completeRehabilitativeActivity(
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      punishmentId = punishmentId,
+      completed = false,
+      notCompletedOutcome = NotCompletedOutcome.FULL_ACTIVATE,
+    ).expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesCompleted").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesNotCompletedOutcome").isEqualTo(NotCompletedOutcome.FULL_ACTIVATE.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.suspendedUntil").doesNotExist()
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.days").isEqualTo(10)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+      .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
+  }
+
+  @Test
+  fun `completes a rehabilitative activity - partial activation`() {
+    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val punishmentId = createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
+
+    completeRehabilitativeActivity(
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      punishmentId = punishmentId,
+      completed = false,
+      days = 5,
+      notCompletedOutcome = NotCompletedOutcome.PARTIAL_ACTIVATE,
+    ).expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesCompleted").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesNotCompletedOutcome").isEqualTo(NotCompletedOutcome.PARTIAL_ACTIVATE.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.suspendedUntil").doesNotExist()
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.days").isEqualTo(5)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+      .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
+  }
+
+  @Test
+  fun `completes a rehabilitative activity - extend suspension`() {
+    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val punishmentId = createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
+
+    completeRehabilitativeActivity(
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      punishmentId = punishmentId,
+      completed = false,
+      date = LocalDate.now().plusDays(10),
+      notCompletedOutcome = NotCompletedOutcome.EXT_SUSPEND,
+    ).expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesCompleted").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].rehabilitativeActivitiesNotCompletedOutcome").isEqualTo(NotCompletedOutcome.EXT_SUSPEND.name)
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.suspendedUntil").isEqualTo(
+        LocalDate.now().plusDays(10).format(
+          DateTimeFormatter.ISO_DATE,
+        ),
+      )
+      .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
   }
 
   @CsvSource("true", "false")
@@ -577,4 +647,52 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       )
       .exchange()
   }
+
+  private fun createRehabilitativeActivity(
+    chargeNumber: String,
+    rehabilitativeActivityRequest: RehabilitativeActivityRequest,
+  ): Long =
+    webTestClient.post()
+      .uri("/reported-adjudications/$chargeNumber/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to
+            listOf(
+              PunishmentRequest(
+                type = PunishmentType.CONFINEMENT,
+                suspendedUntil = LocalDate.now(),
+                duration = 10,
+                rehabilitativeActivities = listOf(rehabilitativeActivityRequest),
+              ),
+            ),
+        ),
+      )
+      .exchange()
+      .expectStatus().isCreated
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+      .reportedAdjudication.punishments.first().id!!
+
+  private fun completeRehabilitativeActivity(
+    chargeNumber: String,
+    punishmentId: Long,
+    completed: Boolean,
+    notCompletedOutcome: NotCompletedOutcome? = null,
+    days: Int? = null,
+    date: LocalDate? = null,
+  ): WebTestClient.ResponseSpec =
+    webTestClient.post()
+      .uri("/reported-adjudications/$chargeNumber/punishments/$punishmentId/complete-rehabilitative-activity")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        CompleteRehabilitativeActivityRequest(
+          completed = completed,
+          outcome = notCompletedOutcome,
+          daysToActivate = days,
+          suspendedUntil = date,
+        ),
+      )
+      .exchange()
 }

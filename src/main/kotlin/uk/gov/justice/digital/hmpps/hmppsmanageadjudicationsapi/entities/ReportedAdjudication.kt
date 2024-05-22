@@ -25,7 +25,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 import java.lang.IllegalStateException
-import java.time.LocalDate
 import java.time.LocalDateTime
 @Entity
 @Table(name = "reported_adjudications")
@@ -231,8 +230,6 @@ data class ReportedAdjudication(
         this.latestOutcome()?.code == OutcomeCode.PROSECUTION && this.getPunishments().isNotEmpty()
     fun ReportedAdjudication.isActivePrisoner(): Boolean = !this.migratedInactivePrisoner
     fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.getCreatedDateTime()!! }
-    fun Punishment.isCorrupted(): Boolean =
-      this.suspendedUntil != null && this.actualCreatedDate?.toLocalDate()?.isEqual(this.suspendedUntil) == true && this.actualCreatedDate?.toLocalDate()?.isAfter(LocalDate.now().minusMonths(6)) == true
 
     fun ReportedAdjudication.toHearingsDto() = this.hearings.map { it.toDto() }.sortedBy { it.dateTimeOfHearing }
     fun ReportedAdjudication.isActionable(activeCaseload: String?): Boolean? {

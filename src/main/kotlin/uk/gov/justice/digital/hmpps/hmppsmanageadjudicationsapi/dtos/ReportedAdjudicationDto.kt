@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotCompletedOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
@@ -295,6 +296,10 @@ data class PunishmentDto(
   val paybackNotes: String? = null,
   @Schema(description = "rehabilitative activities associated to suspended punishment")
   val rehabilitativeActivities: List<RehabilitativeActivityDto> = emptyList(),
+  @Schema(description = "rehabilitative activity completed")
+  val rehabilitativeActivitiesCompleted: Boolean? = null,
+  @Schema(description = "rehabilitative activity not completed outcome")
+  val rehabilitativeActivitiesNotCompletedOutcome: NotCompletedOutcome? = null,
 )
 
 @Schema(description = "rehabilitative activity dto")

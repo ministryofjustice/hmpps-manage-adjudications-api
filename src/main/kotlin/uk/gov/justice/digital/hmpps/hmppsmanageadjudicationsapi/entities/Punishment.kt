@@ -26,12 +26,12 @@ data class Punishment(
   var stoppagePercentage: Int? = null,
   @field:Length(max = 16)
   var activatedByChargeNumber: String? = null,
-  var suspendedUntil: LocalDate? = null,
+  private var suspendedUntil: LocalDate? = null,
   var amount: Double? = null,
   var sanctionSeq: Long? = null,
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "punishment_fk_id")
-  var schedule: MutableList<PunishmentSchedule>,
+  private var schedule: MutableList<PunishmentSchedule>,
   var deleted: Boolean? = null,
   @field:Length(max = 16)
   var consecutiveToChargeNumber: String? = null,
@@ -43,12 +43,42 @@ data class Punishment(
   @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(name = "punishment_fk_id")
   var rehabilitativeActivities: MutableList<RehabilitativeActivity> = mutableListOf(),
+  var rehabCompleted: Boolean? = null,
+  @Enumerated(EnumType.STRING)
+  var rehabNotCompletedOutcome: NotCompletedOutcome? = null,
 ) : BaseEntity() {
   fun isActiveSuspended(punishmentCutOff: LocalDate): Boolean =
     this.suspendedUntil?.isAfter(punishmentCutOff) == true && this.activatedByChargeNumber == null
 
+  fun isActivePunishment(punishmentCutOff: LocalDate): Boolean =
+    PunishmentType.damagesAndCaution().none { it == this.type } && this.suspendedUntil == null && (
+      this.latestSchedule().endDate?.isAfter(punishmentCutOff) == true || PunishmentType.additionalDays().contains(this.type)
+      )
+
+  fun isActive(): Boolean =
+    this.suspendedUntil == null && this.latestSchedule().endDate?.isAfter(LocalDate.now().minusDays(1)) == true
+
+  fun latestSchedule() = this.schedule.maxBy { it.createDateTime!! }
+
+  fun addSchedule(schedule: PunishmentSchedule) {
+    this.suspendedUntil = schedule.suspendedUntil
+    this.schedule.add(schedule)
+  }
+
+  fun removeSchedule(schedule: PunishmentSchedule) {
+    this.schedule.remove(schedule)
+    this.suspendedUntil = latestSchedule().suspendedUntil
+  }
+
+  fun getSchedule(): List<PunishmentSchedule> = this.schedule
+
+  fun getSuspendedUntil(): LocalDate? = this.suspendedUntil
+
+  fun isCorrupted(): Boolean =
+    this.suspendedUntil != null && this.actualCreatedDate?.toLocalDate()?.isEqual(this.suspendedUntil) == true && this.actualCreatedDate?.toLocalDate()?.isAfter(LocalDate.now().minusMonths(6)) == true
+
   fun toDto(hasLinkedAda: Boolean, consecutiveReportsAvailable: List<String>?, activatedFrom: String? = null): PunishmentDto {
-    val canRemove = !(PunishmentType.additionalDays().contains(this.type) && hasLinkedAda)
+    val canRemove = !(PunishmentType.additionalDays().contains(this.type) && hasLinkedAda) && this.rehabCompleted == null
     return PunishmentDto(
       id = this.id,
       type = this.type,
@@ -65,6 +95,8 @@ data class Punishment(
       schedule = this.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toDto(),
       paybackNotes = this.paybackNotes,
       rehabilitativeActivities = this.rehabilitativeActivities.map { it.toDto() },
+      rehabilitativeActivitiesCompleted = this.rehabCompleted,
+      rehabilitativeActivitiesNotCompletedOutcome = this.rehabNotCompletedOutcome,
     )
   }
 

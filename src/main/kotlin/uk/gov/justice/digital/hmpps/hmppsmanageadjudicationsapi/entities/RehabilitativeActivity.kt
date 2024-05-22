@@ -40,3 +40,10 @@ enum class RehabilitativeActivityOutcome {
   EXTENDED,
   NO_ACTION,
 }
+
+enum class NotCompletedOutcome {
+  FULL_ACTIVATE,
+  PARTIAL_ACTIVATE,
+  EXT_SUSPEND,
+  NO_ACTION,
+}
