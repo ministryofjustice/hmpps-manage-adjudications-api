@@ -155,7 +155,7 @@ class PunishmentsService(
     completeRehabilitativeActivityRequest: CompleteRehabilitativeActivityRequest,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
-    val punishment = reportedAdjudication.getPunishments().firstOrNull { it.id == punishmentId } ?: throw EntityNotFoundException("punishment $punishmentId not found for charge $chargeNumber")
+    val punishment = reportedAdjudication.getPunishments().getPunishmentToAmend(punishmentId)
     if (punishment.rehabilitativeActivities.isEmpty()) throw ValidationException("punishment $punishmentId on charge $chargeNumber has no rehabilitative activities")
     if (!completeRehabilitativeActivityRequest.completed && completeRehabilitativeActivityRequest.outcome == null) throw ValidationException("completed false needs outcome")
 

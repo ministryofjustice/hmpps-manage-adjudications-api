@@ -1511,7 +1511,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = true),
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
-        .hasMessageContaining("punishment 1 not found for charge 1")
+        .hasMessageContaining("Punishment 1 is not associated with ReportedAdjudication")
     }
 
     @Test
