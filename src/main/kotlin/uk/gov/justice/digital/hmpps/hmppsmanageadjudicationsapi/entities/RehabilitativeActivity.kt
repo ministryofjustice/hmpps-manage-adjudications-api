@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.RehabilitativeActivityDto
@@ -19,8 +17,6 @@ data class RehabilitativeActivity(
   var endDate: LocalDate? = null,
   var totalSessions: Int? = null,
   var completed: Boolean? = null,
-  @Enumerated(EnumType.STRING)
-  var outcome: RehabilitativeActivityOutcome? = null,
 ) : BaseEntity() {
   fun toDto(): RehabilitativeActivityDto =
     RehabilitativeActivityDto(
@@ -29,21 +25,6 @@ data class RehabilitativeActivity(
       monitor = this.monitor,
       endDate = this.endDate,
       totalSessions = this.totalSessions,
-      outcome = this.outcome,
       completed = this.completed,
     )
-}
-
-enum class RehabilitativeActivityOutcome {
-  ACTIVATED,
-  PARTIAL_ACTIVATED,
-  EXTENDED,
-  NO_ACTION,
-}
-
-enum class NotCompletedOutcome {
-  FULL_ACTIVATE,
-  PARTIAL_ACTIVATE,
-  EXT_SUSPEND,
-  NO_ACTION,
 }

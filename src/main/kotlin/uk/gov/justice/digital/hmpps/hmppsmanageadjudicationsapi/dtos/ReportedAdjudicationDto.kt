@@ -19,7 +19,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReasonForChange
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.RehabilitativeActivityOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDate
@@ -316,8 +315,6 @@ data class RehabilitativeActivityDto(
   val totalSessions: Int? = null,
   @Schema(description = "completed")
   val completed: Boolean? = null,
-  @Schema(description = "outcome")
-  val outcome: RehabilitativeActivityOutcome? = null,
 )
 
 @Schema(description = "punishment schedule")

@@ -1,0 +1,1 @@
+ALTER TABLE rehabilitative_activity DROP COLUMN outcome;

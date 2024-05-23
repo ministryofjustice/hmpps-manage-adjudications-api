@@ -136,3 +136,10 @@ enum class PrivilegeType {
   GYM,
   OTHER,
 }
+
+enum class NotCompletedOutcome {
+  FULL_ACTIVATE,
+  PARTIAL_ACTIVATE,
+  EXT_SUSPEND,
+  NO_ACTION,
+}
