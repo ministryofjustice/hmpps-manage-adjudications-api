@@ -7,6 +7,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
@@ -1309,6 +1310,44 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
       assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities).isNotEmpty
       assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.size).isEqualTo(2)
+    }
+
+    @Test
+    fun `validation error should not be thrown - rehabilitative activity requires suspended punishment `() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.GOV_YOI
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.TV,
+              rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+              rehabCompleted = true,
+              schedule =
+              mutableListOf(PunishmentSchedule(duration = 1, startDate = LocalDate.now(), endDate = LocalDate.now())),
+            ),
+          )
+        },
+      )
+
+      assertDoesNotThrow {
+        punishmentsService.update(
+          chargeNumber = "1",
+          listOf(
+            PunishmentRequest(
+              id = 1,
+              type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.TV,
+              duration = 1,
+              startDate = LocalDate.now(),
+              endDate = LocalDate.now(),
+              rehabilitativeActivities = listOf(RehabilitativeActivityRequest()),
+            ),
+          ),
+        )
+      }
     }
   }
 
