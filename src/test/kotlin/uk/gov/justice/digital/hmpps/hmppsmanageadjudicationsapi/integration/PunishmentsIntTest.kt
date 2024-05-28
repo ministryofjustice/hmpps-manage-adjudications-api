@@ -269,6 +269,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.punishments[0].schedule.startDate").isEqualTo(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
       .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
       .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].previousSuspendedUntilDate").doesNotExist()
   }
 
   @Test
@@ -293,6 +294,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       )
       .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
       .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
+      .jsonPath("$.reportedAdjudication.punishments[0].previousSuspendedUntilDate").exists()
   }
 
   @CsvSource("true", "false")

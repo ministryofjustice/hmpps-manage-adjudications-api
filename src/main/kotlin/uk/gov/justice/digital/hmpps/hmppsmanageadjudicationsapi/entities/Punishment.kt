@@ -60,6 +60,8 @@ data class Punishment(
 
   fun latestSchedule() = this.schedule.maxBy { it.createDateTime!! }
 
+  fun previousSchedule() = this.schedule.filter { it.id != latestSchedule().id }.maxBy { it.createDateTime!! }
+
   fun addSchedule(schedule: PunishmentSchedule) {
     this.suspendedUntil = schedule.suspendedUntil
     this.schedule.add(schedule)
@@ -97,6 +99,7 @@ data class Punishment(
       rehabilitativeActivities = this.rehabilitativeActivities.map { it.toDto() },
       rehabilitativeActivitiesCompleted = this.rehabCompleted,
       rehabilitativeActivitiesNotCompletedOutcome = this.rehabNotCompletedOutcome,
+      previousSuspendedUntilDate = if (this.rehabCompleted == false && this.rehabNotCompletedOutcome == NotCompletedOutcome.EXT_SUSPEND) previousSchedule().suspendedUntil else null,
     )
   }
 
