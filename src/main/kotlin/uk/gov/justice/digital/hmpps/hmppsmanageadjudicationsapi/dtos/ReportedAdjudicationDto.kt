@@ -299,6 +299,8 @@ data class PunishmentDto(
   val rehabilitativeActivitiesCompleted: Boolean? = null,
   @Schema(description = "rehabilitative activity not completed outcome")
   val rehabilitativeActivitiesNotCompletedOutcome: NotCompletedOutcome? = null,
+  @Schema(description = "previous suspended until date if subsequently extended")
+  val previousSuspendedUntilDate: LocalDate? = null,
 )
 
 @Schema(description = "rehabilitative activity dto")
