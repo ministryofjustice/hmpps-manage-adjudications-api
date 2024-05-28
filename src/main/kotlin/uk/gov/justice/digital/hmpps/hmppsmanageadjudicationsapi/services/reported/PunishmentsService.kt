@@ -106,9 +106,9 @@ class PunishmentsService(
     }
 
     punishments.filter { it.activatedFrom == null }.forEach { punishmentRequest ->
-      punishmentRequest.validateRequest(reportedAdjudication.getLatestHearing())
 
       if (punishmentRequest.id == null) {
+        punishmentRequest.validateRequest(reportedAdjudication.getLatestHearing())
         reportedAdjudication.addPunishment(
           createNewPunishment(
             punishmentRequest = punishmentRequest,
@@ -117,6 +117,7 @@ class PunishmentsService(
         )
       } else {
         val punishmentToAmend = reportedAdjudication.getPunishments().getPunishmentToAmend(punishmentRequest.id)
+        punishmentRequest.validateRequest(reportedAdjudication.getLatestHearing(), punishmentToAmend)
         when (punishmentToAmend.type) {
           punishmentRequest.type -> {
             punishmentRequest.suspendedUntil?.let {
@@ -345,7 +346,7 @@ class PunishmentsService(
       }
     }
 
-  private fun PunishmentRequest.validateRequest(latestHearing: Hearing?) {
+  private fun PunishmentRequest.validateRequest(latestHearing: Hearing?, punishmentToAmend: Punishment? = null) {
     when (this.type) {
       PunishmentType.DAMAGES_OWED -> this.damagesOwedAmount ?: throw ValidationException("amount missing for type DAMAGES_OWED")
       PunishmentType.PRIVILEGE -> {
@@ -371,7 +372,7 @@ class PunishmentsService(
         throw ValidationException("only GOV can award rehabilitative activities")
       }
       if (!this.type.rehabilitativeActivitiesAllowed) throw ValidationException("punishment type does not support rehabilitative activities")
-      this.suspendedUntil ?: throw ValidationException("only suspended punishments can have rehabilitative activities")
+      if (punishmentToAmend?.rehabCompleted == null) this.suspendedUntil ?: throw ValidationException("only suspended punishments can have rehabilitative activities")
     }
   }
 
