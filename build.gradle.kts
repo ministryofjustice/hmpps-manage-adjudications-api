@@ -31,10 +31,10 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:3.1.3")
-  implementation("io.opentelemetry:opentelemetry-api:1.37.0")
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.3.0")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.0")
+  implementation("io.opentelemetry:opentelemetry-api:1.38.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.4.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
   runtimeOnly("com.h2database:h2:2.2.224")
   runtimeOnly("org.flywaydb:flyway-core")
   runtimeOnly("org.postgresql:postgresql")
@@ -46,9 +46,9 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.7")
   testImplementation("org.flywaydb:flyway-core")
-  testImplementation("org.testcontainers:localstack:1.19.7")
-  testImplementation("org.testcontainers:postgresql:1.19.7")
-  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.37.0")
+  testImplementation("org.testcontainers:localstack:1.19.8")
+  testImplementation("org.testcontainers:postgresql:1.19.8")
+  testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.38.0")
 }
 
 allOpen {
