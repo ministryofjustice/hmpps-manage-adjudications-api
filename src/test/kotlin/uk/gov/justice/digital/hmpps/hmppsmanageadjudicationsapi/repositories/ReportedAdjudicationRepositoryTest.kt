@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.data.domain.Pageable
@@ -43,7 +42,6 @@ import java.time.LocalTime
 // note these tests are a bit of a mess, as the DPS gradle 6.0 upgrade broke a lot of the entity manager tests, and the set up was built around it
 // jpa tests should really insert their own data, and not rely on setUp, which is the old @BeforeEach and will clash with @Transactional for lazy loading
 @SpringBootTest
-@AutoConfigureDataJpa
 @ActiveProfiles("test")
 @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
 @Import(AuditConfiguration::class, UserDetails::class)
