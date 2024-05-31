@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
@@ -16,24 +16,29 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
 import java.time.LocalDateTime
 
-@DataJpaTest
+@SpringBootTest
 @ActiveProfiles("test")
 @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
 @Import(AuditConfiguration::class, UserDetails::class)
 class BaseEntityTest {
   @Autowired
-  lateinit var entityManager: TestEntityManager
+  lateinit var draftAdjudicationRepository: DraftAdjudicationRepository
+
+  @BeforeEach
+  fun `init`() {
+    draftAdjudicationRepository.deleteAll()
+  }
 
   @Test
   fun `check the correct audit data is used`() {
     val draft = newDraft()
 
-    val savedEntity = entityManager.persistAndFlush(draft)
+    val savedEntity = draftAdjudicationRepository.save(draft)
 
     Thread.sleep(2000)
 
     savedEntity.incidentRole?.roleCode = "25c"
-    val updatedEntity = entityManager.persistAndFlush(savedEntity)
+    val updatedEntity = draftAdjudicationRepository.save(savedEntity)
 
     assertThat(updatedEntity.incidentRole?.createdByUserId).isEqualTo("ITAG_USER")
     assertThat(updatedEntity.incidentRole?.modifiedByUserId).isEqualTo("ITAG_USER")
