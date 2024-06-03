@@ -16,16 +16,29 @@
 
 The frontend can be found here: <https://github.com/ministryofjustice/hmpps-manage-adjudications>
 
+Swagger is found here <https://manage-adjudications-api-dev.hmpps.service.justice.gov.uk/swagger-ui/index.html>
 # Record security
 
 The Active-Caseload header parameter is used in conjunction with the front end, to avoid prisoner officers or 
 ALO's navigating to records they are not allowed to action, it is only use for endpoints for a specific resource, 
 and is not used for all reports endpoints
 
+```
+ if (listOf(reportedAdjudication.originatingAgencyId, overrideAgencyId)
+        .none { it == authenticationFacade.activeCaseload }
+    ) {
+      throwEntityNotFoundException(chargeNumber)
+    }
+```
+
 # Transfers
 
 Transfers are handled by events within the api.  If a prisoner is transferred, a service will identify whether 
 the prisoner has any transfer in a transferable state, and will mark the new agency as the override agency
+
+```
+  fun processTransferEvent(prisonerNumber: String?, agencyId: String?) {
+```
 
 # Adding an offence rule
 
@@ -37,6 +50,21 @@ The api would require a new OffenceCode, the original mapping spreadsheet can be
 
 Paragraph descriptions will need gender based content
 
+Offences can now be versioned, the default will be versions 1 and 2.  To add additional policy changes add a version, 
+ie 3 to the defaults, and then add or exclude offences from the relevant versions.  The UI will controls the version flag
+
+```
+enum class OffenceCodes(val applicableVersions: List<Int> = listOf(1, 2)
+```
+
+```
+ADULT_51_1A(applicableVersions = listOf(1), nomisCode = "51:1A", paragraph = "1(a)", uniqueOffenceCodes = listOf(1001, 1003, 1005, 1021, 1007), paragraphDescription = Descriptions.YOI_2_ADULT_1A),
+ADULT_51_1A_24(applicableVersions = listOf(2), nomisCode = "51:1A (24)", paragraph = "1(a)", uniqueOffenceCodes = listOf(100124, 100324, 100524, 102124, 100724), paragraphDescription = Descriptions.YOI_2A_24_ADULT_1A_24),  
+```
+
+Bear in mind, any offence that no longer exists in the current version can be accessible from the front end
+due to historic data
+
 # Hearing outcomes and outcomes
 
 Validation and ordering of the outcomes is important.  A hearing can have a hearing outcome, 
@@ -44,6 +72,10 @@ and generally an outcome (except for adjourn).  You can also have outcomes, with
 In addition, from a rendering perspective, referrals have referral outcomes.
 
 The api handles the complexity for rendering on behalf of the UI.
+
+```
+fun createOutcomeHistory(hearings: MutableList<HearingDto>, outcomes: MutableList<CombinedOutcomeDto>): List<OutcomeHistoryDto> {
+```
 
 For guidance refer to the integration tests which demonstrate how the user will build 
 this model and how it should be represented for the UI
@@ -60,7 +92,7 @@ For running locally against docker instances of the following services:
 
 ### Running all services including this service
 
-`docker-compose up`
+`docker-compose up -d`
 
 ### Tests
 Before running the tests `docker-compose up` needs to be running and to have finished loading
