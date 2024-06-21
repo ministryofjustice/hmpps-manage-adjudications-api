@@ -68,9 +68,8 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `returns adjudication summary for prisoner - basic`(): Unit = runBlocking {
       whenever(
-        reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+        reportedAdjudicationRepository.activeChargeProvedForBookingId(
           1L,
-          ReportedAdjudicationStatus.CHARGE_PROVED,
           LocalDate.now().minusMonths(3).atStartOfDay(),
         ),
       ).thenReturn(2)

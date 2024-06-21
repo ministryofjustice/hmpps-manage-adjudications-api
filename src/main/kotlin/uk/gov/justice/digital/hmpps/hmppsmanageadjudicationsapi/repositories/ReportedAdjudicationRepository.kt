@@ -143,10 +143,23 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("sequenceName") sequenceName: String,
   ): Long
 
-  fun countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
-    bookingId: Long,
-    status: ReportedAdjudicationStatus,
-    cutOff: LocalDateTime,
+  @Query(
+    value = """
+    SELECT COUNT(1) 
+    FROM (SELECT DISTINCT ra.charge_number FROM reported_adjudications ra
+    JOIN hearing h ON h.reported_adjudication_fk_id = ra.id
+    JOIN hearing_outcome ho ON ho.id = h.outcome_id
+    WHERE
+     ra.status = 'CHARGE_PROVED' 
+     AND ra.offender_booking_id = :bookingId
+     AND h.date_time_of_hearing >= :cutOff 
+     AND ho.code = 'COMPLETE') tbl
+  """,
+    nativeQuery = true,
+  )
+  fun activeChargeProvedForBookingId(
+    @Param("bookingId") bookingId: Long,
+    @Param("cutOff") cutOff: LocalDateTime,
   ): Long
 
   @Query(

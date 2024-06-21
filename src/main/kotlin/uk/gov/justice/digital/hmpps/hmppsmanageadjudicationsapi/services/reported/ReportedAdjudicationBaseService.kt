@@ -76,9 +76,8 @@ open class ReportedAdjudicationBaseService(
     }
 
   protected fun getReportCountForProfile(offenderBookingId: Long, cutOff: LocalDateTime): Long =
-    reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+    reportedAdjudicationRepository.activeChargeProvedForBookingId(
       bookingId = offenderBookingId,
-      status = ReportedAdjudicationStatus.CHARGE_PROVED,
       cutOff = cutOff,
     )
 
