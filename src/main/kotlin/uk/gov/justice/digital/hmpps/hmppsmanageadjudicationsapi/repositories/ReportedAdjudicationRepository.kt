@@ -153,7 +153,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
      ra.status = 'CHARGE_PROVED' 
      AND ra.offender_booking_id = :bookingId
      AND h.date_time_of_hearing >= :cutOff 
-     AND ho.code = 'COMPLETE')
+     AND ho.code = 'COMPLETE') tbl
   """,
     nativeQuery = true,
   )
