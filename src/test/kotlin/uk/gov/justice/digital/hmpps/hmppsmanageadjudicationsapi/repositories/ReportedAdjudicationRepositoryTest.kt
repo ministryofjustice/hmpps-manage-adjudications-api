@@ -719,18 +719,31 @@ class ReportedAdjudicationRepositoryTest {
       entityBuilder.reportedAdjudication(offenderBookingId = 2L, chargeNumber = "TESTING_SUM").also {
         it.hearings.clear()
         it.hearings.add(
-          Hearing(dateTimeOfHearing = LocalDateTime.now().minusDays(1), locationId = 1, agencyId = "", oicHearingType = OicHearingType.GOV_ADULT, chargeNumber = ""),
+          Hearing(
+            dateTimeOfHearing = LocalDateTime.now().minusDays(1),
+            locationId = 1,
+            agencyId = "",
+            oicHearingType = OicHearingType.GOV_ADULT,
+            chargeNumber = "",
+            hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = ""),
+          ),
         )
         it.hearings.add(
-          Hearing(dateTimeOfHearing = LocalDateTime.now().minusDays(1), locationId = 1, agencyId = "", oicHearingType = OicHearingType.GOV_ADULT, chargeNumber = ""),
+          Hearing(
+            dateTimeOfHearing = LocalDateTime.now().minusDays(1),
+            locationId = 1,
+            agencyId = "",
+            oicHearingType = OicHearingType.GOV_ADULT,
+            chargeNumber = "",
+            hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = ""),
+          ),
         )
         it.status = ReportedAdjudicationStatus.CHARGE_PROVED
       },
     )
 
-    val adjudications = reportedAdjudicationRepository.countByOffenderBookingIdAndStatusAndHearingsDateTimeOfHearingAfter(
+    val adjudications = reportedAdjudicationRepository.activeChargeProvedForBookingId(
       bookingId = 2L,
-      status = ReportedAdjudicationStatus.CHARGE_PROVED,
       cutOff = LocalDate.now().minusDays(2).atStartOfDay(),
     )
 
