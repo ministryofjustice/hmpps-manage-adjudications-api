@@ -721,6 +721,9 @@ class ReportedAdjudicationRepositoryTest {
         it.hearings.add(
           Hearing(dateTimeOfHearing = LocalDateTime.now().minusDays(1), locationId = 1, agencyId = "", oicHearingType = OicHearingType.GOV_ADULT, chargeNumber = ""),
         )
+        it.hearings.add(
+          Hearing(dateTimeOfHearing = LocalDateTime.now().minusDays(1), locationId = 1, agencyId = "", oicHearingType = OicHearingType.GOV_ADULT, chargeNumber = ""),
+        )
         it.status = ReportedAdjudicationStatus.CHARGE_PROVED
       },
     )
