@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDet
 import java.time.LocalDateTime
 
 @DataJpaTest
-@ActiveProfiles("test")
+@ActiveProfiles("jpa")
 @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
 @Import(AuditConfiguration::class, UserDetails::class)
 class BaseEntityTest {

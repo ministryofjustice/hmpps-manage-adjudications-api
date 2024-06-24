@@ -41,7 +41,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 
 @DataJpaTest
-@ActiveProfiles("test")
+@ActiveProfiles("jpa")
 @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
 @Import(AuditConfiguration::class, UserDetails::class)
 class ReportedAdjudicationRepositoryTest {
