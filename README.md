@@ -88,15 +88,14 @@ For running locally against docker instances of the following services:
 
 - run this application independently e.g. in IntelliJ
 
-`docker-compose -f docker-compose-local.yml up`
+`docker-compose -f docker-compose-local.yml up -d`
 
 ### Running all services including this service
 
 `docker-compose up -d`
 
 ### Tests
-Before running the tests `docker-compose up` needs to be running and to have finished loading
-before you start running the tests. Once done you can run the tests by running `./gradlew build`
+The integration tests use containers and no longer require docker compose files.  To test `./gradlew check`
 
 ### Running locally
 `./gradlew bootRun --args='--spring.profiles.active=dev-local'`
