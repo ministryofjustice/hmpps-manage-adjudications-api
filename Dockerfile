@@ -12,6 +12,10 @@ ENV BUILD_NUMBER ${BUILD_NUMBER:-1_0_0}
 COPY . .
 RUN ./gradlew clean assemble -Dorg.gradle.daemon=false
 
+# Grab AWS RDS Root cert
+RUN apt-get update && apt-get install -y curl
+RUN curl https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem  > root.crt
+
 FROM eclipse-temurin:21-jre-alpine
 LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
 
@@ -19,10 +23,6 @@ ARG BUILD_NUMBER
 ENV BUILD_NUMBER ${BUILD_NUMBER:-1_0_0}
 
 RUN apk --no-cache upgrade
-
-# Grab AWS RDS Root cert
-RUN apt-get update && apt-get install -y curl
-RUN curl https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem  > root.crt
 
 ENV TZ=Europe/London
 RUN ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
