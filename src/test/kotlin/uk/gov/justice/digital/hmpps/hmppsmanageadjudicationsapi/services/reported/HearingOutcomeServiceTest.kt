@@ -113,7 +113,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         hearingOutcomeService.createAdjourn("1", adjudicator = "", adjournReason = HearingOutcomeAdjournReason.OTHER, details = "", plea = HearingOutcomePlea.NOT_ASKED)
-      }.isInstanceOf(RuntimeException::class.java)
+      }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("back key detected")
     }
 

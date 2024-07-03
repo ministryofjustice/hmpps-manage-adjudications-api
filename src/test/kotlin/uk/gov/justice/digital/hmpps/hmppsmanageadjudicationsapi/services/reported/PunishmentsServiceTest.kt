@@ -108,7 +108,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           chargeNumber = "1",
           listOf(PunishmentRequest(type = PunishmentType.CONFINEMENT, duration = 1)),
         )
-      }.isInstanceOf(RuntimeException::class.java)
+      }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("This charge already has punishments - back key detected")
     }
 
