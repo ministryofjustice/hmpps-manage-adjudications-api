@@ -33,7 +33,7 @@ jobs:
       postgres_username: "adjudications"
       postgres_password: "adjudications"
     environment:
-      _JAVA_OPTIONS: -Xmx2048m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process
+      _JAVA_OPTIONS: -Xmx1024m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process
     steps:
       - checkout
       - restore_cache:
@@ -42,7 +42,7 @@ jobs:
             - gradle-
       - hmpps/wait_till_ready_postgres
       - run:
-          command: ./gradlew check --no-daemon
+          command: ./gradlew check
       - save_cache:
           paths:
             - ~/.gradle
