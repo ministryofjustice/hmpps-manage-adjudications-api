@@ -42,7 +42,7 @@ jobs:
             - gradle-
       - hmpps/wait_till_ready_postgres
       - run:
-          command: ./gradlew check
+          command: ./gradlew check --no-daemon
       - save_cache:
           paths:
             - ~/.gradle
