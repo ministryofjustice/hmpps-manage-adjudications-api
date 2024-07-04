@@ -45,7 +45,7 @@ dependencies {
   testImplementation("io.jsonwebtoken:jjwt-jackson:0.12.6")
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
   testImplementation("org.springframework.security:spring-security-test")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.3.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.4.0")
   testImplementation("org.flywaydb:flyway-core")
   testImplementation("org.testcontainers:localstack:1.19.8")
   testImplementation("org.testcontainers:postgresql:1.19.8")
