@@ -30,11 +30,11 @@ data class HearingSummaryResponse(
   val hearings: List<HearingSummaryDto>,
 )
 
-@Schema(description = "Hearings by prisoner")
-data class HearingsByPrisoner(
+@Schema(description = "Hearing and prisoner")
+data class HearingAndPrisoner(
   @Schema(description = "prisoner number")
   val prisonerNumber: String,
-  @Schema(description = "hearings")
+  @Schema(description = "hearing")
   val hearing: HearingDto,
 )
 
@@ -162,7 +162,7 @@ class HearingController(
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     date: LocalDate,
     @RequestBody prisoners: List<String>,
-  ): List<HearingsByPrisoner> = hearingService.getHearingsByPrisoner(
+  ): List<HearingAndPrisoner> = hearingService.getHearingsByPrisoner(
     agencyId = agencyId,
     date = date,
     prisoners = prisoners,

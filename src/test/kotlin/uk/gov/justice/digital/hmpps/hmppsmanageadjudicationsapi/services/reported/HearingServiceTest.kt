@@ -611,7 +611,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
   }
 
   @Nested
-  inner class HearingsByPrisonerForDate {
+  inner class HearingAndPrisonerForDate {
     val now = LocalDateTime.now()
 
     inner class TestData : HearingsByPrisoner {

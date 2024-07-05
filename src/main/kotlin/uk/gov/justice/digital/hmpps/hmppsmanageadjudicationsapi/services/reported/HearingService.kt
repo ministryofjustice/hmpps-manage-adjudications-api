@@ -4,7 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.HearingsByPrisoner
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.HearingAndPrisoner
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHistoryDto
@@ -129,13 +129,13 @@ class HearingService(
     agencyId: String,
     date: LocalDate,
     prisoners: List<String>,
-  ): List<HearingsByPrisoner> = hearingRepository.getHearingsByPrisoner(
+  ): List<HearingAndPrisoner> = hearingRepository.getHearingsByPrisoner(
     agencyId = agencyId,
     startDate = date.atStartOfDay(),
     endDate = date.atTime(LocalTime.MAX),
     prisoners = prisoners,
   ).map {
-    HearingsByPrisoner(
+    HearingAndPrisoner(
       prisonerNumber = it.getPrisonerNumber(),
       hearing =
       HearingDto(
