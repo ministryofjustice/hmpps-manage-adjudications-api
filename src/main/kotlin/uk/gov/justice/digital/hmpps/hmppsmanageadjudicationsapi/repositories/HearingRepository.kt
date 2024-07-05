@@ -20,8 +20,7 @@ interface HearingRepository : CrudRepository<Hearing, Long> {
              h.location_id,
              h.oic_hearing_type,
              h.id AS hearing_id
-       FROM 
-      reported_adjudications ra
+       FROM reported_adjudications ra
       JOIN hearing h ON h.reported_adjudication_fk_id = ra.id
       WHERE ra.prisoner_number in :prisoners
         AND h.agency_id = :agencyId
