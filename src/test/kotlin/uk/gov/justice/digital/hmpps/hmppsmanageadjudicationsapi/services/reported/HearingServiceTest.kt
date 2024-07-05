@@ -639,19 +639,17 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val response = hearingService.getHearingsByPrisoner(
         agencyId = "MDI",
-        startDate = LocalDate.now(),
-        endDate = LocalDate.now(),
+        date = LocalDate.now(),
         prisoners = listOf("AE12345"),
       )
 
       assertThat(response.size).isEqualTo(1)
       assertThat(response.first().prisonerNumber).isEqualTo("AE12345")
-      assertThat(response.first().hearings.size).isEqualTo(1)
-      assertThat(response.first().hearings.first().id).isEqualTo(1)
-      assertThat(response.first().hearings.first().locationId).isEqualTo(2)
-      assertThat(response.first().hearings.first().oicHearingType).isEqualTo(OicHearingType.GOV)
-      assertThat(response.first().hearings.first().agencyId).isEqualTo("MDI")
-      assertThat(response.first().hearings.first().dateTimeOfHearing).isEqualTo(now)
+      assertThat(response.first().hearing.id).isEqualTo(1)
+      assertThat(response.first().hearing.locationId).isEqualTo(2)
+      assertThat(response.first().hearing.oicHearingType).isEqualTo(OicHearingType.GOV)
+      assertThat(response.first().hearing.agencyId).isEqualTo("MDI")
+      assertThat(response.first().hearing.dateTimeOfHearing).isEqualTo(now)
     }
   }
 }

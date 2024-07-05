@@ -127,29 +127,26 @@ class HearingService(
 
   fun getHearingsByPrisoner(
     agencyId: String,
-    startDate: LocalDate,
-    endDate: LocalDate,
+    date: LocalDate,
     prisoners: List<String>,
   ): List<HearingsByPrisoner> = hearingRepository.getHearingsByPrisoner(
     agencyId = agencyId,
-    startDate = startDate.atStartOfDay(),
-    endDate = endDate.atTime(LocalTime.MAX),
+    startDate = date.atStartOfDay(),
+    endDate = date.atTime(LocalTime.MAX),
     prisoners = prisoners,
-  ).groupBy { it.getPrisonerNumber() }
-    .map {
-      HearingsByPrisoner(
-        prisonerNumber = it.key,
-        hearings = it.value.map { hearing ->
-          HearingDto(
-            id = hearing.getHearingId(),
-            locationId = hearing.getLocationId(),
-            dateTimeOfHearing = hearing.getDateTimeOfHearing(),
-            oicHearingType = OicHearingType.valueOf(hearing.getOicHearingType()),
-            agencyId = agencyId,
-          )
-        },
-      )
-    }
+  ).map {
+    HearingsByPrisoner(
+      prisonerNumber = it.getPrisonerNumber(),
+      hearing =
+      HearingDto(
+        id = it.getHearingId(),
+        locationId = it.getLocationId(),
+        dateTimeOfHearing = it.getDateTimeOfHearing(),
+        oicHearingType = OicHearingType.valueOf(it.getOicHearingType()),
+        agencyId = agencyId,
+      ),
+    )
+  }
 
   private fun toHearingSummaries(hearings: List<Hearing>, adjudications: Map<String, ReportedAdjudication>): List<HearingSummaryDto> =
     hearings.map {

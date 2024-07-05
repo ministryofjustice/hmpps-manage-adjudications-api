@@ -35,7 +35,7 @@ data class HearingsByPrisoner(
   @Schema(description = "prisoner number")
   val prisonerNumber: String,
   @Schema(description = "hearings")
-  val hearings: List<HearingDto>,
+  val hearing: HearingDto,
 )
 
 @Schema(description = "Request to add a hearing")
@@ -158,17 +158,13 @@ class HearingController(
   fun getHearingsByPrisoner(
     @PathVariable("agencyId")
     agencyId: String,
-    @RequestParam(name = "startDate")
+    @RequestParam(name = "date")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    startDate: LocalDate,
-    @RequestParam(name = "endDate")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    endDate: LocalDate,
+    date: LocalDate,
     @RequestBody prisoners: List<String>,
   ): List<HearingsByPrisoner> = hearingService.getHearingsByPrisoner(
     agencyId = agencyId,
-    startDate = startDate,
-    endDate = endDate,
+    date = date,
     prisoners = prisoners,
   )
 }
