@@ -639,7 +639,8 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       val response = hearingService.getHearingsByPrisoner(
         agencyId = "MDI",
-        date = LocalDate.now(),
+        startDate = LocalDate.now(),
+        endDate = LocalDate.now(),
         prisoners = listOf("AE12345"),
       )
 

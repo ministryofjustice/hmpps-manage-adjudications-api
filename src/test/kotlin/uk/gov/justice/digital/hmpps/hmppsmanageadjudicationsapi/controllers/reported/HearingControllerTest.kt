@@ -263,6 +263,7 @@ class HearingControllerTest : TestControllerBase() {
           any(),
           any(),
           any(),
+          any(),
         ),
       ).thenReturn(emptyList())
     }
@@ -280,7 +281,8 @@ class HearingControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(hearingService).getHearingsByPrisoner(
         agencyId = "MDI",
-        date = now,
+        startDate = now,
+        endDate = now,
         prisoners = listOf("AE12345"),
       )
     }
@@ -292,7 +294,7 @@ class HearingControllerTest : TestControllerBase() {
 
       return mockMvc
         .perform(
-          MockMvcRequestBuilders.post("/reported-adjudications/hearings/MDI?date=$date")
+          MockMvcRequestBuilders.post("/reported-adjudications/hearings/MDI?startDate=$date&endDate=$date")
             .header("Content-Type", "application/json")
             .content(body),
         )

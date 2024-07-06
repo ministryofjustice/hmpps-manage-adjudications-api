@@ -127,12 +127,13 @@ class HearingService(
 
   fun getHearingsByPrisoner(
     agencyId: String,
-    date: LocalDate,
+    startDate: LocalDate,
+    endDate: LocalDate,
     prisoners: List<String>,
   ): List<HearingAndPrisoner> = hearingRepository.getHearingsByPrisoner(
     agencyId = agencyId,
-    startDate = date.atStartOfDay(),
-    endDate = date.atTime(LocalTime.MAX),
+    startDate = startDate.atStartOfDay(),
+    endDate = endDate.atTime(LocalTime.MAX),
     prisoners = prisoners,
   ).map {
     HearingAndPrisoner(

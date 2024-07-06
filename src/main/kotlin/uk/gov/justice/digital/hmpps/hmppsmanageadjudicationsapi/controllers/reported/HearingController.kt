@@ -158,13 +158,17 @@ class HearingController(
   fun getHearingsByPrisoner(
     @PathVariable("agencyId")
     agencyId: String,
-    @RequestParam(name = "date")
+    @RequestParam(name = "startDate")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    date: LocalDate,
+    startDate: LocalDate,
+    @RequestParam(name = "endDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    endDate: LocalDate,
     @RequestBody prisoners: List<String>,
   ): List<HearingAndPrisoner> = hearingService.getHearingsByPrisoner(
     agencyId = agencyId,
-    date = date,
+    startDate = startDate,
+    endDate = endDate,
     prisoners = prisoners,
   )
 }

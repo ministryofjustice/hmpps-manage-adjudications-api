@@ -153,7 +153,7 @@ class HearingsIntTest : SqsIntegrationTestBase() {
     val hearingDate = IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.toLocalDate()
 
     webTestClient.post()
-      .uri("/reported-adjudications/hearings/MDI?date=$hearingDate")
+      .uri("/reported-adjudications/hearings/MDI?startDate=$hearingDate&endDate=$hearingDate")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_VIEW_ADJUDICATIONS")))
       .bodyValue(
         listOf(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber),
