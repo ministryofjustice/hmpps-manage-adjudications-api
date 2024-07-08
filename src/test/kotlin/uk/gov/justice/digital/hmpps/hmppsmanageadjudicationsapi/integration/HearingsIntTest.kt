@@ -146,4 +146,24 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.hearings[0].dateTimeOfHearing")
       .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearingISOString!!)
   }
+
+  @Test
+  fun `get hearings by prisoner`() {
+    initDataForUnScheduled().createHearing()
+    val hearingDate = IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.toLocalDate()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/hearings/MDI?startDate=$hearingDate&endDate=$hearingDate")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_VIEW_ADJUDICATIONS")))
+      .bodyValue(
+        listOf(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.size()").isEqualTo(1)
+      .jsonPath("$.[0].prisonerNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber)
+      .jsonPath("$.[0].hearing.dateTimeOfHearing").isEqualTo("2010-11-19T10:00:00")
+      .jsonPath("$.[0].hearing.locationId").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.locationId)
+  }
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.HearingAndPrisoner
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHistoryDto
@@ -24,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.lastOutcomeIsRefer
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 @Transactional
 @Service
@@ -121,6 +123,30 @@ class HearingService(
     ).associateBy { it.chargeNumber }
 
     return toHearingSummaries(hearings, adjudicationsMap)
+  }
+
+  fun getHearingsByPrisoner(
+    agencyId: String,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    prisoners: List<String>,
+  ): List<HearingAndPrisoner> = hearingRepository.getHearingsByPrisoner(
+    agencyId = agencyId,
+    startDate = startDate.atStartOfDay(),
+    endDate = endDate.atTime(LocalTime.MAX),
+    prisoners = prisoners,
+  ).map {
+    HearingAndPrisoner(
+      prisonerNumber = it.getPrisonerNumber(),
+      hearing =
+      HearingDto(
+        id = it.getHearingId(),
+        locationId = it.getLocationId(),
+        dateTimeOfHearing = it.getDateTimeOfHearing(),
+        oicHearingType = OicHearingType.valueOf(it.getOicHearingType()),
+        agencyId = agencyId,
+      ),
+    )
   }
 
   private fun toHearingSummaries(hearings: List<Hearing>, adjudications: Map<String, ReportedAdjudication>): List<HearingSummaryDto> =

@@ -23,8 +23,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.HearingsByPrisoner
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 class HearingServiceTest : ReportedAdjudicationTestBase() {
   private val hearingRepository: HearingRepository = mock()
@@ -605,6 +607,50 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response).isNotNull
       assertThat(response.isEmpty()).isTrue
+    }
+  }
+
+  @Nested
+  inner class HearingAndPrisonerForDate {
+    val now = LocalDateTime.now()
+
+    inner class TestData : HearingsByPrisoner {
+      override fun getPrisonerNumber(): String = "AE12345"
+
+      override fun getDateTimeOfHearing(): LocalDateTime = now
+
+      override fun getOicHearingType(): String = OicHearingType.GOV.name
+
+      override fun getLocationId(): Long = 2
+
+      override fun getHearingId(): Long = 1
+    }
+
+    @Test
+    fun `gets hearings for a prisoner`() {
+      whenever(
+        hearingRepository.getHearingsByPrisoner(
+          agencyId = "MDI",
+          startDate = LocalDate.now().atStartOfDay(),
+          endDate = LocalDate.now().atTime(LocalTime.MAX),
+          prisoners = listOf("AE12345"),
+        ),
+      ).thenReturn(listOf(TestData()))
+
+      val response = hearingService.getHearingsByPrisoner(
+        agencyId = "MDI",
+        startDate = LocalDate.now(),
+        endDate = LocalDate.now(),
+        prisoners = listOf("AE12345"),
+      )
+
+      assertThat(response.size).isEqualTo(1)
+      assertThat(response.first().prisonerNumber).isEqualTo("AE12345")
+      assertThat(response.first().hearing.id).isEqualTo(1)
+      assertThat(response.first().hearing.locationId).isEqualTo(2)
+      assertThat(response.first().hearing.oicHearingType).isEqualTo(OicHearingType.GOV)
+      assertThat(response.first().hearing.agencyId).isEqualTo("MDI")
+      assertThat(response.first().hearing.dateTimeOfHearing).isEqualTo(now)
     }
   }
 }

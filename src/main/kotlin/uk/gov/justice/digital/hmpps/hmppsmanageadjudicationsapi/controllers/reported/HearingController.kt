@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ErrorResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingSummaryDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
@@ -27,6 +28,14 @@ import java.time.LocalDateTime
 data class HearingSummaryResponse(
   @Schema(description = "The hearing summaries response")
   val hearings: List<HearingSummaryDto>,
+)
+
+@Schema(description = "Hearing and prisoner")
+data class HearingAndPrisoner(
+  @Schema(description = "prisoner number")
+  val prisonerNumber: String,
+  @Schema(description = "hearing")
+  val hearing: HearingDto,
 )
 
 @Schema(description = "Request to add a hearing")
@@ -142,4 +151,24 @@ class HearingController(
       hearings,
     )
   }
+
+  @Operation(summary = "Get a list of hearings by prisoner for an agency")
+  @PostMapping(value = ["/hearings/{agencyId}"])
+  @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
+  fun getHearingsByPrisoner(
+    @PathVariable("agencyId")
+    agencyId: String,
+    @RequestParam(name = "startDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    startDate: LocalDate,
+    @RequestParam(name = "endDate")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    endDate: LocalDate,
+    @RequestBody prisoners: List<String>,
+  ): List<HearingAndPrisoner> = hearingService.getHearingsByPrisoner(
+    agencyId = agencyId,
+    startDate = startDate,
+    endDate = endDate,
+    prisoners = prisoners,
+  )
 }
