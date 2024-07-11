@@ -160,6 +160,7 @@ class HearingService(
         chargeNumber = it.chargeNumber,
         oicHearingType = it.oicHearingType,
         status = adjudication.status,
+        locationId = it.locationId,
       )
     }.sortedBy { it.dateTimeOfHearing }
 
