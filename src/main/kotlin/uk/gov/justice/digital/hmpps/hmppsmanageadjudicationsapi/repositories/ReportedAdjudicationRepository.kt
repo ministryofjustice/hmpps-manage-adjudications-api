@@ -11,15 +11,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-interface ReportCounts {
-  fun getAwaitingReviewCount(): Long
-  fun getHearingsToScheduleCount(): Long
-  fun getOverrideHearingsToScheduleCount(): Long
-  fun getTransfersInCount(): Long
-  fun getTransfersOutAwaitingCount(): Long
-  fun getTransfersOutScheduledCount(): Long
-}
-
 interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, Long> {
 
   fun findByCreatedByUserIdAndOriginatingAgencyIdAndDateTimeOfDiscoveryBetweenAndStatusIn(
@@ -118,7 +109,32 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByPrisonerNumberAndStatusIn(prisonerNumber: String, statuses: List<ReportedAdjudicationStatus>): List<ReportedAdjudication>
 
+  fun countByOriginatingAgencyIdAndStatus(agencyId: String, status: ReportedAdjudicationStatus): Long
+
+  fun countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(agencyId: String, statuses: List<ReportedAdjudicationStatus>, cutOffDate: LocalDateTime): Long
+
+  fun countByOriginatingAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(agencyId: String, statuses: List<ReportedAdjudicationStatus>, cutOffDate: LocalDateTime): Long
+
   fun findByPunishmentsActivatedByChargeNumber(chargeNumber: String): List<ReportedAdjudication>
+
+  @Query(
+    value = "select count(1) from reported_adjudications ra where ra.status in :statuses $TRANSFER_IN",
+    nativeQuery = true,
+  )
+  fun countTransfersIn(
+    @Param("agencyId") agencyId: String,
+    @Param("statuses") statuses: List<String>,
+  ): Long
+
+  @Query(
+    value = "select count(1) from reported_adjudications ra where ra.status in :statuses $TRANSFER_OUT",
+    nativeQuery = true,
+  )
+  fun countTransfersOut(
+    @Param("agencyId") agencyId: String,
+    @Param("statuses") statuses: List<String>,
+    @Param("cutOffDate") cutOffDate: LocalDateTime,
+  ): Long
 
   fun findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(chargeNumber: String, types: List<PunishmentType>): List<ReportedAdjudication>
 
@@ -201,55 +217,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("suspended") suspended: Boolean,
     pageable: Pageable,
   ): Page<ReportedAdjudication>
-
-  @Query(
-    value = """
-      select
-sum(
-  case when ra.status = 'AWAITING_REVIEW' and ra.originating_agency_id = :agencyId then 1 else 0 end
-  ) as awaiting_review_count,
-sum(
-  case when ra.status in :hearingStatuses and ra.originating_agency_id = :agencyId 
-            and ra.date_time_of_discovery >= :cutOffDate then 1 else 0 end
-  ) as hearings_to_schedule_count,
-sum(
-  case when ra.status in :hearingStatuses 
-            and ra.override_agency_id = :agencyId 
-            and ra.date_time_of_discovery >= :cutOffDate then 1 else 0 end
-  ) as override_hearings_to_schedule_count,
-sum(
-  case when ra.status in ('ADJOURNED', 'UNSCHEDULED', 'REFER_INAD', 'REFER_POLICE') 
-            and ra.override_agency_id = :agencyId 
-            and coalesce(ra.last_modified_agency_id, ra.originating_agency_id) != :agencyId then 1 else 0 end
-  ) as transfers_in_count,
-sum(
-  case when ra.status = 'AWAITING_REVIEW' 
-       and ra.originating_agency_id  = :agencyId and ra.override_agency_id is not null 
-       and ra.date_time_of_discovery >= :cutOffDate then 1 else 0 end
-  ) as transfers_out_awaiting_count,
-sum(
-  case when ra.status = 'SCHEDULED' 
-       and ra.originating_agency_id  = :agencyId 
-       and ra.override_agency_id is not null 
-       and ra.date_time_of_discovery >= :cutOffDate 
-       and 0 = (select count(1) 
-                  from hearing h 
-                  where h.charge_number = ra.charge_number 
-                  and h.agency_id = ra.override_agency_id) then 1 else 0 end
-  ) as transfers_out_scheduled_count
-from
-reported_adjudications ra
-where (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId)
- and ra.status in :statuses
-    """,
-    nativeQuery = true,
-  )
-  fun getReportCounts(
-    @Param("agencyId") agencyId: String,
-    @Param("statuses") statuses: List<String>,
-    @Param("hearingStatuses") hearingStatuses: List<String>,
-    @Param("cutOffDate") cutOffDate: LocalDateTime,
-  ): ReportCounts
 
   fun findByPrisonerNumber(prisonerNumber: String): List<ReportedAdjudication>
 
