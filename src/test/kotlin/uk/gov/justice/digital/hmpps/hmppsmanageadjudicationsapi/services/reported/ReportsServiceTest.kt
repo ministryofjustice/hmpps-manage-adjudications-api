@@ -1,8 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
@@ -313,15 +310,14 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
   inner class ReportCounts {
 
     @Test
-    fun `get reports count for agency`(): Unit = runBlocking {
+    fun `get reports count for agency`() {
       whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.AWAITING_REVIEW)).thenReturn(2)
       whenever(reportedAdjudicationRepository.countTransfersIn("MDI", transferReviewStatuses.map { it.name })).thenReturn(1)
       whenever(reportedAdjudicationRepository.countTransfersOut("MDI", transferOutStatuses.map { it.name }, transferOutAndHearingsToScheduledCutOffDate)).thenReturn(2)
       whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter("MDI", ReportsService.hearingsToScheduleStatuses, transferOutAndHearingsToScheduledCutOffDate)).thenReturn(3)
       whenever(reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter("MDI", ReportsService.hearingsToScheduleStatuses, transferOutAndHearingsToScheduledCutOffDate)).thenReturn(3)
 
-      val result =
-        withContext(Dispatchers.Default) { reportsService.getReportCounts() }
+      val result = reportsService.getReportCounts()
 
       assertThat(result.reviewTotal).isEqualTo(2)
       assertThat(result.transferReviewTotal).isEqualTo(1)
