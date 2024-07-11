@@ -156,44 +156,18 @@ class ReportsService(
   fun getReportCounts(): AgencyReportCountsDto {
     val agencyId = authenticationFacade.activeCaseload
 
-    val reviewTotal =
-      reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus(
-        agencyId = agencyId,
-        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-      )
-
-    val transferReviewTotal =
-      reportedAdjudicationRepository.countTransfersIn(
-        agencyId = agencyId,
-        statuses = transferReviewStatuses.map { it.name },
-      )
-
-    val transferOutTotal =
-      reportedAdjudicationRepository.countTransfersOut(
-        agencyId = agencyId,
-        statuses = transferOutStatuses.map { it.name },
-        cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
-      )
-
-    val hearingsToScheduleTotal =
-      reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(
-        agencyId = agencyId,
-        statuses = hearingsToScheduleStatuses,
-        cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
-      )
-
-    val overrideHearingsToScheduleTotal =
-      reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(
-        agencyId = agencyId,
-        statuses = hearingsToScheduleStatuses,
-        cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
-      )
+    val reportCounts = reportedAdjudicationRepository.getReportCounts(
+      agencyId = agencyId,
+      statuses = (transferReviewStatuses + transferOutStatuses + hearingsToScheduleStatuses).map { it.name }.distinct(),
+      hearingStatuses = hearingsToScheduleStatuses.map { it.name },
+      cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
+    )
 
     return AgencyReportCountsDto(
-      reviewTotal = reviewTotal,
-      transferReviewTotal = transferReviewTotal,
-      transferOutTotal = transferOutTotal,
-      hearingsToScheduleTotal = hearingsToScheduleTotal + overrideHearingsToScheduleTotal,
+      reviewTotal = reportCounts.getAwaitingReviewCount(),
+      transferReviewTotal = reportCounts.getTransfersInCount(),
+      transferOutTotal = reportCounts.getTransfersOutAwaitingCount() + reportCounts.getTransfersOutScheduledCount(),
+      hearingsToScheduleTotal = reportCounts.getHearingsToScheduleCount() + reportCounts.getOverrideHearingsToScheduleCount(),
     ).also {
       it.transferAllTotal = it.transferReviewTotal + it.transferOutTotal
     }

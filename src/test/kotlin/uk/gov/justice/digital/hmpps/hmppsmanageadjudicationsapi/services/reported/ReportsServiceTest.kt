@@ -15,9 +15,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferOutAndHearingsToScheduledCutOffDate
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferOutStatuses
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportsService.Companion.transferReviewStatuses
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportCounts
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -306,16 +304,28 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     }
   }
 
+  class TestReportCounts : ReportCounts {
+    override fun getAwaitingReviewCount(): Long = 2
+
+    override fun getHearingsToScheduleCount(): Long = 3
+
+    override fun getOverrideHearingsToScheduleCount(): Long = 3
+
+    override fun getTransfersInCount(): Long = 1
+
+    override fun getTransfersOutAwaitingCount(): Long = 1
+
+    override fun getTransfersOutScheduledCount(): Long = 1
+  }
+
   @Nested
-  inner class ReportCounts {
+  inner class ReportCountsTest {
 
     @Test
     fun `get reports count for agency`() {
-      whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.AWAITING_REVIEW)).thenReturn(2)
-      whenever(reportedAdjudicationRepository.countTransfersIn("MDI", transferReviewStatuses.map { it.name })).thenReturn(1)
-      whenever(reportedAdjudicationRepository.countTransfersOut("MDI", transferOutStatuses.map { it.name }, transferOutAndHearingsToScheduledCutOffDate)).thenReturn(2)
-      whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter("MDI", ReportsService.hearingsToScheduleStatuses, transferOutAndHearingsToScheduledCutOffDate)).thenReturn(3)
-      whenever(reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter("MDI", ReportsService.hearingsToScheduleStatuses, transferOutAndHearingsToScheduledCutOffDate)).thenReturn(3)
+      whenever(reportedAdjudicationRepository.getReportCounts(any(), any(), any(), any())).thenReturn(
+        TestReportCounts(),
+      )
 
       val result = reportsService.getReportCounts()
 
