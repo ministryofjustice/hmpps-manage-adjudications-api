@@ -627,28 +627,28 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `count by agency and status `() {
     assertThat(
-      reportedAdjudicationRepository.getReportCounts("LEI", listOf(ReportedAdjudicationStatus.AWAITING_REVIEW.name), emptyList(), LocalDateTime.now()).getAwaitingReviewCount(),
-    ).isEqualTo(1)
+      reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus("LEI", ReportedAdjudicationStatus.UNSCHEDULED),
+    ).isEqualTo(3)
   }
 
   @Test
   fun `count by agency and status in `() {
     assertThat(
-      reportedAdjudicationRepository.getReportCounts("LEI", listOf(ReportedAdjudicationStatus.UNSCHEDULED.name), listOf(ReportedAdjudicationStatus.UNSCHEDULED.name), LocalDateTime.now()).getHearingsToScheduleCount(),
+      reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter("LEI", listOf(ReportedAdjudicationStatus.UNSCHEDULED), LocalDateTime.now()),
     ).isEqualTo(3)
   }
 
   @Test
   fun `count by override agency and status in `() {
     assertThat(
-      reportedAdjudicationRepository.getReportCounts("LEI", listOf(ReportedAdjudicationStatus.ADJOURNED.name), listOf(ReportedAdjudicationStatus.ADJOURNED.name), LocalDateTime.now()).getOverrideHearingsToScheduleCount(),
+      reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter("LEI", listOf(ReportedAdjudicationStatus.ADJOURNED), LocalDateTime.now()),
     ).isEqualTo(1)
   }
 
   @Test
   fun `count by transfer in`() {
     assertThat(
-      reportedAdjudicationRepository.getReportCounts("MDI", listOf(ReportedAdjudicationStatus.UNSCHEDULED.name), emptyList(), LocalDateTime.now().minusYears(1)).getTransfersInCount(),
+      reportedAdjudicationRepository.countTransfersIn("MDI", listOf(ReportedAdjudicationStatus.UNSCHEDULED).map { it.name }),
     ).isEqualTo(1)
   }
 
@@ -664,12 +664,11 @@ class ReportedAdjudicationRepositoryTest {
     )
 
     assertThat(
-      reportedAdjudicationRepository.getReportCounts(
+      reportedAdjudicationRepository.countTransfersOut(
         "MDI",
         listOf(ReportedAdjudicationStatus.SCHEDULED).map { it.name },
-        emptyList(),
         transferOutAndHearingsToScheduledCutOffDate,
-      ).getTransfersOutScheduledCount(),
+      ),
     ).isEqualTo(1)
   }
 

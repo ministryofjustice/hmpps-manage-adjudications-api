@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -153,21 +155,52 @@ class ReportsService(
     return emptyList()
   }
 
-  fun getReportCounts(): AgencyReportCountsDto {
+  suspend fun getReportCounts(): AgencyReportCountsDto = coroutineScope {
     val agencyId = authenticationFacade.activeCaseload
 
-    val reportCounts = reportedAdjudicationRepository.getReportCounts(
-      agencyId = agencyId,
-      statuses = (transferReviewStatuses + transferOutStatuses + hearingsToScheduleStatuses).map { it.name }.distinct(),
-      hearingStatuses = hearingsToScheduleStatuses.map { it.name },
-      cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
-    )
+    val reviewTotal = async {
+      reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus(
+        agencyId = agencyId,
+        status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+      )
+    }
 
-    return AgencyReportCountsDto(
-      reviewTotal = reportCounts.getAwaitingReviewCount(),
-      transferReviewTotal = reportCounts.getTransfersInCount(),
-      transferOutTotal = reportCounts.getTransfersOutAwaitingCount() + reportCounts.getTransfersOutScheduledCount(),
-      hearingsToScheduleTotal = reportCounts.getHearingsToScheduleCount() + reportCounts.getOverrideHearingsToScheduleCount(),
+    val transferReviewTotal = async {
+      reportedAdjudicationRepository.countTransfersIn(
+        agencyId = agencyId,
+        statuses = transferReviewStatuses.map { it.name },
+      )
+    }
+
+    val transferOutTotal = async {
+      reportedAdjudicationRepository.countTransfersOut(
+        agencyId = agencyId,
+        statuses = transferOutStatuses.map { it.name },
+        cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
+      )
+    }
+
+    val hearingsToScheduleTotal = async {
+      reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(
+        agencyId = agencyId,
+        statuses = hearingsToScheduleStatuses,
+        cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
+      )
+    }
+
+    val overrideHearingsToScheduleTotal = async {
+      reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(
+        agencyId = agencyId,
+        statuses = hearingsToScheduleStatuses,
+        cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
+      )
+    }
+
+    AgencyReportCountsDto(
+      reviewTotal = reviewTotal.await(),
+      transferReviewTotal = transferReviewTotal.await(),
+      transferOutTotal = transferOutTotal.await(),
+      hearingsToScheduleTotal = hearingsToScheduleTotal.await() + overrideHearingsToScheduleTotal.await(),
     ).also {
       it.transferAllTotal = it.transferReviewTotal + it.transferOutTotal
     }

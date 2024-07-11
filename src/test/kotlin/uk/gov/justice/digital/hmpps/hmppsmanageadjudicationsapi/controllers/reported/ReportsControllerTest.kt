@@ -270,15 +270,17 @@ class ReportsControllerTest : TestControllerBase() {
 
     @BeforeEach
     fun `init`() {
-      whenever(reportsService.getReportCounts()).thenReturn(
-        AgencyReportCountsDto(
-          reviewTotal = 1,
-          transferReviewTotal = 1,
-          transferOutTotal = 1,
-          transferAllTotal = 2,
-          hearingsToScheduleTotal = 4,
-        ),
-      )
+      runBlocking {
+        whenever(reportsService.getReportCounts()).thenReturn(
+          AgencyReportCountsDto(
+            reviewTotal = 1,
+            transferReviewTotal = 1,
+            transferOutTotal = 1,
+            transferAllTotal = 2,
+            hearingsToScheduleTotal = 4,
+          ),
+        )
+      }
     }
 
     @Test
