@@ -285,7 +285,7 @@ class ReportsController(
   @Operation(summary = "Get report counts by agency")
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   @GetMapping("/report-counts")
-  suspend fun getReportCounts(): AgencyReportCountsDto = reportsService.getReportCounts()
+  fun getReportCounts(): AgencyReportCountsDto = reportsService.getReportCounts()
 
   @Operation(summary = "Get adjudications for an offender booking")
   @Parameters(
