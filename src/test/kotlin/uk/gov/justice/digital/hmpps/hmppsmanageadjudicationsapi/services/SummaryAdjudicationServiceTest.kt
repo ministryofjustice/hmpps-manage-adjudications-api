@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -63,7 +66,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
-    fun `returns adjudication summary for prisoner - basic`() {
+    fun `returns adjudication summary for prisoner - basic`(): Unit = runBlocking {
       whenever(
         reportedAdjudicationRepository.activeChargeProvedForBookingId(
           1L,
@@ -80,7 +83,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       ).thenReturn(listOf(basicData))
 
       val response =
-        summaryAdjudicationService.getAdjudicationSummary(bookingId = 1L, awardCutoffDate = null, adjudicationCutoffDate = null)
+        withContext(Dispatchers.Default) { summaryAdjudicationService.getAdjudicationSummary(bookingId = 1L, awardCutoffDate = null, adjudicationCutoffDate = null) }
       assertThat(response.adjudicationCount).isEqualTo(2)
       assertThat(response.awards.size).isEqualTo(2)
       assertThat(response.bookingId).isEqualTo(1L)

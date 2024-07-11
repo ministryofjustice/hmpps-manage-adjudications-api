@@ -33,19 +33,21 @@ class AdjudicationSummaryControllerTest : TestControllerBase() {
   inner class Profile {
     @BeforeEach
     fun beforeEach() {
-      whenever(
-        summaryAdjudicationService.getAdjudicationSummary(
-          any(),
-          anyOrNull(),
-          anyOrNull(),
-        ),
-      ).thenReturn(
-        AdjudicationSummary(
-          adjudicationCount = 1,
-          awards = emptyList(),
-          bookingId = 1,
-        ),
-      )
+      runBlocking {
+        whenever(
+          summaryAdjudicationService.getAdjudicationSummary(
+            any(),
+            anyOrNull(),
+            anyOrNull(),
+          ),
+        ).thenReturn(
+          AdjudicationSummary(
+            adjudicationCount = 1,
+            awards = emptyList(),
+            bookingId = 1,
+          ),
+        )
+      }
     }
 
     @Test
