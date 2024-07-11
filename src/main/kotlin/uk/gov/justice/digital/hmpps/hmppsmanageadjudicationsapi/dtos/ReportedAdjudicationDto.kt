@@ -221,6 +221,8 @@ data class HearingSummaryDto(
   val oicHearingType: OicHearingType,
   @Schema(description = "reported adjudication status")
   val status: ReportedAdjudicationStatus,
+  @Schema(description = "internal location id")
+  val locationId: Long,
 )
 
 data class OutcomeHistoryDto(

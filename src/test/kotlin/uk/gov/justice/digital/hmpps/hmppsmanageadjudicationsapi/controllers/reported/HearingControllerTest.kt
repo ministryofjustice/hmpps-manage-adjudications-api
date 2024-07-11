@@ -314,6 +314,7 @@ class HearingControllerTest : TestControllerBase() {
           prisonerNumber = "123",
           oicHearingType = OicHearingType.GOV,
           status = ReportedAdjudicationStatus.SCHEDULED,
+          locationId = 1,
         ),
       )
   }

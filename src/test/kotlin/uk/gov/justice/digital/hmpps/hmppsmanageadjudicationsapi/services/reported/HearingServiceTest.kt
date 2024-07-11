@@ -588,6 +588,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.first().dateTimeOfDiscovery).isEqualTo(reportedAdjudication.dateTimeOfDiscovery)
       assertThat(response.first().oicHearingType).isEqualTo(reportedAdjudication.hearings[0].oicHearingType)
       assertThat(response.first().status).isEqualTo(reportedAdjudication.status)
+      assertThat(response.first().locationId).isEqualTo(reportedAdjudication.hearings[0].locationId)
 
       assertThat(response[1].id).isEqualTo(2)
       assertThat(response[2].id).isEqualTo(3)
