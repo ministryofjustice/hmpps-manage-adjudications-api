@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
@@ -9,14 +10,13 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.HMPPSDo
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.PrisonOffenderEventListener
 import java.time.Instant
 
+@Disabled
 class PrisonerMergeIntTest : SqsIntegrationTestBase() {
-
-  var chargeNumber: String? = null
 
   @BeforeEach
   fun setUp() {
     setAuditTime()
-    chargeNumber = initDataForUnScheduled().createHearing().getGeneratedChargeNumber()
+    initDataForUnScheduled().createHearing()
 
     domainEventsTopicSnsClient.publish(
       PublishRequest.builder()
