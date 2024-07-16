@@ -29,8 +29,8 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     val scenario = initDataForAccept(
       testData = IntegrationTestData.DEFAULT_ADJUDICATION.also {
         it.protectedCharacteristics = null
-        it.overrideAgencyId = "BXI"
       },
+      overrideAgencyId = "BXI",
     )
 
     IntegrationTestData.DEFAULT_ADJUDICATION.offence.victimOtherPersonsName?.let {
@@ -106,9 +106,9 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
   fun `get reported adjudication with protected characteristics`() {
     val scenario = initDataForAccept(
       testData = IntegrationTestData.DEFAULT_ADJUDICATION.also {
-        it.overrideAgencyId = "BXI"
         it.protectedCharacteristics = mutableListOf(Characteristic.AGE)
       },
+      overrideAgencyId = "BXI",
     )
 
     IntegrationTestData.DEFAULT_ADJUDICATION.offence.victimOtherPersonsName?.let {
@@ -124,7 +124,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reported adjudication with other nomis code set`() {
-    initDataForAccept(testData = IntegrationTestData.ADJUDICATION_3.also { it.overrideAgencyId = "BXI" })
+    initDataForAccept(testData = IntegrationTestData.ADJUDICATION_3, overrideAgencyId = "BXI")
 
     webTestClient.get()
       .uri("/reported-adjudications/${IntegrationTestData.ADJUDICATION_3.chargeNumber}/v2")
@@ -161,7 +161,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create draft from reported adjudication returns expected result`() {
-    val scenario = initDataForAccept(testData = IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "BXI" })
+    val scenario = initDataForAccept(testData = IntegrationTestData.DEFAULT_ADJUDICATION, overrideAgencyId = "BXI")
 
     webTestClient.post()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/create-draft-adjudication")

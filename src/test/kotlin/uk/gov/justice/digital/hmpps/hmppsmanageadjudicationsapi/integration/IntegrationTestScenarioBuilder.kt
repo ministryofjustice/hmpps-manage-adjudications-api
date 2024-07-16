@@ -16,7 +16,7 @@ class IntegrationTestScenarioBuilder(
   private val activeCaseload: String? = "MDI",
   private val headers: ((HttpHeaders) -> Unit) = intTestBase.setHeaders(activeCaseload = activeCaseload, roles = listOf("ROLE_ADJUDICATIONS_REVIEWER", "ROLE_VIEW_ADJUDICATIONS")),
 ) {
-  fun startDraft(testAdjudication: AdjudicationIntTestDataSet): IntegrationTestScenario {
+  fun startDraft(testAdjudication: AdjudicationIntTestDataSet, overrideAgencyId: String? = null): IntegrationTestScenario {
     val draftCreationResponse = intTestData.startNewAdjudication(testAdjudication)
     return IntegrationTestScenario(intTestData, headers, draftCreationResponse, testAdjudication)
   }

@@ -313,6 +313,7 @@ class IntegrationTestData(
   fun startNewAdjudication(
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
+    overrideAgencyId: String? = null,
   ): DraftAdjudicationResponse {
     return webTestClient.post()
       .uri("/draft-adjudications")
@@ -326,7 +327,7 @@ class IntegrationTestData(
           "locationId" to testDataSet.locationId,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,
           "dateTimeOfDiscovery" to testDataSet.dateTimeOfDiscovery,
-          "overrideAgencyId" to testDataSet.overrideAgencyId,
+          "overrideAgencyId" to overrideAgencyId,
         ),
       )
       .exchange()

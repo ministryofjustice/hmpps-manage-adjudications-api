@@ -400,7 +400,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
     )
 
     val intTestScenario = intTestBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "BXI" })
+      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION, "BXI")
       .setApplicableRules()
       .setIncidentRole()
       .setAssociatedPrisoner()
