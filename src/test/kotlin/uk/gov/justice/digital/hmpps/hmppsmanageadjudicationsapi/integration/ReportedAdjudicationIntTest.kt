@@ -30,17 +30,19 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       testData = IntegrationTestData.DEFAULT_ADJUDICATION.also {
         it.protectedCharacteristics = null
       },
+      overrideAgencyId = "BXI",
     )
 
     IntegrationTestData.DEFAULT_ADJUDICATION.offence.victimOtherPersonsName?.let {
       webTestClient.get()
         .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/v2?includeActivated=true")
-        .headers(setHeaders())
+        .headers(setHeaders(activeCaseload = "BXI"))
         .exchange()
         .expectStatus().is2xxSuccessful
         .expectBody()
         .jsonPath("$.reportedAdjudication.chargeNumber")
         .isEqualTo(scenario.getGeneratedChargeNumber())
+        .jsonPath("$.reportedAdjudication.overrideAgencyId").isEqualTo("BXI")
         .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident")
         .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString)
         .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfDiscovery")
@@ -158,16 +160,17 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create draft from reported adjudication returns expected result`() {
-    val scenario = initDataForAccept(testData = IntegrationTestData.DEFAULT_ADJUDICATION)
+    val scenario = initDataForAccept(testData = IntegrationTestData.DEFAULT_ADJUDICATION, overrideAgencyId = "BXI")
 
     webTestClient.post()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/create-draft-adjudication")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = "BXI"))
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
       .jsonPath("$.draftAdjudication.chargeNumber")
       .isEqualTo(scenario.getGeneratedChargeNumber())
+      .jsonPath("$.draftAdjudication.overrideAgencyId").isEqualTo("BXI")
       .jsonPath("$.draftAdjudication.damages[0].code")
       .isEqualTo(DamageCode.CLEANING.name)
       .jsonPath("$.draftAdjudication.damages[0].details")

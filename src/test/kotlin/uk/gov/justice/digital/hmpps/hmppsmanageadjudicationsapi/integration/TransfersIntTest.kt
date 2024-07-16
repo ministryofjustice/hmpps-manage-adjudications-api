@@ -162,7 +162,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
         .exchange()
         .expectStatus().isOk
 
-      initDataForAccept(overrideAgencyId = "BXI", testData = IntegrationTestData.DEFAULT_TRANSFER_ADJUDICATION)
+      initDataForAccept(overrideActiveCaseLoad = "BXI", testData = IntegrationTestData.DEFAULT_TRANSFER_ADJUDICATION)
 
       webTestClient.get()
         .uri("/reported-adjudications/report-counts")
@@ -174,7 +174,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
         .jsonPath("$.transferReviewTotal").isEqualTo(1)
         .jsonPath("$.transferOutTotal").isEqualTo(0)
         .jsonPath("$.transferAllTotal").isEqualTo(1)
-        .jsonPath("$.hearingsToScheduleTotal").isEqualTo(1)
+        .jsonPath("$.hearingsToScheduleTotal").isEqualTo(0)
     }
 
     @Test
