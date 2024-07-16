@@ -96,7 +96,7 @@ abstract class IntegrationTestBase : TestBase() {
 
     return if (incDamagesEvidenceWitnesses) {
       draftIntTestScenarioBuilder
-        .startDraft(testData)
+        .startDraft(testAdjudication = testData, overrideAgencyId = overrideAgencyId)
         .setApplicableRules()
         .setIncidentRole()
         .setAssociatedPrisoner()
@@ -108,7 +108,7 @@ abstract class IntegrationTestBase : TestBase() {
         .completeDraft()
     } else {
       draftIntTestScenarioBuilder
-        .startDraft(testData)
+        .startDraft(testAdjudication = testData, overrideAgencyId = overrideAgencyId)
         .setApplicableRules()
         .setIncidentRole()
         .setAssociatedPrisoner()
