@@ -385,6 +385,8 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.chargeNumber").isNotEmpty
+
+    intTestScenario.getDraftAdjudicationDetails().expectStatus().isNotFound
   }
 
   @Test
