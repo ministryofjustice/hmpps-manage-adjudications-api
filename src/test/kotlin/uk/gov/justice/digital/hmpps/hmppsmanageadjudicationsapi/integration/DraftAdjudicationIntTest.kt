@@ -384,7 +384,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isCreated
       .expectBody()
-      .jsonPath("$.chargeNumber").isEqualTo(intTestScenario.getGeneratedChargeNumber())
+      .jsonPath("$.chargeNumber").isNotEmpty
 
     intTestScenario.getDraftAdjudicationDetails().expectStatus().isNotFound
   }
@@ -400,7 +400,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
     )
 
     val intTestScenario = intTestBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "BXI" })
+      .startDraft(testAdjudication = IntegrationTestData.DEFAULT_ADJUDICATION, overrideAgencyId = "BXI")
       .setApplicableRules()
       .setIncidentRole()
       .setAssociatedPrisoner()

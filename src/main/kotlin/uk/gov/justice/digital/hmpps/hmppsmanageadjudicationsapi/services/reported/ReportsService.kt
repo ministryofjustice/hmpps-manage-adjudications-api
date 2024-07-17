@@ -176,7 +176,7 @@ class ReportsService(
       )
 
     val hearingsToScheduleTotal =
-      reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(
+      reportedAdjudicationRepository.countByOriginatingAgencyIdAndOverrideAgencyIdIsNullAndStatusInAndDateTimeOfDiscoveryAfter(
         agencyId = agencyId,
         statuses = hearingsToScheduleStatuses,
         cutOffDate = transferOutAndHearingsToScheduledCutOffDate,

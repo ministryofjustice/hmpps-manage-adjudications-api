@@ -29,14 +29,14 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     val scenario = initDataForAccept(
       testData = IntegrationTestData.DEFAULT_ADJUDICATION.also {
         it.protectedCharacteristics = null
-        it.overrideAgencyId = "BXI"
       },
+      overrideAgencyId = "BXI",
     )
 
     IntegrationTestData.DEFAULT_ADJUDICATION.offence.victimOtherPersonsName?.let {
       webTestClient.get()
         .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/v2?includeActivated=true")
-        .headers(setHeaders())
+        .headers(setHeaders(activeCaseload = "BXI"))
         .exchange()
         .expectStatus().is2xxSuccessful
         .expectBody()
@@ -106,7 +106,6 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
   fun `get reported adjudication with protected characteristics`() {
     val scenario = initDataForAccept(
       testData = IntegrationTestData.DEFAULT_ADJUDICATION.also {
-        it.overrideAgencyId = "BXI"
         it.protectedCharacteristics = mutableListOf(Characteristic.AGE)
       },
     )
@@ -124,7 +123,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reported adjudication with other nomis code set`() {
-    initDataForAccept(testData = IntegrationTestData.ADJUDICATION_3.also { it.overrideAgencyId = "BXI" })
+    initDataForAccept(testData = IntegrationTestData.ADJUDICATION_3)
 
     webTestClient.get()
       .uri("/reported-adjudications/${IntegrationTestData.ADJUDICATION_3.chargeNumber}/v2")
@@ -161,11 +160,11 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create draft from reported adjudication returns expected result`() {
-    val scenario = initDataForAccept(testData = IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "BXI" })
+    val scenario = initDataForAccept(testData = IntegrationTestData.DEFAULT_ADJUDICATION, overrideAgencyId = "BXI")
 
     webTestClient.post()
       .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/create-draft-adjudication")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = "BXI"))
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()

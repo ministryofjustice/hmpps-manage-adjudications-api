@@ -14,7 +14,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {
-    setAuditTime(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME)
+    setAuditTime()
   }
 
   @ParameterizedTest
@@ -141,6 +141,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody()
+      .jsonPath("$.content.size()").isEqualTo(2)
       .jsonPath("$.content[0].chargeNumber").isEqualTo("MDI-000002")
       .jsonPath("$.content[1].chargeNumber").isEqualTo("MDI-000001")
   }

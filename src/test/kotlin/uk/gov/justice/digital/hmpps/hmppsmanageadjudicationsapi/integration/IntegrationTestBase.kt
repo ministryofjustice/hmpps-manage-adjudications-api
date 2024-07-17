@@ -77,14 +77,15 @@ abstract class IntegrationTestBase : TestBase() {
   }
 
   protected fun initDataForAccept(
-    overrideAgencyId: String? = null,
+    overrideActiveCaseLoad: String? = null,
     testData: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION,
     incDamagesEvidenceWitnesses: Boolean = true,
+    overrideAgencyId: String? = null,
   ): IntegrationTestScenario {
     val intTestData = integrationTestData()
 
-    val draftUserHeaders = if (overrideAgencyId != null) {
-      setHeaders(username = testData.createdByUserId, activeCaseload = overrideAgencyId)
+    val draftUserHeaders = if (overrideActiveCaseLoad != null) {
+      setHeaders(username = testData.createdByUserId, activeCaseload = overrideActiveCaseLoad)
     } else {
       setHeaders(username = testData.createdByUserId)
     }
@@ -96,7 +97,7 @@ abstract class IntegrationTestBase : TestBase() {
 
     return if (incDamagesEvidenceWitnesses) {
       draftIntTestScenarioBuilder
-        .startDraft(testData)
+        .startDraft(testAdjudication = testData, overrideAgencyId = overrideAgencyId)
         .setApplicableRules()
         .setIncidentRole()
         .setAssociatedPrisoner()
@@ -108,7 +109,7 @@ abstract class IntegrationTestBase : TestBase() {
         .completeDraft()
     } else {
       draftIntTestScenarioBuilder
-        .startDraft(testData)
+        .startDraft(testAdjudication = testData, overrideAgencyId = overrideAgencyId)
         .setApplicableRules()
         .setIncidentRole()
         .setAssociatedPrisoner()

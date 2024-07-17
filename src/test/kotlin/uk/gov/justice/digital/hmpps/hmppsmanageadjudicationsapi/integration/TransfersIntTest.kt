@@ -152,17 +152,25 @@ class TransfersIntTest : SqsIntegrationTestBase() {
         .expectBody()
         .jsonPath("$.reportedAdjudication.hearings[0].agencyId").isEqualTo("MDI")
         .jsonPath("$.reportedAdjudication.hearings[1].agencyId").isEqualTo("BXI")
-    }
 
-    @Test
-    fun `get report count by agency - transfer in `() {
+      // work around.  for now remove the hearing, and the hearing outcome
       webTestClient.delete()
         .uri("/reported-adjudications/$chargeNumber/hearing/v2")
         .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
         .exchange()
         .expectStatus().isOk
 
-      initDataForAccept(overrideAgencyId = "BXI", testData = IntegrationTestData.DEFAULT_TRANSFER_ADJUDICATION)
+      webTestClient.delete()
+        .uri("/reported-adjudications/$chargeNumber/hearing/outcome/adjourn")
+        .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+        .exchange()
+        .expectStatus().isOk
+    }
+
+    @Test
+    fun `get report count by agency - transfer in `() {
+      initDataForAccept(overrideActiveCaseLoad = "BXI", testData = IntegrationTestData.DEFAULT_TRANSFER_ADJUDICATION)
+      adjourn(chargeNumber = chargeNumber!!)
 
       webTestClient.get()
         .uri("/reported-adjudications/report-counts")

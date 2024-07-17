@@ -385,6 +385,14 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `find reported adjudications by agency id`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(chargeNumber = "excluded", agencyId = "LEI", dateTime = LocalDateTime.now()).also {
+        it.hearings.clear()
+        it.overrideAgencyId = "MDI"
+        it.status = ReportedAdjudicationStatus.ADJOURNED
+      },
+    )
+
     val foundAdjudications = reportedAdjudicationRepository.findAllReportsByAgency(
       "LEI",
       LocalDate.now().plusDays(1).atStartOfDay(),
@@ -634,8 +642,8 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `count by agency and status in `() {
     assertThat(
-      reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter("LEI", listOf(ReportedAdjudicationStatus.UNSCHEDULED), LocalDateTime.now()),
-    ).isEqualTo(3)
+      reportedAdjudicationRepository.countByOriginatingAgencyIdAndOverrideAgencyIdIsNullAndStatusInAndDateTimeOfDiscoveryAfter("LEI", listOf(ReportedAdjudicationStatus.UNSCHEDULED), LocalDateTime.now()),
+    ).isEqualTo(1)
   }
 
   @Test

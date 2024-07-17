@@ -11,12 +11,10 @@ import java.time.Instant
 
 class PrisonerMergeIntTest : SqsIntegrationTestBase() {
 
-  var chargeNumber: String? = null
-
   @BeforeEach
   fun setUp() {
     setAuditTime()
-    chargeNumber = initDataForUnScheduled().createHearing().getGeneratedChargeNumber()
+    initDataForUnScheduled().createHearing()
 
     domainEventsTopicSnsClient.publish(
       PublishRequest.builder()
