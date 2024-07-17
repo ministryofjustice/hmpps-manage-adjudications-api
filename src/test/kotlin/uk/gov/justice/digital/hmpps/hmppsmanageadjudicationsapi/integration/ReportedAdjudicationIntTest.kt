@@ -4,8 +4,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamageRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
@@ -215,6 +217,47 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.status").isEqualTo(404)
       .jsonPath("$.userMessage")
       .isEqualTo("Not found: ReportedAdjudication not found for 1524242")
+  }
+
+  @Test
+  fun `accepted a report` () {
+    val scenario = initDataForAccept()
+
+    webTestClient.put()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/status")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "status" to ReportedAdjudicationStatus.RETURNED,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.RETURNED.toString())
+      .jsonPath("$.reportedAdjudication.createdDateTime").isEqualTo(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME_TEXT)
+
+    setAuditTime(DEFAULT_REPORTED_DATE_TIME.plusHours(1))
+
+    val draftId = webTestClient.post()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/create-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+      .draftAdjudication.id
+
+    webTestClient.post()
+      .uri("/draft-adjudications/$draftId/complete-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isCreated
+      .expectBody()
+      .jsonPath("$.chargeNumber").isNotEmpty
+      .jsonPath("$.status").isEqualTo(ReportedAdjudicationStatus.AWAITING_REVIEW.toString())
+      .jsonPath("$.createdDateTime").isEqualTo("2010-11-13T11:00:00")
   }
 
   @Test
