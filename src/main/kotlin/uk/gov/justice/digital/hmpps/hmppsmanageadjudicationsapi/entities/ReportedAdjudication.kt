@@ -97,6 +97,7 @@ data class ReportedAdjudication(
   var createdOnBehalfOfReason: String? = null,
   var migratedInactivePrisoner: Boolean = false,
   var migratedSplitRecord: Boolean = false,
+  var dateTimeResubmitted: LocalDateTime? = null,
 ) :
   BaseEntity() {
   fun transition(to: ReportedAdjudicationStatus, reason: String? = null, details: String? = null, reviewUserId: String? = null) {
@@ -192,7 +193,7 @@ data class ReportedAdjudication(
         completed = true,
       ),
       createdByUserId = createdByUserId!!,
-      createdDateTime = modifiedDateTime ?: createDateTime!!,
+      createdDateTime = dateTimeResubmitted ?: createDateTime!!,
       reviewedByUserId = reviewUserId,
       damages = this.damages.map { it.toDto() },
       evidence = this.evidence.map { it.toDto() },

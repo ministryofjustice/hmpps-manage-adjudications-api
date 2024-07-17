@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
-import net.javacrumbs.jsonunit.assertj.assertThatJson
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.ActiveProfiles
@@ -222,7 +221,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
-  fun `accepted a report` () {
+  fun `confirm createdDateTime updated on resubmission`() {
     setAuditTime(null)
     val scenario = initDataForAccept()
 
@@ -240,7 +239,6 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .responseBody
       .blockFirst()!!
       .reportedAdjudication.createdDateTime
-
 
     val draftId = webTestClient.post()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/create-draft-adjudication")
@@ -262,7 +260,6 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .blockFirst()!!
       .createdDateTime
 
-
     val accepted = webTestClient.put()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/status")
       .headers(setHeaders())
@@ -278,12 +275,11 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .blockFirst()!!
       .reportedAdjudication.createdDateTime
 
-
     assert(
-        created != updated
+      created != updated,
     )
 
-    assert( updated == accepted)
+    assert(updated == accepted)
   }
 
   @Test
