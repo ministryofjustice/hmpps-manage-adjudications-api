@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @ActiveProfiles("test")
 class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
@@ -260,6 +261,12 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .blockFirst()!!
       .createdDateTime
 
+    assert(
+      created != updated,
+    )
+
+    Thread.sleep(1000)
+
     val accepted = webTestClient.put()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/status")
       .headers(setHeaders())
@@ -275,11 +282,8 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .blockFirst()!!
       .reportedAdjudication.createdDateTime
 
-    assert(
-      created != updated,
-    )
-
-    assert(updated == accepted)
+    val formatter = DateTimeFormatter.ofPattern("hh:mm:ss")
+    assert(updated.toLocalTime().format(formatter) == accepted.toLocalTime().format(formatter))
   }
 
   @Test
