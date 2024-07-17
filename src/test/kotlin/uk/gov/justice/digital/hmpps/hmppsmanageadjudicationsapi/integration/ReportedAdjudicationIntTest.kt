@@ -262,9 +262,28 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .blockFirst()!!
       .createdDateTime
 
+
+    val accepted = webTestClient.put()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/status")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "status" to ReportedAdjudicationStatus.UNSCHEDULED,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+      .reportedAdjudication.createdDateTime
+
+
     assert(
         created != updated
     )
+
+    assert( updated == accepted)
   }
 
   @Test
