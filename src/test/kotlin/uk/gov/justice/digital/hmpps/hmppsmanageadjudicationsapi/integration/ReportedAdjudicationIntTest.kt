@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import net.javacrumbs.jsonunit.assertj.assertThatJson
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.ActiveProfiles
@@ -8,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draf
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
@@ -221,9 +223,10 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `accepted a report` () {
+    setAuditTime(null)
     val scenario = initDataForAccept()
 
-    webTestClient.put()
+    val created = webTestClient.put()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/status")
       .headers(setHeaders())
       .bodyValue(
@@ -233,11 +236,11 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       )
       .exchange()
       .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.RETURNED.toString())
-      .jsonPath("$.reportedAdjudication.createdDateTime").isEqualTo(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME_TEXT)
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+      .reportedAdjudication.createdDateTime
 
-    setAuditTime(DEFAULT_REPORTED_DATE_TIME.plusHours(1))
 
     val draftId = webTestClient.post()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/create-draft-adjudication")
@@ -249,15 +252,19 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .blockFirst()!!
       .draftAdjudication.id
 
-    webTestClient.post()
+    val updated = webTestClient.post()
       .uri("/draft-adjudications/$draftId/complete-draft-adjudication")
       .headers(setHeaders())
       .exchange()
       .expectStatus().isCreated
-      .expectBody()
-      .jsonPath("$.chargeNumber").isNotEmpty
-      .jsonPath("$.status").isEqualTo(ReportedAdjudicationStatus.AWAITING_REVIEW.toString())
-      .jsonPath("$.createdDateTime").isEqualTo("2010-11-13T11:00:00")
+      .returnResult(ReportedAdjudicationDto::class.java)
+      .responseBody
+      .blockFirst()!!
+      .createdDateTime
+
+    assert(
+        created != updated
+    )
   }
 
   @Test

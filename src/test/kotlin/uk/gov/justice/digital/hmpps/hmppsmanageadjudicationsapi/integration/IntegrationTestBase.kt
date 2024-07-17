@@ -68,7 +68,7 @@ abstract class IntegrationTestBase : TestBase() {
       auditingHandler.setDateTimeProvider(null)
     } else {
       auditingHandler.setDateTimeProvider(dateTimeProvider)
-      whenever(dateTimeProvider.now).thenReturn(Optional.of(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME))
+      whenever(dateTimeProvider.now).thenReturn(Optional.of(auditDateTime))
     }
   }
 

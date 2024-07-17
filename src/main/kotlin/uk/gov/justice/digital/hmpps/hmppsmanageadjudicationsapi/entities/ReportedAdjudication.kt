@@ -192,7 +192,7 @@ data class ReportedAdjudication(
         completed = true,
       ),
       createdByUserId = createdByUserId!!,
-      createdDateTime = createDateTime!!,
+      createdDateTime = modifiedDateTime ?: createDateTime!!,
       reviewedByUserId = reviewUserId,
       damages = this.damages.map { it.toDto() },
       evidence = this.evidence.map { it.toDto() },
