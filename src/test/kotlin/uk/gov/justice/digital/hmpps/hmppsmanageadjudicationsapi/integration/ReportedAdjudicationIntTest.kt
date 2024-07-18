@@ -4,8 +4,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamageRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
@@ -15,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @ActiveProfiles("test")
 class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
@@ -215,6 +219,71 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.status").isEqualTo(404)
       .jsonPath("$.userMessage")
       .isEqualTo("Not found: ReportedAdjudication not found for 1524242")
+  }
+
+  @Test
+  fun `confirm createdDateTime updated on resubmission`() {
+    setAuditTime(null)
+    val scenario = initDataForAccept()
+
+    val created = webTestClient.put()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/status")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "status" to ReportedAdjudicationStatus.RETURNED,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+      .reportedAdjudication.createdDateTime
+
+    val draftId = webTestClient.post()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/create-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+      .draftAdjudication.id
+
+    val updated = webTestClient.post()
+      .uri("/draft-adjudications/$draftId/complete-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isCreated
+      .returnResult(ReportedAdjudicationDto::class.java)
+      .responseBody
+      .blockFirst()!!
+      .createdDateTime
+
+    assert(
+      created != updated,
+    )
+
+    Thread.sleep(1000)
+
+    val accepted = webTestClient.put()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/status")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "status" to ReportedAdjudicationStatus.UNSCHEDULED,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+      .reportedAdjudication.createdDateTime
+
+    val formatter = DateTimeFormatter.ofPattern("hh:mm:ss")
+    assert(updated.toLocalTime().format(formatter) == accepted.toLocalTime().format(formatter))
   }
 
   @Test
