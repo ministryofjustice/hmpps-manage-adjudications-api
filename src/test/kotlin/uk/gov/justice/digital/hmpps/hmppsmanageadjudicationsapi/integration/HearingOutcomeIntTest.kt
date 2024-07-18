@@ -22,7 +22,8 @@ class HearingOutcomeIntTest : SqsIntegrationTestBase() {
   inner class Adjourn {
     @Test
     fun `create hearing outcome - adjourn`() {
-      val scenario = initDataForUnScheduled().createHearing()
+      val testData = IntegrationTestData.getDefaultAdjudication()
+      val scenario = initDataForUnScheduled(testData = testData).createHearing()
 
       webTestClient.post()
         .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/outcome/adjourn")
@@ -57,7 +58,8 @@ class HearingOutcomeIntTest : SqsIntegrationTestBase() {
 
     @Test
     fun `remove adjourn outcome `() {
-      val scenario = initDataForUnScheduled().createHearing().createAdjourn()
+      val testData = IntegrationTestData.getDefaultAdjudication()
+      val scenario = initDataForUnScheduled(testData = testData).createHearing().createAdjourn()
 
       webTestClient.delete()
         .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/outcome/adjourn")
@@ -73,7 +75,8 @@ class HearingOutcomeIntTest : SqsIntegrationTestBase() {
 
     @Test
     fun `create hearing outcome - adjourn and then create new hearing`() {
-      val scenario = initDataForUnScheduled().createHearing().createAdjourn()
+      val testData = IntegrationTestData.getDefaultAdjudication()
+      val scenario = initDataForUnScheduled(testData = testData).createHearing().createAdjourn()
 
       webTestClient.post()
         .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/v2")
@@ -97,7 +100,8 @@ class HearingOutcomeIntTest : SqsIntegrationTestBase() {
   inner class Referral {
     @Test
     fun `create hearing outcome for referral`() {
-      val scenario = initDataForUnScheduled().createHearing()
+      val testData = IntegrationTestData.getDefaultAdjudication()
+      val scenario = initDataForUnScheduled(testData = testData).createHearing()
       webTestClient.post()
         .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/outcome/referral")
         .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
@@ -128,7 +132,8 @@ class HearingOutcomeIntTest : SqsIntegrationTestBase() {
 
     @Test
     fun `should only create one schedule hearing - refer police, adjourn, adjourn `() {
-      val scenario = initDataForUnScheduled()
+      val testData = IntegrationTestData.getDefaultAdjudication()
+      val scenario = initDataForUnScheduled(testData = testData)
         .createOutcomeReferPolice()
         .createHearing(dateTimeOfHearing = LocalDateTime.now())
         .createAdjourn()

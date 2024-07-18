@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import jakarta.annotation.PostConstruct
-import org.flywaydb.core.Flyway
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -13,7 +11,6 @@ import org.springframework.data.auditing.AuditingHandler
 import org.springframework.data.auditing.DateTimeProvider
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
@@ -24,7 +21,6 @@ import java.time.LocalDateTime
 import java.util.Optional
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
-@ActiveProfiles("test")
 abstract class IntegrationTestBase : TestBase() {
 
   @Suppress("SpringJavaInjectionPointsAutowiringInspection")
@@ -42,15 +38,6 @@ abstract class IntegrationTestBase : TestBase() {
 
   @SpyBean
   lateinit var auditingHandler: AuditingHandler
-
-  @Autowired
-  lateinit var flyway: Flyway
-
-  @PostConstruct
-  fun init() {
-    flyway.clean()
-    flyway.migrate()
-  }
 
   fun setHeaders(
     contentType: MediaType = MediaType.APPLICATION_JSON,
@@ -78,7 +65,7 @@ abstract class IntegrationTestBase : TestBase() {
 
   protected fun initDataForAccept(
     overrideActiveCaseLoad: String? = null,
-    testData: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION,
+    testData: AdjudicationIntTestDataSet,
     incDamagesEvidenceWitnesses: Boolean = true,
     overrideAgencyId: String? = null,
   ): IntegrationTestScenario {
@@ -119,9 +106,11 @@ abstract class IntegrationTestBase : TestBase() {
     }
   }
 
-  protected fun initDataForUnScheduled(adjudication: AdjudicationIntTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION): IntegrationTestScenario {
+  protected fun initDataForUnScheduled(
+    testData: AdjudicationIntTestDataSet,
+  ): IntegrationTestScenario {
     val intTestData = integrationTestData()
-    val draftUserHeaders = setHeaders(username = adjudication.createdByUserId)
+    val draftUserHeaders = setHeaders(username = testData.createdByUserId, activeCaseload = testData.agencyId)
     val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
@@ -129,7 +118,7 @@ abstract class IntegrationTestBase : TestBase() {
     )
 
     return draftIntTestScenarioBuilder
-      .startDraft(adjudication)
+      .startDraft(testAdjudication = testData)
       .setApplicableRules()
       .setIncidentRole()
       .setOffenceData()
@@ -138,12 +127,12 @@ abstract class IntegrationTestBase : TestBase() {
       .addEvidence()
       .addWitnesses()
       .completeDraft()
-      .acceptReport()
+      .acceptReport(activeCaseload = testData.agencyId)
   }
 
-  protected fun getSuspendedPunishments(chargeNumber: String): WebTestClient.ResponseSpec =
+  protected fun getSuspendedPunishments(chargeNumber: String, prisonerNumber: String): WebTestClient.ResponseSpec =
     webTestClient.get()
-      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended/v2?chargeNumber=$chargeNumber")
+      .uri("/reported-adjudications/punishments/$prisonerNumber/suspended/v2?chargeNumber=$chargeNumber")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
 

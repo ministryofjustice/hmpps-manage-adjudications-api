@@ -12,9 +12,10 @@ class PrintSupportIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get dis5 print support`() {
-    val firstCharge = initDataForUnScheduled().getGeneratedChargeNumber()
-    val scenario2 = initDataForUnScheduled()
-    val updatedTestDataSet = IntegrationTestData.DEFAULT_ADJUDICATION.also {
+    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "ZZ12345", offenderBookingId = 999999)
+    val firstCharge = initDataForUnScheduled(testData = testData).getGeneratedChargeNumber()
+    val scenario2 = initDataForUnScheduled(testData = testData)
+    val updatedTestDataSet = testData.also {
       it.chargeNumber = scenario2.getGeneratedChargeNumber()
     }
 
@@ -38,7 +39,8 @@ class PrintSupportIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get dis5 print support with no last reported charge`() {
-    val firstCharge = initDataForUnScheduled().getGeneratedChargeNumber()
+    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "ZZ56789", offenderBookingId = 111111)
+    val firstCharge = initDataForUnScheduled(testData = testData).getGeneratedChargeNumber()
 
     webTestClient.get()
       .uri("/reported-adjudications/$firstCharge/print-support/dis5")

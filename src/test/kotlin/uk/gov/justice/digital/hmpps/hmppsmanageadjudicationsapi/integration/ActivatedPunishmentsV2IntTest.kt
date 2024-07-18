@@ -18,8 +18,8 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
   @Test
   fun `activate a suspended punishment with create`() {
     val activatedFrom = createSuspendedPunishmentCharge()
-
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
     createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false, activatedFrom = activatedFrom.first, id = activatedFrom.second)
       .expectStatus().isCreated
@@ -36,7 +36,8 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
   fun `activate a suspended punishment with update`() {
     val activatedFrom = createSuspendedPunishmentCharge()
 
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
     createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false)
       .expectStatus().isCreated
@@ -76,7 +77,8 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
   fun `deactivate a suspended punishment`() {
     val activatedFrom = createSuspendedPunishmentCharge()
 
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
     createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false, activatedFrom = activatedFrom.first, id = activatedFrom.second)
       .expectStatus().isCreated
@@ -115,7 +117,8 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
   fun `remove charge proved outcome and restore activated suspended punishment to original state`() {
     val activatedFrom = createSuspendedPunishmentCharge()
 
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
     createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false, activatedFrom = activatedFrom.first, id = activatedFrom.second)
       .expectStatus().isCreated
@@ -141,7 +144,8 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
   fun `quashed deactivates an activated punishment `() {
     val activatedFrom = createSuspendedPunishmentCharge()
 
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
     createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false, activatedFrom = activatedFrom.first, id = activatedFrom.second)
       .expectStatus().isCreated
@@ -174,7 +178,8 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
   fun `get reported adjudication with activated punishments merged into charge punishments`() {
     val activatedFrom = createSuspendedPunishmentCharge()
 
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
     createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false, activatedFrom = activatedFrom.first, id = activatedFrom.second)
       .expectStatus().isCreated
@@ -192,7 +197,8 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
   }
 
   private fun createSuspendedPunishmentCharge(): Pair<String, Long> {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
     val punishmentId = createPunishments(scenario.getGeneratedChargeNumber())
       .expectStatus().isCreated
