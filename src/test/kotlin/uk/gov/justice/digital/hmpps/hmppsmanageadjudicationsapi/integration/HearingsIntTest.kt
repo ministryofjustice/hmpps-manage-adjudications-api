@@ -15,7 +15,8 @@ class HearingsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create a hearing `() {
-    val scenario = initDataForUnScheduled()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData)
 
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 12, 10, 0)
     webTestClient.post()
@@ -43,7 +44,8 @@ class HearingsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create a hearing illegal state on hearing type `() {
-    val scenario = initDataForUnScheduled()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData)
 
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 12, 10, 0)
     webTestClient.post()
@@ -62,7 +64,8 @@ class HearingsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `amend a hearing `() {
-    val scenario = initDataForUnScheduled().createHearing()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing()
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
 
     webTestClient.put()
@@ -90,7 +93,8 @@ class HearingsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `amend a hearing illegal state on hearing type `() {
-    val scenario = initDataForUnScheduled().createHearing()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing()
     val dateTimeOfHearing = LocalDateTime.of(2010, 10, 25, 10, 0)
 
     webTestClient.put()
@@ -109,7 +113,8 @@ class HearingsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `delete a hearing `() {
-    val scenario = initDataForUnScheduled().createHearing()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing()
 
     webTestClient.delete()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/hearing/v2")
@@ -124,17 +129,18 @@ class HearingsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get all hearings`() {
-    val scenario = initDataForUnScheduled().createHearing()
+    val testData = IntegrationTestData.getDefaultAdjudication(agencyId = "BSI")
+    val scenario = initDataForUnScheduled(testData = testData).createHearing()
 
     webTestClient.get()
-      .uri("/reported-adjudications/hearings?hearingDate=${IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.toLocalDate()}")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_VIEW_ADJUDICATIONS")))
+      .uri("/reported-adjudications/hearings?hearingDate=${testData.dateTimeOfHearing!!.toLocalDate()}")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_VIEW_ADJUDICATIONS"), activeCaseload = "BSI"))
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.hearings.size()").isEqualTo(1)
       .jsonPath("$.hearings[0].prisonerNumber")
-      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber)
+      .isEqualTo(testData.prisonerNumber)
       .jsonPath("$.hearings[0].status")
       .isEqualTo(ReportedAdjudicationStatus.SCHEDULED.name)
       .jsonPath("$.hearings[0].chargeNumber")
@@ -142,28 +148,29 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.hearings[0].chargeNumber")
       .isEqualTo(scenario.getGeneratedChargeNumber())
       .jsonPath("$.hearings[0].dateTimeOfDiscovery")
-      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfDiscoveryISOString!!)
+      .isEqualTo(testData.dateTimeOfDiscoveryISOString!!)
       .jsonPath("$.hearings[0].dateTimeOfHearing")
-      .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearingISOString!!)
+      .isEqualTo(testData.dateTimeOfHearingISOString!!)
   }
 
   @Test
   fun `get hearings by prisoner`() {
-    initDataForUnScheduled().createHearing()
-    val hearingDate = IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing!!.toLocalDate()
+    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "AE99999")
+    initDataForUnScheduled(testData = testData).createHearing()
+    val hearingDate = testData.dateTimeOfHearing!!.toLocalDate()
 
     webTestClient.post()
       .uri("/reported-adjudications/hearings/MDI?startDate=$hearingDate&endDate=$hearingDate")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_VIEW_ADJUDICATIONS")))
       .bodyValue(
-        listOf(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber),
+        listOf("AE99999"),
       )
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
-      .jsonPath("$.[0].prisonerNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber)
+      .jsonPath("$.[0].prisonerNumber").isEqualTo("AE99999")
       .jsonPath("$.[0].hearing.dateTimeOfHearing").isEqualTo("2010-11-19T10:00:00")
-      .jsonPath("$.[0].hearing.locationId").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.locationId)
+      .jsonPath("$.[0].hearing.locationId").isEqualTo(testData.locationId)
   }
 }

@@ -29,7 +29,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create punishments v2`() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
     createPunishments(scenario.getGeneratedChargeNumber())
       .expectStatus().isCreated
@@ -48,7 +49,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   @ParameterizedTest
   fun `create a payback punishment`(hasDetails: Boolean) {
     val hearingDate = LocalDate.of(2024, 1, 1)
-    val scenario = initDataForUnScheduled().createHearing(dateTimeOfHearing = hearingDate.atStartOfDay()).createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing(dateTimeOfHearing = hearingDate.atStartOfDay()).createChargeProved()
 
     val body = webTestClient.post()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
@@ -88,7 +90,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   @CsvSource("true", "false")
   @ParameterizedTest
   fun `create a rehabilitative activity punishment`(hasDetails: Boolean) {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
     val rehabRequest = if (hasDetails) RehabilitativeActivityRequest(details = "some details", monitor = "monitor", endDate = LocalDate.now().plusDays(10)) else RehabilitativeActivityRequest()
 
@@ -130,7 +133,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `update a rehabilitative activity`() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
     createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
 
@@ -168,7 +172,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `delete a rehabilitative activity`() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
     createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
 
@@ -196,7 +201,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `completes a rehabilitative activity successfully`() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
     val punishmentId = createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
 
     completeRehabilitativeActivity(
@@ -212,7 +218,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `completes a rehabilitative activity - no action`() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
     val punishmentId = createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
 
     completeRehabilitativeActivity(
@@ -230,7 +237,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `completes a rehabilitative activity - full activation`() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
     val punishmentId = createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
 
     completeRehabilitativeActivity(
@@ -251,7 +259,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `completes a rehabilitative activity - partial activation`() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
     val punishmentId = createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
 
     completeRehabilitativeActivity(
@@ -274,7 +283,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `completes a rehabilitative activity - extend suspension`() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
     val punishmentId = createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
 
     completeRehabilitativeActivity(
@@ -301,9 +311,10 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   @ParameterizedTest
   fun `update a payback punishment`(hasDuration: Boolean) {
     val hearingDate = LocalDate.of(2024, 1, 1)
-    val scenario = initDataForUnScheduled().createHearing(dateTimeOfHearing = hearingDate.atStartOfDay()).createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing(dateTimeOfHearing = hearingDate.atStartOfDay()).createChargeProved()
 
-    webTestClient.post()
+    val punishmentId = webTestClient.post()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
@@ -321,6 +332,10 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       )
       .exchange()
       .expectStatus().isCreated
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+      .reportedAdjudication.punishments.first().id
 
     val body = webTestClient.put()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/punishments/v2")
@@ -330,7 +345,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
           "punishments" to
             listOf(
               PunishmentRequest(
-                id = 1,
+                id = punishmentId,
                 type = PunishmentType.PAYBACK,
                 endDate = LocalDate.now().plusDays(10),
                 duration = if (hasDuration) 12 else null,
@@ -359,7 +374,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create punishments - additional days v2`() {
-    val scenario = initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved()
 
     createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), type = PunishmentType.ADDITIONAL_DAYS, consecutiveChargeNumber = "9999")
       .expectStatus().isCreated
@@ -370,12 +386,13 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `update punishments - amends one record, removes a record, and creates a record v2`() {
-    initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val chargeNumber = initDataForUnScheduled(testData = testData).createHearing().createChargeProved().getGeneratedChargeNumber()
 
     val suspendedUntil = LocalDate.now().plusMonths(1)
     val formattedDate = suspendedUntil.format(DateTimeFormatter.ISO_DATE)
     val reportedAdjudicationResponse = webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/v2")
+      .uri("/reported-adjudications/$chargeNumber/punishments/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -403,7 +420,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
     punishmentToAmend?.let {
       webTestClient.put()
-        .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/v2")
+        .uri("/reported-adjudications/$chargeNumber/punishments/v2")
         .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
         .bodyValue(
           mapOf(
@@ -442,14 +459,16 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get suspended punishments `() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
-    initDataForUnScheduled(IntegrationTestData.DEFAULT_ADJUDICATION_OVERRIDE).createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "SUSPEND")
+    val overrideTestData = IntegrationTestData.getDefaultAdjudicationOverride(prisonerNumber = "SUSPEND")
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
+    val otherChargeNumber = initDataForUnScheduled(overrideTestData).createHearing().createChargeProved().getGeneratedChargeNumber()
 
     createPunishments(chargeNumber = scenario.getGeneratedChargeNumber())
       .expectStatus().isCreated
 
     webTestClient.get()
-      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended/v2?chargeNumber=${IntegrationTestData.DEFAULT_ADJUDICATION_OVERRIDE.chargeNumber}")
+      .uri("/reported-adjudications/punishments/${testData.prisonerNumber}/suspended/v2?chargeNumber=$otherChargeNumber")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -468,13 +487,15 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get suspended punishments should not include any with rehabilitative activities`() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "SUSP2")
+    val overrideTestData = IntegrationTestData.getDefaultAdjudicationOverride(prisonerNumber = "SUSP2")
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
     createRehabilitativeActivity(scenario.getGeneratedChargeNumber(), RehabilitativeActivityRequest())
 
-    initDataForUnScheduled(IntegrationTestData.DEFAULT_ADJUDICATION_OVERRIDE).createHearing().createChargeProved()
+    val overrideChargeNumber = initDataForUnScheduled(overrideTestData).createHearing().createChargeProved().getGeneratedChargeNumber()
 
     webTestClient.get()
-      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/suspended/v2?chargeNumber=${IntegrationTestData.DEFAULT_ADJUDICATION_OVERRIDE.chargeNumber}")
+      .uri("/reported-adjudications/punishments/${testData.prisonerNumber}/suspended/v2?chargeNumber=$overrideChargeNumber")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -485,11 +506,15 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
   @ParameterizedTest
   fun `get additional days punishments `(punishmentType: PunishmentType) {
-    val scenario = initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved()
-    initDataForUnScheduled(adjudication = IntegrationTestData.ADJUDICATION_2).createHearing(oicHearingType = OicHearingType.INAD_YOI, dateTimeOfHearing = IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfHearing, overrideTestDataSet = IntegrationTestData.ADJUDICATION_2)
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val testData2 = IntegrationTestData.getDefaultAdjudication(plusDays = 1)
+
+    val chargeNumber = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().getGeneratedChargeNumber()
+    val charge2 = initDataForUnScheduled(testData = testData2).createHearing(oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = testData.dateTimeOfHearing, overrideTestDataSet = testData2)
+      .getGeneratedChargeNumber()
 
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/v2")
+      .uri("/reported-adjudications/$chargeNumber/punishments/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -506,13 +531,13 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isCreated
 
     webTestClient.get()
-      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}/for-consecutive?type=$punishmentType&chargeNumber=${IntegrationTestData.ADJUDICATION_2.chargeNumber}")
+      .uri("/reported-adjudications/punishments/${testData.prisonerNumber}/for-consecutive?type=$punishmentType&chargeNumber=$charge2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
-      .jsonPath("$.[0].chargeNumber").isEqualTo(scenario.getGeneratedChargeNumber())
+      .jsonPath("$.[0].chargeNumber").isEqualTo(chargeNumber)
       .jsonPath("$.[0].punishment.type").isEqualTo(punishmentType.name)
       .jsonPath("$.[0].punishment.schedule.duration").isEqualTo(10)
       .jsonPath("$.[0].punishment.schedule.measurement").isEqualTo(Measurement.DAYS.name)
@@ -521,14 +546,16 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get active punishments for offender booking id`() {
-    val scenario = initDataForUnScheduled().createHearing().createChargeProved()
-    initDataForUnScheduled(IntegrationTestData.DEFAULT_ADJUDICATION_OVERRIDE).createHearing().createChargeProved()
+    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "SUSP3", offenderBookingId = 46)
+    val overrideTestData = IntegrationTestData.getDefaultAdjudicationOverride(prisonerNumber = "SUSP3", offenderBookingId = 46)
+    val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
+    initDataForUnScheduled(overrideTestData).createHearing().createChargeProved()
 
     createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false)
       .expectStatus().isCreated
 
     webTestClient.get()
-      .uri("/reported-adjudications/punishments/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}/active")
+      .uri("/reported-adjudications/punishments/${testData.offenderBookingId}/active")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_VIEW_ADJUDICATIONS")))
       .exchange()
       .expectStatus().isOk
@@ -547,7 +574,8 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create punishment comment `() {
-    val scenario = initDataForUnScheduled()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForUnScheduled(testData = testData)
 
     createPunishmentComment(chargeNumber = scenario.getGeneratedChargeNumber())
       .expectStatus().isCreated
@@ -560,10 +588,11 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `update punishment comment `() {
-    initDataForUnScheduled()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val chargeNumber = initDataForUnScheduled(testData = testData).getGeneratedChargeNumber()
 
     val reportedAdjudicationResponse = webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/comment")
+      .uri("/reported-adjudications/$chargeNumber/punishments/comment")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         PunishmentCommentRequest(
@@ -578,7 +607,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     val punishmentCommentToAmend = reportedAdjudicationResponse.reportedAdjudication.punishmentComments[0].id
 
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/comment")
+      .uri("/reported-adjudications/$chargeNumber/punishments/comment")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         PunishmentCommentRequest(id = punishmentCommentToAmend, comment = "new text"),
@@ -593,10 +622,11 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `delete punishment comment `() {
-    initDataForUnScheduled()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val chargeNumber = initDataForUnScheduled(testData = testData).getGeneratedChargeNumber()
 
     val reportedAdjudicationResponse = webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/comment")
+      .uri("/reported-adjudications/$chargeNumber/punishments/comment")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         PunishmentCommentRequest(
@@ -611,7 +641,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     val punishmentCommentToAmend = reportedAdjudicationResponse.reportedAdjudication.punishmentComments[0].id
 
     webTestClient.delete()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/comment/$punishmentCommentToAmend")
+      .uri("/reported-adjudications/$chargeNumber/punishments/comment/$punishmentCommentToAmend")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
@@ -621,24 +651,29 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `activate a suspended punishment, remove it and ensure the punishment is now available in suspended punishments list`() {
-    val dummyCharge = initDataForUnScheduled().getGeneratedChargeNumber()
-    val suspended = initDataForUnScheduled().createHearing().createChargeProved().getGeneratedChargeNumber()
+    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "DUMMY")
+    val dummyCharge = initDataForUnScheduled(testData = testData).getGeneratedChargeNumber()
+    val suspended = initDataForUnScheduled(testData = testData).createHearing().createChargeProved().getGeneratedChargeNumber()
 
-    createPunishments(suspended).expectStatus().isCreated
+    val punishmentId = createPunishments(suspended).expectStatus().isCreated
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+      .reportedAdjudication.punishments.first().id!!
 
-    getSuspendedPunishments(chargeNumber = dummyCharge).expectStatus().isOk
+    getSuspendedPunishments(chargeNumber = dummyCharge, prisonerNumber = testData.prisonerNumber).expectStatus().isOk
       .expectBody().jsonPath("$.size()").isEqualTo(1)
 
-    val activated = initDataForUnScheduled().createHearing().createChargeProved().getGeneratedChargeNumber()
+    val activated = initDataForUnScheduled(testData = testData).createHearing().createChargeProved().getGeneratedChargeNumber()
 
-    createPunishments(chargeNumber = activated, activatedFrom = suspended, isSuspended = false, id = 1).expectStatus().isCreated
+    createPunishments(chargeNumber = activated, activatedFrom = suspended, isSuspended = false, id = punishmentId).expectStatus().isCreated
 
-    getSuspendedPunishments(chargeNumber = activated).expectStatus().isOk
+    getSuspendedPunishments(chargeNumber = activated, prisonerNumber = testData.prisonerNumber).expectStatus().isOk
       .expectBody().jsonPath("$.size()").isEqualTo(0)
 
     // now update it and remove the activated record.
     webTestClient.put()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/punishments/v2")
+      .uri("/reported-adjudications/$activated/punishments/v2")
       .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .bodyValue(
         mapOf(
@@ -647,7 +682,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       )
       .exchange().expectStatus().isOk
 
-    getSuspendedPunishments(chargeNumber = activated).expectStatus().isOk
+    getSuspendedPunishments(chargeNumber = activated, prisonerNumber = testData.prisonerNumber).expectStatus().isOk
       .expectBody().jsonPath("$.size()").isEqualTo(1)
   }
 
