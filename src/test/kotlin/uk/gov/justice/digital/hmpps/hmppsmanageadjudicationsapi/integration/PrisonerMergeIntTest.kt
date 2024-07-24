@@ -11,12 +11,14 @@ import java.time.Instant
 
 class PrisonerMergeIntTest : SqsIntegrationTestBase() {
 
-  var chargeNumber: String? = null
+  var prisonerNumber: String? = null
 
   @BeforeEach
   fun setUp() {
     setAuditTime()
-    chargeNumber = initDataForUnScheduled().createHearing().getGeneratedChargeNumber()
+    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "MERGE")
+    prisonerNumber = testData.prisonerNumber
+    initDataForUnScheduled(testData = testData).createHearing()
 
     domainEventsTopicSnsClient.publish(
       PublishRequest.builder()
@@ -27,7 +29,7 @@ class PrisonerMergeIntTest : SqsIntegrationTestBase() {
               eventType = PrisonOffenderEventListener.PRISONER_MERGE_EVENT_TYPE,
               additionalInformation = AdditionalInformation(
                 nomsNumber = "TO",
-                removedNomsNumber = IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber,
+                removedNomsNumber = testData.prisonerNumber,
                 reason = "MERGE",
               ),
               occurredAt = Instant.now(),
@@ -57,7 +59,7 @@ class PrisonerMergeIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.content.size()").isEqualTo(1)
 
     webTestClient.get()
-      .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?status=SCHEDULED&page=0&size=20")
+      .uri("/reported-adjudications/bookings/prisoner/$prisonerNumber!!?status=SCHEDULED&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk

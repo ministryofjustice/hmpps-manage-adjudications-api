@@ -113,7 +113,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(agencyId: String, statuses: List<ReportedAdjudicationStatus>, cutOffDate: LocalDateTime): Long
 
-  fun countByOriginatingAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(agencyId: String, statuses: List<ReportedAdjudicationStatus>, cutOffDate: LocalDateTime): Long
+  fun countByOriginatingAgencyIdAndOverrideAgencyIdIsNullAndStatusInAndDateTimeOfDiscoveryAfter(agencyId: String, statuses: List<ReportedAdjudicationStatus>, cutOffDate: LocalDateTime): Long
 
   fun findByPunishmentsActivatedByChargeNumber(chargeNumber: String): List<ReportedAdjudication>
 
@@ -244,7 +244,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
     private const val STATUS_FILTER = "ra.status in :statuses "
     private const val DATE_AND_STATUS_FILTER = "ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate and $STATUS_FILTER"
-    private const val AGENCY_AND_TRANSFER_STATUS_FILTER = "and (ra.originating_agency_id = :agencyId or ra.override_agency_id = :agencyId)"
+    private const val AGENCY_AND_TRANSFER_STATUS_FILTER = "and ((ra.originating_agency_id = :agencyId and ra.override_agency_id is null) or ra.override_agency_id = :agencyId)"
     private const val AGENCIES_INC_TRANSFERS_FILTER = "and (ra.originating_agency_id in :agencies or ra.override_agency_id in :agencies)"
     private const val TRANSFER_OUT = """
       and ra.override_agency_id is not null 

@@ -97,14 +97,21 @@ class IntegrationTestData(
     const val UPDATED_STATEMENT = "updated test statement"
     val UPDATED_DATE_TIME_OF_INCIDENT = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1)
 
-    val DEFAULT_ADJUDICATION = AdjudicationIntTestDataSet(
-      prisonerNumber = DEFAULT_PRISONER_NUMBER,
-      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
-      agencyId = DEFAULT_AGENCY_ID,
+    fun getDefaultAdjudication(
+      agencyId: String = DEFAULT_AGENCY_ID,
+      offenderBookingId: Long = DEFAULT_OFFENDER_BOOKING_ID,
+      prisonerNumber: String = DEFAULT_PRISONER_NUMBER,
+      plusDays: Long = 0,
+      withOthers: Boolean = false,
+      dateTimeOfIncident: LocalDateTime = DEFAULT_DATE_TIME_OF_INCIDENT,
+    ) = AdjudicationIntTestDataSet(
+      prisonerNumber = prisonerNumber,
+      offenderBookingId = offenderBookingId,
+      agencyId = agencyId,
       locationId = UPDATED_LOCATION_ID,
       dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
-      dateTimeOfIncident = DEFAULT_DATE_TIME_OF_INCIDENT,
-      dateTimeOfDiscovery = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1),
+      dateTimeOfIncident = dateTimeOfIncident.plusDays(plusDays),
+      dateTimeOfDiscovery = dateTimeOfIncident.plusDays(1 + plusDays),
       dateTimeOfDiscoveryISOString = DEFAULT_DATE_TIME_OF_DISCOVERY_TEXT,
       handoverDeadlineISOString = DEFAULT_HANDOVER_DEADLINE_ISO_STRING,
       isYouthOffender = false,
@@ -112,7 +119,7 @@ class IntegrationTestData(
       incidentRoleParagraphNumber = DEFAULT_INCIDENT_ROLE_PARAGRAPH_NUMBER,
       incidentRoleParagraphDescription = DEFAULT_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION,
       incidentRoleAssociatedPrisonersNumber = DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER,
-      offence = DEFAULT_OFFENCE,
+      offence = if (withOthers) WITH_OTHERS else DEFAULT_OFFENCE,
       statement = DEFAULT_STATEMENT,
       createdByUserId = DEFAULT_CREATED_USER_ID,
       damages = DEFAULT_DAMAGES,
@@ -122,35 +129,13 @@ class IntegrationTestData(
       dateTimeOfHearingISOString = DEFAULT_DATE_TIME_OF_HEARING_TEXT,
     )
 
-    val DEFAULT_ADJUDICATION_OVERRIDE = AdjudicationIntTestDataSet(
-      prisonerNumber = DEFAULT_PRISONER_NUMBER,
-      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
+    fun getDefaultAdjudicationOverride(
+      prisonerNumber: String = DEFAULT_PRISONER_NUMBER,
+      offenderBookingId: Long = DEFAULT_OFFENDER_BOOKING_ID,
+    ) = AdjudicationIntTestDataSet(
+      prisonerNumber = prisonerNumber,
+      offenderBookingId = offenderBookingId,
       agencyId = DEFAULT_AGENCY_ID,
-      locationId = UPDATED_LOCATION_ID,
-      dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
-      dateTimeOfIncident = DEFAULT_DATE_TIME_OF_INCIDENT,
-      dateTimeOfDiscovery = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1),
-      dateTimeOfDiscoveryISOString = DEFAULT_DATE_TIME_OF_DISCOVERY_TEXT,
-      handoverDeadlineISOString = DEFAULT_HANDOVER_DEADLINE_ISO_STRING,
-      isYouthOffender = false,
-      incidentRoleCode = DEFAULT_INCIDENT_ROLE_CODE,
-      incidentRoleParagraphNumber = DEFAULT_INCIDENT_ROLE_PARAGRAPH_NUMBER,
-      incidentRoleParagraphDescription = DEFAULT_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION,
-      incidentRoleAssociatedPrisonersNumber = DEFAULT_INCIDENT_ROLE_ASSOCIATED_PRISONER,
-      offence = DEFAULT_OFFENCE,
-      statement = DEFAULT_STATEMENT,
-      createdByUserId = DEFAULT_CREATED_USER_ID,
-      damages = DEFAULT_DAMAGES,
-      evidence = DEFAULT_EVIDENCE,
-      witnesses = DEFAULT_WITNESSES,
-      dateTimeOfHearing = DEFAULT_DATE_TIME_OF_INCIDENT.plusWeeks(1),
-      dateTimeOfHearingISOString = DEFAULT_DATE_TIME_OF_HEARING_TEXT,
-    )
-
-    val DEFAULT_TRANSFER_ADJUDICATION = AdjudicationIntTestDataSet(
-      prisonerNumber = DEFAULT_PRISONER_NUMBER,
-      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
-      agencyId = "BXI",
       locationId = UPDATED_LOCATION_ID,
       dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
       dateTimeOfIncident = DEFAULT_DATE_TIME_OF_INCIDENT,
@@ -193,7 +178,7 @@ class IntegrationTestData(
       witnesses = UPDATED_WITNESSES,
     )
 
-    val ADJUDICATION_1 = AdjudicationIntTestDataSet(
+    val USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT = AdjudicationIntTestDataSet(
       prisonerNumber = "BB2345B",
       offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
       agencyId = "LEI",
@@ -215,90 +200,6 @@ class IntegrationTestData(
       evidence = DEFAULT_EVIDENCE,
       witnesses = DEFAULT_WITNESSES,
     )
-
-    val ADJUDICATION_2 = AdjudicationIntTestDataSet(
-      prisonerNumber = "CC2345C",
-      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
-      agencyId = "MDI",
-      locationId = 12L,
-      dateTimeOfIncidentISOString = "2020-12-14T09:00:00",
-      dateTimeOfIncident = LocalDateTime.parse("2020-12-14T09:00:00"),
-      handoverDeadlineISOString = "2020-12-16T09:00:00",
-      isYouthOffender = true,
-      incidentRoleCode = "25a",
-      incidentRoleParagraphNumber = "29(a)",
-      incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
-      incidentRoleAssociatedPrisonersNumber = "A5678AA",
-      offence = DEFAULT_YOUTH_OFFENCE,
-      statement = "Different test statement",
-      createdByUserId = "P_NESS",
-      damages = DEFAULT_DAMAGES,
-      evidence = DEFAULT_EVIDENCE,
-      witnesses = DEFAULT_WITNESSES,
-    )
-
-    val ADJUDICATION_3 = AdjudicationIntTestDataSet(
-      prisonerNumber = "DD3456D",
-      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
-      agencyId = "MDI",
-      locationId = 13L,
-      dateTimeOfIncidentISOString = "2020-12-15T10:00:00",
-      dateTimeOfIncident = LocalDateTime.parse("2020-12-15T10:00:00"),
-      handoverDeadlineISOString = "2020-12-17T10:00:00",
-      isYouthOffender = false,
-      incidentRoleCode = "25c",
-      incidentRoleParagraphNumber = "25(c)",
-      incidentRoleParagraphDescription = "Assists another prisoner to commit, or to attempt to commit, any of the foregoing offences:",
-      incidentRoleAssociatedPrisonersNumber = "D4567DD",
-      offence = WITH_OTHERS,
-      statement = "Another test statement",
-      createdByUserId = "L_NESS",
-      damages = DEFAULT_DAMAGES,
-      evidence = DEFAULT_EVIDENCE,
-      witnesses = DEFAULT_WITNESSES,
-    )
-
-    val ADJUDICATION_4 = AdjudicationIntTestDataSet(
-      prisonerNumber = "EE4567E",
-      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
-      agencyId = "MDI",
-      locationId = 14L,
-      dateTimeOfIncidentISOString = "2020-12-16T10:00:00",
-      dateTimeOfIncident = LocalDateTime.parse("2020-12-16T10:00:00"),
-      handoverDeadlineISOString = "2020-12-18T10:00:00",
-      isYouthOffender = true,
-      incidentRoleCode = "25a",
-      incidentRoleParagraphNumber = "29(a)",
-      incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
-      incidentRoleAssociatedPrisonersNumber = "A5678AA",
-      offence = DEFAULT_YOUTH_OFFENCE,
-      statement = "Yet another test statement",
-      createdByUserId = "P_NESS",
-      damages = DEFAULT_DAMAGES,
-      evidence = DEFAULT_EVIDENCE,
-      witnesses = DEFAULT_WITNESSES,
-    )
-
-    val ADJUDICATION_5 = AdjudicationIntTestDataSet(
-      prisonerNumber = "FF4567F",
-      offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
-      agencyId = "LEI",
-      locationId = 15L,
-      dateTimeOfIncidentISOString = "2020-12-17T10:00:00",
-      dateTimeOfIncident = LocalDateTime.parse("2020-12-17T10:00:00"),
-      handoverDeadlineISOString = "2020-12-19T10:00:00",
-      isYouthOffender = false,
-      incidentRoleCode = "25a",
-      incidentRoleParagraphNumber = "25(a)",
-      incidentRoleParagraphDescription = "Attempts to commit any of the foregoing offences:",
-      incidentRoleAssociatedPrisonersNumber = "A5678AA",
-      offence = DEFAULT_OFFENCE,
-      statement = "Keep on with the test statements",
-      createdByUserId = "P_NESS",
-      damages = DEFAULT_DAMAGES,
-      evidence = DEFAULT_EVIDENCE,
-      witnesses = DEFAULT_WITNESSES,
-    )
   }
 
   fun getDraftAdjudicationDetails(
@@ -313,6 +214,7 @@ class IntegrationTestData(
   fun startNewAdjudication(
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
+    overrideAgencyId: String? = null,
   ): DraftAdjudicationResponse {
     return webTestClient.post()
       .uri("/draft-adjudications")
@@ -326,7 +228,7 @@ class IntegrationTestData(
           "locationId" to testDataSet.locationId,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,
           "dateTimeOfDiscovery" to testDataSet.dateTimeOfDiscovery,
-          "overrideAgencyId" to testDataSet.overrideAgencyId,
+          "overrideAgencyId" to overrideAgencyId,
         ),
       )
       .exchange()
@@ -649,7 +551,7 @@ class IntegrationTestData(
   ): WebTestClient.ResponseSpec {
     return webTestClient.post()
       .uri("/reported-adjudications/${testDataSet.chargeNumber}/hearing/v2")
-      .headers(setHeaders(username = "ITAG_ALO"))
+      .headers(setHeaders(username = "ITAG_ALO", activeCaseload = testDataSet.agencyId))
       .bodyValue(
         mapOf(
           "locationId" to testDataSet.locationId,

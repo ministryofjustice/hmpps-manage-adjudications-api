@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.D
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftOffenceService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.ValidationChecks
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationBaseService
+import java.time.LocalDateTime
 
 private class DraftAdjudicationServiceWrapper(
   draftAdjudicationRepository: DraftAdjudicationRepository,
@@ -82,8 +83,8 @@ class AdjudicationWorkflowService(
     ValidationChecks.entries.stream()
       .forEach { it.validate(draftAdjudication) }
 
-    val isNew = draftAdjudication.chargeNumber == null
-    val generatedReportedAdjudication = saveAdjudication(draftAdjudication, isNew)
+    val isResubmitted = draftAdjudication.chargeNumber != null
+    val generatedReportedAdjudication = saveAdjudication(draftAdjudication, isResubmitted)
 
     draftAdjudicationService.remove(draftAdjudication)
 
@@ -138,8 +139,8 @@ class AdjudicationWorkflowService(
     return completeDraftAdjudication(id)
   }
 
-  private fun saveAdjudication(draftAdjudication: DraftAdjudication, isNew: Boolean): ReportedAdjudicationDto {
-    if (isNew) {
+  private fun saveAdjudication(draftAdjudication: DraftAdjudication, isResubmitted: Boolean): ReportedAdjudicationDto {
+    if (!isResubmitted) {
       return createReportedAdjudication(draftAdjudication)
     }
     checkStateTransition(draftAdjudication)
@@ -218,6 +219,7 @@ class AdjudicationWorkflowService(
       it.offenceDetails.addAll(toReportedOffence(draftAdjudication.offenceDetails))
       it.statement = draftAdjudication.incidentStatement!!.statement!!
       it.transition(ReportedAdjudicationStatus.AWAITING_REVIEW)
+      it.dateTimeResubmitted = LocalDateTime.now()
 
       val damagesPreserve = it.damages.filter { damage -> damage.reporter != reporter }
       val evidencePreserve = it.evidence.filter { evidence -> evidence.reporter != reporter }

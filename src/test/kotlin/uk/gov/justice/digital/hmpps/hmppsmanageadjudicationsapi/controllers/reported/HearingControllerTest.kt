@@ -253,6 +253,54 @@ class HearingControllerTest : TestControllerBase() {
     }
   }
 
+  @Nested
+  inner class HearingsForPrisoners {
+
+    @BeforeEach
+    fun beforeEach() {
+      whenever(
+        hearingService.getHearingsByPrisoner(
+          any(),
+          any(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(emptyList())
+    }
+
+    @Test
+    fun `responds with a unauthorised status code`() {
+      allHearingsRequest(LocalDate.now()).andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
+    fun `get all hearings for agency and prisoners `() {
+      val now = LocalDate.now()
+      allHearingsRequest(now)
+        .andExpect(MockMvcResultMatchers.status().isOk)
+      verify(hearingService).getHearingsByPrisoner(
+        agencyId = "MDI",
+        startDate = now,
+        endDate = now,
+        prisoners = listOf("AE12345"),
+      )
+    }
+
+    private fun allHearingsRequest(
+      date: LocalDate,
+    ): ResultActions {
+      val body = objectMapper.writeValueAsString(listOf("AE12345"))
+
+      return mockMvc
+        .perform(
+          MockMvcRequestBuilders.post("/reported-adjudications/hearings/MDI?startDate=$date&endDate=$date")
+            .header("Content-Type", "application/json")
+            .content(body),
+        )
+    }
+  }
+
   companion object {
     private val HEARING_REQUEST = HearingRequest(locationId = 1L, dateTimeOfHearing = LocalDateTime.now(), oicHearingType = OicHearingType.GOV)
 
@@ -266,6 +314,7 @@ class HearingControllerTest : TestControllerBase() {
           prisonerNumber = "123",
           oicHearingType = OicHearingType.GOV,
           status = ReportedAdjudicationStatus.SCHEDULED,
+          locationId = 1,
         ),
       )
   }

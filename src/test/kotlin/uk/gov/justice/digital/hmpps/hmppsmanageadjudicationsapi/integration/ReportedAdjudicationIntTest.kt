@@ -4,8 +4,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.ActiveProfiles
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamageRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.WitnessRequestItem
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
@@ -15,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @ActiveProfiles("test")
 class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
@@ -26,17 +30,19 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reported adjudication details v2`() {
+    val testData = IntegrationTestData.getDefaultAdjudication()
+
     val scenario = initDataForAccept(
-      testData = IntegrationTestData.DEFAULT_ADJUDICATION.also {
+      testData = testData.also {
         it.protectedCharacteristics = null
-        it.overrideAgencyId = "BXI"
       },
+      overrideAgencyId = "BXI",
     )
 
-    IntegrationTestData.DEFAULT_ADJUDICATION.offence.victimOtherPersonsName?.let {
+    testData.offence.victimOtherPersonsName?.let {
       webTestClient.get()
         .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/v2?includeActivated=true")
-        .headers(setHeaders())
+        .headers(setHeaders(activeCaseload = "BXI"))
         .exchange()
         .expectStatus().is2xxSuccessful
         .expectBody()
@@ -44,38 +50,38 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
         .isEqualTo(scenario.getGeneratedChargeNumber())
         .jsonPath("$.reportedAdjudication.overrideAgencyId").isEqualTo("BXI")
         .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfIncident")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfIncidentISOString)
+        .isEqualTo(testData.dateTimeOfIncidentISOString)
         .jsonPath("$.reportedAdjudication.incidentDetails.dateTimeOfDiscovery")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.dateTimeOfDiscoveryISOString!!)
+        .isEqualTo(testData.dateTimeOfDiscoveryISOString!!)
         .jsonPath("$.reportedAdjudication.incidentDetails.locationId")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.locationId)
+        .isEqualTo(testData.locationId)
         .jsonPath("$.reportedAdjudication.incidentDetails.handoverDeadline")
         .isEqualTo(IntegrationTestData.DEFAULT_HANDOVER_DEADLINE_ISO_STRING)
         .jsonPath("$.reportedAdjudication.isYouthOffender")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.isYouthOffender)
+        .isEqualTo(testData.isYouthOffender)
         .jsonPath("$.reportedAdjudication.incidentRole.roleCode")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.incidentRoleCode)
+        .isEqualTo(testData.incidentRoleCode)
         .jsonPath("$.reportedAdjudication.incidentRole.offenceRule.paragraphNumber")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.incidentRoleParagraphNumber)
+        .isEqualTo(testData.incidentRoleParagraphNumber)
         .jsonPath("$.reportedAdjudication.incidentRole.offenceRule.paragraphDescription")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.incidentRoleParagraphDescription)
+        .isEqualTo(testData.incidentRoleParagraphDescription)
         .jsonPath("$.reportedAdjudication.offenceDetails.offenceCode")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.offence.offenceCode)
+        .isEqualTo(testData.offence.offenceCode)
         .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.paragraphNumber")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.offence.paragraphNumber)
+        .isEqualTo(testData.offence.paragraphNumber)
         .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.paragraphDescription")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.offence.paragraphDescription)
+        .isEqualTo(testData.offence.paragraphDescription)
         .jsonPath("$.reportedAdjudication.offenceDetails.victimPrisonersNumber")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.offence.victimPrisonersNumber!!)
+        .isEqualTo(testData.offence.victimPrisonersNumber!!)
         .jsonPath("$.reportedAdjudication.offenceDetails.victimStaffUsername")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.offence.victimStaffUsername!!)
+        .isEqualTo(testData.offence.victimStaffUsername!!)
         .jsonPath("$.reportedAdjudication.offenceDetails.victimOtherPersonsName")
         .isEqualTo(it)
         .jsonPath("$.reportedAdjudication.incidentStatement.statement")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.statement)
+        .isEqualTo(testData.statement)
         .jsonPath("$.reportedAdjudication.incidentStatement.completed").isEqualTo(true)
         .jsonPath("$.reportedAdjudication.createdByUserId")
-        .isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+        .isEqualTo(testData.createdByUserId)
         .jsonPath("$.reportedAdjudication.createdDateTime").isEqualTo(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME_TEXT)
         .jsonPath("$.reportedAdjudication.damages[0].code")
         .isEqualTo(DamageCode.CLEANING.name)
@@ -104,14 +110,14 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reported adjudication with protected characteristics`() {
+    val testData = IntegrationTestData.getDefaultAdjudication()
     val scenario = initDataForAccept(
-      testData = IntegrationTestData.DEFAULT_ADJUDICATION.also {
-        it.overrideAgencyId = "BXI"
+      testData = testData.also {
         it.protectedCharacteristics = mutableListOf(Characteristic.AGE)
       },
     )
 
-    IntegrationTestData.DEFAULT_ADJUDICATION.offence.victimOtherPersonsName?.let {
+    testData.offence.victimOtherPersonsName?.let {
       webTestClient.get()
         .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/v2")
         .headers(setHeaders())
@@ -124,10 +130,11 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reported adjudication with other nomis code set`() {
-    initDataForAccept(testData = IntegrationTestData.ADJUDICATION_3.also { it.overrideAgencyId = "BXI" })
+    val testData = IntegrationTestData.getDefaultAdjudication(plusDays = 2, withOthers = true)
+    val chargeNumber = initDataForAccept(testData = testData).getGeneratedChargeNumber()
 
     webTestClient.get()
-      .uri("/reported-adjudications/${IntegrationTestData.ADJUDICATION_3.chargeNumber}/v2")
+      .uri("/reported-adjudications/$chargeNumber/v2")
       .headers(setHeaders())
       .exchange()
       .expectStatus().is2xxSuccessful
@@ -161,11 +168,12 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create draft from reported adjudication returns expected result`() {
-    val scenario = initDataForAccept(testData = IntegrationTestData.DEFAULT_ADJUDICATION.also { it.overrideAgencyId = "BXI" })
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForAccept(testData = testData, overrideAgencyId = "BXI")
 
     webTestClient.post()
-      .uri("/reported-adjudications/${IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber}/create-draft-adjudication")
-      .headers(setHeaders())
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/create-draft-adjudication")
+      .headers(setHeaders(activeCaseload = "BXI"))
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
@@ -194,7 +202,8 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `create draft from reported adjudication adds draft`() {
-    val scenario = initDataForAccept()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForAccept(testData = testData)
 
     val createdDraftDetails = scenario.recallCompletedDraftAdjudication()
 
@@ -219,8 +228,75 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `confirm createdDateTime updated on resubmission`() {
+    setAuditTime(null)
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForAccept(testData = testData)
+
+    val created = webTestClient.put()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/status")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "status" to ReportedAdjudicationStatus.RETURNED,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+      .reportedAdjudication.createdDateTime
+
+    val draftId = webTestClient.post()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/create-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().is2xxSuccessful
+      .returnResult(DraftAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+      .draftAdjudication.id
+
+    val updated = webTestClient.post()
+      .uri("/draft-adjudications/$draftId/complete-draft-adjudication")
+      .headers(setHeaders())
+      .exchange()
+      .expectStatus().isCreated
+      .returnResult(ReportedAdjudicationDto::class.java)
+      .responseBody
+      .blockFirst()!!
+      .createdDateTime
+
+    assert(
+      created != updated,
+    )
+
+    Thread.sleep(1000)
+
+    val accepted = webTestClient.put()
+      .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/status")
+      .headers(setHeaders())
+      .bodyValue(
+        mapOf(
+          "status" to ReportedAdjudicationStatus.UNSCHEDULED,
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .returnResult(ReportedAdjudicationResponse::class.java)
+      .responseBody
+      .blockFirst()!!
+      .reportedAdjudication.createdDateTime
+
+    val formatter = DateTimeFormatter.ofPattern("hh:mm:ss")
+    assert(updated.toLocalTime().format(formatter) == accepted.toLocalTime().format(formatter))
+  }
+
+  @Test
   fun `transition from one state to another`() {
-    val scenario = initDataForAccept()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForAccept(testData = testData)
 
     webTestClient.put()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/status")
@@ -243,9 +319,10 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get a 400 when trying to transition to an invalid state`() {
+    val testData = IntegrationTestData.getDefaultAdjudication()
     val intTestData = integrationTestData()
 
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftUserHeaders = setHeaders(username = testData.createdByUserId)
     val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
@@ -253,7 +330,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     )
 
     val scenario = draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .startDraft(testData)
       .setApplicableRules()
       .setIncidentRole()
       .setOffenceData()
@@ -277,7 +354,8 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `update damages to the reported adjudication`() {
-    val scenario = initDataForAccept()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForAccept(testData = testData)
 
     webTestClient.put()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/damages/edit")
@@ -317,7 +395,8 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `update evidence to the reported adjudication`() {
-    val scenario = initDataForAccept()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForAccept(testData = testData)
 
     webTestClient.put()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/evidence/edit")
@@ -357,7 +436,8 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `update witnesses to the reported adjudication`() {
-    val scenario = initDataForAccept()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    val scenario = initDataForAccept(testData = testData)
 
     webTestClient.put()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/witnesses/edit")
@@ -399,9 +479,10 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `set issued and then re-issue details for DIS form `() {
+    val testData = IntegrationTestData.getDefaultAdjudication()
     val intTestData = integrationTestData()
 
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftUserHeaders = setHeaders(username = testData.createdByUserId)
     val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
@@ -409,7 +490,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     )
 
     val scenario = draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .startDraft(testData)
       .setApplicableRules()
       .setIncidentRole()
       .setOffenceData()
@@ -418,7 +499,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .addEvidence()
       .addWitnesses()
       .completeDraft()
-      .acceptReport()
+      .acceptReport(activeCaseload = testData.agencyId)
 
     val dateTimeOfIssue = LocalDateTime.of(2022, 11, 29, 10, 0)
 
@@ -458,9 +539,10 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `set created on behalf of`() {
+    val testData = IntegrationTestData.getDefaultAdjudication()
     val intTestData = integrationTestData()
 
-    val draftUserHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val draftUserHeaders = setHeaders(username = testData.createdByUserId)
     val draftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
@@ -468,7 +550,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
     )
 
     val scenario = draftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .startDraft(testData)
       .setApplicableRules()
       .setIncidentRole()
       .setOffenceData()
@@ -477,7 +559,7 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .addEvidence()
       .addWitnesses()
       .completeDraft()
-      .acceptReport(IntegrationTestData.DEFAULT_ADJUDICATION.chargeNumber.toString())
+      .acceptReport(testData.chargeNumber.toString()) // dont know what this is doing TODO
 
     val officer = "officer"
     val reason = "some reason"

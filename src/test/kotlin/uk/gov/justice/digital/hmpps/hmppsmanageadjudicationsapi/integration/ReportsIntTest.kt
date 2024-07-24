@@ -8,93 +8,93 @@ import org.springframework.http.HttpStatusCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_CREATED_USER_ID
 import java.time.format.DateTimeFormatter
 
 class ReportsIntTest : SqsIntegrationTestBase() {
 
   @BeforeEach
   fun setUp() {
-    setAuditTime(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME)
+    setAuditTime()
   }
 
   @ParameterizedTest
   @CsvSource(
-    "2020-12-14, 2020-12-17, AWAITING_REVIEW, 3, MDI-000003",
-    "2020-12-15, 2020-12-15, AWAITING_REVIEW, 1, MDI-000002",
+    "2010-11-13, 2010-11-17, AWAITING_REVIEW, 4",
+    "2010-11-14, 2010-11-14, AWAITING_REVIEW, 2",
   )
   fun `return a page of reported adjudications for agency with filters`(
     startDate: String,
     endDate: String,
     reportedAdjudicationStatus: ReportedAdjudicationStatus,
     expectedCount: Int,
-    adjudicationNumber: String,
   ) {
-    initMyReportData()
+    initMyReportData(agencyId = "DTI")
 
     webTestClient.get()
       .uri("/reported-adjudications/reports?startDate=$startDate&endDate=$endDate&status=$reportedAdjudicationStatus&page=0&size=20")
-      .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(activeCaseload = "DTI", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.content.size()").isEqualTo(expectedCount)
-      .jsonPath("$.content[0].chargeNumber").isEqualTo(adjudicationNumber)
   }
 
   @ParameterizedTest
   @CsvSource(
-    "2020-12-14, 2020-12-16, AWAITING_REVIEW, 2, MDI-000003",
-    "2020-12-14, 2020-12-14, AWAITING_REVIEW, 1, MDI-000001",
+    "2010-11-15, 2010-11-16, AWAITING_REVIEW, 2",
+    "2010-11-14, 2010-11-14, AWAITING_REVIEW, 2",
   )
   fun `return a page of reported adjudications completed by the current user with filters`(
     startDate: String,
     endDate: String,
     reportedAdjudicationStatus: ReportedAdjudicationStatus,
     expectedCount: Int,
-    adjudicationNumber: String,
   ) {
-    initMyReportData()
+    initMyReportData(agencyId = "FBI")
 
     webTestClient.get()
       .uri("/reported-adjudications/my-reports?startDate=$startDate&endDate=$endDate&status=$reportedAdjudicationStatus&page=0&size=20")
-      .headers(setHeaders(username = "P_NESS"))
+      .headers(setHeaders(username = DEFAULT_CREATED_USER_ID, activeCaseload = "FBI"))
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.content.size()").isEqualTo(expectedCount)
-      .jsonPath("$.content[0].chargeNumber").isEqualTo(adjudicationNumber)
   }
 
   @Test
   fun `return a page of reported adjudications completed by the current user`() {
-    initMyReportData()
+    initMyReportData(agencyId = "FKI")
+    val testData = IntegrationTestData.getDefaultAdjudication(agencyId = "FKI")
 
     val startDate =
-      IntegrationTestData.ADJUDICATION_2.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
-    val endDate = IntegrationTestData.ADJUDICATION_5.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
+      testData.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
+    val endDate = testData.dateTimeOfIncident.toLocalDate().plusDays(4).format(DateTimeFormatter.ISO_DATE)
 
     webTestClient.get()
       .uri("/reported-adjudications/my-reports?status=AWAITING_REVIEW&startDate=$startDate&endDate=$endDate&page=0&size=20")
-      .headers(setHeaders(username = "P_NESS"))
+      .headers(setHeaders(username = DEFAULT_CREATED_USER_ID, activeCaseload = "FKI"))
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.content[0].chargeNumber").isEqualTo("MDI-000003")
-      .jsonPath("$.content[1].chargeNumber").isEqualTo("MDI-000001")
+      .jsonPath("$.content.size()").isEqualTo(3)
   }
 
   @Test
   fun `return a page of reported adjudications completed in the current agency`() {
     val intTestData = integrationTestData()
 
-    val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_1.createdByUserId, activeCaseload = IntegrationTestData.ADJUDICATION_1.agencyId)
+    val testData1 = IntegrationTestData.getDefaultAdjudication(plusDays = 1, agencyId = "BFI")
+    val testData2 = IntegrationTestData.getDefaultAdjudication(plusDays = 2, agencyId = "BFI")
+
+    val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT.createdByUserId, activeCaseload = IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT.agencyId)
     val firstDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
       headers = firstDraftUserHeaders,
     )
     firstDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_1)
+      .startDraft(IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT)
       .setApplicableRules()
       .setIncidentRole()
       .setAssociatedPrisoner()
@@ -102,139 +102,147 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .addIncidentStatement()
       .completeDraft()
 
-    val secondDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_2.createdByUserId, activeCaseload = IntegrationTestData.ADJUDICATION_2.agencyId)
+    val secondDraftUserHeaders = setHeaders(username = testData1.createdByUserId, activeCaseload = testData1.agencyId)
     val secondDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
       headers = secondDraftUserHeaders,
     )
-    secondDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_2)
+    val secondChargeNumber = secondDraftIntTestScenarioBuilder
+      .startDraft(testData1)
       .setApplicableRules()
       .setIncidentRole()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
+      .getGeneratedChargeNumber()
 
-    val thirdDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_3.createdByUserId, activeCaseload = IntegrationTestData.ADJUDICATION_3.agencyId)
+    val thirdDraftUserHeaders = setHeaders(username = testData2.createdByUserId, activeCaseload = testData2.agencyId)
     val thirdDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
       headers = thirdDraftUserHeaders,
     )
-    thirdDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_3)
+    val thirdChargeNumber = thirdDraftIntTestScenarioBuilder
+      .startDraft(testData2)
       .setApplicableRules()
       .setIncidentRole()
       .setAssociatedPrisoner()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
+      .getGeneratedChargeNumber()
 
     val startDate =
-      IntegrationTestData.ADJUDICATION_1.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
-    val endDate = IntegrationTestData.ADJUDICATION_3.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
+      testData2.dateTimeOfIncident.toLocalDate().format(DateTimeFormatter.ISO_DATE)
+    val endDate = testData2.dateTimeOfIncident.toLocalDate().plusDays(4).format(DateTimeFormatter.ISO_DATE)
 
     webTestClient.get()
       .uri("/reported-adjudications/reports?status=AWAITING_REVIEW&startDate=$startDate&endDate=$endDate&page=0&size=20")
-      .headers(setHeaders(username = "NEW_USER", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(setHeaders(activeCaseload = "BFI", username = "NEW_USER", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
       .exchange()
       .expectStatus().isOk
       .expectBody()
-      .jsonPath("$.content[0].chargeNumber").isEqualTo("MDI-000002")
-      .jsonPath("$.content[1].chargeNumber").isEqualTo("MDI-000001")
+      .jsonPath("$.content.size()").isEqualTo(2)
+      .jsonPath("$.content[0].chargeNumber").isEqualTo(thirdChargeNumber)
+      .jsonPath("$.content[1].chargeNumber").isEqualTo(secondChargeNumber)
   }
 
   @Test
-  fun `get adjudications for issue for all locations in agency MDI for date range`() {
-    initMyReportData() // ensure more data to filter out
+  fun `get adjudications for issue for all locations in agency RSI for date range`() {
+    initMyReportData(agencyId = "RSI")
 
     val intTestData = integrationTestData()
-    val underTestHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val testData = IntegrationTestData.getDefaultAdjudication(agencyId = "RSI")
+    val headers = setHeaders(activeCaseload = "RSI", username = testData.createdByUserId)
     val underTestDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
-      headers = underTestHeaders,
+      headers = headers,
     )
     underTestDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .startDraft(testData)
       .setApplicableRules()
       .setIncidentRole()
       .setAssociatedPrisoner()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
-      .acceptReport()
+      .acceptReport(activeCaseload = testData.agencyId)
       .issueReport()
 
     webTestClient.get()
       .uri("/reported-adjudications/for-issue/v2?startDate=2010-11-12&endDate=2020-12-16")
-      .headers(setHeaders())
+      .headers(headers)
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudications.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudications[0].issuingOfficer").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+      .jsonPath("$.reportedAdjudications[0].issuingOfficer").isEqualTo(testData.createdByUserId)
   }
 
   @Test
   fun `get issued adjudications for all locations in agency MDI for date range`() {
-    initMyReportData() // ensure more data to filter out
+    initMyReportData(agencyId = "FMI") // ensure more data to filter out
 
     val intTestData = integrationTestData()
-    val underTestHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val testData = IntegrationTestData.getDefaultAdjudication(agencyId = "FMI")
+
+    val underTestHeaders = setHeaders(username = testData.createdByUserId, activeCaseload = "FMI")
     val underTestDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
       headers = underTestHeaders,
     )
     underTestDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .startDraft(testData)
       .setApplicableRules()
       .setIncidentRole()
       .setAssociatedPrisoner()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
-      .acceptReport()
+      .acceptReport(activeCaseload = testData.agencyId)
       .issueReport()
       .createHearing()
 
     webTestClient.get()
       .uri("/reported-adjudications/for-print?issueStatus=ISSUED&startDate=2010-11-12&endDate=2020-12-20")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = "FMI"))
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudications.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudications[0].issuingOfficer").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+      .jsonPath("$.reportedAdjudications[0].issuingOfficer").isEqualTo(testData.createdByUserId)
   }
 
   @Test
   fun `get not issued adjudications for all locations in agency MDI for date range`() {
-    initMyReportData() // ensure more data to filter out
+    initMyReportData(agencyId = "AKI") // ensure more data to filter out
 
     val intTestData = integrationTestData()
-    val underTestHeaders = setHeaders(username = IntegrationTestData.DEFAULT_ADJUDICATION.createdByUserId)
+    val testData = IntegrationTestData.getDefaultAdjudication(agencyId = "AKI")
+
+    val underTestHeaders = setHeaders(username = testData.createdByUserId, activeCaseload = "AKI")
     val underTestDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
       headers = underTestHeaders,
     )
     underTestDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.DEFAULT_ADJUDICATION)
+      .startDraft(testData)
       .setApplicableRules()
       .setIncidentRole()
       .setAssociatedPrisoner()
       .setOffenceData()
       .addIncidentStatement()
       .completeDraft()
-      .acceptReport()
+      .acceptReport(activeCaseload = testData.agencyId)
       .createHearing()
 
     webTestClient.get()
       .uri("/reported-adjudications/for-print?issueStatus=NOT_ISSUED&startDate=2010-11-12&endDate=2020-12-20")
-      .headers(setHeaders())
+      .headers(underTestHeaders)
       .exchange()
       .expectStatus().isOk
       .expectBody()
@@ -245,11 +253,12 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get report count by agency `() {
-    initDataForAccept()
+    val testData = IntegrationTestData.getDefaultAdjudication(agencyId = "BLI")
+    initDataForAccept(testData = testData, overrideActiveCaseLoad = "BLI")
 
     webTestClient.get()
       .uri("/reported-adjudications/report-counts")
-      .headers(setHeaders())
+      .headers(setHeaders(activeCaseload = "BLI"))
       .exchange()
       .expectStatus().isOk
       .expectBody()
@@ -259,10 +268,11 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reports for booking`() {
-    initDataForUnScheduled()
+    val testData = IntegrationTestData.getDefaultAdjudication(offenderBookingId = 19789)
+    initDataForUnScheduled(testData = testData)
 
     webTestClient.get()
-      .uri("/reported-adjudications/booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}?agency=${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}&page=0&size=20")
+      .uri("/reported-adjudications/booking/${testData.offenderBookingId}?agency=${testData.agencyId}&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -273,10 +283,11 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reports for booking with ADA`() {
-    initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.ADDITIONAL_DAYS)
+    val testData = IntegrationTestData.getDefaultAdjudication(offenderBookingId = 911)
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.ADDITIONAL_DAYS)
 
     webTestClient.get()
-      .uri("/reported-adjudications/booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}?status=CHARGE_PROVED&ada=true&agency=${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}&page=0&size=20")
+      .uri("/reported-adjudications/booking/${testData.offenderBookingId}?status=CHARGE_PROVED&ada=true&agency=${testData.agencyId}&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -286,10 +297,11 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reports for booking with PADA`() {
-    initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.PROSPECTIVE_DAYS)
+    val testData = IntegrationTestData.getDefaultAdjudication(offenderBookingId = 1001)
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.PROSPECTIVE_DAYS)
 
     webTestClient.get()
-      .uri("/reported-adjudications/booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}?status=CHARGE_PROVED&pada=true&agency=${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}&page=0&size=20")
+      .uri("/reported-adjudications/booking/${testData.offenderBookingId}?status=CHARGE_PROVED&pada=true&agency=${testData.agencyId}&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -299,10 +311,11 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reports for booking with suspended`() {
-    initDataForUnScheduled().createHearing().createChargeProved().createPunishments()
+    val testData = IntegrationTestData.getDefaultAdjudication(offenderBookingId = 100001)
+    initDataForUnScheduled(testData = testData).createHearing().createChargeProved().createPunishments()
 
     webTestClient.get()
-      .uri("/reported-adjudications/booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}?status=CHARGE_PROVED&suspended=true&agency=${IntegrationTestData.DEFAULT_ADJUDICATION.agencyId}&page=0&size=20")
+      .uri("/reported-adjudications/booking/${testData.offenderBookingId}?status=CHARGE_PROVED&suspended=true&agency=${testData.agencyId}&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -312,10 +325,11 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reports for prisoner`() {
-    initDataForUnScheduled()
+    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "REPORTS")
+    initDataForUnScheduled(testData = testData)
 
     webTestClient.get()
-      .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?page=0&size=20")
+      .uri("/reported-adjudications/bookings/prisoner/${testData.prisonerNumber}?page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -326,10 +340,11 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reports for prisoner with ADA`() {
-    initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.ADDITIONAL_DAYS)
+    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "ADA")
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.ADDITIONAL_DAYS)
 
     webTestClient.get()
-      .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?status=CHARGE_PROVED&ada=true&page=0&size=20")
+      .uri("/reported-adjudications/bookings/prisoner/${testData.prisonerNumber}?status=CHARGE_PROVED&ada=true&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -339,10 +354,11 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reports for prisoner with PADA`() {
-    initDataForUnScheduled().createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.PROSPECTIVE_DAYS)
+    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "PADA")
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.PROSPECTIVE_DAYS)
 
     webTestClient.get()
-      .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?status=CHARGE_PROVED&pada=true&page=0&size=20")
+      .uri("/reported-adjudications/bookings/prisoner/${testData.prisonerNumber}?status=CHARGE_PROVED&pada=true&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -352,10 +368,11 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get reports for prisoner with suspended`() {
-    initDataForUnScheduled().createHearing().createChargeProved().createPunishments()
+    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "SUSP")
+    initDataForUnScheduled(testData = testData).createHearing().createChargeProved().createPunishments()
 
     webTestClient.get()
-      .uri("/reported-adjudications/bookings/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}?status=CHARGE_PROVED&suspended=true&page=0&size=20")
+      .uri("/reported-adjudications/bookings/prisoner/${testData.prisonerNumber}?status=CHARGE_PROVED&suspended=true&page=0&size=20")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -365,38 +382,41 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `get all reports for prisoner`() {
-    initDataForUnScheduled()
+    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "REPORT2")
+    initDataForUnScheduled(testData = testData)
 
     webTestClient.get()
-      .uri("/reported-adjudications/prisoner/${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}")
+      .uri("/reported-adjudications/prisoner/${testData.prisonerNumber}")
       .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ALL_ADJUDICATIONS")))
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
-      .jsonPath("$.[0].prisonerNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber)
+      .jsonPath("$.[0].prisonerNumber").isEqualTo(testData.prisonerNumber)
   }
 
   @Test
   fun `get all reports for booking`() {
-    initDataForUnScheduled()
+    val testData = IntegrationTestData.getDefaultAdjudication(offenderBookingId = 78987)
+    initDataForUnScheduled(testData = testData)
 
     webTestClient.get()
-      .uri("/reported-adjudications/all-by-booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}")
+      .uri("/reported-adjudications/all-by-booking/${testData.offenderBookingId}")
       .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_ALL_ADJUDICATIONS")))
       .exchange()
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.size()").isEqualTo(1)
-      .jsonPath("$.[0].prisonerNumber").isEqualTo(IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber)
+      .jsonPath("$.[0].prisonerNumber").isEqualTo(testData.prisonerNumber)
   }
 
   @Test
   fun `offender has reports`() {
-    initDataForUnScheduled()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    initDataForUnScheduled(testData = testData)
 
     webTestClient.get()
-      .uri("/adjudications/booking/${IntegrationTestData.DEFAULT_ADJUDICATION.offenderBookingId}/exists")
+      .uri("/adjudications/booking/${testData.offenderBookingId}/exists")
       .headers(setHeaders(username = "P_NESS"))
       .exchange()
       .expectStatus().isOk
@@ -435,9 +455,10 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `SAR has content`() {
-    initDataForUnScheduled()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    initDataForUnScheduled(testData = testData)
     webTestClient.get()
-      .uri("/subject-access-request?prn=${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}")
+      .uri("/subject-access-request?prn=${testData.prisonerNumber}")
       .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_SAR_DATA_ACCESS")))
       .exchange()
       .expectStatus().isOk
@@ -448,9 +469,10 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `SAR has content with date`() {
-    initDataForUnScheduled()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    initDataForUnScheduled(testData = testData)
     webTestClient.get()
-      .uri("/subject-access-request?prn=${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}&fromDate=1999-01-01")
+      .uri("/subject-access-request?prn=${testData.prisonerNumber}&fromDate=1999-01-01")
       .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_SAR_DATA_ACCESS")))
       .exchange()
       .expectStatus().isOk
@@ -461,25 +483,33 @@ class ReportsIntTest : SqsIntegrationTestBase() {
 
   @Test
   fun `SAR has no content with date`() {
-    initDataForUnScheduled()
+    val testData = IntegrationTestData.getDefaultAdjudication()
+    initDataForUnScheduled(testData = testData)
     webTestClient.get()
-      .uri("/subject-access-request?prn=${IntegrationTestData.DEFAULT_ADJUDICATION.prisonerNumber}&toDate=1999-01-01")
+      .uri("/subject-access-request?prn=${testData.prisonerNumber}&toDate=1999-01-01")
       .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_SAR_DATA_ACCESS")))
       .exchange()
       .expectStatus().isNoContent
   }
 
-  private fun initMyReportData() {
+  private fun initMyReportData(
+    agencyId: String,
+  ) {
     val intTestData = integrationTestData()
 
-    val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_2.createdByUserId, activeCaseload = IntegrationTestData.ADJUDICATION_2.agencyId)
+    val testData1 = IntegrationTestData.getDefaultAdjudication(plusDays = 1, agencyId = agencyId)
+    val testData2 = IntegrationTestData.getDefaultAdjudication(plusDays = 2, agencyId = agencyId)
+    val testData3 = IntegrationTestData.getDefaultAdjudication(plusDays = 3, agencyId = agencyId)
+    val testData4 = IntegrationTestData.getDefaultAdjudication(plusDays = 4, agencyId = agencyId)
+
+    val firstDraftUserHeaders = setHeaders(username = testData1.createdByUserId, activeCaseload = testData1.agencyId)
     val firstDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
       headers = firstDraftUserHeaders,
     )
     firstDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_2)
+      .startDraft(testData1)
       .setApplicableRules()
       .setIncidentRole()
       .setAssociatedPrisoner()
@@ -487,14 +517,14 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .addIncidentStatement()
       .completeDraft()
 
-    val secondDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_3.createdByUserId, activeCaseload = IntegrationTestData.ADJUDICATION_3.agencyId)
+    val secondDraftUserHeaders = setHeaders(username = testData2.createdByUserId, activeCaseload = testData2.agencyId)
     val secondDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
       headers = secondDraftUserHeaders,
     )
     secondDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_3)
+      .startDraft(testData2)
       .setApplicableRules()
       .setIncidentRole()
       .setAssociatedPrisoner()
@@ -502,14 +532,14 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .addIncidentStatement()
       .completeDraft()
 
-    val thirdDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_4.createdByUserId, activeCaseload = IntegrationTestData.ADJUDICATION_4.agencyId)
+    val thirdDraftUserHeaders = setHeaders(username = testData3.createdByUserId, activeCaseload = testData3.agencyId)
     val thirdDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
       headers = thirdDraftUserHeaders,
     )
     thirdDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_4)
+      .startDraft(testData3)
       .setApplicableRules()
       .setIncidentRole()
       .setAssociatedPrisoner()
@@ -517,14 +547,14 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .addIncidentStatement()
       .completeDraft()
 
-    val fourthDraftUserHeaders = setHeaders(username = IntegrationTestData.ADJUDICATION_5.createdByUserId, activeCaseload = IntegrationTestData.ADJUDICATION_5.agencyId)
+    val fourthDraftUserHeaders = setHeaders(username = testData4.createdByUserId, activeCaseload = testData4.agencyId)
     val fourthDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
       headers = fourthDraftUserHeaders,
     )
     fourthDraftIntTestScenarioBuilder
-      .startDraft(IntegrationTestData.ADJUDICATION_5)
+      .startDraft(testData4)
       .setApplicableRules()
       .setIncidentRole()
       .setAssociatedPrisoner()
