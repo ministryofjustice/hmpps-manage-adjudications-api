@@ -13,11 +13,25 @@ parameters:
   java-version:
     type: string
     default: "21.0"
+  node-version:
+    type: string
+    default: 18.16-browsers
+  postgres-version:
+    type: string
+    default: "14"
+  localstack-version:
+    type: string
+    default: "3.0"
 jobs:
   validate:
     executor:
-      name: hmpps/java
-      tag: << pipeline.parameters.java-version >>
+      name: hmpps/java_localstack_postgres
+      jdk_tag: << pipeline.parameters.java-version >>
+      localstack_tag: << pipeline.parameters.localstack-version >>
+      services: "sns,sqs"
+      postgres_tag: << pipeline.parameters.postgres-version >>
+      postgres_username: "adjudications"
+      postgres_password: "adjudications"
     resource_class: medium+
     environment:
       _JAVA_OPTIONS: -Xmx1024m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process
@@ -27,6 +41,7 @@ jobs:
           keys:
             - gradle-{{ checksum "build.gradle.kts" }}
             - gradle-
+      - hmpps/wait_till_ready_postgres
       - run:
           command: ./gradlew check
       - save_cache:
