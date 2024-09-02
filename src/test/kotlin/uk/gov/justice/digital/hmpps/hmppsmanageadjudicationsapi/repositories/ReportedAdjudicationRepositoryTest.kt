@@ -412,6 +412,30 @@ class ReportedAdjudicationRepositoryTest {
   }
 
   @Test
+  fun `awaiting review reports include transferred out`() {
+    reportedAdjudicationRepository.save(
+      entityBuilder.reportedAdjudication(chargeNumber = "transferred", agencyId = "IWI", dateTime = LocalDateTime.now()).also {
+        it.hearings.clear()
+        it.overrideAgencyId = "FKI"
+        it.status = ReportedAdjudicationStatus.AWAITING_REVIEW
+      },
+    )
+
+    val foundAdjudications = reportedAdjudicationRepository.findAllReportsByAgency(
+      "IWI",
+      LocalDate.now().plusDays(1).atStartOfDay(),
+      LocalDate.now().plusDays(1).atTime(
+        LocalTime.MAX,
+      ),
+      listOf(ReportedAdjudicationStatus.AWAITING_REVIEW.name),
+      Pageable.ofSize(10),
+    )
+
+    assertThat(foundAdjudications.content).hasSize(1)
+    assertThat(foundAdjudications.content.first().chargeNumber).isEqualTo("transferred")
+  }
+
+  @Test
   fun `find reported adjudications by agency id and first hearing date`() {
     val foundAdjudications = reportedAdjudicationRepository.findReportsForPrint(
       "XXX",
