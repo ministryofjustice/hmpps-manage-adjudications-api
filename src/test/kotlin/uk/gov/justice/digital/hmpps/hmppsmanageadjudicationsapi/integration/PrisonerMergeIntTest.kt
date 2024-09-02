@@ -45,7 +45,7 @@ class PrisonerMergeIntTest : SqsIntegrationTestBase() {
         .build(),
     )
 
-    Thread.sleep(500)
+    Thread.sleep(1000)
   }
 
   @Test
