@@ -25,6 +25,17 @@
             }
           ],
           "percentage": 10
+        },
+        {
+          "telemetryType": "dependency",
+          "attributes": [
+            {
+              "key": "db.operation",
+              "value": "SELECT",
+              "matchType": "strict"
+            }
+          ],
+          "percentage": 10
         }
       ]
     }
