@@ -12,6 +12,8 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedOffence
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PrintSupportService.Companion.matchesLegacyOffence
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -314,6 +316,13 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
       assertThat(data.existingPunishments.first().type).isEqualTo(PunishmentType.ADDITIONAL_DAYS)
       assertThat(data.existingPunishments[1].type).isEqualTo(PunishmentType.PROSPECTIVE_DAYS)
       assertThat(data.existingPunishments.last().type).isEqualTo(PunishmentType.CONFINEMENT)
+    }
+
+    @Test
+    fun `legacy nomis codes should match based on paragraph`() {
+      assertThat(
+        listOf(ReportedOffence(offenceCode = 0, nomisOffenceCode = "51:22")).matchesLegacyOffence(23002),
+      ).isTrue()
     }
   }
 }
