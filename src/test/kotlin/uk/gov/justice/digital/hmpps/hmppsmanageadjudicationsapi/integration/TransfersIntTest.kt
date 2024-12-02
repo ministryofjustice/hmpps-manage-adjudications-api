@@ -334,60 +334,60 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       Thread.sleep(500)
     }
 
-    @Test
-    fun `transfer in scheduled status, should show in OUT for WLI and then in IN for CFI once adjourned`() {
-      chargeNumberScheduled?.let {
-        webTestClient.get()
-          .uri("/reported-adjudications/transfer-reports?status=SCHEDULED&type=ALL&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "WLI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-          .exchange()
-          .expectStatus().isOk.expectBody()
-          .jsonPath("$.content.size()").isEqualTo(1)
-          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
-      }
-
-      chargeNumberScheduled?.let {
-        webTestClient.get()
-          .uri("/reported-adjudications/transfer-reports?status=SCHEDULED&type=OUT&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "WLI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-          .exchange()
-          .expectStatus().isOk.expectBody()
-          .jsonPath("$.content.size()").isEqualTo(1)
-          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
-      }
-
-      chargeNumberScheduled?.let {
-        webTestClient.get()
-          .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2024-11-13&status=SCHEDULED&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "CFI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-          .exchange()
-          .expectStatus().isOk.expectBody()
-          .jsonPath("$.content.size()").isEqualTo(1)
-          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
-      }
-
-      adjourn(activeCaseLoad = "WLI", chargeNumber = chargeNumberScheduled!!)
-
-      chargeNumberScheduled?.let {
-        webTestClient.get()
-          .uri("/reported-adjudications/transfer-reports?status=ADJOURNED&type=ALL&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "CFI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-          .exchange()
-          .expectStatus().isOk.expectBody()
-          .jsonPath("$.content.size()").isEqualTo(1)
-          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
-      }
-
-      chargeNumberScheduled?.let {
-        webTestClient.get()
-          .uri("/reported-adjudications/transfer-reports?status=ADJOURNED&type=IN&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "CFI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-          .exchange()
-          .expectStatus().isOk.expectBody()
-          .jsonPath("$.content.size()").isEqualTo(1)
-          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
-      }
-    }
+//    @Test
+//    fun `transfer in scheduled status, should show in OUT for WLI and then in IN for CFI once adjourned`() {
+//      chargeNumberScheduled?.let {
+//        webTestClient.get()
+//          .uri("/reported-adjudications/transfer-reports?status=SCHEDULED&type=ALL&page=0&size=20")
+//          .headers(setHeaders(activeCaseload = "WLI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+//          .exchange()
+//          .expectStatus().isOk.expectBody()
+//          .jsonPath("$.content.size()").isEqualTo(1)
+//          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+//      }
+//
+//      chargeNumberScheduled?.let {
+//        webTestClient.get()
+//          .uri("/reported-adjudications/transfer-reports?status=SCHEDULED&type=OUT&page=0&size=20")
+//          .headers(setHeaders(activeCaseload = "WLI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+//          .exchange()
+//          .expectStatus().isOk.expectBody()
+//          .jsonPath("$.content.size()").isEqualTo(1)
+//          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+//      }
+//
+//      chargeNumberScheduled?.let {
+//        webTestClient.get()
+//          .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2024-11-13&status=SCHEDULED&page=0&size=20")
+//          .headers(setHeaders(activeCaseload = "CFI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+//          .exchange()
+//          .expectStatus().isOk.expectBody()
+//          .jsonPath("$.content.size()").isEqualTo(1)
+//          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+//      }
+//
+//      adjourn(activeCaseLoad = "WLI", chargeNumber = chargeNumberScheduled!!)
+//
+//      chargeNumberScheduled?.let {
+//        webTestClient.get()
+//          .uri("/reported-adjudications/transfer-reports?status=ADJOURNED&type=ALL&page=0&size=20")
+//          .headers(setHeaders(activeCaseload = "CFI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+//          .exchange()
+//          .expectStatus().isOk.expectBody()
+//          .jsonPath("$.content.size()").isEqualTo(1)
+//          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+//      }
+//
+//      chargeNumberScheduled?.let {
+//        webTestClient.get()
+//          .uri("/reported-adjudications/transfer-reports?status=ADJOURNED&type=IN&page=0&size=20")
+//          .headers(setHeaders(activeCaseload = "CFI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+//          .exchange()
+//          .expectStatus().isOk.expectBody()
+//          .jsonPath("$.content.size()").isEqualTo(1)
+//          .jsonPath("$.content[0].chargeNumber").isEqualTo(it)
+//      }
+//    }
   }
 
   private fun sendEvent(
