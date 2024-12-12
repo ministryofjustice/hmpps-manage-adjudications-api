@@ -358,7 +358,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
 
       chargeNumberScheduled?.let {
         webTestClient.get()
-          .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2024-11-13&status=SCHEDULED&page=0&size=20")
+          .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2030-11-13&status=SCHEDULED&page=0&size=20")
           .headers(setHeaders(activeCaseload = "CFI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
           .exchange()
           .expectStatus().isOk.expectBody()
