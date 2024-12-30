@@ -105,7 +105,7 @@ class PrintSupportService(
   companion object {
 
     fun List<ReportedOffence>.matchesOffence(offenceCode: Int): Boolean =
-      this.first().offenceCode != -0 && this.first().offenceCode == offenceCode
+      this.first().offenceCode != 0 && this.first().offenceCode == offenceCode
 
     fun List<ReportedOffence>.matchesLegacyOffence(offenceCode: Int): Boolean =
       this.first().offenceCode == 0 && this.first().nomisOffenceCode != null && offenceCode.containsNomisCode(this.first().nomisOffenceCode!!)
