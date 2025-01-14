@@ -57,6 +57,8 @@ server:
 hmpps:
   sqs:
     queueAdminRole: ROLE_ADJUDICATIONS_API_QUEUE_ADMIN
+  sar:
+    additionalAccessRole: ROLE_ADJUDICATIONS_SAR_VIEWER
 
 management:
   endpoints:
