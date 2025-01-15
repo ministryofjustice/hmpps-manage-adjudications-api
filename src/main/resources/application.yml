@@ -88,4 +88,9 @@ service:
   active:
     prisons: ${SERVICE_ACTIVE_PRISONS:***}
 
-
+prison:
+  nomis:
+    search:
+      api:
+        endpoint:
+          url: ${PRISONS_NOMIS_SEARCH_BASE_DOMAIN:https://nomis-sync-prisoner-mapping-dev.hmpps.service.justice.gov.uk}
