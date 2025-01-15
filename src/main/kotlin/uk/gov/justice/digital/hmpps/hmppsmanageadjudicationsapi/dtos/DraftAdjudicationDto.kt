@@ -57,6 +57,8 @@ data class DraftAdjudicationDto(
 data class IncidentDetailsDto(
   @Schema(description = "The id of the location the incident took place")
   val locationId: Long,
+  @Schema(description = "The name of the location the incident took place")
+  val locationName: String?,
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   val dateTimeOfIncident: LocalDateTime,
   @Schema(description = "Date time of discovery if date different to incident date", example = "2010-10-12T10:00:00")

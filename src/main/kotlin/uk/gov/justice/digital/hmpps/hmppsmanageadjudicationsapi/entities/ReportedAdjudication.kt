@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHist
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.LocationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 import java.lang.IllegalStateException
@@ -42,6 +43,7 @@ data class ReportedAdjudication(
   var overrideAgencyId: String? = null,
   var lastModifiedAgencyId: String? = null,
   var locationId: Long,
+  var locationName: String? = null,
   var dateTimeOfIncident: LocalDateTime,
   var dateTimeOfDiscovery: LocalDateTime,
   var handoverDeadline: LocalDateTime,
@@ -163,6 +165,7 @@ data class ReportedAdjudication(
 
   fun toDto(
     offenceCodeLookupService: OffenceCodeLookupService,
+    locationService: LocationService,
     activeCaseload: String? = null,
     consecutiveReportsAvailable: List<String>? = null,
     hasLinkedAda: Boolean = false,
@@ -171,11 +174,13 @@ data class ReportedAdjudication(
   ): ReportedAdjudicationDto {
     val hearings = this.toHearingsDto()
     val outcomes = this.getOutcomes().createCombinedOutcomes(hasLinkedAda = hasLinkedAda)
+    val lo = locationService.getNomisLocationDetail(locationId.toString())
     return ReportedAdjudicationDto(
       chargeNumber = chargeNumber,
       prisonerNumber = prisonerNumber,
       incidentDetails = IncidentDetailsDto(
         locationId = locationId,
+        locationName = lo?.label,
         dateTimeOfIncident = dateTimeOfIncident,
         dateTimeOfDiscovery = dateTimeOfDiscovery,
         handoverDeadline = handoverDeadline,
