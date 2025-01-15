@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Dra
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.ForbiddenException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup.Companion.associatedPrisonerInformationRequired
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.LocationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -71,10 +72,12 @@ class DraftAdjudicationService(
   draftAdjudicationRepository: DraftAdjudicationRepository,
   offenceCodeLookupService: OffenceCodeLookupService,
   authenticationFacade: AuthenticationFacade,
+  locationService: LocationService,
 ) : DraftAdjudicationBaseService(
   draftAdjudicationRepository,
   offenceCodeLookupService,
   authenticationFacade,
+  locationService,
 ) {
 
   companion object {
@@ -125,6 +128,7 @@ class DraftAdjudicationService(
       overrideAgencyId = overrideAgencyId,
       incidentDetails = IncidentDetails(
         locationId = locationId,
+        locationName = locationService.getNomisLocationDetail(locationId.toString())?.label,
         dateTimeOfIncident = dateTimeOfIncident,
         dateTimeOfDiscovery = actualDateTimeOfDiscovery,
         handoverDeadline = daysToActionFromIncident(actualDateTimeOfDiscovery),

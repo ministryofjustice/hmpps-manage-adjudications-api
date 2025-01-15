@@ -5,6 +5,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.LocationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.Clock
 import java.time.Instant
@@ -19,6 +20,7 @@ abstract class DraftAdjudicationTestBase : TestsToImplement {
   internal val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
   internal val offenceCodeLookupService: OffenceCodeLookupService = OffenceCodeLookupService()
   internal val authenticationFacade: AuthenticationFacade = mock()
+  internal val locationService: LocationService = mock()
 
   @BeforeEach
   fun beforeEach() {

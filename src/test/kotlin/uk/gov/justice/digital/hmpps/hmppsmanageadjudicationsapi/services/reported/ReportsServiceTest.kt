@@ -29,6 +29,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     reportedAdjudicationRepository,
     offenceCodeLookupService,
     authenticationFacade,
+    locationService,
   )
 
   @Nested

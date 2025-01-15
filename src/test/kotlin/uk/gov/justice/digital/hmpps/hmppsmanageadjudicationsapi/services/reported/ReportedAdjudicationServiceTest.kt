@@ -40,6 +40,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       reportedAdjudicationRepository,
       offenceCodeLookupService,
       authenticationFacade,
+      locationService,
     )
 
   @Nested
@@ -1835,6 +1836,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudicationRepository,
         offenceCodeLookupService,
         authenticationFacade,
+        locationService,
       )
 
     @BeforeEach

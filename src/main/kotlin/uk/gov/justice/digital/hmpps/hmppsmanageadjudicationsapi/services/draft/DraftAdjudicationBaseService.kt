@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.LocationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -33,6 +34,7 @@ open class DraftAdjudicationBaseService(
   private val draftAdjudicationRepository: DraftAdjudicationRepository,
   protected val offenceCodeLookupService: OffenceCodeLookupService,
   protected val authenticationFacade: AuthenticationFacade,
+  protected val locationService: LocationService,
 ) {
 
   protected fun find(id: Long): DraftAdjudication {
@@ -97,6 +99,7 @@ open class DraftAdjudicationBaseService(
 
   private fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
     locationId = this.locationId,
+    locationName = locationService.getNomisLocationDetail(this.locationId.toString())?.label,
     dateTimeOfIncident = this.dateTimeOfIncident,
     dateTimeOfDiscovery = this.dateTimeOfDiscovery,
     handoverDeadline = this.handoverDeadline,

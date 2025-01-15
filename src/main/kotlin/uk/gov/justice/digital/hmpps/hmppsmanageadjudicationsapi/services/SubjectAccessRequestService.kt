@@ -13,6 +13,7 @@ import java.time.LocalTime
 class SubjectAccessRequestService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   private val offenceCodeLookupService: OffenceCodeLookupService,
+  private val locationService: LocationService,
 ) : HmppsPrisonSubjectAccessRequestService {
 
   companion object {
@@ -32,6 +33,6 @@ class SubjectAccessRequestService(
     )
     if (reported.isEmpty()) return null
 
-    return HmppsSubjectAccessRequestContent(content = reported.map { it.toDto(offenceCodeLookupService) })
+    return HmppsSubjectAccessRequestContent(content = reported.map { it.toDto(offenceCodeLookupService, locationService) })
   }
 }

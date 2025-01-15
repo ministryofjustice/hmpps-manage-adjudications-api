@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.LocationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDateTime
 
@@ -16,6 +17,7 @@ open class ReportedAdjudicationBaseService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   protected val offenceCodeLookupService: OffenceCodeLookupService,
   protected val authenticationFacade: AuthenticationFacade,
+  protected val locationService: LocationService,
 ) {
 
   protected fun findByChargeNumber(chargeNumber: String): ReportedAdjudication {
@@ -42,6 +44,7 @@ open class ReportedAdjudicationBaseService(
       },
     ).toDto(
       offenceCodeLookupService = offenceCodeLookupService,
+      locationService = locationService,
       activeCaseload = authenticationFacade.activeCaseload,
     )
 

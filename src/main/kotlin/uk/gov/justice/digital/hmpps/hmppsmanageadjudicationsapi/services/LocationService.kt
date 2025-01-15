@@ -14,7 +14,7 @@ data class LocationResponse(
   val nomisLocationId: Int,
   val label: String,
   val mappingType: String,
-  val whenCreated: LocalDateTime
+  val whenCreated: LocalDateTime,
 )
 
 data class ErrorResponse(
@@ -22,12 +22,12 @@ data class ErrorResponse(
   val errorCode: String,
   val userMessage: String,
   val developerMessage: String,
-  val moreInfo: String
+  val moreInfo: String,
 )
 
 @Service
 class LocationService(
-  @Qualifier("prisonLocationWebClient") private val webClient: WebClient
+  @Qualifier("prisonLocationWebClient") private val webClient: WebClient,
 ) {
 
   private val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -74,7 +74,7 @@ class LocationService(
         errorCode = "UNKNOWN",
         userMessage = "Unable to parse error response from server.",
         developerMessage = parseException.message ?: "Error parsing response body.",
-        moreInfo = "No additional information available."
+        moreInfo = "No additional information available.",
       )
     }
   }
