@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -30,7 +33,7 @@ class LocationServiceTest {
         nomisLocationId = 1234,
         label = "My Label",
         mappingType = "TYPE",
-        whenCreated = LocalDateTime.now()
+        whenCreated = LocalDateTime.now(),
       )
 
       // Mock the fluent WebClient chain:
@@ -68,12 +71,13 @@ class LocationServiceTest {
  "moreInfo": "N/A"
  }""".trimIndent()
 
+
       val notFoundException = WebClientResponseException.create(
         HttpStatus.NOT_FOUND.value(),
         "Not Found",
         null,
         errorJson.toByteArray(StandardCharsets.UTF_8),
-        null
+        null,
       )
 
       // Mock the fluent WebClient chain:
@@ -124,7 +128,7 @@ class LocationServiceTest {
       }
       assertTrue(
         ex.message!!.contains("Failed to fetch location details for ID: $locationId"),
-        "Should wrap unexpected exception in a RuntimeException"
+        "Should wrap unexpected exception in a RuntimeException",
       )
     }
   }
