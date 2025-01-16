@@ -63,15 +63,13 @@ class LocationServiceTest {
     fun `Given the location is not found, When WebClient throws 404, Then getNomisLocationDetail returns null`() {
       // Given
       val locationId = "NOT_FOUND"
-      val errorJson = """
-{
-  "status": 404,
-  "errorCode": "LOCATION_NOT_FOUND",
-  "userMessage": "Location not found",
-  "developerMessage": "No location found for id",
-  "moreInfo": "N/A"
-}
-                      """.trimIndent()
+      val errorJson = "{\n" +
+        "  \"status\": 404,\n" +
+        "  \"errorCode\": \"LOCATION_NOT_FOUND\",\n" +
+        "  \"userMessage\": \"Location not found\",\n" +
+        "  \"developerMessage\": \"No location found for id\",\n" +
+        "  \"moreInfo\": \"N/A\"\n" +
+        "}"
 
       val notFoundException = WebClientResponseException.create(
         HttpStatus.NOT_FOUND.value(),
