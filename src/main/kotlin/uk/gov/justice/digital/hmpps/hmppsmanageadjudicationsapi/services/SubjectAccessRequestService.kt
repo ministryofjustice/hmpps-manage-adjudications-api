@@ -13,6 +13,7 @@ import java.time.LocalTime
 class SubjectAccessRequestService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   private val offenceCodeLookupService: OffenceCodeLookupService,
+  private val locationService: LocationService,
 ) : HmppsPrisonSubjectAccessRequestService {
 
   companion object {
@@ -32,6 +33,25 @@ class SubjectAccessRequestService(
     )
     if (reported.isEmpty()) return null
 
-    return HmppsSubjectAccessRequestContent(content = reported.map { it.toDto(offenceCodeLookupService) })
+    val locationCache = mutableMapOf<Long, String?>()
+
+//    var sar_initial_response =  HmppsSubjectAccessRequestContent(content = reported.map { it.toDto(offenceCodeLookupService) })
+    val dtos = reported.map { adjudication ->
+      val dto = adjudication.toDto(offenceCodeLookupService)
+
+      // Retrieve the locationId from 'incidentDetails'
+      val locationId = dto.incidentDetails?.locationId
+      if (locationId != null) {
+        // Use cache or call the service
+        val locationName = locationCache.getOrPut(locationId) {
+          locationService.getNomisLocationDetail(locationId.toString())?.label
+        }
+        // Set the locationName back into incidentDetails
+        dto.incidentDetails?.locationName = locationName
+      }
+
+      dto
+    }
+    return HmppsSubjectAccessRequestContent(content = dtos)
   }
 }
