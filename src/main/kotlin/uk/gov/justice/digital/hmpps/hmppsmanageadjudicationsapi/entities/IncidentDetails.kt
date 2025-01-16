@@ -9,6 +9,7 @@ import java.time.LocalDateTime
 data class IncidentDetails(
   override val id: Long? = null,
   var locationId: Long,
+  @Transient
   val locationName: String? = null,
   var dateTimeOfIncident: LocalDateTime,
   var dateTimeOfDiscovery: LocalDateTime,
