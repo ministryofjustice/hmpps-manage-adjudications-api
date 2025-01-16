@@ -71,7 +71,7 @@ class LocationServiceTest {
   "developerMessage": "No location found for id",
   "moreInfo": "N/A"
 }
-""".trimIndent()
+                      """.trimIndent()
 
       val notFoundException = WebClientResponseException.create(
         HttpStatus.NOT_FOUND.value(),
