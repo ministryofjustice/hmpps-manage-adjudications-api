@@ -14,6 +14,7 @@ data class AdjudicationIntTestDataSet(
   val gender: Gender = Gender.MALE,
   val agencyId: String,
   val locationId: Long,
+  val locationName: String? = null,
   val dateTimeOfIncident: LocalDateTime,
   val dateTimeOfIncidentISOString: String,
   var dateTimeOfDiscovery: LocalDateTime? = null,
