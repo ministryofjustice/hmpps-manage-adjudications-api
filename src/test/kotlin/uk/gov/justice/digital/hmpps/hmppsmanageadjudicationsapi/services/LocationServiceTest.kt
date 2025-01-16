@@ -64,14 +64,14 @@ class LocationServiceTest {
       // Given
       val locationId = "NOT_FOUND"
       val errorJson = """
-        {
-           "status": 404,
-           "errorCode": "LOCATION_NOT_FOUND",
-           "userMessage": "Location not found",
-           "developerMessage": "No location found for id",
-           "moreInfo": "N/A"
-         }
-                       """.trimIndent()
+{
+  "status": 404,
+  "errorCode": "LOCATION_NOT_FOUND",
+  "userMessage": "Location not found",
+  "developerMessage": "No location found for id",
+  "moreInfo": "N/A"
+}
+""".trimIndent()
 
       val notFoundException = WebClientResponseException.create(
         HttpStatus.NOT_FOUND.value(),
