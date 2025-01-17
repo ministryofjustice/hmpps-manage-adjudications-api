@@ -14,7 +14,6 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import java.nio.charset.StandardCharsets
-import java.time.LocalDateTime
 
 class PrisonerSearchServiceTest {
 
@@ -39,7 +38,7 @@ class PrisonerSearchServiceTest {
       val responseSpec = mock<WebClient.ResponseSpec>()
 
       whenever(webClient.get()).thenReturn(requestHeadersUriSpec)
-      whenever(requestHeadersUriSpec.uri("/api/offenders/${prisonerNumber}", prisonerNumber))
+      whenever(requestHeadersUriSpec.uri("/api/offenders/{prisonerNumber}", prisonerNumber))
         .thenReturn(requestHeadersSpec)
       whenever(requestHeadersSpec.retrieve()).thenReturn(responseSpec)
       whenever(responseSpec.bodyToMono(PrisonerResponse::class.java))
@@ -80,7 +79,7 @@ class PrisonerSearchServiceTest {
       val responseSpec = mock<WebClient.ResponseSpec>()
 
       whenever(webClient.get()).thenReturn(requestHeadersUriSpec)
-      whenever(requestHeadersUriSpec.uri("/api/offenders/${prisonerNumber}", prisonerNumber))
+      whenever(requestHeadersUriSpec.uri("/api/offenders/{prisonerNumber}", prisonerNumber))
         .thenReturn(requestHeadersSpec)
 
       whenever(requestHeadersSpec.retrieve()).thenReturn(responseSpec)
@@ -107,7 +106,7 @@ class PrisonerSearchServiceTest {
 
       whenever(webClient.get()).thenReturn(requestHeadersUriSpec)
 
-      whenever(requestHeadersUriSpec.uri("/api/offenders/${prisonerNumber}", prisonerNumber))
+      whenever(requestHeadersUriSpec.uri("/api/offenders/{prisonerNumber}", prisonerNumber))
         .thenReturn(requestHeadersSpec)
 
       whenever(requestHeadersSpec.retrieve()).thenReturn(responseSpec)
