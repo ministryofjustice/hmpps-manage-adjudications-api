@@ -90,7 +90,11 @@ service:
 
 prison:
   nomis:
-    search:
+    location:
       api:
         endpoint:
-          url: ${PRISONS_NOMIS_SEARCH_BASE_DOMAIN:https://nomis-sync-prisoner-mapping-dev.hmpps.service.justice.gov.uk}
+          url: ${PRISONS_NOMIS_LOCATION_BASE_DOMAIN:https://nomis-sync-prisoner-mapping-dev.hmpps.service.justice.gov.uk}
+  prisoner-search:
+    api:
+      endpoint:
+        url: ${PRISONER_SEARCH_BASE_DOMAIN:https://prisoner-search-dev.prison.service.justice.gov.uk}

@@ -14,6 +14,7 @@ class SubjectAccessRequestService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   private val offenceCodeLookupService: OffenceCodeLookupService,
   private val locationService: LocationService,
+  private val prisonerSearchService: PrisonerSearchService,
 ) : HmppsPrisonSubjectAccessRequestService {
 
   companion object {
@@ -34,10 +35,19 @@ class SubjectAccessRequestService(
     if (reported.isEmpty()) return null
 
     val locationCache = mutableMapOf<Long, String?>()
+    val prisonerCache = mutableMapOf<String, String?>()
 
 //    var sar_initial_response =  HmppsSubjectAccessRequestContent(content = reported.map { it.toDto(offenceCodeLookupService) })
     val dtos = reported.map { adjudication ->
       val dto = adjudication.toDto(offenceCodeLookupService)
+
+      val prisonerNumber = dto.prisonerNumber
+      // Use cache or call the service
+      val prisonerName = prisonerCache.getOrPut(prisonerNumber) {
+        prisonerSearchService.getPrisonerDetail(prisonerNumber)?.firstName + " " + prisonerSearchService.getPrisonerDetail(prisonerNumber)?.lastName
+      }
+      // Set the locationName back into incidentDetails
+      dto.prisonerName = prisonerName
 
       // Retrieve the locationId from 'incidentDetails'
       val locationId = dto.incidentDetails?.locationId
