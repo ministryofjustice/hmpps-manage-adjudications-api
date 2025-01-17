@@ -48,6 +48,8 @@ data class ReportedAdjudicationDto(
   val createdDateTime: LocalDateTime,
   @Schema(description = "The status of the reported adjudication")
   val status: ReportedAdjudicationStatus,
+  @Schema(description = "The description of the status in the reported adjudication")
+  var statusDescription: String? = null,
   @Schema(description = "Reviewed by user id")
   val reviewedByUserId: String?,
   @Schema(description = "The reason for the status of the reported adjudication")
