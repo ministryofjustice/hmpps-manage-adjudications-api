@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
-import kotlinx.coroutines.DEBUG_PROPERTY_VALUE_AUTO
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
