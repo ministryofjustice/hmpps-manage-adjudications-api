@@ -10,6 +10,7 @@ import java.time.LocalDateTime
 data class AdjudicationIntTestDataSet(
   var chargeNumber: String? = null,
   val prisonerNumber: String,
+  var prisonerName: String? = null,
   val offenderBookingId: Long,
   val gender: Gender = Gender.MALE,
   val agencyId: String,
