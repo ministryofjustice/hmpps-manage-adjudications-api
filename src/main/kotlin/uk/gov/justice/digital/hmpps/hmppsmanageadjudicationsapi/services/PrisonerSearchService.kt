@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
-import java.time.LocalDateTime
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class PrisonerResponse(
@@ -33,7 +32,7 @@ class PrisonerSearchService(
     logger.info("Fetching prisoner details for ID: $prisonerNumber")
     return try {
       webClient.get()
-        .uri("/api/offenders/${prisonerNumber}", prisonerNumber)
+        .uri("/api/offenders/{prisonerNumber}", prisonerNumber)
         .retrieve()
         .bodyToMono(PrisonerResponse::class.java)
         .block()
