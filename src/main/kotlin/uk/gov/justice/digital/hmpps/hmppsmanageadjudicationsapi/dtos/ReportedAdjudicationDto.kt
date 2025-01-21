@@ -191,6 +191,8 @@ data class HearingDto(
   val dateTimeOfHearing: LocalDateTime,
   @Schema(description = "oic hearing type")
   val oicHearingType: OicHearingType,
+  @Schema(description = "oic hearing type description")
+  var oicHearingTypeDescription: String? = null,
   @Schema(description = "hearing outcome")
   val outcome: HearingOutcomeDto? = null,
   @Schema(description = "agency id of hearing")
