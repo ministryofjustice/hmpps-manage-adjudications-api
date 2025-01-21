@@ -89,8 +89,8 @@ class SubjectAccessRequestService(
 
       // Transform each hearings
       dto.hearings.forEach { hearingItem ->
-        val hearingDescription = OicHearingTypeTransformer.displayName(hearingItem.oicHearingType)
-        hearingItem.oicHearingTypeDescription = hearingDescription
+        val ociHearingDescription = OicHearingTypeTransformer.displayName(hearingItem.oicHearingType)
+        hearingItem.oicHearingTypeDescription = ociHearingDescription
 
         //to do - add transformation for location id when that is resolved in an earlier ticket (NN-6007)
       }
