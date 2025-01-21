@@ -127,6 +127,8 @@ data class OffenceDto(
   val victimOtherPersonsName: String? = null,
   @Schema(description = "list of protected characteristics for offence, empty if non involved in offence")
   val protectedCharacteristics: List<Characteristic>,
+  @Schema(description = "list of protected characteristics for offence descriptions, empty if non involved in offence")
+  var protectedCharacteristicsDescriptions: List<String>? = null,
 )
 
 @Schema(description = "Details of a rule they have broken")
@@ -191,6 +193,8 @@ data class HearingDto(
   val dateTimeOfHearing: LocalDateTime,
   @Schema(description = "oic hearing type")
   val oicHearingType: OicHearingType,
+  @Schema(description = "oic hearing type description")
+  var oicHearingTypeDescription: String? = null,
   @Schema(description = "hearing outcome")
   val outcome: HearingOutcomeDto? = null,
   @Schema(description = "agency id of hearing")
@@ -205,12 +209,16 @@ data class HearingOutcomeDto(
   val adjudicator: String,
   @Schema(description = "the hearing outcome code")
   val code: HearingOutcomeCode,
+  @Schema(description = "the hearing outcome code description")
+  var codeDescription: String? = null,
   @Schema(description = "reason for outcome")
   val reason: HearingOutcomeAdjournReason? = null,
   @Schema(description = "details of outcome")
   val details: String? = null,
   @Schema(description = "hearing outcome plea")
   val plea: HearingOutcomePlea? = null,
+  @Schema(description = "hearing outcome plea description")
+  var pleaDescription: String? = null,
 )
 
 @Schema(description = "Hearing Summary")

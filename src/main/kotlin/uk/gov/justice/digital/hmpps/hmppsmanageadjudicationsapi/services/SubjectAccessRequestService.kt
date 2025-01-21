@@ -4,8 +4,11 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.TransferService.Companion.log
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.CharacteristicTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.DamageCodeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EvidenceCodeTransformer
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.HearingOutcomeTransformer
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.OicHearingTypeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.PrivilegeTypeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.PunishmentCommentTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.PunishmentTypeTransformer
@@ -85,6 +88,30 @@ class SubjectAccessRequestService(
         }
         punishmentCommentsItem.reasonForChangeDescription = punishmentCommentDescription
       }
+
+      // Transform each hearings
+      dto.hearings.forEach { hearingItem ->
+        val ociHearingDescription = OicHearingTypeTransformer.displayName(hearingItem.oicHearingType)
+        hearingItem.oicHearingTypeDescription = ociHearingDescription
+
+        val hearingOutcomeCodeDescription = hearingItem.outcome?.code?.let {
+          HearingOutcomeTransformer.displayOutcomeCodeName(it)
+        }
+        hearingItem.outcome?.codeDescription = hearingOutcomeCodeDescription
+
+        val hearingOutcomePleaDescription = hearingItem.outcome?.plea?.let {
+          HearingOutcomeTransformer.displayOutcomePleaName(it)
+        }
+        hearingItem.outcome?.pleaDescription = hearingOutcomePleaDescription
+
+        // to do - add transformation for location id when that is resolved in an earlier ticket (NN-6007)
+      }
+
+      // Transform each protectedCharacteristics
+      val protectedCharacteristicsDescriptions = dto.offenceDetails.protectedCharacteristics.mapNotNull { characteristic ->
+        CharacteristicTransformer.displayName(characteristic)
+      }
+      dto.offenceDetails.protectedCharacteristicsDescriptions = protectedCharacteristicsDescriptions
 
       dto
     }
