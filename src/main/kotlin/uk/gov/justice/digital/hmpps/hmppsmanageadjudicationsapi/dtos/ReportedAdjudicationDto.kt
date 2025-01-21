@@ -128,7 +128,7 @@ data class OffenceDto(
   @Schema(description = "list of protected characteristics for offence, empty if non involved in offence")
   val protectedCharacteristics: List<Characteristic>,
   @Schema(description = "list of protected characteristics for offence descriptions, empty if non involved in offence")
-  var protectedCharacteristicsDescriptions: List<String>,
+  var protectedCharacteristicsDescriptions: List<String>? = null,
 )
 
 @Schema(description = "Details of a rule they have broken")
