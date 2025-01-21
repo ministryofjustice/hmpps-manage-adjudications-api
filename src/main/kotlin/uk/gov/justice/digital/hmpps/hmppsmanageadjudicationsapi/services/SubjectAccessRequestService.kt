@@ -104,7 +104,7 @@ class SubjectAccessRequestService(
         }
         hearingItem.outcome?.pleaDescription = hearingOutcomePleaDescription
 
-        //to do - add transformation for location id when that is resolved in an earlier ticket (NN-6007)
+        // to do - add transformation for location id when that is resolved in an earlier ticket (NN-6007)
       }
 
       // Transform each protectedCharacteristics
