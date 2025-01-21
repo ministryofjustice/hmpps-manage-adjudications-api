@@ -9,8 +9,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EvidenceCo
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.PrivilegeTypeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.PunishmentCommentTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.PunishmentTypeTransformer
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.WitnessCodeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.ReportedAdjudicationStatusTransformer
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.WitnessCodeTransformer
 import uk.gov.justice.hmpps.kotlin.sar.HmppsPrisonSubjectAccessRequestService
 import uk.gov.justice.hmpps.kotlin.sar.HmppsSubjectAccessRequestContent
 import java.time.LocalDate
@@ -81,9 +81,7 @@ class SubjectAccessRequestService(
       // Transform each punishmentComments
       dto.punishmentComments.forEach { punishmentCommentsItem ->
         val punishmentCommentDescription = punishmentCommentsItem.reasonForChange?.let {
-          PunishmentCommentTransformer.displayName(
-            it
-          )
+          PunishmentCommentTransformer.displayName(it)
         }
         punishmentCommentsItem.reasonForChangeDescription = punishmentCommentDescription
       }
