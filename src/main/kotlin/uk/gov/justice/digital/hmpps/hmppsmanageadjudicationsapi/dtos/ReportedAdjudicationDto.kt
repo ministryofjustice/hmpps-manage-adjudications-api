@@ -207,12 +207,16 @@ data class HearingOutcomeDto(
   val adjudicator: String,
   @Schema(description = "the hearing outcome code")
   val code: HearingOutcomeCode,
+  @Schema(description = "the hearing outcome code description")
+  var codeDescription: String? = null,
   @Schema(description = "reason for outcome")
   val reason: HearingOutcomeAdjournReason? = null,
   @Schema(description = "details of outcome")
   val details: String? = null,
   @Schema(description = "hearing outcome plea")
   val plea: HearingOutcomePlea? = null,
+  @Schema(description = "hearing outcome plea description")
+  var pleaDescription: String? = null,
 )
 
 @Schema(description = "Hearing Summary")

@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.TransferService.Companion.log
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.DamageCodeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EvidenceCodeTransformer
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.HearingOutcomeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.OicHearingTypeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.PrivilegeTypeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.PunishmentCommentTransformer
@@ -91,6 +92,16 @@ class SubjectAccessRequestService(
       dto.hearings.forEach { hearingItem ->
         val ociHearingDescription = OicHearingTypeTransformer.displayName(hearingItem.oicHearingType)
         hearingItem.oicHearingTypeDescription = ociHearingDescription
+
+        val hearingOutcomeCodeDescription = hearingItem.outcome?.code?.let {
+          HearingOutcomeTransformer.displayOutcomeCodeName(it)
+        }
+        hearingItem.outcome?.codeDescription = hearingOutcomeCodeDescription
+
+        val hearingOutcomePleaDescription = hearingItem.outcome?.plea?.let {
+          HearingOutcomeTransformer.displayOutcomePleaName(it)
+        }
+        hearingItem.outcome?.pleaDescription = hearingOutcomePleaDescription
 
         //to do - add transformation for location id when that is resolved in an earlier ticket (NN-6007)
       }
