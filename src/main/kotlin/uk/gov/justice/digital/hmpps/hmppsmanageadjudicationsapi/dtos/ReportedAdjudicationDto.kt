@@ -279,8 +279,12 @@ data class PunishmentDto(
   val id: Long? = null,
   @Schema(description = "punishment type")
   val type: PunishmentType,
+  @Schema(description = "punishment type description")
+  var typeDescription: String? = null,
   @Schema(description = "optional privilege type")
   val privilegeType: PrivilegeType? = null,
+  @Schema(description = "optional privilege type description")
+  var privilegeTypeDescription: String? = null,
   @Schema(description = "optional other privilege type")
   val otherPrivilege: String? = null,
   @Schema(description = "optional stoppage of earnings percentage")
@@ -374,6 +378,8 @@ data class PunishmentCommentDto(
   val comment: String,
   @Schema(description = "punishment reason for change")
   val reasonForChange: ReasonForChange? = null,
+  @Schema(description = "description of the punishment reason for change")
+  var reasonForChangeDescription: String? = null,
   @Schema(description = "username of the person created or updated the comment")
   val createdByUserId: String? = null,
   @Schema(description = "date and time comment was created or updated")
