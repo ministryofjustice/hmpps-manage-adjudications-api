@@ -6,6 +6,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.TransferService.Companion.log
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.DamageCodeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EvidenceCodeTransformer
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.PrivilegeTypeTransformer
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.PunishmentCommentTransformer
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.PunishmentTypeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.ReportedAdjudicationStatusTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.WitnessCodeTransformer
 import uk.gov.justice.hmpps.kotlin.sar.HmppsPrisonSubjectAccessRequestService
@@ -37,6 +40,55 @@ class SubjectAccessRequestService(
     )
     if (reported.isEmpty()) return null
 
+//    return HmppsSubjectAccessRequestContent(content = reported.map { it.toDto(offenceCodeLookupService) })
+    val dtos = reported.map { adjudication ->
+      val dto = adjudication.toDto(offenceCodeLookupService)
+
+      val statusDescription = ReportedAdjudicationStatusTransformer.displayName(dto.status)
+      dto.statusDescription = statusDescription
+      log.info("added status description for ${dto.status} to ${dto.statusDescription}")
+
+      // Transform each piece of damages
+      dto.damages.forEach { damageItem ->
+        val damageDescription = DamageCodeTransformer.displayName(damageItem.code)
+        damageItem.codeDescription = damageDescription
+        log.info("Transformed evidence code ${damageItem.code} -> $damageDescription")
+      }
+
+      // Transform each piece of evidence
+      dto.evidence.forEach { evidenceItem ->
+        val evidenceDescription = EvidenceCodeTransformer.displayName(evidenceItem.code)
+        evidenceItem.codeDescription = evidenceDescription
+        log.info("Transformed evidence code ${evidenceItem.code} -> $evidenceDescription")
+      }
+
+      // Transform each witness
+      dto.witnesses.forEach { witnessItem ->
+        val witnessDescription = WitnessCodeTransformer.displayName(witnessItem.code)
+        witnessItem.codeDescription = witnessDescription
+        log.info("Transformed witness code ${witnessItem.code} -> $witnessDescription")
+      }
+
+      // Transform each punishment
+      dto.punishments.forEach { punishmentItem ->
+        val punishmentTypeDescription = PunishmentTypeTransformer.displayName(punishmentItem.type)
+        punishmentItem.typeDescription = punishmentTypeDescription
+
+        val privilegeTypeDescription = punishmentItem.privilegeType?.let { PrivilegeTypeTransformer.displayName(it) }
+        punishmentItem.privilegeTypeDescription = privilegeTypeDescription
+      }
+
+      // Transform each punishmentComments
+      dto.punishmentComments.forEach { punishmentCommentsItem ->
+        val punishmentCommentDescription = punishmentCommentsItem.reasonForChange?.let {
+          PunishmentCommentTransformer.displayName(it)
+        }
+        punishmentCommentsItem.reasonForChangeDescription = punishmentCommentDescription
+      }
+
+      dto
+    }
+    return HmppsSubjectAccessRequestContent(content = dtos)
 //    return HmppsSubjectAccessRequestContent(content = reported.map { it.toDto(offenceCodeLookupService) })
     val dtos = reported.map { adjudication ->
       val dto = adjudication.toDto(offenceCodeLookupService)
