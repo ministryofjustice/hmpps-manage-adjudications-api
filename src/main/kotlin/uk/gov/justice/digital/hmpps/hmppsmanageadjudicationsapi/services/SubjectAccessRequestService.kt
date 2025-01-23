@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.Characteri
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.DamageCodeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EvidenceCodeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.HearingOutcomeTransformer
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.OffenceCodeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.OicHearingTypeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.PrivilegeTypeTransformer
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.PunishmentCommentTransformer
@@ -112,6 +113,10 @@ class SubjectAccessRequestService(
         CharacteristicTransformer.displayName(characteristic)
       }
       dto.offenceDetails.protectedCharacteristicsDescriptions = protectedCharacteristicsDescriptions
+
+      // Transform each offence code
+      val offenceCodeDescriptions = OffenceCodeTransformer.displayName(dto.offenceDetails.offenceCode)
+      dto.offenceDetails.offenceCodeDescription = offenceCodeDescriptions
 
       dto
     }
