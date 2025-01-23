@@ -117,6 +117,8 @@ data class SuspendedPunishmentEvent(
 data class OffenceDto(
   @Schema(description = "The offence code", example = "3")
   val offenceCode: Int,
+  @Schema(description = "The offence code description", example = "Disobeys any lawful order")
+  var offenceCodeDescription: String? = null,
   @Schema(description = "The offence rules they have broken")
   val offenceRule: OffenceRuleDto,
   @Schema(description = "The prison number of the victim involved in the incident, if relevant", example = "G2996UX")
