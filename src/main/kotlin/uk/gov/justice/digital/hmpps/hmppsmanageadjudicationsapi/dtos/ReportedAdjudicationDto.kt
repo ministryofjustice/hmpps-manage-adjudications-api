@@ -50,6 +50,8 @@ data class ReportedAdjudicationDto(
   val createdDateTime: LocalDateTime,
   @Schema(description = "The status of the reported adjudication")
   val status: ReportedAdjudicationStatus,
+  @Schema(description = "The description of the status in the reported adjudication")
+  var statusDescription: String? = null,
   @Schema(description = "Reviewed by user id")
   val reviewedByUserId: String?,
   @Schema(description = "The reason for the status of the reported adjudication")
@@ -117,6 +119,8 @@ data class SuspendedPunishmentEvent(
 data class OffenceDto(
   @Schema(description = "The offence code", example = "3")
   val offenceCode: Int,
+  @Schema(description = "The offence code description", example = "Disobeys any lawful order")
+  var offenceCodeDescription: String? = null,
   @Schema(description = "The offence rules they have broken")
   val offenceRule: OffenceRuleDto,
   @Schema(description = "The prison number of the victim involved in the incident, if relevant", example = "G2996UX")
@@ -127,6 +131,8 @@ data class OffenceDto(
   val victimOtherPersonsName: String? = null,
   @Schema(description = "list of protected characteristics for offence, empty if non involved in offence")
   val protectedCharacteristics: List<Characteristic>,
+  @Schema(description = "list of protected characteristics for offence descriptions, empty if non involved in offence")
+  var protectedCharacteristicsDescriptions: List<String>? = null,
 )
 
 @Schema(description = "Details of a rule they have broken")
@@ -145,6 +151,8 @@ data class OffenceRuleDto(
 data class ReportedDamageDto(
   @Schema(description = "The damage code based on an enum for defined damages", example = "CLEANING")
   val code: DamageCode,
+  @Schema(description = "The damage code description based on an enum for defined damages", example = "Cleaning")
+  var codeDescription: String? = null,
   @Schema(description = "The details of the damage", example = "the kettle was broken")
   val details: String,
   @Schema(description = "The username of the person who added this record", example = "ABC12D")
@@ -155,6 +163,8 @@ data class ReportedDamageDto(
 data class ReportedEvidenceDto(
   @Schema(description = "The evidence code based on an enum for defined evidence", example = "PHOTO")
   val code: EvidenceCode,
+  @Schema(description = "The evidence code description based on an enum for defined evidence", example = "Photo")
+  var codeDescription: String? = null,
   @Schema(description = "Evidence identifier", example = "Tag number or Camera number")
   val identifier: String? = null,
   @Schema(description = "The details of the evidence", example = "ie what does the photo describe")
@@ -167,6 +177,8 @@ data class ReportedEvidenceDto(
 data class ReportedWitnessDto(
   @Schema(description = "The witness code based on an enum for defined witness", example = "PRISON_OFFICER")
   val code: WitnessCode,
+  @Schema(description = "The witness code description based on an enum for defined witness", example = "A prison officer")
+  var codeDescription: String? = null,
   @Schema(description = "Witness first name", example = "Fred")
   val firstName: String,
   @Schema(description = "Witness last name", example = "Kruger")
@@ -185,6 +197,8 @@ data class HearingDto(
   val dateTimeOfHearing: LocalDateTime,
   @Schema(description = "oic hearing type")
   val oicHearingType: OicHearingType,
+  @Schema(description = "oic hearing type description")
+  var oicHearingTypeDescription: String? = null,
   @Schema(description = "hearing outcome")
   val outcome: HearingOutcomeDto? = null,
   @Schema(description = "agency id of hearing")
@@ -199,12 +213,16 @@ data class HearingOutcomeDto(
   val adjudicator: String,
   @Schema(description = "the hearing outcome code")
   val code: HearingOutcomeCode,
+  @Schema(description = "the hearing outcome code description")
+  var codeDescription: String? = null,
   @Schema(description = "reason for outcome")
   val reason: HearingOutcomeAdjournReason? = null,
   @Schema(description = "details of outcome")
   val details: String? = null,
   @Schema(description = "hearing outcome plea")
   val plea: HearingOutcomePlea? = null,
+  @Schema(description = "hearing outcome plea description")
+  var pleaDescription: String? = null,
 )
 
 @Schema(description = "Hearing Summary")
@@ -273,8 +291,12 @@ data class PunishmentDto(
   val id: Long? = null,
   @Schema(description = "punishment type")
   val type: PunishmentType,
+  @Schema(description = "punishment type description")
+  var typeDescription: String? = null,
   @Schema(description = "optional privilege type")
   val privilegeType: PrivilegeType? = null,
+  @Schema(description = "optional privilege type description")
+  var privilegeTypeDescription: String? = null,
   @Schema(description = "optional other privilege type")
   val otherPrivilege: String? = null,
   @Schema(description = "optional stoppage of earnings percentage")
@@ -368,6 +390,8 @@ data class PunishmentCommentDto(
   val comment: String,
   @Schema(description = "punishment reason for change")
   val reasonForChange: ReasonForChange? = null,
+  @Schema(description = "description of the punishment reason for change")
+  var reasonForChangeDescription: String? = null,
   @Schema(description = "username of the person created or updated the comment")
   val createdByUserId: String? = null,
   @Schema(description = "date and time comment was created or updated")
