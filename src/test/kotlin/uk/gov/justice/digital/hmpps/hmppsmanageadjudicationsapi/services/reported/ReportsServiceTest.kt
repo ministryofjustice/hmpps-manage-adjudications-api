@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.*
 
 class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
@@ -527,6 +528,7 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     ).also {
       it.status = ReportedAdjudicationStatus.UNSCHEDULED
       it.locationId = 3
+      it.locationUuid = UUID.fromString("0194ac91-0968-75b1-b304-73e905ab934d")
       it.createDateTime = now
       it.createdByUserId = "testing"
     }

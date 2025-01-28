@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidenc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDateTime
+import java.util.UUID
 
 data class AdjudicationIntTestDataSet(
   var chargeNumber: String? = null,
@@ -14,6 +15,7 @@ data class AdjudicationIntTestDataSet(
   val gender: Gender = Gender.MALE,
   val agencyId: String,
   val locationId: Long,
+  val locationUuid: UUID? = null,
   val dateTimeOfIncident: LocalDateTime,
   val dateTimeOfIncidentISOString: String,
   var dateTimeOfDiscovery: LocalDateTime? = null,

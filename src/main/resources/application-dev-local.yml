@@ -11,6 +11,7 @@ spring:
       resource-server:
         jwt:
           public-key-location: classpath:local-public-key.pub
+          jwk-set-uri: http://localhost:9090/auth/.well-known/jwks.json
 
   flyway:
     url: jdbc:postgresql://localhost:5432/adjudications?sslmode=prefer

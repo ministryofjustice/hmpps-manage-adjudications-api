@@ -12,8 +12,8 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAu
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
@@ -25,6 +25,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Adjudic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
 @WebMvcTest(
   HearingController::class,
@@ -32,7 +33,7 @@ import java.time.LocalDateTime
 )
 class HearingControllerTest : TestControllerBase() {
 
-  @MockBean
+  @MockitoBean
   lateinit var hearingService: HearingService
 
   @Nested
@@ -43,6 +44,7 @@ class HearingControllerTest : TestControllerBase() {
         hearingService.createHearing(
           ArgumentMatchers.anyString(),
           ArgumentMatchers.anyLong(),
+          any(),
           any(),
           any(),
         ),
@@ -80,7 +82,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to create a hearing`() {
       createHearingRequest(1, HEARING_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(hearingService).createHearing("1", HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
+      verify(hearingService).createHearing("1", HEARING_REQUEST.locationId, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
       verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_CREATED, REPORTED_ADJUDICATION_DTO)
     }
 
@@ -157,6 +159,7 @@ class HearingControllerTest : TestControllerBase() {
           ArgumentMatchers.anyLong(),
           any(),
           any(),
+          any(),
         ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
@@ -192,7 +195,7 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to amend a hearing`() {
       amendHearingRequest(1, HEARING_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingService).amendHearing("1", HEARING_REQUEST.locationId, HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
+      verify(hearingService).amendHearing("1", HEARING_REQUEST.locationId, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
       verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_UPDATED, REPORTED_ADJUDICATION_DTO)
     }
 
@@ -302,7 +305,7 @@ class HearingControllerTest : TestControllerBase() {
   }
 
   companion object {
-    private val HEARING_REQUEST = HearingRequest(locationId = 1L, dateTimeOfHearing = LocalDateTime.now(), oicHearingType = OicHearingType.GOV)
+    private val HEARING_REQUEST = HearingRequest(locationId = 1L, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), dateTimeOfHearing = LocalDateTime.now(), oicHearingType = OicHearingType.GOV)
 
     private val ALL_HEARINGS_DTO =
       listOf(
@@ -315,6 +318,7 @@ class HearingControllerTest : TestControllerBase() {
           oicHearingType = OicHearingType.GOV,
           status = ReportedAdjudicationStatus.SCHEDULED,
           locationId = 1,
+          locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
         ),
       )
   }

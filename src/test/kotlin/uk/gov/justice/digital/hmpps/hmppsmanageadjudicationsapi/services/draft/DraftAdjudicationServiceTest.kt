@@ -33,7 +33,7 @@ import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.Optional
+import java.util.*
 import java.util.function.Supplier
 
 class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
@@ -52,7 +52,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       prisonerNumber = "A12345",
       gender = Gender.MALE,
       agencyId = "MDI",
-      incidentDetails = incidentDetails(2L, DATE_TIME_OF_INCIDENT),
+      incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), DATE_TIME_OF_INCIDENT),
     )
 
     @Test
@@ -66,6 +66,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           2L,
           DATE_TIME_OF_INCIDENT,
           DATE_TIME_OF_INCIDENT.minusDays(1),
+          locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
         )
       }.isInstanceOf(IllegalStateException::class.java)
         .hasMessageContaining("Date of discovery is before incident date")
@@ -84,6 +85,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           2L,
           DATE_TIME_OF_INCIDENT,
           DATE_TIME_OF_INCIDENT.plusDays(1),
+          locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
         )
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
@@ -114,7 +116,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           prisonerNumber = "A12345",
           gender = Gender.MALE,
           agencyId = "MDI",
-          incidentDetails = incidentDetails(2L, now),
+          incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
           incidentRole = incidentRoleWithAllValuesSet(),
           incidentStatement = IncidentStatement(
             statement = "Example statement",
@@ -159,7 +161,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           prisonerNumber = "A12345",
           gender = Gender.MALE,
           agencyId = "MDI",
-          incidentDetails = incidentDetails(2L, now),
+          incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
           incidentRole = incidentRoleWithAllValuesSet(),
           offenceDetails = offenceDetails,
           incidentStatement = IncidentStatement(
@@ -228,7 +230,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         agencyId = "MDI",
-        incidentDetails = incidentDetails(2L, now),
+        incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
         offenceDetails = mutableListOf(
           Offence(
             offenceCode = 1002,
@@ -247,7 +249,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         agencyId = "MDI",
-        incidentDetails = incidentDetails(2L, now),
+        incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
         offenceDetails = mutableListOf(
           Offence(
             offenceCode = 1002,
@@ -346,7 +348,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
             prisonerNumber = "A12345",
             gender = Gender.MALE,
             agencyId = "MDI",
-            incidentDetails = incidentDetails(2L, now),
+            incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
             incidentRole = IncidentRole(null, "25a", null, null),
             offenceDetails = mutableListOf(
               Offence(
@@ -379,7 +381,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         agencyId = "MDI",
-        incidentDetails = incidentDetails(2L, now),
+        incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
         incidentRole = incidentRoleWithNoValuesSet(),
         offenceDetails = mutableListOf(
           Offence(
@@ -476,7 +478,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         agencyId = "MDI",
-        incidentDetails = incidentDetails(2L, clock),
+        incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), clock),
         incidentRole = incidentRoleWithNoValuesSet(),
         isYouthOffender = true,
       )
@@ -513,7 +515,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
               prisonerNumber = "A12345",
               gender = Gender.MALE,
               agencyId = "MDI",
-              incidentDetails = incidentDetails(2L, clock),
+              incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), clock),
               incidentRole = incidentRoleWithNoValuesSet(),
               incidentStatement = IncidentStatement(id = 1, statement = "test"),
               isYouthOffender = true,
@@ -544,6 +546,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         draftAdjudicationService.editIncidentDetails(
           1,
           2,
+          UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
           DATE_TIME_OF_INCIDENT,
           DATE_TIME_OF_INCIDENT.minusDays(1),
         )
@@ -563,6 +566,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         incidentDetails = IncidentDetails(
           id = 1,
           locationId = 2,
+          locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
           dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -578,6 +582,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           incidentDetails = IncidentDetails(
             id = 1,
             locationId = 3L,
+            locationUuid = UUID.fromString("0194ac91-0968-75b1-b304-73e905ab934d"),
             dateTimeOfIncident = editedDateTimeOfIncident,
             dateTimeOfDiscovery = editedDateTimeOfIncident,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -589,6 +594,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       val draftAdjudication = draftAdjudicationService.editIncidentDetails(
         1,
         3,
+        UUID.fromString("0194ac91-0968-75b1-b304-73e905ab934d"),
         editedDateTimeOfIncident,
         null,
       )
@@ -621,6 +627,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         incidentDetails = IncidentDetails(
           id = 1,
           locationId = 2,
+          locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
           dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -636,6 +643,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           incidentDetails = IncidentDetails(
             id = 1,
             locationId = 3L,
+            locationUuid = UUID.fromString("0194ac91-0968-75b1-b304-73e905ab934d"),
             dateTimeOfIncident = editedDateTimeOfIncident,
             dateTimeOfDiscovery = editedDateTimeOfIncident.plusDays(1),
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -647,6 +655,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       val draftAdjudication = draftAdjudicationService.editIncidentDetails(
         1,
         3,
+        UUID.fromString("0194ac91-0968-75b1-b304-73e905ab934d"),
         editedDateTimeOfIncident,
         editedDateTimeOfIncident.plusDays(1),
       )
@@ -687,7 +696,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
             prisonerNumber = "A12345",
             gender = Gender.MALE,
             agencyId = "MDI",
-            incidentDetails = incidentDetails(2L, clock),
+            incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), clock),
             incidentRole = incidentRoleWithNoValuesSet(),
             isYouthOffender = true,
           ),
@@ -709,7 +718,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           prisonerNumber = "A12345",
           gender = Gender.MALE,
           agencyId = "MDI",
-          incidentDetails = incidentDetails(2L, clock),
+          incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), clock),
           incidentRole = incidentRoleWithNoValuesSet(),
           incidentStatement = IncidentStatement(statement = "old statement"),
           isYouthOffender = true,
@@ -784,7 +793,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
               prisonerNumber = "A12346",
               gender = Gender.MALE,
               agencyId = "MDI",
-              incidentDetails = incidentDetails(3L, clock),
+              incidentDetails = incidentDetails(3L, UUID.fromString("0194ac91-0968-75b1-b304-73e905ab934d"), clock),
               incidentRole = incidentRoleWithNoValuesSet(),
               isYouthOffender = false,
             ),
@@ -833,7 +842,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         agencyId = "MDI",
-        incidentDetails = incidentDetails(2L, now),
+        incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
         incidentRole = incidentRoleWithAllValuesSet(),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
@@ -878,7 +887,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         agencyId = "MDI",
-        incidentDetails = incidentDetails(2L, now),
+        incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
         incidentRole = incidentRoleWithAllValuesSet(),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
@@ -915,7 +924,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           prisonerNumber = "A12345",
           gender = Gender.MALE,
           agencyId = "MDI",
-          incidentDetails = incidentDetails(2L, now),
+          incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
           incidentRole = incidentRoleWithAllValuesSet(),
           incidentStatement = IncidentStatement(
             statement = "Example statement",
@@ -965,7 +974,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         agencyId = "MDI",
-        incidentDetails = incidentDetails(2L, now),
+        incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
         incidentRole = incidentRoleWithAllValuesSet(),
         incidentStatement = IncidentStatement(
           statement = "Example statement",
@@ -999,15 +1008,17 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
 
     val pageable = Pageable.ofSize(20).withPage(0)
 
-    fun incidentDetails(locationId: Long, clock: Clock) = IncidentDetails(
+    fun incidentDetails(locationId: Long, locationUuid: UUID? = null, clock: Clock) = IncidentDetails(
       locationId = locationId,
+      locationUuid = locationUuid,
       dateTimeOfIncident = LocalDateTime.now(clock),
       dateTimeOfDiscovery = LocalDateTime.now(clock).plusDays(1),
       handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
     )
 
-    fun incidentDetails(locationId: Long, now: LocalDateTime) = IncidentDetails(
+    fun incidentDetails(locationId: Long, locationUuid: UUID? = null, now: LocalDateTime) = IncidentDetails(
       locationId = locationId,
+      locationUuid = locationUuid,
       dateTimeOfIncident = now,
       dateTimeOfDiscovery = now.plusDays(1),
       handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -1044,7 +1055,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         agencyId = "MDI",
-        incidentDetails = incidentDetails(2L, now),
+        incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
         incidentRole = incidentRoleWithAllValuesSet(),
         offenceDetails = mutableListOf(
           Offence(
@@ -1131,6 +1142,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       draftAdjudicationService.editIncidentDetails(
         1,
         2,
+        UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
         DATE_TIME_OF_INCIDENT,
         DATE_TIME_OF_INCIDENT.plusDays(1),
       )

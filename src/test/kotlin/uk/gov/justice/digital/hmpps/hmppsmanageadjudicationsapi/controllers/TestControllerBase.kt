@@ -2,9 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ResourceServerConfiguration
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.DraftAdjudicationDto
@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPublishService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import java.time.LocalDateTime
+import java.util.*
 
 @ActiveProfiles("test")
 @Import(JwtAuthHelper::class, ResourceServerConfiguration::class)
@@ -32,7 +33,7 @@ open class TestControllerBase {
   @Autowired
   internal lateinit var objectMapper: ObjectMapper
 
-  @MockBean
+  @MockitoBean
   lateinit var eventPublishService: EventPublishService
 
   companion object {
@@ -57,6 +58,7 @@ open class TestControllerBase {
         prisonerNumber = "A12345",
         incidentDetails = IncidentDetailsDto(
           locationId = 2,
+          locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
           dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -105,6 +107,7 @@ open class TestControllerBase {
         prisonerNumber = "A12345",
         incidentDetails = IncidentDetailsDto(
           locationId = 2,
+          locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
           dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -162,6 +165,7 @@ open class TestControllerBase {
       gender = Gender.MALE,
       incidentDetails = IncidentDetailsDto(
         locationId = 3,
+        locationUuid = UUID.fromString("0194ac91-0968-75b1-b304-73e905ab934d"),
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
         handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,

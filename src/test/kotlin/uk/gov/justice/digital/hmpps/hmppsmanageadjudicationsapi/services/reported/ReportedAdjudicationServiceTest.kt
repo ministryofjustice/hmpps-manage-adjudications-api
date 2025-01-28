@@ -33,6 +33,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
 class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
   private val reportedAdjudicationService =
@@ -170,6 +171,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           dateTimeOfHearing = LocalDateTime.now().plusDays(1),
           oicHearingType = OicHearingType.GOV_ADULT,
           locationId = 1,
+          locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
           agencyId = "MDI",
           oicHearingId = 1,
           chargeNumber = "1235",
@@ -179,6 +181,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           dateTimeOfHearing = LocalDateTime.now().plusWeeks(3),
           oicHearingType = OicHearingType.INAD_YOI,
           locationId = 1,
+          locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
           agencyId = "MDI",
           oicHearingId = 1,
           chargeNumber = "1235",

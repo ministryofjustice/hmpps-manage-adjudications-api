@@ -26,6 +26,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Offence
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 import java.lang.IllegalStateException
 import java.time.LocalDateTime
+import java.util.UUID
+
 @Entity
 @Table(name = "reported_adjudications")
 data class ReportedAdjudication(
@@ -42,6 +44,7 @@ data class ReportedAdjudication(
   var overrideAgencyId: String? = null,
   var lastModifiedAgencyId: String? = null,
   var locationId: Long,
+  var locationUuid: UUID? = null,
   var dateTimeOfIncident: LocalDateTime,
   var dateTimeOfDiscovery: LocalDateTime,
   var handoverDeadline: LocalDateTime,
@@ -176,6 +179,7 @@ data class ReportedAdjudication(
       prisonerNumber = prisonerNumber,
       incidentDetails = IncidentDetailsDto(
         locationId = locationId,
+        locationUuid = locationUuid,
         dateTimeOfIncident = dateTimeOfIncident,
         dateTimeOfDiscovery = dateTimeOfDiscovery,
         handoverDeadline = handoverDeadline,

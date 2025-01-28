@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Hea
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.*
 
 class HearingServiceTest : ReportedAdjudicationTestBase() {
   private val hearingRepository: HearingRepository = mock()
@@ -42,12 +43,12 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(null)
 
     Assertions.assertThatThrownBy {
-      hearingService.createHearing("1", 1, LocalDateTime.now(), OicHearingType.GOV)
+      hearingService.createHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now(), OicHearingType.GOV)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      hearingService.amendHearing("1", 1, LocalDateTime.now(), OicHearingType.GOV)
+      hearingService.amendHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now(), OicHearingType.GOV)
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
@@ -93,6 +94,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         hearingService.createHearing(
           "1235",
           1,
+          locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
           now,
           oicHearingType,
         )
@@ -110,7 +112,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingService.createHearing("1", 1, LocalDateTime.now(), OicHearingType.GOV)
+        hearingService.createHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now(), OicHearingType.GOV)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Invalid status transition")
     }
@@ -125,7 +127,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       Assertions.assertThatThrownBy {
-        hearingService.createHearing("1", 1, LocalDateTime.now(), OicHearingType.GOV)
+        hearingService.createHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now(), OicHearingType.GOV)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Adjudication already has a hearing without outcome")
     }
@@ -140,7 +142,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       Assertions.assertThatThrownBy {
-        hearingService.createHearing("1", 1, LocalDateTime.now().minusDays(10), OicHearingType.GOV)
+        hearingService.createHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now().minusDays(10), OicHearingType.GOV)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("A hearing can not be before or at the same time as the previous hearing")
     }
@@ -156,7 +158,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       Assertions.assertThatThrownBy {
-        hearingService.createHearing("1", 1, now, OicHearingType.GOV)
+        hearingService.createHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), now, OicHearingType.GOV)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("A hearing can not be before or at the same time as the previous hearing")
     }
@@ -167,6 +169,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       val response = hearingService.createHearing(
         "1235",
         1,
+        locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
         now,
         OicHearingType.GOV_ADULT,
       )
@@ -218,6 +221,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       hearingService.createHearing(
         "1235",
         1,
+        locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
         LocalDateTime.now().plusDays(2),
         OicHearingType.GOV_ADULT,
       )
@@ -253,6 +257,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       hearingService.createHearing(
         "1235",
         1,
+        locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
         LocalDateTime.now().plusDays(2),
         OicHearingType.GOV_ADULT,
       )
@@ -293,8 +298,9 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy {
         hearingService.amendHearing(
-          "1",
-          1235L,
+          "1235",
+          1,
+          locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
           now,
           oicHearingType,
         )
@@ -312,7 +318,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingService.amendHearing("1", 1, LocalDateTime.now(), OicHearingType.GOV)
+        hearingService.amendHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now(), OicHearingType.GOV)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Invalid status transition")
     }
@@ -327,7 +333,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       Assertions.assertThatThrownBy {
-        hearingService.amendHearing("1", 1, LocalDateTime.now().plusDays(1), OicHearingType.GOV)
+        hearingService.amendHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now().plusDays(1), OicHearingType.GOV)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("A hearing can not be before or at the same time as the previous hearing")
     }
@@ -338,6 +344,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       val response = hearingService.amendHearing(
         "1235",
         2,
+        locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
         now.plusDays(1),
         OicHearingType.INAD_ADULT,
       )
@@ -364,7 +371,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingService.amendHearing("1", 1, LocalDateTime.now(), OicHearingType.GOV)
+        hearingService.amendHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now(), OicHearingType.GOV)
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Hearing not found")
     }
@@ -526,7 +533,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
   @Nested
   inner class AllHearings {
-    val now = LocalDate.now()
+    val now: LocalDate = LocalDate.now()
 
     private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
       .also {
@@ -613,7 +620,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
   @Nested
   inner class HearingAndPrisonerForDate {
-    val now = LocalDateTime.now()
+    val now: LocalDateTime = LocalDateTime.now()
 
     inner class TestData : HearingsByPrisoner {
       override fun getPrisonerNumber(): String = "AE12345"
@@ -623,6 +630,8 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       override fun getOicHearingType(): String = OicHearingType.GOV.name
 
       override fun getLocationId(): Long = 2
+
+      override fun getLocationUuid(): UUID = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff")
 
       override fun getHearingId(): Long = 1
     }
