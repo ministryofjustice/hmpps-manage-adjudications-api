@@ -120,7 +120,9 @@ enum class OffenceCodes(val applicableVersions: List<Int> = listOf(1, 2), val no
     fun Int.containsNomisCode(nomisCode: String): Boolean {
       val offenceCode = entries.first { it.uniqueOffenceCodes.contains(this) }
 
-      return offenceCode.nomisCode == nomisCode || offenceCode.getNomisCodeWithOthers().contains(nomisCode)
+      return offenceCode.nomisCode == nomisCode ||
+        nomisCode == "${offenceCode.nomisCode.substringBefore(":")}:${offenceCode.paragraph}" ||
+        offenceCode.getNomisCodeWithOthers().contains(nomisCode)
     }
   }
 }
