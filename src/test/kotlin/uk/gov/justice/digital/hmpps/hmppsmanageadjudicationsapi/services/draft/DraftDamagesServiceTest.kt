@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DraftAd
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentStatement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
-import java.util.Optional
+import java.util.*
 
 class DraftDamagesServiceTest : DraftAdjudicationTestBase() {
   private val damagesService =
@@ -31,7 +31,7 @@ class DraftDamagesServiceTest : DraftAdjudicationTestBase() {
       prisonerNumber = "A12345",
       gender = Gender.MALE,
       agencyId = "MDI",
-      incidentDetails = DraftAdjudicationServiceTest.incidentDetails(2L, now),
+      incidentDetails = DraftAdjudicationServiceTest.incidentDetails(2L, locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
       incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
       incidentStatement = IncidentStatement(
         statement = "Example statement",

@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAu
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
@@ -20,13 +20,14 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.IncidentSta
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OffenceRuleDetailsDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationWorkflowService
+import java.util.*
 
 @WebMvcTest(
   ReportedAdjudicationWorkflowController::class,
   excludeAutoConfiguration = [SecurityAutoConfiguration::class, OAuth2ClientAutoConfiguration::class, OAuth2ResourceServerAutoConfiguration::class],
 )
 class ReportedAdjudicationWorkflowControllerTest : TestControllerBase() {
-  @MockBean
+  @MockitoBean
   lateinit var adjudicationWorkflowService: AdjudicationWorkflowService
 
   @BeforeEach
@@ -39,6 +40,7 @@ class ReportedAdjudicationWorkflowControllerTest : TestControllerBase() {
         gender = Gender.MALE,
         incidentDetails = IncidentDetailsDto(
           locationId = 2,
+          locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
           dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
           dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
           handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,

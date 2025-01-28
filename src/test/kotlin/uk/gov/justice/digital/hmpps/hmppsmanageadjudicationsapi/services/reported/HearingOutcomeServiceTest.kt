@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDateTime
+import java.util.*
 
 class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
@@ -409,6 +410,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
               agencyId = "1",
               chargeNumber = "2",
               locationId = 1,
+              locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
               oicHearingId = 1,
             ).also { h ->
               h.hearingOutcome = HearingOutcome(

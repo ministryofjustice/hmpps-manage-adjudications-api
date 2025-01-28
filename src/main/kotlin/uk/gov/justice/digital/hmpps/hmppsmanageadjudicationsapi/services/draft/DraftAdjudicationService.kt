@@ -21,6 +21,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
 enum class ValidationChecks(val errorMessage: String) {
   APPLICABLE_RULES("No applicable rules set") {
@@ -112,6 +113,7 @@ class DraftAdjudicationService(
     dateTimeOfIncident: LocalDateTime,
     dateTimeOfDiscovery: LocalDateTime? = null,
     offenderBookingId: Long? = null,
+    locationUuid: UUID? = null,
   ): DraftAdjudicationDto {
     dateOfDiscoveryValidation(dateTimeOfDiscovery, dateTimeOfIncident)
 
@@ -125,6 +127,7 @@ class DraftAdjudicationService(
       overrideAgencyId = overrideAgencyId,
       incidentDetails = IncidentDetails(
         locationId = locationId,
+        locationUuid = locationUuid,
         dateTimeOfIncident = dateTimeOfIncident,
         dateTimeOfDiscovery = actualDateTimeOfDiscovery,
         handoverDeadline = daysToActionFromIncident(actualDateTimeOfDiscovery),
@@ -155,6 +158,7 @@ class DraftAdjudicationService(
   fun editIncidentDetails(
     id: Long,
     locationId: Long,
+    locationUuid: UUID? = null,
     dateTimeOfIncident: LocalDateTime,
     dateTimeOfDiscovery: LocalDateTime?,
   ): DraftAdjudicationDto {
@@ -164,6 +168,7 @@ class DraftAdjudicationService(
     val actualDateTimeOfDiscovery = dateTimeOfDiscovery ?: dateTimeOfIncident
 
     draftAdjudication.incidentDetails.locationId = locationId
+    draftAdjudication.incidentDetails.locationUuid = locationUuid
     draftAdjudication.incidentDetails.dateTimeOfIncident = dateTimeOfIncident
     draftAdjudication.incidentDetails.dateTimeOfDiscovery = actualDateTimeOfDiscovery
     draftAdjudication.incidentDetails.handoverDeadline = daysToActionFromIncident(actualDateTimeOfDiscovery)

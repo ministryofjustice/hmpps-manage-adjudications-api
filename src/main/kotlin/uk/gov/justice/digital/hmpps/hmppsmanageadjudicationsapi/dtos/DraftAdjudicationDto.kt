@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Evidenc
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDateTime
+import java.util.*
 
 @Schema(description = "Draft adjudication details")
 data class DraftAdjudicationDto(
@@ -55,8 +56,10 @@ data class DraftAdjudicationDto(
 
 @Schema(description = "Incident details")
 data class IncidentDetailsDto(
-  @Schema(description = "The id of the location the incident took place")
+  @Schema(description = "The id of the location the incident took place", deprecated = true)
   val locationId: Long,
+  @Schema(description = "The uuid of the location the incident took place")
+  val locationUuid: UUID? = null,
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   val dateTimeOfIncident: LocalDateTime,
   @Schema(description = "Date time of discovery if date different to incident date", example = "2010-10-12T10:00:00")

@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
 @Schema(description = "Reported adjudication details")
 data class ReportedAdjudicationDto(
@@ -189,8 +190,10 @@ data class ReportedWitnessDto(
 data class HearingDto(
   @Schema(description = "The id of the hearing")
   val id: Long? = null,
-  @Schema(description = "The id of the location of the hearing")
+  @Schema(description = "The id of the location of the hearing", deprecated = true)
   val locationId: Long,
+  @Schema(description = "The location uuid of the location the hearing")
+  val locationUuid: UUID? = null,
   @Schema(description = "Date and time the hearing will take place", example = "2010-10-12T10:00:00")
   val dateTimeOfHearing: LocalDateTime,
   @Schema(description = "oic hearing type")
@@ -239,8 +242,10 @@ data class HearingSummaryDto(
   val oicHearingType: OicHearingType,
   @Schema(description = "reported adjudication status")
   val status: ReportedAdjudicationStatus,
-  @Schema(description = "internal location id")
+  @Schema(description = "internal location id", deprecated = true)
   val locationId: Long,
+  @Schema(description = "Location UUID of the hearing")
+  val locationUuid: UUID? = null,
 )
 
 data class OutcomeHistoryDto(

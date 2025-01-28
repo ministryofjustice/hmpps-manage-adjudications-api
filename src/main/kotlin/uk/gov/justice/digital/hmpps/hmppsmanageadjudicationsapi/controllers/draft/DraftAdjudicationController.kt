@@ -30,6 +30,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Schema(description = "Request to create a new draft adjudication")
 data class NewAdjudicationRequest(
@@ -41,8 +42,10 @@ data class NewAdjudicationRequest(
   val agencyId: String,
   @Schema(description = "The optional agencyId where the prisoner now resides", example = "MDI")
   val overrideAgencyId: String? = null,
-  @Schema(description = "The id of the location the incident took place")
+  @Schema(description = "The id of the location the incident took place", deprecated = true)
   val locationId: Long,
+  @Schema(description = "The uuid of the location the incident took place")
+  val locationUuid: UUID? = null,
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime,
@@ -80,8 +83,10 @@ data class IncidentStatementRequest(
 
 @Schema(description = "Request to edit the incident details")
 data class EditIncidentDetailsRequest(
-  @Schema(description = "The id of the location the incident took place")
+  @Schema(description = "The id of the location the incident took place", deprecated = true)
   val locationId: Long,
+  @Schema(description = "The uuid of the location the incident took place")
+  val locationUuid: UUID? = null,
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime,
@@ -203,6 +208,7 @@ class DraftAdjudicationController(
         newAdjudicationRequest.dateTimeOfIncident,
         newAdjudicationRequest.dateTimeOfDiscovery,
         newAdjudicationRequest.offenderBookingId,
+        newAdjudicationRequest.locationUuid,
       )
 
     return DraftAdjudicationResponse(
@@ -270,6 +276,7 @@ class DraftAdjudicationController(
     val draftAdjudication = draftAdjudicationService.editIncidentDetails(
       id,
       editIncidentDetailsRequest.locationId,
+      editIncidentDetailsRequest.locationUuid,
       editIncidentDetailsRequest.dateTimeOfIncident,
       editIncidentDetailsRequest.dateTimeOfDiscovery,
     )

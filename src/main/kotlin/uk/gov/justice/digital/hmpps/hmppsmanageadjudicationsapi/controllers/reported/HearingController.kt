@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Adjudic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.HearingService
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Schema(description = "All hearings response")
 data class HearingSummaryResponse(
@@ -40,8 +41,10 @@ data class HearingAndPrisoner(
 
 @Schema(description = "Request to add a hearing")
 data class HearingRequest(
-  @Schema(description = "The id of the location of the hearing")
+  @Schema(description = "The id of the location of the hearing", deprecated = true)
   val locationId: Long,
+  @Schema(description = "The uuid of the location of the hearing")
+  val locationUuid: UUID? = null,
   @Schema(description = "Date and time of the hearing", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfHearing: LocalDateTime,
@@ -91,6 +94,7 @@ class HearingController(
         hearingService.createHearing(
           chargeNumber = chargeNumber,
           locationId = hearingRequest.locationId,
+          locationUuid = hearingRequest.locationUuid,
           dateTimeOfHearing = hearingRequest.dateTimeOfHearing,
           oicHearingType = hearingRequest.oicHearingType,
         )
@@ -114,6 +118,7 @@ class HearingController(
         hearingService.amendHearing(
           chargeNumber = chargeNumber,
           locationId = hearingRequest.locationId,
+          locationUuid = hearingRequest.locationUuid,
           dateTimeOfHearing = hearingRequest.dateTimeOfHearing,
           oicHearingType = hearingRequest.oicHearingType,
         )

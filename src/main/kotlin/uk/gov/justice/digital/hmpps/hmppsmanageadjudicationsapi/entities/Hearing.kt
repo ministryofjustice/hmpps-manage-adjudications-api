@@ -12,6 +12,7 @@ import jakarta.persistence.Table
 import org.hibernate.validator.constraints.Length
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.HearingDto
 import java.time.LocalDateTime
+import java.util.*
 
 enum class OicHearingType {
   GOV_ADULT,
@@ -39,6 +40,7 @@ enum class OicHearingType {
 data class Hearing(
   override val id: Long? = null,
   var locationId: Long,
+  var locationUuid: UUID? = null,
   var dateTimeOfHearing: LocalDateTime,
   @field:Length(max = 6)
   var agencyId: String,
@@ -58,6 +60,7 @@ data class Hearing(
     HearingDto(
       id = this.id,
       locationId = this.locationId,
+      locationUuid = this.locationUuid,
       dateTimeOfHearing = this.dateTimeOfHearing,
       oicHearingType = this.oicHearingType,
       outcome = this.hearingOutcome?.toDto(),

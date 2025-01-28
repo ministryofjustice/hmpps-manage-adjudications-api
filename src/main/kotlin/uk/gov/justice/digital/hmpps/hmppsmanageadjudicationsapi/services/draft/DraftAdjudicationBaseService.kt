@@ -97,6 +97,7 @@ open class DraftAdjudicationBaseService(
 
   private fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
     locationId = this.locationId,
+    locationUuid = this.locationUuid,
     dateTimeOfIncident = this.dateTimeOfIncident,
     dateTimeOfDiscovery = this.dateTimeOfDiscovery,
     handoverDeadline = this.handoverDeadline,

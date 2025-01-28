@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepositoryTest
 import java.time.LocalDateTime
+import java.util.*
 
 class EntityBuilder {
 
@@ -34,6 +35,7 @@ class EntityBuilder {
       gender = Gender.MALE,
       originatingAgencyId = agencyId,
       locationId = 2,
+      locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
       dateTimeOfIncident = dateTime,
       dateTimeOfDiscovery = dateTime.plusDays(1),
       handoverDeadline = dateTime.plusDays(2),
@@ -98,6 +100,7 @@ class EntityBuilder {
   ) = Hearing(
     id = hearingId,
     locationId = 1L,
+    locationUuid = UUID.fromString("0194ac91-6646-7bdb-b8f8-584844283a3a"),
     dateTimeOfHearing = dateTime.plusWeeks(1),
     agencyId = agencyId,
     chargeNumber = chargeNumber,

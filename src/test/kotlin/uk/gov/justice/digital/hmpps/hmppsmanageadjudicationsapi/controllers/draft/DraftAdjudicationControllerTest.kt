@@ -19,11 +19,11 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAu
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -40,6 +40,9 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Forbidd
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
+
+private const val LOCATION_1 = "0194ac91-b762-7baf-a52e-725d34f05a78"
 
 @WebMvcTest(
   DraftAdjudicationController::class,
@@ -47,7 +50,7 @@ import java.time.LocalDateTime
 )
 class DraftAdjudicationControllerTest : TestControllerBase() {
 
-  @MockBean
+  @MockitoBean
   lateinit var draftAdjudicationService: DraftAdjudicationService
 
   @Nested
@@ -56,14 +59,15 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     fun beforeEach() {
       whenever(
         draftAdjudicationService.startNewAdjudication(
-          any(),
-          any(),
-          any(),
-          anyOrNull(),
-          any(),
-          any(),
-          anyOrNull(),
-          anyOrNull(),
+          prisonerNumber = anyString(),
+          gender = any(),
+          agencyId = anyString(),
+          overrideAgencyId = anyOrNull(),
+          locationId = anyLong(),
+          dateTimeOfIncident = any(),
+          dateTimeOfDiscovery = anyOrNull(),
+          offenderBookingId = anyOrNull(),
+          locationUuid = anyOrNull(),
         ),
       ).thenReturn(
         draftAdjudicationDto(),
@@ -78,29 +82,47 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `calls the service to start a new adjudication for a prisoner`() {
-      startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT, null, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+      startANewAdjudication(
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        locationId = 1,
+        locationUuid = UUID.fromString(LOCATION_1),
+        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+        dateTimeOfDiscovery = null,
+        incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
+      )
         .andExpect(status().isCreated)
 
       verify(draftAdjudicationService).startNewAdjudication(
-        "A12345",
-        Gender.MALE,
-        "MDI",
-        null,
-        1,
-        DATE_TIME_OF_INCIDENT,
-        null,
+        prisonerNumber = "A12345",
+        gender = Gender.MALE,
+        agencyId = "MDI",
+        overrideAgencyId = null,
+        locationId = 1,
+        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+        dateTimeOfDiscovery = null,
+        locationUuid = UUID.fromString(LOCATION_1),
       )
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `returns the newly created draft adjudication`() {
-      startANewAdjudication("A12345", "MDI", 1, DATE_TIME_OF_INCIDENT, null, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+      startANewAdjudication(
+        prisonerNumber = "A12345",
+        agencyId = "MDI",
+        locationId = 1,
+        locationUuid = UUID.fromString(LOCATION_1),
+        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+        dateTimeOfDiscovery = null,
+        incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
+      )
         .andExpect(status().isCreated)
         .andExpect(jsonPath("draftAdjudication.id").isNumber)
         .andExpect(jsonPath("draftAdjudication.adjudicationNumber").doesNotExist())
         .andExpect(jsonPath("draftAdjudication.prisonerNumber").value("A12345"))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.locationId").value(3))
+        .andExpect(jsonPath("draftAdjudication.incidentDetails.locationUuid").value("0194ac91-0968-75b1-b304-73e905ab934d"))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
     }
@@ -121,12 +143,13 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       prisonerNumber: String? = null,
       agencyId: String = "MDI",
       locationId: Long? = null,
+      locationUuid: UUID? = null,
       dateTimeOfIncident: LocalDateTime? = null,
       dateTimeOfDiscovery: LocalDateTime? = null,
       incidentRole: IncidentRoleRequest? = null,
     ): ResultActions {
       val jsonBody =
-        if (locationId == null && dateTimeOfIncident == null && prisonerNumber == null) {
+        if ((locationId == null || locationUuid == null) && dateTimeOfIncident == null && prisonerNumber == null) {
           ""
         } else {
           objectMapper.writeValueAsString(
@@ -135,6 +158,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
               "gender" to Gender.MALE.name,
               "agencyId" to agencyId,
               "locationId" to locationId,
+              "locationUuid" to locationUuid,
               "dateTimeOfIncident" to dateTimeOfIncident,
               "incidentRole" to incidentRole,
               "dateTimeOfDiscovery" to dateTimeOfDiscovery,
@@ -219,6 +243,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           gender = Gender.MALE,
           incidentDetails = IncidentDetailsDto(
             locationId = 1L,
+            locationUuid = UUID.fromString(LOCATION_1),
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -258,6 +283,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           gender = Gender.MALE,
           incidentDetails = IncidentDetailsDto(
             locationId = 1L,
+            locationUuid = UUID.fromString(LOCATION_1),
             dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
             dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
             handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -355,6 +381,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           anyLong(),
           any(),
+          any(),
           anyOrNull(),
         ),
       ).thenReturn(draftAdjudicationDto())
@@ -365,6 +392,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       editIncidentDetailsRequest(
         1,
         1,
+        locationUuid = UUID.fromString(LOCATION_1),
         DATE_TIME_OF_INCIDENT,
         DATE_TIME_OF_INCIDENT.plusDays(1),
         INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
@@ -378,6 +406,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       editIncidentDetailsRequest(
         1,
         2,
+        locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
         DATE_TIME_OF_INCIDENT,
         DATE_TIME_OF_INCIDENT.plusDays(1),
         INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
@@ -387,6 +416,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       verify(draftAdjudicationService).editIncidentDetails(
         1,
         2,
+        locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
         DATE_TIME_OF_INCIDENT,
         DATE_TIME_OF_INCIDENT.plusDays(1),
       )
@@ -398,6 +428,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       editIncidentDetailsRequest(
         1,
         2,
+        locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
         DATE_TIME_OF_INCIDENT,
         DATE_TIME_OF_INCIDENT.plusDays(1),
         INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
@@ -429,18 +460,20 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
           anyLong(),
           anyLong(),
           any(),
+          any(),
           anyOrNull(),
         ),
       ).thenThrow(
         IllegalStateException::class.java,
       )
-      editIncidentDetailsRequest(1, 2, DATE_TIME_OF_INCIDENT, null, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+      editIncidentDetailsRequest(1, 2, locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), DATE_TIME_OF_INCIDENT, null, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
         .andExpect(status().isBadRequest)
     }
 
     private fun editIncidentDetailsRequest(
       id: Long,
       locationId: Long,
+      locationUuid: UUID? = null,
       dateTimeOfIncident: LocalDateTime?,
       dateTimeOfDiscovery: LocalDateTime?,
       incidentRole: IncidentRoleRequest?,
@@ -449,6 +482,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         objectMapper.writeValueAsString(
           mapOf(
             "locationId" to locationId,
+            "locationUuid" to locationUuid,
             "dateTimeOfIncident" to dateTimeOfIncident,
             "incidentRole" to incidentRole,
             "dateTimeOfDiscovery" to dateTimeOfDiscovery,
@@ -599,7 +633,11 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       setApplicableRules(1, true)
         .andExpect(status().isOk)
 
-      verify(draftAdjudicationService).setIncidentApplicableRule(1, true, false)
+      verify(draftAdjudicationService).setIncidentApplicableRule(
+        1,
+        isYouthOffender = true,
+        removeExistingOffences = false,
+      )
     }
 
     private fun setApplicableRules(id: Long, isYoungOffender: Boolean): ResultActions {
