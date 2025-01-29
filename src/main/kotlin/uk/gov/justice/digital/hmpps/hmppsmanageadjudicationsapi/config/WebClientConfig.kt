@@ -19,8 +19,7 @@ class WebClientConfig(
   @Value("\${prison.nomis.location.api.endpoint.url}") val prisonNomisBaseUri: String,
   @Value("\${prison.location.api.endpoint.url}") val prisonLocationDetailBaseUri: String,
   @Value("\${prison.prisoner-search.api.endpoint.url}") val prisonerSearchBaseUri: String,
-  @Value("\${prison.timeout:30s}") private val apiTimeout: Duration,
-  ) {
+  @Value("\${prison.timeout:30s}") private val apiTimeout: Duration) {
 
   companion object {
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -47,9 +46,4 @@ class WebClientConfig(
   fun prisonerSearchWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder) = builder
     .authorisedWebClient(authorizedClientManager, "prisoner-search-api", prisonerSearchBaseUri, apiTimeout)
     .also { log.info("WEB CLIENT CONFIG: creating prisoner search api web client") }
-
-
-
-
-
 }
