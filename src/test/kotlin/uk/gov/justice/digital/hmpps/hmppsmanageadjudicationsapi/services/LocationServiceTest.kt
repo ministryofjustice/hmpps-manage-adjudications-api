@@ -14,12 +14,14 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import java.nio.charset.StandardCharsets
-import java.time.LocalDateTime
 
 class LocationServiceTest {
+  // Mock the two WebClients your service expects:
+  private val prisonLocationWebClient: WebClient = mock()
+  private val locationDetailWebClient: WebClient = mock()
 
-  private val webClient: WebClient = mock()
-  private val locationService = LocationService(webClient)
+  // Inject them into the service
+  private val locationService = LocationService(prisonLocationWebClient, locationDetailWebClient)
 
   @Nested
   inner class GetNomisLocationDetailTests {
@@ -31,9 +33,6 @@ class LocationServiceTest {
       val expectedResponse = LocationResponse(
         dpsLocationId = "A1234BC",
         nomisLocationId = 1234,
-        label = "My Label",
-        mappingType = "TYPE",
-        whenCreated = LocalDateTime.now(),
       )
 
       // Mock the fluent WebClient chain:
@@ -41,8 +40,8 @@ class LocationServiceTest {
       val requestHeadersSpec = mock<WebClient.RequestHeadersSpec<*>>()
       val responseSpec = mock<WebClient.ResponseSpec>()
 
-      whenever(webClient.get()).thenReturn(requestHeadersUriSpec)
-      whenever(requestHeadersUriSpec.uri("/mapping/locations/nomis/{locationId}", locationId))
+      whenever(prisonLocationWebClient.get()).thenReturn(requestHeadersUriSpec)
+      whenever(requestHeadersUriSpec.uri("/api/locations/nomis/{locationId}", locationId))
         .thenReturn(requestHeadersSpec)
       whenever(requestHeadersSpec.retrieve()).thenReturn(responseSpec)
       whenever(responseSpec.bodyToMono(LocationResponse::class.java))
@@ -55,8 +54,6 @@ class LocationServiceTest {
       assertNotNull(result)
       assertEquals(expectedResponse.dpsLocationId, result?.dpsLocationId)
       assertEquals(expectedResponse.nomisLocationId, result?.nomisLocationId)
-      assertEquals(expectedResponse.label, result?.label)
-      assertEquals(expectedResponse.mappingType, result?.mappingType)
     }
 
     @Test
@@ -84,8 +81,8 @@ class LocationServiceTest {
       val requestHeadersSpec = mock<WebClient.RequestHeadersSpec<*>>()
       val responseSpec = mock<WebClient.ResponseSpec>()
 
-      whenever(webClient.get()).thenReturn(requestHeadersUriSpec)
-      whenever(requestHeadersUriSpec.uri("/mapping/locations/nomis/{locationId}", locationId))
+      whenever(prisonLocationWebClient.get()).thenReturn(requestHeadersUriSpec)
+      whenever(requestHeadersUriSpec.uri("/api/locations/nomis/{locationId}", locationId))
         .thenReturn(requestHeadersSpec)
 
       whenever(requestHeadersSpec.retrieve()).thenReturn(responseSpec)
@@ -110,9 +107,9 @@ class LocationServiceTest {
       val requestHeadersSpec = mock<WebClient.RequestHeadersSpec<*>>()
       val responseSpec = mock<WebClient.ResponseSpec>()
 
-      whenever(webClient.get()).thenReturn(requestHeadersUriSpec)
+      whenever(prisonLocationWebClient.get()).thenReturn(requestHeadersUriSpec)
 
-      whenever(requestHeadersUriSpec.uri("/mapping/locations/nomis/{locationId}", locationId))
+      whenever(requestHeadersUriSpec.uri("/api/locations/nomis/{locationId}", locationId))
         .thenReturn(requestHeadersSpec)
 
       whenever(requestHeadersSpec.retrieve()).thenReturn(responseSpec)
@@ -128,6 +125,114 @@ class LocationServiceTest {
       assertTrue(
         ex.message!!.contains("Failed to fetch location details for ID: $locationId"),
         "Should wrap unexpected exception in a RuntimeException",
+      )
+    }
+  }
+
+  @Nested
+  inner class GetLocationDetailTests {
+
+    @Test
+    fun `Given a valid DPS locationId, When getLocationDetail is called, Then it returns the LocationDetailResponse`() {
+      // Given
+      val locationId = "A-DPS-LOC"
+      val expectedResponse = LocationDetailResponse(
+        id = "A-DPS-LOC",
+        prisonId = "MDI",
+        localName = "Moorland Location",
+        pathHierarchy = "MDI > Moorland location path",
+        key = "some-key"
+      )
+
+      // Mock the fluent WebClient chain for locationDetailWebClient:
+      val requestHeadersUriSpec = mock<WebClient.RequestHeadersUriSpec<*>>()
+      val requestHeadersSpec = mock<WebClient.RequestHeadersSpec<*>>()
+      val responseSpec = mock<WebClient.ResponseSpec>()
+
+      whenever(locationDetailWebClient.get()).thenReturn(requestHeadersUriSpec)
+      whenever(requestHeadersUriSpec.uri("/locations/{locationId}?formatLocalName=true", locationId))
+        .thenReturn(requestHeadersSpec)
+      whenever(requestHeadersSpec.retrieve()).thenReturn(responseSpec)
+      whenever(responseSpec.bodyToMono(LocationDetailResponse::class.java))
+        .thenReturn(Mono.just(expectedResponse))
+
+      // When
+      val result = locationService.getLocationDetail(locationId)
+
+      // Then
+      assertNotNull(result)
+      assertEquals(expectedResponse.id, result?.id)
+      assertEquals(expectedResponse.prisonId, result?.prisonId)
+      assertEquals(expectedResponse.localName, result?.localName)
+      assertEquals(expectedResponse.pathHierarchy, result?.pathHierarchy)
+      assertEquals(expectedResponse.key, result?.key)
+    }
+
+    @Test
+    fun `Given the location is not found, When WebClient throws 404, Then getLocationDetail returns null`() {
+      // Given
+      val locationId = "NOT_FOUND"
+      val errorJson = """
+        {
+          "status": 404,
+          "errorCode": "LOCATION_NOT_FOUND",
+          "userMessage": "Location not found",
+          "developerMessage": "No location found for id",
+          "moreInfo": "N/A"
+        }
+      """.trimIndent()
+
+      val notFoundException = WebClientResponseException.create(
+        HttpStatus.NOT_FOUND.value(),
+        "Not Found",
+        null,
+        errorJson.toByteArray(StandardCharsets.UTF_8),
+        null
+      )
+
+      // Mock the fluent WebClient chain:
+      val requestHeadersUriSpec = mock<WebClient.RequestHeadersUriSpec<*>>()
+      val requestHeadersSpec = mock<WebClient.RequestHeadersSpec<*>>()
+      val responseSpec = mock<WebClient.ResponseSpec>()
+
+      whenever(locationDetailWebClient.get()).thenReturn(requestHeadersUriSpec)
+      whenever(requestHeadersUriSpec.uri("/locations/{locationId}?formatLocalName=true", locationId))
+        .thenReturn(requestHeadersSpec)
+      whenever(requestHeadersSpec.retrieve()).thenReturn(responseSpec)
+      whenever(responseSpec.bodyToMono(LocationDetailResponse::class.java))
+        .thenReturn(Mono.error(notFoundException))
+
+      // When
+      val result = locationService.getLocationDetail(locationId)
+
+      // Then
+      assertNull(result, "Expected null when location is not found (404)")
+    }
+
+    @Test
+    fun `Given an unexpected exception, When getLocationDetail is called, Then it throws a RuntimeException`() {
+      // Given
+      val locationId = "ANY_DPS_ID"
+
+      val requestHeadersUriSpec = mock<WebClient.RequestHeadersUriSpec<*>>()
+      val requestHeadersSpec = mock<WebClient.RequestHeadersSpec<*>>()
+      val responseSpec = mock<WebClient.ResponseSpec>()
+
+      whenever(locationDetailWebClient.get()).thenReturn(requestHeadersUriSpec)
+      whenever(requestHeadersUriSpec.uri("/locations/{locationId}?formatLocalName=true", locationId))
+        .thenReturn(requestHeadersSpec)
+      whenever(requestHeadersSpec.retrieve()).thenReturn(responseSpec)
+      // Force a generic exception
+      whenever(responseSpec.bodyToMono(LocationDetailResponse::class.java))
+        .thenThrow(RuntimeException("Something went wrong"))
+
+      // When / Then
+      val ex = assertThrows<RuntimeException> {
+        locationService.getLocationDetail(locationId)
+      }
+      assertTrue(
+        ex.message!!.contains("Failed to fetch location details for ID: $locationId"),
+        "Should wrap unexpected exception in a RuntimeException"
       )
     }
   }
