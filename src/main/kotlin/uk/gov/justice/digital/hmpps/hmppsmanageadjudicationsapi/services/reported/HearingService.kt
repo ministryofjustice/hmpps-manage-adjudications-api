@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.*
 
 @Transactional
 @Service
@@ -40,7 +41,7 @@ class HearingService(
   authenticationFacade,
 ) {
 
-  fun createHearing(chargeNumber: String, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
+  fun createHearing(chargeNumber: String, locationId: Long, locationUuid: UUID? = null, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
       it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED)
@@ -57,6 +58,7 @@ class HearingService(
           agencyId = authenticationFacade.activeCaseload,
           chargeNumber = reportedAdjudication.chargeNumber,
           locationId = locationId,
+          locationUuid = locationUuid,
           dateTimeOfHearing = dateTimeOfHearing,
           oicHearingType = oicHearingType,
         ),
@@ -73,7 +75,7 @@ class HearingService(
     }
   }
 
-  fun amendHearing(chargeNumber: String, locationId: Long, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
+  fun amendHearing(chargeNumber: String, locationId: Long, locationUuid: UUID? = null, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
       it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED)
@@ -85,6 +87,7 @@ class HearingService(
     hearingToEdit.let {
       it.dateTimeOfHearing = dateTimeOfHearing
       it.locationId = locationId
+      it.locationUuid = locationUuid
       it.oicHearingType = oicHearingType
     }
 
@@ -142,6 +145,7 @@ class HearingService(
       HearingDto(
         id = it.getHearingId(),
         locationId = it.getLocationId(),
+        locationUuid = it.getLocationUuid(),
         dateTimeOfHearing = it.getDateTimeOfHearing(),
         oicHearingType = OicHearingType.valueOf(it.getOicHearingType()),
         agencyId = agencyId,
@@ -161,6 +165,7 @@ class HearingService(
         oicHearingType = it.oicHearingType,
         status = adjudication.status,
         locationId = it.locationId,
+        locationUuid = it.locationUuid,
       )
     }.sortedBy { it.dateTimeOfHearing }
 

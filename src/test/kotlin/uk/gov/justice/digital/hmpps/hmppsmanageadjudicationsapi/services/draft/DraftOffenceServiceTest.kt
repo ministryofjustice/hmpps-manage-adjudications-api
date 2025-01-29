@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentDetails
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Offence
 import java.time.LocalDateTime
-import java.util.Optional
+import java.util.*
 
 class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
 
@@ -33,7 +33,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     prisonerNumber = "A12345",
     gender = Gender.MALE,
     agencyId = "MDI",
-    incidentDetails = DraftAdjudicationServiceTest.incidentDetails(2L, clock),
+    incidentDetails = DraftAdjudicationServiceTest.incidentDetails(2L, locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), clock),
     incidentRole = DraftAdjudicationServiceTest.incidentRoleWithNoValuesSet(),
   )
 
@@ -125,6 +125,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
       agencyId = "MDI",
       incidentDetails = IncidentDetails(
         locationId = 1,
+        locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
         dateTimeOfIncident = LocalDateTime.now(clock),
         dateTimeOfDiscovery = LocalDateTime.now(clock).plusDays(1),
         handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -175,6 +176,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
       agencyId = "MDI",
       incidentDetails = IncidentDetails(
         locationId = 1,
+        locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
         dateTimeOfIncident = LocalDateTime.now(clock),
         dateTimeOfDiscovery = LocalDateTime.now(clock).plusDays(1),
         handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,

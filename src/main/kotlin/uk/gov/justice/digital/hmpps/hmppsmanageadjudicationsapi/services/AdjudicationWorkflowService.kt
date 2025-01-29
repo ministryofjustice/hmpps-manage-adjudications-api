@@ -105,6 +105,7 @@ class AdjudicationWorkflowService(
       overrideAgencyId = reportedAdjudication.overrideAgencyId,
       incidentDetails = IncidentDetails(
         locationId = reportedAdjudication.locationId,
+        locationUuid = reportedAdjudication.locationUuid,
         dateTimeOfIncident = reportedAdjudication.dateTimeOfIncident,
         dateTimeOfDiscovery = reportedAdjudication.dateTimeOfDiscovery,
         handoverDeadline = reportedAdjudication.handoverDeadline,
@@ -168,6 +169,7 @@ class AdjudicationWorkflowService(
         originatingAgencyId = draftAdjudication.agencyId,
         overrideAgencyId = draftAdjudication.overrideAgencyId,
         locationId = draftAdjudication.incidentDetails.locationId,
+        locationUuid = draftAdjudication.incidentDetails.locationUuid,
         dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident,
         dateTimeOfDiscovery = draftAdjudication.incidentDetails.dateTimeOfDiscovery,
         handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline,
@@ -208,6 +210,7 @@ class AdjudicationWorkflowService(
       it.originatingAgencyId = draftAdjudication.agencyId
       it.overrideAgencyId = draftAdjudication.overrideAgencyId
       it.locationId = draftAdjudication.incidentDetails.locationId
+      it.locationUuid = draftAdjudication.incidentDetails.locationUuid
       it.dateTimeOfIncident = draftAdjudication.incidentDetails.dateTimeOfIncident
       it.dateTimeOfDiscovery = draftAdjudication.incidentDetails.dateTimeOfDiscovery
       it.handoverDeadline = draftAdjudication.incidentDetails.handoverDeadline

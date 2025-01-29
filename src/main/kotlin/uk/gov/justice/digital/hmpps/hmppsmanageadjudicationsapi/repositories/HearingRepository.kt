@@ -5,6 +5,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import java.time.LocalDateTime
+import java.util.*
 
 interface HearingRepository : CrudRepository<Hearing, Long> {
   fun findByAgencyIdAndDateTimeOfHearingBetween(
@@ -41,5 +42,6 @@ interface HearingsByPrisoner {
   fun getDateTimeOfHearing(): LocalDateTime
   fun getOicHearingType(): String
   fun getLocationId(): Long
+  fun getLocationUuid(): UUID?
   fun getHearingId(): Long
 }

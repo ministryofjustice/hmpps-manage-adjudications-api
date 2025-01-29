@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
 class IntegrationTestData(
   private val webTestClient: WebTestClient,
@@ -88,6 +89,7 @@ class IntegrationTestData(
     const val UPDATED_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-13T10:00:00" // 13 is saturday
     const val UPDATED_HANDOVER_DEADLINE_ISO_STRING = "2010-11-15T10:00:00"
     const val UPDATED_LOCATION_ID = 721899L
+    const val UPDATED_LOCATION_UUID = "0194ad42-6616-72e9-96e5-e4fe9356e32b"
     const val UPDATED_INCIDENT_ROLE_CODE = "25b" // seems to be 25a now.
     const val UPDATED_INCIDENT_ROLE_PARAGRAPH_NUMBER = "25(b)"
     const val UPDATED_INCIDENT_ROLE_PARAGRAPH_DESCRIPTION =
@@ -109,6 +111,7 @@ class IntegrationTestData(
       offenderBookingId = offenderBookingId,
       agencyId = agencyId,
       locationId = UPDATED_LOCATION_ID,
+      locationUuid = UUID.fromString(UPDATED_LOCATION_UUID),
       dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
       dateTimeOfIncident = dateTimeOfIncident.plusDays(plusDays),
       dateTimeOfDiscovery = dateTimeOfIncident.plusDays(1 + plusDays),
@@ -137,6 +140,7 @@ class IntegrationTestData(
       offenderBookingId = offenderBookingId,
       agencyId = DEFAULT_AGENCY_ID,
       locationId = UPDATED_LOCATION_ID,
+      locationUuid = UUID.fromString(UPDATED_LOCATION_UUID),
       dateTimeOfIncidentISOString = DEFAULT_DATE_TIME_OF_INCIDENT_TEXT,
       dateTimeOfIncident = DEFAULT_DATE_TIME_OF_INCIDENT,
       dateTimeOfDiscovery = DEFAULT_DATE_TIME_OF_INCIDENT.plusDays(1),
@@ -162,6 +166,7 @@ class IntegrationTestData(
       offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
       agencyId = DEFAULT_AGENCY_ID,
       locationId = UPDATED_LOCATION_ID,
+      locationUuid = UUID.fromString(UPDATED_LOCATION_UUID),
       dateTimeOfIncidentISOString = UPDATED_DATE_TIME_OF_INCIDENT_TEXT,
       dateTimeOfIncident = UPDATED_DATE_TIME_OF_INCIDENT,
       handoverDeadlineISOString = UPDATED_HANDOVER_DEADLINE_ISO_STRING,
@@ -183,6 +188,7 @@ class IntegrationTestData(
       offenderBookingId = DEFAULT_OFFENDER_BOOKING_ID,
       agencyId = "LEI",
       locationId = 11L,
+      locationUuid = UUID.fromString("0194ad44-1b7a-7555-9173-d1b633cbccdf"),
       dateTimeOfIncidentISOString = "2020-12-13T08:00:00",
       dateTimeOfIncident = LocalDateTime.parse("2020-12-13T08:00:00"),
       dateTimeOfDiscovery = LocalDateTime.parse("2020-12-14T08:00:00"),

@@ -49,7 +49,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.Optional
+import java.util.*
 
 class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
@@ -80,6 +80,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       agencyId = "MDI",
       incidentDetails = IncidentDetails(
         locationId = 2L,
+        locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
         dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
         dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusDays(1),
         handoverDeadline = DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
@@ -228,7 +229,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         agencyId = "MDI",
-        incidentDetails = incidentDetails(1L, incidentTime),
+        incidentDetails = incidentDetails(1L, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), incidentTime),
         incidentRole = incidentRoleWithAllValuesSet(),
         offenceDetails = mutableListOf(
           Offence(
@@ -348,7 +349,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             prisonerNumber = "A12345",
             gender = Gender.MALE,
             agencyId = "MDI",
-            incidentDetails = incidentDetails(2L, now),
+            incidentDetails = incidentDetails(2L, locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
           ).also {
             when (validationCheck) {
               ValidationChecks.INCIDENT_ROLE -> {
@@ -408,7 +409,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             gender = Gender.MALE,
             chargeNumber = "123",
             agencyId = "MDI",
-            incidentDetails = incidentDetails(2L, incidentTime),
+            incidentDetails = incidentDetails(2L, locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), incidentTime),
             incidentRole = incidentRoleWithNoValuesSet(),
             offenceDetails = mutableListOf(
               Offence(
@@ -480,7 +481,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             chargeNumber = "123",
             reportByUserId = "A_SMITH",
             agencyId = "MDI",
-            incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, clock),
+            incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), clock),
             incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
             offenceDetails = mutableListOf(
               Offence(
@@ -672,7 +673,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             chargeNumber = "123",
             reportByUserId = "A_SMITH",
             agencyId = "MDI",
-            incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, clock),
+            incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), clock),
             incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
             offenceDetails = mutableListOf(
               Offence(
@@ -733,15 +734,17 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     fun incidentRoleWithNoValuesSet(): IncidentRole =
       IncidentRole(null, null, null, null)
 
-    fun incidentDetails(locationId: Long, clock: Clock) = IncidentDetails(
+    fun incidentDetails(locationId: Long, locationUuid: UUID? = null, clock: Clock) = IncidentDetails(
       locationId = locationId,
+      locationUuid = locationUuid,
       dateTimeOfIncident = LocalDateTime.now(clock),
       dateTimeOfDiscovery = LocalDateTime.now(clock).plusDays(1),
       handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
     )
 
-    fun incidentDetails(locationId: Long, now: LocalDateTime) = IncidentDetails(
+    fun incidentDetails(locationId: Long, locationUuid: UUID? = null, now: LocalDateTime) = IncidentDetails(
       locationId = locationId,
+      locationUuid = locationUuid,
       dateTimeOfIncident = now,
       dateTimeOfDiscovery = now.plusDays(1),
       handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
