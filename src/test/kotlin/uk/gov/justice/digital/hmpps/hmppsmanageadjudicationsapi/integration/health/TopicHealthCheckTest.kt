@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.health
 
 import org.junit.jupiter.api.Test
+import org.springframework.context.annotation.Import
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.SqsIntegrationTestBase
 
+@Import(TestOAuth2Config::class)
 class TopicHealthCheckTest : SqsIntegrationTestBase() {
 
   @Test
