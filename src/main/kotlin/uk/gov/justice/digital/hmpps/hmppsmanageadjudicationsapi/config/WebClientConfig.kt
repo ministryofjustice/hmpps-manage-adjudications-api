@@ -16,7 +16,7 @@ class WebClientConfig(
   @Value("\${prison.nomis.location.api.endpoint.url}") val prisonNomisBaseUri: String,
   @Value("\${prison.location.api.endpoint.url}") val prisonLocationDetailBaseUri: String,
   @Value("\${prison.prisoner-search.api.endpoint.url}") val prisonerSearchBaseUri: String,
-  @Value("\${prison.timeout:30s}") private val apiTimeout: Duration
+  @Value("\${prison.timeout:30s}") private val apiTimeout: Duration,
 ) {
 
   companion object {
