@@ -31,7 +31,7 @@ data class ErrorResponse(
 
 @Service
 class LocationService(
-  @Qualifier("prisonLocationWebClient") private val webClient: WebClient,
+  @Qualifier("prisonLocationWebClient") private val prisonLocationWebClient: WebClient,
   @Qualifier("prisonLocationDetailWebClient") private val locationDetailWebClient: WebClient,
 ) {
 
@@ -46,7 +46,7 @@ class LocationService(
   fun getNomisLocationDetail(locationId: String): LocationResponse? {
     logger.info("Fetching Nomis location details for ID: $locationId")
     return try {
-      webClient.get()
+      prisonLocationWebClient.get()
         .uri("/api/locations/nomis/{locationId}", locationId)
         .retrieve()
         .bodyToMono(LocationResponse::class.java)
