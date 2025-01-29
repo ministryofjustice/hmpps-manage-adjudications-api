@@ -2,7 +2,9 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DamageRequestItem
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.EvidenceRequestItem
@@ -20,6 +22,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Offence
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+@Import(TestOAuth2Config::class)
 @ActiveProfiles("test")
 class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
 

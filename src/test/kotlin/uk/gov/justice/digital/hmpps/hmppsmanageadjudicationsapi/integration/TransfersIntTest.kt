@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.springframework.context.annotation.Import
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
@@ -17,6 +19,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.PrisonO
 import java.time.Instant
 import java.time.LocalDateTime
 
+@Import(TestOAuth2Config::class)
 class TransfersIntTest : SqsIntegrationTestBase() {
 
   @Nested
