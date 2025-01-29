@@ -141,7 +141,7 @@ class LocationServiceTest {
         prisonId = "MDI",
         localName = "Moorland Location",
         pathHierarchy = "MDI > Moorland location path",
-        key = "some-key"
+        key = "some-key",
       )
 
       // Mock the fluent WebClient chain for locationDetailWebClient:
@@ -187,7 +187,7 @@ class LocationServiceTest {
         "Not Found",
         null,
         errorJson.toByteArray(StandardCharsets.UTF_8),
-        null
+        null,
       )
 
       // Mock the fluent WebClient chain:
@@ -232,7 +232,7 @@ class LocationServiceTest {
       }
       assertTrue(
         ex.message!!.contains("Failed to fetch location details for ID: $locationId"),
-        "Should wrap unexpected exception in a RuntimeException"
+        "Should wrap unexpected exception in a RuntimeException",
       )
     }
   }
