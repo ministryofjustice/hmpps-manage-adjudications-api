@@ -11,10 +11,15 @@ import java.time.LocalDateTime
 
 data class LocationResponse(
   val dpsLocationId: String,
-  val nomisLocationId: Int,
-  val label: String,
-  val mappingType: String,
-  val whenCreated: LocalDateTime,
+  val nomisLocationId: Int
+)
+
+data class LocationDetailResponse(
+  val id: String,
+  val prisonId: String,
+  val localName: String,
+  val pathHierarchy: String,
+  val key: String,
 )
 
 data class ErrorResponse(
@@ -28,6 +33,7 @@ data class ErrorResponse(
 @Service
 class LocationService(
   @Qualifier("prisonLocationWebClient") private val webClient: WebClient,
+  @Qualifier("prisonLocationDetailWebClient") private val locationDetailWebClient: WebClient,
 ) {
 
   private val logger: Logger = LoggerFactory.getLogger(this::class.java)
@@ -42,9 +48,32 @@ class LocationService(
     logger.info("Fetching Nomis location details for ID: $locationId")
     return try {
       webClient.get()
-        .uri("/mapping/locations/nomis/{locationId}", locationId)
+        .uri("/api/locations/nomis/{locationId}", locationId)
         .retrieve()
         .bodyToMono(LocationResponse::class.java)
+        .block()
+    } catch (ex: WebClientResponseException) {
+      val errorResponse = handleError(ex)
+      logger.error("Error fetching location details for ID: $locationId - $errorResponse")
+      null
+    } catch (ex: Exception) {
+      logger.error("Unexpected error while fetching location details for ID: $locationId", ex)
+      throw RuntimeException("Failed to fetch location details for ID: $locationId", ex)
+    }
+  }
+
+  /**
+   * Fetches location details with dps location ID.
+   * @param locationId The DPS location ID.
+   * @return The location details or `null` if not found.
+   */
+  fun getLocationDetail(locationId: String): LocationDetailResponse? {
+    logger.info("Fetching location details for ID: $locationId")
+    return try {
+      locationDetailWebClient.get()
+        .uri("/locations/{locationId}?formatLocalName=true", locationId)
+        .retrieve()
+        .bodyToMono(LocationDetailResponse::class.java)
         .block()
     } catch (ex: WebClientResponseException) {
       val errorResponse = handleError(ex)

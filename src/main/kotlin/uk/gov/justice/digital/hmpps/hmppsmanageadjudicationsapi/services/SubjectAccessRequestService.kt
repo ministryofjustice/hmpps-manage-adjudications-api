@@ -46,9 +46,37 @@ class SubjectAccessRequestService(
     )
     if (reported.isEmpty()) return null
 
-//    return HmppsSubjectAccessRequestContent(content = reported.map { it.toDto(offenceCodeLookupService) })
+
+    val locationCache = mutableMapOf<Long, String?>()
+    val prisonerCache = mutableMapOf<String, String?>()
+
     val dtos = reported.map { adjudication ->
       val dto = adjudication.toDto(offenceCodeLookupService)
+
+      val prisonerNumber = dto.prisonerNumber
+      // Use cache or call the service
+      val prisonerName = prisonerCache.getOrPut(prisonerNumber) {
+        val prisonerDet = prisonerSearchService.getPrisonerDetail(prisonerNumber)
+        prisonerDet?.firstName + " " + prisonerDet?.lastName
+      }
+      // Set the locationName back into incidentDetails
+      dto.prisonerName = prisonerName
+
+      // Retrieve the locationId from 'incidentDetails'
+      val locationId = dto.incidentDetails?.locationId
+      if (locationId != null) {
+        // Use cache or call the service
+        val locationName = locationCache.getOrPut(locationId) {
+          // First, call the getNomisLocationDetail to find the DPS location ID
+          val dpsLocationId = locationService.getNomisLocationDetail(locationId.toString())?.dpsLocationId
+          // If dpsLocationId is non-null, call getLocationDetail and return its localName
+          dpsLocationId?.let { id ->
+            locationService.getLocationDetail(id)?.localName
+          }
+        }
+        // Set the locationName back into incidentDetails
+        dto.incidentDetails?.locationName = locationName
+      }
 
       val statusDescription = ReportedAdjudicationStatusTransformer.displayName(dto.status)
       dto.statusDescription = statusDescription
@@ -119,35 +147,6 @@ class SubjectAccessRequestService(
       // Transform each offence code
       val offenceCodeDescriptions = OffenceCodeTransformer.displayName(dto.offenceDetails.offenceCode)
       dto.offenceDetails.offenceCodeDescription = offenceCodeDescriptions
-
-      dto
-    }
-    return HmppsSubjectAccessRequestContent(content = dtos)
-    val locationCache = mutableMapOf<Long, String?>()
-    val prisonerCache = mutableMapOf<String, String?>()
-
-//    var sar_initial_response =  HmppsSubjectAccessRequestContent(content = reported.map { it.toDto(offenceCodeLookupService) })
-    val dtos = reported.map { adjudication ->
-      val dto = adjudication.toDto(offenceCodeLookupService)
-
-      val prisonerNumber = dto.prisonerNumber
-      // Use cache or call the service
-      val prisonerName = prisonerCache.getOrPut(prisonerNumber) {
-        prisonerSearchService.getPrisonerDetail(prisonerNumber)?.firstName + " " + prisonerSearchService.getPrisonerDetail(prisonerNumber)?.lastName
-      }
-      // Set the locationName back into incidentDetails
-      dto.prisonerName = prisonerName
-
-      // Retrieve the locationId from 'incidentDetails'
-      val locationId = dto.incidentDetails?.locationId
-      if (locationId != null) {
-        // Use cache or call the service
-        val locationName = locationCache.getOrPut(locationId) {
-          locationService.getNomisLocationDetail(locationId.toString())?.label
-        }
-        // Set the locationName back into incidentDetails
-        dto.incidentDetails?.locationName = locationName
-      }
 
       dto
     }
