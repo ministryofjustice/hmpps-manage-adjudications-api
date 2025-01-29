@@ -46,7 +46,6 @@ class SubjectAccessRequestService(
     )
     if (reported.isEmpty()) return null
 
-
     val locationCache = mutableMapOf<Long, String?>()
     val prisonerCache = mutableMapOf<String, String?>()
 

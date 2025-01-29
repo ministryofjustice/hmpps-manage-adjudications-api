@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 data class LocationResponse(
   val dpsLocationId: String,
-  val nomisLocationId: Int
+  val nomisLocationId: Int,
 )
 
 data class LocationDetailResponse(
