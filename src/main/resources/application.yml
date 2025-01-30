@@ -65,8 +65,8 @@ hmpps:
 
 system:
   client:
-    id: ${SYSTEM_CLIENT_ID:manage-adjudications-client-2}
-    secret: ${SYSTEM_CLIENT_SECRET:%kY9p1XpIPW;E$=J.YPFJ22)ZMNmrOZ(6KDr$XWKGDzLC6QIuRCeS3w9abh7}
+    id: ${SYSTEM_CLIENT_ID}
+    secret: ${SYSTEM_CLIENT_SECRET}
 
 management:
   endpoints:
@@ -101,13 +101,13 @@ prison:
     location:
       api:
         endpoint:
-          url: ${PRISONS_NOMIS_LOCATION_BASE_DOMAIN:https://nomis-sync-prisoner-mapping-dev.hmpps.service.justice.gov.uk}
+          url: ${PRISONS_NOMIS_LOCATION_BASE_DOMAIN}
   location:
     api:
       endpoint:
-        url: ${PRISONS_LOCATION_BASE_DOMAIN:https://locations-inside-prison-api-dev.hmpps.service.justice.gov.uk}
+        url: ${PRISONS_LOCATION_BASE_DOMAIN}
   prisoner-search:
     api:
       endpoint:
-        url: ${PRISONER_SEARCH_BASE_DOMAIN:https://prison-api-dev.prison.service.justice.gov.uk}
+        url: ${PRISONER_SEARCH_BASE_DOMAIN}
   timeout: 10s
