@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.mockito.kotlin.whenever
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatusCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
@@ -11,10 +13,16 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHear
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_CREATED_USER_ID
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.*
 import java.time.format.DateTimeFormatter
 
 @Import(TestOAuth2Config::class)
 class ReportsIntTest : SqsIntegrationTestBase() {
+  @MockBean
+  private lateinit var prisonerSearchService: PrisonerSearchService
+
+  @MockBean
+  private lateinit var locationService: LocationService
 
   @BeforeEach
   fun setUp() {
@@ -460,6 +468,17 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   fun `SAR has content`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
     initDataForUnScheduled(testData = testData)
+
+    // Then stub in your test:
+    whenever(prisonerSearchService.getPrisonerDetail("ANY_PRN"))
+      .thenReturn(PrisonerResponse("Jane", "Doe"))
+
+    whenever(locationService.getNomisLocationDetail("12345"))
+      .thenReturn(LocationResponse("A-123", 12345))
+
+    whenever(locationService.getLocationDetail("A-123"))
+      .thenReturn(LocationDetailResponse("9d306768-26a3-4bce-8b5d-3ec0f8a57b2c", "LEI", "MAX", "RES-AWING-AWING", "LEI-RES-AWING-AWING"))
+
     webTestClient.get()
       .uri("/subject-access-request?prn=${testData.prisonerNumber}")
       .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_SAR_DATA_ACCESS")))
@@ -474,6 +493,17 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   fun `SAR has content with date`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
     initDataForUnScheduled(testData = testData)
+
+    // Then stub in your test:
+    whenever(prisonerSearchService.getPrisonerDetail("ANY_PRN"))
+      .thenReturn(PrisonerResponse("Jane", "Doe"))
+
+    whenever(locationService.getNomisLocationDetail("12345"))
+      .thenReturn(LocationResponse("A-123", 12345))
+
+    whenever(locationService.getLocationDetail("A-123"))
+      .thenReturn(LocationDetailResponse("9d306768-26a3-4bce-8b5d-3ec0f8a57b2c", "LEI", "MAX", "RES-AWING-AWING", "LEI-RES-AWING-AWING"))
+
     webTestClient.get()
       .uri("/subject-access-request?prn=${testData.prisonerNumber}&fromDate=1999-01-01")
       .headers(setHeaders(username = "P_NESS", roles = listOf("ROLE_SAR_DATA_ACCESS")))
