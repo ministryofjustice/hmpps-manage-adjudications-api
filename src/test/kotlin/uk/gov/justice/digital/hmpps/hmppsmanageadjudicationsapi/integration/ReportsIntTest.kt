@@ -13,7 +13,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHear
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_CREATED_USER_ID
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.*
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.LocationDetailResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.LocationResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.LocationService
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.PrisonerResponse
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.PrisonerSearchService
 import java.time.format.DateTimeFormatter
 
 @Import(TestOAuth2Config::class)
