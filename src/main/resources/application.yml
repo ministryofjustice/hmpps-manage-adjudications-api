@@ -65,8 +65,8 @@ hmpps:
 
 system:
   client:
-    id: ${MANAGE_ADJUDICATIONS_API_CLIENT_ID}
-    secret: ${MANAGE_ADJUDICATIONS_API_CLIENT_SECRET}
+    id: ${SYSTEM_CLIENT_ID}
+    secret: ${SYSTEM_CLIENT_SECRET}
 
 management:
   endpoints:
