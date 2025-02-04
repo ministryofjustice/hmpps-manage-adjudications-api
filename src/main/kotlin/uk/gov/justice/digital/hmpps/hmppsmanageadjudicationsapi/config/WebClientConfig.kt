@@ -44,5 +44,4 @@ class WebClientConfig(
   fun prisonerSearchWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder) = builder
     .authorisedWebClient(authorizedClientManager, "prisoner-search-api", prisonerSearchBaseUri, apiTimeout)
     .also { log.info("WEB CLIENT CONFIG: creating prisoner search api web client") }
-
 }
