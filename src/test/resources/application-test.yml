@@ -30,6 +30,9 @@ spring:
       ddl-auto: none
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
+  main:
+        allow-bean-definition-overriding: true
+
 hmpps.sqs:
   provider: localstack
   queues:
