@@ -7,10 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.repo
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
-// import org.springframework.context.annotation.Import
-// import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
 
-// @Import(TestOAuth2Config::class)
 class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
 
   @BeforeEach
