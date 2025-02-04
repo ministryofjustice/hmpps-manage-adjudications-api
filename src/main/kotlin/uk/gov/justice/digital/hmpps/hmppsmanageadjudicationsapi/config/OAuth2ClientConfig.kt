@@ -11,12 +11,13 @@ import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedCli
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository
 
 @Configuration
-class OAuth2ClientConfig{
+class OAuth2ClientConfig {
+
   @Bean
   fun authorizedClientManager(
     clientRegistrationRepository: ClientRegistrationRepository,
     authorizedClientRepository: OAuth2AuthorizedClientRepository,
-  ): OAuth2AuthorizedClientManager{
+  ): OAuth2AuthorizedClientManager {
     val defaultClientCredentialsTokenResponseClient = DefaultClientCredentialsTokenResponseClient()
     val authentication = UserContext.getAuthentication()
 
@@ -38,3 +39,4 @@ class OAuth2ClientConfig{
     return authorizedClientManager
   }
 }
+
