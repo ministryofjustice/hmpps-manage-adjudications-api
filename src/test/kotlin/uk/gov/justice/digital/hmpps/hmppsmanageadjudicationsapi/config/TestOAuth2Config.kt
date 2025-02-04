@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config
 
-import org.mockito.Mockito.mock
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository
+// import org.mockito.Mockito.mock
+// import org.springframework.boot.test.context.TestConfiguration
+// import org.springframework.context.annotation.Bean
+// import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
+// import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
+// import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository
 
-//@TestConfiguration
+// @TestConfiguration
 class TestOAuth2Config {
 
 //  @Bean
