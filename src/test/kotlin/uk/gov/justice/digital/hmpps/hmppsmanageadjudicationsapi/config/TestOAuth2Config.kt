@@ -23,7 +23,7 @@ class TestOAuth2Config {
   @Bean
   fun authorizedClientManager(
     clientRegistrationRepository: ClientRegistrationRepository,
-    authorizedClientRepository: OAuth2AuthorizedClientRepository
+    authorizedClientRepository: OAuth2AuthorizedClientRepository,
   ): OAuth2AuthorizedClientManager {
     return mock()
   }
