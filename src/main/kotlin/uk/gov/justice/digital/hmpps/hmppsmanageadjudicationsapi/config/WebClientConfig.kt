@@ -30,17 +30,17 @@ class WebClientConfig(
       .build()
   }
 
-  @Bean
+  @Bean("prisonLocationWebClient")
   fun prisonLocationWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder) = builder
     .authorisedWebClient(authorizedClientManager, "prison-nomis-api", prisonNomisBaseUri, apiTimeout)
     .also { log.info("WEB CLIENT CONFIG: creating prison nomis api web client") }
 
-  @Bean
+  @Bean("prisonLocationDetailWebClient")
   fun prisonLocationDetailWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder) = builder
     .authorisedWebClient(authorizedClientManager, "prison-location-api", prisonLocationDetailBaseUri, apiTimeout)
     .also { log.info("WEB CLIENT CONFIG: creating manage prison location api web client") }
 
-  @Bean
+  @Bean("prisonerSearchWebClient")
   fun prisonerSearchWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder) = builder
     .authorisedWebClient(authorizedClientManager, "prisoner-search-api", prisonerSearchBaseUri, apiTimeout)
     .also { log.info("WEB CLIENT CONFIG: creating prisoner search api web client") }
