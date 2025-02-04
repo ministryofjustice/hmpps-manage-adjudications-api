@@ -2,10 +2,13 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.hea
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.context.annotation.Import
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.SqsIntegrationTestBase
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+@Import(TestOAuth2Config::class)
 class InfoTest : SqsIntegrationTestBase() {
 
   @Test

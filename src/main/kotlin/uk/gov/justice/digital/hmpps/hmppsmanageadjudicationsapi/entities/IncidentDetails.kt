@@ -10,6 +10,8 @@ import java.util.UUID
 data class IncidentDetails(
   override val id: Long? = null,
   var locationId: Long,
+  @Transient
+  val locationName: String? = null,
   var locationUuid: UUID? = null,
   var dateTimeOfIncident: LocalDateTime,
   var dateTimeOfDiscovery: LocalDateTime,

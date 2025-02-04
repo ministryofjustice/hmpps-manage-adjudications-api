@@ -2,7 +2,10 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.context.annotation.Import
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
 
+@Import(TestOAuth2Config::class)
 class PrintSupportIntTest : SqsIntegrationTestBase() {
 
   @BeforeEach

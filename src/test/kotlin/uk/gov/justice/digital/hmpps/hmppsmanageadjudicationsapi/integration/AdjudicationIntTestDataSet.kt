@@ -11,10 +11,12 @@ import java.util.UUID
 data class AdjudicationIntTestDataSet(
   var chargeNumber: String? = null,
   val prisonerNumber: String,
+  var prisonerName: String? = null,
   val offenderBookingId: Long,
   val gender: Gender = Gender.MALE,
   val agencyId: String,
   val locationId: Long,
+  val locationName: String? = null,
   val locationUuid: UUID? = null,
   val dateTimeOfIncident: LocalDateTime,
   val dateTimeOfIncidentISOString: String,

@@ -59,6 +59,14 @@ hmpps:
     queueAdminRole: ROLE_ADJUDICATIONS_API_QUEUE_ADMIN
   sar:
     additionalAccessRole: ROLE_ADJUDICATIONS_SAR_VIEWER
+  auth:
+      # url: http://localhost:8090/auth
+      url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
+
+system:
+  client:
+    id: ${SYSTEM_CLIENT_ID}
+    secret: ${SYSTEM_CLIENT_SECRET}
 
 management:
   endpoints:
@@ -88,4 +96,18 @@ service:
   active:
     prisons: ${SERVICE_ACTIVE_PRISONS:***}
 
-
+prison:
+  nomis:
+    location:
+      api:
+        endpoint:
+          url: ${PRISONS_NOMIS_LOCATION_BASE_DOMAIN:https://nomis-sync-prisoner-mapping-dev.hmpps.service.justice.gov.uk}
+  location:
+    api:
+      endpoint:
+        url: ${PRISONS_LOCATION_BASE_DOMAIN:https://locations-inside-prison-api-dev.hmpps.service.justice.gov.uk}
+  prisoner-search:
+    api:
+      endpoint:
+        url: ${PRISONER_SEARCH_BASE_DOMAIN:https://prison-api-dev.prison.service.justice.gov.uk}
+  timeout: 10s
