@@ -40,6 +40,35 @@ spring:
     init:
       continue-on-error: true
 
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          jwk-set-uri: ${hmpps.auth.url}/.well-known/jwks.json
+      client:
+        registration:
+          prison-nomis-api:
+            provider: hmpps-auth
+            client-id: ${system.client.id}
+            client-secret: ${system.client.secret}
+            authorization-grant-type: client_credentials
+            scope: read,write
+          prisoner-search-api:
+            provider: hmpps-auth
+            client-id: ${system.client.id}
+            client-secret: ${system.client.secret}
+            authorization-grant-type: client_credentials
+            scope: read
+          prison-location-api:
+            provider: hmpps-auth
+            client-id: ${system.client.id}
+            client-secret: ${system.client.secret}
+            authorization-grant-type: client_credentials
+            scope: read
+        provider:
+          hmpps-auth:
+            token-uri: ${hmpps.auth.url}/oauth/token
+
 server:
   port: 8080
   servlet:
@@ -60,13 +89,12 @@ hmpps:
   sar:
     additionalAccessRole: ROLE_ADJUDICATIONS_SAR_VIEWER
   auth:
-      # url: http://localhost:8090/auth
-      url: https://sign-in-dev.hmpps.service.justice.gov.uk/auth
+    url: ${HMPPS_AUTH_BASE_URL:https://sign-in-dev.hmpps.service.justice.gov.uk/auth}
 
 system:
   client:
-    id: ${SYSTEM_CLIENT_ID}
-    secret: ${SYSTEM_CLIENT_SECRET}
+    id: ${SYSTEM_CLIENT_ID:hmpps-manage-adjudications-api-4}
+    secret: ${SYSTEM_CLIENT_SECRET:S%7qNUt3Y%+5sE-Z!8vzBd=+-NlVjeNrH.;c(hUl52vKxPki4ew<HGa7Bn;v}
 
 management:
   endpoints:
