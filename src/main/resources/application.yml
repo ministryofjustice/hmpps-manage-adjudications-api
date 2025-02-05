@@ -93,8 +93,8 @@ hmpps:
 
 system:
   client:
-    id: ${SYSTEM_CLIENT_ID:hmpps-manage-adjudications-api-4}
-    secret: ${SYSTEM_CLIENT_SECRET:S%7qNUt3Y%+5sE-Z!8vzBd=+-NlVjeNrH.;c(hUl52vKxPki4ew<HGa7Bn;v}
+    id: ${SYSTEM_CLIENT_ID}
+    secret: ${SYSTEM_CLIENT_SECRET}
 
 management:
   endpoints:
