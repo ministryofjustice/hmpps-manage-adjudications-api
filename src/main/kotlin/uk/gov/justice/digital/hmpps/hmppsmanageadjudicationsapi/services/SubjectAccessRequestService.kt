@@ -134,7 +134,17 @@ class SubjectAccessRequestService(
         }
         hearingItem.outcome?.pleaDescription = hearingOutcomePleaDescription
 
-        // to do - add transformation for location id when that is resolved in an earlier ticket (NN-6007)
+        // Use cache or call the service
+        val hearingLocationName = locationCache.getOrPut(hearingItem.locationId) {
+          // First, call the getNomisLocationDetail to find the DPS location ID
+          val dpsHearingLocationId = locationService.getNomisLocationDetail(locationId.toString())?.dpsLocationId
+          // If dpsLocationId is non-null, call getLocationDetail and return its localName
+          dpsHearingLocationId?.let { id ->
+            locationService.getLocationDetail(id)?.localName
+          }
+        }
+        // Set the locationName back into incidentDetails
+        hearingItem.locationName = hearingLocationName
       }
 
       // Transform each protectedCharacteristics
