@@ -12,6 +12,11 @@ oauth:
   endpoint:
     url: http://localhost:8070/auth
 
+system:
+  client:
+    id: test-client-id
+    secret: test-client-secret
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/adjudications

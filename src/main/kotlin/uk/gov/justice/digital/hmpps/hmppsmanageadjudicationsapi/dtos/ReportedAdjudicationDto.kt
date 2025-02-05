@@ -194,6 +194,8 @@ data class HearingDto(
   val id: Long? = null,
   @Schema(description = "The id of the location of the hearing", deprecated = true)
   val locationId: Long,
+  @Schema(description = "The name of the location of the hearing", deprecated = true)
+  var locationName: String? = null,
   @Schema(description = "The location uuid of the location the hearing")
   val locationUuid: UUID? = null,
   @Schema(description = "Date and time the hearing will take place", example = "2010-10-12T10:00:00")
