@@ -52,7 +52,7 @@ class WebClientConfig(
   @Bean
   fun authorizedClientManager(
     clientRegistrationRepository: ClientRegistrationRepository,
-    authorizedClientRepository: OAuth2AuthorizedClientRepository
+    authorizedClientRepository: OAuth2AuthorizedClientRepository,
   ): OAuth2AuthorizedClientManager {
     val authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
       .clientCredentials()
@@ -60,7 +60,7 @@ class WebClientConfig(
 
     val authorizedClientManager = DefaultOAuth2AuthorizedClientManager(
       clientRegistrationRepository,
-      authorizedClientRepository
+      authorizedClientRepository,
     )
     authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider)
 
