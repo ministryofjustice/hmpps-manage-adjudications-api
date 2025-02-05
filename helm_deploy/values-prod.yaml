@@ -8,7 +8,7 @@ generic-service:
 
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
-    OAUTH_ENDPOINT_URL: https://sign-in.hmpps.service.justice.gov.uk/auth
+    HMPPS_AUTH_BASE_URL: https://sign-in.hmpps.service.justice.gov.uk/auth
     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: https://sign-in.hmpps.service.justice.gov.uk/auth/.well-known/jwks.json
     PRISONS_NOMIS_LOCATION_BASE_DOMAIN: https://nomis-sync-prisoner-mapping.hmpps.service.justice.gov.uk
     PRISONS_LOCATION_BASE_DOMAIN: https://locations-inside-prison-api.hmpps.service.justice.gov.uk
