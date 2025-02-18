@@ -56,6 +56,9 @@ open class ReportedAdjudicationBaseService(
   protected fun isLinkedToReport(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean =
     reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(consecutiveChargeNumber, types).isNotEmpty()
 
+  protected fun isLinkedToReportV2(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean =
+    reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(consecutiveChargeNumber, types).isNotEmpty()
+
   protected fun findMultipleOffenceCharges(prisonerNumber: String, chargeNumber: String): List<String> =
     reportedAdjudicationRepository.findByPrisonerNumberAndChargeNumberStartsWith(
       prisonerNumber = prisonerNumber,
@@ -70,7 +73,7 @@ open class ReportedAdjudicationBaseService(
         if (reportedAdjudication.getPunishments().none { PunishmentType.additionalDays().contains(it.type) }) {
           false
         } else {
-          isLinkedToReport(reportedAdjudication.chargeNumber, PunishmentType.additionalDays())
+          isLinkedToReportV2(reportedAdjudication.chargeNumber, PunishmentType.additionalDays())
         }
       else -> false
     }

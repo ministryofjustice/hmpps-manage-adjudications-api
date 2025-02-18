@@ -138,6 +138,30 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(chargeNumber: String, types: List<PunishmentType>): List<ReportedAdjudication>
 
+  @Query(
+    value = """
+        SELECT DISTINCT ra.*
+        FROM reported_adjudications ra
+        JOIN punishment p 
+            ON p.reported_adjudication_fk_id = ra.id
+        JOIN punishment_schedule ps
+            ON ps.punishment_fk_id = p.id
+        JOIN reported_adjudications ra2
+            ON ra2.charge_number = p.consecutive_to_charge_number
+        WHERE p.consecutive_to_charge_number = :chargeNumber
+          AND p.type IN (:types)
+          -- Exclude deleted punishments:
+          AND (p.deleted = false OR p.deleted IS NULL)
+    """,
+    nativeQuery = true
+  )
+  fun findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
+    chargeNumber: String,
+    types: List<PunishmentType>
+  ): List<ReportedAdjudication>
+
+
+
   @Query(value = "SELECT nextval(:sequenceName)", nativeQuery = true)
   fun getNextChargeSequence(
     @Param("sequenceName") sequenceName: String,
