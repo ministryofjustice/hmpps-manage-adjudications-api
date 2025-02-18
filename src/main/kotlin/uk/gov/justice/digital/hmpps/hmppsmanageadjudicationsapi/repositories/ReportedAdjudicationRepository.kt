@@ -149,7 +149,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
         JOIN reported_adjudications ra2
             ON ra2.charge_number = p.consecutive_to_charge_number
         WHERE p.consecutive_to_charge_number = :chargeNumber
-          AND p.type IN (:types)
+          AND p.type::int IN (:types)
           -- Exclude deleted punishments:
           AND (p.deleted = false OR p.deleted IS NULL)
     """,
