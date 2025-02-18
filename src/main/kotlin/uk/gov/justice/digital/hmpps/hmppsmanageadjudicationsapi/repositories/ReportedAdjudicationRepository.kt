@@ -155,12 +155,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     """,
     nativeQuery = true
   )
-  fun findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
-    chargeNumber: String,
-    types: List<PunishmentType>
-  ): List<ReportedAdjudication>
-
-
+  fun findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(chargeNumber: String, types: List<PunishmentType>): List<ReportedAdjudication>
 
   @Query(value = "SELECT nextval(:sequenceName)", nativeQuery = true)
   fun getNextChargeSequence(
