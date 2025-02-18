@@ -1623,7 +1623,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2("12345", PunishmentType.additionalDays()))
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2("12345", listOf("ADDITIONAL_DAYS")))
         .thenReturn(listOf(entityBuilder.reportedAdjudication()))
     }
 
