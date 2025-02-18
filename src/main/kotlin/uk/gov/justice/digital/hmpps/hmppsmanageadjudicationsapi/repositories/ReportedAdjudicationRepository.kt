@@ -153,7 +153,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
           -- Exclude deleted punishments:
           AND (p.deleted = false OR p.deleted IS NULL)
     """,
-    nativeQuery = true
+    nativeQuery = true,
   )
   fun findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(chargeNumber: String, types: List<PunishmentType>): List<ReportedAdjudication>
 
