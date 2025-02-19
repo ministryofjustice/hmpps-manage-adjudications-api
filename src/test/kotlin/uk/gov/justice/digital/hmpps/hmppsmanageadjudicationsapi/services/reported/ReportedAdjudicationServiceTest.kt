@@ -1623,7 +1623,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2("12345", PunishmentType.additionalDays()))
+      val stringTypes = PunishmentType.additionalDays().map { it.name }
+      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2("12345", stringTypes))
         .thenReturn(listOf(entityBuilder.reportedAdjudication()))
     }
 
