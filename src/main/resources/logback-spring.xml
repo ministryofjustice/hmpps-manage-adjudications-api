@@ -12,7 +12,8 @@
         </encoder>
     </appender>
 
-    <logger name="uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.HmppsManageAdjudicationsApiKt" additivity="false" level="DEBUG">
+    <logger name="uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.HmppsManageAdjudicationsApiKt"
+            additivity="false" level="DEBUG">
         <appender-ref ref="consoleAppender"/>
     </logger>
 

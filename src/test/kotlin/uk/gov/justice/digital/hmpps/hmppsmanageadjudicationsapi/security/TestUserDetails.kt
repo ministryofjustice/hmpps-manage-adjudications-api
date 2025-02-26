@@ -3,8 +3,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
-class TestUserDetails(private val username: String) :
-  UserDetails {
+class TestUserDetails(private val username: String) : UserDetails {
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
     TODO("Not yet implemented")
   }

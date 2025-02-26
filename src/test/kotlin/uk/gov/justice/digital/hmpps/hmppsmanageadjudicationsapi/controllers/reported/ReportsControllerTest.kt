@@ -118,16 +118,16 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     private fun getMyAdjudications(): ResultActions = mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/my-reports?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=date_time_of_discovery,DESC")
-            .header("Content-Type", "application/json"),
-        )
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/my-reports?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=date_time_of_discovery,DESC")
+          .header("Content-Type", "application/json"),
+      )
 
     private fun getMyAdjudicationsWithFilter(date: LocalDate): ResultActions = mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/my-reports?status=AWAITING_REVIEW&startDate=$date&endDate=$date&page=0&size=20&sort=date_time_of_discovery,DESC")
-            .header("Content-Type", "application/json"),
-        )
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/my-reports?status=AWAITING_REVIEW&startDate=$date&endDate=$date&page=0&size=20&sort=date_time_of_discovery,DESC")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -157,10 +157,10 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     private fun getAllAdjudications(): ResultActions = mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/reports?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=date_time_of_discovery,DESC")
-            .header("Content-Type", "application/json"),
-        )
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/reports?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=date_time_of_discovery,DESC")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -189,10 +189,10 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     private fun getTransferAdjudications(): ResultActions = mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/transfer-reports?status=SCHEDULED&type=ALL&page=0&size=20&sort=date_time_of_discovery,DESC")
-            .header("Content-Type", "application/json"),
-        )
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/transfer-reports?status=SCHEDULED&type=ALL&page=0&size=20&sort=date_time_of_discovery,DESC")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -213,10 +213,10 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     private fun getAdjudicationsForIssue(): ResultActions = mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/for-issue/v2")
-            .header("Content-Type", "application/json"),
-        )
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/for-issue/v2")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -247,10 +247,10 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     private fun getAdjudicationsForPrint(): ResultActions = mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/for-print?issueStatus=ISSUED,NOT_ISSUED")
-            .header("Content-Type", "application/json"),
-        )
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/for-print?issueStatus=ISSUED,NOT_ISSUED")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -283,10 +283,10 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     private fun getCounters(): ResultActions = mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/report-counts")
-            .header("Content-Type", "application/json"),
-        )
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/report-counts")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -326,14 +326,24 @@ class ReportsControllerTest : TestControllerBase() {
     fun `responds with adjudication history for prisoner `() {
       getAdjudicationHistory().andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(reportsService, atLeastOnce()).getAdjudicationsForBooking(any(), anyOrNull(), anyOrNull(), any(), any(), any(), any(), any(), any())
+      verify(reportsService, atLeastOnce()).getAdjudicationsForBooking(
+        any(),
+        anyOrNull(),
+        anyOrNull(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+      )
     }
 
     private fun getAdjudicationHistory(): ResultActions = mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/booking/12345?status=UNSCHEDULED,SCHEDULED&agency=MDI&page=0&size=20&sort=date_time_of_discovery,DESC")
-            .header("Content-Type", "application/json"),
-        )
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/booking/12345?status=UNSCHEDULED,SCHEDULED&agency=MDI&page=0&size=20&sort=date_time_of_discovery,DESC")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -372,14 +382,23 @@ class ReportsControllerTest : TestControllerBase() {
     fun `responds with adjudication history for prisoner `() {
       getAdjudicationHistory().andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(reportsService, atLeastOnce()).getAdjudicationsForPrisoner(any(), anyOrNull(), anyOrNull(), any(), any(), any(), any(), any())
+      verify(reportsService, atLeastOnce()).getAdjudicationsForPrisoner(
+        any(),
+        anyOrNull(),
+        anyOrNull(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+      )
     }
 
     private fun getAdjudicationHistory(): ResultActions = mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/bookings/prisoner/AY12345?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=date_time_of_discovery,DESC")
-            .header("Content-Type", "application/json"),
-        )
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/bookings/prisoner/AY12345?status=UNSCHEDULED,SCHEDULED&page=0&size=20&sort=date_time_of_discovery,DESC")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -404,10 +423,10 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     private fun getAllReportsByPrisonerRequest(): ResultActions = mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/prisoner/A12345")
-            .header("Content-Type", "application/json"),
-        )
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/prisoner/A12345")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -432,9 +451,9 @@ class ReportsControllerTest : TestControllerBase() {
     }
 
     private fun getAllReportsByBookingRequest(): ResultActions = mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/all-by-booking/12345")
-            .header("Content-Type", "application/json"),
-        )
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/all-by-booking/12345")
+          .header("Content-Type", "application/json"),
+      )
   }
 }

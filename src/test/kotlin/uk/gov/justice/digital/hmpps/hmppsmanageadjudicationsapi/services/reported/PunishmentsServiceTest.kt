@@ -1997,27 +1997,26 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       type: PunishmentType,
       startDate: LocalDate? = null,
       endDate: LocalDate? = null,
-    ): PunishmentRequest =
-      when (type) {
-        PunishmentType.PRIVILEGE -> PunishmentRequest(
-          id = id,
-          type = type,
-          privilegeType = PrivilegeType.ASSOCIATION,
-          duration = 1,
-          startDate = startDate,
-          endDate = endDate,
-        )
+    ): PunishmentRequest = when (type) {
+      PunishmentType.PRIVILEGE -> PunishmentRequest(
+        id = id,
+        type = type,
+        privilegeType = PrivilegeType.ASSOCIATION,
+        duration = 1,
+        startDate = startDate,
+        endDate = endDate,
+      )
 
-        PunishmentType.EARNINGS -> PunishmentRequest(
-          id = id,
-          type = type,
-          stoppagePercentage = 10,
-          duration = 1,
-          startDate = startDate,
-          endDate = endDate,
-        )
+      PunishmentType.EARNINGS -> PunishmentRequest(
+        id = id,
+        type = type,
+        stoppagePercentage = 10,
+        duration = 1,
+        startDate = startDate,
+        endDate = endDate,
+      )
 
-        else -> PunishmentRequest(id = id, type = type, duration = 1, startDate = startDate, endDate = endDate)
-      }
+      else -> PunishmentRequest(id = id, type = type, duration = 1, startDate = startDate, endDate = endDate)
+    }
   }
 }

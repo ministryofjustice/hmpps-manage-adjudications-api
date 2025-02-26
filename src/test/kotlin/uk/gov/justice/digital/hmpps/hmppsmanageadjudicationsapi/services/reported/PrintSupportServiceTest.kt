@@ -18,7 +18,12 @@ import java.time.LocalDateTime
 class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
 
   private val printSupportQueryService = PrintSupportQueryService(reportedAdjudicationRepository)
-  private val printSupportService = PrintSupportService(printSupportQueryService, reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
+  private val printSupportService = PrintSupportService(
+    printSupportQueryService,
+    reportedAdjudicationRepository,
+    offenceCodeLookupService,
+    authenticationFacade,
+  )
 
   @Test
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
@@ -149,7 +154,11 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
               ),
             )
           },
-          entityBuilder.reportedAdjudication(chargeNumber = "888881", offenderBookingId = 1, dateTime = LocalDateTime.now()).also {
+          entityBuilder.reportedAdjudication(
+            chargeNumber = "888881",
+            offenderBookingId = 1,
+            dateTime = LocalDateTime.now(),
+          ).also {
             it.overrideAgencyId = report.originatingAgencyId
             // valid first
             it.addPunishment(
@@ -170,7 +179,9 @@ class PrintSupportServiceTest : ReportedAdjudicationTestBase() {
       assertThat(data.chargesWithSuspendedPunishments.first().chargeNumber).isEqualTo("88888")
       assertThat(data.chargesWithSuspendedPunishments.last().chargeNumber).isEqualTo("888881")
       assertThat(data.chargesWithSuspendedPunishments.first().suspendedPunishments.size).isEqualTo(2)
-      assertThat(data.chargesWithSuspendedPunishments.first().suspendedPunishments.first().type).isEqualTo(PunishmentType.CONFINEMENT)
+      assertThat(data.chargesWithSuspendedPunishments.first().suspendedPunishments.first().type).isEqualTo(
+        PunishmentType.CONFINEMENT,
+      )
       assertThat(data.chargesWithSuspendedPunishments.first().suspendedPunishments.last().type).isEqualTo(PunishmentType.ADDITIONAL_DAYS)
       assertThat(data.chargesWithSuspendedPunishments.first().offenceDetails.offenceCode).isEqualTo(1002)
       assertThat(data.existingPunishments.isEmpty()).isTrue

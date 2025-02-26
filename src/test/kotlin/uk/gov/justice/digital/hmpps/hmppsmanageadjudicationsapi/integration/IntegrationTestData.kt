@@ -83,8 +83,10 @@ class IntegrationTestData(
     val UPDATED_DAMAGES = listOf(DamagesTestDataSet(code = DamageCode.REDECORATION, details = "details"))
     val DEFAULT_EVIDENCE = listOf(EvidenceTestDataSet(code = EvidenceCode.PHOTO, details = "details"))
     val UPDATED_EVIDENCE = listOf(EvidenceTestDataSet(code = EvidenceCode.BAGGED_AND_TAGGED, details = "details"))
-    val DEFAULT_WITNESSES = listOf(WitnessTestDataSet(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer"))
-    val UPDATED_WITNESSES = listOf(WitnessTestDataSet(code = WitnessCode.STAFF, firstName = "staff", lastName = "member"))
+    val DEFAULT_WITNESSES =
+      listOf(WitnessTestDataSet(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer"))
+    val UPDATED_WITNESSES =
+      listOf(WitnessTestDataSet(code = WitnessCode.STAFF, firstName = "staff", lastName = "member"))
 
     const val UPDATED_DATE_TIME_OF_INCIDENT_TEXT = "2010-11-13T10:00:00" // 13 is saturday
     const val UPDATED_HANDOVER_DEADLINE_ISO_STRING = "2010-11-15T10:00:00"
@@ -221,191 +223,173 @@ class IntegrationTestData(
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
     overrideAgencyId: String? = null,
-  ): DraftAdjudicationResponse {
-    return webTestClient.post()
-      .uri("/draft-adjudications")
-      .headers(headers)
-      .bodyValue(
-        mapOf(
-          "prisonerNumber" to testDataSet.prisonerNumber,
-          "offenderBookingId" to testDataSet.offenderBookingId,
-          "gender" to testDataSet.gender.name,
-          "agencyId" to testDataSet.agencyId,
-          "locationId" to testDataSet.locationId,
-          "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,
-          "dateTimeOfDiscovery" to testDataSet.dateTimeOfDiscovery,
-          "overrideAgencyId" to overrideAgencyId,
-        ),
-      )
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(DraftAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): DraftAdjudicationResponse = webTestClient.post()
+    .uri("/draft-adjudications")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "prisonerNumber" to testDataSet.prisonerNumber,
+        "offenderBookingId" to testDataSet.offenderBookingId,
+        "gender" to testDataSet.gender.name,
+        "agencyId" to testDataSet.agencyId,
+        "locationId" to testDataSet.locationId,
+        "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,
+        "dateTimeOfDiscovery" to testDataSet.dateTimeOfDiscovery,
+        "overrideAgencyId" to overrideAgencyId,
+      ),
+    )
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun setIncidentRole(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): DraftAdjudicationResponse {
-    return webTestClient.put()
-      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/incident-role")
-      .headers(headers)
-      .bodyValue(
-        mapOf(
-          "incidentRole" to IncidentRoleRequest(
-            testDataSet.incidentRoleCode,
-          ),
-          "removeExistingOffences" to true,
+  ): DraftAdjudicationResponse = webTestClient.put()
+    .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/incident-role")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "incidentRole" to IncidentRoleRequest(
+          testDataSet.incidentRoleCode,
         ),
-      ).exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(DraftAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+        "removeExistingOffences" to true,
+      ),
+    ).exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun setAssociatedPrisoner(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): DraftAdjudicationResponse {
-    return webTestClient.put()
-      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/associated-prisoner")
-      .headers(headers)
-      .bodyValue(
-        mapOf(
-          "associatedPrisonersNumber" to testDataSet.incidentRoleAssociatedPrisonersNumber,
-        ),
-      ).exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(DraftAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): DraftAdjudicationResponse = webTestClient.put()
+    .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/associated-prisoner")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "associatedPrisonersNumber" to testDataSet.incidentRoleAssociatedPrisonersNumber,
+      ),
+    ).exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun setApplicableRules(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): DraftAdjudicationResponse {
-    return webTestClient.put()
-      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/applicable-rules")
-      .headers(headers)
-      .bodyValue(
-        mapOf(
-          "isYouthOffenderRule" to testDataSet.isYouthOffender,
-        ),
-      )
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(DraftAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): DraftAdjudicationResponse = webTestClient.put()
+    .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/applicable-rules")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "isYouthOffenderRule" to testDataSet.isYouthOffender,
+      ),
+    )
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun setOffenceDetails(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): DraftAdjudicationResponse {
-    return webTestClient.put()
-      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/offence-details")
-      .headers(headers)
-      .bodyValue(
-        mapOf(
-          "offenceDetails" to testDataSet.offence.also {
-            it.protectedCharacteristics = testDataSet.protectedCharacteristics
-          },
-        ),
-      )
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(DraftAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): DraftAdjudicationResponse = webTestClient.put()
+    .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/offence-details")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "offenceDetails" to testDataSet.offence.also {
+          it.protectedCharacteristics = testDataSet.protectedCharacteristics
+        },
+      ),
+    )
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun addIncidentStatement(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): DraftAdjudicationResponse {
-    return webTestClient.post()
-      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/incident-statement")
-      .headers(headers)
-      .bodyValue(
-        mapOf(
-          "statement" to testDataSet.statement,
-        ),
-      )
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(DraftAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): DraftAdjudicationResponse = webTestClient.post()
+    .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/incident-statement")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "statement" to testDataSet.statement,
+      ),
+    )
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun addDamages(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): DraftAdjudicationResponse {
-    return webTestClient.put()
-      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/damages")
-      .headers(headers)
-      .bodyValue(
-        mapOf(
-          "damages" to testDataSet.damages,
-        ),
-      )
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(DraftAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): DraftAdjudicationResponse = webTestClient.put()
+    .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/damages")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "damages" to testDataSet.damages,
+      ),
+    )
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun addEvidence(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): DraftAdjudicationResponse {
-    return webTestClient.put()
-      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/evidence")
-      .headers(headers)
-      .bodyValue(
-        mapOf(
-          "evidence" to testDataSet.evidence,
-        ),
-      )
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(DraftAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): DraftAdjudicationResponse = webTestClient.put()
+    .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/evidence")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "evidence" to testDataSet.evidence,
+      ),
+    )
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun addWitnesses(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): DraftAdjudicationResponse {
-    return webTestClient.put()
-      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/witnesses")
-      .headers(headers)
-      .bodyValue(
-        mapOf(
-          "witnesses" to testDataSet.witnesses,
-        ),
-      )
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(DraftAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): DraftAdjudicationResponse = webTestClient.put()
+    .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/witnesses")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "witnesses" to testDataSet.witnesses,
+      ),
+    )
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun editIncidentDetails(
     draftAdjudicationResponse: DraftAdjudicationResponse,
@@ -433,261 +417,231 @@ class IntegrationTestData(
     draftCreationData: DraftAdjudicationResponse,
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): DraftAdjudicationResponse {
-    return webTestClient.put()
-      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/incident-statement")
-      .headers(headers)
-      .bodyValue(
-        mapOf(
-          "statement" to testDataSet.statement,
-        ),
-      )
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(DraftAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): DraftAdjudicationResponse = webTestClient.put()
+    .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/incident-statement")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "statement" to testDataSet.statement,
+      ),
+    )
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun completeDraftAdjudication(
     draftCreationData: DraftAdjudicationResponse,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): String {
-    return webTestClient.post()
-      .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/complete-draft-adjudication")
-      .headers(headers)
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(ReportedAdjudicationDto::class.java)
-      .responseBody
-      .blockFirst()!!.chargeNumber
-  }
+  ): String = webTestClient.post()
+    .uri("/draft-adjudications/${draftCreationData.draftAdjudication.id}/complete-draft-adjudication")
+    .headers(headers)
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(ReportedAdjudicationDto::class.java)
+    .responseBody
+    .blockFirst()!!.chargeNumber
 
   fun acceptReport(
     chargeNumber: String,
     activeCaseLoad: String,
     status: ReportedAdjudicationStatus = ReportedAdjudicationStatus.UNSCHEDULED,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.put()
-      .uri("/reported-adjudications/$chargeNumber/status")
-      .headers(setHeaders(username = "ITAG_ALO", activeCaseload = activeCaseLoad))
-      .bodyValue(
-        mapOf(
-          "status" to status.name,
-          "statusReason" to "status reason",
-          "statusDetails" to "status details",
-        ),
-      )
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.put()
+    .uri("/reported-adjudications/$chargeNumber/status")
+    .headers(setHeaders(username = "ITAG_ALO", activeCaseload = activeCaseLoad))
+    .bodyValue(
+      mapOf(
+        "status" to status.name,
+        "statusReason" to "status reason",
+        "statusDetails" to "status details",
+      ),
+    )
+    .exchange()
 
   fun issueReport(
     draftCreationData: DraftAdjudicationResponse,
     chargeNumber: String,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.put()
-      .uri("/reported-adjudications/$chargeNumber/issue")
-      .headers(headers)
-      .bodyValue(
-        mapOf(
-          "dateTimeOfIssue" to draftCreationData.draftAdjudication.incidentDetails.dateTimeOfDiscovery.plusDays(1),
-        ),
-      )
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.put()
+    .uri("/reported-adjudications/$chargeNumber/issue")
+    .headers(headers)
+    .bodyValue(
+      mapOf(
+        "dateTimeOfIssue" to draftCreationData.draftAdjudication.incidentDetails.dateTimeOfDiscovery.plusDays(1),
+      ),
+    )
+    .exchange()
 
   fun createOutcomeReferPolice(
     testDataSet: AdjudicationIntTestDataSet,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/refer-police")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "details" to "details",
-        ),
-      )
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.post()
+    .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/refer-police")
+    .headers(setHeaders(username = "ITAG_ALO"))
+    .bodyValue(
+      mapOf(
+        "details" to "details",
+      ),
+    )
+    .exchange()
 
   fun createOutcomeProsecution(
     testDataSet: AdjudicationIntTestDataSet,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/prosecution")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.post()
+    .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/prosecution")
+    .headers(setHeaders(username = "ITAG_ALO"))
+    .exchange()
 
   fun createOutcomeNotProceed(
     testDataSet: AdjudicationIntTestDataSet,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/not-proceed")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "details" to "details",
-          "reason" to NotProceedReason.NOT_FAIR,
-        ),
-      )
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.post()
+    .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/not-proceed")
+    .headers(setHeaders(username = "ITAG_ALO"))
+    .bodyValue(
+      mapOf(
+        "details" to "details",
+        "reason" to NotProceedReason.NOT_FAIR,
+      ),
+    )
+    .exchange()
 
   fun createOutcomeReferGov(
     testDataSet: AdjudicationIntTestDataSet,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/refer-gov")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "details" to "details",
-          "referGovReason" to ReferGovReason.OTHER,
-        ),
-      )
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.post()
+    .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/refer-gov")
+    .headers(setHeaders(username = "ITAG_ALO"))
+    .bodyValue(
+      mapOf(
+        "details" to "details",
+        "referGovReason" to ReferGovReason.OTHER,
+      ),
+    )
+    .exchange()
 
   fun createHearing(
     testDataSet: AdjudicationIntTestDataSet,
     dateTimeOfHearing: LocalDateTime? = null,
     oicHearingType: OicHearingType? = OicHearingType.GOV,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/hearing/v2")
-      .headers(setHeaders(username = "ITAG_ALO", activeCaseload = testDataSet.agencyId))
-      .bodyValue(
-        mapOf(
-          "locationId" to testDataSet.locationId,
-          "dateTimeOfHearing" to (dateTimeOfHearing ?: testDataSet.dateTimeOfHearing!!),
-          "oicHearingType" to oicHearingType!!.name,
-        ),
-      )
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.post()
+    .uri("/reported-adjudications/${testDataSet.chargeNumber}/hearing/v2")
+    .headers(setHeaders(username = "ITAG_ALO", activeCaseload = testDataSet.agencyId))
+    .bodyValue(
+      mapOf(
+        "locationId" to testDataSet.locationId,
+        "dateTimeOfHearing" to (dateTimeOfHearing ?: testDataSet.dateTimeOfHearing!!),
+        "oicHearingType" to oicHearingType!!.name,
+      ),
+    )
+    .exchange()
 
   fun createAdjourn(
     testDataSet: AdjudicationIntTestDataSet,
-  ): ReportedAdjudicationResponse {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/hearing/outcome/adjourn")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "details" to "details",
-          "adjudicator" to "testing",
-          "reason" to HearingOutcomeAdjournReason.LEGAL_ADVICE,
-          "plea" to HearingOutcomePlea.UNFIT,
-        ),
-      )
-      .exchange()
-      .returnResult(ReportedAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): ReportedAdjudicationResponse = webTestClient.post()
+    .uri("/reported-adjudications/${testDataSet.chargeNumber}/hearing/outcome/adjourn")
+    .headers(setHeaders(username = "ITAG_ALO"))
+    .bodyValue(
+      mapOf(
+        "details" to "details",
+        "adjudicator" to "testing",
+        "reason" to HearingOutcomeAdjournReason.LEGAL_ADVICE,
+        "plea" to HearingOutcomePlea.UNFIT,
+      ),
+    )
+    .exchange()
+    .returnResult(ReportedAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun createQuashed(
     testDataSet: AdjudicationIntTestDataSet,
-  ): ReportedAdjudicationResponse {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/quashed")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "reason" to QuashedReason.APPEAL_UPHELD,
-          "details" to "details",
-        ),
-      )
-      .exchange()
-      .returnResult(ReportedAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): ReportedAdjudicationResponse = webTestClient.post()
+    .uri("/reported-adjudications/${testDataSet.chargeNumber}/outcome/quashed")
+    .headers(setHeaders(username = "ITAG_ALO"))
+    .bodyValue(
+      mapOf(
+        "reason" to QuashedReason.APPEAL_UPHELD,
+        "details" to "details",
+      ),
+    )
+    .exchange()
+    .returnResult(ReportedAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun createChargeProved(
     testDataSet: AdjudicationIntTestDataSet,
-  ): ReportedAdjudicationResponse {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/complete-hearing/charge-proved/v2")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "adjudicator" to "test",
-          "plea" to HearingOutcomePlea.NOT_GUILTY,
-        ),
-      )
-      .exchange()
-      .returnResult(ReportedAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): ReportedAdjudicationResponse = webTestClient.post()
+    .uri("/reported-adjudications/${testDataSet.chargeNumber}/complete-hearing/charge-proved/v2")
+    .headers(setHeaders(username = "ITAG_ALO"))
+    .bodyValue(
+      mapOf(
+        "adjudicator" to "test",
+        "plea" to HearingOutcomePlea.NOT_GUILTY,
+      ),
+    )
+    .exchange()
+    .returnResult(ReportedAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun createPunishments(
     testDataSet: AdjudicationIntTestDataSet,
     startDate: LocalDate? = null,
     punishmentType: PunishmentType,
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/punishments/v2")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "punishments" to
-            listOf(
-              PunishmentRequest(
-                type = punishmentType,
-                duration = 10,
-                suspendedUntil = if (startDate == null) LocalDate.now() else null,
-                startDate = startDate,
-                endDate = startDate?.plusDays(1),
-              ),
+  ): WebTestClient.ResponseSpec = webTestClient.post()
+    .uri("/reported-adjudications/${testDataSet.chargeNumber}/punishments/v2")
+    .headers(setHeaders(username = "ITAG_ALO"))
+    .bodyValue(
+      mapOf(
+        "punishments" to
+          listOf(
+            PunishmentRequest(
+              type = punishmentType,
+              duration = 10,
+              suspendedUntil = if (startDate == null) LocalDate.now() else null,
+              startDate = startDate,
+              endDate = startDate?.plusDays(1),
             ),
-        ),
-      )
-      .exchange()
-      .expectStatus().isCreated
-  }
+          ),
+      ),
+    )
+    .exchange()
+    .expectStatus().isCreated
 
   fun createNotProceed(
     testDataSet: AdjudicationIntTestDataSet,
-  ): ReportedAdjudicationResponse {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/complete-hearing/not-proceed")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "adjudicator" to "test",
-          "plea" to HearingOutcomePlea.NOT_GUILTY,
-          "reason" to NotProceedReason.NOT_FAIR,
-          "details" to "details",
-        ),
-      )
-      .exchange()
-      .returnResult(ReportedAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): ReportedAdjudicationResponse = webTestClient.post()
+    .uri("/reported-adjudications/${testDataSet.chargeNumber}/complete-hearing/not-proceed")
+    .headers(setHeaders(username = "ITAG_ALO"))
+    .bodyValue(
+      mapOf(
+        "adjudicator" to "test",
+        "plea" to HearingOutcomePlea.NOT_GUILTY,
+        "reason" to NotProceedReason.NOT_FAIR,
+        "details" to "details",
+      ),
+    )
+    .exchange()
+    .returnResult(ReportedAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun createDismissed(
     testDataSet: AdjudicationIntTestDataSet,
-  ): ReportedAdjudicationResponse {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/complete-hearing/dismissed")
-      .headers(setHeaders(username = "ITAG_ALO"))
-      .bodyValue(
-        mapOf(
-          "adjudicator" to "test",
-          "plea" to HearingOutcomePlea.NOT_GUILTY,
-          "details" to "details",
-        ),
-      )
-      .exchange()
-      .returnResult(ReportedAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): ReportedAdjudicationResponse = webTestClient.post()
+    .uri("/reported-adjudications/${testDataSet.chargeNumber}/complete-hearing/dismissed")
+    .headers(setHeaders(username = "ITAG_ALO"))
+    .bodyValue(
+      mapOf(
+        "adjudicator" to "test",
+        "plea" to HearingOutcomePlea.NOT_GUILTY,
+        "details" to "details",
+      ),
+    )
+    .exchange()
+    .returnResult(ReportedAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun createReferral(
     testDataSet: AdjudicationIntTestDataSet,
@@ -722,27 +676,23 @@ class IntegrationTestData(
     reportedAdjudicationStatus: ReportedAdjudicationStatus,
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): WebTestClient.ResponseSpec {
-    return webTestClient.put()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/status")
-      .bodyValue(mapOf("status" to reportedAdjudicationStatus))
-      .headers(headers)
-      .exchange()
-  }
+  ): WebTestClient.ResponseSpec = webTestClient.put()
+    .uri("/reported-adjudications/${testDataSet.chargeNumber}/status")
+    .bodyValue(mapOf("status" to reportedAdjudicationStatus))
+    .headers(headers)
+    .exchange()
 
   fun recallCompletedDraftAdjudication(
     testDataSet: AdjudicationIntTestDataSet,
     headers: (HttpHeaders) -> Unit = setHeaders(),
-  ): DraftAdjudicationResponse {
-    return webTestClient.post()
-      .uri("/reported-adjudications/${testDataSet.chargeNumber}/create-draft-adjudication")
-      .headers(headers)
-      .exchange()
-      .expectStatus().is2xxSuccessful
-      .returnResult(DraftAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-  }
+  ): DraftAdjudicationResponse = webTestClient.post()
+    .uri("/reported-adjudications/${testDataSet.chargeNumber}/create-draft-adjudication")
+    .headers(headers)
+    .exchange()
+    .expectStatus().is2xxSuccessful
+    .returnResult(DraftAdjudicationResponse::class.java)
+    .responseBody
+    .blockFirst()!!
 
   fun setHeaders(
     contentType: MediaType = MediaType.APPLICATION_JSON,

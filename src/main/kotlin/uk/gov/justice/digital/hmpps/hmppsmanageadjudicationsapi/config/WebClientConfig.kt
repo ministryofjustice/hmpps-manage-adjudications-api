@@ -36,7 +36,10 @@ class WebClientConfig(
     .also { log.info("WEB CLIENT CONFIG: creating prison nomis api web client") }
 
   @Bean("prisonLocationDetailWebClient")
-  fun prisonLocationDetailWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder) = builder
+  fun prisonLocationDetailWebClient(
+    authorizedClientManager: OAuth2AuthorizedClientManager,
+    builder: WebClient.Builder,
+  ) = builder
     .authorisedWebClient(authorizedClientManager, "prison-location-api", prisonLocationDetailBaseUri, apiTimeout)
     .also { log.info("WEB CLIENT CONFIG: creating manage prison location api web client") }
 

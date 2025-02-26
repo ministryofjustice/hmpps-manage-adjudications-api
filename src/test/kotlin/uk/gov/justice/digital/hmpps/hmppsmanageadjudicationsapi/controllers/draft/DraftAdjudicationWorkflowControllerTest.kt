@@ -95,6 +95,7 @@ class DraftAdjudicationWorkflowControllerTest : TestControllerBase() {
         )
     }
   }
+
   companion object {
     private val BASIC_OFFENCE_REQUEST = OffenceDetailsRequestItem(offenceCode = 3)
   }

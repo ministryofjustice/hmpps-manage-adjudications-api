@@ -36,7 +36,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   main:
-        allow-bean-definition-overriding: true
+    allow-bean-definition-overriding: true
 
 hmpps.sqs:
   provider: localstack

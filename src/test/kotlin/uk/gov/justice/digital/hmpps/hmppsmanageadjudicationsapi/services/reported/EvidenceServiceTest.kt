@@ -26,7 +26,12 @@ class EvidenceServiceTest : ReportedAdjudicationTestBase() {
     .also {
       it.evidence = mutableListOf(
         ReportedEvidence(code = EvidenceCode.PHOTO, identifier = "identifier", details = "details", reporter = "Rod"),
-        ReportedEvidence(code = EvidenceCode.BAGGED_AND_TAGGED, identifier = "identifier", details = "details 3", reporter = "Fred"),
+        ReportedEvidence(
+          code = EvidenceCode.BAGGED_AND_TAGGED,
+          identifier = "identifier",
+          details = "details 3",
+          reporter = "Fred",
+        ),
       )
     }
 

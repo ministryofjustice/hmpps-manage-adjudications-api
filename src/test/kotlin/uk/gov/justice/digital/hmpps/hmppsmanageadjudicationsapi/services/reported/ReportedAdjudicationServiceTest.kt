@@ -308,8 +308,8 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       val response = reportedAdjudicationService.getReportedAdjudicationDetails(report.chargeNumber)
 
       verify(reportedAdjudicationRepository, atLeastOnce()).findByPrisonerNumberAndChargeNumberStartsWith(
-          "A12345",
-          "${report.chargeNumber}-",
+        "A12345",
+        "${report.chargeNumber}-",
       )
 
       assertThat(response.linkedChargeNumbers.size).isEqualTo(2)
@@ -333,10 +333,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
       ReportedAdjudicationStatus.entries.filter { it != ReportedAdjudicationStatus.ACCEPTED }
         .filter { !from.nextStates().contains(it) }.forEach {
-        Assertions.assertThrows(IllegalStateException::class.java) {
-          reportedAdjudicationService.setStatus("1", it)
+          Assertions.assertThrows(IllegalStateException::class.java) {
+            reportedAdjudicationService.setStatus("1", it)
+          }
         }
-      }
     }
 
     @Test
@@ -560,12 +560,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
       it.hearings.add(
         Hearing(
-            locationId = 1,
-            agencyId = "",
-            chargeNumber = "1",
-            oicHearingType = OicHearingType.GOV_ADULT,
-            dateTimeOfHearing = LocalDateTime.now().plusDays(1),
-            oicHearingId = 1L,
+          locationId = 1,
+          agencyId = "",
+          chargeNumber = "1",
+          oicHearingType = OicHearingType.GOV_ADULT,
+          dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+          oicHearingId = 1L,
         ),
       )
     }
@@ -880,9 +880,9 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       )
 
       it.addOutcome(
-          Outcome(code = OutcomeCode.NOT_PROCEED).also {
-              it.createDateTime = LocalDateTime.now().plusDays(1)
-          },
+        Outcome(code = OutcomeCode.NOT_PROCEED).also {
+          it.createDateTime = LocalDateTime.now().plusDays(1)
+        },
       )
     }
 
@@ -955,7 +955,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - Refer gov, not proceed`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-          reportedAdjudicationReferGovNotProceed,
+        reportedAdjudicationReferGovNotProceed,
       )
       val result = reportedAdjudicationService.getReportedAdjudicationDetails("4")
 
@@ -1024,7 +1024,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - Schedule hearing, refer to inad, scheduled hearing, refer to police, prosecution yes`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-          reportedAdjudicationProsecutionAllHearings,
+        reportedAdjudicationProsecutionAllHearings,
       )
       val result = reportedAdjudicationService.getReportedAdjudicationDetails("9")
 
@@ -1049,7 +1049,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - Refer police no hearing, No prosecution, Not proceed`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-          reportedAdjudicationReferPoliceNotProceed,
+        reportedAdjudicationReferPoliceNotProceed,
       )
       val result = reportedAdjudicationService.getReportedAdjudicationDetails("11")
       assertThat(result.outcomes.size).isEqualTo(1)
@@ -1064,7 +1064,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - hearing refers to INAD who chooses NOT_PROCEED `() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-          reportedAdjudicationReferInadNotProceed,
+        reportedAdjudicationReferInadNotProceed,
       )
 
       val result = reportedAdjudicationService.getReportedAdjudicationDetails("12")
@@ -1094,7 +1094,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - refer to police, no prosecution, hearing scheduled, refer to inad, hearing scheduled and adjourned`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-          reportedAdjudicationReferPoliceReferInadAdjourned,
+        reportedAdjudicationReferPoliceReferInadAdjourned,
       )
       val result =
         reportedAdjudicationService.getReportedAdjudicationDetails("14").validateFirstItem().validateSecondItem()
@@ -1109,7 +1109,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - hearing completed - dismissed `() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-          reportedAdjudicationCompletedHearingDismissed,
+        reportedAdjudicationCompletedHearingDismissed,
       )
       val result = reportedAdjudicationService.getReportedAdjudicationDetails("15")
       assertThat(result.outcomes.size).isEqualTo(1)
@@ -1126,7 +1126,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - hearing completed - not proceed `() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-          reportedAdjudicationCompletedHearingNotProceed,
+        reportedAdjudicationCompletedHearingNotProceed,
       )
       val result = reportedAdjudicationService.getReportedAdjudicationDetails("16")
       assertThat(result.outcomes.size).isEqualTo(1)
@@ -1143,7 +1143,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - hearing completed - charge proved `() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-          reportedAdjudicationCompletedHearingChargeProved,
+        reportedAdjudicationCompletedHearingChargeProved,
       )
       val result = reportedAdjudicationService.getReportedAdjudicationDetails("17")
       assertThat(result.outcomes.size).isEqualTo(1)
@@ -1160,7 +1160,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - refer to police, no prosecution, hearing scheduled and adjourned, rescheduled and charge proved `() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-          reportedAdjudicationCompletedHearingAfterAdjourn,
+        reportedAdjudicationCompletedHearingAfterAdjourn,
       )
       val result =
         reportedAdjudicationService.getReportedAdjudicationDetails("18").validateFirstItem().validateSecondItem()
@@ -1178,7 +1178,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - quashed `() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-          reportedAdjudicationCompletedHearingNotProceedQuashed,
+        reportedAdjudicationCompletedHearingNotProceedQuashed,
       )
       val result = reportedAdjudicationService.getReportedAdjudicationDetails("19")
       assertThat(result.outcomes.size).isEqualTo(2)
@@ -1190,7 +1190,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `outcome history DTO - orders migrated and UI data correctly`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
-          reportedAdjudicationWithMigratedAndUIDate,
+        reportedAdjudicationWithMigratedAndUIDate,
       )
       val result = reportedAdjudicationService.getReportedAdjudicationDetails("19")
       assertThat(result.outcomes.size).isEqualTo(1)
@@ -1288,12 +1288,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           )
           it.hearings.add(
             Hearing(
-                dateTimeOfHearing = LocalDateTime.now(),
-                locationId = 1,
-                agencyId = "",
-                oicHearingId = 1,
-                oicHearingType = OicHearingType.GOV,
-                chargeNumber = "1",
+              dateTimeOfHearing = LocalDateTime.now(),
+              locationId = 1,
+              agencyId = "",
+              oicHearingId = 1,
+              oicHearingType = OicHearingType.GOV,
+              chargeNumber = "1",
             ),
           )
           it.hearings.last().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
@@ -1326,12 +1326,12 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           )
           it.hearings.add(
             Hearing(
-                dateTimeOfHearing = LocalDateTime.now(),
-                locationId = 1,
-                agencyId = "",
-                oicHearingId = 1,
-                oicHearingType = OicHearingType.GOV,
-                chargeNumber = "1",
+              dateTimeOfHearing = LocalDateTime.now(),
+              locationId = 1,
+              agencyId = "",
+              oicHearingId = 1,
+              oicHearingType = OicHearingType.GOV,
+              chargeNumber = "1",
             ),
           )
           it.hearings.last().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.NOMIS, adjudicator = "")
@@ -1356,23 +1356,23 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
           it.hearings.add(
             Hearing(
-                dateTimeOfHearing = LocalDateTime.now().plusDays(1),
-                oicHearingType = OicHearingType.GOV_ADULT,
-                locationId = 1,
-                agencyId = "",
-                chargeNumber = "",
+              dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+              oicHearingType = OicHearingType.GOV_ADULT,
+              locationId = 1,
+              agencyId = "",
+              chargeNumber = "",
             ),
           )
           it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD).also { o -> o.createDateTime = LocalDateTime.now() })
           it.addOutcome(
-              Outcome(code = OutcomeCode.REFER_GOV).also { o ->
-                  o.createDateTime = LocalDateTime.now().plusDays(1)
-              },
+            Outcome(code = OutcomeCode.REFER_GOV).also { o ->
+              o.createDateTime = LocalDateTime.now().plusDays(1)
+            },
           )
           it.addOutcome(
-              Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o ->
-                  o.createDateTime = LocalDateTime.now().plusDays(2)
-              },
+            Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o ->
+              o.createDateTime = LocalDateTime.now().plusDays(2)
+            },
           )
         },
       )
@@ -1565,16 +1565,16 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @CsvSource(
-        "CHARGE_PROVED",
-        "QUASHED",
-        "REFER_POLICE",
-        "REFER_INAD",
-        "NOT_PROCEED",
-        "PROSECUTION",
-        "DISMISSED",
-        "ADJOURNED",
-        "UNSCHEDULED",
-        "REFER_GOV",
+      "CHARGE_PROVED",
+      "QUASHED",
+      "REFER_POLICE",
+      "REFER_INAD",
+      "NOT_PROCEED",
+      "PROSECUTION",
+      "DISMISSED",
+      "ADJOURNED",
+      "UNSCHEDULED",
+      "REFER_GOV",
     )
     @ParameterizedTest
     fun `for other states it is always not actionable for originating agency`(status: ReportedAdjudicationStatus) {
@@ -1591,16 +1591,16 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @CsvSource(
-        "CHARGE_PROVED",
-        "QUASHED",
-        "REFER_POLICE",
-        "REFER_INAD",
-        "NOT_PROCEED",
-        "PROSECUTION",
-        "DISMISSED",
-        "ADJOURNED",
-        "UNSCHEDULED",
-        "REFER_GOV",
+      "CHARGE_PROVED",
+      "QUASHED",
+      "REFER_POLICE",
+      "REFER_INAD",
+      "NOT_PROCEED",
+      "PROSECUTION",
+      "DISMISSED",
+      "ADJOURNED",
+      "UNSCHEDULED",
+      "REFER_GOV",
     )
     @ParameterizedTest
     fun `for other states it is always actionable for override agency`(status: ReportedAdjudicationStatus) {
@@ -1697,10 +1697,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       val stringTypes = PunishmentType.additionalDays().map { it.name }
       whenever(
-          reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
-              "12345",
-              stringTypes,
-          ),
+        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
+          "12345",
+          stringTypes,
+        ),
       )
         .thenReturn(listOf(entityBuilder.reportedAdjudication()))
     }
@@ -1846,10 +1846,10 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.clearOutcomes()
           it.addOutcome(Outcome(code = OutcomeCode.REFER_POLICE, actualCreatedDate = LocalDateTime.now()))
           it.addOutcome(
-              Outcome(
-                  code = OutcomeCode.SCHEDULE_HEARING,
-                  actualCreatedDate = LocalDateTime.now().plusDays(1),
-              ),
+            Outcome(
+              code = OutcomeCode.SCHEDULE_HEARING,
+              actualCreatedDate = LocalDateTime.now().plusDays(1),
+            ),
           )
 
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
@@ -1893,11 +1893,11 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "")
           it.hearings.add(
             Hearing(
-                dateTimeOfHearing = LocalDateTime.now().plusDays(1),
-                oicHearingType = OicHearingType.INAD_ADULT,
-                agencyId = "",
-                locationId = 1,
-                chargeNumber = "",
+              dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+              oicHearingType = OicHearingType.INAD_ADULT,
+              agencyId = "",
+              locationId = 1,
+              chargeNumber = "",
             ),
           )
           it.calculateStatus()
@@ -1909,20 +1909,20 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.clearOutcomes()
           it.addOutcome(Outcome(code = OutcomeCode.REFER_POLICE, actualCreatedDate = LocalDateTime.now()))
           it.addOutcome(
-              Outcome(
-                  code = OutcomeCode.SCHEDULE_HEARING,
-                  actualCreatedDate = LocalDateTime.now().plusDays(1),
-              ),
+            Outcome(
+              code = OutcomeCode.SCHEDULE_HEARING,
+              actualCreatedDate = LocalDateTime.now().plusDays(1),
+            ),
           )
 
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "")
           it.hearings.add(
             Hearing(
-                dateTimeOfHearing = LocalDateTime.now().plusDays(1),
-                oicHearingType = OicHearingType.INAD_ADULT,
-                agencyId = "",
-                locationId = 1,
-                chargeNumber = "",
+              dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+              oicHearingType = OicHearingType.INAD_ADULT,
+              agencyId = "",
+              locationId = 1,
+              chargeNumber = "",
             ),
           )
           it.calculateStatus()

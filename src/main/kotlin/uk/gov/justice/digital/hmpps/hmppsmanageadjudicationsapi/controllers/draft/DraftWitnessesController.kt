@@ -41,7 +41,10 @@ class DraftWitnessesController(
 ) : DraftAdjudicationBaseController() {
 
   @PutMapping(value = ["/{id}/witnesses"])
-  @Operation(summary = "Set the witnesses for the draft adjudication.", description = "0 or more witnesses to be supplied")
+  @Operation(
+    summary = "Set the witnesses for the draft adjudication.",
+    description = "0 or more witnesses to be supplied",
+  )
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun setWitnesses(

@@ -10,13 +10,25 @@ class IncidentRoleRuleLookup {
 
     private val adultIncidentRuleDetailByRole = mapOf(
       ATTEMPTS_TO_COMMIT_OFFENCE to Pair("25(a)", "Attempts to commit any of the foregoing offences:"),
-      INCITES_OTHER_TO_COMMIT_OFFENCE to Pair("25(b)", "Incites another prisoner to commit any of the foregoing offences:"),
-      ASSISTS_OTHER_TO_COMMIT_OFFENCE to Pair("25(c)", "Assists another prisoner to commit, or to attempt to commit, any of the foregoing offences:"),
+      INCITES_OTHER_TO_COMMIT_OFFENCE to Pair(
+        "25(b)",
+        "Incites another prisoner to commit any of the foregoing offences:",
+      ),
+      ASSISTS_OTHER_TO_COMMIT_OFFENCE to Pair(
+        "25(c)",
+        "Assists another prisoner to commit, or to attempt to commit, any of the foregoing offences:",
+      ),
     )
     private val youthIncidentRuleDetailByRole = mapOf(
       ATTEMPTS_TO_COMMIT_OFFENCE to Pair("29(a)", "Attempts to commit any of the foregoing offences:"),
-      INCITES_OTHER_TO_COMMIT_OFFENCE to Pair("29(b)", "Incites another inmate to commit any of the foregoing offences:"),
-      ASSISTS_OTHER_TO_COMMIT_OFFENCE to Pair("29(c)", "Assists another inmate to commit, or to attempt to commit, any of the foregoing offences: "),
+      INCITES_OTHER_TO_COMMIT_OFFENCE to Pair(
+        "29(b)",
+        "Incites another inmate to commit any of the foregoing offences:",
+      ),
+      ASSISTS_OTHER_TO_COMMIT_OFFENCE to Pair(
+        "29(c)",
+        "Assists another inmate to commit, or to attempt to commit, any of the foregoing offences: ",
+      ),
     )
 
     fun associatedPrisonerInformationRequired(incidentRoleCode: String?): Boolean = INCITES_OTHER_TO_COMMIT_OFFENCE == incidentRoleCode || ASSISTS_OTHER_TO_COMMIT_OFFENCE == incidentRoleCode

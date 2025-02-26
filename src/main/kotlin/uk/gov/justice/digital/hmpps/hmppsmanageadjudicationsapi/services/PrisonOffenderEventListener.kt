@@ -48,6 +48,7 @@ class PrisonOffenderEventListener(
           )
         }
       }
+
       PRISONER_MERGE_EVENT_TYPE -> {
         if (hmppsDomainEvent.additionalInformation?.reason == "MERGE") {
           prisonerMergeService.merge(
@@ -56,6 +57,7 @@ class PrisonOffenderEventListener(
           )
         }
       }
+
       else -> {
         log.debug("Ignoring message with type $eventType")
       }

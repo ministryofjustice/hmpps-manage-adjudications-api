@@ -14,7 +14,10 @@ import java.util.*
 data class DraftAdjudicationDto(
   @Schema(description = "Draft adjudication id")
   val id: Long,
-  @Schema(description = "The charge number for the reported adjudication, Will only be present if this adjudication has been submitted to Prison-API", example = "4567123")
+  @Schema(
+    description = "The charge number for the reported adjudication, Will only be present if this adjudication has been submitted to Prison-API",
+    example = "4567123",
+  )
   val chargeNumber: String?,
   @Schema(description = "Prison number assigned to a prisoner", example = "G2996UX")
   val prisonerNumber: String,
@@ -75,27 +78,45 @@ data class IncidentDetailsDto(
 
 @Schema(description = "Incident Role")
 data class IncidentRoleDto(
-  @Schema(description = "The incident role code, If not set then it is assumed they committed the offence on their own", example = "25a")
+  @Schema(
+    description = "The incident role code, If not set then it is assumed they committed the offence on their own",
+    example = "25a",
+  )
   val roleCode: String?,
   @Schema(description = "The offence rules related to the given incident role, Will not be set of there is no role code")
   val offenceRule: OffenceRuleDetailsDto?,
-  @Schema(description = "The prison number of the other prisoner involved in the incident, This only applies to role codes 25b and 25c", example = "G2996UX")
+  @Schema(
+    description = "The prison number of the other prisoner involved in the incident, This only applies to role codes 25b and 25c",
+    example = "G2996UX",
+  )
   val associatedPrisonersNumber: String?,
-  @Schema(description = "The name of the other prisoner involved in the incident, This only applies when the prisoner is from outside the establishment", example = "G2996UX")
+  @Schema(
+    description = "The name of the other prisoner involved in the incident, This only applies when the prisoner is from outside the establishment",
+    example = "G2996UX",
+  )
   val associatedPrisonersName: String?,
 )
 
 @Schema(description = "Details of an offence")
 data class OffenceDetailsDto(
-  @Schema(description = "The offence code, This is the unique number relating to the type of offence they have been alleged to have committed", example = "3")
+  @Schema(
+    description = "The offence code, This is the unique number relating to the type of offence they have been alleged to have committed",
+    example = "3",
+  )
   val offenceCode: Int,
   @Schema(description = "The offence rules they have broken")
   val offenceRule: OffenceRuleDetailsDto,
   @Schema(description = "The prison number of the victim involved in the incident, if relevant", example = "G2996UX")
   val victimPrisonersNumber: String? = null,
-  @Schema(description = "The username of the member of staff who is a victim of the incident, if relevant", example = "ABC12D")
+  @Schema(
+    description = "The username of the member of staff who is a victim of the incident, if relevant",
+    example = "ABC12D",
+  )
   val victimStaffUsername: String? = null,
-  @Schema(description = "The name of the victim (who is not a member of staff or a prisoner) involved in the incident, if relevant", example = "Bob Hope")
+  @Schema(
+    description = "The name of the victim (who is not a member of staff or a prisoner) involved in the incident, if relevant",
+    example = "Bob Hope",
+  )
   val victimOtherPersonsName: String? = null,
   @Schema(description = "list of protected characteristics for offence, empty if non involved in offence")
   val protectedCharacteristics: List<Characteristic>,
@@ -103,7 +124,10 @@ data class OffenceDetailsDto(
 
 @Schema(description = "Details of a rule they have broken")
 data class OffenceRuleDetailsDto(
-  @Schema(description = "The paragraph number relating to the offence rule they have been alleged to have broken", example = "25(a)")
+  @Schema(
+    description = "The paragraph number relating to the offence rule they have been alleged to have broken",
+    example = "25(a)",
+  )
   val paragraphNumber: String,
   @Schema(description = "The name relating to the paragraph description", example = "Committed an assault")
   val paragraphDescription: String,

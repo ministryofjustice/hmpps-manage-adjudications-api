@@ -86,8 +86,8 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(eventPublishService, atLeastOnce()).publishEvent(
-          AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME,
-          response,
+        AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME,
+        response,
       )
     }
 
@@ -163,8 +163,8 @@ class OutcomeControllerTest : TestControllerBase() {
 
       verify(outcomeService).createNotProceed("1", NotProceedReason.NOT_FAIR, "details")
       verify(eventPublishService, atLeastOnce()).publishEvent(
-          AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME,
-          response,
+        AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME,
+        response,
       )
     }
 
@@ -254,13 +254,13 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(outcomeService).createReferGov(
-          chargeNumber = "1",
-          referGovReason = ReferGovReason.GOV_INQUIRY,
-          details = "details",
+        chargeNumber = "1",
+        referGovReason = ReferGovReason.GOV_INQUIRY,
+        details = "details",
       )
       verify(eventPublishService, atLeastOnce()).publishEvent(
-          AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV,
-          REPORTED_ADJUDICATION_DTO,
+        AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV,
+        REPORTED_ADJUDICATION_DTO,
       )
     }
 
@@ -333,8 +333,8 @@ class OutcomeControllerTest : TestControllerBase() {
         details = "details",
       )
       verify(eventPublishService, atLeastOnce()).publishEvent(
-          AdjudicationDomainEventType.REF_POLICE_OUTCOME,
-          REPORTED_ADJUDICATION_DTO,
+        AdjudicationDomainEventType.REF_POLICE_OUTCOME,
+        REPORTED_ADJUDICATION_DTO,
       )
     }
 
@@ -399,11 +399,11 @@ class OutcomeControllerTest : TestControllerBase() {
       )
 
       verify(
-          eventPublishService,
-          atLeastOnce(),
+        eventPublishService,
+        atLeastOnce(),
       ).publishEvent(
-          if (outcomeCode == OutcomeCode.QUASHED) AdjudicationDomainEventType.UNQUASHED else AdjudicationDomainEventType.NOT_PROCEED_OUTCOME_DELETED,
-          response,
+        if (outcomeCode == OutcomeCode.QUASHED) AdjudicationDomainEventType.UNQUASHED else AdjudicationDomainEventType.NOT_PROCEED_OUTCOME_DELETED,
+        response,
       )
     }
 
@@ -463,8 +463,8 @@ class OutcomeControllerTest : TestControllerBase() {
 
       verify(outcomeService).createQuashed("1", QUASHED_REQUEST.reason, QUASHED_REQUEST.details)
       verify(eventPublishService, atLeastOnce()).publishEvent(
-          AdjudicationDomainEventType.QUASHED,
-          REPORTED_ADJUDICATION_DTO,
+        AdjudicationDomainEventType.QUASHED,
+        REPORTED_ADJUDICATION_DTO,
       )
     }
 
@@ -561,8 +561,8 @@ class OutcomeControllerTest : TestControllerBase() {
       )
 
       verify(eventPublishService, atLeastOnce()).publishEvent(
-          AdjudicationDomainEventType.OUTCOME_UPDATED,
-          REPORTED_ADJUDICATION_DTO,
+        AdjudicationDomainEventType.OUTCOME_UPDATED,
+        REPORTED_ADJUDICATION_DTO,
       )
     }
 

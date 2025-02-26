@@ -456,45 +456,44 @@ class AmendHearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
 
   companion object {
 
-    fun createRequest(status: ReportedAdjudicationStatus): AmendHearingOutcomeRequest =
-      when (status) {
-        ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD -> AmendHearingOutcomeRequest(
-          adjudicator = "test",
-          details = "details",
-        )
+    fun createRequest(status: ReportedAdjudicationStatus): AmendHearingOutcomeRequest = when (status) {
+      ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD -> AmendHearingOutcomeRequest(
+        adjudicator = "test",
+        details = "details",
+      )
 
-        ReportedAdjudicationStatus.REFER_GOV -> AmendHearingOutcomeRequest(
-          adjudicator = "test",
-          details = "details",
-          referGovReason = ReferGovReason.OTHER,
-        )
+      ReportedAdjudicationStatus.REFER_GOV -> AmendHearingOutcomeRequest(
+        adjudicator = "test",
+        details = "details",
+        referGovReason = ReferGovReason.OTHER,
+      )
 
-        ReportedAdjudicationStatus.DISMISSED -> AmendHearingOutcomeRequest(
-          adjudicator = "test",
-          details = "details",
-          plea = HearingOutcomePlea.GUILTY,
-        )
+      ReportedAdjudicationStatus.DISMISSED -> AmendHearingOutcomeRequest(
+        adjudicator = "test",
+        details = "details",
+        plea = HearingOutcomePlea.GUILTY,
+      )
 
-        ReportedAdjudicationStatus.NOT_PROCEED -> AmendHearingOutcomeRequest(
-          adjudicator = "test",
-          details = "details",
-          notProceedReason = NotProceedReason.NOT_FAIR,
-          plea = HearingOutcomePlea.GUILTY,
-        )
+      ReportedAdjudicationStatus.NOT_PROCEED -> AmendHearingOutcomeRequest(
+        adjudicator = "test",
+        details = "details",
+        notProceedReason = NotProceedReason.NOT_FAIR,
+        plea = HearingOutcomePlea.GUILTY,
+      )
 
-        ReportedAdjudicationStatus.ADJOURNED -> AmendHearingOutcomeRequest(
-          adjudicator = "test",
-          details = "details",
-          adjournReason = HearingOutcomeAdjournReason.HELP,
-          plea = HearingOutcomePlea.GUILTY,
-        )
+      ReportedAdjudicationStatus.ADJOURNED -> AmendHearingOutcomeRequest(
+        adjudicator = "test",
+        details = "details",
+        adjournReason = HearingOutcomeAdjournReason.HELP,
+        plea = HearingOutcomePlea.GUILTY,
+      )
 
-        ReportedAdjudicationStatus.CHARGE_PROVED -> AmendHearingOutcomeRequest(
-          adjudicator = "test",
-          plea = HearingOutcomePlea.GUILTY,
-        )
+      ReportedAdjudicationStatus.CHARGE_PROVED -> AmendHearingOutcomeRequest(
+        adjudicator = "test",
+        plea = HearingOutcomePlea.GUILTY,
+      )
 
-        else -> throw RuntimeException("not supported")
-      }
+      else -> throw RuntimeException("not supported")
+    }
   }
 }

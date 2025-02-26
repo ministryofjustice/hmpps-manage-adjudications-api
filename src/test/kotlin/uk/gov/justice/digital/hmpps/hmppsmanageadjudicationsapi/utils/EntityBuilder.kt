@@ -27,68 +27,68 @@ class EntityBuilder {
     prisonerNumber: String = "A12345",
     offenderBookingId: Long? = null,
   ): ReportedAdjudication = ReportedAdjudication(
-      id = id,
-      chargeNumber = chargeNumber,
-      prisonerNumber = prisonerNumber,
-      offenderBookingId = offenderBookingId,
-      gender = Gender.MALE,
-      originatingAgencyId = agencyId,
-      locationId = 2,
-      locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
-      dateTimeOfIncident = dateTime,
-      dateTimeOfDiscovery = dateTime.plusDays(1),
-      handoverDeadline = dateTime.plusDays(2),
-      isYouthOffender = false,
-      incidentRoleCode = "25a",
-      incidentRoleAssociatedPrisonersNumber = "B23456",
-      incidentRoleAssociatedPrisonersName = "Associated Prisoner",
-      offenceDetails = mutableListOf(
-        ReportedOffence(
-          offenceCode = 1002,
-          victimPrisonersNumber = "A1234AA",
-          victimStaffUsername = "ABC12D",
-          victimOtherPersonsName = "A Person",
-          protectedCharacteristics = mutableListOf(),
-        ),
+    id = id,
+    chargeNumber = chargeNumber,
+    prisonerNumber = prisonerNumber,
+    offenderBookingId = offenderBookingId,
+    gender = Gender.MALE,
+    originatingAgencyId = agencyId,
+    locationId = 2,
+    locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
+    dateTimeOfIncident = dateTime,
+    dateTimeOfDiscovery = dateTime.plusDays(1),
+    handoverDeadline = dateTime.plusDays(2),
+    isYouthOffender = false,
+    incidentRoleCode = "25a",
+    incidentRoleAssociatedPrisonersNumber = "B23456",
+    incidentRoleAssociatedPrisonersName = "Associated Prisoner",
+    offenceDetails = mutableListOf(
+      ReportedOffence(
+        offenceCode = 1002,
+        victimPrisonersNumber = "A1234AA",
+        victimStaffUsername = "ABC12D",
+        victimOtherPersonsName = "A Person",
+        protectedCharacteristics = mutableListOf(),
       ),
-      statement = "Example statement",
-      status = ReportedAdjudicationStatus.AWAITING_REVIEW,
-      damages = mutableListOf(
-        ReportedDamage(
-          code = DamageCode.CLEANING,
-          details = "details",
-          reporter = "Fred",
-        ),
+    ),
+    statement = "Example statement",
+    status = ReportedAdjudicationStatus.AWAITING_REVIEW,
+    damages = mutableListOf(
+      ReportedDamage(
+        code = DamageCode.CLEANING,
+        details = "details",
+        reporter = "Fred",
       ),
-      evidence = mutableListOf(
-        ReportedEvidence(
-          code = EvidenceCode.PHOTO,
-          details = "details",
-          reporter = "Fred",
-          identifier = "identifier",
-        ),
+    ),
+    evidence = mutableListOf(
+      ReportedEvidence(
+        code = EvidenceCode.PHOTO,
+        details = "details",
+        reporter = "Fred",
+        identifier = "identifier",
       ),
-      witnesses = mutableListOf(
-        ReportedWitness(
-          code = WitnessCode.OFFICER,
-          firstName = "prison",
-          lastName = "officer",
-          reporter = "Fred",
-        ),
+    ),
+    witnesses = mutableListOf(
+      ReportedWitness(
+        code = WitnessCode.OFFICER,
+        firstName = "prison",
+        lastName = "officer",
+        reporter = "Fred",
       ),
-      hearings = mutableListOf(
-        createHearing(chargeNumber, dateTime, agencyId, hearingId),
-      ),
-      outcomes = mutableListOf(),
-      disIssueHistory = mutableListOf(),
-      punishments = mutableListOf(),
-      punishmentComments = mutableListOf(),
-      createdOnBehalfOfOfficer = "officer",
-      createdOnBehalfOfReason = "some reason",
-    ).also {
-      it.createDateTime = LocalDateTime.now()
-      it.createdByUserId = ""
-    }
+    ),
+    hearings = mutableListOf(
+      createHearing(chargeNumber, dateTime, agencyId, hearingId),
+    ),
+    outcomes = mutableListOf(),
+    disIssueHistory = mutableListOf(),
+    punishments = mutableListOf(),
+    punishmentComments = mutableListOf(),
+    createdOnBehalfOfOfficer = "officer",
+    createdOnBehalfOfReason = "some reason",
+  ).also {
+    it.createDateTime = LocalDateTime.now()
+    it.createdByUserId = ""
+  }
 
   fun createHearing(
     chargeNumber: String = "1235",
