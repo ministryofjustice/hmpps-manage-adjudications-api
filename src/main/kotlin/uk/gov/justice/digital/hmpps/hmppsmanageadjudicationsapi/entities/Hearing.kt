@@ -24,8 +24,17 @@ enum class OicHearingType {
 
   fun isValidState(isYoungOffender: Boolean) {
     when (isYoungOffender) {
-      true -> if (listOf(GOV_ADULT, INAD_ADULT).contains(this)) throw IllegalStateException("oic hearing type is not applicable for rule set")
-      false -> if (listOf(GOV_YOI, INAD_YOI).contains(this)) throw IllegalStateException("oic hearing type is not applicable for rule set")
+      true -> if (listOf(
+              GOV_ADULT,
+              INAD_ADULT,
+          ).contains(this)
+      ) throw IllegalStateException("oic hearing type is not applicable for rule set")
+
+      false -> if (listOf(
+              GOV_YOI,
+              INAD_YOI,
+          ).contains(this)
+      ) throw IllegalStateException("oic hearing type is not applicable for rule set")
     }
   }
 
@@ -57,12 +66,12 @@ data class Hearing(
   var representative: String? = null,
 ) : BaseEntity() {
   fun toDto(): HearingDto = HearingDto(
-      id = this.id,
-      locationId = this.locationId,
-      locationUuid = this.locationUuid,
-      dateTimeOfHearing = this.dateTimeOfHearing,
-      oicHearingType = this.oicHearingType,
-      outcome = this.hearingOutcome?.toDto(),
-      agencyId = this.agencyId,
-    )
+    id = this.id,
+    locationId = this.locationId,
+    locationUuid = this.locationUuid,
+    dateTimeOfHearing = this.dateTimeOfHearing,
+    oicHearingType = this.oicHearingType,
+    outcome = this.hearingOutcome?.toDto(),
+    agencyId = this.agencyId,
+  )
 }

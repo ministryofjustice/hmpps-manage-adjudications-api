@@ -15,7 +15,7 @@ data class DisIssueHistory(
   var dateTimeOfIssue: LocalDateTime,
 ) : BaseEntity() {
   fun toDto(): DisIssueHistoryDto = DisIssueHistoryDto(
-      issuingOfficer = this.issuingOfficer,
-      dateTimeOfIssue = this.dateTimeOfIssue,
-    )
+    issuingOfficer = this.issuingOfficer,
+    dateTimeOfIssue = this.dateTimeOfIssue,
+  )
 }

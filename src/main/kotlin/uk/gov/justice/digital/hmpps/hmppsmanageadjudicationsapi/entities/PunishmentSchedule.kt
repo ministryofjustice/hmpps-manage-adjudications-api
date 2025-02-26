@@ -19,13 +19,13 @@ data class PunishmentSchedule(
   var suspendedUntil: LocalDate? = null,
 ) : BaseEntity() {
   fun toDto(): PunishmentScheduleDto = PunishmentScheduleDto(
-      days = this.duration ?: 0,
-      startDate = this.startDate,
-      endDate = this.endDate,
-      suspendedUntil = this.suspendedUntil,
-      duration = this.duration,
-      measurement = this.measurement,
-    )
+    days = this.duration ?: 0,
+    startDate = this.startDate,
+    endDate = this.endDate,
+    suspendedUntil = this.suspendedUntil,
+    duration = this.duration,
+    measurement = this.measurement,
+  )
 }
 
 enum class Measurement {

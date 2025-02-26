@@ -41,7 +41,13 @@ class HearingService(
   authenticationFacade,
 ) {
 
-  fun createHearing(chargeNumber: String, locationId: Long, locationUuid: UUID? = null, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
+  fun createHearing(
+    chargeNumber: String,
+    locationId: Long,
+    locationUuid: UUID? = null,
+    dateTimeOfHearing: LocalDateTime,
+    oicHearingType: OicHearingType,
+  ): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
       it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED)
@@ -75,7 +81,13 @@ class HearingService(
     }
   }
 
-  fun amendHearing(chargeNumber: String, locationId: Long, locationUuid: UUID? = null, dateTimeOfHearing: LocalDateTime, oicHearingType: OicHearingType): ReportedAdjudicationDto {
+  fun amendHearing(
+    chargeNumber: String,
+    locationId: Long,
+    locationUuid: UUID? = null,
+    dateTimeOfHearing: LocalDateTime,
+    oicHearingType: OicHearingType,
+  ): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       oicHearingType.isValidState(it.isYouthOffender)
       it.status.validateTransition(ReportedAdjudicationStatus.SCHEDULED, ReportedAdjudicationStatus.UNSCHEDULED)
@@ -106,7 +118,8 @@ class HearingService(
       it.hearings.remove(hearingToRemove)
       it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
 
-      if (reportedAdjudication.getOutcomeHistory().shouldRemoveLastScheduleHearing()) it.getOutcomeToRemove().deleted = true
+      if (reportedAdjudication.getOutcomeHistory().shouldRemoveLastScheduleHearing()) it.getOutcomeToRemove().deleted =
+        true
     }.calculateStatus()
 
     return saveToDto(reportedAdjudication).also {
@@ -153,21 +166,23 @@ class HearingService(
     )
   }
 
-  private fun toHearingSummaries(hearings: List<Hearing>, adjudications: Map<String, ReportedAdjudication>): List<HearingSummaryDto> =
-    hearings.map {
-      val adjudication = adjudications[it.chargeNumber]!!
-      HearingSummaryDto(
-        id = it.id!!,
-        dateTimeOfHearing = it.dateTimeOfHearing,
-        dateTimeOfDiscovery = adjudication.dateTimeOfDiscovery,
-        prisonerNumber = adjudication.prisonerNumber,
-        chargeNumber = it.chargeNumber,
-        oicHearingType = it.oicHearingType,
-        status = adjudication.status,
-        locationId = it.locationId,
-        locationUuid = it.locationUuid,
-      )
-    }.sortedBy { it.dateTimeOfHearing }
+  private fun toHearingSummaries(
+    hearings: List<Hearing>,
+    adjudications: Map<String, ReportedAdjudication>,
+  ): List<HearingSummaryDto> = hearings.map {
+    val adjudication = adjudications[it.chargeNumber]!!
+    HearingSummaryDto(
+      id = it.id!!,
+      dateTimeOfHearing = it.dateTimeOfHearing,
+      dateTimeOfDiscovery = adjudication.dateTimeOfDiscovery,
+      prisonerNumber = adjudication.prisonerNumber,
+      chargeNumber = it.chargeNumber,
+      oicHearingType = it.oicHearingType,
+      status = adjudication.status,
+      locationId = it.locationId,
+      locationUuid = it.locationUuid,
+    )
+  }.sortedBy { it.dateTimeOfHearing }
 
   companion object {
 
@@ -194,7 +209,9 @@ class HearingService(
     fun ReportedAdjudication.calcFirstHearingDate(): LocalDateTime? = this.hearings.minOfOrNull { it.dateTimeOfHearing }
 
     fun Hearing.canDelete(): Hearing {
-      if (OutcomeCode.referrals().contains(this.hearingOutcome?.code?.outcomeCode) || this.hearingOutcome?.code == HearingOutcomeCode.COMPLETE) {
+      if (OutcomeCode.referrals()
+          .contains(this.hearingOutcome?.code?.outcomeCode) || this.hearingOutcome?.code == HearingOutcomeCode.COMPLETE
+      ) {
         throw ValidationException("Unable to delete hearing via api DEL/hearing - outcome associated to this hearing")
       }
       return this

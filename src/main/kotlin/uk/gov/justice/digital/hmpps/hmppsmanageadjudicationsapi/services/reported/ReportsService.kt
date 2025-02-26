@@ -38,8 +38,7 @@ class ReportsService(
     endDate: LocalDate,
     statuses: List<ReportedAdjudicationStatus>,
     pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> =
-    reportedAdjudicationRepository.findAllReportsByAgency(
+  ): Page<ReportedAdjudicationDto> = reportedAdjudicationRepository.findAllReportsByAgency(
       agencyId = authenticationFacade.activeCaseload,
       startDate = reportsFrom(startDate),
       endDate = reportsTo(endDate),
@@ -56,8 +55,7 @@ class ReportsService(
     statuses: List<ReportedAdjudicationStatus>,
     transferType: TransferType,
     pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> =
-    when (transferType) {
+  ): Page<ReportedAdjudicationDto> = when (transferType) {
       TransferType.IN -> reportedAdjudicationRepository.findTransfersInByAgency(
         agencyId = authenticationFacade.activeCaseload,
         statuses = statuses.filter { transferReviewStatuses.contains(it) }.map { it.name },
@@ -274,11 +272,9 @@ class ReportsService(
     )
   }
 
-  fun getReportsForPrisoner(prisonerNumber: String): List<ReportedAdjudicationDto> =
-    reportedAdjudicationRepository.findByPrisonerNumber(prisonerNumber = prisonerNumber).map { it.toDto(offenceCodeLookupService) }
+  fun getReportsForPrisoner(prisonerNumber: String): List<ReportedAdjudicationDto> = reportedAdjudicationRepository.findByPrisonerNumber(prisonerNumber = prisonerNumber).map { it.toDto(offenceCodeLookupService) }
 
-  fun getReportsForBooking(offenderBookingId: Long): List<ReportedAdjudicationDto> =
-    reportedAdjudicationRepository.findByOffenderBookingId(offenderBookingId).map { it.toDto(offenceCodeLookupService) }
+  fun getReportsForBooking(offenderBookingId: Long): List<ReportedAdjudicationDto> = reportedAdjudicationRepository.findByOffenderBookingId(offenderBookingId).map { it.toDto(offenceCodeLookupService) }
 
   companion object {
     val minDate: LocalDate = LocalDate.EPOCH

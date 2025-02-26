@@ -101,15 +101,18 @@ class AmendHearingOutcomeService(
         referralService.removeReferral(
           chargeNumber = chargeNumber,
         )
+
       ReportedAdjudicationStatus.DISMISSED, ReportedAdjudicationStatus.NOT_PROCEED, ReportedAdjudicationStatus.CHARGE_PROVED ->
         completedHearingService.removeOutcome(
           chargeNumber = chargeNumber,
         )
+
       ReportedAdjudicationStatus.ADJOURNED ->
         hearingOutcomeService.removeAdjourn(
           chargeNumber = chargeNumber,
           recalculateStatus = false,
         )
+
       else -> throw RuntimeException("should not of made it to this point - fatal")
     }
 
@@ -123,6 +126,7 @@ class AmendHearingOutcomeService(
           details = amendHearingOutcomeRequest.details ?: throw ValidationException("missing details"),
           validate = false,
         )
+
       ReportedAdjudicationStatus.DISMISSED ->
         completedHearingService.createDismissed(
           chargeNumber = chargeNumber,
@@ -131,6 +135,7 @@ class AmendHearingOutcomeService(
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
           validate = false,
         )
+
       ReportedAdjudicationStatus.NOT_PROCEED ->
         completedHearingService.createNotProceed(
           chargeNumber = chargeNumber,
@@ -140,6 +145,7 @@ class AmendHearingOutcomeService(
           notProceedReason = amendHearingOutcomeRequest.notProceedReason ?: throw ValidationException("missing reason"),
           validate = false,
         )
+
       ReportedAdjudicationStatus.ADJOURNED ->
         hearingOutcomeService.createAdjourn(
           chargeNumber = chargeNumber,
@@ -148,6 +154,7 @@ class AmendHearingOutcomeService(
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
           adjournReason = amendHearingOutcomeRequest.adjournReason ?: throw ValidationException("missing reason"),
         )
+
       ReportedAdjudicationStatus.CHARGE_PROVED ->
         completedHearingService.createChargeProved(
           chargeNumber = chargeNumber,
@@ -155,25 +162,29 @@ class AmendHearingOutcomeService(
           plea = amendHearingOutcomeRequest.plea ?: throw ValidationException("missing plea"),
           validate = false,
         )
+
       else -> throw RuntimeException("should not of made it to this point - fatal")
     }
   }
 
   companion object {
 
-    val referrals = listOf(ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_INAD, ReportedAdjudicationStatus.REFER_GOV)
+    val referrals = listOf(
+        ReportedAdjudicationStatus.REFER_POLICE,
+        ReportedAdjudicationStatus.REFER_INAD,
+        ReportedAdjudicationStatus.REFER_GOV,
+    )
 
-    fun ReportedAdjudicationStatus.mapStatusToHearingOutcomeCode() =
-      when (this) {
-        ReportedAdjudicationStatus.REFER_POLICE -> HearingOutcomeCode.REFER_POLICE
-        ReportedAdjudicationStatus.REFER_INAD -> HearingOutcomeCode.REFER_INAD
-        ReportedAdjudicationStatus.DISMISSED -> HearingOutcomeCode.COMPLETE
-        ReportedAdjudicationStatus.NOT_PROCEED -> HearingOutcomeCode.COMPLETE
-        ReportedAdjudicationStatus.ADJOURNED -> HearingOutcomeCode.ADJOURN
-        ReportedAdjudicationStatus.CHARGE_PROVED -> HearingOutcomeCode.COMPLETE
-        ReportedAdjudicationStatus.REFER_GOV -> HearingOutcomeCode.REFER_GOV
-        else -> throw ValidationException("unable to amend from this status")
-      }
+    fun ReportedAdjudicationStatus.mapStatusToHearingOutcomeCode() = when (this) {
+      ReportedAdjudicationStatus.REFER_POLICE -> HearingOutcomeCode.REFER_POLICE
+      ReportedAdjudicationStatus.REFER_INAD -> HearingOutcomeCode.REFER_INAD
+      ReportedAdjudicationStatus.DISMISSED -> HearingOutcomeCode.COMPLETE
+      ReportedAdjudicationStatus.NOT_PROCEED -> HearingOutcomeCode.COMPLETE
+      ReportedAdjudicationStatus.ADJOURNED -> HearingOutcomeCode.ADJOURN
+      ReportedAdjudicationStatus.CHARGE_PROVED -> HearingOutcomeCode.COMPLETE
+      ReportedAdjudicationStatus.REFER_GOV -> HearingOutcomeCode.REFER_GOV
+      else -> throw ValidationException("unable to amend from this status")
+    }
 
     fun ReportedAdjudicationStatus.mapStatusToOutcomeCode(): OutcomeCode? =
       when (this) {
@@ -195,7 +206,9 @@ class AmendHearingOutcomeService(
         ReportedAdjudicationStatus.NOT_PROCEED,
         ReportedAdjudicationStatus.ADJOURNED,
         ReportedAdjudicationStatus.CHARGE_PROVED,
-        -> {}
+        -> {
+        }
+
         else -> throw ValidationException("unable to amend $direction $this")
       }
     }

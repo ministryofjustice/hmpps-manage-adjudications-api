@@ -26,32 +26,30 @@ import java.time.LocalDate
 class PunishmentsReportQueryService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
-  fun getReportsWithSuspendedPunishments(prisonerNumber: String) = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
-    status = ReportedAdjudicationStatus.CHARGE_PROVED,
-    prisonerNumber = prisonerNumber,
-    date = suspendedCutOff,
-  )
+  fun getReportsWithSuspendedPunishments(prisonerNumber: String) =
+    reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
+      status = ReportedAdjudicationStatus.CHARGE_PROVED,
+      prisonerNumber = prisonerNumber,
+      date = suspendedCutOff,
+    )
 
   @Deprecated(
     """this can be removed at some point in the near future ie after 1.9.2024 approximately. 
       Its purpose is to include nomis records where nomis allowed the user to incorrectly specify suspended until dates """,
   )
-  fun getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber: String) =
-    reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(
+  fun getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber: String) = reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(
       prisonerNumber = prisonerNumber,
       statuses = ReportedAdjudicationStatus.corruptedStatuses(),
       date = corruptedSuspendedCutOff,
     )
 
-  fun getReportsWithActiveAdditionalDays(prisonerNumber: String, punishmentType: PunishmentType) =
-    reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(
+  fun getReportsWithActiveAdditionalDays(prisonerNumber: String, punishmentType: PunishmentType) = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(
       status = ReportedAdjudicationStatus.CHARGE_PROVED,
       prisonerNumber = prisonerNumber,
       punishmentType = punishmentType,
     )
 
-  fun getReportsWithActivePunishments(offenderBookingId: Long): List<Pair<String, List<Punishment>>> =
-    reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
+  fun getReportsWithActivePunishments(offenderBookingId: Long): List<Pair<String, List<Punishment>>> = reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
       status = ReportedAdjudicationStatus.CHARGE_PROVED,
       offenderBookingId = offenderBookingId,
       cutOff = LocalDate.now().minusDays(1),
@@ -72,8 +70,8 @@ class PunishmentsReportService(
 ) {
   fun getSuspendedPunishments(prisonerNumber: String, chargeNumber: String): List<SuspendedPunishmentDto> {
     val reportsWithSuspendedPunishments = punishmentsReportQueryService.getReportsWithSuspendedPunishments(prisonerNumber = prisonerNumber).toMutableList()
-      .union(punishmentsReportQueryService.getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber = prisonerNumber))
-      .filter { it.chargeNumber != chargeNumber }
+        .union(punishmentsReportQueryService.getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber = prisonerNumber))
+        .filter { it.chargeNumber != chargeNumber }
 
     val includeAdditionalDays = includeAdditionalDays(chargeNumber)
 
@@ -81,7 +79,8 @@ class PunishmentsReportService(
       val corrupted = ReportedAdjudicationStatus.corruptedStatuses().contains(it.status)
       val cutOff = if (corrupted) corruptedSuspendedCutOff else suspendedCutOff
       it.getPunishments().suspendedPunishmentsToActivate(cutOff)
-        .filter { punishment -> punishment.type.includeInSuspendedPunishments(includeAdditionalDays) }.map { punishment ->
+        .filter { punishment -> punishment.type.includeInSuspendedPunishments(includeAdditionalDays) }
+        .map { punishment ->
           val schedule = punishment.latestSchedule()
 
           SuspendedPunishmentDto(
@@ -93,15 +92,26 @@ class PunishmentsReportService(
               privilegeType = punishment.privilegeType,
               otherPrivilege = punishment.otherPrivilege,
               stoppagePercentage = punishment.stoppagePercentage,
-              schedule = PunishmentScheduleDto(days = schedule.duration ?: 0, suspendedUntil = schedule.suspendedUntil, duration = schedule.duration, measurement = Measurement.DAYS),
+              schedule = PunishmentScheduleDto(
+                  days = schedule.duration ?: 0,
+                  suspendedUntil = schedule.suspendedUntil,
+                  duration = schedule.duration,
+                  measurement = Measurement.DAYS,
+              ),
             ),
           )
         }
     }.flatten()
   }
 
-  fun getReportsWithAdditionalDays(chargeNumber: String, prisonerNumber: String, punishmentType: PunishmentType): List<AdditionalDaysDto> {
-    if (!PunishmentType.additionalDays().contains(punishmentType)) throw ValidationException("Punishment type must be ADDITIONAL_DAYS or PROSPECTIVE_DAYS")
+  fun getReportsWithAdditionalDays(
+    chargeNumber: String,
+    prisonerNumber: String,
+    punishmentType: PunishmentType,
+  ): List<AdditionalDaysDto> {
+    if (!PunishmentType.additionalDays()
+        .contains(punishmentType)
+    ) throw ValidationException("Punishment type must be ADDITIONAL_DAYS or PROSPECTIVE_DAYS")
 
     val reportedAdjudication = findByChargeNumber(chargeNumber)
 
@@ -120,7 +130,11 @@ class PunishmentsReportService(
               id = punishment.id,
               type = punishment.type,
               consecutiveChargeNumber = punishment.consecutiveToChargeNumber,
-              schedule = PunishmentScheduleDto(days = schedule.duration ?: 0, duration = schedule.duration, measurement = Measurement.DAYS),
+              schedule = PunishmentScheduleDto(
+                  days = schedule.duration ?: 0,
+                  duration = schedule.duration,
+                  measurement = Measurement.DAYS,
+              ),
             ),
           )
         }

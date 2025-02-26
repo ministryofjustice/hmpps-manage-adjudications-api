@@ -70,8 +70,7 @@ class PunishmentCommentService(
   }
 
   companion object {
-    fun List<PunishmentComment>.getPunishmentComment(id: Long): PunishmentComment =
-      this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Punishment comment id $id is not found")
+    fun List<PunishmentComment>.getPunishmentComment(id: Long): PunishmentComment = this.firstOrNull { it.id == id } ?: throw EntityNotFoundException("Punishment comment id $id is not found")
 
     fun String.validatePunishmentCommentAction(username: String) {
       if (this != username) {

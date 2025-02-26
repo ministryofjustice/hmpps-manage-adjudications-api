@@ -30,15 +30,15 @@ data class Outcome(
   fun getCreatedDateTime(): LocalDateTime? = this.actualCreatedDate ?: this.createDateTime
 
   fun toDto(hasLinkedAda: Boolean): OutcomeDto = OutcomeDto(
-      id = this.id,
-      code = this.code,
-      details = this.details,
-      // added due to migration - not applicable for DPS app itself
-      reason = this.notProceedReason ?: if (this.code == OutcomeCode.NOT_PROCEED) NotProceedReason.OTHER else null,
-      quashedReason = this.quashedReason,
-      referGovReason = this.referGovReason,
-      canRemove = !hasLinkedAda,
-    )
+    id = this.id,
+    code = this.code,
+    details = this.details,
+    // added due to migration - not applicable for DPS app itself
+    reason = this.notProceedReason ?: if (this.code == OutcomeCode.NOT_PROCEED) NotProceedReason.OTHER else null,
+    quashedReason = this.quashedReason,
+    referGovReason = this.referGovReason,
+    canRemove = !hasLinkedAda,
+  )
 }
 
 enum class OutcomeCode(val status: ReportedAdjudicationStatus) {

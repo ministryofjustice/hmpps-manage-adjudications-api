@@ -51,8 +51,7 @@ class PrintSupportService(
     }
     val punishmentCutOff = LocalDate.now().minusDays(1)
     val chargesWithActiveSuspendedPunishments = otherChargesOnSentence.filter {
-      it.getPunishments().any {
-          punishment ->
+      it.getPunishments().any { punishment ->
         punishment.isActiveSuspended(punishmentCutOff) && !punishment.isCorrupted()
       }
     }.sortedBy { it.dateTimeOfDiscovery }
@@ -61,8 +60,7 @@ class PrintSupportService(
     val sameOffenceCharges = otherChargesOnSentence.filter {
       it.offenceDetails.matchesOffence(offenceCode = offenceCode) || it.offenceDetails.matchesLegacyOffence(offenceCode = offenceCode)
     }
-    val existingPunishments = otherChargesOnSentence.flatMap { it.getPunishments() }.filter {
-        punishment ->
+    val existingPunishments = otherChargesOnSentence.flatMap { it.getPunishments() }.filter { punishment ->
       punishment.isActivePunishment(punishmentCutOff)
     }
 
@@ -78,8 +76,7 @@ class PrintSupportService(
           dateOfIncident = it.dateTimeOfIncident.toLocalDate(),
           dateOfDiscovery = it.dateTimeOfDiscovery.toLocalDate(),
           offenceDetails = it.offenceDetails.first().toDto(offenceCodeLookupService, it.isYouthOffender, it.gender),
-          suspendedPunishments = it.getPunishments().filter {
-              punishment ->
+          suspendedPunishments = it.getPunishments().filter { punishment ->
             punishment.isActiveSuspended(punishmentCutOff) && !punishment.isCorrupted()
           }.toPunishmentsDto(false).sortedBy { p -> p.schedule.suspendedUntil },
         )
@@ -104,10 +101,8 @@ class PrintSupportService(
 
   companion object {
 
-    fun List<ReportedOffence>.matchesOffence(offenceCode: Int): Boolean =
-      this.first().offenceCode != -0 && this.first().offenceCode == offenceCode
+    fun List<ReportedOffence>.matchesOffence(offenceCode: Int): Boolean = this.first().offenceCode != -0 && this.first().offenceCode == offenceCode
 
-    fun List<ReportedOffence>.matchesLegacyOffence(offenceCode: Int): Boolean =
-      this.first().offenceCode == 0 && this.first().nomisOffenceCode != null && offenceCode.containsNomisCode(this.first().nomisOffenceCode!!)
+    fun List<ReportedOffence>.matchesLegacyOffence(offenceCode: Int): Boolean = this.first().offenceCode == 0 && this.first().nomisOffenceCode != null && offenceCode.containsNomisCode(this.first().nomisOffenceCode!!)
   }
 }

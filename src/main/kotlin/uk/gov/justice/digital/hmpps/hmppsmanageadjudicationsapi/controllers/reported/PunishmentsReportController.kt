@@ -57,7 +57,8 @@ class PunishmentsReportController(
   fun getSuspendedPunishments(
     @PathVariable(name = "prisonerNumber") prisonerNumber: String,
     @RequestParam(name = "chargeNumber") chargeNumber: String,
-  ): List<SuspendedPunishmentDto> = punishmentsReportService.getSuspendedPunishments(prisonerNumber = prisonerNumber, chargeNumber = chargeNumber)
+  ): List<SuspendedPunishmentDto> =
+    punishmentsReportService.getSuspendedPunishments(prisonerNumber = prisonerNumber, chargeNumber = chargeNumber)
 
   @PreAuthorize("hasRole('ADJUDICATIONS_REVIEWER') and hasAuthority('SCOPE_write')")
   @Operation(summary = "get a list of active additional days reports by prisoner for a consecutive punishment")
@@ -68,10 +69,10 @@ class PunishmentsReportController(
     @RequestParam(name = "type") punishmentType: PunishmentType,
     @RequestParam(name = "chargeNumber") chargeNumber: String,
   ): List<AdditionalDaysDto> = punishmentsReportService.getReportsWithAdditionalDays(
-      chargeNumber = chargeNumber,
-      prisonerNumber = prisonerNumber,
-      punishmentType = punishmentType,
-    )
+    chargeNumber = chargeNumber,
+    prisonerNumber = prisonerNumber,
+    punishmentType = punishmentType,
+  )
 
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")
   @Operation(summary = "get a list of active punishments by offenderBookingId")

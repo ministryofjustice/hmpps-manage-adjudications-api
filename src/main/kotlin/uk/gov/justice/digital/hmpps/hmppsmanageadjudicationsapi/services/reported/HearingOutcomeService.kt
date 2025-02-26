@@ -37,8 +37,7 @@ class HearingOutcomeService(
     code: HearingOutcomeCode,
     adjudicator: String,
     details: String,
-  ): ReportedAdjudicationDto =
-    createHearingOutcome(
+  ): ReportedAdjudicationDto = createHearingOutcome(
       chargeNumber = chargeNumber,
       code = code.validateReferral(),
       adjudicator = adjudicator,
@@ -51,8 +50,7 @@ class HearingOutcomeService(
     adjournReason: HearingOutcomeAdjournReason,
     details: String,
     plea: HearingOutcomePlea,
-  ): ReportedAdjudicationDto =
-    createHearingOutcome(
+  ): ReportedAdjudicationDto = createHearingOutcome(
       chargeNumber = chargeNumber,
       code = HearingOutcomeCode.ADJOURN,
       adjudicator = adjudicator,
@@ -177,8 +175,7 @@ class HearingOutcomeService(
       }
     }
 
-    fun ReportedAdjudication.latestHearingOutcome(): HearingOutcome =
-      this.getHearing().hearingOutcome ?: throw EntityNotFoundException("outcome not found for hearing")
+    fun ReportedAdjudication.latestHearingOutcome(): HearingOutcome = this.getHearing().hearingOutcome ?: throw EntityNotFoundException("outcome not found for hearing")
   }
 
   fun HearingOutcome.isLatestSameAsAmendRequest(outcomeCodeToAmend: HearingOutcomeCode): HearingOutcome {

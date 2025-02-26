@@ -48,9 +48,9 @@ data class ReportedEvidence(
   var dateAdded: LocalDateTime? = null,
 ) : BaseEntity() {
   fun toDto(): ReportedEvidenceDto = ReportedEvidenceDto(
-      code = this.code,
-      identifier = this.identifier,
-      details = this.details,
-      reporter = this.reporter,
-    )
+    code = this.code,
+    identifier = this.identifier,
+    details = this.details,
+    reporter = this.reporter,
+  )
 }

@@ -18,13 +18,12 @@ data class RehabilitativeActivity(
   var totalSessions: Int? = null,
   var completed: Boolean? = null,
 ) : BaseEntity() {
-  fun toDto(): RehabilitativeActivityDto =
-    RehabilitativeActivityDto(
-      id = this.id,
-      details = this.details,
-      monitor = this.monitor,
-      endDate = this.endDate,
-      totalSessions = this.totalSessions,
-      completed = this.completed,
-    )
+  fun toDto(): RehabilitativeActivityDto = RehabilitativeActivityDto(
+    id = this.id,
+    details = this.details,
+    monitor = this.monitor,
+    endDate = this.endDate,
+    totalSessions = this.totalSessions,
+    completed = this.completed,
+  )
 }

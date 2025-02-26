@@ -44,7 +44,8 @@ class DraftAdjudicationWorkflowController(
   )
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
-  fun completeDraftAdjudication(@PathVariable(name = "id") id: Long): ReportedAdjudicationDto = adjudicationWorkflowService.completeDraftAdjudication(id)
+  fun completeDraftAdjudication(@PathVariable(name = "id") id: Long): ReportedAdjudicationDto =
+    adjudicationWorkflowService.completeDraftAdjudication(id)
 
   @PostMapping(value = ["/{id}/alo-offence-details"])
   @Operation(
@@ -73,7 +74,7 @@ class DraftAdjudicationWorkflowController(
     @RequestBody @Valid
     offenceDetailsRequest: OffenceDetailsRequest,
   ): ReportedAdjudicationDto = adjudicationWorkflowService.setOffenceDetailsAndCompleteDraft(
-      id = id,
-      offenceDetails = offenceDetailsRequest.offenceDetails,
-    )
+    id = id,
+    offenceDetails = offenceDetailsRequest.offenceDetails,
+  )
 }

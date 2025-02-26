@@ -56,8 +56,7 @@ class ReportedAdjudicationService(
     }
   }
 
-  fun lastOutcomeHasReferralOutcome(chargeNumber: String): Boolean =
-    findByChargeNumber(chargeNumber).getOutcomeHistory().lastOrNull()?.outcome?.referralOutcome != null
+  fun lastOutcomeHasReferralOutcome(chargeNumber: String): Boolean = findByChargeNumber(chargeNumber).getOutcomeHistory().lastOrNull()?.outcome?.referralOutcome != null
 
   fun setStatus(chargeNumber: String, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
     val username = if (status == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername

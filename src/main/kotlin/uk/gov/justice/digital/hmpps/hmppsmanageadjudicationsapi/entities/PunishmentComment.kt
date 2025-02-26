@@ -20,12 +20,12 @@ data class PunishmentComment(
   var actualCreatedDate: LocalDateTime? = null,
 ) : BaseEntity() {
   fun toDto(): PunishmentCommentDto = PunishmentCommentDto(
-      id = this.id,
-      comment = this.comment,
-      reasonForChange = this.reasonForChange,
-      createdByUserId = this.nomisCreatedBy ?: this.createdByUserId,
-      dateTime = this.actualCreatedDate ?: this.modifiedDateTime ?: this.createDateTime,
-    )
+    id = this.id,
+    comment = this.comment,
+    reasonForChange = this.reasonForChange,
+    createdByUserId = this.nomisCreatedBy ?: this.createdByUserId,
+    dateTime = this.actualCreatedDate ?: this.modifiedDateTime ?: this.createDateTime,
+  )
 }
 
 enum class ReasonForChange {

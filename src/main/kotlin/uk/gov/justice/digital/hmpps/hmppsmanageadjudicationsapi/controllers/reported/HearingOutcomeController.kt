@@ -130,21 +130,21 @@ class HearingOutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody referralRequest: ReferralRequest,
   ): ReportedAdjudicationResponse = eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.HEARING_REFERRAL_CREATED },
-        ),
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.HEARING_REFERRAL_CREATED },
       ),
-      controllerAction = {
-        referralService.createReferral(
-          chargeNumber = chargeNumber,
-          code = referralRequest.code.validateReferral(),
-          adjudicator = referralRequest.adjudicator,
-          details = referralRequest.details,
-          referGovReason = referralRequest.referGovReason,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      referralService.createReferral(
+        chargeNumber = chargeNumber,
+        code = referralRequest.code.validateReferral(),
+        adjudicator = referralRequest.adjudicator,
+        details = referralRequest.details,
+        referGovReason = referralRequest.referGovReason,
+      )
+    },
+  )
 
   @Operation(summary = "remove a referral")
   @DeleteMapping(value = ["/{chargeNumber}/remove-referral"])
@@ -152,22 +152,22 @@ class HearingOutcomeController(
   fun removeReferral(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse = eventPublishWrapper(
-      controllerAction = {
-        referralService.removeReferral(
-          chargeNumber = chargeNumber,
-        )
-      },
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = {
-            when (it.status) {
-              ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_GOV, ReportedAdjudicationStatus.REFER_INAD -> AdjudicationDomainEventType.REFERRAL_OUTCOME_DELETED
-              else -> if (it.hearingIdActioned != null) AdjudicationDomainEventType.HEARING_REFERRAL_DELETED else AdjudicationDomainEventType.REFERRAL_DELETED
-            }
-          },
-        ),
+    controllerAction = {
+      referralService.removeReferral(
+        chargeNumber = chargeNumber,
+      )
+    },
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = {
+          when (it.status) {
+            ReportedAdjudicationStatus.REFER_POLICE, ReportedAdjudicationStatus.REFER_GOV, ReportedAdjudicationStatus.REFER_INAD -> AdjudicationDomainEventType.REFERRAL_OUTCOME_DELETED
+            else -> if (it.hearingIdActioned != null) AdjudicationDomainEventType.HEARING_REFERRAL_DELETED else AdjudicationDomainEventType.REFERRAL_DELETED
+          }
+        },
       ),
-    )
+    ),
+  )
 
   @Operation(
     summary = "create a adjourn for latest hearing",
@@ -194,21 +194,21 @@ class HearingOutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody adjournRequest: AdjournRequest,
   ): ReportedAdjudicationResponse = eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.HEARING_ADJOURN_CREATED },
-        ),
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.HEARING_ADJOURN_CREATED },
       ),
-      controllerAction = {
-        hearingOutcomeService.createAdjourn(
-          chargeNumber = chargeNumber,
-          adjudicator = adjournRequest.adjudicator,
-          details = adjournRequest.details,
-          adjournReason = adjournRequest.reason,
-          plea = adjournRequest.plea,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      hearingOutcomeService.createAdjourn(
+        chargeNumber = chargeNumber,
+        adjudicator = adjournRequest.adjudicator,
+        details = adjournRequest.details,
+        adjournReason = adjournRequest.reason,
+        plea = adjournRequest.plea,
+      )
+    },
+  )
 
   @DeleteMapping(value = ["/{chargeNumber}/hearing/outcome/adjourn"])
   @Operation(summary = "removes the adjourn outcome")
@@ -216,15 +216,15 @@ class HearingOutcomeController(
   fun removeAdjourn(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
   ): ReportedAdjudicationResponse = eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.HEARING_ADJOURN_DELETED },
-        ),
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.HEARING_ADJOURN_DELETED },
       ),
-      controllerAction = {
-        hearingOutcomeService.removeAdjourn(chargeNumber = chargeNumber)
-      },
-    )
+    ),
+    controllerAction = {
+      hearingOutcomeService.removeAdjourn(chargeNumber = chargeNumber)
+    },
+  )
 
   @Operation(summary = "amends a hearing outcome and associated outcome")
   @PutMapping(value = ["/{chargeNumber}/hearing/outcome/{status}/v2"])
@@ -234,23 +234,23 @@ class HearingOutcomeController(
     @PathVariable(name = "status") status: ReportedAdjudicationStatus,
     @RequestBody amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
   ): ReportedAdjudicationResponse = eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.HEARING_OUTCOME_UPDATED },
-        ),
-        EventRuleAndSupplier(
-          eventRule = { it.punishmentsRemoved },
-          eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_DELETED },
-        ),
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.HEARING_OUTCOME_UPDATED },
       ),
-      controllerAction = {
-        amendHearingOutcomeService.amendHearingOutcome(
-          chargeNumber = chargeNumber,
-          status = status,
-          amendHearingOutcomeRequest = amendHearingOutcomeRequest,
-        )
-      },
-    )
+      EventRuleAndSupplier(
+        eventRule = { it.punishmentsRemoved },
+        eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_DELETED },
+      ),
+    ),
+    controllerAction = {
+      amendHearingOutcomeService.amendHearingOutcome(
+        chargeNumber = chargeNumber,
+        status = status,
+        amendHearingOutcomeRequest = amendHearingOutcomeRequest,
+      )
+    },
+  )
 
   @Operation(
     summary = "create a dismissed from hearing outcome",
@@ -277,20 +277,20 @@ class HearingOutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody completedDismissedRequest: HearingCompletedDismissedRequest,
   ): ReportedAdjudicationResponse = eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_CREATED },
-        ),
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_CREATED },
       ),
-      controllerAction = {
-        completedHearingService.createDismissed(
-          chargeNumber = chargeNumber,
-          adjudicator = completedDismissedRequest.adjudicator,
-          plea = completedDismissedRequest.plea,
-          details = completedDismissedRequest.details,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      completedHearingService.createDismissed(
+        chargeNumber = chargeNumber,
+        adjudicator = completedDismissedRequest.adjudicator,
+        plea = completedDismissedRequest.plea,
+        details = completedDismissedRequest.details,
+      )
+    },
+  )
 
   @Operation(
     summary = "create a not proceed from hearing outcome",
@@ -317,21 +317,21 @@ class HearingOutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody completedNotProceedRequest: HearingCompletedNotProceedRequest,
   ): ReportedAdjudicationResponse = eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_CREATED },
-        ),
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_CREATED },
       ),
-      controllerAction = {
-        completedHearingService.createNotProceed(
-          chargeNumber = chargeNumber,
-          adjudicator = completedNotProceedRequest.adjudicator,
-          plea = completedNotProceedRequest.plea,
-          notProceedReason = completedNotProceedRequest.reason,
-          details = completedNotProceedRequest.details,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      completedHearingService.createNotProceed(
+        chargeNumber = chargeNumber,
+        adjudicator = completedNotProceedRequest.adjudicator,
+        plea = completedNotProceedRequest.plea,
+        notProceedReason = completedNotProceedRequest.reason,
+        details = completedNotProceedRequest.details,
+      )
+    },
+  )
 
   @PostMapping(value = ["/{chargeNumber}/complete-hearing/charge-proved/v2"])
   @ResponseStatus(HttpStatus.CREATED)
@@ -339,19 +339,19 @@ class HearingOutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody chargeProvedRequest: HearingCompletedChargeProvedRequest,
   ): ReportedAdjudicationResponse = eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_CREATED },
-        ),
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_CREATED },
       ),
-      controllerAction = {
-        completedHearingService.createChargeProved(
-          chargeNumber = chargeNumber,
-          adjudicator = chargeProvedRequest.adjudicator,
-          plea = chargeProvedRequest.plea,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      completedHearingService.createChargeProved(
+        chargeNumber = chargeNumber,
+        adjudicator = chargeProvedRequest.adjudicator,
+        plea = chargeProvedRequest.plea,
+      )
+    },
+  )
 
   @Operation(summary = "remove a completed hearing outcome")
   @DeleteMapping(value = ["/{chargeNumber}/remove-completed-hearing"])

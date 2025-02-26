@@ -65,10 +65,10 @@ class AdjudicationSummaryController(
     @Parameter(description = "Only proved adjudications ending on or after this date (in YYYY-MM-DD format) will be counted.")
     adjudicationCutoffDate: LocalDate?,
   ): AdjudicationSummary = summaryAdjudicationService.getAdjudicationSummary(
-      bookingId,
-      awardCutoffDate,
-      adjudicationCutoffDate,
-    )
+    bookingId,
+    awardCutoffDate,
+    adjudicationCutoffDate,
+  )
 
   @Operation(
     summary = "Does the booking id have any adjudications",

@@ -19,9 +19,7 @@ class IncidentRoleRuleLookup {
       ASSISTS_OTHER_TO_COMMIT_OFFENCE to Pair("29(c)", "Assists another inmate to commit, or to attempt to commit, any of the foregoing offences: "),
     )
 
-    fun associatedPrisonerInformationRequired(incidentRoleCode: String?): Boolean {
-      return INCITES_OTHER_TO_COMMIT_OFFENCE == incidentRoleCode || ASSISTS_OTHER_TO_COMMIT_OFFENCE == incidentRoleCode
-    }
+    fun associatedPrisonerInformationRequired(incidentRoleCode: String?): Boolean = INCITES_OTHER_TO_COMMIT_OFFENCE == incidentRoleCode || ASSISTS_OTHER_TO_COMMIT_OFFENCE == incidentRoleCode
 
     fun getOffenceRuleDetails(incidentRoleCode: String?, isYouthOffender: Boolean): OffenceRuleDetailsDto? {
       if (incidentRoleCode == null) {

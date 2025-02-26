@@ -45,8 +45,8 @@ data class ReportedDamage(
   var repairCost: Double? = null,
 ) : BaseEntity() {
   fun toDto(): ReportedDamageDto = ReportedDamageDto(
-      code = this.code,
-      details = this.details,
-      reporter = this.reporter,
-    )
+    code = this.code,
+    details = this.details,
+    reporter = this.reporter,
+  )
 }
