@@ -68,11 +68,9 @@ class ReportedAdjudicationWorkflowControllerTest : TestControllerBase() {
 
   private fun makeCreateDraftFromReportedAdjudicationRequest(
     adjudicationNumber: Long,
-  ): ResultActions {
-    return mockMvc
+  ): ResultActions = mockMvc
       .perform(
         MockMvcRequestBuilders.get("/reported-adjudications/$adjudicationNumber/create-draft-adjudication")
           .header("Content-Type", "application/json"),
       )
-  }
 }

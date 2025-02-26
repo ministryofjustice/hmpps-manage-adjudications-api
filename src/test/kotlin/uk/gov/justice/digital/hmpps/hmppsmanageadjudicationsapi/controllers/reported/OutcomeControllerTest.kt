@@ -85,18 +85,19 @@ class OutcomeControllerTest : TestControllerBase() {
       createProsecutionRequest(1)
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME, response)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+          AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME,
+          response,
+      )
     }
 
     private fun createProsecutionRequest(
       id: Long,
-    ): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.post("/reported-adjudications/$id/outcome/prosecution")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    ): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.post("/reported-adjudications/$id/outcome/prosecution")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -161,7 +162,10 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(outcomeService).createNotProceed("1", NotProceedReason.NOT_FAIR, "details")
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME, response)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+          AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME,
+          response,
+      )
     }
 
     @Test
@@ -249,8 +253,15 @@ class OutcomeControllerTest : TestControllerBase() {
       )
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(outcomeService).createReferGov(chargeNumber = "1", referGovReason = ReferGovReason.GOV_INQUIRY, details = "details")
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV, REPORTED_ADJUDICATION_DTO)
+      verify(outcomeService).createReferGov(
+          chargeNumber = "1",
+          referGovReason = ReferGovReason.GOV_INQUIRY,
+          details = "details",
+      )
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+          AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV,
+          REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun createOutcomeRequest(
@@ -321,7 +332,10 @@ class OutcomeControllerTest : TestControllerBase() {
         code = OutcomeCode.REFER_POLICE,
         details = "details",
       )
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.REF_POLICE_OUTCOME, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+          AdjudicationDomainEventType.REF_POLICE_OUTCOME,
+          REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun createOutcomeRequest(
@@ -368,7 +382,8 @@ class OutcomeControllerTest : TestControllerBase() {
     @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `makes a call to delete an outcome`(outcomeCode: OutcomeCode) {
-      val response = reportedAdjudicationDto(status = if (outcomeCode == OutcomeCode.QUASHED) ReportedAdjudicationStatus.CHARGE_PROVED else ReportedAdjudicationStatus.UNSCHEDULED)
+      val response =
+        reportedAdjudicationDto(status = if (outcomeCode == OutcomeCode.QUASHED) ReportedAdjudicationStatus.CHARGE_PROVED else ReportedAdjudicationStatus.UNSCHEDULED)
 
       whenever(
         outcomeService.deleteOutcome(
@@ -383,18 +398,22 @@ class OutcomeControllerTest : TestControllerBase() {
         "1",
       )
 
-      verify(eventPublishService, atLeastOnce()).publishEvent(if (outcomeCode == OutcomeCode.QUASHED) AdjudicationDomainEventType.UNQUASHED else AdjudicationDomainEventType.NOT_PROCEED_OUTCOME_DELETED, response)
+      verify(
+          eventPublishService,
+          atLeastOnce(),
+      ).publishEvent(
+          if (outcomeCode == OutcomeCode.QUASHED) AdjudicationDomainEventType.UNQUASHED else AdjudicationDomainEventType.NOT_PROCEED_OUTCOME_DELETED,
+          response,
+      )
     }
 
     private fun deleteOutcomeRequest(
       id: Long,
-    ): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.delete("/reported-adjudications/$id/outcome")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    ): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.delete("/reported-adjudications/$id/outcome")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -443,7 +462,10 @@ class OutcomeControllerTest : TestControllerBase() {
         .andExpect(MockMvcResultMatchers.status().isCreated)
 
       verify(outcomeService).createQuashed("1", QUASHED_REQUEST.reason, QUASHED_REQUEST.details)
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.QUASHED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+          AdjudicationDomainEventType.QUASHED,
+          REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun createQuashedRequest(
@@ -538,7 +560,10 @@ class OutcomeControllerTest : TestControllerBase() {
         quashedReason = AMEND_QUASHED_REQUEST.quashedReason,
       )
 
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.OUTCOME_UPDATED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+          AdjudicationDomainEventType.OUTCOME_UPDATED,
+          REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun amendOutcomeRequest(
@@ -562,6 +587,7 @@ class OutcomeControllerTest : TestControllerBase() {
     private val QUASHED_REQUEST = QuashedRequest(reason = QuashedReason.APPEAL_UPHELD, details = "details")
     private val AMEND_REFER_POLICE_REQUEST = AmendOutcomeRequest(details = "details")
     private val AMEND_NOT_PROCEED_REQUEST = AmendOutcomeRequest(details = "details", reason = NotProceedReason.NOT_FAIR)
-    private val AMEND_QUASHED_REQUEST = AmendOutcomeRequest(details = "details", quashedReason = QuashedReason.JUDICIAL_REVIEW)
+    private val AMEND_QUASHED_REQUEST =
+      AmendOutcomeRequest(details = "details", quashedReason = QuashedReason.JUDICIAL_REVIEW)
   }
 }

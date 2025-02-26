@@ -67,13 +67,11 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
 
     private fun makeGetAdjudicationRequest(
       adjudicationNumber: Long,
-    ): ResultActions {
-      return mockMvc
+    ): ResultActions = mockMvc
         .perform(
           get("/reported-adjudications/$adjudicationNumber/v2")
             .header("Content-Type", "application/json"),
         )
-    }
   }
 
   @Nested
@@ -82,14 +80,12 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     private fun makeReportedAdjudicationSetStatusRequest(
       adjudicationNumber: Long,
       body: Map<String, Any>,
-    ): ResultActions {
-      return mockMvc
+    ): ResultActions = mockMvc
         .perform(
           MockMvcRequestBuilders.put("/reported-adjudications/$adjudicationNumber/status")
             .header("Content-Type", "application/json")
             .content(objectMapper.writeValueAsString(body)),
         )
-    }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
@@ -163,14 +159,12 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     private fun makeIssuedRequest(
       adjudicationNumber: Long,
       issuedRequest: IssueRequest,
-    ): ResultActions {
-      return mockMvc
+    ): ResultActions = mockMvc
         .perform(
           MockMvcRequestBuilders.put("/reported-adjudications/$adjudicationNumber/issue")
             .header("Content-Type", "application/json")
             .content(objectMapper.writeValueAsString(issuedRequest)),
         )
-    }
 
     @Test
     fun `responds with a unauthorised status code`() {

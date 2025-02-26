@@ -14,21 +14,15 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepo
 class TestOAuth2Config {
 
   @Bean
-  fun clientRegistrationRepository(): ClientRegistrationRepository {
-    return mock()
-  }
+  fun clientRegistrationRepository(): ClientRegistrationRepository = mock()
 
   @Bean
-  fun authorizedClientRepository(): OAuth2AuthorizedClientRepository {
-    return mock()
-  }
+  fun authorizedClientRepository(): OAuth2AuthorizedClientRepository = mock()
 
   @Bean
   @Primary
   fun authorizedClientManager(
     clientRegistrationRepository: ClientRegistrationRepository,
     authorizedClientRepository: OAuth2AuthorizedClientRepository,
-  ): OAuth2AuthorizedClientManager {
-    return mock()
-  }
+  ): OAuth2AuthorizedClientManager = mock()
 }

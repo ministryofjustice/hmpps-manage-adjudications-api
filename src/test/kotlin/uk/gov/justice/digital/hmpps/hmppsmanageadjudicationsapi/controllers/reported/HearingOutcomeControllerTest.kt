@@ -106,7 +106,10 @@ class HearingOutcomeControllerTest : TestControllerBase() {
         adjudicator = "test",
         details = "details",
       )
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_REFERRAL_CREATED, response)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+          AdjudicationDomainEventType.HEARING_REFERRAL_CREATED,
+          response,
+      )
     }
 
     private fun createReferralRequest(
@@ -143,11 +146,23 @@ class HearingOutcomeControllerTest : TestControllerBase() {
       removeReferralRequest(1).andExpect(MockMvcResultMatchers.status().isForbidden)
     }
 
-    @CsvSource(",false,REFERRAL_DELETED", "SCHEDULE_HEARING,true,HEARING_REFERRAL_DELETED", "REFER_POLICE,true,REFERRAL_OUTCOME_DELETED", "REFER_POLICE,false,REFERRAL_OUTCOME_DELETED")
+    @CsvSource(
+        ",false,REFERRAL_DELETED",
+        "SCHEDULE_HEARING,true,HEARING_REFERRAL_DELETED",
+        "REFER_POLICE,true,REFERRAL_OUTCOME_DELETED",
+        "REFER_POLICE,false,REFERRAL_OUTCOME_DELETED",
+    )
     @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to remove a referral`(nextState: OutcomeCode? = null, hasHearings: Boolean, eventToSend: AdjudicationDomainEventType) {
-      val response = reportedAdjudicationDto(status = nextState?.status ?: ReportedAdjudicationStatus.UNSCHEDULED, hearingIdActioned = if (hasHearings)1 else null)
+    fun `makes a call to remove a referral`(
+      nextState: OutcomeCode? = null,
+      hasHearings: Boolean,
+      eventToSend: AdjudicationDomainEventType,
+    ) {
+      val response = reportedAdjudicationDto(
+          status = nextState?.status ?: ReportedAdjudicationStatus.UNSCHEDULED,
+          hearingIdActioned = if (hasHearings) 1 else null,
+      )
 
       whenever(
         referralService.removeReferral(
@@ -216,7 +231,10 @@ class HearingOutcomeControllerTest : TestControllerBase() {
         plea = HearingOutcomePlea.ABSTAIN,
         details = "details",
       )
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_ADJOURN_CREATED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+          AdjudicationDomainEventType.HEARING_ADJOURN_CREATED,
+          REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun createAdjournRequest(
@@ -242,7 +260,7 @@ class HearingOutcomeControllerTest : TestControllerBase() {
           chargeNumber = ArgumentMatchers.anyString(),
           recalculateStatus = any(),
 
-        ),
+          ),
       ).thenReturn(REPORTED_ADJUDICATION_DTO)
     }
 
@@ -269,18 +287,19 @@ class HearingOutcomeControllerTest : TestControllerBase() {
       verify(hearingOutcomeService).removeAdjourn(
         chargeNumber = "1",
       )
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_ADJOURN_DELETED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+          AdjudicationDomainEventType.HEARING_ADJOURN_DELETED,
+          REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun deleteAdjournRequest(
       id: Long,
-    ): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing/outcome/adjourn")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    ): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing/outcome/adjourn")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -328,8 +347,14 @@ class HearingOutcomeControllerTest : TestControllerBase() {
         status = status,
         AMEND_OUTCOME_REQUEST,
       )
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_OUTCOME_UPDATED, REPORTED_ADJUDICATION_DTO)
-      verify(eventPublishService, if (status == ReportedAdjudicationStatus.CHARGE_PROVED) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.PUNISHMENTS_DELETED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+          AdjudicationDomainEventType.HEARING_OUTCOME_UPDATED,
+          REPORTED_ADJUDICATION_DTO,
+      )
+      verify(
+          eventPublishService,
+          if (status == ReportedAdjudicationStatus.CHARGE_PROVED) atLeastOnce() else never(),
+      ).publishEvent(AdjudicationDomainEventType.PUNISHMENTS_DELETED, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun amendHearingOutcomeRequest(
@@ -427,6 +452,7 @@ class HearingOutcomeControllerTest : TestControllerBase() {
           HearingOutcomePlea.UNFIT,
           "details",
         )
+
         OutcomeCode.NOT_PROCEED -> verify(completedHearingService).createNotProceed(
           "1",
           "test",
@@ -437,7 +463,10 @@ class HearingOutcomeControllerTest : TestControllerBase() {
 
         else -> {}
       }
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_COMPLETED_CREATED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+          AdjudicationDomainEventType.HEARING_COMPLETED_CREATED,
+          REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun createOutcomeRequest(
@@ -494,19 +523,23 @@ class HearingOutcomeControllerTest : TestControllerBase() {
       removeCompletedHearingOutcomeRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(completedHearingService).removeOutcome("1")
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_COMPLETED_DELETED, REPORTED_ADJUDICATION_DTO)
-      verify(eventPublishService, if (outcomeCode == OutcomeCode.CHARGE_PROVED) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.PUNISHMENTS_DELETED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+          AdjudicationDomainEventType.HEARING_COMPLETED_DELETED,
+          REPORTED_ADJUDICATION_DTO,
+      )
+      verify(
+          eventPublishService,
+          if (outcomeCode == OutcomeCode.CHARGE_PROVED) atLeastOnce() else never(),
+      ).publishEvent(AdjudicationDomainEventType.PUNISHMENTS_DELETED, REPORTED_ADJUDICATION_DTO)
     }
 
     private fun removeCompletedHearingOutcomeRequest(
       id: Long,
-    ): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.delete("/reported-adjudications/$id/remove-completed-hearing")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    ): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.delete("/reported-adjudications/$id/remove-completed-hearing")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -559,7 +592,10 @@ class HearingOutcomeControllerTest : TestControllerBase() {
         CHARGE_PROVED_REQUEST.adjudicator,
         CHARGE_PROVED_REQUEST.plea,
       )
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_COMPLETED_CREATED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+          AdjudicationDomainEventType.HEARING_COMPLETED_CREATED,
+          REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun createChargeProvedRequest(
@@ -578,11 +614,25 @@ class HearingOutcomeControllerTest : TestControllerBase() {
   }
 
   companion object {
-    private fun referralRequest(code: HearingOutcomeCode? = HearingOutcomeCode.REFER_POLICE) = ReferralRequest(adjudicator = "test", code = code!!, details = "details")
-    private val adjournRequest = AdjournRequest(adjudicator = "test", details = "details", reason = HearingOutcomeAdjournReason.HELP, plea = HearingOutcomePlea.ABSTAIN)
+    private fun referralRequest(code: HearingOutcomeCode? = HearingOutcomeCode.REFER_POLICE) =
+      ReferralRequest(adjudicator = "test", code = code!!, details = "details")
+
+    private val adjournRequest = AdjournRequest(
+        adjudicator = "test",
+        details = "details",
+        reason = HearingOutcomeAdjournReason.HELP,
+        plea = HearingOutcomePlea.ABSTAIN,
+    )
     private val AMEND_OUTCOME_REQUEST = AmendHearingOutcomeRequest()
-    private val COMPLETED_NOT_PROCEED_REQUEST = HearingCompletedNotProceedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, reason = NotProceedReason.NOT_FAIR, details = "details")
-    private val COMPLETED_DISMISSED_REQUEST = HearingCompletedDismissedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, details = "details")
-    private val CHARGE_PROVED_REQUEST = HearingCompletedChargeProvedRequest(adjudicator = "test", plea = HearingOutcomePlea.GUILTY)
+    private val COMPLETED_NOT_PROCEED_REQUEST = HearingCompletedNotProceedRequest(
+        adjudicator = "test",
+        plea = HearingOutcomePlea.UNFIT,
+        reason = NotProceedReason.NOT_FAIR,
+        details = "details",
+    )
+    private val COMPLETED_DISMISSED_REQUEST =
+      HearingCompletedDismissedRequest(adjudicator = "test", plea = HearingOutcomePlea.UNFIT, details = "details")
+    private val CHARGE_PROVED_REQUEST =
+      HearingCompletedChargeProvedRequest(adjudicator = "test", plea = HearingOutcomePlea.GUILTY)
   }
 }

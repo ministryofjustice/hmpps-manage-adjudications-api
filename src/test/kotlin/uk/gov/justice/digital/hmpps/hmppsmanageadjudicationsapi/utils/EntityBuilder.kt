@@ -26,8 +26,7 @@ class EntityBuilder {
     hearingId: Long? = 1L,
     prisonerNumber: String = "A12345",
     offenderBookingId: Long? = null,
-  ): ReportedAdjudication {
-    return ReportedAdjudication(
+  ): ReportedAdjudication = ReportedAdjudication(
       id = id,
       chargeNumber = chargeNumber,
       prisonerNumber = prisonerNumber,
@@ -90,7 +89,6 @@ class EntityBuilder {
       it.createDateTime = LocalDateTime.now()
       it.createdByUserId = ""
     }
-  }
 
   fun createHearing(
     chargeNumber: String = "1235",
