@@ -129,8 +129,7 @@ class HearingOutcomeController(
   fun createReferral(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody referralRequest: ReferralRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.HEARING_REFERRAL_CREATED },
@@ -152,8 +151,7 @@ class HearingOutcomeController(
   @ResponseStatus(HttpStatus.OK)
   fun removeReferral(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       controllerAction = {
         referralService.removeReferral(
           chargeNumber = chargeNumber,
@@ -195,8 +193,7 @@ class HearingOutcomeController(
   fun createAdjourn(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody adjournRequest: AdjournRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.HEARING_ADJOURN_CREATED },
@@ -218,8 +215,7 @@ class HearingOutcomeController(
   @ResponseStatus(HttpStatus.OK)
   fun removeAdjourn(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.HEARING_ADJOURN_DELETED },
@@ -237,8 +233,7 @@ class HearingOutcomeController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @PathVariable(name = "status") status: ReportedAdjudicationStatus,
     @RequestBody amendHearingOutcomeRequest: AmendHearingOutcomeRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.HEARING_OUTCOME_UPDATED },
@@ -281,8 +276,7 @@ class HearingOutcomeController(
   fun createDismissed(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody completedDismissedRequest: HearingCompletedDismissedRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_CREATED },
@@ -322,8 +316,7 @@ class HearingOutcomeController(
   fun createNotProceedFromHearing(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody completedNotProceedRequest: HearingCompletedNotProceedRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_CREATED },
@@ -345,8 +338,7 @@ class HearingOutcomeController(
   fun createChargeProvedFromHearingV2(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody chargeProvedRequest: HearingCompletedChargeProvedRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.HEARING_COMPLETED_CREATED },

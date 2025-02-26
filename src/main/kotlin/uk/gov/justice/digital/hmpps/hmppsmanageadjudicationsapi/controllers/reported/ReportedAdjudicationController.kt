@@ -57,8 +57,7 @@ class ReportedAdjudicationController(
   fun getReportedAdjudicationDetailsV2(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestParam(name = "includeActivated", required = false) includeActivated: Boolean = false,
-  ): ReportedAdjudicationResponse =
-    reportedAdjudicationService.getReportedAdjudicationDetails(
+  ): ReportedAdjudicationResponse = reportedAdjudicationService.getReportedAdjudicationDetails(
       chargeNumber = chargeNumber,
       includeActivated = includeActivated,
     ).toResponse()
@@ -71,8 +70,7 @@ class ReportedAdjudicationController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventRule = { it.status == ReportedAdjudicationStatus.UNSCHEDULED },
@@ -96,8 +94,7 @@ class ReportedAdjudicationController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     issueRequest: IssueRequest,
-  ): ReportedAdjudicationResponse =
-    reportedAdjudicationService.setIssued(
+  ): ReportedAdjudicationResponse = reportedAdjudicationService.setIssued(
       chargeNumber,
       issueRequest.dateTimeOfIssue,
     ).toResponse()
@@ -109,8 +106,7 @@ class ReportedAdjudicationController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     createdOnBehalfOfRequest: CreatedOnBehalfOfRequest,
-  ): ReportedAdjudicationResponse =
-    reportedAdjudicationService.setCreatedOnBehalfOf(
+  ): ReportedAdjudicationResponse = reportedAdjudicationService.setCreatedOnBehalfOf(
       chargeNumber,
       createdOnBehalfOfRequest.createdOnBehalfOfOfficer,
       createdOnBehalfOfRequest.createdOnBehalfOfReason,

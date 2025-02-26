@@ -168,8 +168,7 @@ class DraftAdjudicationController(
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     endDate: LocalDate?,
     @PageableDefault(sort = ["IncidentDetailsDateTimeOfDiscovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
-  ): Page<DraftAdjudicationDto> =
-    draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(
+  ): Page<DraftAdjudicationDto> = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(
       startDate = startDate ?: LocalDate.now().minusWeeks(1),
       endDate = endDate ?: LocalDate.now(),
       pageable = pageable,

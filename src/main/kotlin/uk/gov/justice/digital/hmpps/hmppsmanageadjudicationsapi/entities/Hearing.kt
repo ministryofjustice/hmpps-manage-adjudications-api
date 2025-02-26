@@ -56,8 +56,7 @@ data class Hearing(
   @field:Length(max = 240)
   var representative: String? = null,
 ) : BaseEntity() {
-  fun toDto(): HearingDto =
-    HearingDto(
+  fun toDto(): HearingDto = HearingDto(
       id = this.id,
       locationId = this.locationId,
       locationUuid = this.locationUuid,

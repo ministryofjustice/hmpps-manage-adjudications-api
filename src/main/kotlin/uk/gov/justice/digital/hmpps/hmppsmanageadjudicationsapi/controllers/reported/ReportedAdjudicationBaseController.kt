@@ -29,8 +29,7 @@ class ReportedAdjudicationBaseController {
   fun eventPublishWrapper(
     controllerAction: () -> ReportedAdjudicationDto,
     events: List<EventRuleAndSupplier> = emptyList(),
-  ): ReportedAdjudicationResponse =
-    controllerAction.invoke().also {
+  ): ReportedAdjudicationResponse = controllerAction.invoke().also {
       events.forEach { event -> if (event.eventRule.invoke(it)) eventPublishService.publishEvent(event.eventSupplier.invoke(it), it) }
     }.toResponse()
 

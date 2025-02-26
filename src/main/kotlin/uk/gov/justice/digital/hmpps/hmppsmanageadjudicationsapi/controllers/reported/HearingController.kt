@@ -83,8 +83,7 @@ class HearingController(
   fun createHearing(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody hearingRequest: HearingRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.HEARING_CREATED },
@@ -107,8 +106,7 @@ class HearingController(
   fun amendHearing(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody hearingRequest: HearingRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.HEARING_UPDATED },
@@ -130,8 +128,7 @@ class HearingController(
   @ResponseStatus(HttpStatus.OK)
   fun deleteHearing(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.HEARING_DELETED },

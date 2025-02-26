@@ -94,8 +94,7 @@ class OutcomeController(
   fun createNotProceed(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody notProceedRequest: NotProceedRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       controllerAction = {
         outcomeService.createNotProceed(
           chargeNumber = chargeNumber,
@@ -139,8 +138,7 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createProsecution(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME },
@@ -177,8 +175,7 @@ class OutcomeController(
   fun createReferGov(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody referGovRequest: ReferralGovRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV },
@@ -256,8 +253,7 @@ class OutcomeController(
   fun createRefPolice(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody policeReferralRequest: ReferralDetailsRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.REF_POLICE_OUTCOME },
@@ -301,8 +297,7 @@ class OutcomeController(
   fun amendOutcome(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody amendOutcomeRequest: AmendOutcomeRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventSupplier = { AdjudicationDomainEventType.OUTCOME_UPDATED },

@@ -18,8 +18,7 @@ data class PunishmentSchedule(
   var endDate: LocalDate? = null,
   var suspendedUntil: LocalDate? = null,
 ) : BaseEntity() {
-  fun toDto(): PunishmentScheduleDto =
-    PunishmentScheduleDto(
+  fun toDto(): PunishmentScheduleDto = PunishmentScheduleDto(
       days = this.duration ?: 0,
       startDate = this.startDate,
       endDate = this.endDate,

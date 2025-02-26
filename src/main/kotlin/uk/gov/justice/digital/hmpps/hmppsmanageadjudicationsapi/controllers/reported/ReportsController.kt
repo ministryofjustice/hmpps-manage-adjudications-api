@@ -119,8 +119,7 @@ class ReportsController(
     endDate: LocalDate?,
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> =
-    reportsService.getAllReportedAdjudications(
+  ): Page<ReportedAdjudicationDto> = reportsService.getAllReportedAdjudications(
       startDate = startDate ?: LocalDate.now().minusDays(3),
       endDate = endDate ?: LocalDate.now(),
       statuses = statuses,
@@ -158,8 +157,7 @@ class ReportsController(
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
     @RequestParam(name = "type", required = true) transferType: TransferType,
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> =
-    reportsService.getTransferReportedAdjudications(
+  ): Page<ReportedAdjudicationDto> = reportsService.getTransferReportedAdjudications(
       statuses = statuses,
       transferType = transferType,
       pageable = pageable,
@@ -207,8 +205,7 @@ class ReportsController(
     endDate: LocalDate?,
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
     @PageableDefault(sort = ["dateTimeOfDiscovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> =
-    reportsService.getMyReportedAdjudications(
+  ): Page<ReportedAdjudicationDto> = reportsService.getMyReportedAdjudications(
       startDate = startDate ?: LocalDate.now().minusDays(3),
       endDate = endDate ?: LocalDate.now(),
       statuses = statuses,
@@ -237,8 +234,7 @@ class ReportsController(
     @RequestParam(name = "endDate")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     endDate: LocalDate?,
-  ): IssuableAdjudicationsResponseV2 =
-    IssuableAdjudicationsResponseV2(
+  ): IssuableAdjudicationsResponseV2 = IssuableAdjudicationsResponseV2(
       reportsService.getAdjudicationsForIssue(
         startDate = startDate ?: LocalDate.now().minusDays(2),
         endDate = endDate ?: LocalDate.now(),
@@ -273,8 +269,7 @@ class ReportsController(
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     endDate: LocalDate?,
     @RequestParam(name = "issueStatus") issueStatuses: List<IssuedStatus>,
-  ): PrintableAdjudicationsResponse =
-    PrintableAdjudicationsResponse(
+  ): PrintableAdjudicationsResponse = PrintableAdjudicationsResponse(
       reportsService.getAdjudicationsForPrint(
         startDate = startDate ?: LocalDate.now(),
         endDate = endDate ?: LocalDate.now().plusDays(2),

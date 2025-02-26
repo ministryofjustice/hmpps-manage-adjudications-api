@@ -29,8 +29,7 @@ class EvidenceController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     evidenceRequest: EvidenceRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventRule = { listOf(ReportedAdjudicationStatus.RETURNED, ReportedAdjudicationStatus.AWAITING_REVIEW).none { s -> it.status == s } },

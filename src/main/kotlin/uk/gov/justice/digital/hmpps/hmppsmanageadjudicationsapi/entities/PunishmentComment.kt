@@ -19,8 +19,7 @@ data class PunishmentComment(
   val nomisCreatedBy: String? = null,
   var actualCreatedDate: LocalDateTime? = null,
 ) : BaseEntity() {
-  fun toDto(): PunishmentCommentDto =
-    PunishmentCommentDto(
+  fun toDto(): PunishmentCommentDto = PunishmentCommentDto(
       id = this.id,
       comment = this.comment,
       reasonForChange = this.reasonForChange,

@@ -28,11 +28,7 @@ class WebClientConfig(
   }
 
   @Bean
-  fun authWebClient(): WebClient {
-    return WebClient.builder()
-      .baseUrl(authBaseUri)
-      .build()
-  }
+  fun authWebClient(): WebClient = WebClient.builder().baseUrl(authBaseUri).build()
 
   @Bean("prisonLocationWebClient")
   fun prisonLocationWebClient(authorizedClientManager: OAuth2AuthorizedClientManager, builder: WebClient.Builder) = builder

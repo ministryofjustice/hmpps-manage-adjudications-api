@@ -33,8 +33,7 @@ data class HearingOutcome(
   var nomisOutcome: Boolean = false,
   var migrated: Boolean = false,
 ) : BaseEntity() {
-  fun toDto(): HearingOutcomeDto =
-    HearingOutcomeDto(
+  fun toDto(): HearingOutcomeDto = HearingOutcomeDto(
       id = this.id,
       code = this.code,
       reason = this.adjournReason,

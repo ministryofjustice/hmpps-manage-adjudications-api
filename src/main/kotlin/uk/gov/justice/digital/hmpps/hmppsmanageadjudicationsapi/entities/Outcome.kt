@@ -29,8 +29,7 @@ data class Outcome(
 ) : BaseEntity() {
   fun getCreatedDateTime(): LocalDateTime? = this.actualCreatedDate ?: this.createDateTime
 
-  fun toDto(hasLinkedAda: Boolean): OutcomeDto =
-    OutcomeDto(
+  fun toDto(hasLinkedAda: Boolean): OutcomeDto = OutcomeDto(
       id = this.id,
       code = this.code,
       details = this.details,
@@ -44,19 +43,13 @@ data class Outcome(
 
 enum class OutcomeCode(val status: ReportedAdjudicationStatus) {
   REFER_POLICE(ReportedAdjudicationStatus.REFER_POLICE) {
-    override fun nextStates(): List<OutcomeCode> {
-      return listOf(NOT_PROCEED, PROSECUTION, SCHEDULE_HEARING)
-    }
+    override fun nextStates(): List<OutcomeCode> = listOf(NOT_PROCEED, PROSECUTION, SCHEDULE_HEARING)
   },
   REFER_INAD(ReportedAdjudicationStatus.REFER_INAD) {
-    override fun nextStates(): List<OutcomeCode> {
-      return listOf(NOT_PROCEED, SCHEDULE_HEARING, REFER_GOV)
-    }
+    override fun nextStates(): List<OutcomeCode> = listOf(NOT_PROCEED, SCHEDULE_HEARING, REFER_GOV)
   },
   REFER_GOV(ReportedAdjudicationStatus.REFER_GOV) {
-    override fun nextStates(): List<OutcomeCode> {
-      return listOf(NOT_PROCEED, SCHEDULE_HEARING)
-    }
+    override fun nextStates(): List<OutcomeCode> = listOf(NOT_PROCEED, SCHEDULE_HEARING)
   },
   NOT_PROCEED(ReportedAdjudicationStatus.NOT_PROCEED),
   DISMISSED(ReportedAdjudicationStatus.DISMISSED),

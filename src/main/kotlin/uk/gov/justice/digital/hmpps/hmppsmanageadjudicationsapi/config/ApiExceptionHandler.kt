@@ -25,12 +25,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Forbidd
 class ApiExceptionHandler {
 
   @ExceptionHandler(NoResourceFoundException::class)
-  fun handleEntityNotFoundException(e: NoResourceFoundException): ResponseEntity<ErrorResponse> {
-    return ResponseEntity
+  fun handleEntityNotFoundException(e: NoResourceFoundException): ResponseEntity<ErrorResponse> = ResponseEntity
       .status(HttpStatus.NOT_FOUND)
       .contentType(MediaType.APPLICATION_JSON)
       .body(ErrorResponse(status = HttpStatus.NOT_FOUND.value(), developerMessage = e.message))
-  }
 
   @ExceptionHandler(WebClientResponseException::class)
   fun handleException(e: WebClientResponseException): ResponseEntity<ErrorResponse> {

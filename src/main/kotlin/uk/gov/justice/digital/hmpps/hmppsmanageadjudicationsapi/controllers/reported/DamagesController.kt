@@ -29,8 +29,7 @@ class DamagesController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     damagesRequest: DamagesRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
       events = listOf(
         EventRuleAndSupplier(
           eventRule = { listOf(ReportedAdjudicationStatus.RETURNED, ReportedAdjudicationStatus.AWAITING_REVIEW).none { s -> it.status == s } },
