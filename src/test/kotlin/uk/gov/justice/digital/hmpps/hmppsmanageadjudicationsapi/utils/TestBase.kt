@@ -15,7 +15,7 @@ abstract class TestBase {
     @DynamicPropertySource
     fun properties(registry: DynamicPropertyRegistry) {
       pgContainer?.run {
-        registry.add("spring.datasource.url", pgContainer::jdbcUrl)
+        registry.add("spring.datasource.url") { pgContainer.jdbcUrl }
       }
     }
   }
