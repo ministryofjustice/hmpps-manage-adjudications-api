@@ -20,11 +20,10 @@ import java.time.LocalDate
 class PrintSupportQueryService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
-  fun offenderChargesForPrintSupport(offenderBookingId: Long, chargeNumber: String): List<ReportedAdjudication> =
-    reportedAdjudicationRepository.findByOffenderBookingIdAndStatus(
-      offenderBookingId = offenderBookingId,
-      status = ReportedAdjudicationStatus.CHARGE_PROVED,
-    ).filter { it.chargeNumber != chargeNumber }
+  fun offenderChargesForPrintSupport(offenderBookingId: Long, chargeNumber: String): List<ReportedAdjudication> = reportedAdjudicationRepository.findByOffenderBookingIdAndStatus(
+    offenderBookingId = offenderBookingId,
+    status = ReportedAdjudicationStatus.CHARGE_PROVED,
+  ).filter { it.chargeNumber != chargeNumber }
 }
 
 @Transactional(readOnly = true)

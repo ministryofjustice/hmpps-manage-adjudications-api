@@ -47,17 +47,17 @@ data class Punishment(
   @Enumerated(EnumType.STRING)
   var rehabNotCompletedOutcome: NotCompletedOutcome? = null,
 ) : BaseEntity() {
-  fun isActiveSuspended(punishmentCutOff: LocalDate): Boolean =
-    this.suspendedUntil?.isAfter(punishmentCutOff) == true && this.activatedByChargeNumber == null
+  fun isActiveSuspended(punishmentCutOff: LocalDate): Boolean = this.suspendedUntil?.isAfter(punishmentCutOff) == true && this.activatedByChargeNumber == null
 
-  fun isActivePunishment(punishmentCutOff: LocalDate): Boolean =
-    PunishmentType.damagesAndCaution().none { it == this.type } && this.suspendedUntil == null && (
-      this.latestSchedule().endDate?.isAfter(punishmentCutOff) == true || PunishmentType.additionalDays()
-        .contains(this.type)
+  fun isActivePunishment(punishmentCutOff: LocalDate): Boolean = PunishmentType.damagesAndCaution().none { it == this.type } &&
+    this.suspendedUntil == null &&
+    (
+      this.latestSchedule().endDate?.isAfter(punishmentCutOff) == true ||
+        PunishmentType.additionalDays()
+          .contains(this.type)
       )
 
-  fun isActive(): Boolean =
-    this.suspendedUntil == null && this.latestSchedule().endDate?.isAfter(LocalDate.now().minusDays(1)) == true
+  fun isActive(): Boolean = this.suspendedUntil == null && this.latestSchedule().endDate?.isAfter(LocalDate.now().minusDays(1)) == true
 
   fun latestSchedule() = this.schedule.maxBy { it.createDateTime!! }
 
@@ -77,9 +77,11 @@ data class Punishment(
 
   fun getSuspendedUntil(): LocalDate? = this.suspendedUntil
 
-  fun isCorrupted(): Boolean = this.suspendedUntil != null && this.actualCreatedDate?.toLocalDate()
-    ?.isEqual(this.suspendedUntil) == true && this.actualCreatedDate?.toLocalDate()
-    ?.isAfter(LocalDate.now().minusMonths(6)) == true
+  fun isCorrupted(): Boolean = this.suspendedUntil != null &&
+    this.actualCreatedDate?.toLocalDate()
+      ?.isEqual(this.suspendedUntil) == true &&
+    this.actualCreatedDate?.toLocalDate()
+      ?.isAfter(LocalDate.now().minusMonths(6)) == true
 
   fun toDto(
     hasLinkedAda: Boolean,
@@ -101,8 +103,8 @@ data class Punishment(
       canRemove = canRemove,
       canEdit = this.rehabilitativeActivities.isEmpty() && canRemove,
       consecutiveReportAvailable = isConsecutiveReportAvailable(
-          this.consecutiveToChargeNumber,
-          consecutiveReportsAvailable,
+        this.consecutiveToChargeNumber,
+        consecutiveReportsAvailable,
       ),
       schedule = this.schedule.maxBy { latest -> latest.createDateTime ?: LocalDateTime.now() }.toDto(),
       paybackNotes = this.paybackNotes,

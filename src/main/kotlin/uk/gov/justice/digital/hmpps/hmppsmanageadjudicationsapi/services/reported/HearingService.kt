@@ -118,8 +118,10 @@ class HearingService(
       it.hearings.remove(hearingToRemove)
       it.dateTimeOfFirstHearing = it.calcFirstHearingDate()
 
-      if (reportedAdjudication.getOutcomeHistory().shouldRemoveLastScheduleHearing()) it.getOutcomeToRemove().deleted =
-        true
+      if (reportedAdjudication.getOutcomeHistory().shouldRemoveLastScheduleHearing()) {
+        it.getOutcomeToRemove().deleted =
+          true
+      }
     }.calculateStatus()
 
     return saveToDto(reportedAdjudication).also {
@@ -210,15 +212,15 @@ class HearingService(
 
     fun Hearing.canDelete(): Hearing {
       if (OutcomeCode.referrals()
-          .contains(this.hearingOutcome?.code?.outcomeCode) || this.hearingOutcome?.code == HearingOutcomeCode.COMPLETE
+          .contains(this.hearingOutcome?.code?.outcomeCode) ||
+        this.hearingOutcome?.code == HearingOutcomeCode.COMPLETE
       ) {
         throw ValidationException("Unable to delete hearing via api DEL/hearing - outcome associated to this hearing")
       }
       return this
     }
 
-    fun List<HearingDto>.getLatestHearingId(): Long? =
-      this.maxByOrNull { h -> h.dateTimeOfHearing }?.id
+    fun List<HearingDto>.getLatestHearingId(): Long? = this.maxByOrNull { h -> h.dateTimeOfHearing }?.id
 
     private fun throwHearingNotFoundException(): Nothing = throw EntityNotFoundException("Hearing not found")
   }

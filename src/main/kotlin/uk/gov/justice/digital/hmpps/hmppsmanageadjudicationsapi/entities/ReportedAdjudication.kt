@@ -101,8 +101,7 @@ data class ReportedAdjudication(
   var migratedInactivePrisoner: Boolean = false,
   var migratedSplitRecord: Boolean = false,
   var dateTimeResubmitted: LocalDateTime? = null,
-) :
-  BaseEntity() {
+) : BaseEntity() {
   fun transition(
     to: ReportedAdjudicationStatus,
     reason: String? = null,
@@ -227,22 +226,24 @@ data class ReportedAdjudication(
       createdOnBehalfOfOfficer = this.createdOnBehalfOfOfficer,
       createdOnBehalfOfReason = this.createdOnBehalfOfReason,
       linkedChargeNumbers = linkedChargeNumbers,
-      canActionFromHistory = activeCaseload != null && isAlo && listOf(
-        this.originatingAgencyId,
-        this.overrideAgencyId,
-      ).contains(activeCaseload),
+      canActionFromHistory = activeCaseload != null &&
+        isAlo &&
+        listOf(
+          this.originatingAgencyId,
+          this.overrideAgencyId,
+        ).contains(activeCaseload),
     )
   }
 
   companion object {
-    fun ReportedAdjudication.isInvalidSuspended(): Boolean =
-      this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED && this.getPunishments().any { it.isCorrupted() }
+    fun ReportedAdjudication.isInvalidSuspended(): Boolean = this.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED && this.getPunishments().any { it.isCorrupted() }
 
     fun ReportedAdjudication.isInvalidAda(): Boolean = listOf(
       OutcomeCode.CHARGE_PROVED,
       OutcomeCode.QUASHED,
-    ).none { it == this.latestOutcome()?.code } && this.getPunishments()
-      .any { it.type == PunishmentType.ADDITIONAL_DAYS }
+    ).none { it == this.latestOutcome()?.code } &&
+      this.getPunishments()
+        .any { it.type == PunishmentType.ADDITIONAL_DAYS }
 
     fun ReportedAdjudication.isInvalidOutcome(): Boolean = this.getOutcomes().count {
       listOf(
@@ -251,7 +252,8 @@ data class ReportedAdjudication(
         OutcomeCode.NOT_PROCEED,
       ).contains(it.code)
     } > 1 ||
-      this.latestOutcome()?.code == OutcomeCode.PROSECUTION && this.getPunishments().isNotEmpty()
+      this.latestOutcome()?.code == OutcomeCode.PROSECUTION &&
+      this.getPunishments().isNotEmpty()
 
     fun ReportedAdjudication.isActivePrisoner(): Boolean = !this.migratedInactivePrisoner
     fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.getCreatedDateTime()!! }
@@ -271,19 +273,16 @@ data class ReportedAdjudication(
     fun List<Punishment>.toPunishmentsDto(
       hasLinkedAda: Boolean,
       consecutiveReportsAvailable: List<String>? = null,
-    ): MutableList<PunishmentDto> =
-      this.sortedBy { it.type }.map { it.toDto(hasLinkedAda, consecutiveReportsAvailable) }.toMutableList()
+    ): MutableList<PunishmentDto> = this.sortedBy { it.type }.map { it.toDto(hasLinkedAda, consecutiveReportsAvailable) }.toMutableList()
 
-    private fun HearingDto.hearingHasNoAssociatedOutcome() =
-      this.outcome == null || this.outcome.code == HearingOutcomeCode.ADJOURN
+    private fun HearingDto.hearingHasNoAssociatedOutcome() = this.outcome == null || this.outcome.code == HearingOutcomeCode.ADJOURN
 
     private fun CombinedOutcomeDto?.isScheduleHearing() = this?.outcome?.code == OutcomeCode.SCHEDULE_HEARING
 
-    fun ReportedAdjudication.getOutcomeHistory(): List<OutcomeHistoryDto> =
-      createOutcomeHistory(
-        this.toHearingsDto().toMutableList(),
-        this.getOutcomes().createCombinedOutcomes(false).toMutableList(),
-      )
+    fun ReportedAdjudication.getOutcomeHistory(): List<OutcomeHistoryDto> = createOutcomeHistory(
+      this.toHearingsDto().toMutableList(),
+      this.getOutcomes().createCombinedOutcomes(false).toMutableList(),
+    )
 
     fun createOutcomeHistory(
       hearings: MutableList<HearingDto>,
@@ -362,8 +361,7 @@ enum class ReportedAdjudicationStatus {
   ACCEPTED,
   REJECTED,
   AWAITING_REVIEW {
-    override fun nextStates(): List<ReportedAdjudicationStatus> =
-      listOf(UNSCHEDULED, REJECTED, RETURNED, AWAITING_REVIEW)
+    override fun nextStates(): List<ReportedAdjudicationStatus> = listOf(UNSCHEDULED, REJECTED, RETURNED, AWAITING_REVIEW)
   },
   RETURNED {
     override fun nextStates(): List<ReportedAdjudicationStatus> = listOf(AWAITING_REVIEW, UNSCHEDULED, REJECTED)
@@ -372,8 +370,7 @@ enum class ReportedAdjudicationStatus {
     override fun nextStates(): List<ReportedAdjudicationStatus> = listOf(SCHEDULED, REFER_POLICE, NOT_PROCEED)
   },
   SCHEDULED {
-    override fun nextStates(): List<ReportedAdjudicationStatus> =
-      listOf(UNSCHEDULED, REFER_POLICE, REFER_INAD, REFER_GOV, DISMISSED, NOT_PROCEED, CHARGE_PROVED, ADJOURNED)
+    override fun nextStates(): List<ReportedAdjudicationStatus> = listOf(UNSCHEDULED, REFER_POLICE, REFER_INAD, REFER_GOV, DISMISSED, NOT_PROCEED, CHARGE_PROVED, ADJOURNED)
   },
   REFER_POLICE {
     override fun nextStates(): List<ReportedAdjudicationStatus> = listOf(PROSECUTION, NOT_PROCEED, SCHEDULED)

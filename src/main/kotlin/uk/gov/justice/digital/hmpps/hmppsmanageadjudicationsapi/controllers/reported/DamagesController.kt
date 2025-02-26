@@ -24,8 +24,8 @@ class DamagesController(
 
   @PutMapping(value = ["/{chargeNumber}/damages/edit"])
   @Operation(
-      summary = "Updates the damages for the reported adjudication.",
-      description = "0 or more damages to be supplied, only updates records owned by current user",
+    summary = "Updates the damages for the reported adjudication.",
+    description = "0 or more damages to be supplied, only updates records owned by current user",
   )
   @ResponseStatus(HttpStatus.OK)
   fun updateDamages(
@@ -37,8 +37,8 @@ class DamagesController(
       EventRuleAndSupplier(
         eventRule = {
           listOf(
-              ReportedAdjudicationStatus.RETURNED,
-              ReportedAdjudicationStatus.AWAITING_REVIEW,
+            ReportedAdjudicationStatus.RETURNED,
+            ReportedAdjudicationStatus.AWAITING_REVIEW,
           ).none { s -> it.status == s }
         },
         eventSupplier = { AdjudicationDomainEventType.DAMAGES_UPDATED },

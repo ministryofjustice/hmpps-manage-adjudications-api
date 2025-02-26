@@ -726,7 +726,7 @@ enum class OffenceCodes(
 
   companion object {
     fun validateOffenceCode(offenceCode: Int) = entries.flatMap { it.uniqueOffenceCodes }.firstOrNull { it == offenceCode }
-        ?: throw ValidationException("Invalid offence code $offenceCode")
+      ?: throw ValidationException("Invalid offence code $offenceCode")
 
     fun Int.containsNomisCode(nomisCode: String): Boolean {
       val offenceCode = entries.first { it.uniqueOffenceCodes.contains(this) }

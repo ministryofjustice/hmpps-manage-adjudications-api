@@ -25,16 +25,20 @@ enum class OicHearingType {
   fun isValidState(isYoungOffender: Boolean) {
     when (isYoungOffender) {
       true -> if (listOf(
-              GOV_ADULT,
-              INAD_ADULT,
-          ).contains(this)
-      ) throw IllegalStateException("oic hearing type is not applicable for rule set")
+          GOV_ADULT,
+          INAD_ADULT,
+        ).contains(this)
+      ) {
+        throw IllegalStateException("oic hearing type is not applicable for rule set")
+      }
 
       false -> if (listOf(
-              GOV_YOI,
-              INAD_YOI,
-          ).contains(this)
-      ) throw IllegalStateException("oic hearing type is not applicable for rule set")
+          GOV_YOI,
+          INAD_YOI,
+        ).contains(this)
+      ) {
+        throw IllegalStateException("oic hearing type is not applicable for rule set")
+      }
     }
   }
 

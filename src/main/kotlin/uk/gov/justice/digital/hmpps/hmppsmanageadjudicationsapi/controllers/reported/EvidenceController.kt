@@ -24,8 +24,8 @@ class EvidenceController(
 
   @PutMapping(value = ["/{chargeNumber}/evidence/edit"])
   @Operation(
-      summary = "Updates the evidence for the reported adjudication.",
-      description = "0 or more evidence to be supplied, only updates records owned by current user",
+    summary = "Updates the evidence for the reported adjudication.",
+    description = "0 or more evidence to be supplied, only updates records owned by current user",
   )
   @ResponseStatus(HttpStatus.OK)
   fun updateEvidence(
@@ -37,8 +37,8 @@ class EvidenceController(
       EventRuleAndSupplier(
         eventRule = {
           listOf(
-              ReportedAdjudicationStatus.RETURNED,
-              ReportedAdjudicationStatus.AWAITING_REVIEW,
+            ReportedAdjudicationStatus.RETURNED,
+            ReportedAdjudicationStatus.AWAITING_REVIEW,
           ).none { s -> it.status == s }
         },
         eventSupplier = { AdjudicationDomainEventType.EVIDENCE_UPDATED },

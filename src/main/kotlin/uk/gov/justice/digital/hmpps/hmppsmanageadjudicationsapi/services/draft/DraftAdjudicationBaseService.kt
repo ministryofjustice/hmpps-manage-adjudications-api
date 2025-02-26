@@ -44,8 +44,7 @@ open class DraftAdjudicationBaseService(
 
   protected fun findToDto(id: Long): DraftAdjudicationDto = find(id).toDto()
 
-  protected fun saveToDto(draftAdjudication: DraftAdjudication): DraftAdjudicationDto =
-    draftAdjudicationRepository.save(draftAdjudication).toDto()
+  protected fun saveToDto(draftAdjudication: DraftAdjudication): DraftAdjudicationDto = draftAdjudicationRepository.save(draftAdjudication).toDto()
 
   protected fun delete(draftAdjudication: DraftAdjudication) = draftAdjudicationRepository.delete(draftAdjudication)
 
@@ -61,14 +60,13 @@ open class DraftAdjudicationBaseService(
     startDate: LocalDate,
     endDate: LocalDate,
     pageable: Pageable,
-  ): Page<DraftAdjudicationDto> =
-    draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndChargeNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
-      agencyId,
-      username,
-      startDate.atStartOfDay(),
-      endDate.atTime(LocalTime.MAX),
-      pageable,
-    ).map { it.toDto() }
+  ): Page<DraftAdjudicationDto> = draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndChargeNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
+    agencyId,
+    username,
+    startDate.atStartOfDay(),
+    endDate.atTime(LocalTime.MAX),
+    pageable,
+  ).map { it.toDto() }
 
   private fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(
     id = this.id!!,

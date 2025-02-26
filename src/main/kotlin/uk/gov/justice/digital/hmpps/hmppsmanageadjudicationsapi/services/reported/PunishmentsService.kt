@@ -43,7 +43,9 @@ class PunishmentsService(
     val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       if (it.getPunishments()
           .isNotEmpty()
-      ) throw ValidationException("This charge already has punishments - back key detected")
+      ) {
+        throw ValidationException("This charge already has punishments - back key detected")
+      }
       it.validateCanAddPunishments()
     }
 
@@ -160,9 +162,11 @@ class PunishmentsService(
     val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
     val punishment = reportedAdjudication.getPunishments().getPunishmentToAmend(punishmentId)
     if (punishment.rehabilitativeActivities.isEmpty()) throw ValidationException("punishment $punishmentId on charge $chargeNumber has no rehabilitative activities")
-    if (!completeRehabilitativeActivityRequest.completed && completeRehabilitativeActivityRequest.outcome == null) throw ValidationException(
+    if (!completeRehabilitativeActivityRequest.completed && completeRehabilitativeActivityRequest.outcome == null) {
+      throw ValidationException(
         "completed false needs outcome",
-    )
+      )
+    }
 
     val latestSchedule = punishment.latestSchedule()
 
@@ -194,8 +198,8 @@ class PunishmentsService(
           ?: throw ValidationException("EXT_SUSPEND requires a suspendedUntil")
         punishment.addSchedule(
           PunishmentSchedule(
-              suspendedUntil = completeRehabilitativeActivityRequest.suspendedUntil,
-              duration = latestSchedule.duration,
+            suspendedUntil = completeRehabilitativeActivityRequest.suspendedUntil,
+            duration = latestSchedule.duration,
           ),
         )
       }
@@ -274,98 +278,100 @@ class PunishmentsService(
   }
 
   private fun createNewPunishment(punishmentRequest: PunishmentRequest, hearingDate: LocalDate? = null): Punishment = Punishment(
-      type = punishmentRequest.type,
-      privilegeType = punishmentRequest.privilegeType,
-      otherPrivilege = punishmentRequest.otherPrivilege,
-      stoppagePercentage = punishmentRequest.stoppagePercentage,
-      suspendedUntil = punishmentRequest.suspendedUntil,
-      consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber,
-      amount = punishmentRequest.damagesOwedAmount,
-      paybackNotes = punishmentRequest.paybackNotes,
-      rehabilitativeActivities = punishmentRequest.rehabilitativeActivities.map {
+    type = punishmentRequest.type,
+    privilegeType = punishmentRequest.privilegeType,
+    otherPrivilege = punishmentRequest.otherPrivilege,
+    stoppagePercentage = punishmentRequest.stoppagePercentage,
+    suspendedUntil = punishmentRequest.suspendedUntil,
+    consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber,
+    amount = punishmentRequest.damagesOwedAmount,
+    paybackNotes = punishmentRequest.paybackNotes,
+    rehabilitativeActivities = punishmentRequest.rehabilitativeActivities.map {
+      RehabilitativeActivity(
+        details = it.details,
+        monitor = it.monitor,
+        endDate = it.endDate,
+        totalSessions = it.totalSessions,
+      )
+    }.toMutableList(),
+    schedule = when (punishmentRequest.type) {
+      PunishmentType.CAUTION -> mutableListOf(
+        PunishmentSchedule(
+          duration = 0,
+          measurement = Measurement.DAYS,
+        ),
+      )
+
+      PunishmentType.DAMAGES_OWED -> mutableListOf(
+        PunishmentSchedule(
+          duration = 0,
+          startDate = hearingDate,
+          measurement = Measurement.DAYS,
+        ),
+      )
+
+      PunishmentType.PAYBACK -> mutableListOf(
+        PunishmentSchedule(
+          duration = punishmentRequest.duration,
+          measurement = punishmentRequest.type.measurement,
+          startDate = hearingDate,
+          endDate = punishmentRequest.endDate,
+        ),
+      )
+
+      else -> mutableListOf(
+        PunishmentSchedule(
+          duration = punishmentRequest.duration!!,
+          startDate = punishmentRequest.startDate,
+          endDate = punishmentRequest.endDate,
+          suspendedUntil = punishmentRequest.suspendedUntil,
+          measurement = punishmentRequest.type.measurement,
+        ),
+      )
+    },
+  )
+
+  private fun updatePunishment(punishment: Punishment, punishmentRequest: PunishmentRequest) = punishment.let {
+    it.privilegeType = punishmentRequest.privilegeType
+    it.otherPrivilege = punishmentRequest.otherPrivilege
+    it.stoppagePercentage = punishmentRequest.stoppagePercentage
+    it.consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber
+    it.amount = punishmentRequest.damagesOwedAmount
+    it.paybackNotes = punishmentRequest.paybackNotes
+    // due to edit of activities in session, simpler to delete and insert
+    it.rehabilitativeActivities.clear()
+    it.rehabilitativeActivities.addAll(
+      punishmentRequest.rehabilitativeActivities.map { ra ->
         RehabilitativeActivity(
-          details = it.details,
-          monitor = it.monitor,
-          endDate = it.endDate,
-          totalSessions = it.totalSessions,
-        )
-      }.toMutableList(),
-      schedule = when (punishmentRequest.type) {
-        PunishmentType.CAUTION -> mutableListOf(
-          PunishmentSchedule(
-            duration = 0,
-            measurement = Measurement.DAYS,
-          ),
-        )
-
-        PunishmentType.DAMAGES_OWED -> mutableListOf(
-          PunishmentSchedule(
-            duration = 0,
-            startDate = hearingDate,
-            measurement = Measurement.DAYS,
-          ),
-        )
-
-        PunishmentType.PAYBACK -> mutableListOf(
-          PunishmentSchedule(
-            duration = punishmentRequest.duration,
-            measurement = punishmentRequest.type.measurement,
-            startDate = hearingDate,
-            endDate = punishmentRequest.endDate,
-          ),
-        )
-
-        else -> mutableListOf(
-          PunishmentSchedule(
-            duration = punishmentRequest.duration!!,
-            startDate = punishmentRequest.startDate,
-            endDate = punishmentRequest.endDate,
-            suspendedUntil = punishmentRequest.suspendedUntil,
-            measurement = punishmentRequest.type.measurement,
-          ),
+          details = ra.details,
+          monitor = ra.monitor,
+          endDate = ra.endDate,
+          totalSessions = ra.totalSessions,
         )
       },
     )
-
-  private fun updatePunishment(punishment: Punishment, punishmentRequest: PunishmentRequest) = punishment.let {
-      it.privilegeType = punishmentRequest.privilegeType
-      it.otherPrivilege = punishmentRequest.otherPrivilege
-      it.stoppagePercentage = punishmentRequest.stoppagePercentage
-      it.consecutiveToChargeNumber = punishmentRequest.consecutiveChargeNumber
-      it.amount = punishmentRequest.damagesOwedAmount
-      it.paybackNotes = punishmentRequest.paybackNotes
-      // due to edit of activities in session, simpler to delete and insert
-      it.rehabilitativeActivities.clear()
-      it.rehabilitativeActivities.addAll(
-        punishmentRequest.rehabilitativeActivities.map { ra ->
-          RehabilitativeActivity(
-            details = ra.details,
-            monitor = ra.monitor,
-            endDate = ra.endDate,
-            totalSessions = ra.totalSessions,
-          )
-        },
+    val latestSchedule = it.latestSchedule()
+    if (latestSchedule.hasScheduleBeenUpdated(punishmentRequest) &&
+      !PunishmentType.damagesAndCaution()
+        .contains(it.type)
+    ) {
+      it.addSchedule(
+        PunishmentSchedule(
+          duration = punishmentRequest.duration,
+          startDate = if (it.type == PunishmentType.PAYBACK) latestSchedule.startDate else punishmentRequest.startDate,
+          endDate = punishmentRequest.endDate,
+          suspendedUntil = punishmentRequest.suspendedUntil,
+          measurement = punishmentRequest.type.measurement,
+        ),
       )
-      val latestSchedule = it.latestSchedule()
-      if (latestSchedule.hasScheduleBeenUpdated(punishmentRequest) && !PunishmentType.damagesAndCaution()
-          .contains(it.type)
-      ) {
-        it.addSchedule(
-          PunishmentSchedule(
-            duration = punishmentRequest.duration,
-            startDate = if (it.type == PunishmentType.PAYBACK) latestSchedule.startDate else punishmentRequest.startDate,
-            endDate = punishmentRequest.endDate,
-            suspendedUntil = punishmentRequest.suspendedUntil,
-            measurement = punishmentRequest.type.measurement,
-          ),
-        )
-      }
     }
+  }
 
   private fun PunishmentRequest.validateRequest(latestHearing: Hearing?, punishmentToAmend: Punishment? = null) {
     when (this.type) {
-      PunishmentType.DAMAGES_OWED -> this.damagesOwedAmount
-        ?: throw ValidationException("amount missing for type DAMAGES_OWED")
+      PunishmentType.DAMAGES_OWED ->
+        this.damagesOwedAmount
+          ?: throw ValidationException("amount missing for type DAMAGES_OWED")
 
       PunishmentType.PRIVILEGE -> {
         this.privilegeType ?: throw ValidationException("subtype missing for type PRIVILEGE")
@@ -374,12 +380,15 @@ class PunishmentsService(
         }
       }
 
-      PunishmentType.EARNINGS -> this.stoppagePercentage
-        ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
+      PunishmentType.EARNINGS ->
+        this.stoppagePercentage
+          ?: throw ValidationException("stoppage percentage missing for type EARNINGS")
 
       PunishmentType.PROSPECTIVE_DAYS, PunishmentType.ADDITIONAL_DAYS -> if (!OicHearingType.inadTypes()
           .contains(latestHearing?.oicHearingType)
-      ) throw ValidationException("Punishment ${this.type} is invalid as the punishment decision was not awarded by an independent adjudicator")
+      ) {
+        throw ValidationException("Punishment ${this.type} is invalid as the punishment decision was not awarded by an independent adjudicator")
+      }
 
       else -> {}
     }
@@ -396,8 +405,10 @@ class PunishmentsService(
         throw ValidationException("only GOV can award rehabilitative activities")
       }
       if (!this.type.rehabilitativeActivitiesAllowed) throw ValidationException("punishment type does not support rehabilitative activities")
-      if (punishmentToAmend?.rehabCompleted == null) this.suspendedUntil
-        ?: throw ValidationException("only suspended punishments can have rehabilitative activities")
+      if (punishmentToAmend?.rehabCompleted == null) {
+        this.suspendedUntil
+          ?: throw ValidationException("only suspended punishments can have rehabilitative activities")
+      }
     }
   }
 
@@ -410,23 +421,22 @@ class PunishmentsService(
       return if (punishmentToActivate.activatedByChargeNumber == null) punishmentToActivate else null
     }
 
-    fun PunishmentSchedule.hasScheduleBeenUpdated(punishmentRequest: PunishmentRequest): Boolean =
-      this.duration != punishmentRequest.duration || this.endDate != punishmentRequest.endDate || this.startDate != punishmentRequest.startDate ||
-        this.suspendedUntil != punishmentRequest.suspendedUntil
+    fun PunishmentSchedule.hasScheduleBeenUpdated(punishmentRequest: PunishmentRequest): Boolean = this.duration != punishmentRequest.duration ||
+      this.endDate != punishmentRequest.endDate ||
+      this.startDate != punishmentRequest.startDate ||
+      this.suspendedUntil != punishmentRequest.suspendedUntil
 
-    private fun List<Punishment>.getPunishment(id: Long): Punishment? =
-      this.firstOrNull { it.id == id }
+    private fun List<Punishment>.getPunishment(id: Long): Punishment? = this.firstOrNull { it.id == id }
 
-    fun List<Punishment>.getPunishmentToAmend(id: Long): Punishment =
-      this.getPunishment(id)
-        ?: throw EntityNotFoundException("Punishment $id is not associated with ReportedAdjudication")
+    fun List<Punishment>.getPunishmentToAmend(id: Long): Punishment = this.getPunishment(id)
+      ?: throw EntityNotFoundException("Punishment $id is not associated with ReportedAdjudication")
 
     fun ReportedAdjudication.validateCanAddPunishments() {
       if (!listOf(
-              ReportedAdjudicationStatus.CHARGE_PROVED,
-              ReportedAdjudicationStatus.INVALID_SUSPENDED,
-              ReportedAdjudicationStatus.INVALID_SUSPENDED,
-          ).contains(this.status)
+          ReportedAdjudicationStatus.CHARGE_PROVED,
+          ReportedAdjudicationStatus.INVALID_SUSPENDED,
+          ReportedAdjudicationStatus.INVALID_SUSPENDED,
+        ).contains(this.status)
       ) {
         throw ValidationException("status is not CHARGE_PROVED")
       }

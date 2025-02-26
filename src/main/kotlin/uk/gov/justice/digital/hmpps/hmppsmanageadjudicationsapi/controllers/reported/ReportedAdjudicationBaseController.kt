@@ -31,12 +31,14 @@ class ReportedAdjudicationBaseController {
     events: List<EventRuleAndSupplier> = emptyList(),
   ): ReportedAdjudicationResponse = controllerAction.invoke().also {
     events.forEach { event ->
-      if (event.eventRule.invoke(it)) eventPublishService.publishEvent(
-        event.eventSupplier.invoke(
+      if (event.eventRule.invoke(it)) {
+        eventPublishService.publishEvent(
+          event.eventSupplier.invoke(
+            it,
+          ),
           it,
-        ),
-        it,
-      )
+        )
+      }
     }
   }.toResponse()
 

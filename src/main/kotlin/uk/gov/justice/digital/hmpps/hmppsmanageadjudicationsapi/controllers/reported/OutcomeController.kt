@@ -113,7 +113,7 @@ class OutcomeController(
       ),
     ),
 
-    )
+  )
 
   @Operation(
     summary = "create a prosecution outcome",

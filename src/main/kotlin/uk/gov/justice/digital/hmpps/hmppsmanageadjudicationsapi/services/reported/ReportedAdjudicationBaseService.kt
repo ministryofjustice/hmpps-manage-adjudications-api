@@ -56,9 +56,9 @@ open class ReportedAdjudicationBaseService(
   protected fun findByChargeNumberIn(chargeNumbers: List<String>) = reportedAdjudicationRepository.findByChargeNumberIn(chargeNumbers)
 
   protected fun isLinkedToReport(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean = reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
-        consecutiveChargeNumber,
-        types,
-    ).isNotEmpty()
+    consecutiveChargeNumber,
+    types,
+  ).isNotEmpty()
 
   protected fun isLinkedToReportV2(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean {
     val stringTypes = types.map { it.name }
@@ -69,37 +69,36 @@ open class ReportedAdjudicationBaseService(
   }
 
   protected fun findMultipleOffenceCharges(prisonerNumber: String, chargeNumber: String): List<String> = reportedAdjudicationRepository.findByPrisonerNumberAndChargeNumberStartsWith(
-      prisonerNumber = prisonerNumber,
-      chargeNumber = "${chargeNumber.substringBefore("-")}-",
-    )
-      .filter { it.chargeNumber != chargeNumber }.map { it.chargeNumber }
-      .sortedBy { it }
+    prisonerNumber = prisonerNumber,
+    chargeNumber = "${chargeNumber.substringBefore("-")}-",
+  )
+    .filter { it.chargeNumber != chargeNumber }.map { it.chargeNumber }
+    .sortedBy { it }
 
   protected fun hasLinkedAda(reportedAdjudication: ReportedAdjudication): Boolean = when (reportedAdjudication.status) {
-      ReportedAdjudicationStatus.CHARGE_PROVED ->
-        if (reportedAdjudication.getPunishments().none { PunishmentType.additionalDays().contains(it.type) }) {
-          false
-        } else {
-          isLinkedToReportV2(reportedAdjudication.chargeNumber, PunishmentType.additionalDays())
-        }
+    ReportedAdjudicationStatus.CHARGE_PROVED ->
+      if (reportedAdjudication.getPunishments().none { PunishmentType.additionalDays().contains(it.type) }) {
+        false
+      } else {
+        isLinkedToReportV2(reportedAdjudication.chargeNumber, PunishmentType.additionalDays())
+      }
 
-      else -> false
-    }
+    else -> false
+  }
 
   protected fun getReportCountForProfile(offenderBookingId: Long, cutOff: LocalDateTime): Long = reportedAdjudicationRepository.activeChargeProvedForBookingId(
-      bookingId = offenderBookingId,
-      cutOff = cutOff,
-    )
+    bookingId = offenderBookingId,
+    cutOff = cutOff,
+  )
 
   protected fun offenderHasAdjudications(offenderBookingId: Long): Boolean = reportedAdjudicationRepository.existsByOffenderBookingId(
-      offenderBookingId = offenderBookingId,
-    )
+    offenderBookingId = offenderBookingId,
+  )
 
-  protected fun getActivatedPunishments(chargeNumber: String): List<Pair<String, Punishment>> =
-    reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).map {
-      it.getPunishments().filter { p -> p.activatedByChargeNumber == chargeNumber }
-        .map { toPair -> Pair(it.chargeNumber, toPair) }
-    }.flatten()
+  protected fun getActivatedPunishments(chargeNumber: String): List<Pair<String, Punishment>> = reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).map {
+    it.getPunishments().filter { p -> p.activatedByChargeNumber == chargeNumber }
+      .map { toPair -> Pair(it.chargeNumber, toPair) }
+  }.flatten()
 
   protected fun deactivateActivatedPunishments(
     chargeNumber: String,
@@ -129,7 +128,6 @@ open class ReportedAdjudicationBaseService(
   }
 
   companion object {
-    fun throwEntityNotFoundException(id: String): Nothing =
-      throw EntityNotFoundException("ReportedAdjudication not found for $id")
+    fun throwEntityNotFoundException(id: String): Nothing = throw EntityNotFoundException("ReportedAdjudication not found for $id")
   }
 }

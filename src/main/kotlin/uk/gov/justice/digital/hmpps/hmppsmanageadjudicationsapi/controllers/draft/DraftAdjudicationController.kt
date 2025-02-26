@@ -50,8 +50,8 @@ data class NewAdjudicationRequest(
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime,
   @Schema(
-      description = "Optional Date time if discovery date different to incident date",
-      example = "2010-10-12T10:00:00",
+    description = "Optional Date time if discovery date different to incident date",
+    example = "2010-10-12T10:00:00",
   )
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfDiscovery: LocalDateTime? = null,
@@ -62,9 +62,9 @@ data class NewAdjudicationRequest(
 @Schema(description = "Request to update the incident role")
 data class IncidentRoleRequest(
   @Schema(
-      description = "The incident role code",
-      title = "If not set then it is assumed they committed the offence on their own",
-      example = "25a",
+    description = "The incident role code",
+    title = "If not set then it is assumed they committed the offence on their own",
+    example = "25a",
   )
   val roleCode: String?,
 )
@@ -72,14 +72,14 @@ data class IncidentRoleRequest(
 @Schema(description = "Request to set the associated prisoner")
 data class IncidentRoleAssociatedPrisonerRequest(
   @Schema(
-      required = true,
-      description = "The prison number of the other prisoner involved in the incident",
-      example = "G2996UX",
+    required = true,
+    description = "The prison number of the other prisoner involved in the incident",
+    example = "G2996UX",
   )
   val associatedPrisonersNumber: String,
   @Schema(
-      description = "The name of the other prisoner involved in the incident",
-      title = "This only applies if the associated prisoner is from outside the establishment",
+    description = "The name of the other prisoner involved in the incident",
+    title = "This only applies if the associated prisoner is from outside the establishment",
   )
   val associatedPrisonersName: String?,
 )
@@ -105,8 +105,8 @@ data class EditIncidentDetailsRequest(
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime,
   @Schema(
-      description = "Optional Date time if discovery date different to incident date",
-      example = "2010-10-12T10:00:00",
+    description = "Optional Date time if discovery date different to incident date",
+    example = "2010-10-12T10:00:00",
   )
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfDiscovery: LocalDateTime? = null,
@@ -185,9 +185,9 @@ class DraftAdjudicationController(
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     endDate: LocalDate?,
     @PageableDefault(
-        sort = ["IncidentDetailsDateTimeOfDiscovery"],
-        direction = Sort.Direction.DESC,
-        size = 20,
+      sort = ["IncidentDetailsDateTimeOfDiscovery"],
+      direction = Sort.Direction.DESC,
+      size = 20,
     ) pageable: Pageable,
   ): Page<DraftAdjudicationDto> = draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(
     startDate = startDate ?: LocalDate.now().minusWeeks(1),

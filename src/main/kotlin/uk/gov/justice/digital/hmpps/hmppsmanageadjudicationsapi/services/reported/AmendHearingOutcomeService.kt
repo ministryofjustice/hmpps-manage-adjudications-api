@@ -170,9 +170,9 @@ class AmendHearingOutcomeService(
   companion object {
 
     val referrals = listOf(
-        ReportedAdjudicationStatus.REFER_POLICE,
-        ReportedAdjudicationStatus.REFER_INAD,
-        ReportedAdjudicationStatus.REFER_GOV,
+      ReportedAdjudicationStatus.REFER_POLICE,
+      ReportedAdjudicationStatus.REFER_INAD,
+      ReportedAdjudicationStatus.REFER_GOV,
     )
 
     fun ReportedAdjudicationStatus.mapStatusToHearingOutcomeCode() = when (this) {
@@ -186,15 +186,14 @@ class AmendHearingOutcomeService(
       else -> throw ValidationException("unable to amend from this status")
     }
 
-    fun ReportedAdjudicationStatus.mapStatusToOutcomeCode(): OutcomeCode? =
-      when (this) {
-        ReportedAdjudicationStatus.REFER_POLICE -> OutcomeCode.REFER_POLICE
-        ReportedAdjudicationStatus.REFER_INAD -> OutcomeCode.REFER_INAD
-        ReportedAdjudicationStatus.DISMISSED -> OutcomeCode.DISMISSED
-        ReportedAdjudicationStatus.NOT_PROCEED -> OutcomeCode.NOT_PROCEED
-        ReportedAdjudicationStatus.REFER_GOV -> OutcomeCode.REFER_GOV
-        else -> null
-      }
+    fun ReportedAdjudicationStatus.mapStatusToOutcomeCode(): OutcomeCode? = when (this) {
+      ReportedAdjudicationStatus.REFER_POLICE -> OutcomeCode.REFER_POLICE
+      ReportedAdjudicationStatus.REFER_INAD -> OutcomeCode.REFER_INAD
+      ReportedAdjudicationStatus.DISMISSED -> OutcomeCode.DISMISSED
+      ReportedAdjudicationStatus.NOT_PROCEED -> OutcomeCode.NOT_PROCEED
+      ReportedAdjudicationStatus.REFER_GOV -> OutcomeCode.REFER_GOV
+      else -> null
+    }
 
     fun ReportedAdjudicationStatus.validateCanAmend(from: Boolean) {
       val direction = if (from) "from" else "to"

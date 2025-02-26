@@ -38,14 +38,14 @@ class DraftOffenceService(
   }
 
   fun getRules(isYouthOffender: Boolean, gender: Gender, version: Int): List<OffenceRuleDetailsDto> = when (isYouthOffender) {
-      true -> offenceCodeLookupService.getYouthOffenceCodesByVersion(version)
-      false -> offenceCodeLookupService.getAdultOffenceCodesByVersion(version)
-    }.distinctBy { it.paragraph }.map {
-      OffenceRuleDetailsDto(
-        paragraphNumber = it.paragraph,
-        paragraphDescription = it.paragraphDescription.getParagraphDescription(gender = gender),
-      )
-    }
+    true -> offenceCodeLookupService.getYouthOffenceCodesByVersion(version)
+    false -> offenceCodeLookupService.getAdultOffenceCodesByVersion(version)
+  }.distinctBy { it.paragraph }.map {
+    OffenceRuleDetailsDto(
+      paragraphNumber = it.paragraph,
+      paragraphDescription = it.paragraphDescription.getParagraphDescription(gender = gender),
+    )
+  }
 
   fun setOffenceDetails(id: Long, offenceDetails: OffenceDetailsRequestItem): DraftAdjudicationDto {
     val draftAdjudication = find(id)

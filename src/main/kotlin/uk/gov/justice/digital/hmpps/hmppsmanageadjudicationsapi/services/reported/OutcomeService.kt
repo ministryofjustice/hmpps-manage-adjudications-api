@@ -187,10 +187,12 @@ class OutcomeService(
 
     if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) {
       if (isLinkedToReport(
-              chargeNumber,
-              PunishmentType.additionalDays(),
-          )
-      ) throw ValidationException("Unable to remove: $chargeNumber is linked to another report")
+          chargeNumber,
+          PunishmentType.additionalDays(),
+        )
+      ) {
+        throw ValidationException("Unable to remove: $chargeNumber is linked to another report")
+      }
       suspendedPunishmentEvents.addAll(reportedAdjudication.removePunishments())
     }
 
@@ -302,8 +304,7 @@ class OutcomeService(
   companion object {
     fun ReportedAdjudication.latestOutcome(): Outcome? = this.getOutcomes().maxByOrNull { it.getCreatedDateTime()!! }
 
-    fun ReportedAdjudication.getOutcome(id: Long) =
-      this.getOutcomes().firstOrNull { it.id == id } ?: throw EntityNotFoundException("Outcome not found for $id")
+    fun ReportedAdjudication.getOutcome(id: Long) = this.getOutcomes().firstOrNull { it.id == id } ?: throw EntityNotFoundException("Outcome not found for $id")
 
     fun OutcomeCode.validateReferralTransition(to: OutcomeCode) {
       if (!this.canTransitionTo(to)) {
@@ -323,8 +324,7 @@ class OutcomeService(
       return this
     }
 
-    fun ReportedAdjudication.lastOutcomeIsRefer() =
-      OutcomeCode.referrals().contains(this.getOutcomes().maxByOrNull { it.getCreatedDateTime()!! }?.code)
+    fun ReportedAdjudication.lastOutcomeIsRefer() = OutcomeCode.referrals().contains(this.getOutcomes().maxByOrNull { it.getCreatedDateTime()!! }?.code)
 
     fun Outcome?.canQuash() {
       if (this?.code != OutcomeCode.CHARGE_PROVED) {
@@ -335,10 +335,14 @@ class OutcomeService(
     fun Outcome?.canAmendViaApi(hasHearings: Boolean, isReferralOutcome: Boolean, outcomeReferGovReferral: Boolean) {
       if ((hasHearings && !isReferralOutcome && !outcomeReferGovReferral && OutcomeCode.QUASHED != this?.code) ||
         (hasHearings && !isReferralOutcome && outcomeReferGovReferral && OutcomeCode.NOT_PROCEED != this?.code) ||
-        (hasHearings && isReferralOutcome && !listOf(
-            OutcomeCode.NOT_PROCEED,
-            OutcomeCode.REFER_GOV,
-        ).contains(this?.code)) ||
+        (
+          hasHearings &&
+            isReferralOutcome &&
+            !listOf(
+              OutcomeCode.NOT_PROCEED,
+              OutcomeCode.REFER_GOV,
+            ).contains(this?.code)
+          ) ||
         (!hasHearings && !listOf(OutcomeCode.REFER_POLICE, OutcomeCode.NOT_PROCEED).contains(this?.code))
       ) {
         throw ValidationException("unable to amend this outcome")
@@ -349,10 +353,10 @@ class OutcomeService(
       this ?: throw EntityNotFoundException("no latest outcome to amend")
 
       if (listOf(
-              OutcomeCode.QUASHED,
-              OutcomeCode.SCHEDULE_HEARING,
-              OutcomeCode.CHARGE_PROVED,
-          ).any { it == this.code } ||
+          OutcomeCode.QUASHED,
+          OutcomeCode.SCHEDULE_HEARING,
+          OutcomeCode.CHARGE_PROVED,
+        ).any { it == this.code } ||
         (!hasHearings && listOf(OutcomeCode.NOT_PROCEED, OutcomeCode.REFER_POLICE).any { it == this.code })
       ) {
         throw ValidationException("unable to amend via this function")
@@ -368,8 +372,10 @@ class OutcomeService(
     fun List<CombinedOutcomeDto>.isLatestReferralOutcome() = this.lastOrNull()?.referralOutcome != null
 
     fun ReferGovReason?.validate(outcomeCode: OutcomeCode): ReferGovReason? {
-      if (outcomeCode == OutcomeCode.REFER_GOV) this
-        ?: throw ValidationException("referGovReason is mandatory for code REFER_GOV")
+      if (outcomeCode == OutcomeCode.REFER_GOV) {
+        this
+          ?: throw ValidationException("referGovReason is mandatory for code REFER_GOV")
+      }
       return this
     }
   }
