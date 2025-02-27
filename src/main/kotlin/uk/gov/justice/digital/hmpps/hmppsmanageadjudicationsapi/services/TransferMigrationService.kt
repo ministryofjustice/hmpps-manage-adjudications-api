@@ -21,7 +21,11 @@ class TransferMigrationService(
     val adjudications = reportedAdjudicationRepository.findByChargeNumberIn(chargeNumbers)
     adjudications.forEach {
       val prisoner = prisonerSearchService.getPrisonerDetail(it.prisonerNumber)!!
-      it.overrideAgencyId = prisoner.prisonId
+      if (prisoner.prisonId != it.originatingAgencyId) {
+        it.overrideAgencyId = prisoner.prisonId
+      } else {
+        it.overrideAgencyId = null
+      }
     }
   }
 
