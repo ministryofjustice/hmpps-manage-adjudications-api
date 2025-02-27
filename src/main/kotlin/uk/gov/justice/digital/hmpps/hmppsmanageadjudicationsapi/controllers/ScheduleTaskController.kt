@@ -30,7 +30,7 @@ class ScheduleTaskController(
   fun processCharges() {
     var records = transferMigrationService.getNextRecords()
     while (records.isNotEmpty()) {
-      transferMigrationService.processRecords(records)
+      records = transferMigrationService.processRecords(records)
       transferMigrationService.completeProcessing(records)
       records = transferMigrationService.getNextRecords()
     }

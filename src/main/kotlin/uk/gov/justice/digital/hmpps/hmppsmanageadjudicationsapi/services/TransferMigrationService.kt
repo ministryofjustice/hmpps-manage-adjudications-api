@@ -17,16 +17,26 @@ class TransferMigrationService(
   private val prisonerSearchService: PrisonerSearchService,
 ) {
 
-  fun processRecords(chargeNumbers: List<String>) {
+  fun processRecords(chargeNumbers: List<String>): List<String> {
+    val complete = mutableListOf<String>()
     val adjudications = reportedAdjudicationRepository.findByChargeNumberIn(chargeNumbers)
     adjudications.forEach {
-      val prisoner = prisonerSearchService.getPrisonerDetail(it.prisonerNumber)!!
+      val prisoner = try {
+        prisonerSearchService.getPrisonerDetail(it.prisonerNumber)!!
+      } catch (e: Exception) {
+        return@forEach
+      }
+      complete.add(it.chargeNumber)
+      if (prisoner.prisonId == "OUT") {
+        return@forEach
+      }
       if (prisoner.prisonId != it.originatingAgencyId) {
         it.overrideAgencyId = prisoner.prisonId
       } else {
         it.overrideAgencyId = null
       }
     }
+    return complete
   }
 
   fun completeProcessing(chargeNumbers: List<String>) {
