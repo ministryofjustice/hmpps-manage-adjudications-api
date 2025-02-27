@@ -28,11 +28,11 @@ class ScheduleTaskController(
 
   @PostMapping("/migration-process-charges")
   fun processCharges() {
-    var record = transferMigrationService.getNextRecord()
-    while (record != null) {
-      transferMigrationService.processRecord(record.chargeNumber)
-      transferMigrationService.completeProcessing(record.chargeNumber)
-      record = transferMigrationService.getNextRecord()
+    var records = transferMigrationService.getNextRecords()
+    while (records.isNotEmpty()) {
+      transferMigrationService.processRecords(records)
+      transferMigrationService.completeProcessing(records)
+      records = transferMigrationService.getNextRecords()
     }
   }
 }

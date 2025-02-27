@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -16,22 +17,25 @@ class TransferMigrationService(
   private val prisonerSearchService: PrisonerSearchService,
 ) {
 
-  fun processRecord(chargeNumber: String) {
-    val adjudication = reportedAdjudicationRepository.findByChargeNumber(chargeNumber)!!
-    val prisoner = prisonerSearchService.getPrisonerDetail(adjudication.prisonerNumber)!!
-
-    adjudication.overrideAgencyId = prisoner.prisonId
+  fun processRecords(chargeNumbers: List<String>) {
+    val adjudications = reportedAdjudicationRepository.findByChargeNumberIn(chargeNumbers)
+    adjudications.forEach {
+      val prisoner = prisonerSearchService.getPrisonerDetail(it.prisonerNumber)!!
+      it.overrideAgencyId = prisoner.prisonId
+    }
   }
 
-  fun completeProcessing(chargeNumber: String) {
-    val record = transferMigrationChargeRepository.findByChargeNumber(chargeNumber) ?: return
-    record.status = TransferMigrationChargeStatus.COMPLETE
+  fun completeProcessing(chargeNumbers: List<String>) {
+    val records = transferMigrationChargeRepository.findByChargeNumberIn(chargeNumbers)
+    records.forEach {
+      it.status = TransferMigrationChargeStatus.COMPLETE
+    }
   }
 
-  fun getNextRecord(): TransferMigrationCharges? {
-    val record = transferMigrationChargeRepository.findFirstByStatus(TransferMigrationChargeStatus.READY)
-    record?.let { it.status = TransferMigrationChargeStatus.PROCESSING }
-    return record
+  fun getNextRecords(): List<String> {
+    val records = transferMigrationChargeRepository.findByStatus(TransferMigrationChargeStatus.READY, PageRequest.of(0, 1000))
+    records.forEach { it.status = TransferMigrationChargeStatus.PROCESSING }
+    return records.map { it.chargeNumber }
   }
 
   fun setupChargeIds() {
