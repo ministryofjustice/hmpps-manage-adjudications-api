@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
@@ -16,7 +15,6 @@ import uk.gov.justice.hmpps.sqs.MissingQueueException
 import uk.gov.justice.hmpps.sqs.MissingTopicException
 import uk.gov.justice.hmpps.sqs.countMessagesOnQueue
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SqsIntegrationTestBase : IntegrationTestBase() {
 
   @Autowired

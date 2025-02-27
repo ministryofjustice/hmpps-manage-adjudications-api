@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 data class PrisonerResponse(
   val firstName: String,
   val lastName: String,
+  val prisonId: String = "",
 )
 
 @Service

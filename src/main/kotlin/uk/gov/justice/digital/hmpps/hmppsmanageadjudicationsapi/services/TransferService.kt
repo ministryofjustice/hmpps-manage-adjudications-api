@@ -39,6 +39,7 @@ class TransferService(
       ReportedAdjudicationStatus.ADJOURNED,
       ReportedAdjudicationStatus.REFER_POLICE,
       ReportedAdjudicationStatus.REFER_INAD,
+      ReportedAdjudicationStatus.CHARGE_PROVED,
     )
 
     val log: Logger = LoggerFactory.getLogger(this::class.java)

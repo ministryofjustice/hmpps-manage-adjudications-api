@@ -141,6 +141,14 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   fun findByPunishmentsActivatedByChargeNumber(chargeNumber: String): List<ReportedAdjudication>
 
   @Query(
+    value = "select charge_number from reported_adjudications ra where ra.status in :statuses",
+    nativeQuery = true,
+  )
+  fun findChargeNumbersByStatus(
+    @Param("statuses") statuses: List<String>,
+  ): List<String>
+
+  @Query(
     value = "select count(1) from reported_adjudications ra where ra.status in :statuses $TRANSFER_IN",
     nativeQuery = true,
   )
