@@ -1,0 +1,4 @@
+
+drop index transfer_migration_charges_statusx;
+drop index transfer_migration_charges_charge_numberx;
+drop table transfer_migration_charges;
