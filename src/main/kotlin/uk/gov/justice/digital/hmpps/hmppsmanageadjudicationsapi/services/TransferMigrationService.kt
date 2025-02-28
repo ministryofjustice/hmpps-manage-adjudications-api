@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -24,6 +26,7 @@ class TransferMigrationService(
       val prisoner = try {
         prisonerSearchService.getPrisonerDetail(it.prisonerNumber)!!
       } catch (e: Exception) {
+        log.error("Error fetching prisoner data from search api ${it.prisonerNumber}", e)
         return@forEach
       }
       complete.add(it.chargeNumber)
@@ -59,5 +62,9 @@ class TransferMigrationService(
         TransferMigrationCharges(chargeNumber = it, status = TransferMigrationChargeStatus.READY)
       },
     )
+  }
+
+  companion object {
+    private val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 }
